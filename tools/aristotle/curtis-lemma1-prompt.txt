@@ -1,0 +1,30 @@
+Prove this Lean 4 / mathlib theorem (replace the `sorry`). Source: Lemma 1 of F. Curtis, "On formulas for the Frobenius number of a numerical semigroup", Math. Scand. 67 / 1990 / p. 190-191. Return a complete / compiling proof, no `sorry` / no added `axiom`. mathlib HAS Dirichlet's theorem on primes in arithmetic progressions (search: `Nat.setOf_prime_and_eq_mod`, `Nat.frequently_atTop_modCast_eq`, `Dirichlet`, or `Nat.forall_exists_prime_gt_and_eq_mod` / `ZMod` versions); use whatever form exists.
+
+```lean
+import Mathlib
+
+open scoped Classical
+
+/-- Curtis 1990 / Lemma 1. For a positive real α / target accuracy ε > 0 / a prime p
+and residues i, j coprime to p, there exist x prime and y with x ≡ i, y ≡ j (mod p),
+gcd(x,y) = 1, and |α − y/x| < ε. -/
+theorem curtis_lemma1 (α : ℝ) (hα : 0 < α) (ε : ℝ) (hε : 0 < ε)
+    (p i j : ℕ) (hp : p.Prime) (hi : Nat.Coprime p i) (hj : Nat.Coprime p j) :
+    ∃ x y : ℕ, x.Prime ∧ x ≡ i [MOD p] ∧ y ≡ j [MOD p] ∧
+      Nat.Coprime x y ∧ |α - (y : ℝ) / (x : ℝ)| < ε := by
+  sorry
+```
+
+PROOF STRATEGY (Curtis, p. 191; you may restructure freely — only a complete machine-checked proof is required):
+
+We may assume ε < α. Choose n > 1/ε and let q/r, s/t be ADJACENT elements of the Farey sequence F_n lying in the open interval (α−ε, α+ε); adjacency gives |r·s − q·t| = 1 (consecutive Farey fractions). [Farey adjacency: consecutive fractions a/b < c/d in F_n satisfy b·c − a·d = 1. mathlib may have this via Stern–Brocot / `Nat.continuant` / continued fractions; if absent, it can be built from a mediant / best-approximation argument, or you can directly produce two coprime-cross-difference fractions near α by a continued-fraction / Stern–Brocot step.]
+
+Because |r·s − q·t| = 1, the linear system over ℤ/pℤ
+    r·U + t·V ≡ i,   q·U + s·V ≡ j   (mod p)
+has a unique solution U ≡ u, V ≡ v (mod p), with the matrix [[r,t],[q,s]] invertible mod p (determinant ±1, a unit mod p). Relabel q/r and s/t if necessary so that p ∤ u.
+
+By Dirichlet's theorem choose a ≥ 0 with u' = a·p + u prime and u' > t; then r·u' + t·v ≡ i (mod p), so gcd(p, r·u' + t·v) = 1. From gcd(t,r) = gcd(t,u') = gcd(u',v) = 1 deduce gcd(t, r·u' + t·v) = 1 and hence gcd(p·t·u', r·u' + t·v) = 1; pick b ≥ 0 so that v' = v + b·p·u' makes r·u' + t·v' prime. Then gcd(u', v') = 1.
+
+Set x = r·u' + t·v' and y = q·u' + s·v'. Then x is prime, x ≡ i and y ≡ j (mod p), gcd(x,y) = 1 (since x·s − y·t = u'·(rs − qt) = ±u' and similar combinations, or directly because the unimodular matrix preserves gcd), and the fractions y/x lie between q/r and s/t, hence within (α−ε, α+ε), so |α − y/x| < ε.
+
+Key facts you will need: Dirichlet (infinitely many primes ≡ u mod p when gcd(u,p)=1); a Farey / Stern–Brocot adjacency with unimodular cross-difference near α; basic gcd manipulation; and that a 2×2 integer matrix of determinant ±1 sends coprime pairs to coprime pairs. Feel free to choose x, y by any construction that meets ALL the stated conclusions.
