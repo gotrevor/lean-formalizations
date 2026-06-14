@@ -13,8 +13,10 @@ The proofs delegated to by the audit surface `Statement.lean`.
 -/
 import LeanFormalizations.NumericalSemigroups.Curtis.Defs
 import LeanFormalizations.NumericalSemigroups.Curtis.Lemma2
+import LeanFormalizations.NumericalSemigroups.Curtis.GridVanish
 
 open MvPolynomial
+open scoped Nat
 
 namespace LeanFormalizations.NumericalSemigroups.Curtis
 
@@ -39,6 +41,52 @@ Here the two surviving variables `X₂, X₃` are `X 0, X 1 : MvPolynomial (Fin 
 noncomputable def substCurve (F : MvPolynomial (Fin 4) ℂ) (p k : ℕ) :
     MvPolynomial (Fin 2) ℂ :=
   aeval ![C (p : ℂ), X 0, X 1, C ((k : ℂ) - 2) * X 0 + X 1 - C (p : ℂ)] F
+
+/-- A substitution by degree-`≤ 1` terms cannot raise total degree. -/
+theorem totalDegree_aeval_le {σ τ : Type*} [Fintype σ] (v : σ → MvPolynomial τ ℂ)
+    (hv : ∀ i, (v i).totalDegree ≤ 1) (f : MvPolynomial σ ℂ) :
+    (aeval v f).totalDegree ≤ f.totalDegree := by
+  conv_lhs => rw [f.as_sum]
+  rw [map_sum]
+  apply totalDegree_finsetSum_le
+  intro m hm
+  rw [aeval_monomial, MvPolynomial.algebraMap_eq]
+  refine (totalDegree_mul _ _).trans ?_
+  rw [totalDegree_C, zero_add]
+  refine (totalDegree_finset_prod _ _).trans ?_
+  have hstep : ∀ n ∈ m.support, (v n ^ m n).totalDegree ≤ m n := fun n _ =>
+    (totalDegree_pow _ _).trans
+      (by calc m n * (v n).totalDegree ≤ m n * 1 := Nat.mul_le_mul_left _ (hv n)
+            _ = m n := by ring)
+  refine (Finset.sum_le_sum hstep).trans ?_
+  rw [show ∑ n ∈ m.support, m n = m.sum fun _ e => e from rfl]
+  exact le_totalDegree hm
+
+/-- **Bridge.** Evaluating the substituted plane curve at an integer point `(x,y)`
+equals evaluating `F` at the corresponding graph point `(p, x, y, (k−2)x+y−p)`. The
+hypothesis `p ≤ (k−2)x + y` makes the natural-number subtraction faithful. -/
+theorem eval_substCurve_eq (F : MvPolynomial (Fin 4) ℂ) (p k x y : ℕ)
+    (hk : 2 ≤ k) (hg : p ≤ (k - 2) * x + y) :
+    eval ![(x : ℂ), (y : ℂ)] (substCurve F p k)
+      = eval (evalPoint p x y ((k - 2) * x + y - p)) F := by
+  have hv : (fun i => (aeval ![(x : ℂ), (y : ℂ)])
+        (![C (p : ℂ), X 0, X 1, C ((k : ℂ) - 2) * X 0 + X 1 - C (p : ℂ)] i))
+      = evalPoint p x y ((k - 2) * x + y - p) := by
+    funext i
+    fin_cases i
+    · simp [evalPoint]
+    · simp [evalPoint]
+    · simp [evalPoint]
+    · show (aeval ![(x : ℂ), (y : ℂ)]) (C ((k : ℂ) - 2) * X 0 + X 1 - C (p : ℂ))
+          = evalPoint p x y ((k - 2) * x + y - p) 3
+      rw [aeval_eq_eval, map_sub, map_add, map_mul, eval_C, eval_X, eval_C, eval_X]
+      simp only [evalPoint, Matrix.cons_val_zero, Matrix.cons_val_one,
+        Matrix.cons_val_fin_one, Matrix.cons_val]
+      rw [Nat.cast_sub hg, Nat.cast_add, Nat.cast_mul, Nat.cast_sub hk]
+      push_cast
+      ring
+  rw [substCurve, ← aeval_eq_eval (f := ![(x : ℂ), (y : ℂ)]), comp_aeval_apply, hv,
+    aeval_eq_eval]
 
 /-- The specialization `F(p, X₂, X₃, Y)` at `X₁ := p`, a 3-variable polynomial in
 `X₂, X₃, Y` (mapped to `X 0, X 1, X 2 : MvPolynomial (Fin 3) ℂ`). The Curtis
@@ -108,22 +156,113 @@ If `F` vanishes on the graph of the Frobenius number over the admissible family,
 then for every prime `p > 2` and every `k` with `2 ≤ k ≤ (p−1)/2 + 1` the
 substituted plane curve is identically zero.
 
-Curtis's argument: by Lemma 1 pick admissible triples `(p, xₙ, yₙ)` with `xₙ`
-prime, `xₙ ≡ 1`, `yₙ ≡ p−k+1 (mod p)`, `(xₙ,yₙ)=1` and `yₙ/xₙ → α` for an
-irrational `α ∈ (p−k, p−k+1)`; by Lemma 2 their Frobenius number is exactly
-`(k−2)xₙ + yₙ − p`, so `G(xₙ,yₙ) = F(p,xₙ,yₙ,g) = 0`. As `n → ∞` the leading form
-of `G` acquires infinitely many roots (every irrational in the interval), so it
-vanishes; hence `G ≡ 0`.
-
-**Lemma 2 is now available** as `Curtis.Lemma2.lemma2` (machine-checked,
-axiom-clean). Remaining for this `sorry`: Lemma 1 (Dirichlet + Farey adjacency)
-and the limit argument. -/
+**The proof (machine-checked, axiom-clean).** This replaces Curtis's Lemma 1
+(Dirichlet + Farey adjacency to produce a *converging* sequence of coprime points)
+and the projective/limit argument by an elementary observation: neither
+`IsAdmissible` nor Lemma 2 ever needs full coprimality `gcd(x,y)=1` — only
+`p ∤ y` and `x ∤ y`. So fix one prime `x ≡ 1 (mod p)` with `x > p·(D+1)`
+(`D = F.totalDegree`); for such a fixed `x` the open interval `((p−k)x, (p−k+1)x)`
+has length `x` and therefore contains **no** multiple of `x` (so `x ∤ y` is
+automatic), while it contains `≥ D+1` integers `y ≡ p−k+1 (mod p)`. Each such
+`(p, x, y)` is admissible with Frobenius number `(k−2)x + y − p` (Lemma 2), so the
+substituted curve `G = substCurve F p k` vanishes at `(x,y)`. Running `x` over
+`D+1` such primes (Dirichlet, `Nat.exists_prime_gt_modEq_one`) gives a
+`(D+1)×(D+1)` "staircase" of zeros, and `grid_vanish` (double root-counting +
+`MvPolynomial.funext`) forces `G = 0`. -/
 theorem substCurve_eq_zero (F : MvPolynomial (Fin 4) ℂ)
     (hF : ∀ s₁ s₂ s₃ g : ℕ, IsAdmissible s₁ s₂ s₃ →
         FrobeniusNumber g {s₁, s₂, s₃} → eval (evalPoint s₁ s₂ s₃ g) F = 0)
     (p k : ℕ) (hp : p.Prime) (hp2 : 2 < p) (hk : 2 ≤ k) (hk' : 2 * k ≤ p + 1) :
     substCurve F p k = 0 := by
-  sorry
+  set n := F.totalDegree with hn
+  -- The substituted plane curve has total degree at most `n = F.totalDegree`.
+  have hGdeg : (substCurve F p k).totalDegree ≤ n := by
+    rw [substCurve]
+    apply totalDegree_aeval_le
+    intro i
+    fin_cases i
+    · exact (totalDegree_C _).le.trans (Nat.zero_le _)
+    · exact (totalDegree_X _).le
+    · exact (totalDegree_X _).le
+    · refine (totalDegree_sub _ _).trans ?_
+      rw [totalDegree_C]
+      simp only [Nat.max_eq_left (Nat.zero_le _)]
+      refine (totalDegree_add _ _).trans ?_
+      rw [max_le_iff]
+      refine ⟨(totalDegree_mul _ _).trans ?_, (totalDegree_X _).le⟩
+      rw [totalDegree_C, zero_add]; exact (totalDegree_X _).le
+  -- Infinitely many primes `≡ 1 (mod p)` above the threshold `p·(n+1)`.
+  set S : Set ℕ := {q : ℕ | q.Prime ∧ q % p = 1 ∧ p * (n + 1) < q} with hS
+  have hSinf : S.Infinite := by
+    apply Set.infinite_of_not_bddAbove
+    rw [not_bddAbove_iff]
+    intro m
+    obtain ⟨q, hq_prime, hq_gt, hq_mod⟩ :=
+      Nat.exists_prime_gt_modEq_one (max m (p * (n + 1))) (k := p) (by omega)
+    refine ⟨q, ⟨hq_prime, ?_, lt_of_le_of_lt (le_max_right _ _) hq_gt⟩,
+      lt_of_le_of_lt (le_max_left _ _) hq_gt⟩
+    have : q % p = 1 % p := hq_mod
+    rwa [Nat.one_mod_eq_one.mpr (by omega)] at this
+  -- Extract `n+1` distinct such primes via the natural embedding of an infinite set.
+  set e := hSinf.natEmbedding with he
+  set xq : Fin (n + 1) → ℕ := fun i => (e i.val).val with hxq
+  have hxmem : ∀ i, xq i ∈ S := fun i => (e i.val).property
+  have hxinj : Function.Injective xq := by
+    intro i j hij
+    simp only [hxq, Subtype.val_inj, EmbeddingLike.apply_eq_iff_eq] at hij
+    exact Fin.val_injective hij
+  -- Apply the grid-vanishing lemma to `G = substCurve F p k`.
+  refine grid_vanish (substCurve F p k) n hGdeg
+    (fun i => (xq i : ℂ)) ?_
+    (fun i j => (((p - k) * xq i + 1 + j.val * p : ℕ) : ℂ)) ?_ ?_
+  · -- injectivity of the first coordinates
+    intro i j hij
+    simp only [Nat.cast_inj] at hij
+    exact hxinj hij
+  · -- the `n+1` second coordinates in each row are distinct
+    intro i a b hab
+    have hp0 : 0 < p := by omega
+    simp only [Nat.cast_inj] at hab
+    have hc : (a : ℕ) * p = (b : ℕ) * p := by omega
+    exact Fin.val_injective (Nat.eq_of_mul_eq_mul_right hp0 hc)
+  · -- the curve vanishes at every grid point, via Lemma 2 + admissibility + `hF`
+    intro i j
+    obtain ⟨hxp, hxmod, hxgt⟩ := hxmem i
+    set x := xq i with hxdef
+    have hjn : (j : ℕ) ≤ n := Nat.lt_succ_iff.mp j.isLt
+    have hpk1 : 1 ≤ p - k := by omega
+    have hxbig : p < x := by nlinarith
+    have hpkx : x ≤ (p - k) * x := by nlinarith
+    have hroom : 1 + (j : ℕ) * p < x := by nlinarith
+    set y := (p - k) * x + 1 + (j : ℕ) * p with hydef
+    have hxy : x < y := by omega
+    have hexp : (p - k + 1) * x = (p - k) * x + x := by ring
+    have hub : y < (p - k + 1) * x := by omega
+    have hlb : (p - k) * x < y := by omega
+    have hg : p ≤ (k - 2) * x + y := by omega
+    have hymodp : y % p = p - k + 1 := by
+      have hmodx : x ≡ 1 [MOD p] := by
+        unfold Nat.ModEq; rw [hxmod, Nat.one_mod_eq_one.mpr (by omega)]
+      have e1 : (p - k) * x ≡ (p - k) * 1 [MOD p] := (Nat.ModEq.refl _).mul hmodx
+      have e2 : (j : ℕ) * p ≡ 0 [MOD p] := (Nat.modEq_zero_iff_dvd).mpr ⟨j, by ring⟩
+      have e3 : y ≡ (p - k) * 1 + 1 + 0 [MOD p] := by
+        rw [hydef]; exact (e1.add_right 1).add e2
+      have hee : y % p = ((p - k) * 1 + 1 + 0) % p := e3
+      rw [hee]; simp only [mul_one, add_zero]; exact Nat.mod_eq_of_lt (by omega)
+    have hyxmod : y % x = 1 + (j : ℕ) * p := by
+      have hregroup : y = (1 + (j : ℕ) * p) + x * (p - k) := by rw [hydef]; ring
+      rw [hregroup, Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt hroom]
+    have hxndvd : ¬ x ∣ y := by
+      intro hxd; rw [Nat.dvd_iff_mod_eq_zero] at hxd; omega
+    have hpndvd : ¬ p ∣ y := by
+      intro hpd; rw [Nat.dvd_iff_mod_eq_zero] at hpd; omega
+    have hadm : IsAdmissible p x y := ⟨hxbig, hxy, hp, hxp, hpndvd, hxndvd⟩
+    have hfrob : FrobeniusNumber ((k - 2) * x + y - p) {p, x, y} :=
+      Lemma2.lemma2 p x y k hp2 hxbig hxy hk hk' hlb hub hxmod hymodp
+    have hzero := hF p x y ((k - 2) * x + y - p) hadm hfrob
+    have key : eval ![(x : ℂ), (y : ℂ)] (substCurve F p k) = 0 := by
+      rw [eval_substCurve_eq F p k x y hk hg]; exact hzero
+    exact key
 
 /-- `substCurve F p k` is the `Y := (k−2)X₂ + X₃ − p` substitution applied to the
 specialization `specCurve F p`. This factoring is the bridge for Step B: each
@@ -156,26 +295,6 @@ theorem eval_finSuccEquiv_eq_aeval_cons (G : MvPolynomial (Fin 3) ℂ)
 `Y` to produce `substCurve F p k`. -/
 noncomputable def linForm (p k : ℕ) : MvPolynomial (Fin 2) ℂ :=
   C ((k : ℂ) - 2) * X 0 + X 1 - C (p : ℂ)
-
-/-- A substitution by degree-`≤ 1` terms cannot raise total degree. -/
-theorem totalDegree_aeval_le {σ τ : Type*} [Fintype σ] (v : σ → MvPolynomial τ ℂ)
-    (hv : ∀ i, (v i).totalDegree ≤ 1) (f : MvPolynomial σ ℂ) :
-    (aeval v f).totalDegree ≤ f.totalDegree := by
-  conv_lhs => rw [f.as_sum]
-  rw [map_sum]
-  apply totalDegree_finsetSum_le
-  intro m hm
-  rw [aeval_monomial, MvPolynomial.algebraMap_eq]
-  refine (totalDegree_mul _ _).trans ?_
-  rw [totalDegree_C, zero_add]
-  refine (totalDegree_finset_prod _ _).trans ?_
-  have hstep : ∀ n ∈ m.support, (v n ^ m n).totalDegree ≤ m n := fun n _ =>
-    (totalDegree_pow _ _).trans
-      (by calc m n * (v n).totalDegree ≤ m n * 1 := Nat.mul_le_mul_left _ (hv n)
-            _ = m n := by ring)
-  refine (Finset.sum_le_sum hstep).trans ?_
-  rw [show ∑ n ∈ m.support, m n = m.sum fun _ e => e from rfl]
-  exact le_totalDegree hm
 
 /-- The specialization `F(p,·,·,·)` has total degree at most that of `F`. -/
 theorem totalDegree_specCurve_le (F : MvPolynomial (Fin 4) ℂ) (p : ℕ) :

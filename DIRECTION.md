@@ -25,13 +25,20 @@ Two remaining long poles — spike the riskier first:
    (`MvPolynomial` homogenization + univariate root-finiteness). Build it now, independent
    of Lemma 1, against Lemma 1's *statement*.
 
-## Feasibility gate — report honestly each lap
-Write a VERDICT into `PENDING_WORK.md`/`STATUS.md`: is the crux reachable with current
-mathlib, or is there a genuine gap (name it precisely)?
-- A disclosed `sorry` + a **named gap** is a SUCCESS — it's the feasibility signal Trevor
-  needs. A failed honest attempt that maps the wall beats a confident "done."
-- This is an **umbrella repo**: if the crux is a confirmed wall, **park Curtis** (disclosed
-  sorry + documented gap) and redirect to a target with a reachable crux. Parking-with-gap
-  is correct; grinding a confirmed wall forever is not.
+## Keep banging — advance the crux, do NOT bail to easy leaves
+The crux is the whole game. Attack it EVERY lap. Do not retreat to easier work because
+it's hard — there are no easy leaves left to hide in here, and there wouldn't be an excuse
+if there were.
+- **Advance the attack each lap** (decompose to the narrowest open core, read the paper,
+  formalize the next prerequisite, feed Aristotle, mine the reference corpus). Banging ≠
+  repeating a failed attempt; it means pushing the attack forward from a new angle. A
+  disclosed `sorry` on the crux is a CHECKPOINT to resume from next lap — never a stopping
+  point.
+- **Document the obstacle precisely** in `PENDING_WORK.md` (what you tried, the exact
+  blocking gap, the next angle) — as a continuation aid for the next lap, NOT a verdict that
+  licenses quitting. "Needs deep machinery / infeasible" is a hypothesis to test by trying,
+  not a verdict to file.
+- **Parking/abandoning Curtis is TREVOR's call** after sustained multi-lap effort — never
+  your lap-level excuse.
 - NEVER report "spine/corollary/Step B proved" as deliverable progress without stating they
   remain `sorryAx` until the crux closes.
