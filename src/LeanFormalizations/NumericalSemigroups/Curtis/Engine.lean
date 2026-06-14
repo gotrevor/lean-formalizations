@@ -200,7 +200,7 @@ counterexample (its specialization at `p` is `0`, so every substitution vanishes
 yet its total degree is `1`). The main theorem supplies a prime avoiding the
 finitely many `p` with `specCurve F p = 0` via `finite_specCurve_eq_zero`. -/
 theorem half_le_totalDegree (F : MvPolynomial (Fin 4) ℂ)
-    (p : ℕ) (hp : p.Prime) (hp2 : 2 < p) (hH : specCurve F p ≠ 0)
+    (p : ℕ) (_hp : p.Prime) (hp2 : 2 < p) (hH : specCurve F p ≠ 0)
     (hsub : ∀ k, 2 ≤ k → 2 * k ≤ p + 1 → substCurve F p k = 0) :
     (p - 1) / 2 ≤ F.totalDegree := by
   set H := specCurve F p with hHdef
@@ -224,7 +224,7 @@ theorem half_le_totalDegree (F : MvPolynomial (Fin 4) ℂ)
     have h1 : (eval ![(1 : ℂ), 0]) (linForm p a) = (eval ![(1 : ℂ), 0]) (linForm p b) := by
       rw [hab]
     simp only [linForm, map_add, map_sub, map_mul, eval_C, eval_X, Matrix.cons_val_zero,
-      Matrix.cons_val_one, Matrix.head_cons] at h1
+      Matrix.cons_val_one] at h1
     have hc : (a : ℂ) = b := by linear_combination h1
     exact_mod_cast hc
   -- `Hy.natDegree = H.degreeOf 2`
