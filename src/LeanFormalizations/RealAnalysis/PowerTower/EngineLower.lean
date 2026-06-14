@@ -44,6 +44,30 @@ slope-product / mean-value bound. Being attacked via Aristotle + the literature
 axiom two_cycle_collapse {x β γ : ℝ} (hx0 : 0 < x) (hx1 : x < 1) (hxe : eNegE ≤ x)
     (hβ : 0 < β) (hγ : 0 < γ) (h1 : x ^ β = γ) (h2 : x ^ γ = β) : β = γ
 
+/-- **The corrected elementary heart of the crux** (machine-checked, axiom-free).
+
+For `c < 0` and all `t`, `exp(c t) + t ≥ (1 + log(-c)) / (-c)`, with the minimum
+attained at `t = log(-c)/(-c)`. This is exactly the `add_one_le_exp` "maximum of
+`t·e^{-t}`" phenomenon that powers the upper half — note how the `t`-terms cancel
+because `c + (-c) = 0`.
+
+ROADMAP to discharging `two_cycle_collapse`: with `c = log x` and `f t = x^t = e^{ct}`,
+the second iterate `g = f∘f` has derivative `g'(t) = c²·e^{c·(f(t)+t)} = c²·e^{c·(e^{ct}+t)}`.
+Because `c < 0`, this lemma's lower bound on `e^{ct}+t` gives the *upper* bound
+`g'(t) ≤ c²·e^{c·(1+log(-c))/(-c)} = (-c)/e = |c|/e`. For `x ≥ e^(-e)` we have
+`|c| ≤ e`, hence `g' ≤ 1` everywhere (and `< 1` away from the single critical point).
+So `g` is non-expansive; both `β, γ` are fixed points of `g`, and a strict
+non-expansiveness argument forces `β = γ`. (This is the rigorous replacement for the
+DIRECTION's tangent-subtraction sketch, which is invalid.) The remaining Lean work is
+the `HasDerivAt` computation for `g` and the mean-value/Lipschitz step. -/
+theorem exp_mul_add_ge {c : ℝ} (hc : c < 0) (t : ℝ) :
+    (1 + Real.log (-c)) / (-c) ≤ Real.exp (c * t) + t := by
+  have hcpos : 0 < -c := by linarith
+  have htan := Real.add_one_le_exp (c * t + Real.log (-c))
+  rw [Real.exp_add, Real.exp_log hcpos] at htan
+  rw [div_le_iff₀ hcpos]
+  nlinarith [htan]
+
 /-! ### Elementary scaffolding -/
 
 variable {x : ℝ}
