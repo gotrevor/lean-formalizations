@@ -48,11 +48,59 @@ noncomputable def specCurve (F : MvPolynomial (Fin 4) ℂ) (p : ℕ) :
   aeval ![C (p : ℂ), X 0, X 1, X 2] F
 
 /-- For `F ≠ 0`, the specialization `F(p, ·, ·, ·)` vanishes for only finitely
-many `p`: the coefficient of some fixed monomial is a nonzero univariate complex
-polynomial in `p`, which has finitely many roots. (Disclosed `sorry`.) -/
+many `p`. Proof: viewing `F` through `MvPolynomial.finSuccEquiv` as a univariate
+polynomial `Fp := finSuccEquiv ℂ 3 F` over the domain `S = ℂ[X₂,X₃,Y]`, one has
+`specCurve F p = Fp.eval (C p)`; so `specCurve F p = 0` says `C p` is a root of
+the nonzero `Fp`, and a nonzero polynomial over a domain has finitely many roots.
+The map `p ↦ C (p : ℂ)` is injective, so the set of such `p` is finite. -/
 theorem finite_specCurve_eq_zero (F : MvPolynomial (Fin 4) ℂ) (hF0 : F ≠ 0) :
     {p : ℕ | specCurve F p = 0}.Finite := by
-  sorry
+  -- `Fp`, the image of `F` as a univariate polynomial over `ℂ[X₂,X₃,Y]`.
+  set Fp : Polynomial (MvPolynomial (Fin 3) ℂ) := finSuccEquiv ℂ 3 F with hFp
+  have hFp0 : Fp ≠ 0 := by
+    simpa [hFp] using (finSuccEquiv ℂ 3).injective.ne hF0
+  -- Per-generator agreement, then `specCurve F p = Fp.eval (C p)`.
+  have hkey : ∀ p : ℕ, specCurve F p = Polynomial.eval (C (p : ℂ)) Fp := by
+    intro p
+    have hgen : ∀ i : Fin 4,
+        aeval ![C (p : ℂ), X 0, X 1, X 2] (X i : MvPolynomial (Fin 4) ℂ)
+          = Polynomial.eval (C (p : ℂ)) (finSuccEquiv ℂ 3 (X i)) := by
+      intro i
+      rw [aeval_X]
+      refine Fin.cases ?_ ?_ i
+      · simp [finSuccEquiv_X_zero]
+      · intro j
+        rw [finSuccEquiv_X_succ, Polynomial.eval_C]
+        fin_cases j <;> rfl
+    -- `aeval v` and `eval (C p) ∘ finSuccEquiv` agree as ring homs.
+    have hev : ((aeval ![C (p : ℂ), X 0, X 1, X 2] :
+          MvPolynomial (Fin 4) ℂ →ₐ[ℂ] MvPolynomial (Fin 3) ℂ).toRingHom)
+        = (Polynomial.evalRingHom (C (p : ℂ))).comp
+            ((finSuccEquiv ℂ 3 :
+                MvPolynomial (Fin 4) ℂ ≃ₐ[ℂ] Polynomial (MvPolynomial (Fin 3) ℂ)) :
+              MvPolynomial (Fin 4) ℂ →+* Polynomial (MvPolynomial (Fin 3) ℂ)) := by
+      apply MvPolynomial.ringHom_ext
+      · intro r
+        have hC : finSuccEquiv ℂ 3 (C r) = Polynomial.C ((C r : MvPolynomial (Fin 3) ℂ)) := by
+          rw [← MvPolynomial.algebraMap_eq, AlgEquiv.commutes]; simp
+        simp [Polynomial.coe_evalRingHom, hC, MvPolynomial.algebraMap_eq]
+      · intro i; simpa [Polynomial.coe_evalRingHom] using hgen i
+    simp only [specCurve, hFp]
+    simpa [Polynomial.coe_evalRingHom] using DFunLike.congr_fun hev F
+  -- The root set of `Fp` over the domain `S` is finite.
+  have hroots : {a : MvPolynomial (Fin 3) ℂ | Fp.IsRoot a}.Finite := by
+    apply Set.Finite.subset Fp.roots.toFinset.finite_toSet
+    intro a ha
+    simp only [Finset.mem_coe, Multiset.mem_toFinset, Polynomial.mem_roots hFp0]
+    exact ha
+  -- `{p | specCurve F p = 0}` is the preimage of that finite set under `p ↦ C p`.
+  have hCinj : Function.Injective (fun p : ℕ => (C (p : ℂ) : MvPolynomial (Fin 3) ℂ)) :=
+    (MvPolynomial.C_injective (Fin 3) ℂ).comp Nat.cast_injective
+  apply Set.Finite.subset (hroots.preimage (hCinj.injOn))
+  intro p hp
+  simp only [Set.mem_setOf_eq] at hp
+  have hr : Polynomial.eval (C (p : ℂ)) Fp = 0 := by rw [← hkey p]; exact hp
+  simpa [Set.mem_preimage, Polynomial.IsRoot] using hr
 
 /-- **Step A — Curtis's Lemmas 1 + 2 + limit argument** (disclosed `sorry`).
 If `F` vanishes on the graph of the Frobenius number over the admissible family,
