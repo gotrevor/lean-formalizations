@@ -1,5 +1,10 @@
 # HANDOFF — lean-formalizations (target: Curtis 1990)
 
+> ⚠️ **READ [`DIRECTION.md`](DIRECTION.md) FIRST** (operator directive 2026-06-14):
+> hardest-first. Step A (`substCurve_eq_zero`) is the SOLE gate; spike it and report its
+> feasibility honestly each lap; everything else stays `sorryAx` until it closes; park
+> with a named gap if it's a wall. Don't dress up scaffolding as a deliverable.
+
 **Repo purpose.** An umbrella for *solved-but-unformalized* results, with a soft spot
 for **no-formula / impossibility** meta-theorems. Current target: Curtis 1990, the
 no-Frobenius-formula theorem.
@@ -10,7 +15,8 @@ Prove, axiom-clean, the two theorems in
 surface**; statements delegate to `Engine.lean`):
 - `no_polynomial_relation` — THEOREM: no nonzero `F ∈ ℂ[X₁,X₂,X₃,Y]` vanishes on the
   graph of the Frobenius number over Curtis's admissible family `A`.
-- `no_finite_polynomial_formula` — COROLLARY. ✅ **PROVED** (reduces to the THEOREM).
+- `no_finite_polynomial_formula` — COROLLARY (reduces to the THEOREM; ⚠️ still `sorryAx`
+  via Step A — NOT yet a deliverable).
 
 Paper: `papers/Curtis-1990-Frobenius-formula.pdf` (3 pp.), fully read.
 

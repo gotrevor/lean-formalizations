@@ -1,7 +1,28 @@
 # PENDING_WORK — Curtis 1990 engine
 
+> Read `DIRECTION.md` first. The crux is `substCurve_eq_zero`; everything else is
+> `sorryAx` until it closes and is NOT a deliverable.
+
+## ⚖️ FEASIBILITY VERDICT (2026-06-14) — crux appears REACHABLE, no confirmed wall
+Assessment of `substCurve_eq_zero` against current mathlib (v4.29.1):
+- **Lemma 1 (Dirichlet + Farey witness)** — riskiest pole. mathlib HAS Dirichlet. The
+  only candidate gap is **Farey adjacency** (`|rs−qt|=1` for consecutive Farey fractions,
+  existing near any real α). mathlib has Stern–Brocot / continued-fraction machinery, so
+  this is *probably* buildable, but I have NOT yet confirmed a ready lemma — this is the
+  open feasibility question. OUT TO ARISTOTLE (`80d9166c`); its result will sharpen the verdict.
+- **Limit argument** — no wall seen. All ingredients are in mathlib
+  (`homogeneousComponent`, `sum_homogeneousComponent`, `IsHomogeneous.eq_zero_of_forall_eval_eq_zero_of_le_card`,
+  `Polynomial.eq_zero_of_infinite_isRoot`, `Filter.Tendsto`). A multi-lemma analysis build,
+  but mechanical. Buildable now, independent of Lemma 1.
+- **Net:** NO confirmed wall → do NOT park Curtis. The crux is a real but apparently
+  reachable multi-lap build. Next lap should SPIKE it (build the limit argument + harvest/port
+  Lemma 1) and update this verdict — especially the Farey-adjacency question, the one
+  genuine unknown.
+
+---
+
 Headline theorem `no_polynomial_relation` (spine machine-checked) reduces to ONE
-remaining `sorry`. Everything else is proved, axiom-clean.
+remaining `sorry` — **the crux** — which is still `sorryAx` and gates every headline.
 
 ## DONE this far (all axiom-clean modulo the one open sorry)
 - `no_finite_polynomial_formula` — corollary (`F = ∏(fᵢ − Y)`).
