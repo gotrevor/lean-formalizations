@@ -11,6 +11,7 @@ genre where you reify a class of formulas and prove the target escapes it).
 | Area | Result | Status |
 |------|--------|--------|
 | `NumericalSemigroups/Curtis` | Curtis 1990: the Frobenius number of a triple has no closed formula (and isn't even algebraic over the generators); incl. the ℤ/ℚ corollaries. | **PROVED, axiom-clean** |
+| `RealAnalysis/PowerTower` | Euler 1783: the infinite power tower `ⁿx` converges iff `x ∈ [e^(-e), e^(1/e)]`. Upper half (`x ≥ 1`, sharp endpoint `e^(1/e)`) scaffolded. | **Scaffold** (`iff` proved; convergence/divergence `sorry`) |
 
 Planned: gather the Erdős formalizations here once their publishing gate clears
 (they're separate repos today: `erdos-403`, `erdos-482`, `erdos-1213`, …).

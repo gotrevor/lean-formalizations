@@ -1,151 +1,166 @@
 # DIRECTION — read FIRST (operator directive, 2026-06-14, Trevor via Ren)
 
-## ⛔ THIS IS A BOUNDED RUN. Build items 1–4, then STOP.
+## ⛔ BOUNDED RUN. Discharge the two power-tower sorries (upper half), then STOP.
 
-Curtis 1990 is **COMPLETE and axiom-clean** (re-verified by real `#print axioms`
-on all headlines — pure trust base, no `sorryAx`, no custom axioms). The math core
-is **done and is not to be reopened or extended in this run.**
+Curtis 1990 is **COMPLETE, axiom-clean, and DONE** — do not reopen, extend, or
+re-verify it. Ignore the previous run's items 1–4 (all built last run).
 
-This run has exactly ONE job: **add independent verification / faithfulness
-cross-checks** (items 1–4 below) that raise confidence the formalized *statements*
-faithfully capture Curtis — the kind of external consistency checks you'd run on the
-quadratic formula by plugging in cases where the answer is independently known.
+This run has exactly ONE job: finish the **upper half** of the infinite power
+tower (Euler 1783) in `src/LeanFormalizations/RealAnalysis/PowerTower/`. Two
+`sorry`s remain; both are provable by **elementary** means (NO calculus — no
+derivatives, no critical points). A full proof plan is below.
 
-**When items 1–4 are built (green + axiom-clean) — or honestly marked
-omitted-as-intractable — and `src/` is sorry-free, you are DONE. STOP the treadmill**
-(self-stop sentinel; see "Stop condition" at the bottom).
+### The target
+`Statement.lean` has three load-bearing theorems (keep it the faithful audit
+surface — do not weaken any statement) plus a proved anchor:
+- `tower_converges` — **`sorry`**, the analytic core. ← discharge this
+- `tower_diverges` — **`sorry`**. ← discharge this
+- `tower_converges_iff` — already PROVED from the two above (the headline).
+- `endpoint_fixed_point : eInvE ^ exp 1 = exp 1` — already PROVED.
 
-### Out of scope this run (DO NOT START — deferred to a future run, Trevor's call)
-- ❌ Constructible-number / doubling-the-cube impossibility (the prior "next target").
-- ❌ Upstreaming Curtis to mathlib.
-- ❌ Any new theorem, problem, or target.
-These are PARKED in `PENDING_WORK.md`. Do **not** treat them as "open frontier" when
-deciding whether to stop. Trevor has explicitly scoped this run to 1–4 only. Continuing
-past 1–4 is going OUT OF SCOPE, not diligence.
+`Defs.lean` has `tower x n` (= ⁿx, `^` is `Real.rpow`), `eInvE = exp (1 / exp 1)`
+(= e^(1/e)), and `tower_zero/succ/one`. Audit-faithful; don't change the defs.
+
+### Out of scope this run (DO NOT START)
+- ❌ The **lower half** `e^(-e) ≤ x < 1` (oscillating regime, 2-cycle stability of
+  `g(t)=x^(x^t)`). That is a separate future cycle. Do NOT scaffold it — adding new
+  `sorry`s would block self-stop and turn this into an unbounded run.
+- ❌ Lambert W, any mathlib upstreaming, any new target.
+- ❌ Touching Curtis.
 
 ---
 
-## Rules for this run
-
-- **No `sorry`/`admit`, ever.** Every item below is provable by elementary means. If a
-  sub-item turns out to cost more than its worth, **OMIT it** (delete the attempt, leave a
-  one-line note in `PENDING_WORK.md`) — do **not** leave a `sorry`. A stray `sorry` blocks
-  the self-stop and churns the run.
-- **Order: certain-and-easy first, risky-optional last.** This is NOT a "hardest-first"
-  run — the goal is a complete bundle of cross-checks, not resolving a feasibility gate.
-  Do item 1, the mandatory part of item 2, item 3's worked example, and item 4 first
-  (all easy + certain). Attempt the OPTIONAL parts (g(6,9,20) by hand, a general
-  constructive corollary) only after, and omit if costly.
-- **Keep `Statement.lean` the faithful audit surface.** New checks go in sibling files
-  (suggested: `Curtis/Boundary.lean` for items 1+3; extend `Curtis/Anchors.lean` for
-  item 2; docs for item 4). Each new theorem gets a docstring saying what it cross-checks
-  and why it raises confidence.
-- **Commit every green build** (verify from a real `lake build`). **DO NOT push** (host
-  publishes). Standing repo rules in `HANDOFF.md` still apply.
-- Reference corpus if you need mathlib lemma names:
+## Rules
+- **No `sorry`/`admit` left at the end.** If a step resists, keep attacking it —
+  the plan below is complete and elementary, so a stuck proof is a lemma-name or
+  bookkeeping issue, not a math gap. Grind it.
+- **Engine lives in a sibling, `Statement.lean` delegates.** Create
+  `RealAnalysis/PowerTower/Engine.lean` (imports `Defs`); put the real proofs there
+  as `tower_converges_engine` / `tower_diverges_engine`; then in `Statement.lean`
+  replace each `:= by sorry` with `:= tower_converges_engine` (resp. `_diverges_`),
+  and `import …PowerTower.Engine`. Mirror the Curtis `Engine`/`Statement` split.
+- **Move `endpoint_fixed_point` to `Defs.lean`** (it's a fact about the constant and
+  the engine needs it; `Engine` can't import `Statement`). Keep a reference to it in
+  `Statement.lean`'s docstring; the theorem name stays the same, just relocated.
+- **Verify lemma names against this repo's mathlib** (`v4.29.1`). The names below are
+  ~90% right; fix any that don't resolve (the proof shape is the de-risked part).
+- **Commit every green build** (from a real `lake build`). **DO NOT push.**
+- Reference corpus for mathlib lemma names:
   `~/personal/claude/knowledge/core/projects/lean-journey/reference/`.
+- Blocked needing the open web? Append a dated item to `ON-LINE-REQUEST.md` and continue.
 
 ---
 
-## The four items
+## Proof plan (elementary, no calculus)
 
-### 1. The n = 2 boundary check — MANDATORY, the single most convincing one
-The entire content of Curtis is a boundary: **n = 2 HAS a closed formula (Sylvester,
-g(a,b) = ab − a − b); n ≥ 3 does NOT.** Prove the n = 2 analog of `no_polynomial_relation`
-is **true** — i.e. for two generators the graph DOES lie on a hypersurface — exhibiting
-the explicit Sylvester polynomial. This demonstrates the theorem's teeth sit exactly at
-the n=2 / n=3 line and is not a vacuous "no formula for anything" artifact.
+Let `a n := tower x n`, so `a 0 = 1`, `a (n+1) = x ^ a n` (`tower_succ`). The two
+proofs share a **monotone** sub-proof and a **no-fixed-point-above-threshold**
+lemma. Put shared helpers in `Engine.lean`.
 
-Target (adjust names to taste; this is the shape):
+### Shared helper 1 — `log L ≤ L / e` for `L > 0`
+The whole "max of `t^(1/t)` is `e^(1/e)`" fact, with no derivatives, straight from
+`exp x ≥ x + 1`:
 ```lean
-/-- n = 2 boundary check: contrast with `no_polynomial_relation`. For TWO generators a
-nonzero polynomial DOES vanish on the whole graph — the Frobenius number of a pair is
-given by Sylvester's `ab − a − b`, so the 2-generator graph lies on the hypersurface
-`X₀·X₁ − X₀ − X₁ − Y = 0`. Curtis's theorem is precisely that this becomes impossible at
-n = 3. -/
-theorem n2_polynomial_relation_exists :
-    ∃ F : MvPolynomial (Fin 3) ℂ, F ≠ 0 ∧
-      ∀ a b g : ℕ, 1 < a → 1 < b → Nat.Coprime a b →
-        FrobeniusNumber g {a, b} →
-        eval ![(a : ℂ), (b : ℂ), (g : ℂ)] F = 0
+lemma log_le_div_e {L : ℝ} (hL : 0 < L) : Real.log L ≤ L / Real.exp 1 := by
+  have h := Real.add_one_le_exp (Real.log L - 1)       -- (log L - 1) + 1 ≤ exp (log L - 1)
+  rw [Real.exp_sub, Real.exp_log hL] at h              -- exp(log L -1) = exp(log L)/exp 1 = L/exp 1
+  linarith
 ```
-- Witness `F = X 0 * X 1 - X 0 - X 1 - X 2`. Nonzero: its `X₀X₁` coefficient is `1`.
-- Vanishing: mathlib's Sylvester result (`Mathlib.NumberTheory.FrobeniusNumber`, the
-  coprime-pair theorem — find the exact name, likely `frobeniusNumber_pair`) gives the
-  Frobenius number of `{a,b}` is `a*b - a - b`; `FrobeniusNumber` is an `IsGreatest`, hence
-  unique, so `g = a*b - a - b`. Cast to ℂ (use `Nat.cast_sub`, valid since `ab ≥ a+b` for
-  coprime `a,b > 1`) and the eval is `0`.
 
-### 2. More numerical anchors against an independent computation — MANDATORY (core) + OPTIONAL (stretch)
-The repo currently has ONE faithfulness anchor (`g(3,7,8)=5`, two ways). Add more
-independent agreement between Curtis's Lemma 2 value formula `(k−2)·s₂ + s₃ − s₁` and
-mathlib's independently-defined `FrobeniusNumber`. Each agreement is fresh evidence Lemma 2
-is stated faithfully.
-- **MANDATORY:** add **2–3 more Lemma-2 value anchors** at different `(s₁,s₂,s₃,k)` that
-  satisfy `Lemma2.lemma2`'s hypotheses. For each, state the value `(k−2)s₂+s₃−s₁` and confirm
-  `FrobeniusNumber` agrees (mirror `Anchors.frobeniusNumber_3_7_8_via_lemma2`). Bonus: prove
-  that Frobenius number a SECOND way (directly, like `Anchors.frobeniusNumber_3_7_8`) for at
-  least one of them.
-- **OPTIONAL (stretch):** `FrobeniusNumber 43 {6,9,20}` — the Chicken-McNugget number (the
-  Penn video already in `SOURCES.md`). ⟨6,9,20⟩ is NOT admissible (6 isn't prime), so this
-  tests mathlib's `FrobeniusNumber` predicate *outside* Curtis's family — a different surface
-  than the Lemma-2 anchors. Prove by hand (residue-cover mod 6, like anchor 2) or `decide`.
-  Avoid `native_decide` if you can (keeps the repo's no-`ofReduceBool` cleanliness); if you
-  must use it, note it in the docstring — it's a standalone anchor, so it can't touch any
-  headline's axiom footprint. **Omit entirely if it costs more than ~one focused pass.**
-
-### 3. Refute a named candidate formula — MANDATORY (worked example) + OPTIONAL (general)
-- **MANDATORY:** make the abstract `¬∃` tangible with one concrete refuted guess. The natural
-  "extend Sylvester symmetrically" candidate `s₁s₂ + s₂s₃ + s₁s₃ − s₁ − s₂ − s₃` already
-  fails at ⟨3,7,8⟩: it evaluates to `21+56+24−18 = 83`, not `g = 5`. Formalize:
+### Shared helper 2 — a fixed point forces `x ≤ e^(1/e)`
+If `x^L = L` with `L > 0` and `x > 0`, then `x ≤ eInvE`. (Take logs: `L·log x =
+log L`, so `log x = log L / L ≤ (L/e)/L = 1/e`, then `exp` monotone.)
 ```lean
-/-- A concrete witness that the natural symmetric degree-2 guess is NOT a Frobenius formula:
-it already disagrees with the true value at the admissible triple ⟨3,7,8⟩ (gives 83, not 5). -/
-theorem symmetric_guess_not_a_formula :
-    ∃ s₁ s₂ s₃ g : ℕ, IsAdmissible s₁ s₂ s₃ ∧ FrobeniusNumber g {s₁, s₂, s₃} ∧
-      eval ![(s₁ : ℂ), (s₂ : ℂ), (s₃ : ℂ)]
-        (X 0 * X 1 + X 1 * X 2 + X 0 * X 2 - X 0 - X 1 - X 2) ≠ (g : ℂ)
+lemma base_le_eInvE {x L : ℝ} (hx : 0 < x) (hL : 0 < L) (h : x ^ L = L) :
+    x ≤ eInvE := by
+  have hlog : L * Real.log x = Real.log L := by
+    rw [← Real.log_rpow hx, h]                          -- log (x^L) = L * log x
+  have hlogx : Real.log x ≤ 1 / Real.exp 1 := by
+    have hd := log_le_div_e hL                          -- log L ≤ L / exp 1
+    rw [← hlog] at hd                                   -- L*log x ≤ L/exp 1
+    -- divide by L>0:  log x ≤ 1/exp 1
+    rw [div_eq_mul_inv] at hd ⊢
+    nlinarith [hd, hL, Real.exp_pos 1]                  -- or: cancel L; field_simp/​le_div_iff
+  calc x = Real.exp (Real.log x) := (Real.exp_log hx).symm
+    _ ≤ Real.exp (1 / Real.exp 1) := Real.exp_le_exp.mpr hlogx
+    _ = eInvE := rfl
 ```
-  Witness `⟨3,7,8,5⟩` reusing the `Anchors` lemmas; the eval is `83 ≠ 5` by `norm_num`/`simp`.
-  (Double-check the arithmetic in Lean — don't trust this comment's number.)
-- **OPTIONAL (stretch):** a *constructive* corollary — given any candidate, an explicit
-  admissible triple refutes it. This is essentially the contrapositive of the headline and is
-  harder to state cleanly; attempt only if 1–4 are otherwise done, and OMIT (don't sorry) if
-  it doesn't fall out.
+(If `nlinarith` is fussy, derive `log x ≤ 1/exp 1` via `le_div_iff hL` /
+`(mul_le_mul_left hL)` from `L*log x ≤ L*(1/exp 1)`.)
 
-### 4. Document the "free findings" + fix the stale docstrings — MANDATORY, easy
-- State explicitly (in `Curtis/README.md` and/or a short `FINDINGS.md`) the two consequences
-  the proof already gives, because each is a place a mis-reading could hide:
-  1. **Stronger than "not polynomial" — "not algebraic":** the graph lies on no proper
-     hypersurface of ℂ⁴ (Zariski-dense). The n=2 contrast (item 1) is the cleanest way to feel
-     this — there the graph DOES lie on a hypersurface.
-  2. **Sub-families still have formulas.** Arithmetic progressions ⟨a, a+d, …⟩ have a known
-     closed Frobenius formula, and n=2 has Sylvester; Curtis forbids only a *single universal*
-     formula over all triples. The Lean statement (`no_finite_polynomial_formula`, the "no
-     finite menu covering ALL admissible triples" form) is correct and must not be misread as
-     forbidding per-family formulas.
-- **Fix the stale docstrings** (they currently mislead by describing the pre-completion
-  scaffold state):
-  - `Curtis/Engine.lean` module docstring (≈ lines 9, 11, 35) still says the main theorem is
-    "currently `sorry`" / "disclosed sorrys". Update to reflect COMPLETE + axiom-clean.
-  - `Curtis/README.md` (≈ line 8) says "`sorry` (statements first)" / "Proof: not started".
-    Update to DONE.
+### Shared helper 3 — monotonicity (holds for `1 ≤ x`)
+```lean
+lemma tower_mono {x : ℝ} (hx : 1 ≤ x) : Monotone (tower x) := by
+  apply monotone_nat_of_le_succ
+  intro n
+  induction n with
+  | zero => simpa using hx          -- tower x 0 = 1 ≤ x = tower x 1
+  | succ k ih =>
+      rw [tower_succ, tower_succ]    -- x^(a k) ≤ x^(a (k+1))
+      exact Real.rpow_le_rpow_of_exponent_le hx ih
+```
+(`monotone_nat_of_le_succ` needs `∀ n, a n ≤ a (n+1)`; prove that `∀ n` statement by
+induction as above. Adjust if the induction shape needs `∀ n, a n ≤ a (n+1)` proved
+as its own lemma first.)
+
+### `tower_converges_engine` (`1 ≤ x ≤ eInvE`)
+1. `hmono := tower_mono hx1`.
+2. **Bounded by e:** `hbd : ∀ n, tower x n ≤ exp 1` by induction:
+   - `n=0`: `tower x 0 = 1 ≤ exp 1` via `Real.one_le_exp (by norm_num)`.
+   - `n+1`: `x^(a n) ≤ x^(exp 1) ≤ eInvE^(exp 1) = exp 1`:
+     `Real.rpow_le_rpow_of_exponent_le hx1 (ih)` then
+     `Real.rpow_le_rpow (by linarith) hx2 (Real.exp_pos 1).le` then `endpoint_fixed_point`.
+3. `hbdd : BddAbove (Set.range (tower x)) := ⟨exp 1, by rintro _ ⟨n,rfl⟩; exact hbd n⟩`.
+4. `L := ⨆ n, tower x n`; `hL := tendsto_atTop_ciSup hmono hbdd : Tendsto (tower x) atTop (𝓝 L)`.
+5. **`x ^ L = L`:**
+   - `hshift : Tendsto (fun n => tower x (n+1)) atTop (𝓝 L) := hL.comp (tendsto_add_atTop_nat 1)`.
+   - `hrpow : Tendsto (fun n => x ^ tower x n) atTop (𝓝 (x ^ L)) :=`
+     `Tendsto.rpow tendsto_const_nhds hL (Or.inl (by positivity))`  -- x ≠ 0 (x ≥ 1)
+   - `(fun n => tower x (n+1)) = (fun n => x ^ tower x n)` by `funext; rw [tower_succ]`.
+   - `tendsto_nhds_unique hshift (this ▸ hrpow)` gives `L = x ^ L`; take `.symm`.
+6. **`1 ≤ L`:** `le_ciSup hbdd 0` gives `tower x 0 ≤ L`, and `tower x 0 = 1`.
+7. **`L ≤ exp 1`:** `ciSup_le hbd`.
+8. `exact ⟨L, hL, ⟨x^L=L⟩, ⟨1≤L⟩, ⟨L≤exp 1⟩⟩`.
+
+### `tower_diverges_engine` (`eInvE < x`)
+Here `x > eInvE > 1`. Strategy: monotone + **unbounded** ⇒ `atTop`. Unbounded by
+contradiction with the no-fixed-point lemma — NO δ-gap calculus needed.
+1. `hx1 : 1 ≤ x := le_of_lt (lt_trans one_lt_eInvE hx)` — you'll need `1 < eInvE`
+   (`eInvE = exp(1/exp 1) > exp 0 = 1` since `1/exp 1 > 0`: `Real.one_lt_exp_iff` /
+   `Real.exp_lt_exp` + `Real.exp_zero`). Prove a small `one_lt_eInvE` helper.
+2. `hmono := tower_mono hx1`.
+3. **Unbounded:** `hub : ∀ C, ∃ n, C ≤ tower x n`. Suppose not, i.e. `BddAbove (range)`.
+   Then by the SAME steps 4–6 of converges (you can factor a
+   `monotone_bdd_has_fixedpoint` helper returning `∃ L, Tendsto ∧ x^L=L ∧ 1≤L`),
+   get a fixed point `L ≥ 1 > 0` with `x ^ L = L`. Then `base_le_eInvE` gives
+   `x ≤ eInvE`, contradicting `eInvE < x`. So unbounded.
+   - Cleanly: prove `¬ BddAbove (Set.range (tower x))`, then unbounded follows
+     (`not_bddAbove_iff` on ℝ).
+4. **Monotone + unbounded ⇒ atTop:** `tendsto_atTop_atTop_of_monotone hmono hub`
+   (or `Monotone.tendsto_atTop_atTop`; or `tendsto_atTop_atTop.2`). Find the exact
+   mathlib name; the hypothesis is `∀ b, ∃ n, b ≤ f n`.
+
+### After both engines compile
+- Wire `Statement.lean` to delegate (`:= tower_converges_engine` etc.), rebuild green.
+- `#print axioms tower_converges_iff` and `#print axioms tower_converges` must be
+  `[propext, Classical.choice, Quot.sound]` — **no `sorryAx`**. Same for `_diverges`.
+- Refresh `RealAnalysis/PowerTower/README.md` Status to DONE, and the top-level
+  `README.md` table row (Scaffold → PROVED).
 
 ---
 
-## Completion = stop condition (allow-stop is armed on this run)
+## Completion = stop condition (`--allow-stop` is armed)
 
-You are running with `--allow-stop`. On a **review/reflect lap**, once ALL of the following
-hold, certify completion and self-stop (do NOT keep churning):
-- items 1, the mandatory parts of 2 and 3, and 4 are built; optional parts are either done or
-  explicitly omitted-with-a-note (omission is fine — they are stretch goals);
-- `lake build` is green and `src/` is sorry-free (`#print axioms` on the headlines still clean,
-  and the new check theorems are clean too);
-- there is no remaining IN-SCOPE work (the parked targets do NOT count — they are deferred).
+On a **review/reflect lap**, once ALL hold, certify completion and self-stop:
+- `tower_converges` and `tower_diverges` are PROVED (delegating to the engine),
+  `src/` is sorry-free, `lake build` green;
+- `#print axioms` on `tower_converges`, `tower_diverges`, `tower_converges_iff` is
+  the pure trust base (no `sorryAx`, no custom axioms, no `native_decide`);
+- the lower half is correctly NOT started.
 
-Then, per `lean-review-lap.md`'s completion exit: write your synthesis + refresh `HANDOFF.md`,
-commit, and:
+Then write your synthesis + refresh `HANDOFF.md`, commit, and:
 ```
-printf 'source=lap\nreason=verification-hardening run complete (Curtis cross-checks 1-4 built, axiom-clean)\n' > "$LEAN_STOP_SENTINEL"
+printf 'source=lap\nreason=power-tower upper half complete (tower_converges + tower_diverges proved, axiom-clean)\n' > "$LEAN_STOP_SENTINEL"
 ```
-then end the turn. If a `sorry` lingers or a mandatory item is missing, do NOT stop — finish it.
+then end the turn. If a `sorry` lingers, do NOT stop — finish it. This is a small,
+fully-specified run; expect to finish in 1–3 grind laps + a review lap.
