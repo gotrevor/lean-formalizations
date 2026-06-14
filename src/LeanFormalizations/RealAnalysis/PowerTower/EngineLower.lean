@@ -23,43 +23,26 @@ open Real Filter Topology
 
 namespace LeanFormalizations.RealAnalysis.PowerTower
 
-/-! ### THE CRUX (isolated axiom) -/
+/-! ### THE CRUX — no nontrivial 2-cycle for `t ↦ x^t` on `[e^(-e), 1)`
 
-/-- **No nontrivial 2-cycle for `t ↦ x^t` when `x ≥ e^(-e)`** (with `0 < x < 1`).
+Fully machine-checked (NO axiom). The heart is that the second iterate
+`g = f ∘ f` (`f t = x^t`) is non-expansive: its derivative
+`g'(t) = (log x)² · x^(x^t) · x^t = c²·e^{c(e^{ct}+t)}` (`c = log x < 0`) is bounded
+by `|c|/e ≤ 1` for `x ≥ e^(-e)`. This rides on the SAME `add_one_le_exp`
+"maximum of `t·e^{-t}`" phenomenon as the upper half (`exp_mul_add_ge` below). For
+`x > e^(-e)` the bound is `< 1` uniformly, so `g` is a contraction (Banach ⟹ unique
+fixed point ⟹ `β = γ`); at the boundary `x = e^(-e)` the bound is `1` with strict
+inequality off the single critical point `t = 1/e`, and an antitone-on-interval
+argument still forces `β = γ`.
 
-If `β, γ > 0` form a 2-cycle of `f t = x^t` (`x^β = γ`, `x^γ = β`) and
-`e^(-e) ≤ x`, then `β = γ`. This is the analytic heart of the lower bound for the
-power tower's interval of convergence (the bifurcation at `x = e^(-e)`).
+(NB: the "subtract the two tangent-line inequalities at the fixed point" sketch in
+some references is INVALID — one cannot subtract inequalities, and the tangent-at-`y`
+bound only pins `log y` to an interval *straddling* `-1`. The slope/derivative bound
+here is the correct mechanism.) -/
 
-DISCLOSED AXIOM (debt, not a destination). The genuine difficulty: setting
-`c = log x ∈ [-e, 0)`, the relations give `β log β = γ log γ`, and one must show the
-map `g = f ∘ f` is non-expansive. The clean reason is that its derivative is bounded
-by `|c|/e ≤ 1` — the same "maximum of `t·e^{-t}`" phenomenon (`add_one_le_exp`) that
-drives the upper half. NOTE: the elementary "subtract the two tangent-line
-inequalities at the fixed point" argument sketched in some references is INVALID
-(one cannot subtract inequalities; numerically the tangent-at-`y` bound only pins
-`log y` to an interval straddling `-1`, not below it). A rigorous proof needs the
-slope-product / mean-value bound. Being attacked via Aristotle + the literature
-(Lóczi §3); to be discharged into a machine-checked proof. -/
-axiom two_cycle_collapse {x β γ : ℝ} (hx0 : 0 < x) (hx1 : x < 1) (hxe : eNegE ≤ x)
-    (hβ : 0 < β) (hγ : 0 < γ) (h1 : x ^ β = γ) (h2 : x ^ γ = β) : β = γ
-
-/-- **The corrected elementary heart of the crux** (machine-checked, axiom-free).
-
-For `c < 0` and all `t`, `exp(c t) + t ≥ (1 + log(-c)) / (-c)`, with the minimum
-attained at `t = log(-c)/(-c)`. This is exactly the `add_one_le_exp` "maximum of
-`t·e^{-t}`" phenomenon that powers the upper half — note how the `t`-terms cancel
-because `c + (-c) = 0`.
-
-ROADMAP to discharging `two_cycle_collapse`: with `c = log x` and `f t = x^t = e^{ct}`,
-the second iterate `g = f∘f` has derivative `g'(t) = c²·e^{c·(f(t)+t)} = c²·e^{c·(e^{ct}+t)}`.
-Because `c < 0`, this lemma's lower bound on `e^{ct}+t` gives the *upper* bound
-`g'(t) ≤ c²·e^{c·(1+log(-c))/(-c)} = (-c)/e = |c|/e`. For `x ≥ e^(-e)` we have
-`|c| ≤ e`, hence `g' ≤ 1` everywhere (and `< 1` away from the single critical point).
-So `g` is non-expansive; both `β, γ` are fixed points of `g`, and a strict
-non-expansiveness argument forces `β = γ`. (This is the rigorous replacement for the
-DIRECTION's tangent-subtraction sketch, which is invalid.) The remaining Lean work is
-the `HasDerivAt` computation for `g` and the mean-value/Lipschitz step. -/
+/-- The elementary heart: for `c < 0`, `exp(c t) + t ≥ (1 + log(-c))/(-c)`, the
+minimum of `t ↦ e^{ct}+t` (attained at `t = log(-c)/(-c)`). Pure `add_one_le_exp`;
+the `t`-terms cancel because `c + (-c) = 0`. -/
 theorem exp_mul_add_ge {c : ℝ} (hc : c < 0) (t : ℝ) :
     (1 + Real.log (-c)) / (-c) ≤ Real.exp (c * t) + t := by
   have hcpos : 0 < -c := by linarith
@@ -67,6 +50,197 @@ theorem exp_mul_add_ge {c : ℝ} (hc : c < 0) (t : ℝ) :
   rw [Real.exp_add, Real.exp_log hcpos] at htan
   rw [div_le_iff₀ hcpos]
   nlinarith [htan]
+
+/-- Strict version of `exp_mul_add_ge`, off the unique critical point. -/
+theorem exp_mul_add_gt {c : ℝ} (hc : c < 0) {t : ℝ}
+    (ht : c * t + Real.log (-c) ≠ 0) :
+    (1 + Real.log (-c)) / (-c) < Real.exp (c * t) + t := by
+  have hcpos : 0 < -c := by linarith
+  have htan := Real.add_one_lt_exp ht
+  rw [Real.exp_add, Real.exp_log hcpos] at htan
+  rw [div_lt_iff₀ hcpos]; nlinarith [htan]
+
+/-- The derivative magnitude bound `|g'(t)| ≤ (-log x)/e` for `0 < x < 1`. The whole
+"bifurcation at `e^(-e)`" reduces to this, via `exp_mul_add_ge`. -/
+theorem deriv_bound (x : ℝ) (hx : 0 < x) (hx1 : x < 1) (t : ℝ) :
+    |(x ^ (x ^ t) * Real.log x) * (x ^ t * Real.log x)| ≤ (-Real.log x) * Real.exp (-1) := by
+  set c := Real.log x with hc
+  have hcneg : c < 0 := by rw [hc]; exact Real.log_neg hx hx1
+  have hcne : c ≠ 0 := ne_of_lt hcneg
+  have hcpos : 0 < -c := by linarith
+  have hxt : x ^ t = Real.exp (c * t) := by rw [hc, Real.rpow_def_of_pos hx]
+  have hxxt : x ^ (x ^ t) = Real.exp (c * Real.exp (c * t)) := by
+    rw [hc, Real.rpow_def_of_pos hx, hxt]
+  have hval : (x ^ (x ^ t) * c) * (x ^ t * c)
+      = c ^ 2 * Real.exp (c * (Real.exp (c * t) + t)) := by
+    rw [hxxt, hxt, mul_add, Real.exp_add]; ring
+  rw [hval]
+  have hpos : 0 < c ^ 2 * Real.exp (c * (Real.exp (c * t) + t)) := by positivity
+  rw [abs_of_pos hpos]
+  have hm := exp_mul_add_ge hcneg t
+  have hexp := Real.exp_le_exp.mpr (mul_le_mul_of_nonpos_left hm hcneg.le)
+  have hcc : c / (-c) = -1 := by rw [div_neg, div_self hcne]
+  have hkey : c * ((1 + Real.log (-c)) / (-c)) = -(1 + Real.log (-c)) := by
+    calc c * ((1 + Real.log (-c)) / (-c)) = c / (-c) * (1 + Real.log (-c)) := by ring
+      _ = -1 * (1 + Real.log (-c)) := by rw [hcc]
+      _ = -(1 + Real.log (-c)) := by ring
+  rw [hkey] at hexp
+  have hrhs : Real.exp (-(1 + Real.log (-c))) = Real.exp (-1) / (-c) := by
+    rw [show -(1 + Real.log (-c)) = (-1) - Real.log (-c) by ring, Real.exp_sub, Real.exp_log hcpos]
+  rw [hrhs] at hexp
+  calc c ^ 2 * Real.exp (c * (Real.exp (c * t) + t))
+      ≤ c ^ 2 * (Real.exp (-1) / (-c)) := mul_le_mul_of_nonneg_left hexp (by positivity)
+    _ = (-c) * Real.exp (-1) := by field_simp
+
+/-- `g = f ∘ f` has derivative `(x^(x^t)·log x)·(x^t·log x)` at `t`. -/
+theorem hasDeriv_g (x : ℝ) (hx : 0 < x) (t : ℝ) :
+    HasDerivAt (fun t => x ^ (x ^ t)) ((x ^ (x ^ t) * Real.log x) * (x ^ t * Real.log x)) t :=
+  (Real.hasStrictDerivAt_const_rpow hx (x ^ t)).hasDerivAt.comp t
+    (Real.hasStrictDerivAt_const_rpow hx t).hasDerivAt
+
+/-- **Crux, interior `x > e^(-e)`.** Here `g` is a strict contraction (`|g'| ≤
+(-log x)/e < 1`), so its two fixed points `β, γ` coincide (Banach). -/
+theorem two_cycle_collapse_of_lt {x β γ : ℝ} (hx0 : 0 < x) (hx1 : x < 1)
+    (hxe : eNegE < x) (h1 : x ^ β = γ) (h2 : x ^ γ = β) : β = γ := by
+  set g : ℝ → ℝ := fun t => x ^ (x ^ t) with hg
+  set K : NNReal := Real.toNNReal ((-Real.log x) * Real.exp (-1)) with hK
+  have hKnonneg : 0 ≤ (-Real.log x) * Real.exp (-1) := by
+    have h := Real.log_neg hx0 hx1
+    exact mul_nonneg (by linarith) (Real.exp_pos _).le
+  have hdiff : Differentiable ℝ g := fun t => (hasDeriv_g x hx0 t).differentiableAt
+  have hbound : ∀ t, ‖deriv g t‖₊ ≤ K := by
+    intro t
+    have hderiv : deriv g t = (x ^ (x ^ t) * Real.log x) * (x ^ t * Real.log x) :=
+      (hasDeriv_g x hx0 t).deriv
+    rw [← NNReal.coe_le_coe, coe_nnnorm, hderiv, Real.norm_eq_abs, hK,
+        Real.coe_toNNReal _ hKnonneg]
+    exact deriv_bound x hx0 hx1 t
+  have hLip : LipschitzWith K g := lipschitzWith_of_nnnorm_deriv_le hdiff hbound
+  have hK1 : K < 1 := by
+    rw [hK, ← Real.toNNReal_one]
+    refine (Real.toNNReal_lt_toNNReal_iff (by norm_num)).mpr ?_
+    have hlog : Real.log eNegE < Real.log x :=
+      Real.log_lt_log (by rw [eNegE]; exact Real.exp_pos _) hxe
+    rw [eNegE, Real.log_exp] at hlog
+    rw [Real.exp_neg, mul_inv_lt_iff₀ (Real.exp_pos 1), one_mul]
+    linarith
+  have hcontr : ContractingWith K g := ⟨hK1, hLip⟩
+  have hfixβ : Function.IsFixedPt g β := by show x ^ (x ^ β) = β; rw [h1, h2]
+  have hfixγ : Function.IsFixedPt g γ := by show x ^ (x ^ γ) = γ; rw [h2, h1]
+  rcases hcontr.eq_or_edist_eq_top_of_fixedPoints hfixβ hfixγ with h | h
+  · exact h
+  · exact absurd h (edist_ne_top β γ)
+
+/-- Strict derivative bound at the boundary `x = e^(-e)`: `g'(t) < 1` for `t ≠ 1/e`
+(the unique critical point at the boundary). -/
+theorem deriv_lt_one_boundary {t : ℝ} (ht : t ≠ Real.exp (-1)) :
+    (eNegE ^ (eNegE ^ t) * Real.log eNegE) * (eNegE ^ t * Real.log eNegE) < 1 := by
+  set x := eNegE with hxdef
+  have hx0 : 0 < x := Real.exp_pos _
+  have hxc : Real.log x = -Real.exp 1 := by rw [hxdef, eNegE, Real.log_exp]
+  set c := Real.log x with hc
+  have hcneg : c < 0 := by rw [hxc]; linarith [Real.exp_pos 1]
+  have hcpos : 0 < -c := by linarith
+  have hxt : x ^ t = Real.exp (c * t) := by rw [hc, Real.rpow_def_of_pos hx0]
+  have hxxt : x ^ (x ^ t) = Real.exp (c * Real.exp (c * t)) := by
+    rw [hc, Real.rpow_def_of_pos hx0, hxt]
+  have hval : (x ^ (x ^ t) * c) * (x ^ t * c)
+      = c ^ 2 * Real.exp (c * (Real.exp (c * t) + t)) := by
+    rw [hxxt, hxt, mul_add, Real.exp_add]; ring
+  rw [hval]
+  have htstar : Real.log (-c) / (-c) = Real.exp (-1) := by
+    rw [hxc, neg_neg, Real.log_exp, Real.exp_neg]; ring
+  have hcne0 : c ≠ 0 := ne_of_lt hcneg
+  have hne : c * t + Real.log (-c) ≠ 0 := by
+    intro h0
+    apply ht
+    have ht_eq : t = Real.log (-c) / (-c) := by
+      rw [eq_div_iff (by linarith : (-c) ≠ 0)]
+      linear_combination -h0
+    rw [ht_eq, htstar]
+  have hgt := exp_mul_add_gt hcneg hne
+  have hexp := Real.exp_lt_exp.mpr (mul_lt_mul_of_neg_left hgt hcneg)
+  have hcc : c / (-c) = -1 := by rw [div_neg, div_self hcne0]
+  have hkey : c * ((1 + Real.log (-c)) / (-c)) = -(1 + Real.log (-c)) := by
+    calc c * ((1 + Real.log (-c)) / (-c)) = c / (-c) * (1 + Real.log (-c)) := by ring
+      _ = -1 * (1 + Real.log (-c)) := by rw [hcc]
+      _ = -(1 + Real.log (-c)) := by ring
+  rw [hkey] at hexp
+  have hrhs : Real.exp (-(1 + Real.log (-c))) = Real.exp (-1) / (-c) := by
+    rw [show -(1 + Real.log (-c)) = (-1) - Real.log (-c) by ring, Real.exp_sub, Real.exp_log hcpos]
+  rw [hrhs] at hexp
+  have hfin : c ^ 2 * Real.exp (c * (Real.exp (c * t) + t)) < (-c) * Real.exp (-1) := by
+    calc c ^ 2 * Real.exp (c * (Real.exp (c * t) + t))
+        < c ^ 2 * (Real.exp (-1) / (-c)) := by
+          apply mul_lt_mul_of_pos_left hexp; positivity
+      _ = (-c) * Real.exp (-1) := by field_simp
+  have hone : (-c) * Real.exp (-1) = 1 := by
+    rw [hxc, neg_neg, ← Real.exp_add]; norm_num
+  linarith [hfin, hone]
+
+/-- **Crux, boundary `x = e^(-e)`.** Here `g` is non-expansive with `g' < 1` off the
+single point `1/e`; if `β ≠ γ` were a 2-cycle then `h = g - id` is `0` on the whole
+interval `(β,γ)`, forcing `g' = 1` there — impossible since `g' < 1` away from `1/e`. -/
+theorem two_cycle_collapse_boundary {β γ : ℝ}
+    (h1 : eNegE ^ β = γ) (h2 : eNegE ^ γ = β) : β = γ := by
+  set x := eNegE with hxdef
+  have hx0 : 0 < x := Real.exp_pos _
+  have hx1 : x < 1 := by
+    have hxe : x = Real.exp (-Real.exp 1) := hxdef
+    rw [hxe, Real.exp_lt_one_iff]; linarith [Real.exp_pos 1]
+  set g : ℝ → ℝ := fun t => x ^ (x ^ t) with hg
+  set h : ℝ → ℝ := fun t => g t - t with hh
+  have hHh : ∀ t, HasDerivAt h
+      ((x ^ (x ^ t) * Real.log x) * (x ^ t * Real.log x) - 1) t :=
+    fun t => (hasDeriv_g x hx0 t).sub (hasDerivAt_id t)
+  have hg_le : ∀ t : ℝ, (x ^ (x ^ t) * Real.log x) * (x ^ t * Real.log x) ≤ 1 := by
+    intro t
+    have hb := deriv_bound x hx0 hx1 t
+    have hone : (-Real.log x) * Real.exp (-1) = 1 := by
+      rw [hxdef]; simp only [eNegE, Real.log_exp, neg_neg, ← Real.exp_add]; norm_num
+    rw [hone] at hb
+    exact (abs_le.mp hb).2
+  have hh_anti : Antitone h := by
+    apply antitone_of_deriv_nonpos (fun t => (hHh t).differentiableAt)
+    intro t
+    rw [(hHh t).deriv]; linarith [hg_le t]
+  have hfixβ : h β = 0 := by simp only [hh, hg]; rw [h1, h2]; ring
+  have hfixγ : h γ = 0 := by simp only [hh, hg]; rw [h2, h1]; ring
+  have key : ∀ a b : ℝ, a < b → h a = 0 → h b = 0 → False := by
+    intro a b hab ha hb
+    have hconst : ∀ s ∈ Set.Ioo a b, h s = 0 := by
+      intro s hs
+      have h1' := hh_anti (le_of_lt hs.2)
+      have h2' := hh_anti (le_of_lt hs.1)
+      rw [hb] at h1'; rw [ha] at h2'; linarith
+    obtain ⟨t₀, ht₀mem, ht₀ne⟩ : ∃ t₀ ∈ Set.Ioo a b, t₀ ≠ Real.exp (-1) := by
+      obtain ⟨t₀, ht₀⟩ :=
+        ((Set.Ioo_infinite hab).diff (Set.finite_singleton (Real.exp (-1)))).nonempty
+      exact ⟨t₀, ht₀.1, ht₀.2⟩
+    have hev : h =ᶠ[𝓝 t₀] (fun _ => 0) :=
+      Filter.eventuallyEq_of_mem (Ioo_mem_nhds ht₀mem.1 ht₀mem.2) (fun s hs => hconst s hs)
+    have hderiv0 : deriv h t₀ = 0 := by rw [hev.deriv_eq]; simp
+    rw [(hHh t₀).deriv] at hderiv0
+    have hg_lt := deriv_lt_one_boundary (t := t₀) ht₀ne
+    rw [← hxdef] at hg_lt
+    linarith
+  rcases lt_trichotomy β γ with hlt | heq | hgt
+  · exact (key β γ hlt hfixβ hfixγ).elim
+  · exact heq
+  · exact (key γ β hgt hfixγ hfixβ).elim
+
+/-- **The crux, full closed interval `[e^(-e), 1)`** (machine-checked, NO axiom).
+No nontrivial 2-cycle of `t ↦ x^t`: if `β, γ > 0`, `x^β = γ`, `x^γ = β` and
+`e^(-e) ≤ x < 1`, then `β = γ`. Splits into the interior contraction
+(`two_cycle_collapse_of_lt`) and the boundary (`two_cycle_collapse_boundary`). -/
+theorem two_cycle_collapse {x β γ : ℝ} (hx0 : 0 < x) (hx1 : x < 1) (hxe : eNegE ≤ x)
+    (_hβ : 0 < β) (_hγ : 0 < γ) (h1 : x ^ β = γ) (h2 : x ^ γ = β) : β = γ := by
+  rcases eq_or_lt_of_le hxe with heq | hlt
+  · -- x = eNegE (boundary)
+    subst heq
+    exact two_cycle_collapse_boundary h1 h2
+  · -- eNegE < x (interior)
+    exact two_cycle_collapse_of_lt hx0 hx1 hlt h1 h2
 
 /-! ### Elementary scaffolding -/
 
