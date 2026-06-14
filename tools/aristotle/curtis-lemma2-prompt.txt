@@ -1,0 +1,31 @@
+Prove the following Lean 4 / mathlib theorem (replace the `sorry`). Source: Lemma 2 of F. Curtis, "On formulas for the Frobenius number of a numerical semigroup", Math. Scand. 67 / 1990 / pp. 190-192. Use mathlib's `FrobeniusNumber n s := IsGreatest {k | k ∉ AddSubmonoid.closure s} n` and `frobeniusNumber_iff`. Return a complete / compiling proof with no `sorry` / `axiom`.
+
+```lean
+import Mathlib
+
+open AddSubmonoid in
+/-- Curtis 1990 / Lemma 2. For S = <s1,s2,s3> with the congruence / ratio
+constraints, the Frobenius number is (k-2)*s2 + s3 - s1. -/
+theorem curtis_lemma2 (s₁ s₂ s₃ k : ℕ)
+    (h1 : 2 < s₁) (h2 : s₁ < s₂) (h3 : s₂ < s₃)              -- 2 < s1 < s2 < s3
+    (hk_lo : 2 ≤ k) (hk_hi : 2 * k ≤ s₁ + 1)                 -- 2 ≤ k ≤ (s1-1)/2 + 1
+    -- ratio s₁ - k < s₃/s₂ < s₁ - k + 1, cleared of denominators:
+    (hr_lo : (s₁ - k) * s₂ < s₃) (hr_hi : s₃ < (s₁ - k + 1) * s₂)   -- s3/s2 bounds
+    -- congruences s₂ ≡ 1 mod s₁, s₃ ≡ s₁ - k + 1 mod s₁:           -- mod s1
+    (hc₂ : s₂ % s₁ = 1) (hc₃ : s₃ % s₁ = s₁ - k + 1) :              -- residues s2/s3
+    FrobeniusNumber ((k - 2) * s₂ + s₃ - s₁) {s₁, s₂, s₃} := by      -- value N/closure
+  sorry
+```
+
+PROOF STRATEGY (Curtis's argument / faithful to p. 191): the Apéry set of s₁ in S, written S(s₁), is the set of smallest elements of S in each residue class mod s₁, and g(S) = t - s₁ where t/s₁ picks the largest element t of S(s₁).
+
+Membership in `AddSubmonoid.closure {s₁,s₂,s₃}` means representability as `a*s₁ + b*s₂ + c*s₃` with `a,b,c : ℕ`. Use `frobeniusNumber_iff` (the not-in / above-all split): show `N := (k-2)*s₂+s₃-s₁` is NOT representable, and every `m > N` IS representable.
+
+Key fact: `(k-2)*s₂ + s₃ ∈ S(s₁)` is the largest element of the Apéry set / so `N = (k-2)*s₂+s₃-s₁` is the Frobenius number. Concretely:
+(1) `(k-2)*s₂+s₃ ≡ s₁ - 1 (mod s₁)` (since s₂≡1, s₃≡s₁-k+1, so (k-2)*1+(s₁-k+1)=s₁-1).
+(2) It is the SMALLEST element of S in its residue class s₁-1 mod s₁: any representation `a*s₂+b*s₃ ≡ s₁-1 (mod s₁)` with `a*s₂+b*s₃ < (k-2)*s₂+s₃` leads to a contradiction via the ratio bound `s₁-k < s₃/s₂ < s₁-k+1` and `2*k ≤ s₁+1`. (Case b=0: a≡s₁-1, so a≥s₁-1, giving a*s₂ ≥ (s₁-1)*s₂ > (k-2)*s₂+s₃ since s₃/s₂ < s₁-k+1. Case b=1: a≡k-2, a≥k-2, contradicts smaller. Case b≥2: 2*s₃ ≤ a*s₂+b*s₃ < (k-2)*s₂+s₃ gives s₃/s₂ < k-2, but ratio says s₃/s₂ > s₁-k ≥ k-2 from 2*k≤s₁+1, contradiction.)
+(3) It is the LARGEST Apéry element: for residues m=0..s₁-k the class min uses m*s₂ (since s₃/s₂ > s₁-k ≥ m, so s₃ > m*s₂ / and (k-2)*s₂+s₃ > m*s₂); for m = s₁-k+1 .. s₁-2, written m = (s₁-k+1)+j, the class min is (m-(s₁-k+1))*s₂ + s₃ < (k-2)*s₂+s₃ / strictly. Hence (k-2)*s₂+s₃ is the max over all residue classes mod s₁, and N = max / s₁ offset, i.e. N = max - s₁.
+
+So: N is NOT in closure (it equals classmin - s₁ / below its class's smallest semigroup element). For m > N: m + s₁ > N + s₁ = classmin of N's class / which is ≤ that class's elements; more simply, every m > N lies in closure because N is the largest non-representable (Brauer / Shockley). Prove the upper bound by: for any m > N, m is in the residue class of some r mod s₁, and m ≥ (the Apéry min for that class) since m > N ≥ (every Apéry min) - s₁ / so m + s₁ > Apéry min, hence m ≥ Apéry min (same class / differ by a multiple of s₁), hence m ∈ S.
+
+Feel free to restructure; the only requirement is a complete machine-checked proof of the stated theorem.

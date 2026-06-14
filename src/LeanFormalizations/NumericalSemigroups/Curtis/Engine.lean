@@ -17,28 +17,83 @@ open MvPolynomial
 
 namespace LeanFormalizations.NumericalSemigroups.Curtis
 
-/-! ## The main theorem (engine) -/
+/-! ## The main theorem (engine)
+
+The proof is decomposed into
+
+* `substCurve_eq_zero` — Curtis's **Lemmas 1 + 2 + the limit argument**: for each
+  prime `p > 2` and each `k ∈ {2,…,(p−1)/2+1}`, the substituted plane curve
+  `G(X₂,X₃) = F(p, X₂, X₃, (k−2)X₂+X₃−p)` is identically zero;
+* `half_le_totalDegree` — the **degree-counting finish**: those `(p−1)/2` distinct
+  vanishing substitutions force `(p−1)/2 ≤ F.totalDegree`.
+
+Given both, `no_polynomial_relation_engine` follows because a fixed natural number
+`F.totalDegree` cannot dominate `(p−1)/2` for arbitrarily large primes `p`.
+Both inputs are disclosed `sorry`s (multi-lap); the spine and the final
+contradiction below are machine-checked. -/
+
+/-- The Curtis substitution: `G(X₂,X₃) = F(p, X₂, X₃, (k−2)·X₂ + X₃ − p)`, the
+plane curve obtained from `F` by fixing `X₁ := p` and `Y := (k−2)X₂ + X₃ − p`.
+Here the two surviving variables `X₂, X₃` are `X 0, X 1 : MvPolynomial (Fin 2) ℂ`. -/
+noncomputable def substCurve (F : MvPolynomial (Fin 4) ℂ) (p k : ℕ) :
+    MvPolynomial (Fin 2) ℂ :=
+  aeval ![C (p : ℂ), X 0, X 1, C ((k : ℂ) - 2) * X 0 + X 1 - C (p : ℂ)] F
+
+/-- **Step A — Curtis's Lemmas 1 + 2 + limit argument** (disclosed `sorry`).
+If `F` vanishes on the graph of the Frobenius number over the admissible family,
+then for every prime `p > 2` and every `k` with `2 ≤ k ≤ (p−1)/2 + 1` the
+substituted plane curve is identically zero.
+
+Curtis's argument: by Lemma 1 pick admissible triples `(p, xₙ, yₙ)` with `xₙ`
+prime, `xₙ ≡ 1`, `yₙ ≡ p−k+1 (mod p)`, `(xₙ,yₙ)=1` and `yₙ/xₙ → α` for an
+irrational `α ∈ (p−k, p−k+1)`; by Lemma 2 their Frobenius number is exactly
+`(k−2)xₙ + yₙ − p`, so `G(xₙ,yₙ) = F(p,xₙ,yₙ,g) = 0`. As `n → ∞` the leading form
+of `G` acquires infinitely many roots (every irrational in the interval), so it
+vanishes; hence `G ≡ 0`. -/
+theorem substCurve_eq_zero (F : MvPolynomial (Fin 4) ℂ)
+    (hF : ∀ s₁ s₂ s₃ g : ℕ, IsAdmissible s₁ s₂ s₃ →
+        FrobeniusNumber g {s₁, s₂, s₃} → eval (evalPoint s₁ s₂ s₃ g) F = 0)
+    (p k : ℕ) (hp : p.Prime) (hp2 : 2 < p) (hk : 2 ≤ k) (hk' : 2 * k ≤ p + 1) :
+    substCurve F p k = 0 := by
+  sorry
+
+/-- **Step B — the degree-counting finish** (disclosed `sorry`).
+If `F ≠ 0` and every substituted curve `substCurve F p k` (for `k` in Curtis's
+range) vanishes, then the `(p−1)/2` distinct linear forms `Y − ((k−2)X₂+X₃−p)`
+each divide `F(p, ·, ·, ·)` and are pairwise coprime, so their product divides it
+and `(p−1)/2 ≤ F.totalDegree`. -/
+theorem half_le_totalDegree (F : MvPolynomial (Fin 4) ℂ) (hF0 : F ≠ 0)
+    (p : ℕ) (hp : p.Prime) (hp2 : 2 < p)
+    (hsub : ∀ k, 2 ≤ k → 2 * k ≤ p + 1 → substCurve F p k = 0) :
+    (p - 1) / 2 ≤ F.totalDegree := by
+  sorry
 
 /-- **Curtis's theorem (1990), engine form.** No nonzero `F ∈ ℂ[X₁,X₂,X₃,Y]`
 vanishes on the graph of the Frobenius number over the admissible family `A`.
 
-Proof roadmap (Curtis, pp. 190–192), to be filled in over multiple laps:
-1. **Lemma 1** (Dirichlet primes in AP + Farey adjacency): for `α ∈ ℝ⁺`, `ε > 0`,
-   a prime `p` and residues `i, j` coprime to `p`, there are `x` prime,
-   `y` with `x ≡ i`, `y ≡ j (mod p)`, `(x,y)=1`, `|α − y/x| < ε`.
-2. **Lemma 2** (Brauer–Shockley Apéry-set): the exact value
-   `g⟨s₁,s₂,s₃⟩ = (k−2)s₂ + s₃ − s₁` on the restricted family.
-3. **Finish**: for each prime `p > 2` and `k = 2,…,(p−1)/2+1`, the substituted
-   curve `G(X₂,X₃) = F(p, X₂, X₃, (k−2)X₂+X₃−p)` vanishes on points whose
-   ratios approach an irrational, so its leading form has infinitely many roots
-   and `G ≡ 0`; the `(p−1)/2` distinct linear forms then force
-   `deg F ≥ (p−1)/2` for every prime `p`, contradicting `deg F < ∞`. -/
+The spine: a hypothetical `F` would, by `half_le_totalDegree` (fed by
+`substCurve_eq_zero`), satisfy `(p−1)/2 ≤ F.totalDegree` for every prime `p > 2`.
+But `F.totalDegree` is a fixed natural number, and `(p−1)/2 → ∞` along the primes
+(Euclid), so choosing `p ≥ 2·F.totalDegree + 3` gives a contradiction. -/
 theorem no_polynomial_relation_engine :
     ¬ ∃ F : MvPolynomial (Fin 4) ℂ, F ≠ 0 ∧
       ∀ s₁ s₂ s₃ g : ℕ, IsAdmissible s₁ s₂ s₃ →
         FrobeniusNumber g {s₁, s₂, s₃} →
         eval (evalPoint s₁ s₂ s₃ g) F = 0 := by
-  sorry
+  rintro ⟨F, hF0, hF⟩
+  set D := F.totalDegree with hD
+  -- Pick a prime `p ≥ 2·D + 3 > 2`.
+  obtain ⟨p, hple, hp⟩ := Nat.exists_infinite_primes (2 * D + 3)
+  have hp2 : 2 < p := by omega
+  -- Curtis's degree bound at this prime.
+  have hbound : (p - 1) / 2 ≤ D :=
+    half_le_totalDegree F hF0 p hp hp2
+      (fun k hk hk' => substCurve_eq_zero F hF p k hp hp2 hk hk')
+  -- But `p ≥ 2·D+3` forces `(p-1)/2 ≥ D+1`, a contradiction.
+  have : D + 1 ≤ (p - 1) / 2 := by
+    rw [Nat.le_div_iff_mul_le (by norm_num)]
+    omega
+  omega
 
 /-! ## The corollary (fully proved) -/
 
