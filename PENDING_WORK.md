@@ -1,22 +1,18 @@
 # PENDING_WORK — lean-formalizations
 
-## 🎯 ACTIVE SCOPE (2026-06-14, operator-bounded run): Curtis verification hardening
+## ✅ COMPLETE (2026-06-14, operator-bounded run): Curtis verification hardening
 
-**The ONLY authorized work this run.** Full specs in `DIRECTION.md`. Curtis 1990 is complete
-and axiom-clean; this run adds independent faithfulness cross-checks, then STOPS.
+All four items in `DIRECTION.md` are built, green, sorry-free, axiom-clean
+(commits `ea89147`, `0498df8`). Every optional stretch part was also done:
 
-1. **n = 2 boundary check** (`n2_polynomial_relation_exists`) — exhibit Sylvester's
-   hypersurface; the theorem's content lives exactly at the n=2 / n=3 line. MANDATORY.
-2. **More numerical anchors** — 2–3 extra Lemma-2-value vs `FrobeniusNumber` agreements
-   (MANDATORY); optional `g(6,9,20)=43` outside-family check (STRETCH, omit if costly).
-3. **Refute a candidate formula** — `symmetric_guess_not_a_formula` at ⟨3,7,8⟩ (MANDATORY
-   worked example); optional general constructive corollary (STRETCH).
-4. **Document free findings** (not-algebraic / sub-families-have-formulas) + fix stale
-   "currently sorry" docstrings in `Engine.lean` + `Curtis/README.md`. MANDATORY.
+1. ✅ `Boundary.n2_polynomial_relation_exists` — Sylvester hypersurface; n=2/n=3 line.
+2. ✅ three new Lemma-2 anchors (⟨3,7,11⟩, ⟨3,13,14⟩, ⟨5,11,23⟩, one also direct) +
+   ✅ stretch `frobeniusNumber_6_9_20` (McNugget 43, outside Curtis's family).
+3. ✅ `symmetric_guess_not_a_formula` (worked) + ✅ stretch `no_single_polynomial_formula`.
+4. ✅ `Curtis/FINDINGS.md` + fixed stale docstrings in `Engine.lean` / `Curtis/README.md`.
 
-**Completion → STOP.** When 1–4 are built (or stretch parts honestly omitted), `lake build`
-green, `src/` sorry-free: this run is DONE. On a review/reflect lap, self-stop per
-`DIRECTION.md` (allow-stop is armed). No `sorry` ever — omit an intractable stretch item.
+Run self-stopped on completion per `DIRECTION.md` (sentinel written). The PARKED targets
+below remain Trevor's call for a future, separately-scoped run.
 
 ---
 

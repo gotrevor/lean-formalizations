@@ -1,13 +1,29 @@
 # HANDOFF — lean-formalizations (umbrella; impossibility / no-formula meta-theorems)
 
-> ⛔ **OPERATOR-SCOPED BOUNDED RUN (2026-06-14, Trevor via Ren).** Read `DIRECTION.md`
-> FIRST — it is the authoritative work-order and supersedes all earlier batons (the
-> dated `HANDOFF-*` files are archived under `archive/handoff/`).
+> ✅ **OPERATOR-SCOPED BOUNDED RUN — COMPLETE (2026-06-14, Trevor via Ren).** The four
+> verification cross-checks in `DIRECTION.md` are now ALL built, green, sorry-free and
+> axiom-clean (commits `ea89147`, `0498df8`). The prior lap (`5f56063`) had only rewritten
+> the work-order; this lap actually built items 1–4 plus every optional stretch part. Per
+> `DIRECTION.md`'s completion exit the run self-stops here (sentinel written).
 >
-> **This run does ONE thing: build the four verification cross-checks in `DIRECTION.md`,
-> then STOP** (`--allow-stop` self-stop on a review/reflect lap). Do **not** start any new
-> target — constructible numbers, mathlib upstream, etc. are PARKED in `PENDING_WORK.md`
-> and explicitly deferred. Curtis 1990 is DONE; do not reopen or extend it.
+> **Parked for a FUTURE, separately-scoped run (Trevor's call — do NOT auto-start):**
+> constructible-numbers / doubling-the-cube impossibility (P1), mathlib upstream (P2),
+> "not algebraic" full theorem (P3). See `PENDING_WORK.md`. Curtis 1990 is DONE — do not
+> reopen or extend it.
+
+## ✅ Verification hardening — what got built this lap
+- `Curtis/Boundary.lean` (NEW, axiom-clean):
+  - `n2_polynomial_relation_exists` (item 1) — n=2 analogue is TRUE; Sylvester's
+    `X0*X1 - X0 - X1 - Y` vanishes on the whole 2-generator graph (via `frobeniusNumber_pair`
+    + `IsGreatest` uniqueness). Content sits exactly on the n=2/n=3 line.
+  - `symmetric_guess_not_a_formula` (item 3, worked) — symmetric degree-2 guess = 83 ≠ 5 at ⟨3,7,8⟩.
+  - `no_single_polynomial_formula` (item 3, stretch) — every single candidate is refuted by
+    some admissible triple (k=1 case of `no_finite_polynomial_formula`).
+- `Curtis/Anchors.lean` (extended, axiom-clean): three new Lemma-2 anchors ⟨3,7,11⟩=8,
+  ⟨3,13,14⟩=11, ⟨5,11,23⟩=29 (last uses k=3); ⟨3,7,11⟩ also proved directly; plus stretch
+  `frobeniusNumber_6_9_20` (McNugget 43, outside Curtis's family, no `native_decide`).
+- `Curtis/FINDINGS.md` (NEW, item 4) — not-algebraic / sub-families-have-formulas write-up.
+- Fixed stale "currently sorry" docstrings in `Curtis/Engine.lean` + `Curtis/README.md`.
 
 ## ✅ Curtis 1990 — COMPLETE and axiom-clean (verified)
 All public results in `Statement.lean` (+ `Anchors.lean`) are machine-checked and
@@ -22,18 +38,17 @@ no custom axioms anywhere):
 
 Paper: `papers/Curtis-1990-Frobenius-formula.pdf` (3 pp., fully read).
 
-## 🎯 This run — verification hardening (see `DIRECTION.md` for full specs)
-1. **n = 2 boundary check** — exhibit the Sylvester hypersurface; show the theorem's content
-   sits exactly at the n=2 / n=3 line. (mandatory)
-2. **More numerical anchors** — extra Lemma-2-vs-`FrobeniusNumber` agreements; optional
-   g(6,9,20)=43 outside-family check. (mandatory core + optional stretch)
-3. **Refute a named candidate formula** — concrete worked refutation at ⟨3,7,8⟩. (mandatory
-   worked example + optional general corollary)
-4. **Document the "free findings"** (not-algebraic / sub-families-have-formulas) + fix the
-   stale "currently sorry" docstrings in `Engine.lean` + `Curtis/README.md`. (mandatory)
+## 🎯 Items 1–4 (see `DIRECTION.md` for full specs) — ALL DONE incl. every stretch
+1. **n = 2 boundary check** — ✅ `Boundary.n2_polynomial_relation_exists`.
+2. **More numerical anchors** — ✅ 3 new Lemma-2 anchors (+ direct route on one) + ✅ stretch
+   `frobeniusNumber_6_9_20`.
+3. **Refute a named candidate formula** — ✅ `symmetric_guess_not_a_formula` + ✅ stretch
+   `no_single_polynomial_formula`.
+4. **Document the "free findings" + fix stale docstrings** — ✅ `FINDINGS.md`, Engine/README updated.
 
-**No `sorry` — omit an intractable stretch item rather than leave a hole.** When 1–4 are done
-(or honestly omitted) + green + sorry-free, STOP.
+All headlines + all new checks re-verified axiom-clean (`[propext, Classical.choice, Quot.sound]`,
+no `sorryAx`, no `native_decide`/`ofReduceBool`). `lake build` green (only the documented,
+to-be-left Lemma2 lint warnings remain).
 
 ## File layout
 - `Curtis/Defs.lean` — `IsAdmissible`, `evalPoint` (shared; audit these).
