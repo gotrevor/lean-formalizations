@@ -151,7 +151,8 @@ contradiction with the no-fixed-point lemma — NO δ-gap calculus needed.
 
 ## Completion = stop condition (`--allow-stop` is armed)
 
-On a **review/reflect lap**, once ALL hold, certify completion and self-stop:
+On **ANY lap** (you need NOT wait for a review/reflect lap), as soon as ALL hold,
+certify completion and self-stop — don't keep churning:
 - `tower_converges` and `tower_diverges` are PROVED (delegating to the engine),
   `src/` is sorry-free, `lake build` green;
 - `#print axioms` on `tower_converges`, `tower_diverges`, `tower_converges_iff` is
