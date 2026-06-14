@@ -5,8 +5,17 @@
 > · open-access [PDF](https://www.mscand.dk/article/download/12330/10346)
 
 ## Status
-- `Statement.lean` — both statements present, **`sorry` (statements first)**.
-- Proof: not started. Roadmap in the `Statement.lean` header.
+- **COMPLETE and axiom-clean.** All headline results in `Statement.lean` are
+  machine-checked (`#print axioms` = `[propext, Classical.choice, Quot.sound]`,
+  no `sorryAx`, no custom axioms): `no_polynomial_relation` (the main theorem),
+  `no_finite_polynomial_formula` (+ `_of_algebra` / `_int` / `_rat`), and
+  `no_finite_polynomial_formula_multivar` (the `n ≥ 3` generalization).
+- Faithfulness anchors in `Anchors.lean` (six concrete triples) and boundary /
+  refutation cross-checks in `Boundary.lean`. See `FINDINGS.md` for the two
+  consequences the proof gives for free (not-algebraic; sub-families still have
+  formulas). Proof internals live in `Engine.lean` (+ `Lemma2.lean`,
+  `GridVanish.lean`); the elementary grid-vanishing argument replaces Curtis's
+  Dirichlet/Farey limit argument.
 
 ## What to audit (the entire trust surface)
 Read **`Statement.lean`** against the paper. Two theorems + two small defs:

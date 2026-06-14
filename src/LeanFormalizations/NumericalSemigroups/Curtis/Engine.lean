@@ -4,12 +4,15 @@
 The proofs delegated to by the audit surface `Statement.lean`.
 
 ## Status of the two headline results
-- `no_finite_polynomial_formula_engine` — **PROVED** (axiom-clean), as a direct
-  corollary of the main theorem via Curtis's `F = ∏ (fᵢ − Y)` argument.
-- `no_polynomial_relation_engine` — the main theorem, currently `sorry`. Its
-  decomposition into Curtis's two lemmas + the degree-counting finish is laid
-  out below (`lemma1`, `lemma2`, and the finish), each a disclosed `sorry` with
-  a citing docstring. Multi-lap target.
+Both are **PROVED and axiom-clean** (`#print axioms` =
+`[propext, Classical.choice, Quot.sound]`, no `sorryAx`):
+- `no_finite_polynomial_formula_engine` — a direct corollary of the main theorem
+  via Curtis's `F = ∏ (fᵢ − Y)` argument.
+- `no_polynomial_relation_engine` — the main theorem. Its decomposition is laid
+  out below: Step A (`substCurve_eq_zero`, Curtis's Lemmas 1 + 2 + limit argument,
+  here replaced by an elementary grid-vanishing argument), Step B
+  (`half_le_totalDegree`, the degree-counting finish), and the final
+  arbitrarily-large-prime contradiction. All steps are machine-checked.
 -/
 import LeanFormalizations.NumericalSemigroups.Curtis.Defs
 import LeanFormalizations.NumericalSemigroups.Curtis.Lemma2
@@ -32,8 +35,8 @@ The proof is decomposed into
 
 Given both, `no_polynomial_relation_engine` follows because a fixed natural number
 `F.totalDegree` cannot dominate `(p−1)/2` for arbitrarily large primes `p`.
-Both inputs are disclosed `sorry`s (multi-lap); the spine and the final
-contradiction below are machine-checked. -/
+Both inputs are fully proved below; the spine and the final contradiction are
+machine-checked. -/
 
 /-- The Curtis substitution: `G(X₂,X₃) = F(p, X₂, X₃, (k−2)·X₂ + X₃ − p)`, the
 plane curve obtained from `F` by fixing `X₁ := p` and `Y := (k−2)X₂ + X₃ − p`.
@@ -151,7 +154,7 @@ theorem finite_specCurve_eq_zero (F : MvPolynomial (Fin 4) ℂ) (hF0 : F ≠ 0) 
   have hr : Polynomial.eval (C (p : ℂ)) Fp = 0 := by rw [← hkey p]; exact hp
   simpa [Set.mem_preimage, Polynomial.IsRoot] using hr
 
-/-- **Step A — Curtis's Lemmas 1 + 2 + limit argument** (disclosed `sorry`).
+/-- **Step A — Curtis's Lemmas 1 + 2 + limit argument** (machine-checked).
 If `F` vanishes on the graph of the Frobenius number over the admissible family,
 then for every prime `p > 2` and every `k` with `2 ≤ k ≤ (p−1)/2 + 1` the
 substituted plane curve is identically zero.
