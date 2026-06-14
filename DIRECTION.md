@@ -1,167 +1,145 @@
 # DIRECTION — read FIRST (operator directive, 2026-06-14, Trevor via Ren)
 
-## ⛔ BOUNDED RUN. Discharge the two power-tower sorries (upper half), then STOP.
+## ⛔ BOUNDED RUN. Prove the power-tower LOWER half, then STOP.
 
-Curtis 1990 is **COMPLETE, axiom-clean, and DONE** — do not reopen, extend, or
-re-verify it. Ignore the previous run's items 1–4 (all built last run).
+The **upper half** (`x ≥ 1`, endpoint `e^(1/e)`) is COMPLETE and axiom-clean
+(`Engine.lean`, `tower_converges` / `tower_diverges` / `tower_converges_iff`). Do
+NOT reopen it. Curtis 1990 is also DONE — do not touch it.
 
-This run has exactly ONE job: finish the **upper half** of the infinite power
-tower (Euler 1783) in `src/LeanFormalizations/RealAnalysis/PowerTower/`. Two
-`sorry`s remain; both are provable by **elementary** means (NO calculus — no
-derivatives, no critical points). A full proof plan is below.
+This run's job: the **lower half** — convergence of the tower for `e^(-e) ≤ x < 1`,
+the *oscillating* regime. This is the genuinely harder half (the sequence is no
+longer monotone), but the crux is elementary and rides on the SAME `add_one_le_exp`
+trick as the upper half. A full plan is below. **Expect several grind laps** — this
+is bigger than the upper half. That is fine; chip at it lap by lap, do not give up
+and declare it "out of scope". When `src/` is sorry-free and the mandatory targets
+are proved + axiom-clean, self-stop.
 
-### The target
-`Statement.lean` has three load-bearing theorems (keep it the faithful audit
-surface — do not weaken any statement) plus a proved anchor:
-- `tower_converges` — **`sorry`**, the analytic core. ← discharge this
-- `tower_diverges` — **`sorry`**. ← discharge this
-- `tower_converges_iff` — already PROVED from the two above (the headline).
-- `endpoint_fixed_point : eInvE ^ exp 1 = exp 1` — already PROVED.
-
-`Defs.lean` has `tower x n` (= ⁿx, `^` is `Real.rpow`), `eInvE = exp (1 / exp 1)`
-(= e^(1/e)), and `tower_zero/succ/one`. Audit-faithful; don't change the defs.
-
-### Out of scope this run (DO NOT START)
-- ❌ The **lower half** `e^(-e) ≤ x < 1` (oscillating regime, 2-cycle stability of
-  `g(t)=x^(x^t)`). That is a separate future cycle. Do NOT scaffold it — adding new
-  `sorry`s would block self-stop and turn this into an unbounded run.
-- ❌ Lambert W, any mathlib upstreaming, any new target.
-- ❌ Touching Curtis.
+### The constant
+Add `eNegE : ℝ := Real.exp (-Real.exp 1)` to `Defs.lean` (= `e^(-e) ≈ 0.0659`).
+Anchor (machine-check, mirror `endpoint_fixed_point`): `eNegE ^ (Real.exp (-1)) =
+Real.exp (-1)` — i.e. at `x = e^(-e)` the fixed point is `y = 1/e`.
 
 ---
 
-## Rules
-- **No `sorry`/`admit` left at the end.** If a step resists, keep attacking it —
-  the plan below is complete and elementary, so a stuck proof is a lemma-name or
-  bookkeeping issue, not a math gap. Grind it.
-- **Engine lives in a sibling, `Statement.lean` delegates.** Create
-  `RealAnalysis/PowerTower/Engine.lean` (imports `Defs`); put the real proofs there
-  as `tower_converges_engine` / `tower_diverges_engine`; then in `Statement.lean`
-  replace each `:= by sorry` with `:= tower_converges_engine` (resp. `_diverges_`),
-  and `import …PowerTower.Engine`. Mirror the Curtis `Engine`/`Statement` split.
-- **Move `endpoint_fixed_point` to `Defs.lean`** (it's a fact about the constant and
-  the engine needs it; `Engine` can't import `Statement`). Keep a reference to it in
-  `Statement.lean`'s docstring; the theorem name stays the same, just relocated.
-- **Verify lemma names against this repo's mathlib** (`v4.29.1`). The names below are
-  ~90% right; fix any that don't resolve (the proof shape is the de-risked part).
-- **Commit every green build** (from a real `lake build`). **DO NOT push.**
-- Reference corpus for mathlib lemma names:
-  `~/personal/claude/knowledge/core/projects/lean-journey/reference/`.
-- Blocked needing the open web? Append a dated item to `ON-LINE-REQUEST.md` and continue.
+## Targets (put the engine in a NEW sibling `EngineLower.lean`; keep `Statement.lean` the faithful audit surface)
+
+### MANDATORY — the full convergence interval
+```lean
+/-- Euler's theorem, convergence direction: the infinite power tower converges for
+every `x ∈ [e^(-e), e^(1/e)]`. -/
+theorem tower_converges_of_mem {x : ℝ} (hx : x ∈ Set.Icc eNegE eInvE) :
+    ∃ L : ℝ, Tendsto (tower x) atTop (𝓝 L) ∧ x ^ L = L
+```
+Stitch three cases: `x ≥ 1` (reuse `tower_converges_engine`), `x = 1` trivial, and
+the new `e^(-e) ≤ x < 1` lower half. Expose it in `Statement.lean` as the headline
+`tower_converges_of_mem` with a faithful docstring.
+
+### STRETCH (OPTIONAL) — upgrade to the sharp iff
+```lean
+theorem tower_converges_iff_full {x : ℝ} (hx : 0 < x) :
+    (∃ L, Tendsto (tower x) atTop (𝓝 L)) ↔ x ∈ Set.Icc eNegE eInvE
+```
+Needs the two NON-convergence directions: `x > e^(1/e)` (have it — `tower_diverges`)
+and `0 < x < e^(-e)` (the genuine 2-cycle — `β < γ`, harder). If the
+`x < e^(-e)` direction costs more than ~2 focused laps, **OMIT it** (leave a one-line
+note in `PENDING_WORK.md`, NO `sorry`) and ship the mandatory convergence theorem as
+the deliverable. Do not let the stretch block self-stop.
 
 ---
 
-## Proof plan (elementary, no calculus)
+## Proof plan for the lower half (`e^(-e) ≤ x < 1`) — elementary, no derivatives
 
-Let `a n := tower x n`, so `a 0 = 1`, `a (n+1) = x ^ a n` (`tower_succ`). The two
-proofs share a **monotone** sub-proof and a **no-fixed-point-above-threshold**
-lemma. Put shared helpers in `Engine.lean`.
+Let `f t = x ^ t` and `a n = tower x n`, so `a (n+1) = f (a n)`, `a 0 = 1`.
 
-### Shared helper 1 — `log L ≤ L / e` for `L > 0`
-The whole "max of `t^(1/t)` is `e^(1/e)`" fact, with no derivatives, straight from
-`exp x ≥ x + 1`:
-```lean
-lemma log_le_div_e {L : ℝ} (hL : 0 < L) : Real.log L ≤ L / Real.exp 1 := by
-  have h := Real.add_one_le_exp (Real.log L - 1)       -- (log L - 1) + 1 ≤ exp (log L - 1)
-  rw [Real.exp_sub, Real.exp_log hL] at h              -- exp(log L -1) = exp(log L)/exp 1 = L/exp 1
-  linarith
+### A. `f` is continuous and strictly decreasing; unique fixed point `y ∈ (0,1)`
+- Continuity of `fun t => x ^ t` for `x > 0`: rewrite `x ^ t = Real.exp (t * Real.log x)`
+  (`Real.rpow_def_of_pos`) — continuous as `exp ∘ affine`. (Or find the direct lemma.)
+- Strictly decreasing (`0 < x < 1`): `Real.rpow_lt_rpow_of_exponent_gt`
+  (verify name/dir: base in `(0,1)`, bigger exponent ⟹ smaller value).
+- Fixed point `y`: `φ t = x ^ t - t` is continuous, `φ 0 = 1 > 0`, `φ 1 = x - 1 < 0`
+  ⟹ IVT (`intermediate_value_Ioo` / `Icc`) gives `y ∈ (0,1)` with `x ^ y = y`.
+  Uniqueness: `φ` strictly decreasing ⟹ at most one zero. Record `hyfix : x ^ y = y`,
+  `hy01 : 0 < y ∧ y < 1`, and `hlogy : Real.log y = y * Real.log x` (`Real.log_rpow`).
+
+### B. Even/odd subsequences are monotone + bounded ⟹ converge
+`g t = x ^ (x ^ t)` is strictly **increasing** (decreasing ∘ decreasing). Note
+`a (n+2) = g (a n)`.
+- Even `E n = a (2*n)`: `E 0 = 1`, `E 1 = x^x ≤ 1`, and `g` increasing ⟹ `E`
+  antitone (induction). Bounded below by `0`. ⟹ `E n → γ` (use `tendsto_atTop_ciInf`
+  on the antitone bounded subsequence; `γ = ⨅ n, E n`).
+- Odd `O n = a (2*n+1)`: `O 0 = x`, `O 1 = x^(x^x) ≥ x` (base<1: `x^(x^x) ≥ x^1 ⟺
+  x^x ≤ 1`), `g` increasing ⟹ `O` monotone. Bounded above by `1`. ⟹ `O n → β`.
+- Limits satisfy `g γ = γ`, `g β = β`, and `f β = γ`, `f γ = β` (take limits in
+  `O n = f (E n)` and `E (n+1) = f (O n)`, using continuity of `f`). Also `β ≤ y ≤ γ`.
+- The FULL sequence converges ⟺ `β = γ` (even+odd subsequences cover ℕ; if `β = γ`
+  then `tower x → β` and `f β = β` ⟹ `β = y` by uniqueness). Lemma:
+  `tendsto_of_even_odd` style — `Tendsto (a ∘ (2·)) → c` and `Tendsto (a ∘ (2·+1)) → c`
+  ⟹ `Tendsto a atTop (𝓝 c)` (search mathlib; or prove via `Nat.even_or_odd` + ε).
+
+### C. THE CRUX — `β = γ` for `x ≥ e^(-e)` (tangent line = `add_one_le_exp`)
+The tangent of `f` at `y`, for ALL `t > 0`:
 ```
-
-### Shared helper 2 — a fixed point forces `x ≤ e^(1/e)`
-If `x^L = L` with `L > 0` and `x > 0`, then `x ≤ eInvE`. (Take logs: `L·log x =
-log L`, so `log x = log L / L ≤ (L/e)/L = 1/e`, then `exp` monotone.)
-```lean
-lemma base_le_eInvE {x L : ℝ} (hx : 0 < x) (hL : 0 < L) (h : x ^ L = L) :
-    x ≤ eInvE := by
-  have hlog : L * Real.log x = Real.log L := by
-    rw [← Real.log_rpow hx, h]                          -- log (x^L) = L * log x
-  have hlogx : Real.log x ≤ 1 / Real.exp 1 := by
-    have hd := log_le_div_e hL                          -- log L ≤ L / exp 1
-    rw [← hlog] at hd                                   -- L*log x ≤ L/exp 1
-    -- divide by L>0:  log x ≤ 1/exp 1
-    rw [div_eq_mul_inv] at hd ⊢
-    nlinarith [hd, hL, Real.exp_pos 1]                  -- or: cancel L; field_simp/​le_div_iff
-  calc x = Real.exp (Real.log x) := (Real.exp_log hx).symm
-    _ ≤ Real.exp (1 / Real.exp 1) := Real.exp_le_exp.mpr hlogx
-    _ = eInvE := rfl
+(★)   x ^ t  ≥  y + (Real.log y) * (t - y)
 ```
-(If `nlinarith` is fussy, derive `log x ≤ 1/exp 1` via `le_div_iff hL` /
-`(mul_le_mul_left hL)` from `L*log x ≤ L*(1/exp 1)`.)
+Proof of (★): `x ^ t = Real.exp (t * log x)`; with `y = x^y = exp (y * log x)`, write
+`x^t = y * Real.exp ((t - y) * log x)`. Set `u = (t - y) * log x`. Then
+`(log y)*(t-y) = (y*log x)*(t-y) = y*u`, and `x^t = y*exp u ≥ y*(1+u) = y + (log y)(t-y)`
+by `Real.add_one_le_exp u` (times `y > 0`). ∎
 
-### Shared helper 3 — monotonicity (holds for `1 ≤ x`)
-```lean
-lemma tower_mono {x : ℝ} (hx : 1 ≤ x) : Monotone (tower x) := by
-  apply monotone_nat_of_le_succ
-  intro n
-  induction n with
-  | zero => simpa using hx          -- tower x 0 = 1 ≤ x = tower x 1
-  | succ k ih =>
-      rw [tower_succ, tower_succ]    -- x^(a k) ≤ x^(a (k+1))
-      exact Real.rpow_le_rpow_of_exponent_le hx ih
+Now suppose a strict 2-cycle, `β < γ`, with `f β = γ`, `f γ = β`. Apply (★):
+- at `t = γ`:  `x^γ ≥ y + (log y)(γ - y)`, and `x^γ = f γ = β`  ⟹  `β ≥ y + (log y)(γ - y)`.
+- at `t = β`:  `x^β ≥ y + (log y)(β - y)`, and `x^β = f β = γ`  ⟹  `γ ≥ y + (log y)(β - y)`.
+Subtract:  `β - γ ≥ (log y)(γ - β)`. Since `γ - β > 0`, divide:  `-1 ≥ log y`, i.e.
 ```
-(`monotone_nat_of_le_succ` needs `∀ n, a n ≤ a (n+1)`; prove that `∀ n` statement by
-induction as above. Adjust if the induction shape needs `∀ n, a n ≤ a (n+1)` proved
-as its own lemma first.)
+log y ≤ -1   ⟹   y ≤ 1/e   ⟹   log x = (log y)/y ≤ -1/y ≤ -e   ⟹   x ≤ e^(-e).
+```
+(Last chain: `log y ≤ -1` and `0 < y ≤ 1/e`; `log x = log y / y` from
+`log y = y log x`; `log y/y ≤ -1/y` and `-1/y ≤ -e` since `y ≤ 1/e`; then `exp`.)
 
-### `tower_converges_engine` (`1 ≤ x ≤ eInvE`)
-1. `hmono := tower_mono hx1`.
-2. **Bounded by e:** `hbd : ∀ n, tower x n ≤ exp 1` by induction:
-   - `n=0`: `tower x 0 = 1 ≤ exp 1` via `Real.one_le_exp (by norm_num)`.
-   - `n+1`: `x^(a n) ≤ x^(exp 1) ≤ eInvE^(exp 1) = exp 1`:
-     `Real.rpow_le_rpow_of_exponent_le hx1 (ih)` then
-     `Real.rpow_le_rpow (by linarith) hx2 (Real.exp_pos 1).le` then `endpoint_fixed_point`.
-3. `hbdd : BddAbove (Set.range (tower x)) := ⟨exp 1, by rintro _ ⟨n,rfl⟩; exact hbd n⟩`.
-4. `L := ⨆ n, tower x n`; `hL := tendsto_atTop_ciSup hmono hbdd : Tendsto (tower x) atTop (𝓝 L)`.
-5. **`x ^ L = L`:**
-   - `hshift : Tendsto (fun n => tower x (n+1)) atTop (𝓝 L) := hL.comp (tendsto_add_atTop_nat 1)`.
-   - `hrpow : Tendsto (fun n => x ^ tower x n) atTop (𝓝 (x ^ L)) :=`
-     `Tendsto.rpow tendsto_const_nhds hL (Or.inl (by positivity))`  -- x ≠ 0 (x ≥ 1)
-   - `(fun n => tower x (n+1)) = (fun n => x ^ tower x n)` by `funext; rw [tower_succ]`.
-   - `tendsto_nhds_unique hshift (this ▸ hrpow)` gives `L = x ^ L`; take `.symm`.
-6. **`1 ≤ L`:** `le_ciSup hbdd 0` gives `tower x 0 ≤ L`, and `tower x 0 = 1`.
-7. **`L ≤ exp 1`:** `ciSup_le hbd`.
-8. `exact ⟨L, hL, ⟨x^L=L⟩, ⟨1≤L⟩, ⟨L≤exp 1⟩⟩`.
+This contradicts `x > e^(-e)`. Hence **no strict 2-cycle**, so `β = γ`, so the tower
+converges to `y`. For the boundary `x = e^(-e)` exactly: `add_one_le_exp` is strict
+off `0` (`Real.add_one_lt_exp`, needs `u ≠ 0`), so the subtraction is strict for
+`β ≠ γ`, still forcing `β = γ`. (Handle `x = e^(-e)` and `x > e^(-e)` together via
+`Real.add_one_lt_exp` on the `t = γ` application where `γ ≠ y`.)
 
-### `tower_diverges_engine` (`eInvE < x`)
-Here `x > eInvE > 1`. Strategy: monotone + **unbounded** ⇒ `atTop`. Unbounded by
-contradiction with the no-fixed-point lemma — NO δ-gap calculus needed.
-1. `hx1 : 1 ≤ x := le_of_lt (lt_trans one_lt_eInvE hx)` — you'll need `1 < eInvE`
-   (`eInvE = exp(1/exp 1) > exp 0 = 1` since `1/exp 1 > 0`: `Real.one_lt_exp_iff` /
-   `Real.exp_lt_exp` + `Real.exp_zero`). Prove a small `one_lt_eInvE` helper.
-2. `hmono := tower_mono hx1`.
-3. **Unbounded:** `hub : ∀ C, ∃ n, C ≤ tower x n`. Suppose not, i.e. `BddAbove (range)`.
-   Then by the SAME steps 4–6 of converges (you can factor a
-   `monotone_bdd_has_fixedpoint` helper returning `∃ L, Tendsto ∧ x^L=L ∧ 1≤L`),
-   get a fixed point `L ≥ 1 > 0` with `x ^ L = L`. Then `base_le_eInvE` gives
-   `x ≤ eInvE`, contradicting `eInvE < x`. So unbounded.
-   - Cleanly: prove `¬ BddAbove (Set.range (tower x))`, then unbounded follows
-     (`not_bddAbove_iff` on ℝ).
-4. **Monotone + unbounded ⇒ atTop:** `tendsto_atTop_atTop_of_monotone hmono hub`
-   (or `Monotone.tendsto_atTop_atTop`; or `tendsto_atTop_atTop.2`). Find the exact
-   mathlib name; the hypothesis is `∀ b, ∃ n, b ≤ f n`.
+### D. Conclude
+Package as `tower_converges_lower {x} (hlo : eNegE ≤ x) (hhi : x < 1) : ∃ L, Tendsto … ∧ x^L = L`,
+then stitch with the upper half in `tower_converges_of_mem`.
 
-### After both engines compile
-- Wire `Statement.lean` to delegate (`:= tower_converges_engine` etc.), rebuild green.
-- `#print axioms tower_converges_iff` and `#print axioms tower_converges` must be
-  `[propext, Classical.choice, Quot.sound]` — **no `sorryAx`**. Same for `_diverges`.
-- Refresh `RealAnalysis/PowerTower/README.md` Status to DONE, and the top-level
-  `README.md` table row (Scaffold → PROVED).
+---
+
+## Rules (same as every run here)
+- **No `sorry`/`admit` at the end.** The plan is complete and elementary; a stuck
+  step is a lemma-name/bookkeeping issue — grind it, don't bail. Stretch items may be
+  OMITTED (deleted + one-line `PENDING_WORK.md` note), never left as `sorry`.
+- Verify every lemma name against this repo's mathlib (`v4.29.1`). `push_neg` is
+  deprecated → `push Not at h`. Reuse existing engine helpers (`base_le_eInvE`,
+  `log_le_div_e`, `eInvE`, `endpoint_fixed_point`) where they apply.
+- Engine in `EngineLower.lean` (imports `Defs`); `Statement.lean` delegates and stays
+  the faithful audit surface. Add an `eNegE`-anchor + a `native_decide`/`norm_num`
+  note documenting the `1/e`-vs-`e^(-e)` trap (Penn's board says `1/e`; the true
+  lower bound is `e^(-e)` — `x = 0.1 < 1/e` converges, so `1/e` is wrong).
+- Commit every green build (from a real `lake build`). **DO NOT push.**
+- Reference corpus: `~/personal/claude/knowledge/core/projects/lean-journey/reference/`.
+- Blocked needing the open web (e.g. the exact mathlib name for even/odd-subsequence
+  ⟹ convergence, or Lóczi arXiv:1908.05559 §3 for the rigorous lower-bound argument)?
+  Append a dated item to `ON-LINE-REQUEST.md` and continue on something else.
 
 ---
 
 ## Completion = stop condition (`--allow-stop` is armed)
 
-On **ANY lap** (you need NOT wait for a review/reflect lap), as soon as ALL hold,
-certify completion and self-stop — don't keep churning:
-- `tower_converges` and `tower_diverges` are PROVED (delegating to the engine),
-  `src/` is sorry-free, `lake build` green;
-- `#print axioms` on `tower_converges`, `tower_diverges`, `tower_converges_iff` is
-  the pure trust base (no `sorryAx`, no custom axioms, no `native_decide`);
-- the lower half is correctly NOT started.
+On ANY lap, once ALL hold, certify completion and self-stop (don't churn):
+- `tower_converges_of_mem` (MANDATORY) is PROVED; the lower-half engine is complete;
+- `src/` is sorry-free, `lake build` green;
+- `#print axioms` on the new headline(s) is `[propext, Classical.choice, Quot.sound]`
+  (no `sorryAx`, no custom axioms, no `native_decide` in the headline path);
+- the STRETCH iff is either proved OR explicitly omitted-with-a-note (not `sorry`).
 
-Then write your synthesis + refresh `HANDOFF.md`, commit, and:
+Then refresh `HANDOFF.md` + the two READMEs (Status → lower half done) + the top
+`README.md` table row, commit, and:
 ```
-printf 'source=lap\nreason=power-tower upper half complete (tower_converges + tower_diverges proved, axiom-clean)\n' > "$LEAN_STOP_SENTINEL"
+printf 'source=lap\nreason=power-tower lower half complete (converges on [e^-e, e^1/e], axiom-clean)\n' > "$LEAN_STOP_SENTINEL"
 ```
-then end the turn. If a `sorry` lingers, do NOT stop — finish it. This is a small,
-fully-specified run; expect to finish in 1–3 grind laps + a review lap.
+then end the turn. If a `sorry` lingers or `tower_converges_of_mem` is unproved, do
+NOT stop — finish it.

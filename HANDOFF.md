@@ -1,9 +1,17 @@
 # HANDOFF — lean-formalizations (umbrella; impossibility / no-formula + classical results)
 
-> ✅ **POWER-TOWER UPPER HALF: COMPLETE (2026-06-14).** The bounded run from
-> `DIRECTION.md` is fully discharged. `tower_converges` and `tower_diverges` are
-> PROVED (delegating to `Engine.lean`); `src/` is sorry-free; `lake build` green
-> (8259 jobs); all headline theorems axiom-clean. Self-stop armed.
+> 🎯 **ACTIVE RUN (2026-06-14, Trevor via Ren): power-tower LOWER half.**
+> Read **`DIRECTION.md` FIRST** — it has the full elementary proof plan (the crux
+> rides on `add_one_le_exp`, same as the upper half). Goal: prove convergence on the
+> full Euler interval `tower_converges_of_mem : x ∈ [e^(-e), e^(1/e)] → converges`
+> (mandatory), optionally the sharp `iff` (stretch). New engine → `EngineLower.lean`;
+> add `eNegE = e^(-e)` to `Defs.lean`. Expect SEVERAL grind laps — bigger than the
+> upper half; chip at it, do not declare it out of scope. Self-stops when `src/` is
+> sorry-free + the mandatory theorem is axiom-clean.
+>
+> ✅ **POWER-TOWER UPPER HALF: COMPLETE (2026-06-14).** `tower_converges` /
+> `tower_diverges` / `tower_converges_iff` PROVED + axiom-clean in `Engine.lean`. Do
+> NOT reopen it; build the lower half alongside it.
 
 ## State of the repo
 - **Curtis 1990** — COMPLETE, axiom-clean, DONE. `NumericalSemigroups/Curtis/`.
