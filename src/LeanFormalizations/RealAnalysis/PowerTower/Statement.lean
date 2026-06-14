@@ -15,20 +15,20 @@ and is deferred to a separate file.)
 The two definitions referenced here (`tower`, `eInvE`) live in `Defs.lean`; audit
 those alongside this file.
 
-## Status
-- `tower_converges` — the convergence direction, **`sorry`** (the analytic core:
-  monotone-bounded convergence to the least fixed point).
-- `tower_diverges` — divergence past the threshold, **`sorry`** (`x^t > t` for all
-  `t`, so the increasing sequence is unbounded).
+## Status — PROVED (axiom-clean)
+- `tower_converges` — the convergence direction, **PROVED** (delegates to
+  `tower_converges_engine`: monotone-bounded convergence to a fixed point).
+- `tower_diverges` — divergence past the threshold, **PROVED** (delegates to
+  `tower_diverges_engine`: monotone + no fixed point above `e^(1/e)` ⟹ unbounded).
 - `tower_converges_iff` — the headline ("interval of convergence" on `[1,∞)`),
   **PROVED** from the two facts above.
-- `endpoint_fixed_point` — machine-checked anchor `(e^(1/e))^e = e`, **PROVED**.
+- `endpoint_fixed_point` — machine-checked anchor `(e^(1/e))^e = e`, **PROVED**;
+  relocated to `Defs.lean` (the engine depends on it).
 
-When the engine is built, move the two `sorry`s into an `Engine.lean` sibling and
-make the statements here delegate to it (`:= …_engine`), per the repo's
-audit-surface doctrine.
+The real proofs live in the `Engine.lean` sibling (`import …PowerTower.Engine`),
+per the repo's audit-surface doctrine; the statements here delegate (`:= …_engine`).
 -/
-import LeanFormalizations.RealAnalysis.PowerTower.Defs
+import LeanFormalizations.RealAnalysis.PowerTower.Engine
 
 open Real Filter Topology
 
@@ -39,16 +39,16 @@ tower `ⁿx` converges to a real limit `L`, which is a fixed point of `t ↦ x^t
 (`x^L = L`) lying in `[1, e]`. (`L` is in fact the least such fixed point; the
 value at the top endpoint `x = e^(1/e)` is `L = e`, cf. `endpoint_fixed_point`.) -/
 theorem tower_converges {x : ℝ} (hx1 : 1 ≤ x) (hx2 : x ≤ eInvE) :
-    ∃ L : ℝ, Tendsto (tower x) atTop (𝓝 L) ∧ x ^ L = L ∧ 1 ≤ L ∧ L ≤ Real.exp 1 := by
-  sorry
+    ∃ L : ℝ, Tendsto (tower x) atTop (𝓝 L) ∧ x ^ L = L ∧ 1 ≤ L ∧ L ≤ Real.exp 1 :=
+  tower_converges_engine hx1 hx2
 
 /-- **Divergence past the threshold.** For `x > e^(1/e)` the tower diverges to
 `+∞` (the curve `t ↦ x^t` lies strictly above the diagonal, so the increasing
 sequence has no fixed-point ceiling). Together with `tower_converges` this pins
 `e^(1/e)` as the sharp upper endpoint of convergence on `[1, ∞)`. -/
 theorem tower_diverges {x : ℝ} (hx : eInvE < x) :
-    Tendsto (tower x) atTop atTop := by
-  sorry
+    Tendsto (tower x) atTop atTop :=
+  tower_diverges_engine hx
 
 /-- **Sharp upper endpoint (headline).** On `[1, ∞)` the infinite power tower
 converges **iff** `x ≤ e^(1/e)`. This is the "interval of convergence" answer for
@@ -64,13 +64,5 @@ theorem tower_converges_iff {x : ℝ} (hx1 : 1 ≤ x) :
   · intro hx2
     obtain ⟨L, hL, _⟩ := tower_converges hx1 hx2
     exact ⟨L, hL⟩
-
-/-- Machine-checked anchor: at the upper endpoint `x = e^(1/e)`, the value `L = e`
-solves the tower's fixed-point equation `x^L = L`, since `(e^(1/e))^e = e`. This is
-the limit the tower converges to at the boundary. -/
-theorem endpoint_fixed_point : eInvE ^ Real.exp 1 = Real.exp 1 := by
-  have he : Real.exp 1 ≠ 0 := Real.exp_ne_zero 1
-  have key : 1 / Real.exp 1 * Real.exp 1 = 1 := by field_simp
-  rw [eInvE, Real.rpow_def_of_pos (Real.exp_pos _), Real.log_exp, key]
 
 end LeanFormalizations.RealAnalysis.PowerTower

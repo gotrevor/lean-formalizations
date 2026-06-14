@@ -12,10 +12,13 @@ elementary "monotone, bounded above by the least fixed point of `t = x^t`"
 argument.
 
 - `tower_converges` — for `1 ≤ x ≤ e^(1/e)`, converges to a fixed point `L = x^L`
-  with `1 ≤ L ≤ e`.
-- `tower_diverges` — for `x > e^(1/e)`, the tower → +∞.
+  with `1 ≤ L ≤ e`. **PROVED.**
+- `tower_diverges` — for `x > e^(1/e)`, the tower → +∞. **PROVED.**
 - `tower_converges_iff` — the headline: on `[1,∞)`, converges iff `x ≤ e^(1/e)`.
-  **Proved now** from the two facts above (only those carry `sorry`).
+  **PROVED** from the two facts above.
+
+All three are machine-checked and axiom-clean (trust base
+`[propext, Classical.choice, Quot.sound]`; no `sorryAx`, no `native_decide`).
 
 The lower half (`e^(-e) ≤ x < 1`, the *oscillating* regime — `t ↦ x^t` is
 decreasing, so one analyzes the 2-cycle stability of `g(t) = x^(x^t)`, with the
@@ -23,17 +26,20 @@ even/odd subsequences splitting below `e^(-e)`) is more delicate and is deferred
 to a separate file.
 
 ## What to audit
-- `Statement.lean` — the three load-bearing statements.
-- `Defs.lean` — `tower` (check the recursion + that `^` is `Real.rpow`) and
-  `eInvE = Real.exp (1 / Real.exp 1) = e^(1/e)` (written verbatim).
-- `endpoint_fixed_point` (in `Statement.lean`) — machine-checked anchor that
-  `(e^(1/e))^e = e`, the limit value at the top endpoint.
+- `Statement.lean` — the three load-bearing statements (delegate to the engine).
+- `Defs.lean` — `tower` (check the recursion + that `^` is `Real.rpow`),
+  `eInvE = Real.exp (1 / Real.exp 1) = e^(1/e)` (written verbatim), and
+  `endpoint_fixed_point` — machine-checked anchor that `(e^(1/e))^e = e`, the
+  limit value at the top endpoint.
+- `Engine.lean` — the actual proofs. The only analytic input is
+  `Real.add_one_le_exp` (`x+1 ≤ eˣ`), from which `log_le_div_e` (`log L ≤ L/e`)
+  and `base_le_eInvE` (a fixed point forces `x ≤ e^(1/e)`) follow with no calculus.
 
 ## Status
-Scaffolded 2026-06-14. Statements typecheck. `tower_converges` and
-`tower_diverges` are `sorry` (the analytic content); `tower_converges_iff` and
-`endpoint_fixed_point` are proved. Next: build the monotone-convergence engine
-for `tower_converges`, then `tower_diverges`, then the lower half.
+**DONE (upper half), 2026-06-14.** `tower_converges`, `tower_diverges`, and
+`tower_converges_iff` are all PROVED and axiom-clean; the proofs live in
+`Engine.lean` and `Statement.lean` delegates. The lower half (`e^(-e) ≤ x < 1`) is
+deliberately NOT started (a separate future cycle). `lake build` green.
 
 ## Prior art
 Not in mathlib (checked 2026-06-14 via Reservoir mirror + the "Is there code for

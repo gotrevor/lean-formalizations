@@ -40,4 +40,14 @@ theorem tower_succ (x : ℝ) (n : ℕ) : tower x (n + 1) = x ^ tower x n := rfl
   show x ^ tower x 0 = x
   rw [tower_zero, Real.rpow_one]
 
+/-- Machine-checked anchor: at the upper endpoint `x = e^(1/e)`, the value `L = e`
+solves the tower's fixed-point equation `x^L = L`, since `(e^(1/e))^e = e`. This is
+the limit the tower converges to at the boundary. (Lives here, not in
+`Statement.lean`, because the convergence engine needs it for the `x^t ≤ e` bound
+and `Engine.lean` cannot import the audit surface.) -/
+theorem endpoint_fixed_point : eInvE ^ Real.exp 1 = Real.exp 1 := by
+  have he : Real.exp 1 ≠ 0 := Real.exp_ne_zero 1
+  have key : 1 / Real.exp 1 * Real.exp 1 = 1 := by field_simp
+  rw [eInvE, Real.rpow_def_of_pos (Real.exp_pos _), Real.log_exp, key]
+
 end LeanFormalizations.RealAnalysis.PowerTower

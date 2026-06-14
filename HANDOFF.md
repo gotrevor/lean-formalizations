@@ -1,37 +1,42 @@
 # HANDOFF — lean-formalizations (umbrella; impossibility / no-formula + classical results)
 
-> 🎯 **ACTIVE RUN (2026-06-14, Trevor via Ren): power-tower upper half.**
-> Read **`DIRECTION.md` FIRST** — it is the operator work-order and has the full
-> elementary proof plan. This run discharges the two `sorry`s in
-> `src/LeanFormalizations/RealAnalysis/PowerTower/Statement.lean`
-> (`tower_converges`, `tower_diverges`), then self-stops (`--allow-stop`).
-> Do NOT start the lower half, do NOT touch Curtis.
+> ✅ **POWER-TOWER UPPER HALF: COMPLETE (2026-06-14).** The bounded run from
+> `DIRECTION.md` is fully discharged. `tower_converges` and `tower_diverges` are
+> PROVED (delegating to `Engine.lean`); `src/` is sorry-free; `lake build` green
+> (8259 jobs); all headline theorems axiom-clean. Self-stop armed.
 
 ## State of the repo
 - **Curtis 1990** — COMPLETE, axiom-clean, DONE. `NumericalSemigroups/Curtis/`.
   Do not reopen/extend/re-verify.
-- **Infinite power tower (Euler 1783)** — `RealAnalysis/PowerTower/`, NEW this session,
-  **scaffolded** (builds green; 2 intended `sorry`s):
-  - `Defs.lean` — `tower x n` (= ⁿx, `^` = `Real.rpow`), `eInvE = exp (1/exp 1)` (= e^(1/e)),
-    `tower_zero/succ/one`. Audit-faithful.
-  - `Statement.lean` — audit surface. `tower_converges` (`sorry`), `tower_diverges` (`sorry`),
-    `tower_converges_iff` (PROVED from the two), `endpoint_fixed_point` (PROVED).
-  - `README.md` — "what to audit" + scope (upper half = `x ≥ 1`, sharp endpoint `e^(1/e)`).
-  - Result: for `x>0`, `lim ⁿx` converges **iff** `x ∈ [e^(-e), e^(1/e)]`. This run does the
-    `x ≥ 1` half (boundary `e^(1/e)`); lower half `[e^(-e),1)` deferred.
+- **Infinite power tower (Euler 1783), upper half** — `RealAnalysis/PowerTower/`,
+  **PROVED & axiom-clean** this run:
+  - `Defs.lean` — `tower x n` (= ⁿx, `^` = `Real.rpow`), `eInvE = exp (1/exp 1)`
+    (= e^(1/e)), `tower_zero/succ/one`, and `endpoint_fixed_point` (relocated here
+    from `Statement.lean` so the engine can use it). Audit-faithful.
+  - `Engine.lean` — **NEW**, the real proofs (all elementary, no calculus). Single
+    analytic input is `Real.add_one_le_exp`. Key lemmas: `log_le_div_e`
+    (`log L ≤ L/e`), `base_le_eInvE` (a positive fixed point forces `x ≤ e^(1/e)`),
+    `tower_mono`, `tower_le_exp_one`, `exists_fixedpoint_of_bddAbove` (shared core),
+    then `tower_converges_engine` / `tower_diverges_engine`.
+  - `Statement.lean` — audit surface; `tower_converges` / `tower_diverges` now
+    delegate (`:= …_engine`). `tower_converges_iff` (headline) PROVED from the two.
+  - Verified: `#print axioms` on `tower_converges`, `tower_diverges`,
+    `tower_converges_iff`, `endpoint_fixed_point` = `[propext, Classical.choice,
+    Quot.sound]` — no `sorryAx`, no `native_decide`.
+  - Result: for `x ≥ 1`, `lim ⁿx` converges **iff** `x ≤ e^(1/e)`.
 
-## This run's job (see `DIRECTION.md` for the full plan)
-1. Create `RealAnalysis/PowerTower/Engine.lean`; move `endpoint_fixed_point` to `Defs.lean`.
-2. Prove `tower_converges_engine` (monotone + bounded-by-e ⇒ converges to a fixed point in [1,e])
-   and `tower_diverges_engine` (monotone + unbounded-by-no-fixed-point ⇒ atTop). All elementary —
-   the key trick is `log L ≤ L/e` from `Real.add_one_le_exp`, giving "a fixed point forces
-   `x ≤ e^(1/e)`" (no calculus).
-3. Delegate the `Statement.lean` theorems to the engine; rebuild green; `#print axioms` clean.
-4. Refresh this file + the two READMEs; self-stop via the sentinel (see `DIRECTION.md`).
+## What is deliberately NOT done (future cycles, do not start unprompted)
+- **Power-tower lower half** `e^(-e) ≤ x < 1` (oscillating regime, 2-cycle
+  stability of `g(t)=x^(x^t)`). A separate scope; do not scaffold without a new
+  operator directive — adding `sorry`s would reopen this completed bounded run.
+- P1 constructible-numbers / doubling-the-cube (see `PENDING_WORK.md`,
+  `HANDOFF-2026-06-14-1911.md`) — surveyed, never started. Natural next frontier
+  if/when Trevor reopens the repo for unbounded work.
 
 ## Standing rules (this repo)
 - DO NOT push (host publishes). Commit every green build (verify from a real `lake build`).
 - Keep `Statement.lean` the faithful audit surface; engine lives in siblings and delegates.
 - `Curtis/Lemma2.lean` lint warnings: LEAVE THEM (mathematical hypotheses + Aristotle blocks).
+- `push_neg` is deprecated in this toolchain (v4.29.1) → use `push Not at h`.
 - Reference corpus: `~/personal/claude/knowledge/core/projects/lean-journey/reference/`.
 - Blocked needing the open web? Append a dated item to `ON-LINE-REQUEST.md` and continue.
