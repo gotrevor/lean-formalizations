@@ -132,13 +132,68 @@ theorem substCurve_eq_aeval_specCurve (F : MvPolynomial (Fin 4) ℂ) (p k : ℕ)
   funext i
   fin_cases i <;> simp
 
-/-- **Step B — the degree-counting finish** (disclosed `sorry`).
+/-- Evaluating `finSuccEquiv` at `q` is the substitution `X 0 := q` keeping the
+tail variables: `eval q (finSuccEquiv G) = aeval (Fin.cons q X) G`. -/
+theorem eval_finSuccEquiv_eq_aeval_cons (G : MvPolynomial (Fin 3) ℂ)
+    (q : MvPolynomial (Fin 2) ℂ) :
+    Polynomial.eval q (finSuccEquiv ℂ 2 G) = aeval (Fin.cons q (fun i : Fin 2 => X i)) G := by
+  induction G using MvPolynomial.induction_on with
+  | C a => simp [finSuccEquiv_apply]
+  | add f g hf hg => simp [hf, hg]
+  | mul_X f i hf =>
+      rw [map_mul, map_mul, Polynomial.eval_mul, hf]
+      congr 1
+      refine Fin.cases ?_ ?_ i
+      · simp [finSuccEquiv_X_zero]
+      · intro j; simp [finSuccEquiv_X_succ, Fin.cons_succ]
+
+/-- Curtis's linear form `(k−2)X₂ + X₃ − p ∈ ℂ[X₂,X₃]`, the value substituted for
+`Y` to produce `substCurve F p k`. -/
+noncomputable def linForm (p k : ℕ) : MvPolynomial (Fin 2) ℂ :=
+  C ((k : ℂ) - 2) * X 0 + X 1 - C (p : ℂ)
+
+/-- A substitution by degree-`≤ 1` terms cannot raise total degree. -/
+theorem totalDegree_aeval_le {σ τ : Type*} [Fintype σ] (v : σ → MvPolynomial τ ℂ)
+    (hv : ∀ i, (v i).totalDegree ≤ 1) (f : MvPolynomial σ ℂ) :
+    (aeval v f).totalDegree ≤ f.totalDegree := by
+  conv_lhs => rw [f.as_sum]
+  rw [map_sum]
+  apply totalDegree_finsetSum_le
+  intro m hm
+  rw [aeval_monomial, MvPolynomial.algebraMap_eq]
+  refine (totalDegree_mul _ _).trans ?_
+  rw [totalDegree_C, zero_add]
+  refine (totalDegree_finset_prod _ _).trans ?_
+  have hstep : ∀ n ∈ m.support, (v n ^ m n).totalDegree ≤ m n := fun n _ =>
+    (totalDegree_pow _ _).trans
+      (by calc m n * (v n).totalDegree ≤ m n * 1 := Nat.mul_le_mul_left _ (hv n)
+            _ = m n := by ring)
+  refine (Finset.sum_le_sum hstep).trans ?_
+  rw [show ∑ n ∈ m.support, m n = m.sum fun _ e => e from rfl]
+  exact le_totalDegree hm
+
+/-- The specialization `F(p,·,·,·)` has total degree at most that of `F`. -/
+theorem totalDegree_specCurve_le (F : MvPolynomial (Fin 4) ℂ) (p : ℕ) :
+    (specCurve F p).totalDegree ≤ F.totalDegree := by
+  rw [specCurve]
+  apply totalDegree_aeval_le
+  intro i
+  fin_cases i
+  · exact (totalDegree_C (p : ℂ)).le.trans (by norm_num)
+  · exact (totalDegree_X (R := ℂ) 0).le
+  · exact (totalDegree_X (R := ℂ) 1).le
+  · exact (totalDegree_X (R := ℂ) 2).le
+
+/-- **Step B — the degree-counting finish** (PROVED).
 If the specialization `H := F(p,·,·,·)` is nonzero and every substituted curve
-`substCurve F p k` (for `k` in Curtis's range) vanishes, then the `(p−1)/2`
-distinct linear forms `Y − ((k−2)X₂+X₃−p)` each divide `H` (as a polynomial in
-`Y` over `ℂ[X₂,X₃]`, since `H` has root `(k−2)X₂+X₃−p`) and are pairwise coprime,
-so their product divides `H`. Hence `(p−1)/2 ≤ degᵧ H ≤ H.totalDegree ≤
-F.totalDegree`.
+`substCurve F p k` (for `k = 2,…,(p−1)/2+1`) vanishes, then `(p−1)/2 ≤ F.totalDegree`.
+
+Proof: view `H` as a polynomial in `Y` over `ℂ[X₂,X₃]` —
+`Hy := finSuccEquiv ℂ 2 (rename (finRotate 3) H)`, which rotates `Y` into the
+distinguished variable. Each `substCurve F p k = 0` says `linForm p k` is a root of
+`Hy`; the `(p−1)/2` forms `linForm p k` are distinct (their `X₂`-coefficient is
+`(k:ℂ)−2`), so `Hy` has at least `(p−1)/2` roots, whence
+`(p−1)/2 ≤ Hy.natDegree = H.degreeOf 2 ≤ H.totalDegree ≤ F.totalDegree`.
 
 The nonvanishing hypothesis `hH` is essential: without it `F = X₁ − p` would be a
 counterexample (its specialization at `p` is `0`, so every substitution vanishes,
@@ -148,7 +203,53 @@ theorem half_le_totalDegree (F : MvPolynomial (Fin 4) ℂ)
     (p : ℕ) (hp : p.Prime) (hp2 : 2 < p) (hH : specCurve F p ≠ 0)
     (hsub : ∀ k, 2 ≤ k → 2 * k ≤ p + 1 → substCurve F p k = 0) :
     (p - 1) / 2 ≤ F.totalDegree := by
-  sorry
+  set H := specCurve F p with hHdef
+  set Hy := finSuccEquiv ℂ 2 (rename (finRotate 3) H) with hHy
+  have hHyne : Hy ≠ 0 := by
+    rw [hHy]
+    simp only [ne_eq, AddEquivClass.map_eq_zero_iff]
+    rw [rename_eq_zero_iff_of_injective _ (Equiv.injective _)]
+    exact hH
+  -- each `linForm p k` is a root of `Hy`
+  have hroot : ∀ k, substCurve F p k = Polynomial.eval (linForm p k) Hy := by
+    intro k
+    rw [hHy, eval_finSuccEquiv_eq_aeval_cons, substCurve_eq_aeval_specCurve, ← hHdef,
+      aeval_rename]
+    refine congrArg (fun v => aeval v H) ?_
+    funext i
+    fin_cases i <;> rfl
+  -- the forms `linForm p k` are distinct in `k`
+  have hinj : Function.Injective (linForm p) := by
+    intro a b hab
+    have h1 : (eval ![(1 : ℂ), 0]) (linForm p a) = (eval ![(1 : ℂ), 0]) (linForm p b) := by
+      rw [hab]
+    simp only [linForm, map_add, map_sub, map_mul, eval_C, eval_X, Matrix.cons_val_zero,
+      Matrix.cons_val_one, Matrix.head_cons] at h1
+    have hc : (a : ℂ) = b := by linear_combination h1
+    exact_mod_cast hc
+  -- `Hy.natDegree = H.degreeOf 2`
+  have hdeg : Hy.natDegree = H.degreeOf 2 := by
+    rw [hHy, natDegree_finSuccEquiv]
+    have h := degreeOf_rename_of_injective (p := H) (Equiv.injective (finRotate 3)) 2
+    have h2 : (finRotate 3) 2 = 0 := by decide
+    rwa [h2] at h
+  -- the `(p−1)/2` distinct roots and the degree chain
+  set rng := Finset.Icc 2 ((p - 1) / 2 + 1) with hrng
+  have hcard : rng.card = (p - 1) / 2 := by rw [hrng, Nat.card_Icc]; omega
+  have hsubset : rng.image (linForm p) ⊆ Hy.roots.toFinset := by
+    intro c hc
+    simp only [Finset.mem_image, hrng, Finset.mem_Icc] at hc
+    obtain ⟨k, ⟨hk1, hk2⟩, rfl⟩ := hc
+    rw [Multiset.mem_toFinset, Polynomial.mem_roots hHyne, Polynomial.IsRoot.def, ← hroot]
+    exact hsub k hk1 (by omega)
+  calc (p - 1) / 2 = rng.card := hcard.symm
+    _ = (rng.image (linForm p)).card := (Finset.card_image_of_injective _ hinj).symm
+    _ ≤ Hy.roots.toFinset.card := Finset.card_le_card hsubset
+    _ ≤ Multiset.card Hy.roots := Multiset.toFinset_card_le _
+    _ ≤ Hy.natDegree := Polynomial.card_roots' _
+    _ = H.degreeOf 2 := hdeg
+    _ ≤ H.totalDegree := degreeOf_le_totalDegree H 2
+    _ ≤ F.totalDegree := totalDegree_specCurve_le F p
 
 /-- **Curtis's theorem (1990), engine form.** No nonzero `F ∈ ℂ[X₁,X₂,X₃,Y]`
 vanishes on the graph of the Frobenius number over the admissible family `A`.
