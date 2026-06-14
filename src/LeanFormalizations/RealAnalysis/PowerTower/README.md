@@ -5,25 +5,38 @@
 (Euler 1783). Numerically `[0.0660, 1.4447]`. The famous endpoint is
 `e^(1/e) ≈ 1.44467` (so `√2^(√2^(··)) = 2` works, since `√2 < e^(1/e)`).
 
-## Scope of this side quest (upper half)
-This formalizes the `x ≥ 1` regime, whose sharp boundary is `e^(1/e)`. There
-`t ↦ x^t` is increasing, so the tower is monotone and convergence is the
-elementary "monotone, bounded above by the least fixed point of `t = x^t`"
-argument.
+## Scope — BOTH halves of the convergence interval, machine-checked
+
+### Upper half (`x ≥ 1`, sharp boundary `e^(1/e)`)
+`t ↦ x^t` is increasing, so the tower is monotone; convergence is the elementary
+"monotone, bounded above by the least fixed point of `t = x^t`" argument.
 
 - `tower_converges` — for `1 ≤ x ≤ e^(1/e)`, converges to a fixed point `L = x^L`
   with `1 ≤ L ≤ e`. **PROVED.**
 - `tower_diverges` — for `x > e^(1/e)`, the tower → +∞. **PROVED.**
-- `tower_converges_iff` — the headline: on `[1,∞)`, converges iff `x ≤ e^(1/e)`.
-  **PROVED** from the two facts above.
+- `tower_converges_iff` — on `[1,∞)`, converges iff `x ≤ e^(1/e)`. **PROVED.**
 
-All three are machine-checked and axiom-clean (trust base
-`[propext, Classical.choice, Quot.sound]`; no `sorryAx`, no `native_decide`).
+### Lower half (`e^(-e) ≤ x < 1`, the *oscillating* regime)
+`t ↦ x^t` is decreasing, so the tower is no longer monotone: the even subsequence
+`a(2n)` decreases to `γ`, the odd `a(2n+1)` increases to `β`, and `(β,γ)` is a
+2-cycle of `f`. Convergence ⟺ `β = γ`. The crux — **no nontrivial 2-cycle for
+`x ≥ e^(-e)`** (the bifurcation at the lower endpoint) — is proved via the slope
+bound `g'(t) = (log x)²·x^(x^t)·x^t ≤ |log x|/e ≤ 1` (engine: `EngineLower.lean`):
+a Banach contraction for `x > e^(-e)`, an antitone-on-interval argument at the
+boundary `x = e^(-e)`. The same `add_one_le_exp` "max of `t·e^{-t}`" that drives
+the upper half. (The often-cited "subtract the tangent-line inequalities" sketch
+is mathematically invalid — see `EngineLower.lean`.)
 
-The lower half (`e^(-e) ≤ x < 1`, the *oscillating* regime — `t ↦ x^t` is
-decreasing, so one analyzes the 2-cycle stability of `g(t) = x^(x^t)`, with the
-even/odd subsequences splitting below `e^(-e)`) is more delicate and is deferred
-to a separate file.
+- `tower_converges_lower` — for `e^(-e) ≤ x < 1`, converges to a fixed point. **PROVED.**
+- `tower_converges_of_mem` — **headline**: converges on the FULL Euler interval
+  `[e^(-e), e^(1/e)]`. **PROVED.**
+
+All of the above are machine-checked and **axiom-clean** (trust base
+`[propext, Classical.choice, Quot.sound]`; no `sorryAx`, no `native_decide`, no
+custom axioms).
+
+The sharp `iff` on the full interval (the `0 < x < e^(-e)` *divergence* direction,
+needing a genuine attracting 2-cycle) is OMITTED — see `PENDING_WORK.md`.
 
 ## What to audit
 - `Statement.lean` — the three load-bearing statements (delegate to the engine).
@@ -31,15 +44,21 @@ to a separate file.
   `eInvE = Real.exp (1 / Real.exp 1) = e^(1/e)` (written verbatim), and
   `endpoint_fixed_point` — machine-checked anchor that `(e^(1/e))^e = e`, the
   limit value at the top endpoint.
-- `Engine.lean` — the actual proofs. The only analytic input is
+- `Engine.lean` — upper-half proofs. The only analytic input is
   `Real.add_one_le_exp` (`x+1 ≤ eˣ`), from which `log_le_div_e` (`log L ≤ L/e`)
   and `base_le_eInvE` (a fixed point forces `x ≤ e^(1/e)`) follow with no calculus.
+- `EngineLower.lean` — lower-half proofs. Continuity/monotonicity of `f`,
+  even/odd monotone-bounded subsequence convergence, the even/odd reassembly, and
+  the crux `two_cycle_collapse` (slope bound `g' ≤ |log x|/e ≤ 1` ⟹ contraction /
+  antitone). `Defs.endpoint_fixed_point_lower` anchors `(e^(-e))^(1/e) = 1/e`.
 
 ## Status
-**DONE (upper half), 2026-06-14.** `tower_converges`, `tower_diverges`, and
-`tower_converges_iff` are all PROVED and axiom-clean; the proofs live in
-`Engine.lean` and `Statement.lean` delegates. The lower half (`e^(-e) ≤ x < 1`) is
-deliberately NOT started (a separate future cycle). `lake build` green.
+**DONE (BOTH halves), 2026-06-14.** Upper: `tower_converges`, `tower_diverges`,
+`tower_converges_iff`. Lower: `tower_converges_lower` and the headline
+`tower_converges_of_mem` (convergence on the full `[e^(-e), e^(1/e)]`). All PROVED
+and **axiom-clean**, including the lower-bound crux `two_cycle_collapse` (no axiom).
+`lake build` green. Only the sharp full-interval `iff` (divergence for
+`0 < x < e^(-e)`) is omitted (`PENDING_WORK.md`).
 
 ## Prior art
 Not in mathlib (checked 2026-06-14 via Reservoir mirror + the "Is there code for

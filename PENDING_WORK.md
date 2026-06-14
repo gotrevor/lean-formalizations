@@ -16,6 +16,29 @@ below remain Trevor's call for a future, separately-scoped run.
 
 ---
 
+## ✅ COMPLETE (2026-06-14, power-tower LOWER half run)
+
+Mandatory `tower_converges_of_mem` (convergence on the FULL Euler interval
+`[e^(-e), e^(1/e)]`) is PROVED and **fully axiom-clean** (`[propext,
+Classical.choice, Quot.sound]`). The lower-bound crux `two_cycle_collapse` (no
+nontrivial 2-cycle of `t↦x^t` for `x ≥ e^(-e)`) is **machine-checked, no axiom** —
+via the slope bound `g'(t) ≤ |log x|/e ≤ 1` (`EngineLower.lean`): contraction +
+Banach for `x > e^(-e)`, antitone-on-interval for the boundary `x = e^(-e)`.
+(The DIRECTION's "subtract the tangent-line inequalities" sketch is mathematically
+invalid; the derivative/slope bound is the correct mechanism.)
+
+### OMITTED stretch — the sharp `iff` lower direction (`0 < x < e^(-e)` diverges)
+`tower_converges_iff_full` is NOT shipped. The `x > e^(1/e)` direction is `tower_diverges`
+(have it) and the convergence half is `tower_converges_of_mem`; the missing piece is
+**non-convergence for `0 < x < e^(-e)`**, which requires proving a *genuine attracting
+2-cycle exists* (`β < γ` strictly) — i.e. that the would-be fixed point `y` is repelling
+and the tower from `a₀=1` does not land on its stable manifold. That is a separate,
+multi-lap real-analysis development (instability ⟹ non-convergence), exceeding the
+DIRECTION's ~2-lap budget for the stretch. Omitted with this note, NO `sorry`. Natural
+next scope if the iff is wanted.
+
+---
+
 ## 🅿️ PARKED — future runs, Trevor's call (NOT this run; do not start)
 
 Preserved for a future, separately-scoped run. These are genuine extensions but are

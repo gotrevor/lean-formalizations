@@ -1,32 +1,32 @@
 /-
-# Infinite power tower: interval of convergence (upper half) — Euler (1783)
+# Infinite power tower: interval of convergence — Euler (1783)
 
 For `x > 0`, the infinite power tower `lim_{n→∞} ⁿx` (with `ⁿx = x^(x^(··^x))`,
 `n` copies, here `tower x n`) converges **iff** `x ∈ [e^(-e), e^(1/e)]`
 (Euler 1783; numerically `[0.0660, 1.4447]`).
 
-This file is the **designated audit surface** for the *upper* half: the `x ≥ 1`
-regime, whose sharp boundary is `e^(1/e)`. There `t ↦ x^t` is increasing, so the
-tower is monotone and the analysis is the elementary "monotone bounded by the
-least fixed point" argument. (The lower half `e^(-e) ≤ x < 1` is the *oscillating*
-regime — `t ↦ x^t` is decreasing, needing 2-cycle stability of `g(t) = x^(x^t)` —
-and is deferred to a separate file.)
+This file is the **designated audit surface** for the convergence theorem on the
+whole interval. The `x ≥ 1` regime has sharp boundary `e^(1/e)` (`t ↦ x^t`
+increasing ⟹ tower monotone). The lower regime `e^(-e) ≤ x < 1` is *oscillating*
+(`t ↦ x^t` decreasing ⟹ even/odd subsequences, 2-cycle of `g(t) = x^(x^t)`); its
+crux is the bifurcation at `e^(-e)` (`EngineLower.two_cycle_collapse`).
 
-The two definitions referenced here (`tower`, `eInvE`) live in `Defs.lean`; audit
-those alongside this file.
+The definitions referenced here (`tower`, `eInvE`, `eNegE`) live in `Defs.lean`;
+audit those alongside this file.
 
 ## Status — PROVED (axiom-clean)
-- `tower_converges` — the convergence direction, **PROVED** (delegates to
-  `tower_converges_engine`: monotone-bounded convergence to a fixed point).
-- `tower_diverges` — divergence past the threshold, **PROVED** (delegates to
-  `tower_diverges_engine`: monotone + no fixed point above `e^(1/e)` ⟹ unbounded).
-- `tower_converges_iff` — the headline ("interval of convergence" on `[1,∞)`),
-  **PROVED** from the two facts above.
-- `endpoint_fixed_point` — machine-checked anchor `(e^(1/e))^e = e`, **PROVED**;
-  relocated to `Defs.lean` (the engine depends on it).
+- `tower_converges` — convergence for `1 ≤ x ≤ e^(1/e)`, **PROVED**
+  (`tower_converges_engine`: monotone-bounded convergence to a fixed point).
+- `tower_diverges` — divergence for `x > e^(1/e)`, **PROVED**.
+- `tower_converges_iff` — interval of convergence on `[1,∞)`, **PROVED**.
+- `tower_converges_of_mem` — **headline**: convergence on the full Euler interval
+  `[e^(-e), e^(1/e)]`, **PROVED** (stitches the upper engine with the lower-half
+  `tower_converges_lower`; the lower crux is fully discharged, no axiom).
+- `endpoint_fixed_point` / `endpoint_fixed_point_lower` — machine-checked anchors
+  `(e^(1/e))^e = e` and `(e^(-e))^(1/e) = 1/e` (in `Defs.lean`).
 
-The real proofs live in the `Engine.lean` sibling (`import …PowerTower.Engine`),
-per the repo's audit-surface doctrine; the statements here delegate (`:= …_engine`).
+The real proofs live in the `Engine.lean` / `EngineLower.lean` siblings, per the
+repo's audit-surface doctrine; the statements here delegate.
 -/
 import LeanFormalizations.RealAnalysis.PowerTower.Engine
 import LeanFormalizations.RealAnalysis.PowerTower.EngineLower
@@ -74,10 +74,11 @@ convergence) and the oscillating regime `e^(-e) ≤ x < 1` (`tower_converges_low
 even/odd subsequences collapse to a common fixed point). The lower endpoint `e^(-e)`
 is sharp — its boundary value is `L = 1/e` (cf. `endpoint_fixed_point_lower`).
 
-The lower-half analytic crux (no nontrivial 2-cycle for `x ≥ e^(-e)`) is currently
-the disclosed `EngineLower.two_cycle_collapse`; all the surrounding analysis
-(continuity, monotone-bounded subsequence convergence, even/odd reassembly) is
-machine-checked. -/
+The lower-half analytic crux (no nontrivial 2-cycle for `x ≥ e^(-e)`) is the
+machine-checked `EngineLower.two_cycle_collapse` (NO axiom) — proved via the slope
+bound `g'(t) ≤ |log x|/e ≤ 1`: a Banach contraction for `x > e^(-e)`, an
+antitone-on-interval argument at the boundary `x = e^(-e)`. This whole theorem is
+axiom-clean (`[propext, Classical.choice, Quot.sound]`). -/
 theorem tower_converges_of_mem {x : ℝ} (hx : x ∈ Set.Icc eNegE eInvE) :
     ∃ L : ℝ, Tendsto (tower x) atTop (𝓝 L) ∧ x ^ L = L := by
   obtain ⟨hlo, hhi⟩ := hx
