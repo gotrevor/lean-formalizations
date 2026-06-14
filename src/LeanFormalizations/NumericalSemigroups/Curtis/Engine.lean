@@ -120,6 +120,18 @@ theorem substCurve_eq_zero (F : MvPolynomial (Fin 4) ℂ)
     substCurve F p k = 0 := by
   sorry
 
+/-- `substCurve F p k` is the `Y := (k−2)X₂ + X₃ − p` substitution applied to the
+specialization `specCurve F p`. This factoring is the bridge for Step B: each
+`substCurve F p k = 0` says `(k−2)X₂+X₃−p` is a root of `specCurve F p` viewed as
+a polynomial in `Y`. -/
+theorem substCurve_eq_aeval_specCurve (F : MvPolynomial (Fin 4) ℂ) (p k : ℕ) :
+    substCurve F p k
+      = aeval ![X 0, X 1, C ((k : ℂ) - 2) * X 0 + X 1 - C (p : ℂ)] (specCurve F p) := by
+  rw [substCurve, specCurve, comp_aeval_apply]
+  refine congrArg (fun v => aeval v F) ?_
+  funext i
+  fin_cases i <;> simp
+
 /-- **Step B — the degree-counting finish** (disclosed `sorry`).
 If the specialization `H := F(p,·,·,·)` is nonzero and every substituted curve
 `substCurve F p k` (for `k` in Curtis's range) vanishes, then the `(p−1)/2`
