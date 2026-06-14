@@ -85,7 +85,7 @@ theorem no_single_polynomial_formula (f : MvPolynomial (Fin 3) ℂ) :
     ∃ s₁ s₂ s₃ g : ℕ, IsAdmissible s₁ s₂ s₃ ∧ FrobeniusNumber g {s₁, s₂, s₃} ∧
       eval ![(s₁ : ℂ), (s₂ : ℂ), (s₃ : ℂ)] f ≠ (g : ℂ) := by
   by_contra h
-  push_neg at h
+  push Not at h
   apply no_finite_polynomial_formula
   exact ⟨1, fun _ => f, fun s₁ s₂ s₃ g ha hf => ⟨0, h s₁ s₂ s₃ g ha hf⟩⟩
 
