@@ -12,6 +12,7 @@ The proofs delegated to by the audit surface `Statement.lean`.
   a citing docstring. Multi-lap target.
 -/
 import LeanFormalizations.NumericalSemigroups.Curtis.Defs
+import LeanFormalizations.NumericalSemigroups.Curtis.Lemma2
 
 open MvPolynomial
 
@@ -112,7 +113,11 @@ prime, `xₙ ≡ 1`, `yₙ ≡ p−k+1 (mod p)`, `(xₙ,yₙ)=1` and `yₙ/xₙ 
 irrational `α ∈ (p−k, p−k+1)`; by Lemma 2 their Frobenius number is exactly
 `(k−2)xₙ + yₙ − p`, so `G(xₙ,yₙ) = F(p,xₙ,yₙ,g) = 0`. As `n → ∞` the leading form
 of `G` acquires infinitely many roots (every irrational in the interval), so it
-vanishes; hence `G ≡ 0`. -/
+vanishes; hence `G ≡ 0`.
+
+**Lemma 2 is now available** as `Curtis.Lemma2.lemma2` (machine-checked,
+axiom-clean). Remaining for this `sorry`: Lemma 1 (Dirichlet + Farey adjacency)
+and the limit argument. -/
 theorem substCurve_eq_zero (F : MvPolynomial (Fin 4) ℂ)
     (hF : ∀ s₁ s₂ s₃ g : ℕ, IsAdmissible s₁ s₂ s₃ →
         FrobeniusNumber g {s₁, s₂, s₃} → eval (evalPoint s₁ s₂ s₃ g) F = 0)
