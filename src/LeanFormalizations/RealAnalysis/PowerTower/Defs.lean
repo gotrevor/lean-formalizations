@@ -32,6 +32,12 @@ noncomputable def tower (x : ℝ) : ℕ → ℝ
 convergence `[e^(-e), e^(1/e)]` for the infinite power tower. -/
 noncomputable def eInvE : ℝ := Real.exp (1 / Real.exp 1)
 
+/-- Euler's constant `e ^ (-e) ≈ 0.06599`: the **lower** endpoint of the interval
+of convergence `[e^(-e), e^(1/e)]` for the infinite power tower. (Beware the classic
+trap: the lower bound is `e^(-e)`, NOT `1/e ≈ 0.368` — e.g. `x = 0.1 < 1/e` still
+converges, so `1/e` is wrong.) -/
+noncomputable def eNegE : ℝ := Real.exp (-Real.exp 1)
+
 @[simp] theorem tower_zero (x : ℝ) : tower x 0 = 1 := rfl
 
 theorem tower_succ (x : ℝ) (n : ℕ) : tower x (n + 1) = x ^ tower x n := rfl
@@ -49,5 +55,16 @@ theorem endpoint_fixed_point : eInvE ^ Real.exp 1 = Real.exp 1 := by
   have he : Real.exp 1 ≠ 0 := Real.exp_ne_zero 1
   have key : 1 / Real.exp 1 * Real.exp 1 = 1 := by field_simp
   rw [eInvE, Real.rpow_def_of_pos (Real.exp_pos _), Real.log_exp, key]
+
+/-- Machine-checked anchor at the **lower** endpoint `x = e^(-e)`: there `L = 1/e`
+solves the fixed-point equation `x^L = L`, since `(e^(-e))^(1/e) = e^(-1) = 1/e`.
+This is the limit of the (oscillating) tower at the boundary; mirrors
+`endpoint_fixed_point`. -/
+theorem endpoint_fixed_point_lower : eNegE ^ Real.exp (-1) = Real.exp (-1) := by
+  rw [eNegE, Real.rpow_def_of_pos (Real.exp_pos _), Real.log_exp]
+  congr 1
+  have h : Real.exp 1 ≠ 0 := Real.exp_ne_zero 1
+  rw [Real.exp_neg]
+  field_simp
 
 end LeanFormalizations.RealAnalysis.PowerTower

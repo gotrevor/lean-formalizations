@@ -29,6 +29,7 @@ The real proofs live in the `Engine.lean` sibling (`import …PowerTower.Engine`
 per the repo's audit-surface doctrine; the statements here delegate (`:= …_engine`).
 -/
 import LeanFormalizations.RealAnalysis.PowerTower.Engine
+import LeanFormalizations.RealAnalysis.PowerTower.EngineLower
 
 open Real Filter Topology
 
@@ -64,5 +65,27 @@ theorem tower_converges_iff {x : ℝ} (hx1 : 1 ≤ x) :
   · intro hx2
     obtain ⟨L, hL, _⟩ := tower_converges hx1 hx2
     exact ⟨L, hL⟩
+
+/-- **Euler's convergence theorem on the full interval (headline, MANDATORY).**
+For every `x ∈ [e^(-e), e^(1/e)]` the infinite power tower `ⁿx` converges to a real
+limit `L`, a fixed point of `t ↦ x^t` (`x^L = L`). This stitches the three regimes:
+the increasing regime `x ≥ 1` (`tower_converges_engine`, monotone-bounded
+convergence) and the oscillating regime `e^(-e) ≤ x < 1` (`tower_converges_lower`,
+even/odd subsequences collapse to a common fixed point). The lower endpoint `e^(-e)`
+is sharp — its boundary value is `L = 1/e` (cf. `endpoint_fixed_point_lower`).
+
+The lower-half analytic crux (no nontrivial 2-cycle for `x ≥ e^(-e)`) is currently
+the disclosed `EngineLower.two_cycle_collapse`; all the surrounding analysis
+(continuity, monotone-bounded subsequence convergence, even/odd reassembly) is
+machine-checked. -/
+theorem tower_converges_of_mem {x : ℝ} (hx : x ∈ Set.Icc eNegE eInvE) :
+    ∃ L : ℝ, Tendsto (tower x) atTop (𝓝 L) ∧ x ^ L = L := by
+  obtain ⟨hlo, hhi⟩ := hx
+  rcases lt_or_ge x 1 with h | h
+  · -- oscillating regime e^(-e) ≤ x < 1
+    exact tower_converges_lower hlo h
+  · -- increasing regime 1 ≤ x ≤ e^(1/e)
+    obtain ⟨L, hL, hfix, _, _⟩ := tower_converges_engine h hhi
+    exact ⟨L, hL, hfix⟩
 
 end LeanFormalizations.RealAnalysis.PowerTower
