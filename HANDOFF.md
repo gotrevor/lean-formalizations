@@ -1,8 +1,13 @@
-# HANDOFF — lean-formalizations (target: Curtis 1990)
+# HANDOFF — lean-formalizations (umbrella; impossibility / no-formula meta-theorems)
 
-> ✅ **Curtis 1990 is COMPLETE and axiom-clean** (2026-06-14). The crux
-> `substCurve_eq_zero` — the sole binary gate from `DIRECTION.md` — is closed. See
-> `PENDING_WORK.md` for the proof insight and the next targets.
+> **Thin pointer.** Durable overview → `STATUS.md`. Newest baton →
+> `HANDOFF-2026-06-14-1545.md`. Open items / attack plan → `PENDING_WORK.md`.
+>
+> ✅ **Curtis 1990 is COMPLETE and axiom-clean** — re-verified 2026-06-14 by real
+> `#print axioms` on all 7 headlines (pure trust base, no `sorryAx`/custom axioms).
+> **Next target chosen:** compass-and-straightedge impossibility (constructible numbers /
+> doubling the cube) — absent from mathlib, on-theme. See `PENDING_WORK.md` (top) for the
+> Layer-1 attack plan. Do not reopen Curtis.
 
 **Repo purpose.** An umbrella for *solved-but-unformalized* results, with a soft spot
 for **no-formula / impossibility** meta-theorems.

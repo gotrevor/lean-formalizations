@@ -1,4 +1,43 @@
-# PENDING_WORK — Curtis 1990
+# PENDING_WORK — lean-formalizations
+
+## 🎯 ACTIVE TARGET (chosen 2026-06-14 review lap): Compass-and-straightedge impossibility
+
+**Why this target.** Curtis 1990 is verified complete & axiom-clean (below). Its only
+leftovers are Trevor's-call (mathlib upstream) or trivial (Zariski repackaging). The
+umbrella's job is no-formula / impossibility meta-theorems; mathlib already has Liouville,
+Lindemann–Weierstrass, and Abel–Ruffini, but **constructible-number theory is absent**
+(mathlib's `Constructible.lean` is all topology/spectra). So: formalize the impossibility
+of doubling the cube (and, cheaply later, trisection / regular n-gons / squaring the circle).
+
+**Layer 1 — algebraic core (attack THIS lap; aim axiom-clean).** Three viable encodings:
+1. *(preferred)* Tower predicate. `inductive IsSqrtTower : IntermediateField ℚ ℝ → Prop`
+   with `base : IsSqrtTower ⊥` and `step K a (hK) (ha : a*a ∈ K) :
+   IsSqrtTower ((IntermediateField.adjoin K {a}).restrictScalars ℚ)`. Define
+   `Constructible (x:ℝ) := ∃ K, IsSqrtTower K ∧ x ∈ K`. Prove
+   `IsSqrtTower K → ∃ n, Module.finrank ℚ K = 2^n` by induction:
+   - base: `IntermediateField.finrank_bot = 1 = 2^0`.
+   - step: tower law `Module.finrank_mul_finrank ℚ K K⟮a⟯` (LinearAlgebra/Dimension/Free)
+     × `adjoin.finrank` (= `(minpoly K a).natDegree`, with `a` integral via monic
+     `X² - C(a*a)`) which is `≤ 2` and `≥ 1` ⟹ `∈ {1,2}` ⟹ `2^0` or `2^1`.
+   Then `[ℚ(a):ℚ] ∣ finrank ℚ K` ⟹ power of 2.
+2. *(faithfulness anchor)* the field+sqrt closure `inductive Constructible` (rat/add/neg/
+   mul/inv/sqrt) — most recognizable "constructible number" def; prove it implies (1).
+3. *(witness)* `∛2`: `c := (2:ℝ)^(1/3:ℝ)`, `c^3 = 2` via rpow; `X³ - 2` irreducible over ℚ
+   (Eisenstein at 2: `Polynomial.IsEisensteinAt.irreducible`; OR `X_pow_sub_C` Kummer
+   results). ⟹ `minpoly ℚ c = X³-2`, `[ℚ(c):ℚ] = 3`, and `¬∃n, 3 = 2^n` ⟹ not constructible
+   ⟹ cube cannot be doubled (side `∛2` from unit side).
+
+**Layer 2 — the hard wall (multi-lap; this is the crux to bang on going forward).** A
+faithful *geometric* definition: points constructible from {(0,0),(1,0)} by repeated
+line∩line, line∩circle, circle∩circle, and the bridge **geometric ⟹ coordinates lie in a
+quadratic tower** (line∩line stays in F; the others solve a degree-≤2 equation over F).
+This is the real impossibility-grade theorem; Layer 1 alone proves "∛2 not in a sqrt tower".
+
+**Files (to create):** `src/LeanFormalizations/Geometry/Constructible/{Defs,Tower,Doubling,
+Statement}.lean` (mirror Curtis's audit-surface + engine split). Keep `Statement.lean` the
+faithful audit surface.
+
+---
 
 ## ✅ DONE (2026-06-14) — Curtis 1990 is COMPLETE and axiom-clean
 
