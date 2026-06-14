@@ -39,6 +39,21 @@ noncomputable def substCurve (F : MvPolynomial (Fin 4) ℂ) (p k : ℕ) :
     MvPolynomial (Fin 2) ℂ :=
   aeval ![C (p : ℂ), X 0, X 1, C ((k : ℂ) - 2) * X 0 + X 1 - C (p : ℂ)] F
 
+/-- The specialization `F(p, X₂, X₃, Y)` at `X₁ := p`, a 3-variable polynomial in
+`X₂, X₃, Y` (mapped to `X 0, X 1, X 2 : MvPolynomial (Fin 3) ℂ`). The Curtis
+substitution `substCurve F p k` factors through this by then setting
+`Y := (k−2)X₂ + X₃ − p`. -/
+noncomputable def specCurve (F : MvPolynomial (Fin 4) ℂ) (p : ℕ) :
+    MvPolynomial (Fin 3) ℂ :=
+  aeval ![C (p : ℂ), X 0, X 1, X 2] F
+
+/-- For `F ≠ 0`, the specialization `F(p, ·, ·, ·)` vanishes for only finitely
+many `p`: the coefficient of some fixed monomial is a nonzero univariate complex
+polynomial in `p`, which has finitely many roots. (Disclosed `sorry`.) -/
+theorem finite_specCurve_eq_zero (F : MvPolynomial (Fin 4) ℂ) (hF0 : F ≠ 0) :
+    {p : ℕ | specCurve F p = 0}.Finite := by
+  sorry
+
 /-- **Step A — Curtis's Lemmas 1 + 2 + limit argument** (disclosed `sorry`).
 If `F` vanishes on the graph of the Frobenius number over the admissible family,
 then for every prime `p > 2` and every `k` with `2 ≤ k ≤ (p−1)/2 + 1` the
@@ -58,12 +73,19 @@ theorem substCurve_eq_zero (F : MvPolynomial (Fin 4) ℂ)
   sorry
 
 /-- **Step B — the degree-counting finish** (disclosed `sorry`).
-If `F ≠ 0` and every substituted curve `substCurve F p k` (for `k` in Curtis's
-range) vanishes, then the `(p−1)/2` distinct linear forms `Y − ((k−2)X₂+X₃−p)`
-each divide `F(p, ·, ·, ·)` and are pairwise coprime, so their product divides it
-and `(p−1)/2 ≤ F.totalDegree`. -/
-theorem half_le_totalDegree (F : MvPolynomial (Fin 4) ℂ) (hF0 : F ≠ 0)
-    (p : ℕ) (hp : p.Prime) (hp2 : 2 < p)
+If the specialization `H := F(p,·,·,·)` is nonzero and every substituted curve
+`substCurve F p k` (for `k` in Curtis's range) vanishes, then the `(p−1)/2`
+distinct linear forms `Y − ((k−2)X₂+X₃−p)` each divide `H` (as a polynomial in
+`Y` over `ℂ[X₂,X₃]`, since `H` has root `(k−2)X₂+X₃−p`) and are pairwise coprime,
+so their product divides `H`. Hence `(p−1)/2 ≤ degᵧ H ≤ H.totalDegree ≤
+F.totalDegree`.
+
+The nonvanishing hypothesis `hH` is essential: without it `F = X₁ − p` would be a
+counterexample (its specialization at `p` is `0`, so every substitution vanishes,
+yet its total degree is `1`). The main theorem supplies a prime avoiding the
+finitely many `p` with `specCurve F p = 0` via `finite_specCurve_eq_zero`. -/
+theorem half_le_totalDegree (F : MvPolynomial (Fin 4) ℂ)
+    (p : ℕ) (hp : p.Prime) (hp2 : 2 < p) (hH : specCurve F p ≠ 0)
     (hsub : ∀ k, 2 ≤ k → 2 * k ≤ p + 1 → substCurve F p k = 0) :
     (p - 1) / 2 ≤ F.totalDegree := by
   sorry
@@ -82,14 +104,23 @@ theorem no_polynomial_relation_engine :
         eval (evalPoint s₁ s₂ s₃ g) F = 0 := by
   rintro ⟨F, hF0, hF⟩
   set D := F.totalDegree with hD
-  -- Pick a prime `p ≥ 2·D + 3 > 2`.
-  obtain ⟨p, hple, hp⟩ := Nat.exists_infinite_primes (2 * D + 3)
-  have hp2 : 2 < p := by omega
+  -- The good primes — prime, `> 2`, and with nonvanishing specialization — form
+  -- an infinite set (primes are infinite; only finitely many `p` are bad).
+  have hgood : {p : ℕ | p.Prime ∧ specCurve F p ≠ 0}.Infinite := by
+    have hset : {p : ℕ | p.Prime ∧ specCurve F p ≠ 0}
+        = {p : ℕ | p.Prime} \ {p : ℕ | specCurve F p = 0} := by
+      ext p; simp [Set.mem_diff]
+    rw [hset]
+    exact Nat.infinite_setOf_prime.diff (finite_specCurve_eq_zero F hF0)
+  -- Pick such a good prime `p ≥ 2·D + 3`.
+  obtain ⟨p, ⟨hp, hpH⟩, hple⟩ := hgood.exists_gt (2 * D + 2)
+  have hp2 : 2 < p := by
+    have := hp.two_le; omega
   -- Curtis's degree bound at this prime.
   have hbound : (p - 1) / 2 ≤ D :=
-    half_le_totalDegree F hF0 p hp hp2
+    half_le_totalDegree F p hp hp2 hpH
       (fun k hk hk' => substCurve_eq_zero F hF p k hp hp2 hk hk')
-  -- But `p ≥ 2·D+3` forces `(p-1)/2 ≥ D+1`, a contradiction.
+  -- But `p ≥ 2·D + 3` forces `(p-1)/2 ≥ D+1`, a contradiction.
   have : D + 1 ≤ (p - 1) / 2 := by
     rw [Nat.le_div_iff_mul_le (by norm_num)]
     omega
