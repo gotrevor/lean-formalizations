@@ -1,64 +1,57 @@
 # HANDOFF — lean-formalizations (target: Curtis 1990)
 
-> ⚠️ **READ [`DIRECTION.md`](DIRECTION.md) FIRST** (operator directive 2026-06-14):
-> hardest-first. Step A (`substCurve_eq_zero`) is the SOLE gate; spike it and report its
-> feasibility honestly each lap; everything else stays `sorryAx` until it closes; park
-> with a named gap if it's a wall. Don't dress up scaffolding as a deliverable.
+> ✅ **Curtis 1990 is COMPLETE and axiom-clean** (2026-06-14). The crux
+> `substCurve_eq_zero` — the sole binary gate from `DIRECTION.md` — is closed. See
+> `PENDING_WORK.md` for the proof insight and the next targets.
 
 **Repo purpose.** An umbrella for *solved-but-unformalized* results, with a soft spot
-for **no-formula / impossibility** meta-theorems. Current target: Curtis 1990, the
-no-Frobenius-formula theorem.
+for **no-formula / impossibility** meta-theorems.
 
-## 🎯 THE TARGET — Curtis 1990
-Prove, axiom-clean, the two theorems in
-`src/LeanFormalizations/NumericalSemigroups/Curtis/Statement.lean` (the **audit
-surface**; statements delegate to `Engine.lean`):
-- `no_polynomial_relation` — THEOREM: no nonzero `F ∈ ℂ[X₁,X₂,X₃,Y]` vanishes on the
-  graph of the Frobenius number over Curtis's admissible family `A`.
-- `no_finite_polynomial_formula` — COROLLARY (reduces to the THEOREM; ⚠️ still `sorryAx`
-  via Step A — NOT yet a deliverable).
+## 🎯 Status — Curtis 1990: DONE
+All public results in `Statement.lean` (+ `Anchors.lean`) are machine-checked and
+axiom-clean (`#print axioms` = `[propext, Classical.choice, Quot.sound]`, no
+`sorryAx`, no custom axioms anywhere):
+- `no_polynomial_relation` — Curtis's theorem (Frobenius number of a triple is not
+  algebraic over its generators).
+- `no_finite_polynomial_formula` — the ℂ corollary (no finite list of formulas).
+- `no_finite_polynomial_formula_of_algebra` / `_int` / `_rat` — coefficients in any
+  ℂ-algebra; in particular **no integer/rational polynomial formula**.
+- `no_finite_polynomial_formula_multivar (n) (3 ≤ n)` — the **n ≥ 3** generalization
+  (the paper's full title), by reduction to n = 3.
+- `Anchors.frobeniusNumber_3_7_8` etc. — faithfulness witnesses.
 
-Paper: `papers/Curtis-1990-Frobenius-formula.pdf` (3 pp.), fully read.
+Paper: `papers/Curtis-1990-Frobenius-formula.pdf` (3 pp., fully read).
 
 ## File layout
-- `Curtis/Defs.lean` — `IsAdmissible`, `evalPoint` (shared; audit these too).
-- `Curtis/Lemma2.lean` — Curtis's Lemma 2 (Brauer–Shockley), PROVED (axiom-clean).
-- `Curtis/Engine.lean` — proof engine.
-- `Curtis/Statement.lean` — audit surface; the two theorems delegate to Engine.
+- `Curtis/Defs.lean` — `IsAdmissible`, `evalPoint` (shared; audit these).
+- `Curtis/Lemma2.lean` — Curtis's Lemma 2 (Brauer–Shockley), via Aristotle, verified.
+- `Curtis/GridVanish.lean` — the grid-vanishing lemma (replaces the limit argument).
+- `Curtis/Engine.lean` — the engine: spine, Step A (`substCurve_eq_zero`), Step B.
+- `Curtis/Statement.lean` — audit surface; all headline theorems.
+- `Curtis/Anchors.lean` — concrete faithfulness witnesses.
 
-## State of the engine — ONLY ONE `sorry` LEFT
-PROVED, axiom-clean (modulo the single open sorry):
-- `no_finite_polynomial_formula_engine` — corollary via `F = ∏(rename castSucc fᵢ − X 3)`.
-- `no_polynomial_relation_engine` — **spine + final contradiction** (fixed totalDegree
-  can't dominate `(p-1)/2` along Euclid's primes; good-prime selection).
-- `finite_specCurve_eq_zero` — bad-prime set finite (finSuccEquiv → roots over a domain).
-- `half_le_totalDegree` — **the entire Step B degree-counting finish** (root-counting via
-  `finSuccEquiv ∘ rename (finRotate 3)`, distinct `linForm p k`, `card_roots'`).
-  Plus reusable helpers `eval_finSuccEquiv_eq_aeval_cons`, `totalDegree_aeval_le`,
-  `totalDegree_specCurve_le`, `substCurve_eq_aeval_specCurve`.
-- `Curtis.Lemma2.lemma2` — **Curtis's Lemma 2**, via Aristotle, re-verified in our kernel.
+## How the crux closed (the insight)
+Curtis's Lemma 1 (Dirichlet + Farey, for a *converging coprime* sequence) and his
+projective/limit argument are **unnecessary**: admissibility + Lemma 2 never need
+`gcd(x,y)=1`. Fix ONE prime `x ≡ 1 (mod p)`, `x > p(D+1)`; the interval
+`((p−k)x,(p−k+1)x)` (length `x`) holds no multiple of `x` and `≥ D+1` residues
+`y ≡ p−k+1 (mod p)`. `D+1` such primes give a `(D+1)²` grid of zeros of
+`substCurve F p k`; `grid_vanish` (double root-counting + `MvPolynomial.funext`)
+forces it to vanish. Details + next targets in `PENDING_WORK.md`.
 
-THE ONE OPEN `sorry` (in `Engine.lean`):
-- `substCurve_eq_zero` (Step A, **deep**): `F` vanishes on graph ⟹ each substituted
-  curve is `0`. Needs only **Lemma 1** (Dirichlet+Farey, OUT TO ARISTOTLE) + **the limit
-  argument**. Assembly recipe in `PENDING_WORK.md`.
+## Next targets (none blocked; details in PENDING_WORK.md)
+1. (Done this lap) ~~n ≥ 3 generalization~~.
+2. Upstream to `Mathlib.NumberTheory.FrobeniusNumber` (needs style pass + AI-policy
+   check; web-gated — see reference corpus `2026-06-07-mathlib-ai-contribution-policy`).
+3. Optional: "Zariski-dense graph" repackaging of `no_polynomial_relation`.
 
 ## Aristotle
-- Lemma 2 (job `03706c46`) — **DONE, verified, ported** to `Lemma2.lean`.
-- Lemma 1 (job `80d9166c-a0af-4717-978b-98bda8c0af50`) — **RUNNING**. Prompt
-  `tools/aristotle/curtis-lemma1-prompt.txt`. On return: download, verify in our kernel +
-  `#print axioms`, port to a sibling `Lemma1.lean`.
-
-## Next steps (recommended order; details in PENDING_WORK.md)
-1. **Harvest Aristotle Lemma 1** (`80d9166c`) when it returns; verify + port.
-2. **The limit argument** — independent; build now against the Lemma 1/2 statements.
-3. **Assemble `substCurve_eq_zero`** from Lemmas 1+2 + the limit argument → closes the
-   last sorry and the whole theorem becomes axiom-clean.
+Nothing genuinely open → idle is correct. The old Lemma-1 job (`80d9166c`) is
+OBSOLETE (the proof needs no Lemma 1). Don't feed redundant cross-confirms.
 
 ## Standing rules (this repo)
 - DO NOT push (host publishes). Commit every green build (verify from real `lake build`).
 - Keep `Statement.lean` faithful; engine lives in siblings and delegates.
-- Aim axiom-clean; disclosed `axiom`/`sorry` + citing docstring is fine for genuinely-hard
-  sub-lemmas — then keep chipping.
+- `Lemma2.lean` lint warnings: LEAVE THEM (mathematical hypotheses + Aristotle blocks).
 - Reference corpus: `~/personal/claude/knowledge/core/projects/lean-journey/reference/`.
 - Blocked needing the open web? Append a dated item to `ON-LINE-REQUEST.md` and continue.
