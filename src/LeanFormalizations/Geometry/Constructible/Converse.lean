@@ -22,7 +22,7 @@ import LeanFormalizations.Geometry.Constructible.ConstructiblePoint
 
 namespace LeanFormalizations.Constructible
 
-open ConstructiblePoint
+open ConstructiblePoint IntermediateField
 
 /-- A real number is *axis-constructible* if the point `(x, 0)` can be constructed by
 compass and straightedge. The forward bridge shows `AxisConstructible x → IsConstructible
@@ -188,6 +188,22 @@ theorem AxisConstructible.div {a b : ℝ} (ha : AxisConstructible a) (hb : AxisC
     AxisConstructible (a / b) := by
   rw [div_eq_mul_inv]; exact ha.mul hb.inv
 
+/-- Every natural number is axis-constructible. -/
+theorem AxisConstructible.natCast : ∀ n : ℕ, AxisConstructible (n : ℝ)
+  | 0 => by simpa using AxisConstructible.zero
+  | (n + 1) => by rw [Nat.cast_succ]; exact (AxisConstructible.natCast n).add AxisConstructible.one
+
+/-- Every integer is axis-constructible. -/
+theorem AxisConstructible.intCast (n : ℤ) : AxisConstructible (n : ℝ) := by
+  obtain ⟨m, rfl | rfl⟩ := n.eq_nat_or_neg
+  · simpa using AxisConstructible.natCast m
+  · simpa using (AxisConstructible.natCast m).neg
+
+/-- Every rational is axis-constructible (`q = q.num / q.den`). -/
+theorem AxisConstructible.ratCast (q : ℚ) : AxisConstructible (q : ℝ) := by
+  rw [Rat.cast_def]
+  exact (AxisConstructible.intCast q.num).div (AxisConstructible.natCast q.den)
+
 /-- **Square root by compass** (Thales / geometric mean). For `a ≥ 0`: the circle on
 the diameter `[(-1,0), (a,0)]`, equivalently centred at `((a−1)/2, 0)` through `(a,0)`,
 meets the `y`-axis at `(0, √a)`; rotate onto the `x`-axis. This is the characteristic
@@ -213,5 +229,65 @@ theorem AxisConstructible.sqrt {a : ℝ} (ha : AxisConstructible a) (ha0 : 0 ≤
     (by norm_num [Prod.ext_iff])
     (by simp only [OnLine]; ring)
     (by simp only [OnCircle]; ring)
+
+/-! ### The full equivalence via a square-root-tower induction
+
+The axis-constructible reals form a subfield of `ℝ` closed under square roots; every
+square-root tower over `ℚ` therefore lands inside it, giving the converse of the
+faithfulness bridge. -/
+
+/-- The axis-constructible reals as a subfield of `ℝ`. -/
+noncomputable def axisSubfield : Subfield ℝ where
+  carrier := {x | AxisConstructible x}
+  mul_mem' := AxisConstructible.mul
+  one_mem' := AxisConstructible.one
+  add_mem' := AxisConstructible.add
+  zero_mem' := AxisConstructible.zero
+  neg_mem' := AxisConstructible.neg
+  inv_mem' := fun _ hx => AxisConstructible.inv hx
+
+/-- The axis-constructible reals as an intermediate field `ℚ ≤ · ≤ ℝ`. -/
+noncomputable def axisField : IntermediateField ℚ ℝ :=
+  axisSubfield.toIntermediateField (fun q => by simpa using AxisConstructible.ratCast q)
+
+@[simp] theorem mem_axisField {x : ℝ} : x ∈ axisField ↔ AxisConstructible x := Iff.rfl
+
+/-- **The compass step, algebraically.** If `a² = a·a` is axis-constructible then so is
+`a` (it is `±√(a²)`). This is what makes `axisField` closed under the tower's
+square-root adjunctions. -/
+theorem axisField_mem_of_sq_mem {a : ℝ} (ha : AxisConstructible (a * a)) : a ∈ axisField := by
+  rw [mem_axisField]
+  have hs : AxisConstructible (Real.sqrt (a * a)) := ha.sqrt (mul_self_nonneg a)
+  rw [show a * a = a ^ 2 by ring, Real.sqrt_sq_eq_abs] at hs
+  rcases abs_choice a with hab | hab
+  · rwa [hab] at hs
+  · rw [hab] at hs; have h := hs.neg; rwa [neg_neg] at h
+
+/-- Every square-root tower over `ℚ` lies inside the axis-constructible field. -/
+theorem isSqrtTower_le_axisField {K : IntermediateField ℚ ℝ} (hK : IsSqrtTower K) :
+    K ≤ axisField := by
+  induction hK with
+  | base => exact bot_le
+  | @step K hK a ha ih =>
+    have haA : a ∈ axisField := axisField_mem_of_sq_mem (mem_axisField.mp (ih ha))
+    have e : (K⟮a⟯).restrictScalars ℚ = adjoin ℚ (↑K ∪ {a}) :=
+      IntermediateField.restrictScalars_adjoin ℚ K {a}
+    rw [e, IntermediateField.adjoin_le_iff]
+    exact Set.union_subset (SetLike.coe_subset_coe.mpr ih) (Set.singleton_subset_iff.mpr haA)
+
+/-- **Converse faithfulness.** Every algebraically-constructible real number is realised
+on the constructed `x`-axis. -/
+theorem isConstructible_imp_axis {x : ℝ} (hx : IsConstructible x) : AxisConstructible x := by
+  obtain ⟨K, hK, hmem⟩ := hx
+  exact mem_axisField.mp (isSqrtTower_le_axisField hK hmem)
+
+/-- **Wantzel's theorem, both directions.** A real number is algebraically constructible
+(lies in a tower of quadratic extensions of `ℚ`) **iff** the point `(x, 0)` can be
+constructed by compass and straightedge from `(0,0)` and `(1,0)`. This is the full
+equivalence between the algebra of `SqrtTower.lean` and the geometry of
+`ConstructiblePoint.lean`. -/
+theorem isConstructible_iff_constructiblePoint {x : ℝ} :
+    IsConstructible x ↔ ConstructiblePoint (x, 0) :=
+  ⟨isConstructible_imp_axis, fun h => (ConstructiblePoint.isConstructible_coords h).1⟩
 
 end LeanFormalizations.Constructible

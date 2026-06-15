@@ -20,10 +20,20 @@ import LeanFormalizations.Geometry.Constructible.CubeRoot
 import LeanFormalizations.Geometry.Constructible.Trisection
 import LeanFormalizations.Geometry.Constructible.Nonagon
 import LeanFormalizations.Geometry.Constructible.ConstructiblePoint
+import LeanFormalizations.Geometry.Constructible.Converse
 
 open Polynomial IntermediateField Module
 
 namespace LeanFormalizations.Constructible
+
+/-! ### Wantzel's theorem: the algebra–geometry equivalence
+
+The headline of the whole module. A real number lies in a tower of quadratic
+extensions of `ℚ` **iff** the point `(x,0)` is constructible by compass and straightedge
+from `(0,0)` and `(1,0)` — `isConstructible_iff_constructiblePoint`. The forward
+direction is the degree obstruction (`SqrtTower.lean`); the geometry→algebra bridge is
+`ConstructiblePoint.isConstructible_coords`; the algebra→geometry converse is the
+explicit ruler-and-compass arithmetic of `Converse.lean`. -/
 
 /-! ### Doubling the cube -/
 
