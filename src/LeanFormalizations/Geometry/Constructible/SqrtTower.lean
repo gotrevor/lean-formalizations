@@ -141,4 +141,60 @@ theorem IsConstructible.sqrt {x : ℝ} (hx : IsConstructible x) (hx0 : 0 ≤ x) 
   rw [IntermediateField.mem_restrictScalars]
   exact IntermediateField.mem_adjoin_simple_self K (Real.sqrt x)
 
+/-! ### Constructible numbers form a subfield
+
+Two constructible numbers live in (generally different) square-root towers `K`, `L`.
+Stacking `L`'s square-root steps on top of `K` produces a single tower containing
+both (`IsSqrtTower.sup_exists`), inside which the field operations close. -/
+
+/-- **Any two square-root towers embed in a common one.** Replay `L`'s square-root
+adjunctions on top of `K`: each `a` with `a*a ∈ L'` still has `a*a` in the larger
+field, so the same step applies. -/
+theorem IsSqrtTower.sup_exists {K : IntermediateField ℚ ℝ} (hK : IsSqrtTower K)
+    {L : IntermediateField ℚ ℝ} (hL : IsSqrtTower L) :
+    ∃ M, IsSqrtTower M ∧ K ≤ M ∧ L ≤ M := by
+  induction hL with
+  | base => exact ⟨K, hK, le_refl K, bot_le⟩
+  | @step L' hL' a ha ihL' =>
+    obtain ⟨M', hM', hKM', hL'M'⟩ := ihL'
+    have haM' : a * a ∈ M' := hL'M' ha
+    refine ⟨(M'⟮a⟯).restrictScalars ℚ, hM'.step haM', le_trans hKM' ?_, ?_⟩
+    · intro x hx
+      rw [IntermediateField.mem_restrictScalars]
+      simpa using IntermediateField.algebraMap_mem M'⟮a⟯ (⟨x, hx⟩ : M')
+    · have eL : (L'⟮a⟯).restrictScalars ℚ = adjoin ℚ (↑L' ∪ {a}) :=
+        IntermediateField.restrictScalars_adjoin ℚ L' {a}
+      have eM : (M'⟮a⟯).restrictScalars ℚ = adjoin ℚ (↑M' ∪ {a}) :=
+        IntermediateField.restrictScalars_adjoin ℚ M' {a}
+      rw [eL, eM]
+      exact adjoin.mono _ _ _
+        (Set.union_subset_union_left _ (SetLike.coe_subset_coe.mpr hL'M'))
+
+/-- Constructible numbers are closed under addition. -/
+theorem IsConstructible.add {x y : ℝ} (hx : IsConstructible x) (hy : IsConstructible y) :
+    IsConstructible (x + y) := by
+  obtain ⟨K, hK, hxK⟩ := hx; obtain ⟨L, hL, hyL⟩ := hy
+  obtain ⟨M, hM, hKM, hLM⟩ := hK.sup_exists hL
+  exact ⟨M, hM, M.add_mem (hKM hxK) (hLM hyL)⟩
+
+/-- Constructible numbers are closed under multiplication. -/
+theorem IsConstructible.mul {x y : ℝ} (hx : IsConstructible x) (hy : IsConstructible y) :
+    IsConstructible (x * y) := by
+  obtain ⟨K, hK, hxK⟩ := hx; obtain ⟨L, hL, hyL⟩ := hy
+  obtain ⟨M, hM, hKM, hLM⟩ := hK.sup_exists hL
+  exact ⟨M, hM, M.mul_mem (hKM hxK) (hLM hyL)⟩
+
+/-- Constructible numbers are closed under negation. -/
+theorem IsConstructible.neg {x : ℝ} (hx : IsConstructible x) : IsConstructible (-x) := by
+  obtain ⟨K, hK, hxK⟩ := hx; exact ⟨K, hK, K.neg_mem hxK⟩
+
+/-- Constructible numbers are closed under subtraction. -/
+theorem IsConstructible.sub {x y : ℝ} (hx : IsConstructible x) (hy : IsConstructible y) :
+    IsConstructible (x - y) := by
+  rw [sub_eq_add_neg]; exact hx.add hy.neg
+
+/-- Constructible numbers are closed under inversion. -/
+theorem IsConstructible.inv {x : ℝ} (hx : IsConstructible x) : IsConstructible x⁻¹ := by
+  obtain ⟨K, hK, hxK⟩ := hx; exact ⟨K, hK, K.inv_mem hxK⟩
+
 end LeanFormalizations.Constructible
