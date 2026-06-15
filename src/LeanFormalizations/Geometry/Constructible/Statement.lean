@@ -22,6 +22,7 @@ import LeanFormalizations.Geometry.Constructible.Nonagon
 import LeanFormalizations.Geometry.Constructible.Heptagon
 import LeanFormalizations.Geometry.Constructible.ConstructiblePoint
 import LeanFormalizations.Geometry.Constructible.Converse
+import LeanFormalizations.NumberTheory.Transcendence.HermiteLindemann
 
 open Polynomial IntermediateField Module
 
@@ -113,13 +114,19 @@ The regular `7`-gon needs `cos(2π/7)`, of degree `3` over `ℚ`. Headlines
 theorem heptagon_point_not_constructible : ¬ ConstructiblePoint (twoCosHept, 0) :=
   ConstructiblePoint.not_of_finrank_fst_eq_three finrank_adjoin_twoCosHept
 
-/-! ### Squaring the circle (conditional on Lindemann's transcendence of `π`)
+/-! ### Squaring the circle
 
 `√π` is the side of a square with the same area as the unit circle. Constructing it
-is impossible because `√π` is transcendental. mathlib does not yet have the
-transcendence of `π` (only the analytic part of Lindemann–Weierstrass), so we take it
-as an explicit hypothesis `Transcendental ℚ π`; the rest is unconditional and
-axiom-clean. See `PENDING_WORK.md`. -/
+is impossible because `√π` is transcendental.
+
+mathlib has only the *analytic* part of Lindemann–Weierstrass
+(`LindemannWeierstrass.exp_polynomial_approx`), not the transcendence of `π`. The
+conditional theorem `squaring_the_circle_impossible` takes `Transcendental ℚ π` as an
+explicit hypothesis and is axiom-clean. The unconditional
+`squaring_the_circle_impossible_uncond` discharges that hypothesis from the single
+cited axiom `hermite_lindemann` (Hermite–Lindemann, 1882) via
+`Transcendence.transcendental_pi` — so its only non-trust-base dependency is that one
+named theorem. See `NumberTheory/Transcendence/HermiteLindemann.lean`. -/
 
 /-- **Squaring the circle is impossible** (given that `π` is transcendental over `ℚ`).
 If `√π` were constructible it would be algebraic (`IsConstructible.isAlgebraic`),
@@ -131,5 +138,13 @@ theorem squaring_the_circle_impossible (hπ : Transcendental ℚ Real.pi) :
   have hsq : Real.sqrt Real.pi ^ 2 = Real.pi := Real.sq_sqrt Real.pi_pos.le
   rw [← hsq]
   exact h.isAlgebraic.pow 2
+
+/-- **Squaring the circle is impossible** — unconditional modulo the single cited
+Hermite–Lindemann axiom. The transcendence of `π` is supplied by
+`Transcendence.transcendental_pi`, whose `#print axioms` is the trust base plus
+`hermite_lindemann` only. -/
+theorem squaring_the_circle_impossible_uncond :
+    ¬ IsConstructible (Real.sqrt Real.pi) :=
+  squaring_the_circle_impossible Transcendence.transcendental_pi
 
 end LeanFormalizations.Constructible
