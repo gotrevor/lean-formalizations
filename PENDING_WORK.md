@@ -1,5 +1,34 @@
 # PENDING_WORK — lean-formalizations
 
+## 🔭 OPEN-ITEM INVENTORY + ATTACK PATHS (refreshed 2026-06-15, post-Wantzel)
+
+`src/` is **sorry-free and has zero custom axioms** (verified: grep + `#print axioms` on
+12 headlines = `[propext, Classical.choice, Quot.sound]`). The remaining work is
+mathematical *extensions*, each blocked or multi-lap. Three concrete paths each:
+
+### Open item A — `Transcendental ℚ Real.pi` (makes squaring-the-circle unconditional)
+1. **Reduce-then-axiomatize**: state Lindemann–Weierstrass (lin. indep. of `exp` at
+   distinct algebraic exponents) as a *disclosed* `axiom`, then PROVE `Transcendental ℚ π`
+   from it natively (contrapositive: π alg ⟹ iπ alg; `e^{iπ}+e^0=0` contradicts LW). This
+   isolates the deep wall to one cited statement and machine-checks the reduction. Bounded,
+   build-safe, ~1 lap. **Most promising — do this first when budget allows.**
+2. **Formalize the algebraic part of LW** on top of mathlib's `exp_polynomial_approx`
+   (analytic part is present): the symmetric-function / Galois-conjugate-product argument
+   forcing a nonzero integer `< 1`. Multi-lap; needs the reference from `ON-LINE-REQUEST.md`.
+3. **Port** an existing prover's π-transcendence skeleton (Isabelle AFP
+   `Lindemann_Weierstrass`) — needs the web; `ON-LINE-REQUEST.md` filed.
+
+### Open item B — power-tower sharp `iff`, lower direction (`0<x<e^{-e}` diverges)
+1. **2-cycle existence via IVT on the boundary map**: show the second-iterate map has a
+   nontrivial fixed pair `β<γ` for `x<e^{-e}` (sign change of `g∘g − id`), then attracting.
+2. **Instability ⟹ non-convergence**: the fixed point `y` is repelling (`|g'(y)|>1`); show
+   the tower from `a₀=1` is not on its stable manifold (monotone bracketing).
+3. **Reformulate** as divergence of the even/odd subsequences to distinct limits and reuse
+   the existing `EngineLower` slope machinery in reverse. (All multi-lap real analysis.)
+
+### Open item C — Curtis upstream to mathlib (P2/P3 below) — web/CLA-gated, parked.
+
+
 ## ✅ COMPLETE (2026-06-14, operator-bounded run): Curtis verification hardening
 
 All four items in `DIRECTION.md` are built, green, sorry-free, axiom-clean
