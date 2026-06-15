@@ -60,11 +60,15 @@ algebraic tower. Three viable attack paths:
 1. **Coordinate field of constructible points.** Define `ConstructiblePoint : ℝ×ℝ →
    Prop` inductively (start `{(0,0),(1,0)}`; close under line∩line, line∩circle,
    circle∩circle of already-constructible points). Prove
-   `ConstructiblePoint p → IsConstructible p.1 ∧ IsConstructible p.2`. The crux lemma:
-   an intersection of two lines/circles with coords in a field `F ⊆ ℝ` has coords in
-   `F` or `F(√d)` (`d ∈ F`, `d ≥ 0`) — i.e. solving the linear/quadratic systems. The
-   algebraic substrate (subfield closed under √) is already proved here, so this is
-   "coords land in `IsConstructible`" bookkeeping over the geometric recursion.
+   `ConstructiblePoint p → IsConstructible p.1 ∧ IsConstructible p.2`. **The two
+   algebraic crux pieces are already DONE here:** `IsConstructible.of_quadratic` (a
+   root of `t²+bt+c=0` with constructible `b,c` is constructible — the line∩circle and
+   circle∩circle case) and the subfield closure (`{add,sub,mul,inv}` — the line∩line
+   linear-system case). What remains is purely the *geometric* recursion: define
+   points/lines/circles, and show each intersection's coordinates satisfy such a
+   quadratic/linear system over the coordinates already constructed, then feed
+   `of_quadratic` / the field ops. No more field theory needed — it's analytic geometry
+   bookkeeping.
 2. **Port an existing formalization** if one exists (Isabelle's `Constructible` AFP
    entry, Coleman/… ) — needs the open web; file an `ON-LINE-REQUEST` for the
    cleanest reference Lean/Isabelle construction-geometry source.

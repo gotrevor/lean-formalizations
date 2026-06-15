@@ -42,6 +42,8 @@ straightedge. The definition is shown to be "alive":
 - `IsConstructible.{add,sub,mul,neg,inv}` — the constructibles form a **subfield**
   (`IsSqrtTower.sup_exists`: any two towers embed in a common one).
 - `IsConstructible.isAlgebraic` — every constructible number is algebraic over `ℚ`.
+- `IsConstructible.of_quadratic` — a real root of `t²+bt+c=0` with constructible
+  `b,c` is constructible (the algebra of a *line ∩ circle* intersection).
 
 ## The engine (`SqrtTower.lean`)
 
