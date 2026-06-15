@@ -197,4 +197,31 @@ theorem IsConstructible.sub {x y : ℝ} (hx : IsConstructible x) (hy : IsConstru
 theorem IsConstructible.inv {x : ℝ} (hx : IsConstructible x) : IsConstructible x⁻¹ := by
   obtain ⟨K, hK, hxK⟩ := hx; exact ⟨K, hK, K.inv_mem hxK⟩
 
+/-- Every natural number is constructible. -/
+theorem IsConstructible.ofNat_real (n : ℕ) : IsConstructible (n : ℝ) := by
+  rw [show ((n : ℝ)) = (((n : ℚ)) : ℝ) by push_cast; ring]; exact isConstructible_ratCast _
+
+/-- **The quadratic formula preserves constructibility** — the algebra behind a
+compass-and-straightedge *line ∩ circle* intersection. Any real root `t` of a monic
+quadratic `t² + b t + c = 0` with constructible coefficients is constructible:
+`t = (±√(b²-4c) - b)/2`, where the discriminant `b²-4c = (2t+b)² ≥ 0` is itself
+constructible, so its square root is too. -/
+theorem IsConstructible.of_quadratic {b c t : ℝ} (hb : IsConstructible b)
+    (hc : IsConstructible c) (h : t ^ 2 + b * t + c = 0) : IsConstructible t := by
+  have hdisc : (2 * t + b) ^ 2 = b ^ 2 - 4 * c := by linear_combination 4 * h
+  have hb2 : IsConstructible (b ^ 2) := by rw [sq]; exact hb.mul hb
+  have h4 : IsConstructible (4 : ℝ) := by
+    rw [show (4 : ℝ) = ((4 : ℕ) : ℝ) by norm_num]; exact IsConstructible.ofNat_real 4
+  have hbc : IsConstructible (b ^ 2 - 4 * c) := hb2.sub (h4.mul hc)
+  have hnn : 0 ≤ b ^ 2 - 4 * c := by rw [← hdisc]; exact sq_nonneg _
+  have hsq : IsConstructible (Real.sqrt (b ^ 2 - 4 * c)) := hbc.sqrt hnn
+  have hs : Real.sqrt (b ^ 2 - 4 * c) = |2 * t + b| := by rw [← hdisc, Real.sqrt_sq_eq_abs]
+  have h2inv : IsConstructible ((2 : ℝ)⁻¹) := by
+    rw [show (2 : ℝ) = ((2 : ℕ) : ℝ) by norm_num]; exact (IsConstructible.ofNat_real 2).inv
+  rcases abs_cases (2 * t + b) with ⟨habs, _⟩ | ⟨habs, _⟩
+  · have ht : t = (Real.sqrt (b ^ 2 - 4 * c) - b) * 2⁻¹ := by rw [hs, habs]; ring
+    rw [ht]; exact (hsq.sub hb).mul h2inv
+  · have ht : t = (-Real.sqrt (b ^ 2 - 4 * c) - b) * 2⁻¹ := by rw [hs, habs]; ring
+    rw [ht]; exact (hsq.neg.sub hb).mul h2inv
+
 end LeanFormalizations.Constructible
