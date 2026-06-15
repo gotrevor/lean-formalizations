@@ -248,7 +248,7 @@ noncomputable def axisSubfield : Subfield ℝ where
 
 /-- The axis-constructible reals as an intermediate field `ℚ ≤ · ≤ ℝ`. -/
 noncomputable def axisField : IntermediateField ℚ ℝ :=
-  axisSubfield.toIntermediateField (fun q => by simpa using AxisConstructible.ratCast q)
+  axisSubfield.toIntermediateField (fun q => AxisConstructible.ratCast q)
 
 @[simp] theorem mem_axisField {x : ℝ} : x ∈ axisField ↔ AxisConstructible x := Iff.rfl
 
@@ -289,5 +289,29 @@ equivalence between the algebra of `SqrtTower.lean` and the geometry of
 theorem isConstructible_iff_constructiblePoint {x : ℝ} :
     IsConstructible x ↔ ConstructiblePoint (x, 0) :=
   ⟨isConstructible_imp_axis, fun h => (ConstructiblePoint.isConstructible_coords h).1⟩
+
+/-- **The full plane converse.** Any point whose two coordinates are individually
+algebraically constructible is a `ConstructiblePoint`: build `(a,0)` on the axis, then
+translate by the lifted `(0,b)` (a parallelogram step) to reach `(a,b)`. -/
+theorem constructiblePoint_of_coords {a b : ℝ}
+    (ha : IsConstructible a) (hb : IsConstructible b) : ConstructiblePoint (a, b) := by
+  have haA : AxisConstructible a := isConstructible_imp_axis ha
+  have hbA : AxisConstructible b := isConstructible_imp_axis hb
+  by_cases hab : a = 0 ∧ b = 0
+  · obtain ⟨rfl, rfl⟩ := hab; exact ConstructiblePoint.origin
+  · have hPB : ((a, 0) : ℝ × ℝ) ≠ (0, b) := by
+      rw [Ne, Prod.ext_iff, not_and_or]
+      rcases not_and_or.mp hab with h | h
+      · exact Or.inl h
+      · exact Or.inr (Ne.symm h)
+    have hQ := cp_translate ConstructiblePoint.origin (cp_zero_of_axis hbA) haA hPB
+    simpa using hQ
+
+/-- **Wantzel's theorem for plane points.** A point `(a, b)` is constructible by compass
+and straightedge **iff** both coordinates lie in a tower of quadratic extensions of `ℚ`.
+The complete equivalence between the geometry and the algebra. -/
+theorem constructiblePoint_iff_coords {a b : ℝ} :
+    ConstructiblePoint (a, b) ↔ IsConstructible a ∧ IsConstructible b :=
+  ⟨ConstructiblePoint.isConstructible_coords, fun ⟨ha, hb⟩ => constructiblePoint_of_coords ha hb⟩
 
 end LeanFormalizations.Constructible
