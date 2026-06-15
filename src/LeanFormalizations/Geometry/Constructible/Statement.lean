@@ -18,6 +18,7 @@ degree computations in `CubeRoot.lean` / `Trisection.lean`.
 -/
 import LeanFormalizations.Geometry.Constructible.CubeRoot
 import LeanFormalizations.Geometry.Constructible.Trisection
+import LeanFormalizations.Geometry.Constructible.Nonagon
 
 open Polynomial IntermediateField Module
 
@@ -57,6 +58,12 @@ theorem cos20_not_constructible : ¬ IsConstructible cos20 := by
   refine twoCos20_not_constructible ⟨K, hK, ?_⟩
   show (2 : ℝ) * cos20 ∈ K
   rw [two_mul]; exact K.add_mem hmem hmem
+
+/-! ### The regular nonagon (Gauss–Wantzel)
+
+A bonus from the same engine: the regular `9`-gon needs `cos 40°`, which has degree
+`3` over `ℚ`. Headlines `cos40_not_constructible` / `twoCos40_not_constructible` live
+in `Nonagon.lean`. -/
 
 /-! ### Squaring the circle (conditional on Lindemann's transcendence of `π`)
 
