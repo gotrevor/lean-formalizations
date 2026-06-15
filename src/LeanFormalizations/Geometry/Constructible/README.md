@@ -1,15 +1,28 @@
 # Compass-and-straightedge impossibilities (constructible numbers)
 
-**Result.** The algebraic core of **Wantzel's theorem (1837)** and its corollaries —
-the three classical Greek construction problems that resisted for two millennia:
+**Result.** A full formalization of **Wantzel's theorem (1837)** — *both directions* of
+the equivalence between the algebra of quadratic towers and actual compass-and-
+straightedge geometry — and its classical corollaries:
 
 - **Doubling the cube** is impossible: `∛2` is not constructible.
 - **Trisecting the 60° angle** is impossible: `cos 20°` is not constructible.
+- **The regular nonagon and heptagon** are not constructible (`cos 40°`, `cos(2π/7)`
+  have degree 3).
 - **Squaring the circle** is impossible (given `π` transcendental): `√π` is not
   constructible.
+- **Positive side:** the regular **pentagon** *is* constructible (`cos(π/5)=(1+√5)/4`).
 
-All three fall out of one engine: a compass-and-straightedge–constructible real has
-degree a **power of two** over `ℚ`.
+The impossibilities fall out of one engine: a constructible real has degree a **power of
+two** over `ℚ`. The headline is the equivalence itself:
+
+```
+isConstructible_iff_constructiblePoint :
+  IsConstructible x ↔ ConstructiblePoint (x, 0)
+```
+
+`ConstructiblePoint` is the *faithful geometric* definition (a point reachable from
+`{(0,0),(1,0)}` by line/circle intersections); `IsConstructible` is the algebraic
+square-root-tower definition. Both directions are proved and axiom-clean.
 
 ## What to audit (`Statement.lean`)
 
@@ -71,15 +84,25 @@ the circle additionally needs Lindemann's transcendence of `π` (1882).
 
 ## Status / scope
 
-**Layer 1 (algebraic core): PROVED, axiom-clean.** This is the half of Wantzel that
-powers the impossibility results.
+**Layer 1 (algebraic core): PROVED, axiom-clean** (`SqrtTower.lean`). The degree-`2ⁿ`
+obstruction that powers the impossibility results.
 
-**Layer 2 (geometric faithfulness): open.** A fully geometric definition (a point is
-constructible if obtained from `{(0,0),(1,0)}` by line/circle intersections) and the
-bridge "constructible point ⟹ coordinates in a quadratic tower" is a separate
-multi-lap development. The algebraic substrate it needs — constructibles are a
-subfield closed under `√` — is in place here. See `PENDING_WORK.md`.
+**Layer 2 (geometric faithfulness): PROVED, axiom-clean** (`ConstructiblePoint.lean`).
+`ConstructiblePoint : ℝ×ℝ → Prop` is the inductive geometric definition (intersections
+of lines/circles through constructible points). `ConstructiblePoint.isConstructible_coords`
+shows both coordinates land in a quadratic tower — the geometry ⟹ algebra bridge, via
+`line_meet_line` (Cramer), `line_meet_circle` (quadratic formula) and `circle_meet_circle`
+(radical axis). A positive witness `constructiblePoint_equilateral_vertex` confirms the
+predicate is genuinely inhabited.
 
-**Squaring the circle** is conditional on `Transcendental ℚ π`, which mathlib does
-not yet have (only the analytic part of Lindemann–Weierstrass). Stated with that as
-an explicit hypothesis, so the theorem is unconditionally axiom-clean.
+**Converse (algebra ⟹ geometry): PROVED, axiom-clean** (`Converse.lean`). The compass
+arithmetic: `AxisConstructible x := ConstructiblePoint (x,0)` is closed under `+,−,·,⁻¹,/`
+and `√` by explicit ruler-and-compass constructions (intercept theorem for `·`/`⁻¹`,
+Thales/geometric-mean for `√`, parallelogram-translate primitive `cp_translate`). A
+square-root-tower induction (`isSqrtTower_le_axisField`) packages this into the converse,
+giving the full `isConstructible_iff_constructiblePoint`.
+
+**Squaring the circle** remains conditional on `Transcendental ℚ π`, which mathlib does
+not yet have (only the analytic part of Lindemann–Weierstrass). Stated with that as an
+explicit hypothesis, so the theorem is unconditionally axiom-clean. See
+`ON-LINE-REQUEST.md` (repo root) for the open research request on π-transcendence.

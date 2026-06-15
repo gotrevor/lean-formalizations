@@ -54,41 +54,29 @@ Quot.sound]` on every headline). Exactly the Layer-1 plan below, and then some:
 - Constructibles form a **subfield closed under √** (`IsSqrtTower.sup_exists` +
   `IsConstructible.{add,sub,mul,neg,inv,sqrt}`, `isConstructible_ratCast`).
 
-### NEXT on this thread (Trevor's call to schedule): P1 Layer 2 — geometric faithfulness
-Make the *definition* faithful to actual compass-and-straightedge, not just the
-algebraic tower. Three viable attack paths:
-1. **Coordinate field of constructible points.** Define `ConstructiblePoint : ℝ×ℝ →
-   Prop` inductively (start `{(0,0),(1,0)}`; close under line∩line, line∩circle,
-   circle∩circle of already-constructible points). Prove
-   `ConstructiblePoint p → IsConstructible p.1 ∧ IsConstructible p.2`. **The two
-   algebraic crux pieces are already DONE here:** `IsConstructible.of_quadratic` (a
-   root of `t²+bt+c=0` with constructible `b,c` is constructible — the line∩circle and
-   circle∩circle case) and the subfield closure (`{add,sub,mul,inv}` — the line∩line
-   linear-system case). What remains is purely the *geometric* recursion: define
-   points/lines/circles, and show each intersection's coordinates satisfy such a
-   quadratic/linear system over the coordinates already constructed, then feed
-   `of_quadratic` / the field ops. No more field theory needed — it's analytic geometry
-   bookkeeping.
-2. **Port an existing formalization** if one exists (Isabelle's `Constructible` AFP
-   entry, Coleman/… ) — needs the open web; file an `ON-LINE-REQUEST` for the
-   cleanest reference Lean/Isabelle construction-geometry source.
-3. **Bridge via `Polynomial`-free analytic geometry**: represent lines/circles by
-   their defining equations with coefficients in `IsConstructible`, prove the
-   intersection coordinates satisfy a degree-≤2 polynomial over those coefficients,
-   then `IsConstructible.sqrt` closes it. (Same crux as path 1, packaged differently.)
+### ✅ DONE (2026-06-16): P1 Layer 2 + the full converse — Wantzel as an iff
+The geometric faithfulness layer is COMPLETE and axiom-clean, and then some:
+- `ConstructiblePoint : ℝ×ℝ → Prop` (inductive: `{(0,0),(1,0)}` closed under
+  line∩line / line∩circle / circle∩circle). `ConstructiblePoint.isConstructible_coords`
+  proves geometry ⟹ algebra via `line_meet_line` / `line_meet_circle` /
+  `circle_meet_circle` (`ConstructiblePoint.lean`).
+- **Converse** (`Converse.lean`): `AxisConstructible` closed under `+,−,·,⁻¹,/,√` by
+  explicit compass constructions; tower induction `isSqrtTower_le_axisField` gives
+  algebra ⟹ geometry. Headline `isConstructible_iff_constructiblePoint`.
+- Geometric impossibility headlines (`cbrt2_point_not_constructible`,
+  `heptagon_point_not_constructible`); positive `isConstructible_cos_pi_div_five`
+  (pentagon); heptagon added (`Heptagon.lean`, 5th classical instance).
 
-### Also open on this thread: make squaring-the-circle unconditional
+### Only open on this thread: make squaring-the-circle unconditional
 Needs `Transcendental ℚ Real.pi`. mathlib has only the analytic part of
 Lindemann–Weierstrass (`NumberTheory/Transcendental/Lindemann/AnalyticalPart.lean`),
 not the conclusion. This is a multi-year wall (full Lindemann–Weierstrass) — debt,
 not a one-lap target. Advance by formalizing the next missing Lindemann prerequisite,
 or file an `ON-LINE-REQUEST` for the state of π-transcendence in any proof assistant.
 
-### Cheap extension (same engine): regular heptagon / 7-gon
-`2cos(2π/7)` is a root of the monic `X³+X²−2X−1` (no rational root: `±1` fail), so
-`[ℚ(2cos(2π/7)):ℚ]=3` ⟹ the regular 7-gon is not constructible (Gauss–Wantzel). Same
-shape as `Trisection.lean`; the work is deriving the minimal polynomial from the
-`cos(2π/7)` sum/Chebyshev relations (fiddlier than the triple-angle identity).
+### ✅ DONE (2026-06-16): regular heptagon / 7-gon
+`Heptagon.lean` — `twoCosHept_not_constructible`, axiom-clean. Minpoly `X³+X²−2X−1`
+derived from `cos(4θ)=cos(3θ)` at `θ=2π/7` (factor out the `c=1` root).
 
 ## 🅿️ PARKED — future runs, Trevor's call (NOT this run; do not start)
 
