@@ -120,4 +120,25 @@ theorem not_isConstructible_of_finrank_adjoin_eq_three {x : ℝ}
   rw [hx] at hn
   exact three_not_dvd_two_pow n (hn ▸ dvd_refl 3)
 
+/-! ### The definition captures genuine ruler-and-compass capability
+
+The two basic constructions: every rational length is available, and a square root
+of any constructible nonnegative length is constructible (the compass step). -/
+
+/-- Every rational is constructible (available in the base field `⊥ = ℚ`). -/
+theorem isConstructible_ratCast (q : ℚ) : IsConstructible (q : ℝ) :=
+  ⟨⊥, IsSqrtTower.base, by rw [IntermediateField.mem_bot]; exact ⟨q, rfl⟩⟩
+
+/-- **Constructible numbers are closed under square roots.** If `x ≥ 0` is
+constructible then so is `√x` — adjoining `√x` to a tower `K ∋ x` is a square-root
+step, since `(√x)·(√x) = x ∈ K`. This is the compass construction of a mean
+proportional. -/
+theorem IsConstructible.sqrt {x : ℝ} (hx : IsConstructible x) (hx0 : 0 ≤ x) :
+    IsConstructible (Real.sqrt x) := by
+  obtain ⟨K, hK, hmem⟩ := hx
+  have ha : Real.sqrt x * Real.sqrt x ∈ K := by rw [Real.mul_self_sqrt hx0]; exact hmem
+  refine ⟨(K⟮Real.sqrt x⟯).restrictScalars ℚ, hK.step ha, ?_⟩
+  rw [IntermediateField.mem_restrictScalars]
+  exact IntermediateField.mem_adjoin_simple_self K (Real.sqrt x)
+
 end LeanFormalizations.Constructible
