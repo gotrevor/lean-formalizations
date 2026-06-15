@@ -39,19 +39,57 @@ next scope if the iff is wanted.
 
 ---
 
+## ✅ COMPLETE (2026-06-15): P1 Layer 1 — constructible-numbers algebraic core + all three classical impossibilities
+
+`Geometry/Constructible/` — **PROVED, axiom-clean** (`[propext, Classical.choice,
+Quot.sound]` on every headline). Exactly the Layer-1 plan below, and then some:
+- `IsSqrtTower` / `IsConstructible` on `IntermediateField ℚ ℝ`; engine
+  `IsSqrtTower.finrank_eq_pow_two` (degree `2ⁿ`) via tower law + quadratic step.
+- **Doubling the cube**: `cbrt2_not_constructible` (`minpoly ℚ ∛2 = X³−2`,
+  Kummer-irreducible; `[ℚ(∛2):ℚ]=3`).
+- **Trisecting 60°**: `cos20_not_constructible` (triple-angle ⟹ `2cos20°` root of the
+  monic `X³−3X−1`, irreducible by integral-root theorem; degree 3).
+- **Squaring the circle**: `squaring_the_circle_impossible (hπ : Transcendental ℚ π)`
+  via `IsConstructible.isAlgebraic`. Conditional on `π`-transcendence (mathlib gap).
+- Constructibles form a **subfield closed under √** (`IsSqrtTower.sup_exists` +
+  `IsConstructible.{add,sub,mul,neg,inv,sqrt}`, `isConstructible_ratCast`).
+
+### NEXT on this thread (Trevor's call to schedule): P1 Layer 2 — geometric faithfulness
+Make the *definition* faithful to actual compass-and-straightedge, not just the
+algebraic tower. Three viable attack paths:
+1. **Coordinate field of constructible points.** Define `ConstructiblePoint : ℝ×ℝ →
+   Prop` inductively (start `{(0,0),(1,0)}`; close under line∩line, line∩circle,
+   circle∩circle of already-constructible points). Prove
+   `ConstructiblePoint p → IsConstructible p.1 ∧ IsConstructible p.2`. The crux lemma:
+   an intersection of two lines/circles with coords in a field `F ⊆ ℝ` has coords in
+   `F` or `F(√d)` (`d ∈ F`, `d ≥ 0`) — i.e. solving the linear/quadratic systems. The
+   algebraic substrate (subfield closed under √) is already proved here, so this is
+   "coords land in `IsConstructible`" bookkeeping over the geometric recursion.
+2. **Port an existing formalization** if one exists (Isabelle's `Constructible` AFP
+   entry, Coleman/… ) — needs the open web; file an `ON-LINE-REQUEST` for the
+   cleanest reference Lean/Isabelle construction-geometry source.
+3. **Bridge via `Polynomial`-free analytic geometry**: represent lines/circles by
+   their defining equations with coefficients in `IsConstructible`, prove the
+   intersection coordinates satisfy a degree-≤2 polynomial over those coefficients,
+   then `IsConstructible.sqrt` closes it. (Same crux as path 1, packaged differently.)
+
+### Also open on this thread: make squaring-the-circle unconditional
+Needs `Transcendental ℚ Real.pi`. mathlib has only the analytic part of
+Lindemann–Weierstrass (`NumberTheory/Transcendental/Lindemann/AnalyticalPart.lean`),
+not the conclusion. This is a multi-year wall (full Lindemann–Weierstrass) — debt,
+not a one-lap target. Advance by formalizing the next missing Lindemann prerequisite,
+or file an `ON-LINE-REQUEST` for the state of π-transcendence in any proof assistant.
+
+### Cheap extension (same engine): regular heptagon / 7-gon
+`2cos(2π/7)` is a root of the monic `X³+X²−2X−1` (no rational root: `±1` fail), so
+`[ℚ(2cos(2π/7)):ℚ]=3` ⟹ the regular 7-gon is not constructible (Gauss–Wantzel). Same
+shape as `Trisection.lean`; the work is deriving the minimal polynomial from the
+`cos(2π/7)` sum/Chebyshev relations (fiddlier than the triple-angle identity).
+
 ## 🅿️ PARKED — future runs, Trevor's call (NOT this run; do not start)
 
 Preserved for a future, separately-scoped run. These are genuine extensions but are
 **explicitly out of scope now** — do NOT treat them as "open frontier" when deciding to stop.
-
-### P1. Compass-and-straightedge impossibility (constructible numbers / doubling the cube)
-mathlib lacks constructible-number theory (its `Constructible.lean` is topology/spectra).
-Plan (Layer 1 algebraic core): `IsSqrtTower` predicate on `IntermediateField ℚ ℝ`
-(`base : ⊥`, `step` adjoining `a` with `a*a ∈ K`); `Constructible x := ∃ K, IsSqrtTower K ∧
-x ∈ K`; prove `IsSqrtTower K → ∃ n, finrank ℚ K = 2^n` (tower law + `adjoin.finrank ≤ 2`);
-witness `∛2` via `X³−2` Eisenstein-irreducible ⟹ `[ℚ(∛2):ℚ]=3`, `¬∃n, 3=2^n`. Layer 2 (hard,
-multi-lap): faithful geometric definition (line/circle intersections) + bridge to quadratic
-towers. Files would mirror Curtis's audit-surface/engine split under `Geometry/Constructible/`.
 
 ### P2. Upstream Curtis to `Mathlib.NumberTheory.FrobeniusNumber`
 mathlib has the n=2 Chicken-McNugget theorem and notes it stops at n=2; Curtis's n=3
