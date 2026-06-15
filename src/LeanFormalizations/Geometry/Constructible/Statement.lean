@@ -36,6 +36,24 @@ direction is the degree obstruction (`SqrtTower.lean`); the geometry→algebra b
 `ConstructiblePoint.isConstructible_coords`; the algebra→geometry converse is the
 explicit ruler-and-compass arithmetic of `Converse.lean`. -/
 
+/-! ### A positive construction: the regular pentagon
+
+The converse direction (`Converse.lean`) is not vacuous: it actually *builds* numbers.
+`cos(π/5) = (1 + √5)/4` is assembled from rationals and `√5` by the compass field
+operations, so it is constructible — witnessing the regular pentagon/decagon. -/
+
+/-- **`cos(π/5)` is constructible.** It equals `(1 + √5)/4`; `√5` is a compass square
+root and the field operations finish the job (`Converse.lean`). Hence the regular
+pentagon is constructible — the positive side of Gauss–Wantzel. -/
+theorem isConstructible_cos_pi_div_five : IsConstructible (Real.cos (Real.pi / 5)) := by
+  refine isConstructible_iff_constructiblePoint.mpr ?_
+  rw [show ConstructiblePoint (Real.cos (Real.pi / 5), 0)
+      = AxisConstructible (Real.cos (Real.pi / 5)) from rfl, Real.cos_pi_div_five]
+  have h5 : AxisConstructible (Real.sqrt 5) := by
+    simpa using (AxisConstructible.natCast 5).sqrt (by positivity)
+  have h4 : AxisConstructible (4 : ℝ) := by simpa using AxisConstructible.natCast 4
+  exact (AxisConstructible.one.add h5).div h4
+
 /-! ### Doubling the cube -/
 
 /-- **Doubling the cube is impossible.** The real cube root of `2` is not
