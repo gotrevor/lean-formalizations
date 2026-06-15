@@ -1,63 +1,61 @@
 /-
-# Doubling the cube is impossible (audit surface)
+# Two classical impossibilities (audit surface)
 
-The classical Greek problem of *doubling the cube*: given a cube, construct with
-compass and straightedge a cube of twice the volume — i.e. construct the length
-`∛2` from a unit length. This is impossible (Wantzel 1837).
+Two of the three classical Greek construction problems, formalised via the algebraic
+core of Wantzel's theorem (`SqrtTower.lean`): a compass-and-straightedge–constructible
+real number generates an extension of `ℚ` of degree a power of two.
 
-This file is the faithful **audit surface**. The headline:
+* **Doubling the cube.** `cbrt2_not_constructible : ¬ IsConstructible (∛2)`.
+  `[ℚ(∛2):ℚ] = 3` (`finrank_adjoin_cbrt2`), not a power of two.
+* **Trisecting the 60° angle.** `cos20_not_constructible : ¬ IsConstructible (cos 20°)`.
+  `[ℚ(2cos20°):ℚ] = 3` (`finrank_adjoin_twoCos20`), not a power of two.
 
-* `cbrt2_not_constructible` : `¬ IsConstructible (2 ^ (1/3))` — the real cube root of
-  `2` lies in no square-root tower over `ℚ`.
+This file is the faithful **audit surface**, stating the headlines against the
+audited definitions `IsConstructible` / `IsSqrtTower` (`SqrtTower.lean`) and the
+degree computations in `CubeRoot.lean` / `Trisection.lean`.
 
-stated against the definitions audited in `SqrtTower.lean` (`IsConstructible`,
-`IsSqrtTower`) and `CubeRoot.lean` (`cbrt2`). The proof is the two-line classical
-argument: a constructible number has degree a power of `2` over `ℚ`
-(`IsSqrtTower.finrank_eq_pow_two`), but `[ℚ(∛2) : ℚ] = 3` (`finrank_adjoin_cbrt2`),
-and `3` is not a power of `2`.
-
-`#print axioms cbrt2_not_constructible` is `[propext, Classical.choice, Quot.sound]`.
+`#print axioms` on each headline is `[propext, Classical.choice, Quot.sound]`.
 -/
 import LeanFormalizations.Geometry.Constructible.CubeRoot
-import LeanFormalizations.Geometry.Constructible.SqrtTower
+import LeanFormalizations.Geometry.Constructible.Trisection
 
 open Polynomial IntermediateField Module
 
 namespace LeanFormalizations.Constructible
 
-/-- `3` does not divide any power of `2`. -/
-lemma three_not_dvd_two_pow (n : ℕ) : ¬ (3 ∣ 2 ^ n) := fun hd => by
-  have := Nat.prime_three.dvd_of_dvd_pow hd
-  norm_num at this
+/-! ### Doubling the cube -/
 
 /-- **Doubling the cube is impossible.** The real cube root of `2` is not
 constructible by compass and straightedge: it lies in no tower of quadratic
-extensions of `ℚ`.
-
-Proof: any constructible number generates a field of degree `2ⁿ` over `ℚ`
-(`IsSqrtTower.finrank_eq_pow_two`), whereas `ℚ(∛2)` has degree `3`
-(`finrank_adjoin_cbrt2`), and `3 ∤ 2ⁿ`. -/
-theorem cbrt2_not_constructible : ¬ IsConstructible cbrt2 := by
-  rintro ⟨K, hK, hmem⟩
-  obtain ⟨n, hn⟩ := hK.finrank_eq_pow_two
-  haveI : FiniteDimensional ℚ K := .of_finrank_pos (by rw [hn]; positivity)
-  -- `ℚ(∛2) ≤ K`, so `[ℚ(∛2):ℚ] ∣ [K:ℚ] = 2ⁿ`
-  have hle : ℚ⟮cbrt2⟯ ≤ K := by
-    rw [IntermediateField.adjoin_simple_le_iff]; exact hmem
-  have hdvd : finrank ℚ ℚ⟮cbrt2⟯ ∣ finrank ℚ K :=
-    ⟨_, (IntermediateField.finrank_bot_mul_relfinrank hle).symm⟩
-  rw [finrank_adjoin_cbrt2, hn] at hdvd
-  exact three_not_dvd_two_pow n hdvd
+extensions of `ℚ`. (Any constructible number has degree a power of two over `ℚ`,
+while `[ℚ(∛2):ℚ] = 3`.) -/
+theorem cbrt2_not_constructible : ¬ IsConstructible cbrt2 :=
+  not_isConstructible_of_finrank_adjoin_eq_three finrank_adjoin_cbrt2
 
 /-- Restatement: one cannot construct a length whose cube is `2` (the doubled unit
-cube). Phrased on the defining property `x ^ 3 = 2` rather than the name `cbrt2`. -/
+cube), phrased on the defining property `x ^ 3 = 2`. -/
 theorem no_constructible_cube_root_of_two :
     ¬ ∃ x : ℝ, IsConstructible x ∧ x ^ 3 = 2 := by
   rintro ⟨x, hx, hx3⟩
-  -- the real cube root of `2` is unique, so `x = cbrt2`
   have : x = cbrt2 := by
     have hmono : StrictMono (fun t : ℝ => t ^ 3) := Odd.strictMono_pow (by decide)
     exact hmono.injective (by rw [hx3, cbrt2_cube])
   exact cbrt2_not_constructible (this ▸ hx)
+
+/-! ### Trisecting the 60° angle -/
+
+/-- **Trisecting a 60° angle is impossible.** `2 cos 20°` is not constructible
+(`[ℚ(2cos20°):ℚ] = 3`, not a power of two). -/
+theorem twoCos20_not_constructible : ¬ IsConstructible twoCos20 :=
+  not_isConstructible_of_finrank_adjoin_eq_three finrank_adjoin_twoCos20
+
+/-- Consequently `cos 20°` itself is not constructible: a field containing `cos 20°`
+also contains `2 cos 20°`. Since `cos 60° = 1/2` is rational (constructible), the
+`60°` angle cannot be trisected with compass and straightedge. -/
+theorem cos20_not_constructible : ¬ IsConstructible cos20 := by
+  rintro ⟨K, hK, hmem⟩
+  refine twoCos20_not_constructible ⟨K, hK, ?_⟩
+  show (2 : ℝ) * cos20 ∈ K
+  rw [two_mul]; exact K.add_mem hmem hmem
 
 end LeanFormalizations.Constructible

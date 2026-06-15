@@ -79,4 +79,33 @@ theorem IsSqrtTower.finrank_eq_pow_two {K : IntermediateField ℚ ℝ} (h : IsSq
     · exact ⟨n, by rw [hstep, hn, h1, mul_one]⟩
     · exact ⟨n + 1, by rw [hstep, hn, h2, pow_succ]⟩
 
+/-- **Degree of a constructible number.** If `x` is constructible then `[ℚ(x):ℚ]` is a
+power of two: `ℚ(x)` sits inside a square-root tower `K`, so `[ℚ(x):ℚ] ∣ [K:ℚ] = 2ⁿ`,
+and every divisor of `2ⁿ` is a power of two. This is the obstruction behind the
+classical impossibility results. -/
+theorem IsConstructible.finrank_adjoin_eq_pow_two {x : ℝ} (hx : IsConstructible x) :
+    ∃ n : ℕ, finrank ℚ ℚ⟮x⟯ = 2 ^ n := by
+  obtain ⟨K, hK, hmem⟩ := hx
+  obtain ⟨n, hn⟩ := hK.finrank_eq_pow_two
+  haveI : FiniteDimensional ℚ K := .of_finrank_pos (by rw [hn]; positivity)
+  have hle : ℚ⟮x⟯ ≤ K := by rw [IntermediateField.adjoin_simple_le_iff]; exact hmem
+  have hdvd : finrank ℚ ℚ⟮x⟯ ∣ finrank ℚ K :=
+    ⟨_, (IntermediateField.finrank_bot_mul_relfinrank hle).symm⟩
+  rw [hn] at hdvd
+  obtain ⟨m, _, hm⟩ := (Nat.dvd_prime_pow Nat.prime_two).mp hdvd
+  exact ⟨m, hm⟩
+
+/-- `3` does not divide any power of `2`. (The arithmetic obstruction: a degree-3
+number cannot live in a degree-`2ⁿ` tower.) -/
+lemma three_not_dvd_two_pow (n : ℕ) : ¬ (3 ∣ 2 ^ n) := fun hd => by
+  have := Nat.prime_three.dvd_of_dvd_pow hd
+  norm_num at this
+
+/-- A real number whose degree over `ℚ` is exactly `3` is not constructible. -/
+theorem not_isConstructible_of_finrank_adjoin_eq_three {x : ℝ}
+    (hx : finrank ℚ ℚ⟮x⟯ = 3) : ¬ IsConstructible x := fun h => by
+  obtain ⟨n, hn⟩ := h.finrank_adjoin_eq_pow_two
+  rw [hx] at hn
+  exact three_not_dvd_two_pow n (hn ▸ dvd_refl 3)
+
 end LeanFormalizations.Constructible
