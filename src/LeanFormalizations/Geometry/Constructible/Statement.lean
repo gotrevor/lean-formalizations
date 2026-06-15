@@ -19,6 +19,7 @@ degree computations in `CubeRoot.lean` / `Trisection.lean`.
 import LeanFormalizations.Geometry.Constructible.CubeRoot
 import LeanFormalizations.Geometry.Constructible.Trisection
 import LeanFormalizations.Geometry.Constructible.Nonagon
+import LeanFormalizations.Geometry.Constructible.Heptagon
 import LeanFormalizations.Geometry.Constructible.ConstructiblePoint
 import LeanFormalizations.Geometry.Constructible.Converse
 
@@ -82,6 +83,17 @@ theorem cos20_not_constructible : ¬ IsConstructible cos20 := by
 A bonus from the same engine: the regular `9`-gon needs `cos 40°`, which has degree
 `3` over `ℚ`. Headlines `cos40_not_constructible` / `twoCos40_not_constructible` live
 in `Nonagon.lean`. -/
+
+/-! ### The regular heptagon (Gauss–Wantzel)
+
+The regular `7`-gon needs `cos(2π/7)`, of degree `3` over `ℚ`. Headlines
+`cosHept_not_constructible` / `twoCosHept_not_constructible` live in `Heptagon.lean`. -/
+
+/-- **The regular heptagon is not constructible, geometrically.** The point
+`(2cos(2π/7), 0)` cannot be constructed by compass and straightedge, since
+`[ℚ(2cos(2π/7)):ℚ] = 3`. -/
+theorem heptagon_point_not_constructible : ¬ ConstructiblePoint (twoCosHept, 0) :=
+  ConstructiblePoint.not_of_finrank_fst_eq_three finrank_adjoin_twoCosHept
 
 /-! ### Squaring the circle (conditional on Lindemann's transcendence of `π`)
 
