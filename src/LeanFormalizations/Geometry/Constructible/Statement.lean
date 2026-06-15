@@ -19,6 +19,7 @@ degree computations in `CubeRoot.lean` / `Trisection.lean`.
 import LeanFormalizations.Geometry.Constructible.CubeRoot
 import LeanFormalizations.Geometry.Constructible.Trisection
 import LeanFormalizations.Geometry.Constructible.Nonagon
+import LeanFormalizations.Geometry.Constructible.ConstructiblePoint
 
 open Polynomial IntermediateField Module
 
@@ -42,6 +43,13 @@ theorem no_constructible_cube_root_of_two :
     have hmono : StrictMono (fun t : ℝ => t ^ 3) := Odd.strictMono_pow (by decide)
     exact hmono.injective (by rw [hx3, cbrt2_cube])
   exact cbrt2_not_constructible (this ▸ hx)
+
+/-- **Doubling the cube, as a geometric construction.** Via the Layer-2 faithfulness
+bridge (`ConstructiblePoint.isConstructible_coords`): the point `(∛2, 0)`, whose
+abscissa is the doubled-cube edge length, cannot be obtained from `(0,0)` and `(1,0)`
+by any finite sequence of line/circle intersections, since `[ℚ(∛2):ℚ] = 3`. -/
+theorem cbrt2_point_not_constructible : ¬ ConstructiblePoint (cbrt2, 0) :=
+  ConstructiblePoint.not_of_finrank_fst_eq_three finrank_adjoin_cbrt2
 
 /-! ### Trisecting the 60° angle -/
 

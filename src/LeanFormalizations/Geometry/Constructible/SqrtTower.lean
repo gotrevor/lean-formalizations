@@ -201,6 +201,14 @@ theorem IsConstructible.inv {x : ℝ} (hx : IsConstructible x) : IsConstructible
 theorem IsConstructible.ofNat_real (n : ℕ) : IsConstructible (n : ℝ) := by
   rw [show ((n : ℝ)) = (((n : ℚ)) : ℝ) by push_cast; ring]; exact isConstructible_ratCast _
 
+/-- `2` is constructible (as a real literal). -/
+theorem IsConstructible.two : IsConstructible (2 : ℝ) := by
+  rw [show (2 : ℝ) = ((2 : ℕ) : ℝ) by norm_num]; exact IsConstructible.ofNat_real 2
+
+/-- Constructible numbers are closed under squaring. -/
+theorem IsConstructible.sq {x : ℝ} (h : IsConstructible x) : IsConstructible (x ^ 2) := by
+  rw [pow_two]; exact h.mul h
+
 /-- **The quadratic formula preserves constructibility** — the algebra behind a
 compass-and-straightedge *line ∩ circle* intersection. Any real root `t` of a monic
 quadratic `t² + b t + c = 0` with constructible coefficients is constructible:
@@ -209,7 +217,7 @@ constructible, so its square root is too. -/
 theorem IsConstructible.of_quadratic {b c t : ℝ} (hb : IsConstructible b)
     (hc : IsConstructible c) (h : t ^ 2 + b * t + c = 0) : IsConstructible t := by
   have hdisc : (2 * t + b) ^ 2 = b ^ 2 - 4 * c := by linear_combination 4 * h
-  have hb2 : IsConstructible (b ^ 2) := by rw [sq]; exact hb.mul hb
+  have hb2 : IsConstructible (b ^ 2) := hb.sq
   have h4 : IsConstructible (4 : ℝ) := by
     rw [show (4 : ℝ) = ((4 : ℕ) : ℝ) by norm_num]; exact IsConstructible.ofNat_real 4
   have hbc : IsConstructible (b ^ 2 - 4 * c) := hb2.sub (h4.mul hc)
