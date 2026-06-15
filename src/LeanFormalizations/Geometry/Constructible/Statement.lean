@@ -58,4 +58,23 @@ theorem cos20_not_constructible : ¬ IsConstructible cos20 := by
   show (2 : ℝ) * cos20 ∈ K
   rw [two_mul]; exact K.add_mem hmem hmem
 
+/-! ### Squaring the circle (conditional on Lindemann's transcendence of `π`)
+
+`√π` is the side of a square with the same area as the unit circle. Constructing it
+is impossible because `√π` is transcendental. mathlib does not yet have the
+transcendence of `π` (only the analytic part of Lindemann–Weierstrass), so we take it
+as an explicit hypothesis `Transcendental ℚ π`; the rest is unconditional and
+axiom-clean. See `PENDING_WORK.md`. -/
+
+/-- **Squaring the circle is impossible** (given that `π` is transcendental over `ℚ`).
+If `√π` were constructible it would be algebraic (`IsConstructible.isAlgebraic`),
+hence so would `π = (√π)²`, contradicting the transcendence of `π`. -/
+theorem squaring_the_circle_impossible (hπ : Transcendental ℚ Real.pi) :
+    ¬ IsConstructible (Real.sqrt Real.pi) := by
+  intro h
+  apply hπ
+  have hsq : Real.sqrt Real.pi ^ 2 = Real.pi := Real.sq_sqrt Real.pi_pos.le
+  rw [← hsq]
+  exact h.isAlgebraic.pow 2
+
 end LeanFormalizations.Constructible

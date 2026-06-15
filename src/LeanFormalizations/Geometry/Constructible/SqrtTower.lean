@@ -95,6 +95,18 @@ theorem IsConstructible.finrank_adjoin_eq_pow_two {x : ℝ} (hx : IsConstructibl
   obtain ⟨m, _, hm⟩ := (Nat.dvd_prime_pow Nat.prime_two).mp hdvd
   exact ⟨m, hm⟩
 
+/-- **Every constructible number is algebraic over `ℚ`.** It lies in the
+finite-dimensional field `ℚ(x)`, and every element of a finite extension is
+algebraic. (This is the obstruction behind *squaring the circle*: `√π` would be
+algebraic, forcing `π` algebraic — contradicting Lindemann.) -/
+theorem IsConstructible.isAlgebraic {x : ℝ} (hx : IsConstructible x) :
+    IsAlgebraic ℚ x := by
+  obtain ⟨n, hn⟩ := hx.finrank_adjoin_eq_pow_two
+  haveI : FiniteDimensional ℚ ℚ⟮x⟯ := .of_finrank_pos (by rw [hn]; positivity)
+  have hgen : IsAlgebraic ℚ (AdjoinSimple.gen ℚ x) := IsAlgebraic.of_finite _ _
+  have h := hgen.algebraMap (A := ℝ)
+  rwa [AdjoinSimple.algebraMap_gen] at h
+
 /-- `3` does not divide any power of `2`. (The arithmetic obstruction: a degree-3
 number cannot live in a degree-`2ⁿ` tower.) -/
 lemma three_not_dvd_two_pow (n : ℕ) : ¬ (3 ∣ 2 ^ n) := fun hd => by
