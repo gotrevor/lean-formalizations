@@ -8,3 +8,4 @@ import LeanFormalizations.NumericalSemigroups.Curtis.Statement
 import LeanFormalizations.NumericalSemigroups.Curtis.Anchors
 import LeanFormalizations.NumericalSemigroups.Curtis.Boundary
 import LeanFormalizations.RealAnalysis.PowerTower.Statement
+import LeanFormalizations.Geometry.Constructible.Statement
