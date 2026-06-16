@@ -118,103 +118,125 @@ theorem pi_exp_relation {ι : Type*} [DecidableEq ι] (s : Finset ι) (θ : ι �
   exact sum_subsetSum_exp_eq_zero_of_factor s θ k₀ hk₀ hval
 
 /-- **General analytic assembly** (the reusable analytic heart of Hermite–Lindemann for
-*arbitrary* algebraic exponents, not just `e`'s integer ones). No integer exp-relation
+*arbitrary* algebraic exponents — not just `e`'s integer ones). Writing `ℓ := F.leadingCoeff`,
+no integer exp-relation
 
   `K + ∑_{r ∈ F.aroots ℂ} e^r = 0`   (`K` a positive integer)
 
-can hold for `F : ℤ[X]` with nonzero constant term, **provided** the root-sums of every
-integer polynomial `gp` over `F`'s complex roots are integers (`hsum`). The hypothesis
-`hsum` holds for monic `F` (`sum_aeval_roots_int`, handed to Aristotle): power sums of the
-roots of a monic integer polynomial are integers.
+can hold for `F : ℤ[X]` with nonzero constant term, **provided** the `ℓ`-scaled root-sums of
+every integer polynomial `gp` are integers (`hsum` : `ℓ^m · ∑_r aeval r gp ∈ ℤ` whenever
+`deg gp ≤ m`). This hypothesis is the *only* remaining algebraic input: it holds for **every**
+`F : ℤ[X]` because `ℓ·r` is an algebraic integer for each root `r`, so symmetric functions of
+the `ℓ·r` are integers (for monic `F`, `ℓ = 1` and it is `sum_aeval_roots_int`, handed to
+Aristotle).
 
-This generalizes `ETranscendental.no_intPoly_aeval_eq_zero` from the integer roots
-`{1,…,m}` to an arbitrary `F.aroots ℂ`: feed `F` to
-`LindemannWeierstrass.exp_polynomial_approx`, form the integer `N := K·n + p·S` with
-`S = ∑_r aeval r gp ∈ ℤ`, get `‖(N:ℂ)‖ ≤ (card roots)·c^p/(p−1)! < 1` (so `N = 0`) while
-`N ≡ K·n (mod p)` with `p ∤ K·n` (choose the prime `p > K`), so `N ≠ 0` — contradiction.
+Proof: feed `F` to `LindemannWeierstrass.exp_polynomial_approx` (`gp.natDegree ≤ p·deg F − 1`,
+so take `m = p·deg F`). Form the integer `N := ℓ^{p·deg F}·K·n + p·S` with
+`S = ℓ^{p·deg F}·∑_r aeval r gp ∈ ℤ`. Then `(N:ℂ) = −∑_r ℓ^{p·deg F}(n·e^r − p·aeval r gp)`,
+so `‖(N:ℂ)‖ ≤ (card roots)·(|ℓ|^{deg F}·c)^p/(p−1)! < 1` (pick the prime `p` large), giving
+`N = 0`; while `N ≡ ℓ^{p·deg F}·K·n (mod p)` with `p ∤ ℓ·K·n` (`p` prime `> |ℓ|, K`), giving
+`N ≠ 0` — contradiction. Generalizes `ETranscendental.no_intPoly_aeval_eq_zero` from the
+integer roots `{1,…,m}` to an arbitrary `F.aroots ℂ`.
 
-For the `π` reduction (★), `F` is the integer polynomial whose roots are the nonzero
-subset-sums `σ_t`, and `K = #{t : σ_t = 0}`; the only remaining gap is the *integrality*
-of that conjugate polynomial together with `hsum`. -/
-theorem no_monicIntPoly_exp_relation
+For the `π` reduction (★): `F` is the (in general non-monic) integer polynomial whose roots
+are the nonzero subset-sums `σ_t` of the conjugates of `iπ`, and `K = #{t : σ_t = 0}`. The
+only remaining gap is the *symmetric-function construction* of that conjugate polynomial
+together with its `hsum`. -/
+theorem no_intPoly_exp_relation
     (F : ℤ[X]) (hF0 : F.eval 0 ≠ 0)
-    (hsum : ∀ gp : ℤ[X], ∃ S : ℤ,
-        (((F.aroots ℂ).map (fun r => aeval r gp)).sum) = (S : ℂ))
+    (hsum : ∀ (gp : ℤ[X]) (m : ℕ), gp.natDegree ≤ m → ∃ S : ℤ,
+        (F.leadingCoeff : ℂ) ^ m * (((F.aroots ℂ).map (fun r => aeval r gp)).sum) = (S : ℂ))
     (K : ℤ) (hK : 0 < K)
     (hrel : (K : ℂ) + ((F.aroots ℂ).map (fun r => Complex.exp r)).sum = 0) :
     False := by
   classical
+  set ℓ : ℤ := F.leadingCoeff with hℓ
+  have hFne : F ≠ 0 := fun h => hF0 (by rw [h]; simp)
+  have hℓne : ℓ ≠ 0 := by rw [hℓ]; exact Polynomial.leadingCoeff_ne_zero.mpr hFne
+  set d : ℕ := F.natDegree with hd
   set rs := F.aroots ℂ with hrs
   set B : ℝ := (Multiset.card rs : ℝ) with hB
   obtain ⟨c, hc⟩ := LindemannWeierstrass.exp_polynomial_approx F hF0
+  set cc : ℝ := (|ℓ| : ℝ) ^ d * c with hcc
   obtain ⟨p, hp_prime, hp_gt, hp_small⟩ :=
-    exists_prime_smallness c B (max (F.eval 0).natAbs K.natAbs)
+    exists_prime_smallness cc B (max (F.eval 0).natAbs (max K.natAbs ℓ.natAbs))
   have hp_F : (F.eval 0).natAbs < p := lt_of_le_of_lt (le_max_left _ _) hp_gt
-  have hp_K : K.natAbs < p := lt_of_le_of_lt (le_max_right _ _) hp_gt
+  have hp_Kℓ : max K.natAbs ℓ.natAbs < p := lt_of_le_of_lt (le_max_right _ _) hp_gt
+  have hp_K : K.natAbs < p := lt_of_le_of_lt (le_max_left _ _) hp_Kℓ
+  have hp_ℓ : ℓ.natAbs < p := lt_of_le_of_lt (le_max_right _ _) hp_Kℓ
   obtain ⟨n, hpn, gp, hgp_deg, hgp_bound⟩ := hc p hp_F hp_prime
-  obtain ⟨S, hS⟩ := hsum gp
-  set bound : ℝ := c ^ p / (p - 1)! with hbound
-  set N : ℤ := K * n + (p : ℤ) * S with hNdef
-  -- generic multiset sub-of-map
+  have hgp_m : gp.natDegree ≤ p * d := le_trans hgp_deg (Nat.sub_le _ _)
+  obtain ⟨S, hS⟩ := hsum gp (p * d) hgp_m
+  set N : ℤ := ℓ ^ (p * d) * K * n + (p : ℤ) * S with hNdef
   have gsub : ∀ (u : Multiset ℂ) (f g : ℂ → ℂ),
       (u.map (fun r => f r - g r)).sum = (u.map f).sum - (u.map g).sum := by
     intro u f g
     induction u using Multiset.induction with
     | empty => simp
     | cons a s ih => simp only [Multiset.map_cons, Multiset.sum_cons, ih]; ring
-  -- ∑_r e^r = -K
   have hexp_sum : ((rs.map (fun r => Complex.exp r)).sum) = (-K : ℂ) := by
     linear_combination hrel
-  -- the per-root residual ε
-  set ε : ℂ → ℂ := fun r => (n : ℂ) * Complex.exp r - (p : ℂ) * aeval r gp with hε
-  -- (N : ℂ) = - ∑_r ε r
+  set ε : ℂ → ℂ := fun r => (ℓ:ℂ)^(p*d) * ((n : ℂ) * Complex.exp r - (p : ℂ) * aeval r gp)
+    with hε
   have key : (N : ℂ) = - (rs.map ε).sum := by
-    rw [hε, gsub rs (fun r => (n:ℂ)*Complex.exp r) (fun r => (p:ℂ)*aeval r gp),
-        Multiset.sum_map_mul_left, Multiset.sum_map_mul_left, hexp_sum, hS]
+    have e2 : (rs.map ε).sum
+        = ((ℓ:ℂ)^(p*d)*(n:ℂ)) * (rs.map (fun r => Complex.exp r)).sum
+          - (p:ℂ) * ((ℓ:ℂ)^(p*d) * ((rs.map (fun r => aeval r gp)).sum)) := by
+      rw [hε, show (fun r => (ℓ:ℂ)^(p*d) * ((n:ℂ)*Complex.exp r - (p:ℂ)*aeval r gp))
+            = (fun r => ((ℓ:ℂ)^(p*d)*(n:ℂ))*Complex.exp r - ((ℓ:ℂ)^(p*d)*(p:ℂ))*aeval r gp)
+            from by funext r; ring,
+          gsub rs (fun r => ((ℓ:ℂ)^(p*d)*(n:ℂ))*Complex.exp r)
+            (fun r => ((ℓ:ℂ)^(p*d)*(p:ℂ))*aeval r gp),
+          Multiset.sum_map_mul_left, Multiset.sum_map_mul_left]
+      ring
+    rw [e2, hexp_sum, hS]
     push_cast [hNdef]; ring
-  -- each ‖ε r‖ ≤ bound
-  have hεbound : ∀ r ∈ rs, ‖ε r‖ ≤ bound := by
+  have hεbound : ∀ r ∈ rs, ‖ε r‖ ≤ cc ^ p / (p - 1)! := by
     intro r hr
     have hb := hgp_bound hr
     rw [zsmul_eq_mul, nsmul_eq_mul] at hb
-    simpa only [hε, hbound] using hb
-  -- ‖(N:ℂ)‖ < 1 ⟹ N = 0
+    have hnorm_eq : ‖ε r‖
+        = (|ℓ|:ℝ)^(p*d) * ‖(n:ℂ)*Complex.exp r - (p:ℂ)*aeval r gp‖ := by
+      rw [hε, norm_mul, norm_pow, Complex.norm_intCast]
+    rw [hnorm_eq, show cc ^ p / (p-1)! = (|ℓ|:ℝ)^(p*d) * (c^p/(p-1)!) from by
+          rw [hcc]; ring]
+    exact mul_le_mul_of_nonneg_left hb (by positivity)
   have hNzero : N = 0 := by
     have hnorm : ‖(N : ℂ)‖ < 1 := by
       rw [key, norm_neg]
       have h1 : ‖(rs.map ε).sum‖ ≤ (rs.map (fun r => ‖ε r‖)).sum := by
-        have := norm_multiset_sum_le (rs.map ε)
-        rwa [Multiset.map_map] at this
-      have h2 : (rs.map (fun r => ‖ε r‖)).sum ≤ Multiset.card rs • bound := by
-        have := Multiset.sum_le_card_nsmul (rs.map (fun r => ‖ε r‖)) bound (by
-          intro x hx
-          rw [Multiset.mem_map] at hx
-          obtain ⟨r, hr, rfl⟩ := hx
-          exact hεbound r hr)
+        have := norm_multiset_sum_le (rs.map ε); rwa [Multiset.map_map] at this
+      have h2 : (rs.map (fun r => ‖ε r‖)).sum ≤ Multiset.card rs • (cc^p/(p-1)!) := by
+        have := Multiset.sum_le_card_nsmul (rs.map (fun r => ‖ε r‖)) (cc^p/(p-1)!) (by
+          intro x hx; rw [Multiset.mem_map] at hx
+          obtain ⟨r, hr, rfl⟩ := hx; exact hεbound r hr)
         rwa [Multiset.card_map] at this
-      have h3 : (Multiset.card rs • bound : ℝ) = B * bound := by rw [hB, nsmul_eq_mul]
       calc ‖(rs.map ε).sum‖ ≤ (rs.map (fun r => ‖ε r‖)).sum := h1
-        _ ≤ Multiset.card rs • bound := h2
-        _ = B * bound := h3
+        _ ≤ Multiset.card rs • (cc^p/(p-1)!) := h2
+        _ = B * (cc^p/(p-1)!) := by rw [hB, nsmul_eq_mul]
         _ < 1 := hp_small
     rw [Complex.norm_intCast] at hnorm
-    have hN1 : |N| < 1 := by exact_mod_cast hnorm
-    exact Int.abs_lt_one_iff.mp hN1
-  -- p ∤ N ⟹ N ≠ 0
+    exact Int.abs_lt_one_iff.mp (by exact_mod_cast hnorm)
   have hNne : N ≠ 0 := by
-    have hp_prime_int : Prime (p : ℤ) := Nat.prime_iff_prime_int.mp hp_prime
-    have hpK : ¬ (p : ℤ) ∣ K := by
-      intro hd
-      have hle : (p : ℤ) ≤ K := Int.le_of_dvd hK hd
-      have hKnat : (K.natAbs : ℤ) = K := Int.natAbs_of_nonneg hK.le
-      rw [← hKnat] at hle
-      have hple : p ≤ K.natAbs := by exact_mod_cast hle
+    have hpi : Prime (p : ℤ) := Nat.prime_iff_prime_int.mp hp_prime
+    have hpdvd : ∀ a : ℤ, a.natAbs < p → 0 < |a| → ¬ (p : ℤ) ∣ a := by
+      intro a ha hpos hd
+      have hle : (p:ℤ) ≤ |a| := Int.le_of_dvd hpos ((dvd_abs _ _).mpr hd)
+      rw [Int.abs_eq_natAbs] at hle
+      have : p ≤ a.natAbs := by exact_mod_cast hle
       omega
-    have hdvd_prod : ¬ (p : ℤ) ∣ K * n := fun h => (hp_prime_int.dvd_mul.mp h).elim hpK hpn
+    have hpK : ¬ (p:ℤ) ∣ K := hpdvd K hp_K (abs_pos.mpr (by positivity))
+    have hpℓ : ¬ (p:ℤ) ∣ ℓ := hpdvd ℓ hp_ℓ (abs_pos.mpr hℓne)
+    have hpℓpow : ¬ (p:ℤ) ∣ ℓ^(p*d) := fun h => hpℓ (hpi.dvd_of_dvd_pow h)
     intro hN0
-    apply hdvd_prod
-    have he : K * n = -((p : ℤ) * S) := by rw [hNdef] at hN0; linarith [hN0]
-    rw [he]; exact (Dvd.intro _ rfl).neg_right
+    have hdvd : (p:ℤ) ∣ ℓ^(p*d) * K * n := by
+      have he : ℓ^(p*d) * K * n = -((p:ℤ) * S) := by rw [hNdef] at hN0; linarith [hN0]
+      rw [he]; exact (Dvd.intro _ rfl).neg_right
+    rcases hpi.dvd_mul.mp hdvd with h | h
+    · rcases hpi.dvd_mul.mp h with h' | h'
+      · exact hpℓpow h'
+      · exact hpK h'
+    · exact hpn h
   exact hNne hNzero
 
 end LeanFormalizations.Transcendence
