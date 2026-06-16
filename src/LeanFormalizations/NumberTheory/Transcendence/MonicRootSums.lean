@@ -25,8 +25,9 @@ added axiom). Ported verbatim into the project namespace.
 -- environment in which it was kernel-verified axiom-clean.
 import Mathlib
 import LeanFormalizations.NumberTheory.Transcendence.PiLindemann
+import LeanFormalizations.NumberTheory.Transcendence.HermiteLindemann
 
-open Polynomial
+open Polynomial Finset
 
 namespace LeanFormalizations.Transcendence
 
@@ -168,5 +169,54 @@ theorem subsetSum_relation_impossible_of_esymm
   apply subsetSum_relation_impossible_of_conjugatePoly s θ k₀ hk₀ hval F hF0
   rw [hFaroots, ← hQ'roots, hQaroots, hσs, Multiset.filter_map]
   congr 1
+
+/-- **`Transcendental ℚ π`, modulo the single fact `hsse`** (= `subsetSum_esymm_rational`,
+Aristotle job `b7252abe`). This is the complete machine-checked assembly of Lindemann's
+π-transcendence: instantiate the conjugate machinery at `α = iπ`. If `π` were algebraic then
+so is `α = iπ` (≠ 0); index the complex roots of `M = minpoly ℚ (iπ)` by `Fin d`, with `iπ`
+among them and `e^{iπ} = -1` (Euler); `hsse` supplies that the subset-sum `esymm` is rational,
+so `subsetSum_relation_impossible_of_esymm` derives a contradiction.
+
+Once `hsse` is discharged (Aristotle `b7252abe`, kernel-verified), this becomes an
+unconditional `Transcendental ℚ Real.pi`, killing `HermiteLindemann.hermite_lindemann` at `π`
+and making `squaring_the_circle_impossible_uncond` fully axiom-clean. -/
+theorem transcendental_pi_of_subsetSumEsymm
+    (hsse : ∀ (n : ℕ) (θ : Fin n → ℂ) (G : ℚ[X]), G.Monic →
+        (G.map (algebraMap ℚ ℂ)).roots = (Finset.univ : Finset (Fin n)).val.map θ →
+        ∀ j, ((Finset.univ.powerset.val.map (fun t => ∑ k ∈ t, θ k)).esymm j)
+          ∈ Set.range (algebraMap ℚ ℂ)) :
+    Transcendental ℚ Real.pi := by
+  intro hpi
+  have hpiC : IsAlgebraic ℚ (Real.pi : ℂ) := isAlgebraic_pi_complex_of_real hpi
+  have hI : IsAlgebraic ℚ Complex.I := isAlgebraic_iff_isIntegral.mpr Complex.isIntegral_rat_I
+  have hIpi : IsAlgebraic ℚ (Complex.I * (Real.pi : ℂ)) := by
+    rw [isAlgebraic_iff_isIntegral] at hI hpiC ⊢; exact hI.mul hpiC
+  set α : ℂ := Complex.I * (Real.pi : ℂ) with hα
+  have hint : IsIntegral ℚ α := isAlgebraic_iff_isIntegral.mp hIpi
+  set M : ℚ[X] := minpoly ℚ α with hM
+  have hMmonic : M.Monic := minpoly.monic hint
+  have hMroot : aeval α M = 0 := minpoly.aeval ℚ α
+  set S : Multiset ℂ := M.aroots ℂ with hS
+  set d : ℕ := Multiset.card S with hd
+  obtain ⟨θ, hθ⟩ : ∃ θ : Fin d → ℂ, (↑(List.ofFn θ) : Multiset ℂ) = S := by
+    obtain ⟨l, hl_len, hl⟩ : ∃ l : List ℂ, l.length = d ∧ (↑l : Multiset ℂ) = S :=
+      ⟨S.toList, by simp [hd], by simp⟩
+    refine ⟨fun i => l[(i.cast hl_len.symm)], ?_⟩
+    rw [← hl]; congr 1
+    apply List.ext_getElem (by simp [hl_len]) (fun n h1 h2 => by simp)
+  have hθuniv : (Finset.univ : Finset (Fin d)).val.map θ = S := by
+    rw [Fin.univ_val_map]; exact hθ
+  have hαmem : α ∈ S := by
+    rw [hS, mem_aroots]; exact ⟨minpoly.ne_zero hint, hMroot⟩
+  obtain ⟨k₀, hk₀⟩ : ∃ k₀ : Fin d, θ k₀ = α := by
+    rw [← hθuniv, Multiset.mem_map] at hαmem
+    obtain ⟨k₀, _, hk₀⟩ := hαmem; exact ⟨k₀, hk₀⟩
+  have hval : Complex.exp (θ k₀) = -1 := by
+    rw [hk₀, hα, show Complex.I * (Real.pi : ℂ) = (Real.pi : ℂ) * Complex.I by ring,
+        Complex.exp_pi_mul_I]
+  have hroots : (M.map (algebraMap ℚ ℂ)).roots = (Finset.univ : Finset (Fin d)).val.map θ := by
+    rw [← aroots_def, ← hS, hθuniv]
+  exact subsetSum_relation_impossible_of_esymm Finset.univ θ k₀ (Finset.mem_univ k₀) hval
+    (fun j => hsse d θ M hMmonic hroots j)
 
 end LeanFormalizations.Transcendence
