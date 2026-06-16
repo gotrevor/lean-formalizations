@@ -16,21 +16,24 @@ needs symmetric functions over the Galois conjugates of `iπ` — the genuinely 
 mathlib infrastructure. Transcendence of `e` is exactly the `α = 1` instance of
 `hermite_lindemann` and the natural first prerequisite to discharge.)
 
-## Status (this lap)
+## Status — COMPLETE, fully axiom-clean
 
-* `exists_intPoly_aeval_eq_zero` — **proved, axiom-clean**: the algebraic reduction.
-  If `e` is algebraic over `ℚ` then a *nonzero integer* polynomial with *nonzero
-  constant term* annihilates `e` (clear denominators via `IsFractionRing`, then
-  factor out the largest power of `X` using `e ≠ 0`).
+`e_transcendental : Transcendental ℚ (Real.exp 1)` is **proved end-to-end**;
+`#print axioms` = `[propext, Classical.choice, Quot.sound]` (no `sorry`, no custom
+axiom). This *discharges* the `α = 1` instance of `HermiteLindemann.hermite_lindemann`.
+
+* `exists_intPoly_aeval_eq_zero` — the algebraic reduction (denominator-clearing via
+  `IsFractionRing` + factor out the `X`-power using `e ≠ 0`).
 * `tendsto_const_mul_pow_div_factorial`, `exists_prime_smallness`,
-  `hermitePoly_eval_zero_ne`, `hermitePoly_aroots` — **proved, axiom-clean**: the
-  analytic decay + prime selection (roadmap step 2) and the Hermite polynomial's
-  value/roots data (roadmap step 1).
-* `no_intPoly_aeval_eq_zero` — **isolated analytic crux (disclosed `sorry`)**: no such
-  polynomial can annihilate `e`. With steps 1–2 discharged, only the **step-3**
-  integer-`N` / `mod p` assembly of `exp_polynomial_approx` remains. Roadmap in its
-  docstring.
-* `e_transcendental` — the headline, proved *modulo* the crux.
+  `hermitePoly_eval_zero_ne`, `hermitePoly_aroots` — analytic decay + prime selection
+  (roadmap step 2) and the Hermite polynomial's value/roots data (roadmap step 1).
+* `no_intPoly_aeval_eq_zero` — the full Hermite assembly (roadmap step 3): the integer
+  `N`, its `‖(N:ℂ)‖ < 1` bound, and `mod p` nonvanishing.
+* `e_transcendental` — the headline.
+
+The remaining frontier (general `hermite_lindemann`, hence `π`) needs symmetric
+functions over the Galois conjugates of the algebraic exponents — the conjugate-product
+extension of this same `exp_polynomial_approx` assembly. See `PENDING_WORK.md`.
 
 ## The Hermite assembly (roadmap for `no_intPoly_aeval_eq_zero`)
 
@@ -52,7 +55,7 @@ import Mathlib.RingTheory.Localization.Integral
 import Mathlib.Analysis.SpecialFunctions.Exponential
 import Mathlib.Topology.Algebra.Order.Floor
 
-open Polynomial Filter
+open Polynomial Filter Finset
 open scoped Nat Topology
 
 namespace LeanFormalizations.Transcendence
@@ -142,22 +145,116 @@ theorem hermitePoly_aroots (m : ℕ) :
   rw [Multiset.map_map] at key
   exact key
 
-/-- **Hermite's contradiction — the isolated analytic crux** (disclosed `sorry`).
-No nonzero integer polynomial with nonzero constant term annihilates `e`.
+/-- **Hermite's contradiction** (proved). No nonzero integer polynomial with nonzero
+constant term annihilates `e`.
 
-This is the assembly of `LindemannWeierstrass.exp_polynomial_approx` into a nonzero
-integer of absolute value `< 1`; see the file header for the full roadmap. Roadmap
-steps 1–2 are now proved above (`hermitePoly_eval_zero_ne`, `hermitePoly_aroots`,
-`exists_prime_smallness`); what remains is **step 3** — the integer
-`N := a₀·n + p·∑ aₖ·gp(k)`, its `‖(N:ℂ)‖ < 1` bound (via the per-root estimates
-re-summed over `hermitePoly_aroots`), and the `mod p` nonvanishing (`p ∤ a₀·n`). It is
-the concrete prerequisite being chipped toward `HermiteLindemann.hermite_lindemann`. -/
+The assembly of `LindemannWeierstrass.exp_polynomial_approx` into a nonzero integer of
+absolute value `< 1`: build the integer `N := a₀·n + p·∑ aₖ·gp(k)`; the analytic
+estimates (re-summed over `hermitePoly_aroots`) give `‖(N:ℂ)‖ ≤ B·c^p/(p-1)! < 1` so
+`N = 0`, while `N ≡ a₀·n (mod p)` with `p ∤ a₀·n` gives `N ≠ 0` — contradiction. -/
 theorem no_intPoly_aeval_eq_zero (q : ℤ[X]) (hq0 : q.coeff 0 ≠ 0) :
     aeval (Real.exp 1) q ≠ 0 := by
-  sorry
+  intro hrel
+  set m := q.natDegree with hm
+  rcases Nat.eq_zero_or_pos m with hm0 | hmpos
+  · -- `q` is a nonzero constant: `aeval e q = q.coeff 0 ≠ 0`.
+    rw [aeval_eq_sum_range, ← hm, hm0] at hrel
+    simp only [zero_add, range_one, sum_singleton, pow_zero, zsmul_eq_mul, mul_one] at hrel
+    exact hq0 (by exact_mod_cast hrel)
+  -- The Hermite polynomial `f = ∏_{k=1}^m (X - k)` and its approximation data.
+  set f : ℤ[X] := ∏ k ∈ Finset.Icc 1 m, (X - C (k : ℤ)) with hfdef
+  have hf0 : f.eval 0 ≠ 0 := hermitePoly_eval_zero_ne m
+  set a₀ : ℤ := q.coeff 0 with ha0
+  set B : ℝ := ∑ k ∈ Finset.Icc 1 m, (|q.coeff k| : ℝ) with hB
+  obtain ⟨c, hc⟩ := LindemannWeierstrass.exp_polynomial_approx f hf0
+  obtain ⟨p, hp_prime, hp_gt, hp_small⟩ :=
+    exists_prime_smallness c B (max (f.eval 0).natAbs a₀.natAbs)
+  have hp_f : (f.eval 0).natAbs < p := lt_of_le_of_lt (le_max_left _ _) hp_gt
+  have hp_a0 : a₀.natAbs < p := lt_of_le_of_lt (le_max_right _ _) hp_gt
+  obtain ⟨n, hpn, gp, hgp_deg, hgp_bound⟩ := hc p hp_f hp_prime
+  -- Per-root estimate re-expressed over `k = 1,…,m` (via `hermitePoly_aroots`).
+  have hbound : ∀ k ∈ Finset.Icc 1 m,
+      ‖(n : ℂ) * Complex.exp k - (p : ℂ) * aeval ((k : ℕ) : ℂ) gp‖ ≤ c ^ p / (p - 1)! := by
+    intro k hk
+    have hroot : ((k : ℕ) : ℂ) ∈ f.aroots ℂ := by
+      rw [hfdef, hermitePoly_aroots]
+      exact Multiset.mem_map_of_mem _ (Finset.mem_val.mpr hk)
+    have hb := hgp_bound hroot
+    rwa [zsmul_eq_mul, nsmul_eq_mul] at hb
+  -- The annihilating relation, transported to `ℂ` and split off the `k = 0` term.
+  have hcrel : ∑ k ∈ range (m + 1), (q.coeff k : ℂ) * Complex.exp k = 0 := by
+    have hbridge : ∀ k : ℕ, Complex.exp (k : ℂ) = ((Real.exp 1 : ℝ) : ℂ) ^ k := by
+      intro k; rw [Complex.ofReal_exp, ← Complex.exp_nat_mul]; norm_num
+    have hreal : ∑ k ∈ range (m + 1), (q.coeff k : ℝ) * (Real.exp 1) ^ k = 0 := by
+      rw [← hrel, aeval_eq_sum_range, ← hm]
+      exact Finset.sum_congr rfl (fun k _ => by rw [zsmul_eq_mul])
+    have hcast : ((∑ k ∈ range (m + 1), (q.coeff k : ℝ) * (Real.exp 1) ^ k : ℝ) : ℂ) = 0 := by
+      rw [hreal]; simp
+    rw [Complex.ofReal_sum] at hcast
+    rw [← hcast]
+    exact Finset.sum_congr rfl (fun k _ => by rw [hbridge k]; push_cast; ring)
+  have hsplit : (a₀ : ℂ) + ∑ k ∈ Icc 1 m, (q.coeff k : ℂ) * Complex.exp k = 0 := by
+    rw [show range (m + 1) = insert 0 (Icc 1 m) from by
+          ext x; simp only [mem_range, mem_insert, mem_Icc]; omega,
+        Finset.sum_insert (by simp)] at hcrel
+    simpa using hcrel
+  -- The crucial integer `N := a₀·n + p·∑ aₖ·gp(k)`.
+  set N : ℤ := a₀ * n + (p : ℤ) * ∑ k ∈ Finset.Icc 1 m, q.coeff k * gp.eval (k : ℤ) with hNdef
+  have hNcast : (N : ℂ) =
+      - ∑ k ∈ Finset.Icc 1 m,
+          (q.coeff k : ℂ) * ((n : ℂ) * Complex.exp k - (p : ℂ) * aeval ((k : ℕ) : ℂ) gp) := by
+    have haeval : ∀ k : ℕ, aeval ((k : ℕ) : ℂ) gp = ((gp.eval (k : ℤ) : ℤ) : ℂ) := by
+      intro k
+      have hh : ((k : ℕ) : ℂ) = algebraMap ℤ ℂ (k : ℤ) := by push_cast; ring
+      rw [hh, aeval_algebraMap_apply]; simp [aeval_def]
+    have e1 : ∀ k ∈ Icc 1 m,
+        (q.coeff k : ℂ) * ((n : ℂ) * Complex.exp k - (p : ℂ) * aeval ((k : ℕ) : ℂ) gp)
+        = (n : ℂ) * ((q.coeff k : ℂ) * Complex.exp k)
+          - (p : ℂ) * ((q.coeff k : ℂ) * ((gp.eval (k : ℤ) : ℤ) : ℂ)) := by
+      intro k _; rw [haeval k]; ring
+    rw [hNdef, Finset.sum_congr rfl e1, Finset.sum_sub_distrib, ← Finset.mul_sum, ← Finset.mul_sum]
+    push_cast
+    rw [Finset.mul_sum]
+    linear_combination (n : ℂ) * hsplit
+  -- `‖N‖ < 1` (analytic bound) forces `N = 0`…
+  have hNzero : N = 0 := by
+    have hnorm : ‖(N : ℂ)‖ < 1 := by
+      rw [hNcast, norm_neg]
+      calc ‖∑ k ∈ Finset.Icc 1 m,
+              (q.coeff k : ℂ) * ((n : ℂ) * Complex.exp k - (p : ℂ) * aeval ((k : ℕ) : ℂ) gp)‖
+          ≤ ∑ k ∈ Finset.Icc 1 m,
+              ‖(q.coeff k : ℂ) * ((n : ℂ) * Complex.exp k - (p : ℂ) * aeval ((k : ℕ) : ℂ) gp)‖ :=
+            norm_sum_le _ _
+        _ ≤ ∑ k ∈ Finset.Icc 1 m, (|q.coeff k| : ℝ) * (c ^ p / (p - 1)!) := by
+            apply Finset.sum_le_sum
+            intro k hk
+            rw [norm_mul, Complex.norm_intCast]
+            exact mul_le_mul_of_nonneg_left (hbound k hk) (by positivity)
+        _ = B * (c ^ p / (p - 1)!) := by rw [hB, Finset.sum_mul]
+        _ < 1 := hp_small
+    rw [Complex.norm_intCast] at hnorm
+    have hN1 : |N| < 1 := by exact_mod_cast hnorm
+    exact Int.abs_lt_one_iff.mp hN1
+  -- …while `p ∤ N` (since `N ≡ a₀·n (mod p)`, `p ∤ a₀·n`) forces `N ≠ 0`. Contradiction.
+  have hNne : N ≠ 0 := by
+    have hp_prime_int : Prime (p : ℤ) := Nat.prime_iff_prime_int.mp hp_prime
+    have hpa0 : ¬ (p : ℤ) ∣ a₀ := by
+      intro hd
+      have hpos : 0 < |a₀| := abs_pos.mpr hq0
+      have hle : (p : ℤ) ≤ |a₀| := Int.le_of_dvd hpos ((dvd_abs _ _).mpr hd)
+      rw [Int.abs_eq_natAbs] at hle
+      omega
+    have hdvd_prod : ¬ (p : ℤ) ∣ a₀ * n := fun h => (hp_prime_int.dvd_mul.mp h).elim hpa0 hpn
+    intro hN0
+    apply hdvd_prod
+    have he : a₀ * n = -((p : ℤ) * ∑ k ∈ Finset.Icc 1 m, q.coeff k * gp.eval (k : ℤ)) := by
+      rw [hNdef] at hN0; linarith [hN0]
+    rw [he]
+    exact (Dvd.intro _ rfl).neg_right
+  exact hNne hNzero
 
-/-- **Transcendence of `e`** over `ℚ` (Hermite, 1873), modulo the isolated analytic
-crux `no_intPoly_aeval_eq_zero`. The algebraic reduction is machine-checked. -/
+/-- **Transcendence of `e`** over `ℚ` (Hermite, 1873) — fully machine-checked.
+`#print axioms` = `[propext, Classical.choice, Quot.sound]`. -/
 theorem e_transcendental : Transcendental ℚ (Real.exp 1) := by
   intro h
   obtain ⟨q, hq0, hq⟩ := exists_intPoly_aeval_eq_zero h
