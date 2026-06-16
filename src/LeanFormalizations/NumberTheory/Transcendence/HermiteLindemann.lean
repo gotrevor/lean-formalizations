@@ -42,7 +42,16 @@ This is the `n = 1` case of the Lindemann–Weierstrass theorem (linear independ
 of `exp` at distinct algebraic exponents). mathlib has only the analytic part
 (`LindemannWeierstrass.exp_polynomial_approx`); the algebraic-part assembly is not
 yet formalized, so we cite this one statement and derive everything we need from
-it with machine-checked proofs. -/
+it with machine-checked proofs.
+
+The `α = 1` (real) instance is *independently discharged* in `ETranscendental.lean`
+(`e_transcendental`, axiom-clean). **Replacement path:** mathlib PR #28013
+("feat: Lindemann-Weierstrass Theorem") proves `transcendental_exp`
+(`a ≠ 0 → IsAlgebraic ℤ a → Transcendental ℤ (Complex.exp a)`), i.e. this statement
+over `ℤ`. On a mathlib bump past its merge, delete this axiom, import
+`Mathlib.NumberTheory.Transcendental.Lindemann.Basic`, and bridge ℤ↔ℚ via
+`isAlgebraic_algebraMap_iff` / `transcendental_algebraMap_iff`. See
+`archive/findings/ON-LINE-FINDINGS-2026-06-15-pi-transcendence.md`. -/
 axiom hermite_lindemann {α : ℂ} (hα : IsAlgebraic ℚ α) (hα0 : α ≠ 0) :
     Transcendental ℚ (Complex.exp α)
 

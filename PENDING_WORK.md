@@ -25,7 +25,19 @@ contradiction (`no_intPoly_aeval_eq_zero`). Discharges the `α=1` instance of
 ### 🎯 ACTIVE — Open item B: `hermite_lindemann` for `π` (the conjugate-product extension)
 To make squaring-the-circle fully unconditional, discharge `hermite_lindemann` at
 `α = iπ`. Unlike `e`, this needs the **algebraic part** of Lindemann–Weierstrass —
-symmetric functions over the Galois conjugates. Attack paths:
+symmetric functions over the Galois conjugates.
+
+**KEY (from `archive/findings/ON-LINE-FINDINGS-2026-06-15-pi-transcendence.md`): the
+realistic axiom-kill is adopting mathlib PR #28013** ("feat: Lindemann-Weierstrass
+Theorem", Yuyang Zhao — the same author as `AnalyticalPart.lean`). It adds, over `ℤ`,
+`transcendental_pi`, `transcendental_e`, `transcendental_exp` (= our `hermite_lindemann`
+as a real theorem), `transcendental_log`, `linearIndependent_exp`. It's OPEN/awaiting-author,
+not merged. **When mathlib is next bumped past the merge:** delete `axiom hermite_lindemann`,
+`import …Lindemann.Basic`, and bridge `Transcendental ℤ π → Transcendental ℚ π` via
+`transcendental_algebraMap_iff` / `isAlgebraic_algebraMap_iff` (ℤ↔ℚ, char 0). That kills
+the axiom with no local algebraic-part build. Findings recommend NOT re-deriving the
+algebraic part locally. The local route is only worth it if no bump is coming; if pursued,
+attack paths:
 1. **Hermite–Lindemann for a single algebraic α** (Baker ch.1 / Niven): let `α` have
    minimal polynomial with conjugates `α = α₁,…,α_d`; the product `∏_j (relation at α_j)`
    has *symmetric* (hence rational, then integer after scaling by `den^?`) coefficients —
