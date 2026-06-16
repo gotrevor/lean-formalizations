@@ -299,4 +299,46 @@ theorem hsum_of_monic_rootsum
     rw [← pow_add, Nat.sub_add_cancel hm]
   rw [hpow, mul_assoc, hkey]; push_cast; ring
 
+/-- **Capstone reduction.** The Lindemann subset-sum relation is impossible, modulo exactly
+two named facts. Given a finite family of "conjugates" `θ : ι → ℂ` over `s` with one value
+`θ k₀` satisfying `e^{θ k₀} = -1` (Euler, for `θ k₀ = iπ`), it is contradictory to have
+
+* **(monic_rootsum)** the monic root-sum integrality (`sum_aeval_roots_int`, Aristotle
+  job `9a19f72e`); and
+* **(conjugate polynomial)** an integer polynomial `F` with `F.eval 0 ≠ 0` whose complex
+  roots (with multiplicity) are exactly the **nonzero subset-sums** `σ_t = ∑_{k∈t} θ k`.
+
+It assembles `pi_exp_relation` (★), `hsum_of_monic_rootsum`, and `no_intPoly_exp_relation`:
+the relation `(K:ℂ) + ∑_{r∈F.aroots} e^r = 0` with `K = #{t : σ_t = 0} > 0` is exactly the
+forbidden integer exp-relation. **This is the precise remaining frontier for `π`**: only the
+*existence* of the conjugate polynomial `F` (the symmetric-function / Galois construction
+over the conjugates of `iπ`) and `monic_rootsum` are still open; everything else is
+machine-checked here. Discharging both, with `θ` the conjugate set of `iπ`, kills
+`hermite_lindemann` at `π` and makes squaring-the-circle unconditional. -/
+theorem subsetSum_relation_impossible
+    {ι : Type*} [DecidableEq ι] (s : Finset ι) (θ : ι → ℂ)
+    (k₀ : ι) (hk₀ : k₀ ∈ s) (hval : Complex.exp (θ k₀) = -1)
+    (monic_rootsum : ∀ G : ℤ[X], G.Monic → ∀ q : ℤ[X], ∃ T : ℤ,
+        ((G.aroots ℂ).map (fun r => aeval r q)).sum = (T : ℂ))
+    (F : ℤ[X]) (hF0 : F.eval 0 ≠ 0)
+    (hFroots : F.aroots ℂ
+        = (s.powerset.filter (fun t => ∑ k ∈ t, θ k ≠ 0)).val.map
+            (fun t => ∑ k ∈ t, θ k)) :
+    False := by
+  set K : ℤ := ((s.powerset.filter (fun t => ∑ k ∈ t, θ k = 0)).card : ℤ) with hKdef
+  have hK : 0 < K := by rw [hKdef]; exact_mod_cast zeroSubsetSum_card_pos s θ
+  refine no_intPoly_exp_relation F hF0
+    (hsum_of_monic_rootsum monic_rootsum F hF0) K hK ?_
+  have hrel := pi_exp_relation s θ k₀ hk₀ hval
+  rw [hFroots, Multiset.map_map]
+  have hsumeq : ((s.powerset.filter (fun t => ∑ k ∈ t, θ k ≠ 0)).val.map
+      ((fun r => Complex.exp r) ∘ (fun t => ∑ k ∈ t, θ k))).sum
+      = ∑ t ∈ s.powerset.filter (fun t => ∑ k ∈ t, θ k ≠ 0),
+          Complex.exp (∑ k ∈ t, θ k) := by
+    rw [Finset.sum]; rfl
+  rw [hsumeq, show (K : ℂ)
+      = ((s.powerset.filter (fun t => ∑ k ∈ t, θ k = 0)).card : ℂ) from by
+        rw [hKdef]; push_cast; ring]
+  exact hrel
+
 end LeanFormalizations.Transcendence
