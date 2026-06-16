@@ -260,4 +260,12 @@ theorem e_transcendental : Transcendental ℚ (Real.exp 1) := by
   obtain ⟨q, hq0, hq⟩ := exists_intPoly_aeval_eq_zero h
   exact no_intPoly_aeval_eq_zero q hq0 hq
 
+/-- **`eⁿ` is transcendental** over `ℚ` for every `n ≥ 1` — the positive-integer case of
+Hermite–Lindemann, a corollary of `e_transcendental` (`eⁿ = (Real.exp 1)ⁿ` and a power of
+a transcendental is transcendental). Discharges the integer-exponent instances of
+`HermiteLindemann.hermite_lindemann`. -/
+theorem transcendental_exp_nat (n : ℕ) (hn : n ≠ 0) : Transcendental ℚ (Real.exp n) := by
+  have h := e_transcendental.pow (n := n) (Nat.pos_of_ne_zero hn)
+  rwa [← Real.exp_nat_mul, mul_one] at h
+
 end LeanFormalizations.Transcendence
