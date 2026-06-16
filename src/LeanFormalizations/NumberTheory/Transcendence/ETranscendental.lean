@@ -268,4 +268,36 @@ theorem transcendental_exp_nat (n : ℕ) (hn : n ≠ 0) : Transcendental ℚ (Re
   have h := e_transcendental.pow (n := n) (Nat.pos_of_ne_zero hn)
   rwa [← Real.exp_nat_mul, mul_one] at h
 
+/-- **`eᵃ` is transcendental** over `ℚ` for every nonzero integer `a`. For `a < 0`,
+`eᵃ = (e^{-a})⁻¹` and transcendence is preserved by inversion (`IsAlgebraic.inv_iff`). -/
+theorem transcendental_exp_int (a : ℤ) (ha : a ≠ 0) : Transcendental ℚ (Real.exp a) := by
+  rcases lt_or_gt_of_ne ha with hneg | hpos
+  · have hpos' : ((-a).toNat) ≠ 0 := by omega
+    have key : Transcendental ℚ (Real.exp ((-a).toNat : ℕ)) := transcendental_exp_nat _ hpos'
+    have hcast : ((((-a).toNat) : ℕ) : ℝ) = ((-a : ℤ) : ℝ) := by
+      have : ((-a).toNat : ℤ) = -a := Int.toNat_of_nonneg (by omega)
+      exact_mod_cast this
+    rw [hcast] at key
+    have heq : Real.exp (a : ℝ) = (Real.exp ((-a : ℤ) : ℝ))⁻¹ := by rw [← Real.exp_neg]; norm_num
+    rw [Transcendental, heq, IsAlgebraic.inv_iff]; exact key
+  · have hpos' : (a.toNat) ≠ 0 := by omega
+    have key : Transcendental ℚ (Real.exp ((a.toNat) : ℕ)) := transcendental_exp_nat _ hpos'
+    have hcast : (((a.toNat) : ℕ) : ℝ) = ((a : ℤ) : ℝ) := by
+      have : (a.toNat : ℤ) = a := Int.toNat_of_nonneg (by omega)
+      exact_mod_cast this
+    rwa [hcast] at key
+
+/-- **`e^q` is transcendental** over `ℚ` for every nonzero rational `q` — the
+rational-exponent case of Hermite–Lindemann, axiom-clean. If `e^q` were algebraic so
+would `(e^q)^{q.den} = e^{q.num}` be, contradicting `transcendental_exp_int`. No
+symmetric functions needed: this is pure field closure over `e_transcendental`. -/
+theorem transcendental_exp_rat (q : ℚ) (hq : q ≠ 0) : Transcendental ℚ (Real.exp q) := by
+  intro hAlg
+  have hnum : q.num ≠ 0 := Rat.num_ne_zero.mpr hq
+  have hexp : (q.den : ℝ) * (q : ℝ) = ((q.num : ℤ) : ℝ) := by rw [Rat.cast_def]; field_simp
+  have hpow : (Real.exp (q : ℝ)) ^ (q.den) = Real.exp ((q.num : ℤ) : ℝ) := by
+    rw [← Real.exp_nat_mul, hexp]
+  have halg2 : IsAlgebraic ℚ (Real.exp ((q.num : ℤ) : ℝ)) := by rw [← hpow]; exact hAlg.pow _
+  exact (transcendental_exp_int q.num hnum) halg2
+
 end LeanFormalizations.Transcendence
