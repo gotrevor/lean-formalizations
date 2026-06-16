@@ -12,26 +12,34 @@ transcendental) as one disclosed `axiom` and machine-checked `transcendental_pi`
 (Euler `exp(iπ) = -1`). `squaring_the_circle_impossible_uncond` shipped; `#print axioms`
 = trust base + `hermite_lindemann` only. File `NumberTheory/Transcendence/HermiteLindemann.lean`.
 
-### 🎯 ACTIVE — Open item A.2: discharge the analytic crux `no_intPoly_aeval_eq_zero`
-Transcendence of `e` is the accessible α=1 instance of `hermite_lindemann` (NO symmetric
-functions: the polynomial `∏_{k=1}^m (X−k)` has integer roots). `ETranscendental.lean` has
-the algebraic reduction proved; the remaining crux = Hermite's assembly of mathlib's
-`LindemannWeierstrass.exp_polynomial_approx`. Concrete sub-steps (all from the file header):
-1. **Build `f = ∏_{k=1}^m (X − C k) : ℤ[X]`**, prove `f.eval 0 = (-1)^m m! ≠ 0`, and that
-   its `aroots ℂ` are `{1,…,m}`. (`Finset.prod`, `Polynomial.eval_prod`, `roots_prod`.)
-2. **Prime selection**: `∃` prime `p` with `p > (f.eval 0).natAbs ∧ p > |a₀| ∧
-   (∑|aₖ|)·c^p/(p−1)! < 1`. Needs `c^p/(p−1)! → 0` (`tendsto`, `Nat.factorial` growth) +
-   infinitude of primes (`Nat.exists_infinite_primes`).
-3. **Integer N**: `N := a₀·n + p·∑_{k=1}^m aₖ·gp.eval k : ℤ`; show `(N:ℂ) = −∑ aₖ εₖ` from
-   the `n`-scaled relation, hence `‖(N:ℂ)‖ < 1` ⟹ `N = 0`; but `N ≡ a₀·n (mod p)`, `p∤a₀n`
-   ⟹ `N ≠ 0`. Contradiction. (Bridge real `aeval e q` ↔ complex `∑ aₖ exp k` carefully.)
-   - Aristotle job `e502fd22` (submitted 2026-06-16) grinding the full assembly; verify +
-     `#print axioms` + port onto these defs before trusting. See `aristotle-download-and-verify`.
+### ✅ DONE this lap — Open item A.2: transcendence of `e`, fully axiom-clean
+`ETranscendental.lean` — `e_transcendental : Transcendental ℚ (Real.exp 1)`,
+`#print axioms` = trust base only. The complete Hermite assembly of
+`LindemannWeierstrass.exp_polynomial_approx`: algebraic reduction
+(`exists_intPoly_aeval_eq_zero`) + analytic decay/prime-selection
+(`tendsto_const_mul_pow_div_factorial`, `exists_prime_smallness`) + Hermite-polynomial
+data (`hermitePoly_eval_zero_ne`, `hermitePoly_aroots`) + the integer-`N`/mod-`p`
+contradiction (`no_intPoly_aeval_eq_zero`). Discharges the `α=1` instance of
+`hermite_lindemann`. (Aristotle job `e502fd22` canceled — proved locally.)
 
-### Open item B — `hermite_lindemann` for general α / full Lindemann–Weierstrass
-After `e`: extend to `π` via the conjugate-product `∏(1 + e^{β_j})` and symmetric functions
-over the Galois conjugates of `iπ` (the genuinely missing mathlib infrastructure). Multi-lap;
-the `e` assembly is the reusable core. `ON-LINE-REQUEST.md` filed for porting templates.
+### 🎯 ACTIVE — Open item B: `hermite_lindemann` for `π` (the conjugate-product extension)
+To make squaring-the-circle fully unconditional, discharge `hermite_lindemann` at
+`α = iπ`. Unlike `e`, this needs the **algebraic part** of Lindemann–Weierstrass —
+symmetric functions over the Galois conjugates. Attack paths:
+1. **Hermite–Lindemann for a single algebraic α** (Baker ch.1 / Niven): let `α` have
+   minimal polynomial with conjugates `α = α₁,…,α_d`; the product `∏_j (relation at α_j)`
+   has *symmetric* (hence rational, then integer after scaling by `den^?`) coefficients —
+   feed `exp_polynomial_approx` to `f = den·minpoly` and re-run the integer-`N`/mod-`p`
+   contradiction. The `e` assembly here is the reusable analytic core; the NEW piece is
+   the symmetric-function integrality (`MvPolynomial.symmetric`, `Multiset.esymm`,
+   Newton's identities / `Polynomial.roots` of the conjugate set). Build that as a
+   standalone lemma first.
+2. **Lindemann–Weierstrass directly for `{0, iπ}`**: `e^0 + e^{iπ} = 0` is a ℚ-linear
+   dependence of `exp` at distinct algebraic exponents `0, iπ`; LW says that's impossible
+   unless `iπ` non-algebraic. Same symmetric-function machinery, framed as lin. indep.
+3. **Architect for Aristotle**: once the symmetric-function leaf is isolated, hand it over
+   (`aristotle submit`, project-dir). `ON-LINE-REQUEST.md` filed for porting templates
+   (Isabelle AFP `Lindemann_Weierstrass`).
 
 ### Open item C — power-tower sharp `iff`, lower direction (`0<x<e^{-e}` diverges)
 1. **2-cycle existence via IVT** on the second-iterate boundary map (sign change of `g∘g−id`).
