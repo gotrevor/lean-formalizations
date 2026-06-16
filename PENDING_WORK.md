@@ -1,22 +1,43 @@
 # PENDING_WORK — lean-formalizations
 
-## 🔭 OPEN-ITEM INVENTORY + ATTACK PATHS (refreshed 2026-06-15, post-Wantzel)
+## 🔭 OPEN-ITEM INVENTORY + ATTACK PATHS (refreshed 2026-06-16, review lap)
 
-`src/` is **sorry-free and has zero custom axioms** (verified: grep + `#print axioms` on
-12 headlines = `[propext, Classical.choice, Quot.sound]`). The remaining work is
-mathematical *extensions*, each blocked or multi-lap. Three concrete paths each:
+`src/` is axiom-clean except for **one cited axiom** (`hermite_lindemann`, 🟡) and
+**one disclosed `sorry`** (`no_intPoly_aeval_eq_zero`, the active chip toward it).
+The active frontier is discharging the transcendence wall behind squaring-the-circle.
 
-### Open item A — `Transcendental ℚ Real.pi` (makes squaring-the-circle unconditional)
-1. **Reduce-then-axiomatize**: state Lindemann–Weierstrass (lin. indep. of `exp` at
-   distinct algebraic exponents) as a *disclosed* `axiom`, then PROVE `Transcendental ℚ π`
-   from it natively (contrapositive: π alg ⟹ iπ alg; `e^{iπ}+e^0=0` contradicts LW). This
-   isolates the deep wall to one cited statement and machine-checks the reduction. Bounded,
-   build-safe, ~1 lap. **Most promising — do this first when budget allows.**
-2. **Formalize the algebraic part of LW** on top of mathlib's `exp_polynomial_approx`
-   (analytic part is present): the symmetric-function / Galois-conjugate-product argument
-   forcing a nonzero integer `< 1`. Multi-lap; needs the reference from `ON-LINE-REQUEST.md`.
-3. **Port** an existing prover's π-transcendence skeleton (Isabelle AFP
-   `Lindemann_Weierstrass`) — needs the web; `ON-LINE-REQUEST.md` filed.
+### ✅ DONE this lap — Open item A.1: `Transcendental ℚ Real.pi` narrowing
+Stated **Hermite–Lindemann** (`hermite_lindemann`: nonzero algebraic α ⟹ `exp α`
+transcendental) as one disclosed `axiom` and machine-checked `transcendental_pi` from it
+(Euler `exp(iπ) = -1`). `squaring_the_circle_impossible_uncond` shipped; `#print axioms`
+= trust base + `hermite_lindemann` only. File `NumberTheory/Transcendence/HermiteLindemann.lean`.
+
+### 🎯 ACTIVE — Open item A.2: discharge the analytic crux `no_intPoly_aeval_eq_zero`
+Transcendence of `e` is the accessible α=1 instance of `hermite_lindemann` (NO symmetric
+functions: the polynomial `∏_{k=1}^m (X−k)` has integer roots). `ETranscendental.lean` has
+the algebraic reduction proved; the remaining crux = Hermite's assembly of mathlib's
+`LindemannWeierstrass.exp_polynomial_approx`. Concrete sub-steps (all from the file header):
+1. **Build `f = ∏_{k=1}^m (X − C k) : ℤ[X]`**, prove `f.eval 0 = (-1)^m m! ≠ 0`, and that
+   its `aroots ℂ` are `{1,…,m}`. (`Finset.prod`, `Polynomial.eval_prod`, `roots_prod`.)
+2. **Prime selection**: `∃` prime `p` with `p > (f.eval 0).natAbs ∧ p > |a₀| ∧
+   (∑|aₖ|)·c^p/(p−1)! < 1`. Needs `c^p/(p−1)! → 0` (`tendsto`, `Nat.factorial` growth) +
+   infinitude of primes (`Nat.exists_infinite_primes`).
+3. **Integer N**: `N := a₀·n + p·∑_{k=1}^m aₖ·gp.eval k : ℤ`; show `(N:ℂ) = −∑ aₖ εₖ` from
+   the `n`-scaled relation, hence `‖(N:ℂ)‖ < 1` ⟹ `N = 0`; but `N ≡ a₀·n (mod p)`, `p∤a₀n`
+   ⟹ `N ≠ 0`. Contradiction. (Bridge real `aeval e q` ↔ complex `∑ aₖ exp k` carefully.)
+   - Aristotle job `e502fd22` (submitted 2026-06-16) grinding the full assembly; verify +
+     `#print axioms` + port onto these defs before trusting. See `aristotle-download-and-verify`.
+
+### Open item B — `hermite_lindemann` for general α / full Lindemann–Weierstrass
+After `e`: extend to `π` via the conjugate-product `∏(1 + e^{β_j})` and symmetric functions
+over the Galois conjugates of `iπ` (the genuinely missing mathlib infrastructure). Multi-lap;
+the `e` assembly is the reusable core. `ON-LINE-REQUEST.md` filed for porting templates.
+
+### Open item C — power-tower sharp `iff`, lower direction (`0<x<e^{-e}` diverges)
+1. **2-cycle existence via IVT** on the second-iterate boundary map (sign change of `g∘g−id`).
+2. **Instability ⟹ non-convergence**: fixed point repelling (`|g'(y)|>1`), tower off its
+   stable manifold (monotone bracketing).
+3. **Reformulate** as even/odd subsequences → distinct limits; reuse `EngineLower` in reverse.
 
 ### Open item B — power-tower sharp `iff`, lower direction (`0<x<e^{-e}` diverges)
 1. **2-cycle existence via IVT on the boundary map**: show the second-iterate map has a
