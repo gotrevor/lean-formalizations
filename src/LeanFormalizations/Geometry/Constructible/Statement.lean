@@ -120,14 +120,12 @@ theorem heptagon_point_not_constructible : ¬ ConstructiblePoint (twoCosHept, 0)
 `√π` is the side of a square with the same area as the unit circle. Constructing it
 is impossible because `√π` is transcendental.
 
-mathlib has only the *analytic* part of Lindemann–Weierstrass
-(`LindemannWeierstrass.exp_polynomial_approx`), not the transcendence of `π`. The
-conditional theorem `squaring_the_circle_impossible` takes `Transcendental ℚ π` as an
-explicit hypothesis and is axiom-clean. The unconditional
-`squaring_the_circle_impossible_uncond` discharges that hypothesis from the single
-cited axiom `hermite_lindemann` (Hermite–Lindemann, 1882) via
-`Transcendence.transcendental_pi` — so its only non-trust-base dependency is that one
-named theorem. See `NumberTheory/Transcendence/HermiteLindemann.lean`. -/
+The conditional theorem `squaring_the_circle_impossible` takes `Transcendental ℚ π` as an
+explicit hypothesis. The unconditional `squaring_the_circle_impossible_uncond` discharges
+that hypothesis from `Transcendence.transcendental_pi_axiomClean` — the complete
+machine-checked Lindemann assembly (analytic `exp_polynomial_approx` + symmetric functions
+over the Galois conjugates of `iπ`). **Both are axiom-clean** (`#print axioms` = the bare
+trust base; no math axiom). See `NumberTheory/Transcendence/PiTranscendental.lean`. -/
 
 /-- **Squaring the circle is impossible** (given that `π` is transcendental over `ℚ`).
 If `√π` were constructible it would be algebraic (`IsConstructible.isAlgebraic`),
