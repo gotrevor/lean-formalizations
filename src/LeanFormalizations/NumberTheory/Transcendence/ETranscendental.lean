@@ -45,8 +45,10 @@ import Mathlib.NumberTheory.Transcendental.Lindemann.AnalyticalPart
 import Mathlib.RingTheory.Algebraic.Integral
 import Mathlib.RingTheory.Localization.Integral
 import Mathlib.Analysis.SpecialFunctions.Exponential
+import Mathlib.Topology.Algebra.Order.Floor
 
-open Polynomial
+open Polynomial Filter
+open scoped Nat Topology
 
 namespace LeanFormalizations.Transcendence
 
@@ -73,6 +75,52 @@ theorem exists_intPoly_aeval_eq_zero (h : IsAlgebraic ℚ (Real.exp 1)) :
   rcases mul_eq_zero.mp hp with h1 | h2
   · exact absurd h1 (pow_ne_zero _ (Real.exp_ne_zero 1))
   · exact h2
+
+/-! ### Infrastructure for the analytic crux (proved, axiom-clean)
+
+Three portable building blocks for the Hermite assembly: the analytic limit
+`B·c^p/(p-1)! → 0`, the prime-selection corollary it yields (step 2 of the roadmap),
+and that the Hermite polynomial `∏_{k=1}^m (X − k)` has nonzero value at `0` (step 1,
+the hypothesis `exp_polynomial_approx` requires). -/
+
+/-- `B · c^p / (p-1)! → 0` as `p → ∞`: the analytic decay driving Hermite's bound.
+Reindex `tendsto_pow_div_factorial_atTop` (`c^n/n! → 0`) by `p ↦ p-1`. -/
+theorem tendsto_const_mul_pow_div_factorial (c B : ℝ) :
+    Tendsto (fun p : ℕ => B * (c ^ p / (p - 1)!)) atTop (𝓝 0) := by
+  have h0 : Tendsto (fun n : ℕ => c ^ n / n ! : ℕ → ℝ) atTop (𝓝 0) :=
+    FloorSemiring.tendsto_pow_div_factorial_atTop c
+  have h1 : Tendsto (fun j : ℕ => c ^ (j + 1) / j ! : ℕ → ℝ) atTop (𝓝 0) := by
+    have : Tendsto (fun j : ℕ => c * (c ^ j / j !) : ℕ → ℝ) atTop (𝓝 (c * 0)) := h0.const_mul c
+    rw [mul_zero] at this
+    refine this.congr (fun j => ?_); rw [pow_succ]; ring
+  have h2 : Tendsto (fun p : ℕ => c ^ p / (p - 1)! : ℕ → ℝ) atTop (𝓝 0) := by
+    refine (h1.comp (tendsto_sub_atTop_nat 1)).congr' ?_
+    filter_upwards [eventually_ge_atTop 1] with p hp
+    simp only [Function.comp_apply]; rw [Nat.sub_add_cancel hp]
+  have := h2.const_mul B; rw [mul_zero] at this; exact this
+
+/-- **Prime selection** (roadmap step 2): a prime `p` exceeding any bound `M` with the
+Hermite smallness `B · c^p/(p-1)! < 1`. From the decay above + infinitude of primes. -/
+theorem exists_prime_smallness (c B : ℝ) (M : ℕ) :
+    ∃ p : ℕ, p.Prime ∧ M < p ∧ B * (c ^ p / (p - 1)!) < 1 := by
+  have hev : ∀ᶠ p : ℕ in atTop, B * (c ^ p / (p - 1)!) < 1 :=
+    (tendsto_const_mul_pow_div_factorial c B).eventually_lt_const (by norm_num)
+  obtain ⟨N, hN⟩ := eventually_atTop.mp hev
+  obtain ⟨p, hp_ge, hp_prime⟩ := Nat.exists_infinite_primes (max N (M + 1))
+  exact ⟨p, hp_prime,
+    lt_of_lt_of_le (Nat.lt_succ_self M) (le_trans (le_max_right _ _) hp_ge),
+    hN p (le_trans (le_max_left _ _) hp_ge)⟩
+
+/-- **The Hermite polynomial value at 0** (roadmap step 1): `∏_{k=1}^m (X − k)` does not
+vanish at `0`, so `exp_polynomial_approx` applies to it. -/
+theorem hermitePoly_eval_zero_ne (m : ℕ) :
+    (∏ k ∈ Finset.Icc 1 m, (X - C (k : ℤ))).eval 0 ≠ 0 := by
+  rw [eval_prod]
+  refine Finset.prod_ne_zero_iff.mpr fun k hk => ?_
+  rw [eval_sub, eval_X, eval_C]
+  simp only [Finset.mem_Icc] at hk
+  have : (k : ℤ) ≠ 0 := by exact_mod_cast (Nat.one_le_iff_ne_zero.mp hk.1)
+  simpa using this
 
 /-- **Hermite's contradiction — the isolated analytic crux** (disclosed `sorry`).
 No nonzero integer polynomial with nonzero constant term annihilates `e`.
