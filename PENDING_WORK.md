@@ -23,9 +23,33 @@ contradiction (`no_intPoly_aeval_eq_zero`). Discharges the `α=1` instance of
 `hermite_lindemann`. (Aristotle job `e502fd22` canceled — proved locally.)
 
 ### 🎯 ACTIVE — Open item B: `hermite_lindemann` for `π` (the conjugate-product extension)
-To make squaring-the-circle fully unconditional, discharge `hermite_lindemann` at
-`α = iπ`. Unlike `e`, this needs the **algebraic part** of Lindemann–Weierstrass —
-symmetric functions over the Galois conjugates.
+
+**Progress 2026-06-16 (this lap): the ANALYTIC part of π is DONE; the gap narrowed to one
+algebraic construction.** New file `NumberTheory/Transcendence/PiLindemann.lean`, all
+axiom-clean:
+- `prod_one_add_exp_eq_sum_subsetSum`, `sum_subsetSum_exp_eq_zero_of_factor`,
+  `sum_subsetSum_split`, `pi_exp_relation` (★): the **combinatorial reduction** — from
+  `e^{iπ}=−1` to the integer exp-relation `(K:ℂ) + ∑_{t:σ_t≠0} e^{σ_t} = 0`, `K=#{σ_t=0}≥1`.
+- `no_intPoly_exp_relation`: the **general (non-monic) analytic assembly** — for any
+  `F : ℤ[X]` with `F.eval 0 ≠ 0`, no relation `K + ∑_{r∈F.aroots} e^r = 0` (`K>0`) holds,
+  *given* `hsum` (`ℓ^m·∑_r aeval r gp ∈ ℤ`, `ℓ=F.leadingCoeff`). The full
+  integer-`N`/mod-`p` engine, generalized from `e`'s integer roots to arbitrary `F.aroots`.
+
+**What's LEFT (the genuine algebraic crux), two pieces:**
+1. **`hsum` for any integer `F`** — dischargeable from the *monic* root-sum integrality
+   `sum_aeval_roots_int` (∑ over roots of a monic ℤ-poly of `aeval r gp` ∈ ℤ; Aristotle
+   job `9a19f72e`) via `Polynomial.integralNormalization F` (monic, roots = `ℓ·F.aroots`):
+   `ℓ^m·∑_r aeval r gp = ∑_j gp_j ℓ^{m−j}·(power sum of `integralNormalization F` roots)`.
+   So once the monic lemma lands, `hsum` holds for **every** `F` — NOT π-specific.
+2. **The symmetric-function construction of the conjugate polynomial** `F ∈ ℤ[X]` whose
+   complex roots are the nonzero subset-sums `σ_t` (matching `pi_exp_relation`), with
+   `F.eval 0 ≠ 0`. The `{σ_t}` are symmetric in the conjugates of `iπ`, so
+   `∏_t (X−σ_t) ∈ ℚ[X]` (Vieta + `MvPolynomial.IsSymmetric.FundamentalTheorem`); clear
+   denominators to `ℤ[X]`. **This is the remaining deep piece** — architect as the next
+   Aristotle leaf once `9a19f72e` returns.
+
+Plugging both into `no_intPoly_exp_relation` discharges `hermite_lindemann` at π. The
+original orientation (still valid):
 
 **KEY (from `archive/findings/ON-LINE-FINDINGS-2026-06-15-pi-transcendence.md`): the
 realistic axiom-kill is adopting mathlib PR #28013** ("feat: Lindemann-Weierstrass

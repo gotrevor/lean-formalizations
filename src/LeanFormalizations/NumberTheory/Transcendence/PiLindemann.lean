@@ -46,6 +46,8 @@ at `π` (equivalently, adopting mathlib PR #28013 on the next bump; see
 import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 import Mathlib.Analysis.SpecialFunctions.Exponential
 import Mathlib.Algebra.BigOperators.Ring.Finset
+import Mathlib.RingTheory.Polynomial.IntegralNormalization
+import Mathlib.RingTheory.Polynomial.ScaleRoots
 import LeanFormalizations.NumberTheory.Transcendence.ETranscendental
 
 open Polynomial Filter Finset
@@ -238,5 +240,63 @@ theorem no_intPoly_exp_relation
       · exact hpK h'
     · exact hpn h
   exact hNne hNzero
+
+/-- The complex roots of `integralNormalization F` are exactly `ℓ·(roots of F)`,
+`ℓ = F.leadingCoeff` (a unit over `ℂ`). The standard "integralize" correspondence:
+`integralNormalization F * C ℓ = scaleRoots F ℓ`, mapped to `ℂ`. -/
+theorem aroots_integralNormalization (F : ℤ[X]) (hF : F ≠ 0) :
+    (integralNormalization F).aroots ℂ
+      = (F.aroots ℂ).map (fun r => (F.leadingCoeff : ℂ) * r) := by
+  have hℓ : (F.leadingCoeff : ℤ) ≠ 0 := Polynomial.leadingCoeff_ne_zero.mpr hF
+  have hℓc : ((F.leadingCoeff : ℤ) : ℂ) ≠ 0 := by exact_mod_cast hℓ
+  have hmain := integralNormalization_mul_C_leadingCoeff F
+  have h1 : (integralNormalization F * C F.leadingCoeff).aroots ℂ
+      = (integralNormalization F).aroots ℂ := by
+    rw [mul_comm, aroots_C_mul _ hℓ]
+  have h2 : (scaleRoots F F.leadingCoeff).aroots ℂ
+      = (F.aroots ℂ).map (fun r => (F.leadingCoeff : ℂ) * r) := by
+    rw [aroots_def, map_scaleRoots F F.leadingCoeff (algebraMap ℤ ℂ) (by simpa using hℓc),
+        roots_scaleRoots _ (isUnit_iff_ne_zero.mpr (by simpa using hℓc)), ← aroots_def]
+    rfl
+  rw [← h1, hmain, h2]
+
+/-- **`hsum` for any integer `F`, reduced to the monic case.** If for every monic `G : ℤ[X]`
+and every `q : ℤ[X]` the root-sum `∑_{s∈G.aroots} aeval s q` is an integer (`monic_rootsum`
+— exactly `sum_aeval_roots_int`, Aristotle job `9a19f72e`), then the `ℓ`-scaled root-sums of
+`no_intPoly_exp_relation`'s `hsum` hold for **every** `F : ℤ[X]` with nonzero constant term
+(`ℓ = F.leadingCoeff`, `deg gp ≤ m`). Via `integralNormalization F` (monic; roots `= ℓ·F.aroots`)
+and `aeval (ℓ·r) (scaleRoots gp ℓ) = ℓ^{deg gp}·aeval r gp`. So once the monic lemma lands,
+`hsum` is NOT a π-specific obstruction — the *only* remaining gap is the symmetric-function
+construction of the conjugate polynomial. -/
+theorem hsum_of_monic_rootsum
+    (monic_rootsum : ∀ (G : ℤ[X]), G.Monic → ∀ q : ℤ[X], ∃ T : ℤ,
+        ((G.aroots ℂ).map (fun s => aeval s q)).sum = (T : ℂ))
+    (F : ℤ[X]) (hF0 : F.eval 0 ≠ 0) :
+    ∀ (gp : ℤ[X]) (m : ℕ), gp.natDegree ≤ m → ∃ S : ℤ,
+        (F.leadingCoeff : ℂ) ^ m * (((F.aroots ℂ).map (fun r => aeval r gp)).sum)
+          = (S : ℂ) := by
+  intro gp m hm
+  have hF : F ≠ 0 := fun h => hF0 (by rw [h]; simp)
+  set ℓ := F.leadingCoeff with hℓ
+  have hGmonic : (integralNormalization F).Monic := monic_integralNormalization hF
+  have haroots := aroots_integralNormalization F hF
+  obtain ⟨T, hT⟩ := monic_rootsum (integralNormalization F) hGmonic (scaleRoots gp ℓ)
+  have perroot : ∀ r : ℂ, aeval ((ℓ:ℂ) * r) (scaleRoots gp ℓ)
+      = (ℓ:ℂ)^(gp.natDegree) * aeval r gp := by
+    intro r
+    have h := scaleRoots_eval₂_mul (p := gp) (algebraMap ℤ ℂ) r ℓ
+    have hcast : (algebraMap ℤ ℂ) ℓ = (ℓ:ℂ) := by simp
+    rw [hcast] at h
+    simpa [aeval_def] using h
+  have hkey : (ℓ:ℂ)^(gp.natDegree) * (((F.aroots ℂ).map (fun r => aeval r gp)).sum)
+      = (T : ℂ) := by
+    rw [← hT, haroots, Multiset.map_map]
+    rw [show (fun s => aeval s (scaleRoots gp ℓ)) ∘ (fun r => (ℓ:ℂ)*r)
+          = (fun r => (ℓ:ℂ)^(gp.natDegree) * aeval r gp) from by funext r; exact perroot r]
+    rw [Multiset.sum_map_mul_left]
+  refine ⟨ℓ^(m - gp.natDegree) * T, ?_⟩
+  have hpow : (ℓ:ℂ)^m = (ℓ:ℂ)^(m - gp.natDegree) * (ℓ:ℂ)^(gp.natDegree) := by
+    rw [← pow_add, Nat.sub_add_cancel hm]
+  rw [hpow, mul_assoc, hkey]; push_cast; ring
 
 end LeanFormalizations.Transcendence
