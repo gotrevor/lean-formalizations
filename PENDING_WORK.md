@@ -41,12 +41,19 @@ axiom-clean:
    job `9a19f72e`) via `Polynomial.integralNormalization F` (monic, roots = `ℓ·F.aroots`):
    `ℓ^m·∑_r aeval r gp = ∑_j gp_j ℓ^{m−j}·(power sum of `integralNormalization F` roots)`.
    So once the monic lemma lands, `hsum` holds for **every** `F` — NOT π-specific.
-2. **The symmetric-function construction of the conjugate polynomial** `F ∈ ℤ[X]` whose
-   complex roots are the nonzero subset-sums `σ_t` (matching `pi_exp_relation`), with
-   `F.eval 0 ≠ 0`. The `{σ_t}` are symmetric in the conjugates of `iπ`, so
-   `∏_t (X−σ_t) ∈ ℚ[X]` (Vieta + `MvPolynomial.IsSymmetric.FundamentalTheorem`); clear
-   denominators to `ℤ[X]`. **This is the remaining deep piece** — architect as the next
-   Aristotle leaf once `9a19f72e` returns.
+2. **The symmetric-function construction of the conjugate polynomial.** Reduced further
+   this lap — the clear-denominators tail is now DONE (`exists_intPoly_aroots_eq`: any
+   `Q : ℚ[X]` with `Q.eval 0 ≠ 0` ⟹ an integer `F` with the same complex roots and
+   `F.eval 0 ≠ 0`, via `IsLocalization.integerNormalization`). So the IRREDUCIBLE remaining
+   core is just: **produce the monic `Q : ℚ[X]` whose complex roots (with multiplicity) are
+   the nonzero subset-sums `σ_t` of the conjugates of `iπ`.** The `{σ_t}` are symmetric in
+   the conjugates, so `Q = ∏_t (X−σ_t)` has coefficients = symmetric polynomials in the
+   roots of `minpoly ℚ (iπ)`, hence (fundamental theorem `MvPolynomial.esymmAlgEquiv` +
+   Vieta `coeff_eq_esymm_roots_of_card`) `ℚ`-valued. **This is the deep multi-lap piece**
+   (= the "algebraic part" PR #28013 supplies). Infra surveyed:
+   `RingTheory/MvPolynomial/Symmetric/FundamentalTheorem.lean` (`esymmAlgEquiv`),
+   `RingTheory/Polynomial/Vieta.lean`, `FieldTheory/Minpoly/ConjRootClass.lean`.
+   Then `exists_intPoly_aroots_eq` + `subsetSum_relation_impossible` finish π.
 
 Plugging both into `no_intPoly_exp_relation` discharges `hermite_lindemann` at π. The
 original orientation (still valid):
