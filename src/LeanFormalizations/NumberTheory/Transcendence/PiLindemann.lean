@@ -442,4 +442,38 @@ theorem subsetSum_poly_lifts (σs : Multiset ℂ)
         (by rw [natDegree_multiset_prod_X_sub_C_eq_card]; exact hk)]
     exact ⟨0, by simp⟩
 
+/-- **Removing the zero roots** (the `X^K`-factoring glue). Any `Q : ℚ[X]` (`Q ≠ 0`) has a
+factor `Q' : ℚ[X]` with `Q'.eval 0 ≠ 0` whose complex roots are exactly the **nonzero** roots
+of `Q`. Via `Q = X^{mult} · Q'` (`exists_eq_pow_rootMultiplicity_mul_and_not_dvd`): the
+`X^{mult}` contributes only zero roots, `Q'` contributes the rest (none zero). Lets the
+descended conjugate polynomial (whose roots are ALL subset-sums `σ_t`, including `K` zeros)
+be replaced by one whose roots are just the nonzero `σ_t`, as `subsetSum_relation_impossible`
+requires. -/
+theorem exists_ratPoly_removeZeroRoots (Q : ℚ[X]) (hQ : Q ≠ 0) :
+    ∃ Q' : ℚ[X], Q'.eval 0 ≠ 0 ∧ (Q.aroots ℂ).filter (fun r => r ≠ 0) = Q'.aroots ℂ := by
+  classical
+  obtain ⟨Q', hQeq, hndvd⟩ := exists_eq_pow_rootMultiplicity_mul_and_not_dvd Q hQ (0 : ℚ)
+  rw [map_zero, sub_zero] at hQeq hndvd
+  have hcoeff : Q'.coeff 0 ≠ 0 := fun hc => hndvd (X_dvd_iff.mpr hc)
+  have hQ'eval : Q'.eval 0 ≠ 0 := by rw [← coeff_zero_eq_eval_zero]; exact hcoeff
+  have hQ'ne : Q' ≠ 0 := fun h => hcoeff (by rw [h]; simp)
+  refine ⟨Q', hQ'eval, ?_⟩
+  set m := Q.rootMultiplicity 0 with hm
+  have hXmne : (X ^ m : ℚ[X]) ≠ 0 := pow_ne_zero _ X_ne_zero
+  have haroots : Q.aroots ℂ = (X ^ m : ℚ[X]).aroots ℂ + Q'.aroots ℂ := by
+    conv_lhs => rw [hQeq]
+    rw [aroots_mul (mul_ne_zero hXmne hQ'ne)]
+  have hXm : (X ^ m : ℚ[X]).aroots ℂ = Multiset.replicate m 0 := by
+    rw [aroots_def, Polynomial.map_pow, map_X, roots_pow, roots_X, Multiset.nsmul_singleton]
+  have hzero_notmem : (0 : ℂ) ∉ Q'.aroots ℂ := by
+    rw [mem_aroots]
+    rintro ⟨-, h⟩
+    rw [aeval_def, eval₂_at_zero, coeff_zero_eq_eval_zero] at h
+    exact hQ'eval (by exact_mod_cast (FaithfulSMul.algebraMap_injective ℚ ℂ) (by simpa using h))
+  rw [haroots, hXm, Multiset.filter_add]
+  rw [Multiset.filter_eq_nil.mpr (fun x hx => by
+        rw [Multiset.eq_of_mem_replicate hx]; simp)]
+  rw [zero_add,
+    Multiset.filter_eq_self.mpr (by intro x hx hx0; subst hx0; exact hzero_notmem hx)]
+
 end LeanFormalizations.Transcendence
