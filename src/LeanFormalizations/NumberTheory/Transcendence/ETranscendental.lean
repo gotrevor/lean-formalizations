@@ -22,9 +22,14 @@ mathlib infrastructure. Transcendence of `e` is exactly the `α = 1` instance of
   If `e` is algebraic over `ℚ` then a *nonzero integer* polynomial with *nonzero
   constant term* annihilates `e` (clear denominators via `IsFractionRing`, then
   factor out the largest power of `X` using `e ≠ 0`).
+* `tendsto_const_mul_pow_div_factorial`, `exists_prime_smallness`,
+  `hermitePoly_eval_zero_ne`, `hermitePoly_aroots` — **proved, axiom-clean**: the
+  analytic decay + prime selection (roadmap step 2) and the Hermite polynomial's
+  value/roots data (roadmap step 1).
 * `no_intPoly_aeval_eq_zero` — **isolated analytic crux (disclosed `sorry`)**: no such
-  polynomial can annihilate `e`. This is the Hermite assembly of `exp_polynomial_approx`
-  and is the single remaining hard step. Roadmap in its docstring.
+  polynomial can annihilate `e`. With steps 1–2 discharged, only the **step-3**
+  integer-`N` / `mod p` assembly of `exp_polynomial_approx` remains. Roadmap in its
+  docstring.
 * `e_transcendental` — the headline, proved *modulo* the crux.
 
 ## The Hermite assembly (roadmap for `no_intPoly_aeval_eq_zero`)
@@ -122,13 +127,31 @@ theorem hermitePoly_eval_zero_ne (m : ℕ) :
   have : (k : ℤ) ≠ 0 := by exact_mod_cast (Nat.one_le_iff_ne_zero.mp hk.1)
   simpa using this
 
+/-- **The Hermite polynomial's complex roots** (roadmap step 1): the roots of
+`∏_{k=1}^m (X − k)` over `ℂ` are exactly the integers `1,…,m` (as a multiset, each
+with multiplicity one). Lets the per-root bound from `exp_polynomial_approx` be
+re-summed over `k = 1,…,m`. -/
+theorem hermitePoly_aroots (m : ℕ) :
+    (∏ k ∈ Finset.Icc 1 m, (X - C (k : ℤ))).aroots ℂ
+      = (Finset.Icc 1 m).val.map (fun k : ℕ => (k : ℂ)) := by
+  rw [Polynomial.aroots_def, Polynomial.map_prod]
+  have hcongr : ∀ k ∈ Finset.Icc 1 m,
+      (X - C (k : ℤ)).map (algebraMap ℤ ℂ) = X - C ((k : ℕ) : ℂ) := by intro k _; simp
+  rw [Finset.prod_congr rfl hcongr, Finset.prod_eq_multiset_prod]
+  have key := roots_multiset_prod_X_sub_C ((Finset.Icc 1 m).val.map (fun k : ℕ => (k : ℂ)))
+  rw [Multiset.map_map] at key
+  exact key
+
 /-- **Hermite's contradiction — the isolated analytic crux** (disclosed `sorry`).
 No nonzero integer polynomial with nonzero constant term annihilates `e`.
 
 This is the assembly of `LindemannWeierstrass.exp_polynomial_approx` into a nonzero
-integer of absolute value `< 1`; see the file header for the full roadmap. It is the
-single remaining hard step in the transcendence of `e`, and the concrete
-prerequisite being chipped toward `HermiteLindemann.hermite_lindemann`. -/
+integer of absolute value `< 1`; see the file header for the full roadmap. Roadmap
+steps 1–2 are now proved above (`hermitePoly_eval_zero_ne`, `hermitePoly_aroots`,
+`exists_prime_smallness`); what remains is **step 3** — the integer
+`N := a₀·n + p·∑ aₖ·gp(k)`, its `‖(N:ℂ)‖ < 1` bound (via the per-root estimates
+re-summed over `hermitePoly_aroots`), and the `mod p` nonvanishing (`p ∤ a₀·n`). It is
+the concrete prerequisite being chipped toward `HermiteLindemann.hermite_lindemann`. -/
 theorem no_intPoly_aeval_eq_zero (q : ℤ[X]) (hq0 : q.coeff 0 ≠ 0) :
     aeval (Real.exp 1) q ≠ 0 := by
   sorry
