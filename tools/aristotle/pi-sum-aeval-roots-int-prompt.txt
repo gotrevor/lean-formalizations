@@ -1,0 +1,30 @@
+Prove the following Lean 4 (mathlib) theorem. Return a complete, axiom-clean proof
+(#print axioms must be exactly [propext, Classical.choice, Quot.sound], no sorry).
+
+import Mathlib
+open Polynomial
+
+/-- The sum of an integer polynomial g evaluated over the complex roots (with
+multiplicity) of a MONIC integer polynomial f is an integer. -/
+theorem sum_aeval_roots_int (f : Polynomial Int) (hf : f.Monic) (g : Polynomial Int) :
+    exists N : Int,
+      ((f.aroots Complex).map (fun r => Polynomial.aeval r g)).sum = (N : Complex) := by
+  sorry
+
+Mathematical strategy (any correct route is fine):
+The sum equals sum over k of g.coeff k times the k-th power sum p_k of the roots.
+Each power sum p_k of the roots of a monic integer polynomial is an integer, because
+power sums are integer polynomials in the elementary symmetric functions of the roots
+(Newton's identities), and the elementary symmetric functions of the roots of a monic
+integer polynomial are (up to sign) its coefficients, hence integers.
+An alternative clean route: let C be the companion matrix of f over Int (a d-by-d
+integer matrix whose characteristic polynomial is f and whose complex eigenvalues, with
+multiplicity, are exactly f.aroots Complex). Then sum over roots r of g(r) equals the
+trace of the integer matrix g(C) (Matrix.trace of an integer matrix is an integer, and
+trace equals the sum of eigenvalues over an algebraically closed field). Relevant mathlib:
+Matrix.charpoly, the companion matrix, Matrix.trace_eq_sum_roots_charpoly or eigenvalue
+APIs, Polynomial.aeval over matrices.
+
+If you cannot close the full theorem, STILL return the reduction (e.g. reduce to
+"each power sum of the roots is an integer") with that single fact as an isolated sorry,
+so the file builds with one named gap.

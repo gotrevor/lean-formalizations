@@ -1,0 +1,34 @@
+NEXT leaf (submit after sum_aeval_roots_int returns). The deep "algebraic part" of
+Lindemann's pi-transcendence: the symmetric-function descent of the subset-sum polynomial.
+
+Prove the following Lean 4 (mathlib) theorem. Return a complete axiom-clean proof
+(#print axioms = [propext, Classical.choice, Quot.sound]); if you cannot close it, return
+the reduction with the single hard symmetric-function fact as an isolated sorry.
+
+import Mathlib
+open Polynomial
+
+/-- If theta : Fin n -> C are exactly the complex roots (with multiplicity) of a monic
+G : Q[X], then the product over all subsets of (X - C (sum of theta over the subset)) has
+every coefficient in the range of (algebraMap Q C). I.e. the subset-sum polynomial descends
+to Q[X]. -/
+theorem subsetSum_poly_descends (n : Nat) (theta : Fin n -> Complex) (G : Polynomial Rat)
+    (hGmonic : G.Monic)
+    (hroots : (G.map (algebraMap Rat Complex)).roots
+      = (Finset.univ : Finset (Fin n)).val.map theta) :
+    forall j : Nat,
+      (Finset.prod (Finset.univ.powerset)
+        (fun t => Polynomial.X - Polynomial.C (Finset.sum t (fun k => theta k)))).coeff j
+        in Set.range (algebraMap Rat Complex) := by
+  sorry
+
+Mathematical strategy: each coefficient of the product is, up to sign, an elementary
+symmetric function of the family { sum_{k in t} theta k : t subset of Fin n }. Permuting the
+theta_k permutes this family, so the coefficient is a SYMMETRIC polynomial (with integer
+coefficients) in theta_1,...,theta_n. By the fundamental theorem of symmetric polynomials
+(MvPolynomial.esymmAlgEquiv / esymmAlgHom) it is a polynomial in the elementary symmetric
+functions e_j(theta); and e_j(theta) = (up to sign) the coefficients of G (Vieta:
+Polynomial.coeff_eq_esymm_roots_of_card / Multiset.prod_X_sub_C_coeff), which lie in Q.
+Hence each coefficient is in the range of algebraMap Q C. Relevant mathlib:
+MvPolynomial.IsSymmetric, MvPolynomial.esymm, Multiset.esymm, Polynomial.coeff,
+Vieta lemmas in RingTheory/Polynomial/Vieta.lean.
