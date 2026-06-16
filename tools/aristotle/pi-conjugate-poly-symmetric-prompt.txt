@@ -1,34 +1,40 @@
-NEXT leaf (submit after sum_aeval_roots_int returns). The deep "algebraic part" of
-Lindemann's pi-transcendence: the symmetric-function descent of the subset-sum polynomial.
+NEXT leaf (submit after sum_aeval_roots_int returns). The SHARPENED irreducible core of
+Lindemann's pi-transcendence algebraic part: the esymm of the subset-sum multiset is rational.
+
+Context (already machine-checked in the repo, axiom-clean):
+- esymm_aroots_mem_range: for monic G : Q[X], every esymm of G.aroots C is in range(algebraMap Q C).
+- Multiset.prod_X_sub_C_coeff (mathlib): coeffs of prod (X - C a) over a multiset = +/- esymm.
+- Polynomial.lifts_iff_coeff_lifts (mathlib): coeffs in range  <=>  poly lifts to Q[X].
+- exists_intPoly_aroots_eq, subsetSum_relation_impossible (repo): finish pi once we have the
+  integer conjugate polynomial.
+So the WHOLE remaining gap is the single fact below.
 
 Prove the following Lean 4 (mathlib) theorem. Return a complete axiom-clean proof
-(#print axioms = [propext, Classical.choice, Quot.sound]); if you cannot close it, return
-the reduction with the single hard symmetric-function fact as an isolated sorry.
+(#print axioms = [propext, Classical.choice, Quot.sound]); if you cannot close it, return the
+reduction with the single hard symmetric-function fact as an isolated sorry.
 
 import Mathlib
 open Polynomial
 
-/-- If theta : Fin n -> C are exactly the complex roots (with multiplicity) of a monic
-G : Q[X], then the product over all subsets of (X - C (sum of theta over the subset)) has
-every coefficient in the range of (algebraMap Q C). I.e. the subset-sum polynomial descends
-to Q[X]. -/
-theorem subsetSum_poly_descends (n : Nat) (theta : Fin n -> Complex) (G : Polynomial Rat)
+/-- The elementary symmetric functions of the multiset of ALL subset-sums of the complex
+roots of a monic G : Q[X] are rational. (The {sum_{k in t} theta k} are symmetric in the
+conjugates theta, so their esymm is a symmetric polynomial in theta with integer
+coefficients, hence -- by the fundamental theorem of symmetric polynomials and Vieta -- a
+rational number.) -/
+theorem subsetSum_esymm_rational (n : Nat) (theta : Fin n -> Complex) (G : Polynomial Rat)
     (hGmonic : G.Monic)
     (hroots : (G.map (algebraMap Rat Complex)).roots
-      = (Finset.univ : Finset (Fin n)).val.map theta) :
-    forall j : Nat,
-      (Finset.prod (Finset.univ.powerset)
-        (fun t => Polynomial.X - Polynomial.C (Finset.sum t (fun k => theta k)))).coeff j
-        in Set.range (algebraMap Rat Complex) := by
+      = (Finset.univ : Finset (Fin n)).val.map theta)
+    (j : Nat) :
+    (((Finset.univ.powerset : Finset (Finset (Fin n))).val.map
+        (fun t => Finset.sum t (fun k => theta k))).esymm j)
+      in Set.range (algebraMap Rat Complex) := by
   sorry
 
-Mathematical strategy: each coefficient of the product is, up to sign, an elementary
-symmetric function of the family { sum_{k in t} theta k : t subset of Fin n }. Permuting the
-theta_k permutes this family, so the coefficient is a SYMMETRIC polynomial (with integer
-coefficients) in theta_1,...,theta_n. By the fundamental theorem of symmetric polynomials
-(MvPolynomial.esymmAlgEquiv / esymmAlgHom) it is a polynomial in the elementary symmetric
-functions e_j(theta); and e_j(theta) = (up to sign) the coefficients of G (Vieta:
-Polynomial.coeff_eq_esymm_roots_of_card / Multiset.prod_X_sub_C_coeff), which lie in Q.
-Hence each coefficient is in the range of algebraMap Q C. Relevant mathlib:
-MvPolynomial.IsSymmetric, MvPolynomial.esymm, Multiset.esymm, Polynomial.coeff,
-Vieta lemmas in RingTheory/Polynomial/Vieta.lean.
+Strategy: esymm j of the subset-sum family is a polynomial (integer coefficients) in the
+elementary symmetric functions e_1(theta),...,e_n(theta), because permuting theta permutes
+the subset-sums (so the expression is a symmetric MvPolynomial in theta). Use
+MvPolynomial.esymmAlgEquiv / esymmAlgHom (fundamental theorem) to write it via the e_i, then
+e_i(theta) = +/- G.coeff (Vieta: coeff_eq_esymm_roots_of_card) is rational. Relevant mathlib:
+MvPolynomial.IsSymmetric, MvPolynomial.esymm, MvPolynomial.esymmAlgEquiv, Multiset.esymm,
+RingTheory/Polynomial/Vieta.lean.

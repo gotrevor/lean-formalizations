@@ -55,6 +55,17 @@ axiom-clean:
    `RingTheory/Polynomial/Vieta.lean`, `FieldTheory/Minpoly/ConjRootClass.lean`.
    Then `exists_intPoly_aroots_eq` + `subsetSum_relation_impossible` finish π.
 
+   **SHARPENED (this lap):** the descent now reduces to a SINGLE fact —
+   `subsetSum_esymm_rational`: the `esymm` of the multiset of subset-sums
+   `{∑_{k∈t} θ_k}` is rational. Because: `esymm_aroots_mem_range` (repo, done) +
+   Vieta `Multiset.prod_X_sub_C_coeff` (the conjugate polynomial's coeffs ARE the `esymm`
+   of the subset-sums, ± sign) + `Polynomial.lifts_iff_coeff_lifts` (coeffs in range ⟹
+   poly lifts to `ℚ[X]`) ⟹ the conjugate polynomial descends to `ℚ[X]`; then factor the
+   nonzero part and `exists_intPoly_aroots_eq`. The ONLY hard input left is
+   `subsetSum_esymm_rational` (= the fundamental theorem of symmetric polynomials applied to
+   the subset-sum family, symmetric in `θ`). Aristotle leaf written:
+   `tools/aristotle/pi-conjugate-poly-symmetric-prompt.txt`. Submit after `9a19f72e`.
+
 Plugging both into `no_intPoly_exp_relation` discharges `hermite_lindemann` at π. The
 original orientation (still valid):
 
