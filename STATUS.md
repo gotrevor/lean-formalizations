@@ -31,7 +31,7 @@ Three independent threads, all building green and `src/` **sorry-free**. **Curti
 | `Constructible.squaring_the_circle_impossible` | impossibility, **cond.** on `Transcendental ℚ π` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms (hypothesis explicit) |
 | `Constructible.squaring_the_circle_impossible_uncond` | impossibility, uncond. | `[…trust base, hermite_lindemann]` | 🟡 1 axiom = Hermite–Lindemann (proven theorem, project-scale; being chipped via `e`) |
 | `Transcendence.transcendental_pi` | `π` transcendental, uncond. | `[…trust base, hermite_lindemann]` | 🟡 same 1 axiom |
-| `Transcendence.e_transcendental` | `e` transcendental (Hermite 1873), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **fully proved this lap** |
+| `Transcendence.e_transcendental` (+ `transcendental_exp_{nat,int,rat}`) | `e`, `eⁿ`, `eᵃ`, `e^q` transcendental (Hermite 1873; rational-exponent Hermite–Lindemann), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **fully proved this lap** |
 
 **Math-axiom count (🟢+🟡+🟠): 1** — `hermite_lindemann` (🟡, project-scale: proven theorem behind the Lindemann–Weierstrass algebraic part; current frontier, next prerequisite = symmetric-function / conjugate-product extension for `π`). The `α=1` instance is now independently discharged (`e_transcendental`). No 🔴 anywhere (every headline unconditional; the one conditional theorem keeps its hypothesis explicit). **Zero `sorry` in `src/`.**
 
