@@ -341,4 +341,41 @@ theorem subsetSum_relation_impossible
         rw [hKdef]; push_cast; ring]
   exact hrel
 
+/-- **Clearing denominators preserving complex roots** (the easy tail of the conjugate
+polynomial construction). Any `Q : ℚ[X]` with nonzero constant term has an *integer*
+polynomial `F` with the **same complex roots** (with multiplicity) and `F.eval 0 ≠ 0`. Via
+`IsLocalization.integerNormalization` (`F.map (ℤ→ℚ) = b·Q`, `b ≠ 0`); a nonzero scalar
+leaves the complex roots unchanged, and `0` is a root of neither (since `Q.eval 0 ≠ 0`).
+So once the symmetric-function part yields the monic *rational* polynomial with the `σ_t`
+as roots, this produces the integer `F` that `subsetSum_relation_impossible` needs. -/
+theorem exists_intPoly_aroots_eq (Q : ℚ[X]) (hQ0 : Q.eval 0 ≠ 0) :
+    ∃ F : ℤ[X], F.eval 0 ≠ 0 ∧ F.aroots ℂ = Q.aroots ℂ := by
+  have hQne : Q ≠ 0 := fun h => hQ0 (by rw [h]; simp)
+  obtain ⟨b, hb, hbeq⟩ := IsLocalization.integerNormalization_spec (nonZeroDivisors ℤ) Q
+  set F : ℤ[X] := IsLocalization.integerNormalization (nonZeroDivisors ℤ) Q with hF
+  have hbne : (b : ℤ) ≠ 0 := nonZeroDivisors.ne_zero hb
+  have hinjℚℂ : Function.Injective (algebraMap ℚ ℂ) := FaithfulSMul.algebraMap_injective ℚ ℂ
+  have hFne : F ≠ 0 := by
+    intro h; rw [h, Polynomial.map_zero] at hbeq
+    exact (smul_ne_zero hbne hQne) hbeq.symm
+  have hmapℂ : F.map (algebraMap ℤ ℂ) = (b : ℤ) • Q.map (algebraMap ℚ ℂ) := by
+    have htower : (algebraMap ℤ ℂ) = (algebraMap ℚ ℂ).comp (algebraMap ℤ ℚ) := by
+      rw [IsScalarTower.algebraMap_eq ℤ ℚ ℂ]
+    rw [htower, ← Polynomial.map_map, hbeq]
+    simp only [← Polynomial.coe_mapRingHom]
+    exact map_zsmul (Polynomial.mapRingHom (algebraMap ℚ ℂ)) b Q
+  have haroots : F.aroots ℂ = Q.aroots ℂ := by
+    rw [aroots_def, aroots_def, hmapℂ, zsmul_eq_mul, ← Polynomial.C_eq_intCast, roots_C_mul]
+    exact_mod_cast hbne
+  have hQroot : (0 : ℂ) ∉ Q.aroots ℂ := by
+    rw [mem_aroots]
+    rintro ⟨-, h⟩
+    rw [aeval_def, eval₂_at_zero, coeff_zero_eq_eval_zero] at h
+    exact hQ0 (hinjℚℂ (by simpa using h))
+  refine ⟨F, ?_, haroots⟩
+  intro hFeval
+  apply hQroot
+  rw [← haroots, mem_aroots]
+  exact ⟨hFne, by rw [aeval_def, eval₂_at_zero, coeff_zero_eq_eval_zero, hFeval]; simp⟩
+
 end LeanFormalizations.Transcendence
