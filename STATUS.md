@@ -5,6 +5,19 @@
 Three independent threads, all building green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple) and the **power-tower** convergence theorem are complete and fully axiom-clean. The **constructible-numbers / Wantzel** thread is complete as a full iff (algebra ⇔ geometry) with five classical impossibilities + two positive constructions; *squaring the circle* was advanced this lap from "conditional on a `Transcendental ℚ π` hypothesis" to "**unconditional modulo a single cited axiom** (`hermite_lindemann`)". And the **transcendence of `e`** (Hermite 1873) is now **fully proved and axiom-clean** — the assembly of mathlib's analytic part of Lindemann–Weierstrass — discharging the `α=1` instance of `hermite_lindemann`. The remaining frontier is the general `hermite_lindemann` (hence `π`), needing symmetric functions over Galois conjugates.
 
 ## What's happened (newest first)
+- **2026-06-16 (π algebraic-part lap):** drove the `hermite_lindemann`-at-π crux hard. New
+  file `PiLindemann.lean`, **all axiom-clean**, reduces π-transcendence to exactly two named
+  facts: (a) the monic root-sum integrality `sum_aeval_roots_int` (Aristotle job `9a19f72e`),
+  (b) the symmetric-function construction of the integer conjugate polynomial. Everything
+  else is machine-checked: `prod_one_add_exp_eq_sum_subsetSum` + `pi_exp_relation` (★) (the
+  combinatorial reduction `e^{iπ}=−1 ⟹ K + ∑_{σ_t≠0} e^{σ_t}=0`); `no_intPoly_exp_relation`
+  (the **general non-monic analytic engine** — the full integer-`N`/mod-`p` assembly over an
+  arbitrary `F.aroots`, generalizing the `e` proof); `aroots_integralNormalization` +
+  `hsum_of_monic_rootsum` (discharge `hsum` for **every** integer `F` from the monic case via
+  `integralNormalization`/`scaleRoots`); and the capstone `subsetSum_relation_impossible`
+  (assembles all three — the precise remaining frontier). The **entire analytic part of
+  Hermite–Lindemann at π is now done**; only the algebraic conjugate-polynomial construction
+  (the "algebraic part" PR #28013 supplies) remains.
 - **2026-06-16 (review lap):** π-transcendence narrowing shipped: stated **Hermite–Lindemann** (nonzero algebraic α ⟹ `exp α` transcendental) as ONE disclosed `axiom`, machine-checked `Transcendental ℚ π` from it (Euler `exp(iπ) = -1`) → `squaring_the_circle_impossible_uncond`. Then **PROVED transcendence of `e`** end-to-end (`ETranscendental.lean`): algebraic reduction + analytic decay/prime-selection + Hermite-polynomial roots + the full integer-`N`/mod-`p` assembly of `exp_polynomial_approx`. `e_transcendental` is `#print axioms`-clean — the α=1 instance of the cited axiom discharged. New dir `NumberTheory/Transcendence/`.
 - **2026-06-15 2358/2343:** Constructible/Wantzel thread COMPLETE — full equivalence `isConstructible_iff_constructiblePoint` both directions (forward = degree obstruction; converse = explicit compass arithmetic). 5 impossibilities (cube, trisection, nonagon, heptagon, + geometric-point versions), pentagon positive. All axiom-clean.
 - **2026-06-15:** Constructible Layer 1 (algebraic degree engine `IsSqrtTower.finrank_eq_pow_two`) + 3 classical impossibilities; Layer 2 geometric faithfulness bridge.
