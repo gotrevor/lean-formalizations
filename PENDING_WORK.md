@@ -35,12 +35,18 @@ axiom-clean:
   *given* `hsum` (`ℓ^m·∑_r aeval r gp ∈ ℤ`, `ℓ=F.leadingCoeff`). The full
   integer-`N`/mod-`p` engine, generalized from `e`'s integer roots to arbitrary `F.aroots`.
 
-**What's LEFT (the genuine algebraic crux), two pieces:**
-1. **`hsum` for any integer `F`** — dischargeable from the *monic* root-sum integrality
-   `sum_aeval_roots_int` (∑ over roots of a monic ℤ-poly of `aeval r gp` ∈ ℤ; Aristotle
-   job `9a19f72e`) via `Polynomial.integralNormalization F` (monic, roots = `ℓ·F.aroots`):
-   `ℓ^m·∑_r aeval r gp = ∑_j gp_j ℓ^{m−j}·(power sum of `integralNormalization F` roots)`.
-   So once the monic lemma lands, `hsum` holds for **every** `F` — NOT π-specific.
+**STATUS (2026-06-16, end of π algebraic-part lap): the ENTIRE algebraic part is assembled,
+axiom-clean, modulo ONE fact.** Capstone `MonicRootSums.subsetSum_relation_impossible_of_esymm`:
+given the conjugate family `θ` with `e^{θ k₀}=−1`, a contradiction follows from the SOLE
+hypothesis `hesymm` (= the subset-sum `esymm` is rational). Fact (a) `sum_aeval_roots_int`
+is PROVEN (Aristotle `9a19f72e`, kernel-verified). The only open input is
+`subsetSum_esymm_rational` (Aristotle `b7252abe`, RUNNING) + the iπ-conjugate instantiation
+plumbing (extract the conjugate `Finset` from `iπ` algebraic; pure bookkeeping, no deep math).
+
+**What's LEFT (now just two bookkeeping items):**
+1. ✅ DONE — **`hsum` for any integer `F`** dischargeable from the *monic* root-sum
+   integrality `sum_aeval_roots_int` (PROVEN, Aristotle `9a19f72e`, kernel-verified) via
+   `Polynomial.integralNormalization` (`hsum_of_monic_rootsum`).
 2. **The symmetric-function construction of the conjugate polynomial.** Reduced further
    this lap — the clear-denominators tail is now DONE (`exists_intPoly_aroots_eq`: any
    `Q : ℚ[X]` with `Q.eval 0 ≠ 0` ⟹ an integer `F` with the same complex roots and
@@ -55,16 +61,22 @@ axiom-clean:
    `RingTheory/Polynomial/Vieta.lean`, `FieldTheory/Minpoly/ConjRootClass.lean`.
    Then `exists_intPoly_aroots_eq` + `subsetSum_relation_impossible` finish π.
 
-   **SHARPENED (this lap):** the descent now reduces to a SINGLE fact —
-   `subsetSum_esymm_rational`: the `esymm` of the multiset of subset-sums
-   `{∑_{k∈t} θ_k}` is rational. Because: `esymm_aroots_mem_range` (repo, done) +
-   Vieta `Multiset.prod_X_sub_C_coeff` (the conjugate polynomial's coeffs ARE the `esymm`
-   of the subset-sums, ± sign) + `Polynomial.lifts_iff_coeff_lifts` (coeffs in range ⟹
-   poly lifts to `ℚ[X]`) ⟹ the conjugate polynomial descends to `ℚ[X]`; then factor the
-   nonzero part and `exists_intPoly_aroots_eq`. The ONLY hard input left is
-   `subsetSum_esymm_rational` (= the fundamental theorem of symmetric polynomials applied to
-   the subset-sum family, symmetric in `θ`). Aristotle leaf written:
-   `tools/aristotle/pi-conjugate-poly-symmetric-prompt.txt`. Submit after `9a19f72e`.
+2. **`subsetSum_esymm_rational`** — the SOLE remaining math fact: the `esymm` of the
+   subset-sum multiset is rational (fundamental theorem of symmetric polynomials applied to
+   the subset-sums, symmetric in `θ`). Aristotle job `b7252abe` RUNNING (prompt
+   `tools/aristotle/pi-subsetsum-esymm-submitted.txt`; CLI gotcha noted in
+   `tools/aristotle/README-cli-gotcha.md`). When it returns: verify in-kernel, port, and feed
+   to `subsetSum_relation_impossible_of_esymm`.
+
+3. **iπ-conjugate instantiation** (pure bookkeeping, no deep math): from `π` algebraic, get
+   `iπ` algebraic; take `s` = the conjugate roots of `minpoly ℚ (iπ)` as a `Finset` (distinct,
+   char-0 separable), `θ = id`, `k₀ = iπ` with `e^{iπ}=−1`; supply `hesymm` from (2). Then
+   `subsetSum_relation_impossible_of_esymm` ⟹ `False`, giving `Transcendental ℚ π`, hence
+   `hermite_lindemann` at π dies and `squaring_the_circle_impossible_uncond` becomes fully
+   unconditional (delete the cited axiom). The chain `subsetSum_poly_lifts` →
+   `exists_ratPoly_removeZeroRoots` → `exists_intPoly_aroots_eq` →
+   `subsetSum_relation_impossible_of_conjugatePoly` is ALL machine-checked (`PiLindemann.lean`,
+   `MonicRootSums.lean`).
 
 Plugging both into `no_intPoly_exp_relation` discharges `hermite_lindemann` at π. The
 original orientation (still valid):
