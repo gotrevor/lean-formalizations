@@ -45,10 +45,28 @@ New files `NumberTheory/Transcendence/PiLindemann.lean` + `MonicRootSums.lean`:
    clean** before trusting (Aristotle pins v4.28; we're v4.29.1). The returned theorem proves
    `subsetSum_esymm_rational` in the form of `hsse` (modulo trivial renaming). Port it into a
    new file (or `MonicRootSums.lean`), namespaced.
-   - If it came back with an isolated `sorry` (open-problem wrapper) or fails to verify: the
-     prompt is `tools/aristotle/pi-subsetsum-esymm-submitted.txt`; re-pitch or prove locally
-     (fundamental theorem of symmetric polynomials: `MvPolynomial.esymmAlgEquiv` + Vieta —
-     `esymm_aroots_mem_range` is the arithmetic core already done).
+   - If it came back with an isolated `sorry` (open-problem wrapper) or fails to verify:
+     prove locally. **Validated local-proof roadmap** (the approach was checked to compile up
+     to the two hard sub-lemmas this lap):
+     1. `map_multiset_esymm (φ : R →+* S) (s) (j) : (s.map φ).esymm j = φ (s.esymm j)` —
+        PROVEN (clean, ~5 lines: `Multiset.esymm` + `map_multiset_sum` + `powersetCard_map` +
+        `Multiset.prod_hom`). Keep this helper.
+     2. `Φ_j := (univ.powerset.val.map (fun t => ∑ k ∈ t, MvPolynomial.X k)).esymm j`. Then
+        `aeval θ Φ_j = (univ.powerset.val.map (fun t => ∑ k∈t, θ k)).esymm j` (the target LHS),
+        via `map_multiset_esymm (aeval θ).toRingHom` + `aeval (∑_{k∈t} X k) = ∑_{k∈t} θ k`.
+     3. **Φ_j is symmetric** (`IsSymmetric`): for `σ : Equiv.Perm (Fin n)`,
+        `rename σ Φ_j = Φ_j` via `map_multiset_esymm (rename σ).toRingHom`; reduces to
+        `univ.powerset.val.map (fun t => t.image σ) = univ.powerset.val` (σ permutes the
+        powerset). Prove the latter via `Finset.image` injOn (`(s.image f).val = s.val.map f`)
+        + `univ.powerset.image (·.image σ) = univ.powerset`. [the genuine work]
+     4. **Fundamental theorem**: `IsSymmetric` ⟹ `Φ_j ∈ symmetricSubalgebra` ⟹
+        (`esymmAlgHom_surjective`) `Φ_j = esymmAlgHom P`, so
+        `aeval θ Φ_j = aeval (fun i => (univ.val.map θ).esymm (i+1)) P`
+        (`esymmAlgHom` def + `aeval_esymm_eq_multiset_esymm`). Each
+        `(univ.val.map θ).esymm (i+1) = (G.aroots ℂ).esymm (i+1) ∈ range` (`esymm_aroots_mem_range`,
+        already in repo, using `hroots`). A `ℚ`-`aeval` at range-valued points lands in
+        `(algebraMap ℚ ℂ).range` (it's a subalgebra). Done.
+     Prompt archived: `tools/aristotle/pi-subsetsum-esymm-submitted.txt`.
    - **CLI gotcha** (resubmitting): `aristotle submit` does `Path(prompt).is_file()` which
      raises `ENAMETOOLONG` for any 255+ char run without `/`. Sprinkle `/` (e.g. append
      ` -- ref/x` per line) — see `tools/aristotle/README-cli-gotcha.md`.
