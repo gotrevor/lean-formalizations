@@ -22,7 +22,17 @@ data (`hermitePoly_eval_zero_ne`, `hermitePoly_aroots`) + the integer-`N`/mod-`p
 contradiction (`no_intPoly_aeval_eq_zero`). Discharges the `α=1` instance of
 `hermite_lindemann`. (Aristotle job `e502fd22` canceled — proved locally.)
 
-### 🎯 ACTIVE — Open item B: `hermite_lindemann` for `π` (the conjugate-product extension)
+### ✅ COMPLETE (2026-06-16) — Open item B: `π`-transcendence, axiom-clean, axiom DELETED
+**DONE.** `Transcendence.transcendental_pi_axiomClean : Transcendental ℚ Real.pi` is proved
+from first principles and axiom-clean; `squaring_the_circle_impossible_uncond` rewired to it;
+the `hermite_lindemann` axiom deleted. Repo math-axiom count = **0**. The full assembly:
+`PiLindemann.lean` (combinatorial reduction + non-monic analytic engine + descent + glue) →
+`MonicRootSums.lean` (fact (a) `sum_aeval_roots_int` [Aristotle `9a19f72e`] + conjugate
+instantiation) → `SubsetSumEsymm.lean` (fact (b) `subsetSum_esymm_rational`, fundamental
+theorem of symmetric polynomials [Aristotle `b7252abe`]) → `PiTranscendental.lean`. Both
+Aristotle proofs independently kernel-verified. The historical record below is retained.
+
+### 〜 HISTORICAL — Open item B: `hermite_lindemann` for `π` (the conjugate-product extension)
 
 **Progress 2026-06-16 (this lap): the ANALYTIC part of π is DONE; the gap narrowed to one
 algebraic construction.** New file `NumberTheory/Transcendence/PiLindemann.lean`, all

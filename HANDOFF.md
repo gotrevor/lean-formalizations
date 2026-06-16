@@ -3,11 +3,10 @@
 This is a **thin pointer**, not a durable overview. Read, in order:
 
 1. **`STATUS.md`** — the living repo-wide overview (3 threads, real `#print axioms` ledger).
-2. **Newest dated baton: `HANDOFF-2026-06-16-pi-complete-mod-one-fact.md`** — the current
-   resume point: the **entire Lindemann π-transcendence is assembled axiom-clean**, reduced to
-   ONE open input (`subsetSum_esymm_rational`, Aristotle job `b7252abe`). Next = harvest that
-   job, verify, plug into `transcendental_pi_of_subsetSumEsymm` → unconditional `Transcendental
-   ℚ π` → squaring-the-circle fully axiom-clean.
+2. **Newest dated baton: `HANDOFF-2026-06-16-pi-PROVEN-axiom-free.md`** — the current resume
+   point: **π-transcendence is PROVEN axiom-clean and the `hermite_lindemann` axiom is
+   DELETED**; the repo now has **0 math axioms**. The transcendence/squaring-the-circle thread
+   is COMPLETE. Next = a NEW target (default: power-tower sharp iff).
 3. **`PENDING_WORK.md`** — open-item inventory + attack paths (items B = π, C = power-tower iff).
 
 ## Standing rules (this repo)
