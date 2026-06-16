@@ -5,6 +5,16 @@
 Three independent threads, all building green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple) and the **power-tower** convergence theorem are complete and fully axiom-clean. The **constructible-numbers / Wantzel** thread is complete as a full iff (algebra ⇔ geometry) with five classical impossibilities + two positive constructions; *squaring the circle* was advanced this lap from "conditional on a `Transcendental ℚ π` hypothesis" to "**unconditional modulo a single cited axiom** (`hermite_lindemann`)". And the **transcendence of `e`** (Hermite 1873) is now **fully proved and axiom-clean** — the assembly of mathlib's analytic part of Lindemann–Weierstrass — discharging the `α=1` instance of `hermite_lindemann`. The remaining frontier is the general `hermite_lindemann` (hence `π`), needing symmetric functions over Galois conjugates.
 
 ## What's happened (newest first)
+- **2026-06-16 (π COMPLETE modulo one Aristotle fact):** the **entire** Lindemann
+  π-transcendence is now machine-checked and axiom-clean, reduced to a SINGLE open input.
+  `MonicRootSums.transcendental_pi_of_subsetSumEsymm : (hsse) → Transcendental ℚ Real.pi`,
+  where `hsse` is exactly `subsetSum_esymm_rational` (esymm of the subset-sums of the iπ
+  conjugates is rational — Aristotle job `b7252abe`, running). Full chain, all axiom-clean:
+  combinatorial reduction (★) → non-monic analytic engine → `hsum` bridge → conjugate-poly
+  descent (`subsetSum_poly_lifts`) → zero-root removal → clear denominators → integer `F` →
+  fact (a) `sum_aeval_roots_int` (PROVEN, Aristotle `9a19f72e`) → iπ-conjugate instantiation.
+  When `b7252abe` lands (kernel-verified), `hsse` is discharged, `hermite_lindemann` dies, and
+  `squaring_the_circle_impossible_uncond` becomes fully axiom-clean.
 - **2026-06-16 (π algebraic-part lap, cont.):** **fact (a) DISCHARGED.** `sum_aeval_roots_int`
   (monic root-sum integrality, via `roots_esymm_int` + `power_sum_int` / Newton's identities)
   proved by Aristotle (job `9a19f72e`) and **independently kernel-verified** axiom-clean in
