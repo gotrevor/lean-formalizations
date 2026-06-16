@@ -12,4 +12,6 @@ import LeanFormalizations.NumberTheory.Transcendence.HermiteLindemann
 import LeanFormalizations.NumberTheory.Transcendence.ETranscendental
 import LeanFormalizations.NumberTheory.Transcendence.PiLindemann
 import LeanFormalizations.NumberTheory.Transcendence.MonicRootSums
+import LeanFormalizations.NumberTheory.Transcendence.SubsetSumEsymm
+import LeanFormalizations.NumberTheory.Transcendence.PiTranscendental
 import LeanFormalizations.Geometry.Constructible.Statement
