@@ -416,4 +416,30 @@ theorem esymm_aroots_mem_range (G : ℚ[X]) (hG : G.Monic) (j : ℕ) :
       rw [hvieta, ← mul_assoc, hsq, one_mul]
     rw [hesymm, hcoeff]
 
+/-- **The conjugate polynomial descends to `ℚ[X]` — modulo the single fact that the
+subset-sum `esymm` is rational.** If every elementary symmetric function `esymm j` of a
+multiset `σs : Multiset ℂ` is rational, then `∏_{a ∈ σs} (X − a)` lies in `lifts (ℚ → ℂ)`,
+i.e. it is the image of a polynomial in `ℚ[X]`. Via Vieta (`Multiset.prod_X_sub_C_coeff`:
+each coefficient is `±esymm`) + `Polynomial.lifts_iff_coeff_lifts`.
+
+For the `π` conjugate polynomial, `σs` is the multiset of subset-sums `{σ_t}`; combined with
+the FUNDAMENTAL remaining fact `subsetSum_esymm_rational` (`esymm` of the subset-sums is
+rational — symmetric in the conjugates; see
+`tools/aristotle/pi-conjugate-poly-symmetric-prompt.txt`) this descends the conjugate
+polynomial to `ℚ[X]`, after which `exists_intPoly_aroots_eq` produces the integer `F` and
+`subsetSum_relation_impossible` finishes. So the ENTIRE remaining gap is
+`subsetSum_esymm_rational`. -/
+theorem subsetSum_poly_lifts (σs : Multiset ℂ)
+    (hesymm : ∀ j, σs.esymm j ∈ Set.range (algebraMap ℚ ℂ)) :
+    (σs.map (fun a => X - C a)).prod ∈ Polynomial.lifts (algebraMap ℚ ℂ) := by
+  rw [Polynomial.lifts_iff_coeff_lifts]
+  intro k
+  rcases le_or_gt k (Multiset.card σs) with hk | hk
+  · rw [Multiset.prod_X_sub_C_coeff σs hk]
+    obtain ⟨q, hq⟩ := hesymm (Multiset.card σs - k)
+    exact ⟨(-1)^(Multiset.card σs - k) * q, by rw [map_mul, map_pow, map_neg, map_one, hq]⟩
+  · rw [Polynomial.coeff_eq_zero_of_natDegree_lt
+        (by rw [natDegree_multiset_prod_X_sub_C_eq_card]; exact hk)]
+    exact ⟨0, by simp⟩
+
 end LeanFormalizations.Transcendence

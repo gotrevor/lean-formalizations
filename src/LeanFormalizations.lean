@@ -11,4 +11,5 @@ import LeanFormalizations.RealAnalysis.PowerTower.Statement
 import LeanFormalizations.NumberTheory.Transcendence.HermiteLindemann
 import LeanFormalizations.NumberTheory.Transcendence.ETranscendental
 import LeanFormalizations.NumberTheory.Transcendence.PiLindemann
+import LeanFormalizations.NumberTheory.Transcendence.MonicRootSums
 import LeanFormalizations.Geometry.Constructible.Statement
