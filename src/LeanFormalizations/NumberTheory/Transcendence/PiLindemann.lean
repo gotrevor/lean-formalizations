@@ -48,6 +48,9 @@ import Mathlib.Analysis.SpecialFunctions.Exponential
 import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.RingTheory.Polynomial.IntegralNormalization
 import Mathlib.RingTheory.Polynomial.ScaleRoots
+import Mathlib.RingTheory.Polynomial.Vieta
+import Mathlib.FieldTheory.IsAlgClosed.Basic
+import Mathlib.Analysis.Complex.Polynomial.Basic
 import LeanFormalizations.NumberTheory.Transcendence.ETranscendental
 
 open Polynomial Filter Finset
@@ -377,5 +380,40 @@ theorem exists_intPoly_aroots_eq (Q : ℚ[X]) (hQ0 : Q.eval 0 ≠ 0) :
   apply hQroot
   rw [← haroots, mem_aroots]
   exact ⟨hFne, by rw [aeval_def, eval₂_at_zero, coeff_zero_eq_eval_zero, hFeval]; simp⟩
+
+/-- **Elementary symmetric functions of the conjugates are rational** (the arithmetic core
+of the symmetric-function descent). For a monic `G : ℚ[X]`, every `esymm j` of its complex
+roots `G.aroots ℂ` lies in the range of `algebraMap ℚ ℂ`. Vieta (`coeff_eq_esymm_roots_of_card`):
+`esymm j = ±G.coeff (deg − j)`, which is rational. Building block toward the conjugate
+polynomial's coefficients (which are `ℤ`-polynomials in these `esymm` values, hence rational
+by the fundamental theorem of symmetric polynomials — the remaining `subsetSum_poly_descends`
+step, Aristotle leaf `tools/aristotle/pi-conjugate-poly-symmetric-prompt.txt`). -/
+theorem esymm_aroots_mem_range (G : ℚ[X]) (hG : G.Monic) (j : ℕ) :
+    (G.aroots ℂ).esymm j ∈ Set.range (algebraMap ℚ ℂ) := by
+  set p : ℂ[X] := G.map (algebraMap ℚ ℂ) with hp
+  have hpmonic : p.Monic := hG.map _
+  have hcard : Multiset.card p.roots = p.natDegree :=
+    (splits_iff_card_roots.1 (IsAlgClosed.splits p))
+  have hroots_eq : G.aroots ℂ = p.roots := by rw [aroots_def]
+  rw [hroots_eq]
+  rcases Nat.lt_or_ge p.natDegree j with hj | hj
+  · have hz : p.roots.esymm j = 0 := by
+      rw [Multiset.esymm, Multiset.powersetCard_eq_empty j (by omega),
+          Multiset.map_zero, Multiset.sum_zero]
+    rw [hz]; exact ⟨0, by simp⟩
+  · set k : ℕ := p.natDegree - j with hk
+    have hkle : k ≤ p.natDegree := Nat.sub_le _ _
+    have hvieta := Polynomial.coeff_eq_esymm_roots_of_card hcard hkle
+    rw [hpmonic.leadingCoeff, one_mul] at hvieta
+    have hjk : p.natDegree - k = j := by omega
+    rw [hjk] at hvieta
+    have hcoeff : p.coeff k = algebraMap ℚ ℂ (G.coeff k) := by rw [hp, coeff_map]
+    refine ⟨(-1)^j * G.coeff k, ?_⟩
+    rw [map_mul, map_pow, map_neg, map_one]
+    have hsq : ((-1:ℂ))^j * ((-1:ℂ))^j = 1 := by
+      rw [← pow_add, ← two_mul, pow_mul]; simp
+    have hesymm : p.roots.esymm j = (-1)^j * p.coeff k := by
+      rw [hvieta, ← mul_assoc, hsq, one_mul]
+    rw [hesymm, hcoeff]
 
 end LeanFormalizations.Transcendence
