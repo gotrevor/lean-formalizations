@@ -129,4 +129,44 @@ theorem subsetSum_relation_impossible_of_conjugatePoly
   subsetSum_relation_impossible s θ k₀ hk₀ hval
     (fun G hG q => sum_aeval_roots_int G hG q) F hF0 hFroots
 
+/-- **The π-Lindemann reduction, complete modulo ONE fact.** Given a "conjugate" family `θ`
+over `s` with `e^{θ k₀} = -1` (Euler, for `θ k₀ = iπ`), it is contradictory for the
+elementary symmetric functions of the multiset of subset-sums `{∑_{k∈t} θ k}` to all be
+rational (`hesymm`).
+
+This assembles the *entire* algebraic part of Hermite–Lindemann at `π`, every step
+machine-checked and axiom-clean:
+`subsetSum_poly_lifts` (the conjugate polynomial `∏(X − σ_t)` descends to `ℚ[X]` from
+`hesymm`) → `exists_ratPoly_removeZeroRoots` (drop the `K` zero roots) →
+`exists_intPoly_aroots_eq` (clear denominators to an integer `F`, `F.eval 0 ≠ 0`, roots = the
+nonzero `σ_t`) → `subsetSum_relation_impossible_of_conjugatePoly` (fact (a),
+`sum_aeval_roots_int`, + the analytic engine `no_intPoly_exp_relation`).
+
+**The SOLE remaining open input is `hesymm`** — that the subset-sum `esymm` is rational
+(`subsetSum_esymm_rational`, the fundamental theorem of symmetric polynomials applied to the
+subset-sums; Aristotle job `b7252abe`). Instantiating `θ` at the Galois conjugates of `iπ`
+and supplying `hesymm` discharges `hermite_lindemann` at `π` and makes squaring-the-circle
+unconditional. -/
+theorem subsetSum_relation_impossible_of_esymm
+    {ι : Type*} [DecidableEq ι] (s : Finset ι) (θ : ι → ℂ)
+    (k₀ : ι) (hk₀ : k₀ ∈ s) (hval : Complex.exp (θ k₀) = -1)
+    (hesymm : ∀ j, ((s.powerset).val.map (fun t => ∑ k ∈ t, θ k)).esymm j
+                ∈ Set.range (algebraMap ℚ ℂ)) :
+    False := by
+  classical
+  set σs : Multiset ℂ := (s.powerset).val.map (fun t => ∑ k ∈ t, θ k) with hσs
+  obtain ⟨Q, hQ⟩ := (Polynomial.mem_lifts _).mp (subsetSum_poly_lifts σs hesymm)
+  have hPmonic : (σs.map (fun a => X - C a)).prod.Monic :=
+    monic_multiset_prod_of_monic _ _ (fun a _ => monic_X_sub_C a)
+  have hQne : Q ≠ 0 := by
+    intro h; rw [h, Polynomial.map_zero] at hQ
+    exact hPmonic.ne_zero hQ.symm
+  have hQaroots : Q.aroots ℂ = σs := by
+    rw [aroots_def, hQ, roots_multiset_prod_X_sub_C]
+  obtain ⟨Q', hQ'0, hQ'roots⟩ := exists_ratPoly_removeZeroRoots Q hQne
+  obtain ⟨F, hF0, hFaroots⟩ := exists_intPoly_aroots_eq Q' hQ'0
+  apply subsetSum_relation_impossible_of_conjugatePoly s θ k₀ hk₀ hval F hF0
+  rw [hFaroots, ← hQ'roots, hQaroots, hσs, Multiset.filter_map]
+  congr 1
+
 end LeanFormalizations.Transcendence
