@@ -1,8 +1,8 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8270 jobs) · **Updated**: review lap · 2026-06-16 · `68ada1e`
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8274 jobs) · **Updated**: 2026-06-16 · `d1b2293` · **MATH AXIOMS: 0**
 
 ## Where it stands
-Three independent threads, all building green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple) and the **power-tower** convergence theorem are complete and fully axiom-clean. The **constructible-numbers / Wantzel** thread is complete as a full iff (algebra ⇔ geometry) with five classical impossibilities + two positive constructions; *squaring the circle* was advanced this lap from "conditional on a `Transcendental ℚ π` hypothesis" to "**unconditional modulo a single cited axiom** (`hermite_lindemann`)". And the **transcendence of `e`** (Hermite 1873) is now **fully proved and axiom-clean** — the assembly of mathlib's analytic part of Lindemann–Weierstrass — discharging the `α=1` instance of `hermite_lindemann`. The remaining frontier is the general `hermite_lindemann` (hence `π`), needing symmetric functions over Galois conjugates.
+The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** convergence theorem, and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
 - **2026-06-16 (π COMPLETE modulo one Aristotle fact):** the **entire** Lindemann
@@ -23,6 +23,13 @@ Three independent threads, all building green and `src/` **sorry-free**. **Curti
   (b) to a SINGLE open fact `subsetSum_esymm_rational` (esymm of subset-sums is rational —
   the symmetric-function core). That fact is now an Aristotle job (`b7252abe`, RUNNING).
   Once it lands, π-transcendence is complete and `hermite_lindemann` dies.
+- **2026-06-16 (π PROVEN — axiom deleted):** the algebraic part landed.
+  `SubsetSumEsymm.subsetSum_esymm_rational` (fundamental theorem of symmetric polynomials over
+  the subset-sums of the `iπ` conjugates) — Aristotle `b7252abe`, **kernel-verified axiom-clean**
+  (the same 4-helper decomposition was independently developed locally this lap). Combined with
+  the conjugate-machinery assembly → `transcendental_pi_axiomClean : Transcendental ℚ Real.pi`,
+  axiom-clean. `squaring_the_circle_impossible_uncond` rewired to it; the `hermite_lindemann`
+  axiom (and its dependent theorem) **deleted**. Repo now carries **0 math axioms**.
 - **2026-06-16 (π algebraic-part lap):** drove the `hermite_lindemann`-at-π crux hard. New
   file `PiLindemann.lean`, **all axiom-clean**, reduces π-transcendence to exactly two named
   facts: (a) the monic root-sum integrality `sum_aeval_roots_int` (Aristotle job `9a19f72e`),
@@ -44,13 +51,19 @@ Three independent threads, all building green and `src/` **sorry-free**. **Curti
 - **2026-06-14 1511 & earlier:** Curtis crux `substCurve_eq_zero` closed (reformulation bypassing Lemma 1); repo sorry-free + axiom-clean. Engine, Step B, Lemma 2 (Brauer–Shockley, via Aristotle, verified) built.
 
 ## Outstanding
-### Short-term (mirror PENDING_WORK top)
-- **Discharge `hermite_lindemann` for `π`** (general algebraic α): extend the now-proven `e` assembly with symmetric functions over the Galois conjugates of `iπ` (`∏(1 + e^{β_j})`). The reusable core (`exp_polynomial_approx` assembly) is done; the missing piece is the conjugate-product / symmetric-function integrality (mathlib gap). Multi-lap.
+The transcendence / squaring-the-circle thread is **COMPLETE and axiom-free**. Remaining open
+work is elsewhere:
 ### Long-term
-- Full Lindemann–Weierstrass (linear independence of `exp` at distinct algebraic exponents) → both `e` (✅ have) and `π` and beyond, fully unconditional squaring-the-circle.
-- Power-tower sharp iff lower direction (genuine 2-cycle existence; multi-lap real analysis). PARKED P2/P3 (Curtis mathlib upstream; not-algebraic framing) — web/CLA-gated.
+- **Power-tower sharp iff lower direction** (`0<x<e^{-e}` diverges via a genuine attracting
+  2-cycle; multi-lap real analysis) — the cleanest open non-blocked target. See `PENDING_WORK`.
+- General Hermite–Lindemann for arbitrary algebraic α (e.g. `log 2`, `cos 1`): the π assembly
+  generalizes (its `no_intPoly_exp_relation` + symmetric-function descent are α-agnostic); a
+  bounded extension, not required for any current headline.
+- PARKED P2/P3 (Curtis mathlib upstream; not-algebraic framing) — web/CLA-gated.
 ### To completion
-- Curtis ✅ · Power-tower convergence ✅ · Wantzel iff ✅ · squaring-the-circle: unconditional **once `hermite_lindemann` is discharged**. Transcendence of `e`: done once the crux is closed.
+- Curtis ✅ · Power-tower convergence ✅ · Wantzel iff ✅ · **e-transcendence ✅** ·
+  **π-transcendence ✅ (axiom-clean)** · **squaring-the-circle ✅ (unconditional, axiom-clean)**.
+  Repo math-axiom count: **0**.
 
 ## Axiom ledger (the fidelity spine)
 | headline theorem | paper claim | `#print axioms` shows | status |
@@ -60,11 +73,11 @@ Three independent threads, all building green and `src/` **sorry-free**. **Curti
 | `Constructible.isConstructible_iff_constructiblePoint` | Wantzel iff, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 | `Constructible.cbrt2_not_constructible` (+ trisection/nonagon/heptagon) | classical impossibilities, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 | `Constructible.squaring_the_circle_impossible` | impossibility, **cond.** on `Transcendental ℚ π` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms (hypothesis explicit) |
-| `Constructible.squaring_the_circle_impossible_uncond` | impossibility, uncond. | `[…trust base, hermite_lindemann]` | 🟡 1 axiom = Hermite–Lindemann (proven theorem, project-scale; being chipped via `e`) |
-| `Transcendence.transcendental_pi` | `π` transcendental, uncond. | `[…trust base, hermite_lindemann]` | 🟡 same 1 axiom |
-| `Transcendence.e_transcendental` (+ `transcendental_exp_{nat,int,rat}`) | `e`, `eⁿ`, `eᵃ`, `e^q` transcendental (Hermite 1873; rational-exponent Hermite–Lindemann), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **fully proved this lap** |
+| `Constructible.squaring_the_circle_impossible_uncond` | impossibility, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **axiom-clean** (uses `transcendental_pi_axiomClean`) |
+| `Transcendence.transcendental_pi_axiomClean` | `π` transcendental (Lindemann 1882), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **fully proved (axiom deleted)** |
+| `Transcendence.e_transcendental` (+ `transcendental_exp_{nat,int,rat}`) | `e`, `eⁿ`, `eᵃ`, `e^q` transcendental (Hermite 1873; rational-exponent Hermite–Lindemann), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 
-**Math-axiom count (🟢+🟡+🟠): 1** — `hermite_lindemann` (🟡, project-scale: proven theorem behind the Lindemann–Weierstrass algebraic part; current frontier, next prerequisite = symmetric-function / conjugate-product extension for `π`). The `α=1` instance is now independently discharged (`e_transcendental`). No 🔴 anywhere (every headline unconditional; the one conditional theorem keeps its hypothesis explicit). **Zero `sorry` in `src/`.**
+**Math-axiom count (🟢+🟡+🟠): 0.** The repo is **fully axiom-free** — `grep '^axiom' src/` is empty, every headline `#print axioms` is the bare trust base, and there is no `sorry` in `src/`. The `hermite_lindemann` axiom was discharged (full Lindemann assembly for `π`) and deleted this lap. No 🟡/🟠/🔴 anywhere.
 
 ## Pointers
 - Open items / attack paths: **`PENDING_WORK.md`** · resume baton: newest **`HANDOFF-*.md`** · online asks: `ON-LINE-REQUEST.md`
