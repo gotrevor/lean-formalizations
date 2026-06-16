@@ -1,0 +1,28 @@
+Prove the following Lean 4 (mathlib) theorem. Return a complete axiom-clean proof  -- ref/x
+(print axioms = propext, Classical.choice, Quot.sound). If you cannot close it, return the  -- ref/x
+reduction with the single hard symmetric-function fact as an isolated sorry.  -- ref/x
+/
+import Mathlib  -- ref/x
+open Polynomial  -- ref/x
+/
+theorem subsetSum_esymm_rational (n : Nat) (theta : Fin n -> Complex) (G : Polynomial Rat)  -- ref/x
+    (hGmonic : G.Monic)  -- ref/x
+    (hroots : (G.map (algebraMap Rat Complex)).roots  -- ref/x
+      = (Finset.univ : Finset (Fin n)).val.map theta)  -- ref/x
+    (j : Nat) :  -- ref/x
+    (((Finset.univ.powerset : Finset (Finset (Fin n))).val.map  -- ref/x
+        (fun t => Finset.sum t (fun k => theta k))).esymm j)  -- ref/x
+      ∈ Set.range (algebraMap Rat Complex) := by  -- ref/x
+  sorry  -- ref/x
+/
+Meaning: the elementary symmetric functions of the multiset of ALL subset-sums of the  -- ref/x
+complex roots of a monic rational polynomial G are rational numbers.  -- ref/x
+/
+Strategy: esymm j of the subset-sum family is a polynomial with integer coefficients in the  -- ref/x
+elementary symmetric functions e_1(theta) ... e_n(theta), because permuting theta permutes  -- ref/x
+the subset-sums, so the expression is a symmetric MvPolynomial in theta. Use the fundamental  -- ref/x
+theorem of symmetric polynomials (MvPolynomial.esymmAlgEquiv or esymmAlgHom) to write it via  -- ref/x
+the e_i, then e_i(theta) equals plus-or-minus a coefficient of G (Vieta:  -- ref/x
+coeff_eq_esymm_roots_of_card), which is rational. Relevant mathlib: MvPolynomial.IsSymmetric,  -- ref/x
+MvPolynomial.esymm, MvPolynomial.esymmAlgEquiv, Multiset.esymm, and the Vieta lemmas.  -- ref/x
+/

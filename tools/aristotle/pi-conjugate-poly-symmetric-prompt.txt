@@ -28,7 +28,7 @@ theorem subsetSum_esymm_rational (n : Nat) (theta : Fin n -> Complex) (G : Polyn
     (j : Nat) :
     (((Finset.univ.powerset : Finset (Finset (Fin n))).val.map
         (fun t => Finset.sum t (fun k => theta k))).esymm j)
-      in Set.range (algebraMap Rat Complex) := by
+      ∈ Set.range (algebraMap Rat Complex) := by
   sorry
 
 Strategy: esymm j of the subset-sum family is a polynomial (integer coefficients) in the

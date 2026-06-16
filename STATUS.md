@@ -5,6 +5,14 @@
 Three independent threads, all building green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple) and the **power-tower** convergence theorem are complete and fully axiom-clean. The **constructible-numbers / Wantzel** thread is complete as a full iff (algebra ⇔ geometry) with five classical impossibilities + two positive constructions; *squaring the circle* was advanced this lap from "conditional on a `Transcendental ℚ π` hypothesis" to "**unconditional modulo a single cited axiom** (`hermite_lindemann`)". And the **transcendence of `e`** (Hermite 1873) is now **fully proved and axiom-clean** — the assembly of mathlib's analytic part of Lindemann–Weierstrass — discharging the `α=1` instance of `hermite_lindemann`. The remaining frontier is the general `hermite_lindemann` (hence `π`), needing symmetric functions over Galois conjugates.
 
 ## What's happened (newest first)
+- **2026-06-16 (π algebraic-part lap, cont.):** **fact (a) DISCHARGED.** `sum_aeval_roots_int`
+  (monic root-sum integrality, via `roots_esymm_int` + `power_sum_int` / Newton's identities)
+  proved by Aristotle (job `9a19f72e`) and **independently kernel-verified** axiom-clean in
+  `MonicRootSums.lean`. Wired: `subsetSum_relation_impossible_of_conjugatePoly` drops the
+  `monic_rootsum` hypothesis; `subsetSum_poly_lifts` + `esymm_aroots_mem_range` reduce fact
+  (b) to a SINGLE open fact `subsetSum_esymm_rational` (esymm of subset-sums is rational —
+  the symmetric-function core). That fact is now an Aristotle job (`b7252abe`, RUNNING).
+  Once it lands, π-transcendence is complete and `hermite_lindemann` dies.
 - **2026-06-16 (π algebraic-part lap):** drove the `hermite_lindemann`-at-π crux hard. New
   file `PiLindemann.lean`, **all axiom-clean**, reduces π-transcendence to exactly two named
   facts: (a) the monic root-sum integrality `sum_aeval_roots_int` (Aristotle job `9a19f72e`),
