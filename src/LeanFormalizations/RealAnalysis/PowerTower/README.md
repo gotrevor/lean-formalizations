@@ -28,15 +28,27 @@ the upper half. (The often-cited "subtract the tangent-line inequalities" sketch
 is mathematically invalid — see `EngineLower.lean`.)
 
 - `tower_converges_lower` — for `e^(-e) ≤ x < 1`, converges to a fixed point. **PROVED.**
-- `tower_converges_of_mem` — **headline**: converges on the FULL Euler interval
+- `tower_converges_of_mem` — converges on the FULL Euler interval
   `[e^(-e), e^(1/e)]`. **PROVED.**
+
+### Sharp lower divergence (`0 < x < e^(-e)`, the *genuine* 2-cycle)
+Below the lower endpoint the tower diverges by oscillation: the fixed point `y` of
+`f` becomes **repelling** (`g'(y) = (log y)² > 1`, because `x < e^(-e)` forces
+`log y < -1`), so `g = f∘f` acquires two *attracting* fixed points `β₀ < y < γ₀` —
+a genuine attracting 2-cycle of `f`. The even/odd subsequences are trapped on
+opposite sides (`a(2n) ≥ γ₀ > y > β₀ ≥ a(2n+1)`), so their limits differ and no
+overall limit exists. This is the sharp converse of `two_cycle_collapse`.
+
+- `log_fixedpoint_lt_neg_one` — `x < e^(-e) ⟹ log y < -1` (the repelling seed).
+- `strict_two_cycle_exists` — the attracting 2-cycle `β₀ < γ₀` (IVT on `g - id`
+  both sides of `y`, using `g' > 1` on a neighbourhood of `y`).
+- `tower_diverges_lower` — for `0 < x < e^(-e)`, the tower does **not** converge.
+- `tower_converges_iff_full` — **headline (SHARP)**: for `x > 0`, converges **iff**
+  `x ∈ [e^(-e), e^(1/e)]` (`Statement.lean`).
 
 All of the above are machine-checked and **axiom-clean** (trust base
 `[propext, Classical.choice, Quot.sound]`; no `sorryAx`, no `native_decide`, no
 custom axioms).
-
-The sharp `iff` on the full interval (the `0 < x < e^(-e)` *divergence* direction,
-needing a genuine attracting 2-cycle) is OMITTED — see `PENDING_WORK.md`.
 
 ## What to audit
 - `Statement.lean` — the three load-bearing statements (delegate to the engine).
@@ -53,12 +65,14 @@ needing a genuine attracting 2-cycle) is OMITTED — see `PENDING_WORK.md`.
   antitone). `Defs.endpoint_fixed_point_lower` anchors `(e^(-e))^(1/e) = 1/e`.
 
 ## Status
-**DONE (BOTH halves), 2026-06-14.** Upper: `tower_converges`, `tower_diverges`,
-`tower_converges_iff`. Lower: `tower_converges_lower` and the headline
-`tower_converges_of_mem` (convergence on the full `[e^(-e), e^(1/e)]`). All PROVED
-and **axiom-clean**, including the lower-bound crux `two_cycle_collapse` (no axiom).
-`lake build` green. Only the sharp full-interval `iff` (divergence for
-`0 < x < e^(-e)`) is omitted (`PENDING_WORK.md`).
+**DONE — SHARP `iff`, 2026-06-18.** Upper: `tower_converges`, `tower_diverges`,
+`tower_converges_iff`. Lower: `tower_converges_lower`, `tower_converges_of_mem`
+(convergence on the full `[e^(-e), e^(1/e)]`), `tower_diverges_lower` (divergence
+for `0 < x < e^(-e)`, the genuine attracting 2-cycle), and the sharp headline
+`tower_converges_iff_full` (`x > 0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`).
+All PROVED and **axiom-clean**, including both cruxes `two_cycle_collapse` (no
+2-cycle for `x ≥ e^(-e)`) and `strict_two_cycle_exists` (a 2-cycle exists for
+`x < e^(-e)`). `lake build` green.
 
 ## Prior art
 Not in mathlib (checked 2026-06-14 via Reservoir mirror + the "Is there code for

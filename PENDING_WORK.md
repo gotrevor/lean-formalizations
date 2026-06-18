@@ -8,27 +8,18 @@ jobs). Three threads are COMPLETE + axiom-clean — **do not reopen**: Curtis 19
 was discharged + deleted 2026-06-16), and constructible numbers / Wantzel (full iff + 5 classical
 impossibilities). Completion records below.
 
-### ▶️ THE ONE ACTIVE ITEM — power-tower sharp `iff`, lower direction (`0 < x < e^(-e)` diverges)
-**This is the current operator-directed target — see `DIRECTION.md` for the full plan + stop
-condition.** The convergence side is complete on the full interval (`tower_converges_of_mem`,
-`[e^(-e), e^(1/e)]`); the upper divergence is `tower_diverges` (`x > e^(1/e)`). MISSING = the
-lower divergence + the sharp iff:
-```lean
-tower_diverges_lower {x} (hx0 : 0 < x) (hlt : x < eNegE) :
-    ¬ ∃ L, Tendsto (tower x) atTop (𝓝 L)
-tower_converges_iff_full {x} (hx : 0 < x) :
-    (∃ L, Tendsto (tower x) atTop (𝓝 L)) ↔ x ∈ Set.Icc eNegE eInvE
-```
-Genuine multi-lap real analysis — the *existence* of an attracting 2-cycle, the hard converse of
-the proven `two_cycle_collapse`. Attack paths (full detail in `DIRECTION.md`):
-1. **`y` repelling for `x < e^(-e)`**: `g'(y) = (log y)² > 1` (from `hasDeriv_g`/`deriv_bound`,
-   reversed; `x < e^(-e) ⟹ log y < -1`).
-2. **Strict 2-cycle via IVT**: `g - id` changes sign across the repelling `y` ⟹ fixed points
-   `β < y < γ` of `g = f∘f`.
-3. **Distinct subsequence limits**: the even/odd subsequences (built in `tower_converges_lower`)
-   converge to `γ' > y > β'`; `β' < γ'` (negate `two_cycle_collapse`) ⟹ `¬ ∃ L` via
-   `tendsto_of_even_odd`.
-4. Reference if needed: Lóczi arXiv:1908.05559 §3 (→ `ON-LINE-REQUEST.md`).
+### ✅ COMPLETE (2026-06-18) — power-tower SHARP `iff` (the `0 < x < e^(-e)` divergence)
+**DONE, axiom-clean.** The operator-directed target of the 2026-06-17 `DIRECTION.md` is
+finished. `EngineLower.tower_diverges_lower` (`0<x<e^(-e) ⟹ ¬∃L`) + the headline
+`Statement.tower_converges_iff_full` (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`) are
+both proved; `#print axioms` = `[propext, Classical.choice, Quot.sound]`. The proof followed
+the planned route exactly: `fixedpoint_exists` (IVT fixed point `y`), `log_fixedpoint_lt_neg_one`
+(the repelling seed `x<e^(-e) ⟹ log y < -1` — by contradiction, `log y ≥ -1 ⟹ y ≥ 1/e ⟹
+-ye ≤ -1`, no `v·e^v` monotonicity lemma needed), `strict_two_cycle_exists` (IVT on `g-id`
+both sides of `y`, where `g'>1` on a neighbourhood from continuity of `g'` + `g'(y)=(log y)²>1`),
+and the even/odd-trapping bound (`a(2n) ≥ γ₀ > β₀ ≥ a(2n+1)`) ⟹ distinct limits ⟹ no limit.
+The subsequence construction is now the shared `tower_subseq_limits` (used by both directions).
+The Lóczi §3 reference was NOT needed (no `ON-LINE-REQUEST` filed).
 
 ### ✅ COMPLETE (2026-06-16) — π/e-transcendence, axiom-clean, `hermite_lindemann` DELETED
 `Transcendence.transcendental_pi` proved from first principles, axiom-clean;
