@@ -3,11 +3,12 @@
 This is a **thin pointer**, not a durable overview. Read, in order:
 
 1. **`STATUS.md`** — the living repo-wide overview (3 threads, real `#print axioms` ledger).
-2. **Newest dated baton: `HANDOFF-2026-06-16-pi-PROVEN-axiom-free.md`** — the current resume
-   point: **π-transcendence is PROVEN axiom-clean and the `hermite_lindemann` axiom is
-   DELETED**; the repo now has **0 math axioms**. The transcendence/squaring-the-circle thread
-   is COMPLETE. Next = a NEW target (default: power-tower sharp iff).
-3. **`PENDING_WORK.md`** — open-item inventory + attack paths (items B = π, C = power-tower iff).
+2. **Newest dated baton: `HANDOFF-2026-06-18-power-tower-SHARP-iff.md`** — the current resume
+   point: the **power-tower SHARP `iff` is PROVEN axiom-clean** (`tower_converges_iff_full`:
+   `x>0` converges ⟺ `x ∈ [e^-e, e^1/e]`). That bounded operator-directed target is COMPLETE;
+   the transcendence/squaring-the-circle thread was already complete (repo has **0 math axioms**).
+   Next = a NEW target (default: general Hermite–Lindemann for arbitrary algebraic α).
+3. **`PENDING_WORK.md`** — open-item inventory + attack paths.
 
 ## Standing rules (this repo)
 - DO NOT push (host publishes). Commit every green build (verify from a real `lake build`).
@@ -17,5 +18,5 @@ This is a **thin pointer**, not a durable overview. Read, in order:
 - Reference corpus: `~/personal/claude/knowledge/core/projects/lean-journey/reference/`.
 
 ---
-**→ Next session: `/resume HANDOFF-2026-06-16-0036.md` — that dated baton is the chosen
-thread. Don't widen to a KB menu.**
+**→ Next session: `/resume HANDOFF-2026-06-18-power-tower-SHARP-iff.md`. The power-tower thread
+is DONE (sharp iff, axiom-clean) — do NOT reopen it. Start a NEW target.**
