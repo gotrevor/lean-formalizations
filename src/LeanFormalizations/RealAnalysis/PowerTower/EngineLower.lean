@@ -300,12 +300,17 @@ theorem tendsto_of_even_odd {a : ℕ → ℝ} {L : ℝ}
 
 /-! ### The lower-half engine -/
 
-/-- **Convergence engine, lower half** (`e^(-e) ≤ x < 1`). The even subsequence
-decreases to `γ`, the odd subsequence increases to `β`; `(β,γ)` is a 2-cycle of
-`t ↦ x^t`. The crux `two_cycle_collapse` forces `β = γ`, so the whole tower
-converges to the common value `L`, a fixed point of `t ↦ x^t`. -/
-theorem tower_converges_lower (hxe : eNegE ≤ x) (hx1 : x < 1) :
-    ∃ L : ℝ, Tendsto (tower x) atTop (𝓝 L) ∧ x ^ L = L := by
+/-- **Shared subsequence data for the oscillating regime** (`e^(-e) ≤ x < 1`). The
+even subsequence `a (2n)` decreases to `γ`, the odd subsequence `a (2n+1)` increases
+to `β`; `(β,γ)` is a 2-cycle of `t ↦ x^t` (`x^γ = β`, `x^β = γ`). Both the
+convergence proof (`tower_converges_lower`, which adds `two_cycle_collapse` to force
+`β = γ`) and the divergence proof (`tower_diverges_lower`, which shows `β < γ`) build
+on this construction, so it is factored out here. -/
+theorem tower_subseq_limits (hxe : eNegE ≤ x) (hx1 : x < 1) :
+    ∃ β γ : ℝ,
+      Tendsto (fun n => tower x (2 * n)) atTop (𝓝 γ) ∧
+      Tendsto (fun n => tower x (2 * n + 1)) atTop (𝓝 β) ∧
+      γ = x ^ β ∧ β = x ^ γ ∧ 0 < β ∧ 0 < γ := by
   have hx0 : 0 < x := lt_of_lt_of_le (Real.exp_pos _) hxe
   have hcont : Continuous (fun t : ℝ => x ^ t) := Real.continuous_const_rpow (ne_of_gt hx0)
   -- two-step recurrences for the even / odd subsequences
@@ -395,16 +400,21 @@ theorem tower_converges_lower (hxe : eNegE ≤ x) (hx1 : x < 1) :
   -- positivity of the two limits, from the relations
   have hβpos : 0 < β := by rw [hβγ]; exact Real.rpow_pos_of_pos hx0 _
   have hγpos : 0 < γ := by rw [hγβ]; exact Real.rpow_pos_of_pos hx0 _
-  -- THE CRUX: the 2-cycle collapses
+  exact ⟨β, γ, hγ_lim, hβ_lim, hγβ, hβγ, hβpos, hγpos⟩
+
+/-- **Convergence engine, lower half** (`e^(-e) ≤ x < 1`). The crux
+`two_cycle_collapse` forces the 2-cycle endpoints `β = γ`, so the whole tower
+converges to the common value `L`, a fixed point of `t ↦ x^t`. -/
+theorem tower_converges_lower (hxe : eNegE ≤ x) (hx1 : x < 1) :
+    ∃ L : ℝ, Tendsto (tower x) atTop (𝓝 L) ∧ x ^ L = L := by
+  have hx0 : 0 < x := lt_of_lt_of_le (Real.exp_pos _) hxe
+  obtain ⟨β, γ, hγ_lim, hβ_lim, hγβ, hβγ, hβpos, hγpos⟩ := tower_subseq_limits hxe hx1
   have hβeqγ : β = γ :=
     two_cycle_collapse hx0 hx1 hxe hβpos hγpos hγβ.symm hβγ.symm
-  -- conclude: the whole tower converges to L := β = γ
   refine ⟨β, ?_, ?_⟩
   · apply tendsto_of_even_odd
-    · -- even subsequence → β (= γ)
-      rw [hβeqγ]; exact hγ_lim
+    · rw [hβeqγ]; exact hγ_lim
     · exact hβ_lim
-  · -- x ^ β = β : indeed x ^ β = γ = β
-    rw [← hγβ, hβeqγ]
+  · rw [← hγβ, hβeqγ]
 
 end LeanFormalizations.RealAnalysis.PowerTower
