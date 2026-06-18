@@ -1,137 +1,45 @@
 # PENDING_WORK — lean-formalizations
 
-## 🔭 OPEN-ITEM INVENTORY + ATTACK PATHS (refreshed 2026-06-16, review lap)
+## 🔭 OPEN-ITEM INVENTORY (refreshed 2026-06-17, operator directive)
 
-`src/` is axiom-clean except for **one cited axiom** (`hermite_lindemann`, 🟡) and
-**one disclosed `sorry`** (`no_intPoly_aeval_eq_zero`, the active chip toward it).
-The active frontier is discharging the transcendence wall behind squaring-the-circle.
+`src/` is **100% axiom-free** (0 custom axioms, 0 `sorry`/`admit`; `lake build` green, 8274
+jobs). Three threads are COMPLETE + axiom-clean — **do not reopen**: Curtis 1990
+(no-Frobenius-formula), π/e-transcendence + squaring-the-circle (the `hermite_lindemann` axiom
+was discharged + deleted 2026-06-16), and constructible numbers / Wantzel (full iff + 5 classical
+impossibilities). Completion records below.
 
-### ✅ DONE this lap — Open item A.1: `Transcendental ℚ Real.pi` narrowing
-Stated **Hermite–Lindemann** (`hermite_lindemann`: nonzero algebraic α ⟹ `exp α`
-transcendental) as one disclosed `axiom` and machine-checked `transcendental_pi` from it
-(Euler `exp(iπ) = -1`). `squaring_the_circle_impossible_uncond` shipped; `#print axioms`
-= trust base + `hermite_lindemann` only. File `NumberTheory/Transcendence/HermiteLindemann.lean`.
+### ▶️ THE ONE ACTIVE ITEM — power-tower sharp `iff`, lower direction (`0 < x < e^(-e)` diverges)
+**This is the current operator-directed target — see `DIRECTION.md` for the full plan + stop
+condition.** The convergence side is complete on the full interval (`tower_converges_of_mem`,
+`[e^(-e), e^(1/e)]`); the upper divergence is `tower_diverges` (`x > e^(1/e)`). MISSING = the
+lower divergence + the sharp iff:
+```lean
+tower_diverges_lower {x} (hx0 : 0 < x) (hlt : x < eNegE) :
+    ¬ ∃ L, Tendsto (tower x) atTop (𝓝 L)
+tower_converges_iff_full {x} (hx : 0 < x) :
+    (∃ L, Tendsto (tower x) atTop (𝓝 L)) ↔ x ∈ Set.Icc eNegE eInvE
+```
+Genuine multi-lap real analysis — the *existence* of an attracting 2-cycle, the hard converse of
+the proven `two_cycle_collapse`. Attack paths (full detail in `DIRECTION.md`):
+1. **`y` repelling for `x < e^(-e)`**: `g'(y) = (log y)² > 1` (from `hasDeriv_g`/`deriv_bound`,
+   reversed; `x < e^(-e) ⟹ log y < -1`).
+2. **Strict 2-cycle via IVT**: `g - id` changes sign across the repelling `y` ⟹ fixed points
+   `β < y < γ` of `g = f∘f`.
+3. **Distinct subsequence limits**: the even/odd subsequences (built in `tower_converges_lower`)
+   converge to `γ' > y > β'`; `β' < γ'` (negate `two_cycle_collapse`) ⟹ `¬ ∃ L` via
+   `tendsto_of_even_odd`.
+4. Reference if needed: Lóczi arXiv:1908.05559 §3 (→ `ON-LINE-REQUEST.md`).
 
-### ✅ DONE this lap — Open item A.2: transcendence of `e`, fully axiom-clean
-`ETranscendental.lean` — `e_transcendental : Transcendental ℚ (Real.exp 1)`,
-`#print axioms` = trust base only. The complete Hermite assembly of
-`LindemannWeierstrass.exp_polynomial_approx`: algebraic reduction
-(`exists_intPoly_aeval_eq_zero`) + analytic decay/prime-selection
-(`tendsto_const_mul_pow_div_factorial`, `exists_prime_smallness`) + Hermite-polynomial
-data (`hermitePoly_eval_zero_ne`, `hermitePoly_aroots`) + the integer-`N`/mod-`p`
-contradiction (`no_intPoly_aeval_eq_zero`). Discharges the `α=1` instance of
-`hermite_lindemann`. (Aristotle job `e502fd22` canceled — proved locally.)
-
-### ✅ COMPLETE (2026-06-16) — Open item B: `π`-transcendence, axiom-clean, axiom DELETED
-**DONE.** `Transcendence.transcendental_pi_axiomClean : Transcendental ℚ Real.pi` is proved
-from first principles and axiom-clean; `squaring_the_circle_impossible_uncond` rewired to it;
-the `hermite_lindemann` axiom deleted. Repo math-axiom count = **0**. The full assembly:
-`PiLindemann.lean` (combinatorial reduction + non-monic analytic engine + descent + glue) →
-`MonicRootSums.lean` (fact (a) `sum_aeval_roots_int` [Aristotle `9a19f72e`] + conjugate
-instantiation) → `SubsetSumEsymm.lean` (fact (b) `subsetSum_esymm_rational`, fundamental
-theorem of symmetric polynomials [Aristotle `b7252abe`]) → `PiTranscendental.lean`. Both
-Aristotle proofs independently kernel-verified. The historical record below is retained.
-
-### 〜 HISTORICAL — Open item B: `hermite_lindemann` for `π` (the conjugate-product extension)
-
-**Progress 2026-06-16 (this lap): the ANALYTIC part of π is DONE; the gap narrowed to one
-algebraic construction.** New file `NumberTheory/Transcendence/PiLindemann.lean`, all
-axiom-clean:
-- `prod_one_add_exp_eq_sum_subsetSum`, `sum_subsetSum_exp_eq_zero_of_factor`,
-  `sum_subsetSum_split`, `pi_exp_relation` (★): the **combinatorial reduction** — from
-  `e^{iπ}=−1` to the integer exp-relation `(K:ℂ) + ∑_{t:σ_t≠0} e^{σ_t} = 0`, `K=#{σ_t=0}≥1`.
-- `no_intPoly_exp_relation`: the **general (non-monic) analytic assembly** — for any
-  `F : ℤ[X]` with `F.eval 0 ≠ 0`, no relation `K + ∑_{r∈F.aroots} e^r = 0` (`K>0`) holds,
-  *given* `hsum` (`ℓ^m·∑_r aeval r gp ∈ ℤ`, `ℓ=F.leadingCoeff`). The full
-  integer-`N`/mod-`p` engine, generalized from `e`'s integer roots to arbitrary `F.aroots`.
-
-**STATUS (2026-06-16, end of π algebraic-part lap): the ENTIRE algebraic part is assembled,
-axiom-clean, modulo ONE fact.** Capstone `MonicRootSums.subsetSum_relation_impossible_of_esymm`:
-given the conjugate family `θ` with `e^{θ k₀}=−1`, a contradiction follows from the SOLE
-hypothesis `hesymm` (= the subset-sum `esymm` is rational). Fact (a) `sum_aeval_roots_int`
-is PROVEN (Aristotle `9a19f72e`, kernel-verified). The only open input is
-`subsetSum_esymm_rational` (Aristotle `b7252abe`, RUNNING) + the iπ-conjugate instantiation
-plumbing (extract the conjugate `Finset` from `iπ` algebraic; pure bookkeeping, no deep math).
-
-**What's LEFT (now just two bookkeeping items):**
-1. ✅ DONE — **`hsum` for any integer `F`** dischargeable from the *monic* root-sum
-   integrality `sum_aeval_roots_int` (PROVEN, Aristotle `9a19f72e`, kernel-verified) via
-   `Polynomial.integralNormalization` (`hsum_of_monic_rootsum`).
-2. **The symmetric-function construction of the conjugate polynomial.** Reduced further
-   this lap — the clear-denominators tail is now DONE (`exists_intPoly_aroots_eq`: any
-   `Q : ℚ[X]` with `Q.eval 0 ≠ 0` ⟹ an integer `F` with the same complex roots and
-   `F.eval 0 ≠ 0`, via `IsLocalization.integerNormalization`). So the IRREDUCIBLE remaining
-   core is just: **produce the monic `Q : ℚ[X]` whose complex roots (with multiplicity) are
-   the nonzero subset-sums `σ_t` of the conjugates of `iπ`.** The `{σ_t}` are symmetric in
-   the conjugates, so `Q = ∏_t (X−σ_t)` has coefficients = symmetric polynomials in the
-   roots of `minpoly ℚ (iπ)`, hence (fundamental theorem `MvPolynomial.esymmAlgEquiv` +
-   Vieta `coeff_eq_esymm_roots_of_card`) `ℚ`-valued. **This is the deep multi-lap piece**
-   (= the "algebraic part" PR #28013 supplies). Infra surveyed:
-   `RingTheory/MvPolynomial/Symmetric/FundamentalTheorem.lean` (`esymmAlgEquiv`),
-   `RingTheory/Polynomial/Vieta.lean`, `FieldTheory/Minpoly/ConjRootClass.lean`.
-   Then `exists_intPoly_aroots_eq` + `subsetSum_relation_impossible` finish π.
-
-2. **`subsetSum_esymm_rational`** — the SOLE remaining math fact: the `esymm` of the
-   subset-sum multiset is rational (fundamental theorem of symmetric polynomials applied to
-   the subset-sums, symmetric in `θ`). Aristotle job `b7252abe` RUNNING (prompt
-   `tools/aristotle/pi-subsetsum-esymm-submitted.txt`; CLI gotcha noted in
-   `tools/aristotle/README-cli-gotcha.md`). When it returns: verify in-kernel, port, and feed
-   to `subsetSum_relation_impossible_of_esymm`.
-
-3. **iπ-conjugate instantiation** (pure bookkeeping, no deep math): from `π` algebraic, get
-   `iπ` algebraic; take `s` = the conjugate roots of `minpoly ℚ (iπ)` as a `Finset` (distinct,
-   char-0 separable), `θ = id`, `k₀ = iπ` with `e^{iπ}=−1`; supply `hesymm` from (2). Then
-   `subsetSum_relation_impossible_of_esymm` ⟹ `False`, giving `Transcendental ℚ π`, hence
-   `hermite_lindemann` at π dies and `squaring_the_circle_impossible_uncond` becomes fully
-   unconditional (delete the cited axiom). The chain `subsetSum_poly_lifts` →
-   `exists_ratPoly_removeZeroRoots` → `exists_intPoly_aroots_eq` →
-   `subsetSum_relation_impossible_of_conjugatePoly` is ALL machine-checked (`PiLindemann.lean`,
-   `MonicRootSums.lean`).
-
-Plugging both into `no_intPoly_exp_relation` discharges `hermite_lindemann` at π. The
-original orientation (still valid):
-
-**KEY (from `archive/findings/ON-LINE-FINDINGS-2026-06-15-pi-transcendence.md`): the
-realistic axiom-kill is adopting mathlib PR #28013** ("feat: Lindemann-Weierstrass
-Theorem", Yuyang Zhao — the same author as `AnalyticalPart.lean`). It adds, over `ℤ`,
-`transcendental_pi`, `transcendental_e`, `transcendental_exp` (= our `hermite_lindemann`
-as a real theorem), `transcendental_log`, `linearIndependent_exp`. It's OPEN/awaiting-author,
-not merged. **When mathlib is next bumped past the merge:** delete `axiom hermite_lindemann`,
-`import …Lindemann.Basic`, and bridge `Transcendental ℤ π → Transcendental ℚ π` via
-`transcendental_algebraMap_iff` / `isAlgebraic_algebraMap_iff` (ℤ↔ℚ, char 0). That kills
-the axiom with no local algebraic-part build. Findings recommend NOT re-deriving the
-algebraic part locally. The local route is only worth it if no bump is coming; if pursued,
-attack paths:
-1. **Hermite–Lindemann for a single algebraic α** (Baker ch.1 / Niven): let `α` have
-   minimal polynomial with conjugates `α = α₁,…,α_d`; the product `∏_j (relation at α_j)`
-   has *symmetric* (hence rational, then integer after scaling by `den^?`) coefficients —
-   feed `exp_polynomial_approx` to `f = den·minpoly` and re-run the integer-`N`/mod-`p`
-   contradiction. The `e` assembly here is the reusable analytic core; the NEW piece is
-   the symmetric-function integrality (`MvPolynomial.symmetric`, `Multiset.esymm`,
-   Newton's identities / `Polynomial.roots` of the conjugate set). Build that as a
-   standalone lemma first.
-2. **Lindemann–Weierstrass directly for `{0, iπ}`**: `e^0 + e^{iπ} = 0` is a ℚ-linear
-   dependence of `exp` at distinct algebraic exponents `0, iπ`; LW says that's impossible
-   unless `iπ` non-algebraic. Same symmetric-function machinery, framed as lin. indep.
-3. **Architect for Aristotle**: once the symmetric-function leaf is isolated, hand it over
-   (`aristotle submit`, project-dir). `ON-LINE-REQUEST.md` filed for porting templates
-   (Isabelle AFP `Lindemann_Weierstrass`).
-
-### Open item C — power-tower sharp `iff`, lower direction (`0<x<e^{-e}` diverges)
-1. **2-cycle existence via IVT** on the second-iterate boundary map (sign change of `g∘g−id`).
-2. **Instability ⟹ non-convergence**: fixed point repelling (`|g'(y)|>1`), tower off its
-   stable manifold (monotone bracketing).
-3. **Reformulate** as even/odd subsequences → distinct limits; reuse `EngineLower` in reverse.
-
-### Open item B — power-tower sharp `iff`, lower direction (`0<x<e^{-e}` diverges)
-1. **2-cycle existence via IVT on the boundary map**: show the second-iterate map has a
-   nontrivial fixed pair `β<γ` for `x<e^{-e}` (sign change of `g∘g − id`), then attracting.
-2. **Instability ⟹ non-convergence**: the fixed point `y` is repelling (`|g'(y)|>1`); show
-   the tower from `a₀=1` is not on its stable manifold (monotone bracketing).
-3. **Reformulate** as divergence of the even/odd subsequences to distinct limits and reuse
-   the existing `EngineLower` slope machinery in reverse. (All multi-lap real analysis.)
-
-### Open item C — Curtis upstream to mathlib (P2/P3 below) — web/CLA-gated, parked.
+### ✅ COMPLETE (2026-06-16) — π/e-transcendence, axiom-clean, `hermite_lindemann` DELETED
+`Transcendence.transcendental_pi` proved from first principles, axiom-clean;
+`squaring_the_circle_impossible_uncond` rewired to it; the cited axiom deleted → repo
+math-axiom count = **0**. Assembly: `ETranscendental.lean` (`e_transcendental`, the Hermite
+assembly of `exp_polynomial_approx`) → `PiLindemann.lean` (combinatorial reduction + non-monic
+analytic engine) → `MonicRootSums.lean` (fact (a) `sum_aeval_roots_int`, Aristotle `9a19f72e`)
+→ `SubsetSumEsymm.lean` (fact (b) `subsetSum_esymm_rational`, fundamental theorem of symmetric
+polynomials, Aristotle `b7252abe`) → `PiTranscendental.lean`. Both Aristotle proofs independently
+kernel-verified. (For the *alternative* path not taken — adopting mathlib PR #28013 on a future
+bump — see `archive/findings/ON-LINE-FINDINGS-2026-06-15-pi-transcendence.md`.)
 
 
 ## ✅ COMPLETE (2026-06-14, operator-bounded run): Curtis verification hardening
@@ -161,15 +69,11 @@ Banach for `x > e^(-e)`, antitone-on-interval for the boundary `x = e^(-e)`.
 (The DIRECTION's "subtract the tangent-line inequalities" sketch is mathematically
 invalid; the derivative/slope bound is the correct mechanism.)
 
-### OMITTED stretch — the sharp `iff` lower direction (`0 < x < e^(-e)` diverges)
-`tower_converges_iff_full` is NOT shipped. The `x > e^(1/e)` direction is `tower_diverges`
-(have it) and the convergence half is `tower_converges_of_mem`; the missing piece is
-**non-convergence for `0 < x < e^(-e)`**, which requires proving a *genuine attracting
-2-cycle exists* (`β < γ` strictly) — i.e. that the would-be fixed point `y` is repelling
-and the tower from `a₀=1` does not land on its stable manifold. That is a separate,
-multi-lap real-analysis development (instability ⟹ non-convergence), exceeding the
-DIRECTION's ~2-lap budget for the stretch. Omitted with this note, NO `sorry`. Natural
-next scope if the iff is wanted.
+### Sharp `iff` lower direction (`0 < x < e^(-e)` diverges) — NOW THE ACTIVE TARGET
+`tower_converges_iff_full` was omitted as a stretch on the 6-14 run (the convergence half
+`tower_converges_of_mem` + `tower_diverges` shipped; the lower divergence requires a *genuine
+attracting 2-cycle*, multi-lap real analysis). **As of 2026-06-17 it is the directed goal —
+see `DIRECTION.md` and "THE ONE ACTIVE ITEM" at the top.** NO `sorry` was ever left here.
 
 ---
 
@@ -201,12 +105,10 @@ The geometric faithfulness layer is COMPLETE and axiom-clean, and then some:
   `heptagon_point_not_constructible`); positive `isConstructible_cos_pi_div_five`
   (pentagon); heptagon added (`Heptagon.lean`, 5th classical instance).
 
-### Only open on this thread: make squaring-the-circle unconditional
-Needs `Transcendental ℚ Real.pi`. mathlib has only the analytic part of
-Lindemann–Weierstrass (`NumberTheory/Transcendental/Lindemann/AnalyticalPart.lean`),
-not the conclusion. This is a multi-year wall (full Lindemann–Weierstrass) — debt,
-not a one-lap target. Advance by formalizing the next missing Lindemann prerequisite,
-or file an `ON-LINE-REQUEST` for the state of π-transcendence in any proof assistant.
+### ✅ DONE (2026-06-16): squaring-the-circle is now UNCONDITIONAL
+`squaring_the_circle_impossible_uncond` no longer takes a hypothesis — it is wired to the
+axiom-clean `Transcendence.transcendental_pi` (full Lindemann assembly; see the π completion
+record at the top). The "multi-year wall" was discharged from first principles. No axiom remains.
 
 ### ✅ DONE (2026-06-16): regular heptagon / 7-gon
 `Heptagon.lean` — `twoCosHept_not_constructible`, axiom-clean. Minpoly `X³+X²−2X−1`
