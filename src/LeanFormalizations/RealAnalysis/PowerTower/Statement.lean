@@ -89,4 +89,29 @@ theorem tower_converges_of_mem {x : ℝ} (hx : x ∈ Set.Icc eNegE eInvE) :
     obtain ⟨L, hL, hfix, _, _⟩ := tower_converges_engine h hhi
     exact ⟨L, hL, hfix⟩
 
+/-- **Euler's power-tower theorem, SHARP (headline, MANDATORY).** For every `x > 0`
+the infinite power tower `ⁿx` converges **iff** `x ∈ [e^(-e), e^(1/e)]`
+(numerically `[0.0660, 1.4447]`). Both endpoints are sharp:
+- `x > e^(1/e)` diverges to `+∞` (`tower_diverges`);
+- `0 < x < e^(-e)` diverges by *oscillation* — the even/odd subsequences are trapped
+  on opposite sides of a genuine attracting 2-cycle `β₀ < γ₀`, so their limits differ
+  (`EngineLower.tower_diverges_lower`, the sharp converse of `two_cycle_collapse`);
+- `x ∈ [e^(-e), e^(1/e)]` converges (`tower_converges_of_mem`).
+
+This is the full "interval of convergence" statement, axiom-clean
+(`[propext, Classical.choice, Quot.sound]`). -/
+theorem tower_converges_iff_full {x : ℝ} (hx : 0 < x) :
+    (∃ L : ℝ, Tendsto (tower x) atTop (𝓝 L)) ↔ x ∈ Set.Icc eNegE eInvE := by
+  constructor
+  · rintro ⟨L, hL⟩
+    rw [Set.mem_Icc]
+    by_contra hmem
+    push Not at hmem
+    rcases lt_or_ge x eNegE with hlo | hlo
+    · exact tower_diverges_lower hx hlo ⟨L, hL⟩
+    · exact not_tendsto_atTop_of_tendsto_nhds hL (tower_diverges (hmem hlo))
+  · intro hmem
+    obtain ⟨L, hL, _⟩ := tower_converges_of_mem hmem
+    exact ⟨L, hL⟩
+
 end LeanFormalizations.RealAnalysis.PowerTower

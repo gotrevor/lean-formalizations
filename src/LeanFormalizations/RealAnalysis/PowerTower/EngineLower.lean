@@ -305,13 +305,14 @@ even subsequence `a (2n)` decreases to `γ`, the odd subsequence `a (2n+1)` incr
 to `β`; `(β,γ)` is a 2-cycle of `t ↦ x^t` (`x^γ = β`, `x^β = γ`). Both the
 convergence proof (`tower_converges_lower`, which adds `two_cycle_collapse` to force
 `β = γ`) and the divergence proof (`tower_diverges_lower`, which shows `β < γ`) build
-on this construction, so it is factored out here. -/
-theorem tower_subseq_limits (hxe : eNegE ≤ x) (hx1 : x < 1) :
+on this construction, so it is factored out here. Needs only `0 < x < 1` — the
+lower endpoint `e^(-e)` enters only via the *crux* (`two_cycle_collapse`), not the
+subsequence construction. -/
+theorem tower_subseq_limits (hx0 : 0 < x) (hx1 : x < 1) :
     ∃ β γ : ℝ,
       Tendsto (fun n => tower x (2 * n)) atTop (𝓝 γ) ∧
       Tendsto (fun n => tower x (2 * n + 1)) atTop (𝓝 β) ∧
       γ = x ^ β ∧ β = x ^ γ ∧ 0 < β ∧ 0 < γ := by
-  have hx0 : 0 < x := lt_of_lt_of_le (Real.exp_pos _) hxe
   have hcont : Continuous (fun t : ℝ => x ^ t) := Real.continuous_const_rpow (ne_of_gt hx0)
   -- two-step recurrences for the even / odd subsequences
   have hErec : ∀ n, tower x (2 * (n + 1)) = (fun t => x ^ (x ^ t)) (tower x (2 * n)) := by
@@ -408,7 +409,7 @@ converges to the common value `L`, a fixed point of `t ↦ x^t`. -/
 theorem tower_converges_lower (hxe : eNegE ≤ x) (hx1 : x < 1) :
     ∃ L : ℝ, Tendsto (tower x) atTop (𝓝 L) ∧ x ^ L = L := by
   have hx0 : 0 < x := lt_of_lt_of_le (Real.exp_pos _) hxe
-  obtain ⟨β, γ, hγ_lim, hβ_lim, hγβ, hβγ, hβpos, hγpos⟩ := tower_subseq_limits hxe hx1
+  obtain ⟨β, γ, hγ_lim, hβ_lim, hγβ, hβγ, hβpos, hγpos⟩ := tower_subseq_limits hx0 hx1
   have hβeqγ : β = γ :=
     two_cycle_collapse hx0 hx1 hxe hβpos hγpos hγβ.symm hβγ.symm
   refine ⟨β, ?_, ?_⟩
@@ -416,5 +417,217 @@ theorem tower_converges_lower (hxe : eNegE ≤ x) (hx1 : x < 1) :
     · rw [hβeqγ]; exact hγ_lim
     · exact hβ_lim
   · rw [← hγβ, hβeqγ]
+
+/-! ### Divergence below the lower endpoint — the genuine attracting 2-cycle
+
+For `0 < x < e^(-e)` the unique fixed point `y` of `f t = x^t` (which lies in
+`(0,1)`) is **repelling**: `g'(y) = (log y)^2 > 1` because `x < e^(-e)` forces
+`log y < -1`. So `g = f∘f` has *three* fixed points near `y` — a repelling `y`
+flanked by two attracting ones `β₀ < y < γ₀` (a genuine 2-cycle of `f`). The
+even/odd subsequences of the tower are trapped on opposite sides
+(`a(2n) ≥ γ₀ > y > β₀ ≥ a(2n+1)`), so their limits are *distinct* and the tower
+cannot converge. This is the sharp converse of `two_cycle_collapse`. -/
+
+/-- For `0 < x < 1`, the map `t ↦ x^t` has a fixed point in `(0,1)`: by the IVT on
+`x^t - t`, which is `1 > 0` at `t = 0` and `x - 1 < 0` at `t = 1`. -/
+theorem fixedpoint_exists (hx0 : 0 < x) (hx1 : x < 1) :
+    ∃ y : ℝ, 0 < y ∧ y < 1 ∧ x ^ y = y := by
+  have hcont : ContinuousOn (fun t : ℝ => x ^ t - t) (Set.Icc 0 1) :=
+    ((Real.continuous_const_rpow (ne_of_gt hx0)).sub continuous_id).continuousOn
+  have h0 : (fun t : ℝ => x ^ t - t) 1 < 0 := by
+    simp only [Real.rpow_one]; linarith
+  have h1 : (0:ℝ) < (fun t : ℝ => x ^ t - t) 0 := by
+    simp only [Real.rpow_zero]; norm_num
+  obtain ⟨y, hy_mem, hy_eq⟩ :=
+    intermediate_value_Ioo' (by norm_num : (0:ℝ) ≤ 1) hcont ⟨h0, h1⟩
+  refine ⟨y, hy_mem.1, hy_mem.2, ?_⟩
+  have : x ^ y - y = 0 := hy_eq
+  linarith
+
+/-- **The repelling seed.** For `0 < x < e^(-e)`, the fixed point `y` of `t ↦ x^t`
+satisfies `log y < -1`. Equivalent to `y < 1/e`, the genuine content of the
+bifurcation at `e^(-e)`: from `y·log x = log y` and `log x < -e`, if instead
+`log y ≥ -1` then `y ≥ 1/e` so `-y·e ≤ -1`, forcing `log y < -1`, a contradiction. -/
+theorem log_fixedpoint_lt_neg_one (hx0 : 0 < x) (hlt : x < eNegE)
+    {y : ℝ} (hy0 : 0 < y) (hfix : x ^ y = y) : Real.log y < -1 := by
+  have hlogx : Real.log x < -Real.exp 1 := by
+    have h := Real.log_lt_log hx0 hlt
+    rwa [eNegE, Real.log_exp] at h
+  have hlogy : Real.log y = y * Real.log x := by
+    conv_lhs => rw [← hfix]
+    rw [Real.log_rpow hx0]
+  have hA : Real.log y < -(y * Real.exp 1) := by
+    have h := mul_lt_mul_of_pos_left hlogx hy0
+    rw [hlogy]; nlinarith [h]
+  by_contra hcon
+  push Not at hcon
+  have hyge : Real.exp (-1) ≤ y := by
+    have h := Real.exp_le_exp.mpr hcon
+    rwa [Real.exp_log hy0] at h
+  have he : Real.exp (-1) * Real.exp 1 = 1 := by rw [← Real.exp_add]; norm_num
+  have hprod : (1:ℝ) ≤ y * Real.exp 1 := by
+    nlinarith [mul_le_mul_of_nonneg_right hyge (Real.exp_pos 1).le, he]
+  linarith [hA, hprod, hcon]
+
+/-- **The genuine attracting 2-cycle.** For `0 < x < e^(-e)` there are
+`β₀ < γ₀` with `x^(x^β₀) = β₀`, `x^(x^γ₀) = γ₀` (fixed points of `g = f∘f`),
+`x < β₀` and `γ₀ < 1`. These bracket the repelling fixed point `y` and trap the
+two subsequences. Built by IVT on `h = g - id` around `y`, using that `g' > 1` on a
+neighborhood of `y` (continuity of `g'` + `g'(y) = (log y)^2 > 1`). -/
+theorem strict_two_cycle_exists (hx0 : 0 < x) (hlt : x < eNegE) :
+    ∃ β₀ γ₀ : ℝ, x < β₀ ∧ β₀ < γ₀ ∧ γ₀ < 1 ∧
+      x ^ (x ^ β₀) = β₀ ∧ x ^ (x ^ γ₀) = γ₀ := by
+  have hx1 : x < 1 := by
+    have h1 : eNegE < 1 := by rw [eNegE, Real.exp_lt_one_iff]; linarith [Real.exp_pos 1]
+    linarith
+  -- the fixed point y and its repelling derivative
+  obtain ⟨y, hy0, hy1, hfix⟩ := fixedpoint_exists hx0 hx1
+  have hlogy : Real.log y < -1 := log_fixedpoint_lt_neg_one hx0 hlt hy0 hfix
+  have hxy : x < y := by
+    have h := Real.rpow_lt_rpow_of_exponent_gt hx0 hx1 hy1
+    rwa [Real.rpow_one, hfix] at h
+  -- key identities at y
+  have hxxy : x ^ (x ^ y) = y := by rw [hfix, hfix]
+  have hylogx : y * Real.log x = Real.log y := by
+    rw [← Real.log_rpow hx0 y, hfix]
+  -- continuity of f, g, g'
+  have hfcont : Continuous (fun t : ℝ => x ^ t) := Real.continuous_const_rpow (ne_of_gt hx0)
+  have hgcont : Continuous (fun t : ℝ => x ^ (x ^ t)) := hfcont.comp hfcont
+  have hG'cont : Continuous
+      (fun t : ℝ => (x ^ (x ^ t) * Real.log x) * (x ^ t * Real.log x)) :=
+    (hgcont.mul continuous_const).mul (hfcont.mul continuous_const)
+  -- g'(y) > 1
+  have hG'y : (1:ℝ) < (x ^ (x ^ y) * Real.log x) * (x ^ y * Real.log x) := by
+    rw [hxxy, hfix, hylogx]
+    nlinarith [hlogy, mul_self_nonneg (Real.log y + 1)]
+  -- a neighbourhood (radius ε) where g' > 1
+  obtain ⟨ε, hε, hball⟩ :=
+    Metric.isOpen_iff.mp (isOpen_lt continuous_const hG'cont) y hG'y
+  -- shrink ε so the interval [y-δ', y+δ'] stays inside (x,1) ∩ ball y ε
+  obtain ⟨δ', hδ'pos, hδ'ε, hδ'1y, hδ'yx⟩ :
+      ∃ δ' : ℝ, 0 < δ' ∧ δ' < ε ∧ δ' < 1 - y ∧ δ' < y - x := by
+    refine ⟨min ε (min (1 - y) (y - x)) / 2, ?_, ?_, ?_, ?_⟩
+    · have : 0 < min ε (min (1 - y) (y - x)) :=
+        lt_min hε (lt_min (by linarith) (by linarith))
+      linarith
+    · have : min ε (min (1 - y) (y - x)) ≤ ε := min_le_left _ _
+      linarith
+    · have : min ε (min (1 - y) (y - x)) ≤ 1 - y :=
+        (min_le_right _ _).trans (min_le_left _ _)
+      linarith
+    · have : min ε (min (1 - y) (y - x)) ≤ y - x :=
+        (min_le_right _ _).trans (min_le_right _ _)
+      linarith
+  -- h = g - id is strictly increasing on [y-δ', y+δ'] (positive derivative there)
+  have hmono : StrictMonoOn (fun t => x ^ (x ^ t) - t)
+      (Set.Icc (y - δ') (y + δ')) := by
+    have hcont_h : ContinuousOn (fun t : ℝ => x ^ (x ^ t) - t)
+        (Set.Icc (y - δ') (y + δ')) := (hgcont.sub continuous_id).continuousOn
+    refine strictMonoOn_of_deriv_pos (convex_Icc _ _) hcont_h ?_
+    intro t ht
+    rw [interior_Icc] at ht
+    have hball_t : t ∈ Metric.ball y ε := by
+      rw [Metric.mem_ball, Real.dist_eq, abs_lt]
+      constructor <;> [linarith [ht.1]; linarith [ht.2]]
+    have hG'gt : 1 < (x ^ (x ^ t) * Real.log x) * (x ^ t * Real.log x) := hball hball_t
+    have hHD : HasDerivAt (fun s : ℝ => x ^ (x ^ s) - s)
+        ((x ^ (x ^ t) * Real.log x) * (x ^ t * Real.log x) - 1) t :=
+      (hasDeriv_g x hx0 t).sub (hasDerivAt_id t)
+    rw [hHD.deriv]; linarith [hG'gt]
+  -- endpoints and h(y) = 0
+  set a := y - δ' with ha
+  set b := y + δ' with hb
+  have hay : a < y := by rw [ha]; linarith
+  have hyb : y < b := by rw [hb]; linarith
+  have hab : a < b := lt_trans hay hyb
+  have hhy : (fun t => x ^ (x ^ t) - t) y = 0 := by
+    show x ^ (x ^ y) - y = 0; rw [hxxy]; ring
+  have hmem_y : y ∈ Set.Icc a b := ⟨hay.le, hyb.le⟩
+  have hmem_a : a ∈ Set.Icc a b := ⟨le_refl _, hab.le⟩
+  have hmem_b : b ∈ Set.Icc a b := ⟨hab.le, le_refl _⟩
+  have hhb : (0:ℝ) < (fun t => x ^ (x ^ t) - t) b := by
+    have := hmono hmem_y hmem_b hyb; rw [hhy] at this; linarith
+  have hha : (fun t => x ^ (x ^ t) - t) a < 0 := by
+    have := hmono hmem_a hmem_y hay; rw [hhy] at this; linarith
+  -- boundary values: g(1) = x^x < 1 and g(x) = x^(x^x) > x
+  have hh1 : (fun t => x ^ (x ^ t) - t) 1 < 0 := by
+    simp only [Real.rpow_one]
+    have : x ^ x < 1 := Real.rpow_lt_one hx0.le hx1 hx0
+    linarith
+  have hhx : (0:ℝ) < (fun t => x ^ (x ^ t) - t) x := by
+    show (0:ℝ) < x ^ (x ^ x) - x
+    have hxx : x ^ x < 1 := Real.rpow_lt_one hx0.le hx1 hx0
+    have h := Real.rpow_lt_rpow_of_exponent_gt hx0 hx1 hxx
+    rw [Real.rpow_one] at h; linarith
+  have hcontOn : ∀ s t : ℝ, ContinuousOn (fun t => x ^ (x ^ t) - t) (Set.Icc s t) :=
+    fun s t => (hgcont.sub continuous_id).continuousOn
+  -- γ₀ ∈ (b, 1) : a zero of h, hence a fixed point of g above y
+  have hb1 : b ≤ 1 := by rw [hb]; linarith
+  obtain ⟨γ₀, hγ₀mem, hγ₀eq⟩ :=
+    intermediate_value_Ioo' hb1 (hcontOn b 1) ⟨hh1, hhb⟩
+  -- β₀ ∈ (x, a) : a zero of h, hence a fixed point of g below y
+  have hxa : x ≤ a := by rw [ha]; linarith
+  obtain ⟨β₀, hβ₀mem, hβ₀eq⟩ :=
+    intermediate_value_Ioo' hxa (hcontOn x a) ⟨hha, hhx⟩
+  refine ⟨β₀, γ₀, hβ₀mem.1, ?_, ?_, ?_, ?_⟩
+  · -- β₀ < a < y < b < γ₀
+    exact lt_trans hβ₀mem.2 (lt_trans hay (lt_trans hyb hγ₀mem.1))
+  · exact hγ₀mem.2
+  · have : x ^ (x ^ β₀) - β₀ = 0 := hβ₀eq
+    linarith
+  · have : x ^ (x ^ γ₀) - γ₀ = 0 := hγ₀eq
+    linarith
+
+/-- **Lower divergence (MANDATORY).** For `0 < x < e^(-e)` the infinite power tower
+does **not** converge: the even subsequence is trapped above `γ₀` and the odd
+subsequence below `β₀ < γ₀` (the genuine attracting 2-cycle, `strict_two_cycle_exists`),
+so the two subsequence limits are distinct and no single limit exists. The sharp
+converse of `two_cycle_collapse`. -/
+theorem tower_diverges_lower (hx0 : 0 < x) (hlt : x < eNegE) :
+    ¬ ∃ L : ℝ, Tendsto (tower x) atTop (𝓝 L) := by
+  have hx1 : x < 1 := by
+    have h1 : eNegE < 1 := by rw [eNegE, Real.exp_lt_one_iff]; linarith [Real.exp_pos 1]
+    linarith
+  obtain ⟨β, γ, hγ_lim, hβ_lim, _hγβ, _hβγ, _hβpos, _hγpos⟩ := tower_subseq_limits hx0 hx1
+  obtain ⟨β₀, γ₀, hxβ₀, hβ₀γ₀, hγ₀1, hβ₀fix, hγ₀fix⟩ := strict_two_cycle_exists hx0 hlt
+  have hErec : ∀ n, tower x (2 * (n + 1)) = (fun t => x ^ (x ^ t)) (tower x (2 * n)) := by
+    intro n; have h : 2 * (n + 1) = (2 * n) + 2 := by ring
+    rw [h, tower_add_two]
+  have hOrec : ∀ n, tower x (2 * (n + 1) + 1) = (fun t => x ^ (x ^ t)) (tower x (2 * n + 1)) := by
+    intro n; have h : 2 * (n + 1) + 1 = (2 * n + 1) + 2 := by ring
+    rw [h, tower_add_two]
+  have hgm := g_mono hx0 hx1.le
+  -- even subsequence trapped above γ₀
+  have hE_ge : ∀ n, γ₀ ≤ tower x (2 * n) := by
+    intro n
+    induction n with
+    | zero => simp only [Nat.mul_zero, tower_zero]; linarith [hγ₀1]
+    | succ k ih =>
+        rw [hErec k]
+        calc γ₀ = x ^ (x ^ γ₀) := hγ₀fix.symm
+          _ ≤ x ^ (x ^ tower x (2 * k)) := hgm ih
+  -- odd subsequence trapped below β₀
+  have hO_le : ∀ n, tower x (2 * n + 1) ≤ β₀ := by
+    intro n
+    induction n with
+    | zero => simp only [Nat.mul_zero, Nat.zero_add, tower_one]; linarith [hxβ₀]
+    | succ k ih =>
+        rw [hOrec k]
+        calc x ^ (x ^ tower x (2 * k + 1)) ≤ x ^ (x ^ β₀) := hgm ih
+          _ = β₀ := hβ₀fix
+  have hγ_ge : γ₀ ≤ γ := ge_of_tendsto' hγ_lim hE_ge
+  have hβ_le : β ≤ β₀ := le_of_tendsto' hβ_lim hO_le
+  have hβγ_strict : β < γ := by linarith [hβ_le, hγ_ge, hβ₀γ₀]
+  -- distinct subsequence limits ⟹ no overall limit
+  rintro ⟨L, hL⟩
+  have h2n : Tendsto (fun n : ℕ => 2 * n) atTop atTop :=
+    tendsto_atTop_mono (fun n => by simp only [id_eq]; omega) tendsto_id
+  have h2n1 : Tendsto (fun n : ℕ => 2 * n + 1) atTop atTop :=
+    tendsto_atTop_mono (fun n => by simp only [id_eq]; omega) tendsto_id
+  have hEL : Tendsto (fun n => tower x (2 * n)) atTop (𝓝 L) := hL.comp h2n
+  have hOL : Tendsto (fun n => tower x (2 * n + 1)) atTop (𝓝 L) := hL.comp h2n1
+  have hγL : γ = L := tendsto_nhds_unique hγ_lim hEL
+  have hβL : β = L := tendsto_nhds_unique hβ_lim hOL
+  linarith [hβγ_strict, hγL, hβL]
 
 end LeanFormalizations.RealAnalysis.PowerTower
