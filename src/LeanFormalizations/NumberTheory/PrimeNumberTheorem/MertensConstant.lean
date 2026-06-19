@@ -848,4 +848,44 @@ lemma sub_one_mul_integral_log_exp {s : ℝ} (hs : 1 < s) :
       = -Real.eulerMascheroniConstant - Real.log (s - 1) := by
   rw [sub_one_mul_integral_log_exp_eq hs, integral_log_sub_logSub_mul_exp hs]
 
+open MeasureTheory in
+/-- **Exponential form of brick B1** (substitution `t = eˣ`): for `s > 1`,
+`primeZeta s = (s−1)·∫_0^∞ (∑_{p≤⌊eˣ⌋}1/p)·e^{−(s−1)x} dx`.
+
+From `primeZeta_eq_abel_integral` by the change of variables `t = eˣ` (so `eˣ·(eˣ)^{−s} = e^{−(s−1)x}`),
+formalized with `integral_image_eq_integral_abs_deriv_smul` (`exp` is injective with derivative `exp` and
+`exp '' Ioi 0 = Ioi 1`).  This is the form where Mertens 2nd `∑_{p≤⌊eˣ⌋}1/p = log x + M + o(1)` splits the
+integral into the log-part (`sub_one_mul_integral_log_exp` → `−γ − log(s−1)`), the M-part, and the
+Tauberian error (→0). -/
+lemma primeZeta_eq_abel_integral_exp {s : ℝ} (hs : 1 < s) :
+    primeZeta s
+      = (s - 1) * ∫ x in Set.Ioi (0 : ℝ),
+          primeRecipSum ⌊Real.exp x⌋₊ * Real.exp (-((s - 1) * x)) := by
+  rw [primeZeta_eq_abel_integral hs]
+  congr 1
+  have himg : Real.exp '' Set.Ioi 0 = Set.Ioi 1 := by
+    ext y
+    simp only [Set.mem_image, Set.mem_Ioi]
+    constructor
+    · rintro ⟨x, hx, rfl⟩
+      calc (1 : ℝ) = Real.exp 0 := Real.exp_zero.symm
+        _ < Real.exp x := Real.exp_lt_exp.mpr hx
+    · intro hy
+      have hy0 : (0 : ℝ) < y := by linarith
+      have hlogpos : 0 < Real.log y := by
+        rw [show (0 : ℝ) = Real.log 1 from Real.log_one.symm]; exact Real.log_lt_log one_pos hy
+      exact ⟨Real.log y, hlogpos, Real.exp_log hy0⟩
+  have hcov := integral_image_eq_integral_abs_deriv_smul (s := Set.Ioi (0 : ℝ))
+    measurableSet_Ioi (fun x _ => (Real.hasDerivAt_exp x).hasDerivWithinAt)
+    (Real.exp_injective.injOn) (fun t : ℝ => t ^ (-s) * primeRecipSum ⌊t⌋₊)
+  rw [himg] at hcov
+  rw [hcov]
+  refine setIntegral_congr_fun measurableSet_Ioi (fun x hx => ?_)
+  rw [Set.mem_Ioi] at hx
+  show |Real.exp x| • ((Real.exp x) ^ (-s) * primeRecipSum ⌊Real.exp x⌋₊)
+      = primeRecipSum ⌊Real.exp x⌋₊ * Real.exp (-((s - 1) * x))
+  rw [abs_of_pos (Real.exp_pos x), smul_eq_mul, Real.rpow_def_of_pos (Real.exp_pos x), Real.log_exp,
+    ← mul_assoc, ← Real.exp_add, show x + x * -s = -((s - 1) * x) by ring]
+  ring
+
 end LeanFormalizations.Mertens
