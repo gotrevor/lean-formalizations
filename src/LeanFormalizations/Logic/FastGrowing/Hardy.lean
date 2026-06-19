@@ -1,0 +1,99 @@
+/-
+# The Hardy hierarchy `H_α`
+
+The **Hardy hierarchy** is the companion of the fast-growing hierarchy used in the
+Kirby–Paris / Goodstein growth argument. mathlib has `ONote.fastGrowing` but **not**
+the Hardy hierarchy at all — this file introduces it, mirroring `fastGrowing`'s
+structure on `ONote.fundamentalSequence`:
+
+* `H₀(n) = n`              (identity, vs. `f₀ = succ`)
+* `H_{α+1}(n) = H_α(n+1)`  (one step of `+1`, vs. `f_{α+1} n = f_α^[n] n`)
+* `H_λ(n) = H_{λ[n]}(n)`   (limit, via the fundamental sequence — same as `fastGrowing`)
+
+It is **computable** (it builds on the computable `fundamentalSequence`), so we can
+pin small values with `native_decide` anchors. The classical identity `H_{ω^α} = f_α`
+(a long-horizon target, B4) connects it back to `fastGrowing`.
+
+The definition uses the *same* well-founded `<`-recursion on `ONote` that defines
+`fastGrowing`; the characterization lemmas `hardy_zero'/_succ/_limit` mirror
+`fastGrowing_zero'/_succ/_limit` and are proved the same way (`hardy_def` + `subst`).
+-/
+import Mathlib.SetTheory.Ordinal.Notation
+
+namespace LeanFormalizations.Logic.FastGrowing
+
+open ONote
+
+/-- The **Hardy hierarchy** `H_α : ℕ → ℕ` for ordinal notations `< ε₀`:
+`H₀ = id`, `H_{α+1}(n) = H_α(n+1)`, `H_λ(n) = H_{λ[n]}(n)` (limit `λ`, via
+`ONote.fundamentalSequence`). Same well-founded recursion as `ONote.fastGrowing`. -/
+def hardy : ONote → ℕ → ℕ
+  | o =>
+    match fundamentalSequence o, fundamentalSequence_has_prop o with
+    | Sum.inl none, _ => id
+    | Sum.inl (some a), h =>
+      have : a < o := by rw [lt_def, h.1]; exact Order.lt_succ _
+      fun n => hardy a (n + 1)
+    | Sum.inr f, h => fun n =>
+      have : f n < o := (h.2.1 n).2.1
+      hardy (f n) n
+  termination_by o => o
+
+/-- Unfolding lemma for `hardy`, mirroring `ONote.fastGrowing_def`. -/
+theorem hardy_def {o : ONote} {x} (e : fundamentalSequence o = x) :
+    hardy o =
+      match
+        (motive := (x : Option ONote ⊕ (ℕ → ONote)) → FundamentalSequenceProp o x → ℕ → ℕ)
+        x, e ▸ fundamentalSequence_has_prop o with
+      | Sum.inl none, _ => id
+      | Sum.inl (some a), _ => fun n => hardy a (n + 1)
+      | Sum.inr f, _ => fun n => hardy (f n) n := by
+  subst x
+  rw [hardy]
+
+/-- `H_o = id` when `o = 0` (the `inl none` branch). -/
+theorem hardy_zero' (o : ONote) (h : fundamentalSequence o = Sum.inl none) :
+    hardy o = id := by
+  rw [hardy_def h]
+
+/-- `H_o(n) = H_a(n+1)` when `o` is the successor of `a`. -/
+theorem hardy_succ (o) {a} (h : fundamentalSequence o = Sum.inl (some a)) :
+    hardy o = fun n => hardy a (n + 1) := by
+  rw [hardy_def h]
+
+/-- `H_o(n) = H_{o[n]}(n)` when `o` is a limit with fundamental sequence `f`. -/
+theorem hardy_limit (o) {f} (h : fundamentalSequence o = Sum.inr f) :
+    hardy o = fun n => hardy (f n) n := by
+  rw [hardy_def h]
+
+/-- `H₀ = id`. -/
+@[simp]
+theorem hardy_zero : hardy 0 = id :=
+  hardy_zero' _ rfl
+
+/-- `H₁(n) = n + 1` — the first successor level just adds one. -/
+theorem hardy_one : hardy 1 = fun n => n + 1 := by
+  rw [@hardy_succ 1 0 rfl]; funext n; rw [hardy_zero]; rfl
+
+/-- `H₂(n) = n + 2`. -/
+theorem hardy_two : hardy 2 = fun n => n + 2 := by
+  rw [@hardy_succ 2 1 rfl]; funext n; rw [hardy_one]
+
+/-! ### Anti-vacuity anchors (`native_decide`)
+
+Standalone witnesses, off any headline axiom path, that a *wrong* definition of
+`hardy` would fail to satisfy. They pin both the successor branch (`H_k(n) = n + k`)
+and the limit branch: mathlib's fundamental sequence for `ω` is `ω[n] = n + 1`, so
+`H_ω(n) = H_{n+1}(n) = n + (n+1) = 2n + 1`. -/
+
+example : hardy 0 5 = 5 := by native_decide
+example : hardy 1 5 = 6 := by native_decide
+example : hardy 2 5 = 7 := by native_decide
+example : hardy 3 5 = 8 := by native_decide
+example : hardy 4 5 = 9 := by native_decide
+-- limit branch: `H_ω(n) = 2n + 1` (`ω = oadd 1 1 0`, `ω[n] = n + 1`)
+example : hardy (oadd 1 1 0) 2 = 5 := by native_decide
+example : hardy (oadd 1 1 0) 4 = 9 := by native_decide
+example : hardy (oadd 1 1 0) 6 = 13 := by native_decide
+
+end LeanFormalizations.Logic.FastGrowing
