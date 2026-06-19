@@ -39,9 +39,11 @@ Solutions are finite: `∃ N₀, ∀ N ≥ N₀, maxNoThreeInLine N < 2N`. Unpro
 `sorry` target in the `formal-conjectures` style (`@[category research open]`), never a claimed
 proof. Its natural home is the DeepMind `formal-conjectures` repo (gated on the CLA), not here.
 
-### D. Verified witnesses (decidable anchors)
-The record configurations (e.g. `n=70`, Heule 2026) are finite decidable checks, not theorems.
-A `native_decide` anchor "this explicit set of `2k` points has no 3 collinear" would be an
-anti-vacuity lock in the spirit of the other repos' `Anchors.lean`, but needs a decidable mirror
-of `NoThreeCollinear` on a concrete `Finset` (collinearity → determinant ≠ 0, all triples).
-Cheap, optional, high-confidence.
+### D. Verified witnesses (anti-vacuity anchors) — ✅ DONE (`Anchors.lean`, 2026-06-19)
+`collinear_diagonal` (a real collinear grid triple — `Collinear ℝ` is not always false, so
+`NoThreeCollinear` is not vacuously true) and `not_collinear_corner` (a genuine non-collinear
+triple — `Collinear ℝ` is not always true). With `collinear_iff_det3_zero` and the proven
+nonempty family `parabola_noThreeCollinear`, the predicate is pinned to its geometric meaning.
+(A full `native_decide` "this explicit `2k`-set has no 3 collinear" still needs a decidable
+mirror of `NoThreeCollinear` on a concrete `Finset` — reachable via `collinear_iff_det3_zero`
+reduced to an integer determinant check over all triples; lower priority.)

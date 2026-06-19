@@ -31,3 +31,4 @@ import LeanFormalizations.Logic.FastGrowing.Hardy
 import LeanFormalizations.Logic.FastGrowing.Domination
 import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
 import LeanFormalizations.Combinatorics.NoThreeInLine.Hyperbola
+import LeanFormalizations.Combinatorics.NoThreeInLine.Anchors
