@@ -175,6 +175,38 @@ lemma summable_log_div_sq :
       calc Real.log n / (n : ℝ) ^ 2 ≤ 2 * (n : ℝ) ^ (1 / 2 : ℝ) / (n : ℝ) ^ 2 := by gcongr
         _ = 2 / (n : ℝ) ^ (3 / 2 : ℝ) := heq
 
+/-- `P(N) := ∑_{p ≤ N, p prime} (log p)/p`, the prime sum of Mertens' first theorem (prime form). -/
+noncomputable def primeSumDiv (N : ℕ) : ℝ :=
+  ∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, Real.log p / (p : ℝ)
+
+/-- The von Mangoldt sum minus the prime sum is the **proper-prime-power tail**
+`∑_{d ≤ N, ¬prime} Λ(d)/d` (the `¬prime` terms with `Λ ≠ 0` are exactly the `p^k`, `k ≥ 2`). -/
+lemma vonMangoldtSumDiv_sub_primeSumDiv (N : ℕ) :
+    vonMangoldtSumDiv N - primeSumDiv N
+      = ∑ d ∈ (Finset.Ioc 0 N).filter (fun d => ¬ Nat.Prime d), Λ d / (d : ℝ) := by
+  have hsplit : vonMangoldtSumDiv N
+      = (∑ d ∈ (Finset.Ioc 0 N).filter Nat.Prime, Λ d / (d : ℝ))
+        + ∑ d ∈ (Finset.Ioc 0 N).filter (fun d => ¬ Nat.Prime d), Λ d / (d : ℝ) := by
+    rw [vonMangoldtSumDiv]
+    exact (Finset.sum_filter_add_sum_filter_not _ _ _).symm
+  have hprime : (∑ d ∈ (Finset.Ioc 0 N).filter Nat.Prime, Λ d / (d : ℝ)) = primeSumDiv N := by
+    refine Finset.sum_congr rfl (fun p hp => ?_)
+    rw [Finset.mem_filter] at hp
+    rw [ArithmeticFunction.vonMangoldt_apply_prime hp.2]
+  rw [hsplit, hprime]; ring
+
+/-- **Upper half of Mertens' first theorem, prime form.** `∑_{p ≤ N} (log p)/p ≤ log N + (log 4 + 5)`
+for `N ≥ 1` — immediate, since the proper-prime-power tail dropped is `≥ 0`.  (The matching lower bound
+needs the tail to be `O(1)`; see the follow-up note below.) -/
+theorem primeSumDiv_le {N : ℕ} (hN : 1 ≤ N) :
+    primeSumDiv N ≤ Real.log N + (Real.log 4 + 5) := by
+  have htail : 0 ≤ ∑ d ∈ (Finset.Ioc 0 N).filter (fun d => ¬ Nat.Prime d), Λ d / (d : ℝ) :=
+    Finset.sum_nonneg fun d _ => div_nonneg ArithmeticFunction.vonMangoldt_nonneg (by positivity)
+  have hd := vonMangoldtSumDiv_sub_primeSumDiv N
+  have hvm := abs_vonMangoldtSumDiv_sub_log_le hN
+  rw [abs_le] at hvm
+  linarith [hvm.2, hd, htail]
+
 /-!
 ## Follow-up: the prime form `∑_{p ≤ x} (log p)/p = log x + O(1)`
 
