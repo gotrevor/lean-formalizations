@@ -5,7 +5,13 @@
 This file is a **thin pointer**. The durable overview is **`STATUS.md`**; the per-lap baton
 is the newest **`HANDOFF-<date>.md`**; open items/attack paths live in **`PENDING_WORK.md`**.
 
-## Where things stand (2026-06-19 lap 2)
+## Where things stand (2026-06-19 lap 3 — newest baton: `HANDOFF-2026-06-19-0641.md`)
+- **C3 BUILT modulo one sorry.** The Cichoń identity `goodsteinLength m = H_{seqONote m 0}(2) − 2`
+  is proved end-to-end except the `r=0 ∧ L≥1` "borrowing" case of `hstep_toONote`. New intrinsic
+  Hardy machinery (`hstep`, `hardy_hstep`, `hstep_oadd_tail`) is axiom-clean. Crux submitted to
+  Aristotle (job `77c99f0e`). Build 🟢 green (8288 jobs). See the dated baton for the full model.
+
+## Where things stood (2026-06-19 lap 2)
 - Branch `no-three-in-line`. Build 🟢 green (8287 jobs). `src/` is **sorry-free** and
   **0 math axioms**.
 - **Section A COMPLETE + axiom-clean**: A1/A2/A3 **and now A4** — the headline crux
