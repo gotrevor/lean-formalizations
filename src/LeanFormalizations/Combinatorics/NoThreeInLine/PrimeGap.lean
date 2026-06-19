@@ -555,6 +555,38 @@ theorem psi_refined_lower {n : ℕ} (hn : 30 ≤ n) :
       ≤ Chebyshev.psi n :=
   le_trans (logFactorial_comb_lower hn) (logFactorial_comb_le_psi n)
 
+/-- **Refined Chebyshev `θ` lower bound.** For `n ≥ 30`,
+`A·n − 4·√n·log n − 9 ≤ θ(n)` with `A = (7/15)log2+(3/10)log3+(1/6)log5 > 0.91`. Combines the
+capstone `psi_refined_lower` (`ψ(n) ≥ A·n + O(log n)`) with `abs_psi_sub_theta_le_sqrt_mul_log`
+(`θ ≥ ψ − 2√n·log n`); the `O(log n)` corrections are folded into the clean `−4√n·log n − 9` error
+(using `log n ≤ √n·log n` and `log(2π)/2 + log 30 − 7 ≥ −9`). This is the genuine refined `θ` lower
+bound — leading constant `0.92` rather than the elementary `log4/2 ≈ 0.69` (`theta_lower`) — and is the
+lower half of the two-sided `θ` estimate feeding the sub-`2` prime gap. -/
+theorem theta_refined_lower {n : ℕ} (hn : 30 ≤ n) :
+    (n : ℝ) * ((7 / 15) * Real.log 2 + (3 / 10) * Real.log 3 + (1 / 6) * Real.log 5)
+        - 4 * Real.sqrt n * Real.log n - 9
+      ≤ Chebyshev.theta n := by
+  have hn1 : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast (by omega : 1 ≤ n)
+  have hp := psi_refined_lower hn
+  have habs := Chebyshev.abs_psi_sub_theta_le_sqrt_mul_log hn1
+  rw [abs_le] at habs
+  -- algebraic simplifications of the ψ-error logarithms
+  have h2n : Real.log (2 * (n : ℝ)) = Real.log 2 + Real.log n :=
+    Real.log_mul (by norm_num) (by positivity)
+  have hn30 : Real.log ((n : ℝ) / 30) = Real.log n - Real.log 30 :=
+    Real.log_div (by positivity) (by norm_num)
+  -- side facts to fold O(log n) into −4√n·log n − 9
+  have hlogn : 0 ≤ Real.log n := Real.log_nonneg hn1
+  have hsqrt1 : (1 : ℝ) ≤ Real.sqrt n := by
+    rw [show (1 : ℝ) = Real.sqrt 1 by simp]; exact Real.sqrt_le_sqrt hn1
+  have hsq : Real.log n ≤ Real.sqrt n * Real.log n := by nlinarith [hlogn, hsqrt1]
+  have hlog2pi : 0 ≤ Real.log (2 * Real.pi) := by
+    have : (1 : ℝ) ≤ 2 * Real.pi := by nlinarith [Real.pi_gt_three]
+    exact Real.log_nonneg this
+  have hlog30 : 0 ≤ Real.log 30 := Real.log_nonneg (by norm_num)
+  rw [h2n, hn30] at hp
+  linarith [hp, habs.2, hsq, hlog2pi, hlog30]
+
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
 
