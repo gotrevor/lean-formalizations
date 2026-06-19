@@ -1,0 +1,29 @@
+Formalize the following mathematical statement in Lean 4 with Mathlib. Produce only the
+theorem *statement* (the proof may be `sorry`). Use Mathlib's standard notions of Euclidean
+space, Hausdorff dimension, and line segments.
+
+----------------------------------------------------------------------
+Theorem (R. O. Davies, 1971 — the planar case of the Kakeya set conjecture).
+
+Background definitions:
+
+  * Work in the two-dimensional real Euclidean space, i.e. ℝ² with its usual norm.
+
+  * A subset S of ℝ² is called a "Kakeya set" (also "Besicovitch set") if, for every
+    direction, S contains a line segment of length 1 pointing in that direction. More
+    precisely: for every unit vector v (a vector with ‖v‖ = 1) there exists a point a in
+    ℝ² such that the straight line segment from a to a + v is entirely contained in S.
+    (No compactness or measurability assumption is placed on S.)
+
+  * "Hausdorff dimension" is the usual Hausdorff dimension of a subset of a metric space.
+
+Statement to formalize:
+
+  Every Kakeya set S in ℝ² has Hausdorff dimension exactly 2.
+
+That is: for every subset S of ℝ² which is a Kakeya set in the sense above, the Hausdorff
+dimension of S equals 2.
+----------------------------------------------------------------------
+
+Return the Lean 4 statement of this theorem (with the Kakeya-set predicate spelled out
+inline or as an auxiliary definition), proof omitted / `sorry`.

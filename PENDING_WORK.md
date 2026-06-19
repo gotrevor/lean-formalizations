@@ -4,14 +4,35 @@
 Per `STATUS.md`'s FINISH-AND-STOP banner, the planar-Kakeya headline is the deliverable (DONE,
 `#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound]`, re-verified this lap) and
 the threads below are abandoned side quests. Recorded here as durable state only; **do not resume
-without Trevor reversing the stop.** Full open-`sorry` inventory + three attack paths each:
+without Trevor reversing the stop.**
+
+**0. Headline faithfulness cross-check (in flight, banner-compatible).** Submitted the planar-Kakeya
+*prose* (Davies 1971, deliberately NOT my Lean phrasing) to Aristotle's `formalize` mode —
+job `4addbb42-8598-49af-88f6-2f441f0422e5` (`wip/aristotle/kakeya-faithfulness/Prose.txt`). When it
+returns, compare its independent Lean rendering against our `KakeyaSetConjectureDim 2`
+(`∀ S : Set (EuclideanSpace ℝ (Fin 2)), IsKakeya S → dimH S = 2`); logical equivalence = an
+independent faithfulness signal on the deliverable (the charter-endorsed headline-only check). This is
+NOT a re-proof of a proven theorem (forbidden) — it is independent NL→formalization for faithfulness.
+
+Full open-`sorry` inventory + three attack paths each:
 
 1. **`Capacitability.choquet_core_range` — ✅ DISCHARGED this lap** (no longer open). Axiom-clean
    from-scratch Lusin-scheme proof (Aristotle-authored, verified in our mathlib). Brick A is DONE.
 2. **`VonNeumannSelection.analyticSet_nullMeasurableSet`** (1 sorry, the 2nd-route consumer):
-   (a) **port the now-proven `Capacitability.analyticSet_nullMeasurableSet`** (add `[SigmaFinite]`) —
-   essentially trivial now; (b) re-prove inline via the same `ChoquetAux`; (c) drop the route entirely
-   (headline doesn't need it). → Path (a) is ~1 lap and finishes the unconditional 2nd route.
+   (a) **port the now-proven `Capacitability.analyticSet_nullMeasurableSet`** (add `[SigmaFinite]`,
+   thread it through `exists_aemeasurable_section_of_continuous_range` →
+   `measurableSelection_aemeasurable`; `volume` on ℝ is σ-finite so `jvn_of_measurableSelection`
+   closes); (b) re-prove inline via the same `ChoquetAux`; (c) drop the route entirely (headline
+   doesn't need it).
+   ⚠️ **2026-06-19 (this lap) — path (a) is NOT a free cleanup under the current lake layout.**
+   `srcDir = "src"`, so `wip/` is OUTSIDE the package: `VonNeumannSelection.lean` and
+   `Capacitability.lean` are each checked standalone with `lake env lean` + `import Mathlib`, and
+   **cannot import each other** through the module system. Discharging this sorry therefore requires
+   EITHER moving both files into `src/` (adds the abandoned 2nd route to the headline build target,
+   against the banner's "keep `src/` to the headline") OR copying the whole ~590-line `ChoquetAux`
+   development into `VonNeumannSelection.lean`. This confirms the prior handoff's "Decision is
+   Trevor's": the banner's R2 ("source is sorry-backed") is now moot, but R1 ("redundant 2nd proof
+   of an already-axiom-clean headline") stands and the layout cost is real. **Not resumed this lap.**
 3. **`FastGrowing.fastGrowing_fundSeq_step`** (FGH index-monotonicity crux): (a) finish
    `Bachmann.fundSeq_bachmann` then build conditional index-monotonicity by WF recursion; (b) submit to
    Aristotle (pure ordinal case-bash, well-suited); (c) prove more structural special cases (successor
