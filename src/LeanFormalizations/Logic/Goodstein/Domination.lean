@@ -346,7 +346,7 @@ theorem log_le_log_pred_succ (b : ℕ) (hb : 1 < b) (x : ℕ) :
     have hx1 : x - 1 ≠ 0 := by omega
     have hpowlt : b ^ (Nat.log b x - 1) < b ^ Nat.log b x := Nat.pow_lt_pow_right hb (by omega)
     have hpow : b ^ (Nat.log b x - 1) ≤ x - 1 := by omega
-    have := (Nat.pow_le_iff_le_log hb hx1).1 hpow
+    have := (Nat.le_log_iff_pow_le hb hx1).2 hpow
     omega
 
 /-- **The leading CNF exponent drops by at most one per Goodstein step** (while the term is at
@@ -371,6 +371,28 @@ theorem leadExp_drop_le_one (m k : ℕ) (h : base k ≤ goodsteinSeq m k) :
       = bump (base k) (Nat.log (base k) (goodsteinSeq m k)) := log_bump (base k) hb hv0
   have h3 : Nat.log (base k) (goodsteinSeq m k)
       ≤ bump (base k) (Nat.log (base k) (goodsteinSeq m k)) := le_bump (base k) hb _
+  omega
+
+/-- **The leading exponent is non-decreasing while it is itself `≥ base`** (the level-2 analog of
+`goodsteinSeq_ge_init`). If `L_k = log_{base k}(G_k) ≥ base k` then `bump (base k) L_k ≥ L_k + 1`
+(`bump_gt`), so even after the `−1`-induced log drop, `L_{k+1} ≥ L_k`. The same non-decrease
+mechanism that keeps the *value* high keeps the *leading exponent* high — one level up. -/
+theorem leadExp_ge_of_base_le (m k : ℕ)
+    (h : base k ≤ Nat.log (base k) (goodsteinSeq m k)) :
+    Nat.log (base k) (goodsteinSeq m k) ≤ Nat.log (base (k + 1)) (goodsteinSeq m (k + 1)) := by
+  have hb : 2 ≤ base k := Nat.le_add_left 2 k
+  have hv : goodsteinSeq m k ≠ 0 := by
+    intro h0; rw [h0, Nat.log_zero_right] at h; omega
+  have hbb1 : base (k + 1) = base k + 1 := by simp only [base]
+  have hstep : goodsteinSeq m (k + 1) = bump (base k) (goodsteinSeq m k) - 1 := rfl
+  rw [hbb1, hstep]
+  have h2 : Nat.log (base k + 1) (bump (base k) (goodsteinSeq m k))
+      = bump (base k) (Nat.log (base k) (goodsteinSeq m k)) := log_bump (base k) hb hv
+  have hbg : Nat.log (base k) (goodsteinSeq m k) + 1
+      ≤ bump (base k) (Nat.log (base k) (goodsteinSeq m k)) := bump_gt (base k) hb h
+  have h1 : Nat.log (base k + 1) (bump (base k) (goodsteinSeq m k))
+      ≤ Nat.log (base k + 1) (bump (base k) (goodsteinSeq m k) - 1) + 1 :=
+    log_le_log_pred_succ (base k + 1) (by omega) _
   omega
 
 /-- **The Goodstein term stays `≥ m` for the first `m` steps:** `m ≤ goodsteinSeq m k` whenever
