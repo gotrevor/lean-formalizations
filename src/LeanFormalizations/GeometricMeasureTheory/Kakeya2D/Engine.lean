@@ -90,6 +90,98 @@ theorem exists_pos_le_pow_div {b : ℝ} (hb : 1 < b) (m : ℕ) :
   rw [le_div_iff₀ hden]
   exact h j
 
+/-- **Exponential-beats-polynomial ratio (the localized-Córdoba content constant).** For `0 < d < 2`
+there is a fixed `cR > 0` with, for every dyadic scale `j`,
+
+  `cR · (4·(1/4)^j) · (12π·(1 + j·log 2))  ≤  (1/((j+1)(j+2)))² · ((1/2)^(j+1))^d`.
+
+This is exactly the inequality the cross-scale assembly needs after `cover_content_per_scale`: the
+left coefficient is the Córdoba per-piece coefficient `(ρ+δ)²·6πδ·2N(1+log N)` at `δ = ρ = (1/2)^j`,
+`N = 2^j`; the right is the squared covered-length numerator `(1/((j+1)(j+2)))²` times `η^d` with
+`η = (1/2)^(j+1)`. Setting `q = (1/2)^d` and `b = 4q = 2^{2-d} > 1`, the right side is `q^{j+1}/poly`
+and the ratio is `≳ b^j/poly(j)`, whose infimum over `j` is positive since `b > 1`
+(`exists_const_mul_pow_le`). Pure real analysis — no measure theory. -/
+theorem content_ratio_lower {d : ℝ} (hd0 : 0 < d) (hd2 : d < 2) :
+    ∃ cR : ℝ, 0 < cR ∧ ∀ j : ℕ,
+      cR * (4 * (1 / 4 : ℝ) ^ j) * (12 * Real.pi * (1 + (j : ℝ) * Real.log 2))
+        ≤ (1 / (((j : ℝ) + 1) * ((j : ℝ) + 2))) ^ 2 * ((1 / 2 : ℝ) ^ (j + 1)) ^ d := by
+  set q : ℝ := (1 / 2 : ℝ) ^ d with hq
+  have hqpos : 0 < q := Real.rpow_pos_of_pos (by norm_num) d
+  have hb1 : (1 : ℝ) < 4 * q := by
+    have hlt : (1 / 2 : ℝ) ^ (2 : ℝ) < (1 / 2 : ℝ) ^ d :=
+      Real.rpow_lt_rpow_of_exponent_gt (by norm_num) (by norm_num) hd2
+    have h2 : (1 / 2 : ℝ) ^ (2 : ℝ) = 1 / 4 := by
+      rw [show (2 : ℝ) = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]; norm_num
+    rw [h2] at hlt; rw [hq]; linarith
+  obtain ⟨c0, hc0, hc0le⟩ := exists_const_mul_pow_le 5 hb1
+  have hlog2 : (0 : ℝ) < Real.log 2 := Real.log_pos (by norm_num)
+  have hπ : 0 < Real.pi := Real.pi_pos
+  refine ⟨c0 * q / (192 * Real.pi * (1 + Real.log 2)), by positivity, ?_⟩
+  intro j
+  set P : ℝ := ((j : ℝ) + 1) * ((j : ℝ) + 2) with hP
+  have hPpos : 0 < P := by rw [hP]; positivity
+  -- the squared-power identity `((1/2)^(j+1))^d = q^(j+1)`
+  have hE : ((1 / 2 : ℝ) ^ (j + 1)) ^ d = q ^ (j + 1) := by
+    rw [hq, ← Real.rpow_natCast (1 / 2 : ℝ) (j + 1),
+      ← Real.rpow_natCast ((1 / 2 : ℝ) ^ d) (j + 1),
+      ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 1 / 2),
+      ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 1 / 2), mul_comm]
+  -- `q^(j+1) = q · (1/4)^j · (4q)^j`
+  have hqpow : q ^ j = (1 / 4 : ℝ) ^ j * (4 * q) ^ j := by
+    rw [← mul_pow, show (1 / 4 : ℝ) * (4 * q) = q from by ring]
+  have hqj1 : q ^ (j + 1) = q * ((1 / 4 : ℝ) ^ j * (4 * q) ^ j) := by
+    rw [pow_succ, hqpow]; ring
+  -- degree-5 polynomial bound
+  have hpoly : (1 + (j : ℝ) * Real.log 2) * P ^ 2 ≤ 4 * (1 + Real.log 2) * ((j : ℝ) + 1) ^ 5 := by
+    have hx : (0 : ℝ) ≤ (j : ℝ) := j.cast_nonneg
+    have h1 : (1 + (j : ℝ) * Real.log 2) ≤ (1 + Real.log 2) * (1 + (j : ℝ)) := by
+      have he : (1 + Real.log 2) * (1 + (j : ℝ))
+          = 1 + (j : ℝ) + Real.log 2 + (j : ℝ) * Real.log 2 := by ring
+      rw [he]; linarith [hx, hlog2.le]
+    have hstep : ((j : ℝ) + 2) ^ 2 ≤ 4 * ((j : ℝ) + 1) ^ 2 := by nlinarith [hx, mul_nonneg hx hx]
+    have h2 : P ^ 2 ≤ 4 * ((j : ℝ) + 1) ^ 4 := by
+      rw [hP]
+      calc (((j : ℝ) + 1) * ((j : ℝ) + 2)) ^ 2 = ((j : ℝ) + 1) ^ 2 * ((j : ℝ) + 2) ^ 2 := by ring
+        _ ≤ ((j : ℝ) + 1) ^ 2 * (4 * ((j : ℝ) + 1) ^ 2) :=
+            mul_le_mul_of_nonneg_left hstep (by positivity)
+        _ = 4 * ((j : ℝ) + 1) ^ 4 := by ring
+    calc (1 + (j : ℝ) * Real.log 2) * P ^ 2
+        ≤ ((1 + Real.log 2) * (1 + (j : ℝ))) * (4 * ((j : ℝ) + 1) ^ 4) :=
+          mul_le_mul h1 h2 (by positivity) (by positivity)
+      _ = 4 * (1 + Real.log 2) * ((j : ℝ) + 1) ^ 5 := by ring
+  -- core: `c0·G·P² ≤ 4(1+log2)·(4q)^j`
+  have hc5 : c0 * ((j : ℝ) + 1) ^ 5 ≤ (4 * q) ^ j := by
+    have h := hc0le j
+    rwa [show (1 + (j : ℝ)) = ((j : ℝ) + 1) from by ring] at h
+  have hcore : c0 * ((1 + (j : ℝ) * Real.log 2) * P ^ 2) ≤ 4 * (1 + Real.log 2) * (4 * q) ^ j := by
+    calc c0 * ((1 + (j : ℝ) * Real.log 2) * P ^ 2)
+        ≤ c0 * (4 * (1 + Real.log 2) * ((j : ℝ) + 1) ^ 5) := mul_le_mul_of_nonneg_left hpoly hc0.le
+      _ = 4 * (1 + Real.log 2) * (c0 * ((j : ℝ) + 1) ^ 5) := by ring
+      _ ≤ 4 * (1 + Real.log 2) * (4 * q) ^ j := mul_le_mul_of_nonneg_left hc5 (by positivity)
+  -- assemble the main inequality
+  set cR : ℝ := c0 * q / (192 * Real.pi * (1 + Real.log 2)) with hcR
+  have hmain : cR * (48 * Real.pi) * (1 + (j : ℝ) * Real.log 2) * P ^ 2 ≤ q * (4 * q) ^ j := by
+    have hK : (0 : ℝ) < 192 * Real.pi * (1 + Real.log 2) := by positivity
+    rw [hcR]
+    rw [show c0 * q / (192 * Real.pi * (1 + Real.log 2)) * (48 * Real.pi)
+          * (1 + (j : ℝ) * Real.log 2) * P ^ 2
+        = (c0 * q * (48 * Real.pi) * (1 + (j : ℝ) * Real.log 2) * P ^ 2)
+          / (192 * Real.pi * (1 + Real.log 2)) from by ring, div_le_iff₀ hK]
+    calc c0 * q * (48 * Real.pi) * (1 + (j : ℝ) * Real.log 2) * P ^ 2
+        = (q * (48 * Real.pi)) * (c0 * ((1 + (j : ℝ) * Real.log 2) * P ^ 2)) := by ring
+      _ ≤ (q * (48 * Real.pi)) * (4 * (1 + Real.log 2) * (4 * q) ^ j) :=
+          mul_le_mul_of_nonneg_left hcore (by positivity)
+      _ = q * (4 * q) ^ j * (192 * Real.pi * (1 + Real.log 2)) := by ring
+  -- convert main inequality into the goal
+  have hRHS : (1 / P) ^ 2 * q ^ (j + 1) = q ^ (j + 1) / P ^ 2 := by
+    rw [div_pow, one_pow]; ring
+  rw [hE, hRHS, le_div_iff₀ (by positivity : (0 : ℝ) < P ^ 2), hqj1]
+  calc cR * (4 * (1 / 4 : ℝ) ^ j) * (12 * Real.pi * (1 + (j : ℝ) * Real.log 2)) * P ^ 2
+      = (cR * (48 * Real.pi) * (1 + (j : ℝ) * Real.log 2) * P ^ 2) * (1 / 4 : ℝ) ^ j := by ring
+    _ ≤ (q * (4 * q) ^ j) * (1 / 4 : ℝ) ^ j :=
+        mul_le_mul_of_nonneg_right hmain (by positivity)
+    _ = q * ((1 / 4 : ℝ) ^ j * (4 * q) ^ j) := by ring
+
 /-- **The deep crux (Davies 1971, Hausdorff content form), as one named obligation.** For a planar
 Kakeya set `S` and every exponent `0 < d < 2`, the `d`-dimensional **Hausdorff content** of `S` is
 bounded below: there is a scale `r > 0` and a constant `c > 0` such that every fine countable cover
