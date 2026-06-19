@@ -300,7 +300,7 @@ the **cap-free** continuum dominant scale (so the genuine scale-`j` diameter win
 already-proven single-scale content brick. It is the meat of the measurable-selection route's wiring;
 what remains for the full `kakeya_hausdorffContentBound_of_measurableSelection` is the finite-fiber
 diameter bookkeeping (`hediam_lo/hi` on `s = {n : g n = j}`) and the closed-piece reduction, both of
-which `Engine.kakeya_hausdorffContentBound` already performs verbatim at the *capped* scale.
+which `Wiring.content_bound_step` performs at the *uncapped* dominant scale (no Case B).
 
 Proof: `exists_continuum_dominant_scale` gives `scaleWeight j ≤ ∫ℓⱼ`; `measurable_coveredLength` makes
 `ℓⱼ` measurable and `ℓⱼ ≤ vol([0,1]) = 1` makes `∫ℓⱼ ≠ ⊤`, so `exists_shift_ge_integral` extracts `α`

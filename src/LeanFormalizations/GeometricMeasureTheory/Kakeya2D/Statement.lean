@@ -8,10 +8,13 @@ exactly two things against the literature:
   `google-deepmind/formal-conjectures`' `FormalConjectures/Wikipedia/Kakeya.lean` verbatim;
 * the headline `davies_kakeya_2d` below, which states exactly `KakeyaSetConjectureDim 2`.
 
-The proof delegates to `Engine.lean`:
+The proof splits into the two inequalities, both **proven and axiom-clean**
+(`#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound]`):
 
-* `dimH_le_two` (the `≤ 2` half) is **proven** and axiom-clean;
-* `two_le_dimH` (the `≥ 2` half — Davies' actual theorem) is the open crux of this run.
+* `dimH_le_two` (the `≤ 2` half) — trivial, `Engine.lean`;
+* `two_le_dimH` (the `≥ 2` half — Davies' actual theorem) — `Selection.lean`, via the SOUND,
+  axiom-clean *elementary open-cover / measurable-selection* route
+  (`kakeya_hausdorffContentBound_elementary`), which needs no descriptive set theory.
 
 Reference: R. O. Davies, *Some remarks on the Kakeya problem*, Math. Proc. Cambridge
 Philos. Soc. **69** (1971), 417–421.

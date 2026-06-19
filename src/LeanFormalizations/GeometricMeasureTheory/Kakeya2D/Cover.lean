@@ -290,9 +290,9 @@ directions with covered sets `A k ⊆ [0,1]` whose covered segments lie in the u
 
 Reading off `M = |s|`: the number of dominant-scale pieces is `M ≳ (∑ₖ vol(A k))² / ((ρ+δ)²·log N)`.
 With `ρ ≈ δ` (dominant scale), `N ≈ 1/δ`, and `∑ₖ vol(A k) ≳ N/poly` (the two pigeonholes), this is
-`M ≳ δ^{-2}/poly`, hence `∑_{scale} ediam^d ≥ M·δ^d ≳ δ^{-(2-d)}/poly`. The only remaining gap to
-`kakeya_hausdorffContentBound` is the cross-scale orchestration furnishing `∑ₖ vol(A k) ≳ N/poly`
-(the net-scale thinning; see `ON-LINE-REQUEST.md`). -/
+`M ≳ δ^{-2}/poly`, hence `∑_{scale} ediam^d ≥ M·δ^d ≳ δ^{-(2-d)}/poly`. The cross-scale orchestration
+furnishing `∑ₖ vol(A k) ≳ N/poly` is supplied by the continuum dominant-scale pigeonhole of the
+measurable-selection / elementary route (`Wiring.content_bound_step`, `Selection.lean`). -/
 theorem cover_count_lower {δ ρ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) (hρ : 0 ≤ ρ)
     {N : ℕ} (hN : (N : ℝ) * δ ≤ 1)
     (a : ℕ → Plane) (A : ℕ → Set ℝ) (hAmeas : ∀ k, MeasurableSet (A k))
@@ -328,8 +328,9 @@ on the content sum `∑_{n∈s} ediam(Uₙ)^d`. In division-free form (avoiding 
 
 where `C₀ = (ρ+δ)²·vol(disc)·6πδ·2N(1+log N)` is the Córdoba per-piece coefficient. Dividing by `C₀`
 (finite, nonzero) reads off `∑_{n∈s} ediam^d ≥ (∑ₖ 2δ·vol A k)²·η^d / C₀`. At the dominant scale
-`δ = ρ = 2⁻ʲ`, `N = 2ʲ`, `η = 2⁻⁽ʲ⁺¹⁾` this is the `δ^{-(2-d)}/poly` content gain that closes
-`kakeya_hausdorffContentBound` once the cross-scale orchestration supplies `∑ₖ vol(A k) ≳ N/poly`. -/
+`δ = ρ = 2⁻ʲ`, `N = 2ʲ`, `η = 2⁻⁽ʲ⁺¹⁾` this is the `δ^{-(2-d)}/poly` content gain at the heart of
+the live content bound (`NetThinning.caseA_content` ⟶ `Wiring.content_bound_step` ⟶ the elementary
+route in `Selection.lean`). -/
 theorem cover_content_per_scale {δ ρ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) (hρ : 0 ≤ ρ)
     {N : ℕ} (hN : (N : ℝ) * δ ≤ 1)
     (a : ℕ → Plane) (A : ℕ → Set ℝ) (hAmeas : ∀ k, MeasurableSet (A k))

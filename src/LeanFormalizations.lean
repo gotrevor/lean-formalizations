@@ -18,7 +18,6 @@ import LeanFormalizations.Geometry.Constructible.Statement
 import LeanFormalizations.Logic.Goodstein.Statement
 import LeanFormalizations.Logic.Goodstein.Anchors
 import LeanFormalizations.Logic.Goodstein.Length
-import LeanFormalizations.Logic.FastGrowing.Basic
 import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Statement
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Tube
