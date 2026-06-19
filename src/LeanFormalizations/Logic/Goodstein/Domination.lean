@@ -1096,12 +1096,200 @@ theorem fastGrowing_two_le_goodsteinLength_of_log_length {m : ℕ} (hm : 4 ≤ m
   have hgl : j ≤ goodsteinLength m := le_trans (by omega) (le_goodsteinLength m)
   exact goodstein_dominates_of_index_le (o := 2) (m := m) (j := j) ho hgl (by omega) hnorm hidx
 
+/-- `2·m ≤ 2^m` for `m ≥ 2` (elementary; the slack that turns `f_2(m) = 2^m·m` into a clean
+`≥ 2^{m+1}` exponential length bound). -/
+theorem two_mul_le_two_pow {m : ℕ} (h : 2 ≤ m) : 2 * m ≤ 2 ^ m := by
+  induction m with
+  | zero => omega
+  | succ n ih =>
+    rcases Nat.lt_or_ge n 2 with hn | hn
+    · have hn1 : n = 1 := by omega
+      subst hn1; norm_num
+    · have := ih hn; rw [pow_succ]; omega
+
+/-- **Inductive step of Cichoń's exponential length bound.** If the *one-level-down* Goodstein
+sequence runs `≥ m + 2` steps — `m + 2 ≤ goodsteinLength (Nat.log 2 m)` — then the seed-`m` length is
+at least `2^{m+1} + m`. Combines the conditional `o = 2` domination
+(`fastGrowing_two_le_goodsteinLength_of_log_length`, giving `2^m·m = f_2(m) ≤ goodsteinLength m + 2`)
+with the slack `2^m ≥ m + 2`: `2^m·m − 2 ≥ 2^{m+1} + m` for `m ≥ 4`. This is the engine of the strong
+induction in `goodsteinLength_exp_lower`: it converts an exponential length bound at the *small* seed
+`Nat.log 2 m` into one at `m`, the self-reference at the heart of Cichoń's lower bound. -/
+theorem exp_le_goodsteinLength_step {m : ℕ} (hm : 4 ≤ m)
+    (hlen : m + 2 ≤ goodsteinLength (Nat.log 2 m)) :
+    2 ^ (m + 1) + m ≤ goodsteinLength m := by
+  have hdom := fastGrowing_two_le_goodsteinLength_of_log_length hm hlen
+  simp only [ONote.fastGrowing_two] at hdom
+  have hpow : m + 2 ≤ 2 ^ m := le_trans (by omega) (two_mul_le_two_pow (by omega))
+  set P := 2 ^ m with hP
+  set G := goodsteinLength m with hG
+  have hd : 2 ≤ m - 2 := by omega
+  have key : (m + 2) * 2 ≤ P * (m - 2) := Nat.mul_le_mul hpow hd
+  have hsplit : P * m = P * (m - 2) + 2 * P := by
+    have h2 : m - 2 + 2 = m := by omega
+    calc P * m = P * ((m - 2) + 2) := by rw [h2]
+      _ = P * (m - 2) + P * 2 := by rw [Nat.mul_add]
+      _ = P * (m - 2) + 2 * P := by ring
+  have hpsucc : 2 ^ (m + 1) = 2 * P := by rw [hP, pow_succ]; ring
+  rw [hpsucc]; omega
+
+/-- **Tail-recursive forward "all-nonzero" checker.** `gpos k v fuel` is `true` iff the `fuel`
+consecutive Goodstein values `v = G_k, G_{k+1}, …, G_{k+fuel−1}` are all nonzero, computed by a single
+forward pass (recursion structural on `fuel`, in tail position of `&&`, so it compiles to a *loop* — no
+`fuel`-deep call stack, unlike `goodsteinSeq` itself). The tool that lets `native_decide` certify the
+large finite base-case length bounds `goodsteinLength M ≥ 2^{M+1} + M` (`M ≤ 15`, up to `65551` steps)
+that a naive `∀ n < N, goodsteinSeq M n ≠ 0` would stack-overflow on. -/
+def gpos : ℕ → ℕ → ℕ → Bool
+  | _, _, 0 => true
+  | k, v, fuel + 1 => decide (v ≠ 0) && gpos (k + 1) (bump (base k) v - 1) fuel
+
+/-- **Soundness of `gpos`:** if the forward pass from `G_k` reports all-nonzero for `fuel` steps, then
+`goodsteinSeq M (k + j) ≠ 0` for every `j < fuel`. Induction on `fuel`, using that the threaded value
+`bump (base k) (G_k) − 1` is exactly `G_{k+1}` (defeq) so the accumulator stays on the real sequence. -/
+theorem gpos_goodstein (M : ℕ) : ∀ fuel k, gpos k (goodsteinSeq M k) fuel = true →
+    ∀ j, j < fuel → goodsteinSeq M (k + j) ≠ 0 := by
+  intro fuel
+  induction fuel with
+  | zero => intro k _ j hj; omega
+  | succ fuel ih =>
+    intro k hgp j hj
+    rw [gpos, Bool.and_eq_true, decide_eq_true_eq] at hgp
+    obtain ⟨hv0, hrest⟩ := hgp
+    have hstep : bump (base k) (goodsteinSeq M k) - 1 = goodsteinSeq M (k + 1) := rfl
+    rw [hstep] at hrest
+    rcases Nat.eq_zero_or_pos j with hj0 | hjpos
+    · subst hj0; rwa [Nat.add_zero]
+    · obtain ⟨j', rfl⟩ : ∃ j', j = j' + 1 := ⟨j - 1, by omega⟩
+      have hres := ih (k + 1) hrest j' (by omega)
+      rwa [show k + (j' + 1) = (k + 1) + j' from by omega]
+
+/-- **Computable length lower bound.** `gpos 0 M N = true ⟹ N ≤ goodsteinLength M`: if the forward
+pass certifies the first `N` Goodstein values nonzero, the first zero is at step `≥ N`. The bridge
+from `native_decide` to the base-case length bounds. -/
+theorem glen_ge_of_gpos {M N : ℕ} (h : gpos 0 M N = true) : N ≤ goodsteinLength M := by
+  rw [goodsteinLength, Nat.le_find_iff]
+  intro n hn
+  have := gpos_goodstein M N 0 h n hn
+  rwa [Nat.zero_add] at this
+
+/-- **Cichoń's exponential length lower bound, the strong-induction engine** (conditional on finitely
+many base cases). Given the base bounds `2^{M+1} + M ≤ goodsteinLength M` for `4 ≤ M < 16`, the same
+bound holds for *every* `m ≥ 4`. Strong induction on `m`: for `m ≥ 16` the seed `L = Nat.log 2 m` is
+`≥ 4` and `< m`, so the IH gives `goodsteinLength L ≥ 2^{L+1} + L ≥ (m+1) + L ≥ m + 2` (using
+`m < 2^{L+1}`), which feeds `exp_le_goodsteinLength_step` to conclude `goodsteinLength m ≥ 2^{m+1} + m`;
+for `4 ≤ m < 16` it is a base case. **This is Cichoń's lower bound:** the self-similarity
+(`leadExp_ge_goodsteinSeq_log`) makes the exponential length bound *reproduce itself* one scale up. The
+base hypothesis is purely computational (no deep content) — discharged by `gpos`/`native_decide` in
+`goodsteinLength_exp_lower_uncond`. -/
+theorem goodsteinLength_exp_lower
+    (hbase : ∀ M, 4 ≤ M → M < 16 → 2 ^ (M + 1) + M ≤ goodsteinLength M) :
+    ∀ m, 4 ≤ m → 2 ^ (m + 1) + m ≤ goodsteinLength m := by
+  intro m
+  induction m using Nat.strong_induction_on with
+  | _ m ih =>
+    intro hm
+    rcases Nat.lt_or_ge m 16 with hsmall | hbig
+    · exact hbase m hm hsmall
+    · set L := Nat.log 2 m with hL
+      have hL4 : 4 ≤ L := by
+        calc 4 = Nat.log 2 16 := by rw [show (16 : ℕ) = 2 ^ 4 from rfl, Nat.log_pow (by norm_num)]
+          _ ≤ Nat.log 2 m := Nat.log_mono_right hbig
+      have hLm : L < m := Nat.log_lt_self 2 (by omega)
+      have ihL := ih L hLm hL4
+      have hpowL : m + 1 ≤ 2 ^ (L + 1) := by
+        have h := Nat.lt_pow_succ_log_self (b := 2) (by norm_num) m
+        rw [← hL] at h
+        omega
+      have hlen : m + 2 ≤ goodsteinLength L := by omega
+      exact exp_le_goodsteinLength_step (by omega) hlen
+
 /-- `norm (ofNat n) = n`: a finite notation `ofNat (k+1) = oadd 0 ⟨k+1⟩ 0` has CNF norm its single
 coefficient. -/
 theorem norm_ofNat (n : ℕ) : norm (ONote.ofNat n) = n := by
   cases n with
   | zero => rfl
   | succ k => rw [ONote.ofNat_succ, norm_oadd, norm_zero]; simp
+
+/-! ### General level `o = n`: the full diagonal domination (for every finite `n`)
+
+The `o = 2` machinery (self-similarity `leadExp_ge_goodsteinSeq_log` + exponential length bound)
+generalizes verbatim to every finite level `n`. The only new ingredient is a *value* lower bound on
+the one-level-down sequence: `goodsteinSeq (Nat.log 2 m) k ≥ n` for the first `m` steps, which needs
+`goodsteinLength (Nat.log 2 m) ≥ m + n`. That follows from the small-regime termination law
+(`goodsteinLength_le_of_small`): below its base a Goodstein value falls by *exactly one* each step, so
+a value `< n` at step `k` forces termination within `n` more steps — hence the value stays `≥ n` until
+`n` steps before the end. -/
+
+/-- **Small-regime step:** below its base, a Goodstein value drops by exactly one
+(`bump (base k) v = v` for `v < base k`, then the `−1`). -/
+theorem goodsteinSeq_small_step (M k : ℕ) (h : goodsteinSeq M k < base k) :
+    goodsteinSeq M (k + 1) = goodsteinSeq M k - 1 := by
+  show bump (base k) (goodsteinSeq M k) - 1 = goodsteinSeq M k - 1
+  rw [bump_eq_of_lt (base k) (goodsteinSeq M k) h]
+
+/-- **Small-regime termination law:** once a Goodstein value is below its base it decreases by one per
+step (base only grows, so it stays below), reaching `0` within `goodsteinSeq M k` steps. Hence
+`goodsteinLength M ≤ k + goodsteinSeq M k` whenever `goodsteinSeq M k < base k`. -/
+theorem goodsteinLength_le_of_small (M : ℕ) :
+    ∀ v k, goodsteinSeq M k = v → goodsteinSeq M k < base k → goodsteinLength M ≤ k + v := by
+  intro v
+  induction v with
+  | zero => intro k hv _; have := goodsteinLength_le hv; omega
+  | succ v ih =>
+    intro k hv hsmall
+    have hstep := goodsteinSeq_small_step M k hsmall
+    have hstep' : goodsteinSeq M (k + 1) = v := by omega
+    have hsmall' : goodsteinSeq M (k + 1) < base (k + 1) := by
+      rw [hstep']; simp only [base] at hsmall hv ⊢; omega
+    have := ih (k + 1) hstep' hsmall'
+    omega
+
+/-- **A Goodstein term stays `≥ n` until `n` steps before it terminates** (general level). If
+`n ≤ base k` and `k + n ≤ goodsteinLength M` then `n ≤ goodsteinSeq M k`: were it `< n ≤ base k`, the
+small-regime law would force `goodsteinLength M ≤ k + goodsteinSeq M k < k + n`, contradiction.
+Generalizes `two_le_goodsteinSeq` (the `n = 2` case). -/
+theorem n_le_goodsteinSeq (M k n : ℕ) (hn : n ≤ base k) (hlen : k + n ≤ goodsteinLength M) :
+    n ≤ goodsteinSeq M k := by
+  by_contra hc
+  rw [not_le] at hc
+  have hsmall : goodsteinSeq M k < base k := lt_of_lt_of_le hc hn
+  have := goodsteinLength_le_of_small M (goodsteinSeq M k) k rfl hsmall
+  omega
+
+/-- **The self-similarity reduction at general level `n`:** if `m + n ≤ goodsteinLength (Nat.log 2 m)`
+then the seed-`m` leading exponent at step `k ≤ m` is `≥ n` (provided `n ≤ base k`). Chains
+`n_le_goodsteinSeq` (the lower sequence stays `≥ n`) through `leadExp_ge_goodsteinSeq_log`. Generalizes
+`two_le_leadExp_of_log_length`. -/
+theorem n_le_leadExp_of_log_length {m k n : ℕ}
+    (hlen : m + n ≤ goodsteinLength (Nat.log 2 m)) (hk : k ≤ m) (hkn : n ≤ base k) :
+    n ≤ Nat.log (base k) (goodsteinSeq m k) :=
+  le_trans (n_le_goodsteinSeq (Nat.log 2 m) k n hkn (by omega)) (leadExp_ge_goodsteinSeq_log m k)
+
+/-- **The general diagonal domination, REDUCED to a one-level-smaller length bound.** For every finite
+level `n`, if `m + n ≤ goodsteinLength (Nat.log 2 m)` (and `n ≤ m − 2`, `m ≥ 4`) then
+`fastGrowing (ofNat n) m ≤ goodsteinLength m + 2` — the *true diagonal* `f_n(m)` bound at level `n`
+(budget `m`). This is Cichoń's lower bound at every finite level, modulo the self-referential length
+bound. Assembly: `n_le_leadExp_of_log_length` keeps the leading exponent `≥ n` through step
+`j = m − 2`, so the descent ordinal there dominates `ω^n = (oadd (ofNat n) 1 0).repr`
+(`opow_le_seqONote_repr`); the diagonal reduction `goodstein_dominates_of_index_le` closes it.
+Generalizes `fastGrowing_two_le_goodsteinLength_of_log_length` to all `n`. -/
+theorem fastGrowing_ofNat_le_goodsteinLength_of_log_length {n m : ℕ}
+    (hnm : n ≤ m - 2) (hm : 4 ≤ m)
+    (hlen : m + n ≤ goodsteinLength (Nat.log 2 m)) :
+    fastGrowing (ONote.ofNat n) m ≤ goodsteinLength m + 2 := by
+  set j := m - 2 with hj
+  have ho : (ONote.ofNat n).NF := inferInstance
+  have hrepr : (ONote.ofNat n).repr = (n : Ordinal) := ONote.repr_ofNat n
+  have hlead : n ≤ Nat.log (base j) (goodsteinSeq m j) :=
+    n_le_leadExp_of_log_length (m := m) (k := j) (n := n) hlen (by omega) (by simp only [base]; omega)
+  have hv : goodsteinSeq m j ≠ 0 := by have := goodsteinSeq_ge_init m j (by omega); omega
+  have hkb : n < base j := by simp only [base]; omega
+  have hidx : (oadd (ONote.ofNat n) 1 0).repr ≤ (seqONote m j).repr := by
+    have hr : (oadd (ONote.ofNat n) 1 0).repr = ω ^ (n : Ordinal) := by simp [ONote.repr, hrepr]
+    rw [hr]
+    exact opow_le_seqONote_repr (m := m) (i := j) (k := n) hlead hv hkb
+  have hnorm : norm (ONote.ofNat n) ≤ j + 2 := by rw [norm_ofNat]; omega
+  have hgl : j ≤ goodsteinLength m := le_trans (by omega) (le_goodsteinLength m)
+  exact goodstein_dominates_of_index_le (o := ONote.ofNat n) (m := m) (j := j) ho hgl (by omega) hnorm hidx
 
 /-- **`goodsteinLength` is NON-ELEMENTARY:** for every finite level `n`,
 `fastGrowing (ofNat n) (log₂ m − n + 2) ≤ goodsteinLength m + 2` (for `1 ≤ m`, `2n ≤ log₂ m`).
