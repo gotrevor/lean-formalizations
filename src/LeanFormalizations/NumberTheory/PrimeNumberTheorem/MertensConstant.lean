@@ -751,4 +751,31 @@ lemma tendsto_sub_one_mul_integral_rpow :
   filter_upwards [self_mem_nhdsWithin] with s hs
   exact (sub_one_mul_integral_rpow_neg (Set.mem_Ioi.mp hs) (by norm_num)).symm
 
+open MeasureTheory in
+/-- **Change of variables `u = (s−1)x` for the log-part of brick B2.**  For `s > 1`,
+`(s−1)·∫_0^∞ log x · e^{−(s−1)x} dx = ∫_0^∞ (log u − log(s−1))·e^{−u} du`
+(`integral_comp_mul_left_Ioi` after rewriting `log x = log((s−1)x) − log(s−1)`).
+
+Evaluating the RHS — split via `integral_sub`, then `∫_0^∞ log u·e^{−u} = −γ`
+(`integral_log_mul_exp_neg_Ioi_eq_neg_gamma`) and `∫_0^∞ e^{−u} = 1` — gives `−γ − log(s−1)`: the
+term that carries `−γ` and cancels the `+log(s−1)` in Limit B.  (RHS evaluation = next brick; needs
+`IntegrableOn (log·e^{−·}) (Ioi 0)`.) -/
+lemma sub_one_mul_integral_log_exp_eq {s : ℝ} (hs : 1 < s) :
+    (s - 1) * ∫ x in Set.Ioi (0 : ℝ), Real.log x * Real.exp (-((s - 1) * x))
+      = ∫ u in Set.Ioi (0 : ℝ), (Real.log u - Real.log (s - 1)) * Real.exp (-u) := by
+  have hsub : (0 : ℝ) < s - 1 := by linarith
+  -- rewrite the integrand as `G((s−1)x)` with `G u = (log u − log(s−1))·e^{−u}`.
+  have hcongr : (∫ x in Set.Ioi (0 : ℝ), Real.log x * Real.exp (-((s - 1) * x)))
+      = ∫ x in Set.Ioi (0 : ℝ),
+          (fun u => (Real.log u - Real.log (s - 1)) * Real.exp (-u)) ((s - 1) * x) := by
+    refine setIntegral_congr_fun measurableSet_Ioi (fun x hx => ?_)
+    rw [Set.mem_Ioi] at hx
+    show Real.log x * Real.exp (-((s - 1) * x))
+        = (Real.log ((s - 1) * x) - Real.log (s - 1)) * Real.exp (-((s - 1) * x))
+    rw [Real.log_mul (ne_of_gt hsub) (ne_of_gt hx)]
+    ring
+  rw [hcongr, integral_comp_mul_left_Ioi
+        (fun u => (Real.log u - Real.log (s - 1)) * Real.exp (-u)) 0 hsub,
+      mul_zero, smul_eq_mul, ← mul_assoc, mul_inv_cancel₀ (ne_of_gt hsub), one_mul]
+
 end LeanFormalizations.Mertens
