@@ -204,6 +204,50 @@ theorem volume_thickening_fracTubes_ge {E : Set Plane} (hE : MeasurableSet E) {�
         volume_thickening_sets_ge hE hδ hδ1 hN b _ (fun k => measurableSet_tube _ _ _)
           (fun k => tube_smul_subset (hw0 k) (hw1 k)) hsub
 
+/-- **Localized Córdoba count, in cover-piece form — sub-brick (c) assembled (per scale).** The full
+single-scale assembly, parameterised by the covered data so it stays independent of the cross-scale
+combinatorics. Inputs at scale `δ` (separation = tube width): net base points `a k`, per-direction
+*covered sets* `A k ⊆ [0,1]` (measurable), and a measurable container `P` (the union of the
+dominant-scale cover pieces) with each covered segment `φₖ(A k) ⊆ P`. Then
+
+  `(∑ₖ 2δ·vol(A k))²  ≤  vol(Pδ) · (6π δ · 2N(1 + log N))`.
+
+`Pδ = cthickening δ P` is bounded above by `M·C·δ²` (`volume_thickening_le_of_ediam_le`, `M` = number
+of pieces), so when the covered lengths `vol(A k)` are bounded below across a net of `N ≈ 1/δ`
+directions, this forces `M ≳ 1/(δ²·log)` pieces at the dominant scale — the final Hausdorff content
+bound. Proof: take `R k = cthickening δ (φₖ(A k))` in `volume_thickening_sets_ge`; `R k ⊆ Pδ`
+(`cthickening` monotone), `R k ⊆` full tube (`φₖ(A k) ⊆` segment since `A k ⊆ [0,1]`), and the
+numerator `vol(R k) ≥ 2δ·vol(A k)` is `volume_thickening_covered_ge`. -/
+theorem cordoba_cover_count {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) {N : ℕ} (hN : (N : ℝ) * δ ≤ 1)
+    (a : ℕ → Plane) (A : ℕ → Set ℝ) (hAmeas : ∀ k, MeasurableSet (A k))
+    (hA01 : ∀ k, A k ⊆ Set.Icc (0 : ℝ) 1)
+    (P : Set Plane) (hcov : ∀ k, (fun t => a k + t • dir ((k : ℝ) * δ)) '' (A k) ⊆ P) :
+    (∑ k ∈ range N, ENNReal.ofReal (2 * δ) * volume (A k)) ^ 2
+      ≤ volume (Metric.cthickening δ P)
+        * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
+  set φ : ℕ → ℝ → Plane := fun k t => a k + t • dir ((k : ℝ) * δ) with hφ
+  set R : ℕ → Set Plane := fun k => Metric.cthickening δ (φ k '' (A k)) with hR
+  -- R k ⊆ full δ-tube about direction k (covered segment ⊆ unit segment)
+  have hRfull : ∀ k, R k ⊆ tube (a k) (dir ((k : ℝ) * δ)) δ := by
+    intro k
+    have hseg : φ k '' (A k) ⊆ affineSegment ℝ (a k) (a k + dir ((k : ℝ) * δ)) := by
+      rintro y ⟨t, htA, rfl⟩
+      rw [affineSegment_eq]; exact ⟨t, hA01 k htA, rfl⟩
+    rw [hR, tube_def]
+    exact Metric.cthickening_subset_of_subset δ hseg
+  -- R k ⊆ container thickening
+  have hRE : ∀ k, R k ⊆ Metric.cthickening δ P := fun k =>
+    Metric.cthickening_subset_of_subset δ (hcov k)
+  -- numerator: vol(R k) ≥ 2δ·vol(A k)
+  have hnumk : ∀ k, ENNReal.ofReal (2 * δ) * volume (A k) ≤ volume (R k) := fun k =>
+    volume_thickening_covered_ge (norm_dir _) (hAmeas k)
+  calc (∑ k ∈ range N, ENNReal.ofReal (2 * δ) * volume (A k)) ^ 2
+      ≤ (∑ k ∈ range N, volume (R k)) ^ 2 := by gcongr with k _; exact hnumk k
+    _ ≤ volume (Metric.cthickening δ P)
+          * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) :=
+        volume_thickening_sets_ge Metric.isClosed_cthickening.measurableSet hδ hδ1 hN a R
+          (fun k => Metric.isClosed_cthickening.measurableSet) hRfull hRE
+
 /-- The Kakeya specialization of `volume_thickening_tubes_ge`: the `N` net-direction δ-tubes
 furnished by `exists_tube_family` all lie in `Sδ`, so `E := thickening S δ`. -/
 theorem volume_thickening_mul_ge {S : Set Plane} (h : IsKakeya S) {δ : ℝ}
