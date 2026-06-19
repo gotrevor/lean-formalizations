@@ -5,13 +5,40 @@ Inventory of open items + attack paths (per `how-to-get-unblocked.md`). Refreshe
 power-tower, constructibles, transcendence, Goodstein — are complete & axiom-clean, recorded in
 `STATUS.md` and git history. Do not reopen them here.)
 
-## Open items (full `#print axioms` + `grep sorry` sweep of `src/.../NoThreeInLine/`)
+## ⭐⭐ 2026-06-19 UPDATE — THE CONSTRUCTION CRUX IS CRACKED (closed-form rule found)
 
-1. **`hjsw_lower : 3*(p−1) ≤ maxNoThreeInLine (2*p)`** (`Hyperbola.lean`) — the ONLY open `sorry`.
-   The covering count of the HJSW `3N/2` lower bound. Everything else is proven & axiom-clean:
-   2N upper bound, Erdős Θ(N), hyperbola-arc non-collinearity, the **reduction toolkit** (new this
-   lap, see below), the decidable `det3=0 ⟺ Collinear` certificate, and native-decide witnesses at
-   p = 5, 7, 11, 13.
+The open combinatorial crux (the lift-selection rule) is **SOLVED**. A closed-form rule for the
+sheared hyperbola was found and verified (exact integer determinant: card, distinct, grid, NoThree)
+for EVERY prime `3 ≤ p ≤ 109`. See `SELECTION-RULE-FOUND.md`. Construction:
+> drop the pole column `pl=(p−1)/2`; for every other column `(r,s)=(x,(2x+1)⁻¹)` keep 3 of 4 lifts,
+> dropping the corner nearest the grid centre `dropped=(r+p·[r≤pl], s+p·[s≤pl])`.
+
+**Lean status now** (`Hyperbola.lean`, all green except one sorry):
+- `shearSel p` defined (general, computable); `shearSel_card = 3(p−1)` and `shearSel_grid ⊆ 2p×2p`
+  proven **axiom-clean**.
+- `hjsw_lower` rewritten to assemble `card + grid + shearSel_noThree` — so the headline `sorry` is
+  now the SINGLE lemma `shearSel_noThree : NoThreeCollinear (shearSel p)`.
+- Bricks proven axiom-clean: `shear_two_ne` (2x+1 unit off pole), `shear_curve` ((2x+1)·y=1 mod p),
+  `shearY_lt`. Plus the full geometry toolkit from prior laps.
+- `Anchors.lean` native_decide-certifies `NoThreeCollinear (shearSel p)` at p=7,11,13.
+- Aristotle job `1c2a55b7` (`aris-hjsw-shear`) running the pure-arithmetic form
+  (`shearSel_decNoThree`: every distinct triple has `detZ ≠ 0`) — self-contained, no reals.
+
+## The ONLY open item
+
+1. **`shearSel_noThree : NoThreeCollinear (shearSel p)`** (`Hyperbola.lean`) — the lone `sorry`,
+   feeding the headline `hjsw_lower`. **Proof plan (reduction → 4 line-counts):**
+   - Each P,Q,R ∈ `shearSel p` is a kept lift of a column; for x≠pl, `shear_curve` puts its residue
+     on `(2x+1)y=1`. Apply `shear_hyperbola_lift_share_residue` ⇒ two share a residue ⇒ same column
+     (first coord <2p determines column mod p). If all three same column ⇒ `lift_triple_noncollinear`
+     kills it. Else two-in-a-column + one other ⇒ line slope ∈ {0,∞,±1}.
+   - slope 0 / ∞: impossible because `shearY` is **injective** (need a `shearY_injective` lemma:
+     `2x+1` injective on `[0,p)`-residues, inverse injective) ⇒ distinct rows AND columns ⇒ each
+     integer row/column has ≤2 points.
+   - slope ±1: the closed-form drop rule guarantees ≤2 per slope-±1 integer line. This is the genuine
+     remaining content — reduce to modular arithmetic via `coord_diff_of_residue_eq` /
+     `intCoord_diff_factor`. (Diagonal pair kept ⟺ r,s opposite sides of pl; antidiagonal pair kept
+     ⟺ same side — so each column doubly-loads exactly one slope-±1 line, and no two columns collide.)
 
 Single-crux target ⇒ "broaden" mostly means *broaden the attack on this crux*.
 

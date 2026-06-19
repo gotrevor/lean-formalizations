@@ -1,5 +1,15 @@
 # Online requests — no-three-in-line / HJSW frontier
 
+## ✅ 2026-06-19 — RESOLVED IN-HOUSE (construction found; request now LOW priority)
+The construction crux below was **solved locally** without the paper: a closed-form selection rule
+for the sheared hyperbola was discovered and verified (exact integer determinant) for every prime
+`3 ≤ p ≤ 109`. See `SELECTION-RULE-FOUND.md`. The remaining work is a routine (if intricate)
+modular-arithmetic *proof* of the count, not a search for the construction. **A scan of HJSW 1975
+would still be a nice cross-check** of the published point set / proof, but it is no longer blocking.
+The detailed (now-historical) ask is preserved below for context.
+
+---
+
 ## 2026-06-19 — HJSW 1975 explicit construction + collinearity proof (UNBLOCKS `hjsw_lower`)
 
 **What I need.** The *explicit point set* and the *no-three-collinear proof* from:
