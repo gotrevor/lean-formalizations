@@ -29,6 +29,9 @@ The `decNoThree` certificate is an EXACT iff, so candidates are cheap to refute/
 - **Obstruction characterized:** single-curve collinearities are all **slope ±1 alignments** —
   `(r,s)` & `(r+p,s+p)` share `y=x+(s−r)`, and residues with equal `s−r` pile onto it (for p=7,k=1:
   lines `y=x`, `y=x+2`, `y=−x+13` each carry 4 lifts). Doubling in BOTH coords creates them.
+- Update: greedy over the union of 2 hyperbola-lift curves (all key pairs, p=7) caps at ≤17 too —
+  so even 2-curve hyperbola-LIFT unions don't easily give 18. HJSW likely uses non-hyperbola or a
+  cleverer lift/curve family; do not keep brute-forcing hyperbola variants — get the paper (Path A).
 - Next experiments: (i) search the union of 2 curves' lifts (all key pairs) for an 18-set + decode;
   (ii) design a per-residue lift rule that provably dodges slope-±1 alignments (no `s−r` repeats with a
   collinear third), let a 2nd curve fill the deficit; (iii) validate any rule across p=5,7,11,13 before
