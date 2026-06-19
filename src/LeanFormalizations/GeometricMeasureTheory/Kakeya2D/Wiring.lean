@@ -7,11 +7,13 @@ This file assembles the proven measurable-selection spine (`MeasurableRoute.lean
 single-scale content brick (`NetThinning.caseA_content`) into the headline-shaped Hausdorff content
 bound, taking a **measurable base-point selection** as a *hypothesis* (zero new axioms).
 
-This is the route that replaces the murky `Engine.kakeya_subresolution_content` (Case-B residual) with
-the clean, citable Jankov–von Neumann measurable selection. Once `hsel` is discharged (the deep crux,
-descriptive set theory), the headline `davies_kakeya_2d` can be rewired through this lemma and the
-Case-B axiom retired. See `STATUS.md` ledger, `PENDING_WORK.md` §Reflection-2026-06-19, and
-`Kakeya2D/CASE_B_ANALYSIS.md`.
+This is the hypothesis-gated route designed to replace the discrete `Engine.kakeya_subresolution_content`
+(Case-B residual) with a clean measurable selection. **UPDATE 2026-06-19:** history overtook this plan —
+(a) the headline `davies_kakeya_2d` was rewired NOT through this JvN-style `hsel` but through the
+*elementary open-cover selection* (`Selection.kakeya_hausdorffContentBound_elementary`), which needs no
+descriptive set theory; and (b) `kakeya_subresolution_content` was found **UNSOUND** and removed (see
+`Engine.kakeya_subresolution_content_is_unsound`), not "retired via hsel". This lemma is kept as honest,
+axiom-free, hypothesis-gated structure. See `STATUS.md` ledger and `PENDING_WORK.md` (top).
 
 Architecture note: this file imports BOTH `Engine` (for `content_ratio_lower`, `Plane`,
 `HausdorffContentBound`) and `MeasurableRoute` (the spine). `Engine` does not import `MeasurableRoute`,

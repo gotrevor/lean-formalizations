@@ -20,11 +20,13 @@ This file proves the keystone that the continuum route consumes and the discrete
   `w`, the covered-length function `θ ↦ vol{t∈[0,1] : a θ + t•w θ ∈ F}` is measurable** for every
   measurable target `F` (via mathlib's Fubini `measurable_measure_prodMk_right`).
 
-Once a measurable base-point selection is available (the one honest, true, citable axiom that would
-replace `kakeya_subresolution_content`), this keystone + the already-proven `exists_dominant_scale`
-pigeonhole + `one_le_tsum_volume_fiber_union` reduce the headline to a single-scale continuum Córdoba
-count (`cordoba_continuum_count`, the remaining analytic brick). See `CASE_B_ANALYSIS.md` and
-`ON-LINE-REQUEST.md` UPDATE 5. -/
+Once a measurable base-point selection is available, this keystone + the already-proven
+`exists_dominant_scale` pigeonhole + `one_le_tsum_volume_fiber_union` reduce the headline to a
+single-scale continuum Córdoba count. **UPDATE 2026-06-19:** this whole "discharge measurable selection
+to replace `kakeya_subresolution_content`" program is now historical: the headline was instead closed by
+the *elementary open-cover selection* (`Selection.lean`), and `kakeya_subresolution_content` was found
+UNSOUND and removed (see `Engine.kakeya_subresolution_content_is_unsound`). The keystones here are kept
+as honest, axiom-free structure. See `STATUS.md` ledger and `PENDING_WORK.md` (top). -/
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.NetThinning
 import Mathlib.MeasureTheory.Measure.Prod
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
