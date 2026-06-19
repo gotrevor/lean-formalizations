@@ -35,11 +35,44 @@ The current method gives a prime in `(n, c·n]` for any **fixed `c > 6/5`**, con
    `maxNoThreeInLine_ge_five_fourths` is wired to it but now superseded by the unconditional `6/5`. Keep
    as a disclosed `sorry`; do NOT delete.
 
-**Recommended next lap:** path 1 (cheap, bag a constant in `(6/5, 5/4)` like `75/62 ≈ 1.21` by copying
-`exists_prime_in_five_fourths` with `c = 31/25`) to approach the elementary ceiling, OR begin the real
-deep work: assess whether `~/src/PrimeNumberTheoremAnd` (a Lean PNT formalization seen in the tree) is
-portable to discharge `ψ(x) = x + o(x)`, which would blow the door to `3/2 − o(1)` open. Path 2 as
-originally framed (more primes → `3/2`) is a MIRAGE — the `T`-method caps at `5/4`.
+**Recommended next lap:** ⭐ **path 4 — PNT → `3/2 − o(1)` (the real prize, scaffold ready).** Confirmed
+this lap: `~/src/PrimeNumberTheoremAnd` proves **`WeakPNT'' : ψ ~[atTop] (fun x ↦ x)`**
+(`Consequences.lean:105`) and — crucially — its **`ψ` IS mathlib's `Chebyshev.psi`** (the proof rewrites
+via `Chebyshev.psi_eq_sum_Icc`). Toolchains nearly match (theirs `v4.29.0`, ours `v4.29.1`). Plan:
+1. Add a **disclosed `axiom weakPNT : Chebyshev.psi ~[atTop] (fun x ↦ x)`** (honest debt — a *proven*
+   theorem in a real Lean formalization; cite `PrimeNumberTheoremAnd/Consequences.lean WeakPNT''`). Do
+   NOT pollute existing axiom-clean headlines; this is a new, clearly-cited deep axiom.
+2. `Asymptotics.IsEquivalent` unfolds to `(ψ − id) =o[atTop] id`; via `isLittleO_iff` extract: ∀ ε>0,
+   ∃ N₀, ∀ x ≥ N₀, `(1−ε)x ≤ ψ(x) ≤ (1+ε)x`. Then `θ ~ ψ` (gap `O(√x log x)` = `o(x)`,
+   `abs_psi_sub_theta_le_sqrt_mul_log`) gives the same for `θ`.
+3. Re-run the prime-gap contradiction (mirror `exists_prime_in_five_fourths`): no prime in `(n, cn]` ⟹
+   `θ(cn)=θ(n)`; `(1−ε)cn ≤ θ(cn)=θ(n) ≤ (1+ε)n` ⟹ for any `c > (1+ε)/(1−ε)` (→ any `c > 1` as ε→0) a
+   prime exists. Constant `3/(2c) → 3/2`.
+4. Headline: `∀ ε>0, ∃ N₀, ∀ N ≥ N₀, (3/2 − ε)·N ≤ maxNoThreeInLine N` — **HJSW's `3N/2 − o(N)`,
+   matching `hjsw_lower_bound` at all large `N`.** This closes the general-`N` constant frontier.
+
+(Path 1 — bag `75/62 ≈ 1.21` via `c = 31/25` — is a cheap mechanical fallback if PNT porting stalls;
+low value. Path 2 as originally framed (more primes → `3/2`) is a MIRAGE — the `T`-method caps at `5/4`.)
+
+**DE-RISKED this lap — the bound-extraction step (path 4 step 2) WORKS** (verified in scratch, copy in):
+```lean
+open Asymptotics Filter
+axiom weakPNT : Chebyshev.psi ~[atTop] (fun x ↦ x)   -- cite PrimeNumberTheoremAnd WeakPNT''
+example (ε : ℝ) (hε : 0 < ε) :
+    ∀ᶠ x in atTop, (1 - ε) * x ≤ Chebyshev.psi x ∧ Chebyshev.psi x ≤ (1 + ε) * x := by
+  have hlo := weakPNT.isLittleO
+  rw [isLittleO_iff] at hlo
+  filter_upwards [hlo hε, eventually_gt_atTop (0:ℝ)] with x hx hxpos
+  rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_pos hxpos] at hx
+  simp only [Pi.sub_apply] at hx
+  rw [abs_le] at hx
+  constructor <;> nlinarith [hx.1, hx.2]
+```
+Remaining for path 4: (a) the `√·log` error as `o(n)` — use `Real.isLittleO_log_rpow_atTop (r:=1/2)`
+(`log =o[atTop] x^(1/2) = √x`) ⇒ ∀ δ>0 eventually `log x ≤ δ√x`, so `√x·log x ≤ δx`; (b) choose
+`ε = (c−1)/(c+1)/2` so `(1+ε)/(1−ε) < c`; (c) mirror `exists_prime_in_five_fourths`'s contradiction but
+stated `∀ᶠ n in atTop` (intersect the eventually's via `filter_upwards`), giving a prime in `(n,cn]` for
+every `c>1`; (d) feed the no-three interface ⇒ `∀ ε>0, ∃N₀, ∀N≥N₀, (3/2−ε)N ≤ maxNoThreeInLine N`.
 
 ---
 
