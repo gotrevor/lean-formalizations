@@ -688,6 +688,77 @@ theorem psi_refined_upper_step {n : ℕ} (hn : 30 ≤ n) :
         + 4 * Real.log n - Real.log 30 + 6 :=
   le_trans logFactorial_comb_ge_psi_sub (logFactorial_comb_upper hn)
 
+/-- **Refined Chebyshev `ψ` *upper* bound `ψ(n) ≤ (6/5)A·n + O(log² n)`** (the dual capstone).
+With `A = (7/15)log2+(3/10)log3+(1/6)log5 < 1`, leading constant `(6/5)A ≈ 1.106 < log4 ≈ 1.386` — the
+refined upper bound mathlib lacks (it has only `θ(x) ≤ log4·x`). Proved by strong induction telescoping
+the 6-fold recurrence `psi_refined_upper_step`: the leading term cancels exactly
+(`A·n + (6/5)A·⌊n/6⌋ ≤ A·n + (6/5)A·(n/6) = (6/5)A·n`) and the error function
+`D(n) = 2(log(n+1))² + 7log(n+1) + 200` satisfies `D(n) − D(⌊n/6⌋) ≥ 4log n − log30 + 6` (the recurrence
+slop) — the crux being `log(⌊n/6⌋+1) ≤ log(n+1) − 1` (from `e·(⌊n/6⌋+1) ≤ n+1`), which forces
+`(log(n+1))² − (log(⌊n/6⌋+1))² ≥ 2log(n+1) − 1`. The base range `n < 30` uses
+`Chebyshev.psi_le_const_mul_self`. Together with `theta_refined_lower` this is the two-sided `θ`
+estimate with ratio `(6/5)A / A = 6/5 < 2`, yielding a prime in `(n, c·n]` for any `c > 6/5` —
+Nagura-strength, and the no-three-in-line constant up to `3/(2c) → 5/4`. -/
+theorem psi_refined_upper (n : ℕ) :
+    Chebyshev.psi (n : ℝ)
+      ≤ (6 / 5) * ((7 / 15) * Real.log 2 + (3 / 10) * Real.log 3 + (1 / 6) * Real.log 5) * (n : ℝ)
+        + 2 * (Real.log ((n : ℝ) + 1)) ^ 2 + 7 * Real.log ((n : ℝ) + 1) + 200 := by
+  induction n using Nat.strong_induction_on with
+  | _ n IH =>
+  set A := (7 / 15) * Real.log 2 + (3 / 10) * Real.log 3 + (1 / 6) * Real.log 5 with hAdef
+  have hA0 : (0 : ℝ) ≤ A := by rw [hAdef]; nlinarith [chebyshev_const_gt]
+  have hL0 : (0 : ℝ) ≤ Real.log ((n : ℝ) + 1) :=
+    Real.log_nonneg (by have : (0 : ℝ) ≤ n := Nat.cast_nonneg n; linarith)
+  by_cases hn : n < 30
+  · have hb := Chebyshev.psi_le_const_mul_self (x := (n : ℝ)) (by positivity)
+    have hlog4 : Real.log 4 ≤ 1.4 := by
+      rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]; push_cast
+      nlinarith [Real.log_two_lt_d9]
+    have hnle : (n : ℝ) ≤ 29 := by exact_mod_cast (show n ≤ 29 by omega)
+    have hnn : (0 : ℝ) ≤ (n : ℝ) := by positivity
+    nlinarith [hb, hlog4, hnle, hnn, hA0, hL0, sq_nonneg (Real.log ((n : ℝ) + 1)),
+      mul_nonneg hA0 hnn]
+  · push_neg at hn
+    have hkn : n / 6 < n := by omega
+    have hIH := IH (n / 6) hkn
+    have hstep := psi_refined_upper_step (n := n) hn
+    rw [← hAdef] at hstep
+    have hkR : ((n / 6 : ℕ) : ℝ) ≤ (n : ℝ) / 6 := Nat.cast_div_le
+    have hAk : A * ((n / 6 : ℕ) : ℝ) ≤ A * ((n : ℝ) / 6) := mul_le_mul_of_nonneg_left hkR hA0
+    have hAeq : A * ((n : ℝ) / 6) = A * (n : ℝ) / 6 := by ring
+    have he : Real.exp 1 < 2.7182818286 := Real.exp_one_lt_d9
+    have hLrec : Real.log ((n / 6 : ℕ) + 1 : ℝ) ≤ Real.log ((n : ℝ) + 1) - 1 := by
+      have hkle : ((n / 6 : ℕ) : ℝ) ≤ (n : ℝ) / 6 := Nat.cast_div_le
+      have hkR2 : ((n / 6 : ℕ) : ℝ) + 1 ≤ ((n : ℝ) + 1) / Real.exp 1 := by
+        rw [le_div_iff₀ (Real.exp_pos 1)]
+        have hn30 : (30 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+        nlinarith [hkle, he, Real.exp_pos 1, hn30]
+      calc Real.log ((n / 6 : ℕ) + 1 : ℝ)
+          ≤ Real.log (((n : ℝ) + 1) / Real.exp 1) := Real.log_le_log (by positivity) hkR2
+        _ = Real.log ((n : ℝ) + 1) - 1 := by
+            rw [Real.log_div (by positivity) (Real.exp_pos 1).ne', Real.log_exp]
+    have hL'0 : (0 : ℝ) ≤ Real.log ((n / 6 : ℕ) + 1 : ℝ) :=
+      Real.log_nonneg (by have : (0 : ℝ) ≤ ((n / 6 : ℕ) : ℝ) := Nat.cast_nonneg _; linarith)
+    have hlogn : Real.log (n : ℝ) ≤ Real.log ((n : ℝ) + 1) :=
+      Real.log_le_log (by positivity) (by linarith)
+    have hlog30 : (1 : ℝ) ≤ Real.log 30 := by
+      rw [show (1 : ℝ) = Real.log (Real.exp 1) by rw [Real.log_exp]]
+      apply Real.log_le_log (Real.exp_pos 1); nlinarith [he]
+    have hexp3 : Real.exp 3 ≤ 21 := by
+      have h := Real.exp_one_lt_d9
+      have e : Real.exp 3 = Real.exp 1 * Real.exp 1 * Real.exp 1 := by
+        rw [show (3 : ℝ) = 1 + 1 + 1 by norm_num, Real.exp_add, Real.exp_add]
+      have hp := Real.exp_pos 1
+      nlinarith [e, h, hp]
+    have hLbig : (3 : ℝ) ≤ Real.log ((n : ℝ) + 1) := by
+      rw [show (3 : ℝ) = Real.log (Real.exp 3) by rw [Real.log_exp]]
+      apply Real.log_le_log (Real.exp_pos 3)
+      have hn30 : (30 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+      linarith [hexp3]
+    set L := Real.log ((n : ℝ) + 1) with hLdef
+    set L' := Real.log ((n / 6 : ℕ) + 1 : ℝ) with hL'def
+    nlinarith [hIH, hstep, hAk, hAeq, hLrec, hL'0, hlogn, hlog30, hLbig, hA0]
+
 /-- **Refined Chebyshev `θ` lower bound.** For `n ≥ 30`,
 `A·n − 4·√n·log n − 9 ≤ θ(n)` with `A = (7/15)log2+(3/10)log3+(1/6)log5 > 0.91`. Combines the
 capstone `psi_refined_lower` (`ψ(n) ≥ A·n + O(log n)`) with `abs_psi_sub_theta_le_sqrt_mul_log`
