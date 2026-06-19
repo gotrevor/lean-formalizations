@@ -72,11 +72,18 @@ Execute in this order:
 4. **(fallback grind, low value)** If a green-producing lap is wanted and 1–3 stall: `nagura_prime` →
    unconditional `6/5 → 5/4`. Modest, hard (elementary ceiling). Documented; don't fixate.
 
-### Faithfulness (re-audited this lap — all ✓)
+### Faithfulness (re-audited this lap — all ✓, incl. an independent cross-check)
 HJSW `3(p−1)` at `N=2p` = `3(N−2)/2` (matches `DIRECTION.md` / the paper); `NoThreeCollinear` = no three
 *distinct* points `Collinear ℝ` (every slope incl. vertical — the corrected `Green72.AllowedSet`);
 `maxNoThreeInLine_ge_three_halves_sub` = `∀ε>0, ∀ᶠN, (3/2−ε)N ≤ max N` (HJSW's actual `3N/2−o(N)`), and it
 transparently carries `weakPNT` in `#print axioms`. No transcription drift.
+**Independent NL→Lean cross-check (harvested this lap — Aristotle `72891d77`):** given only the *prose* HJSW
+statement, Aristotle independently formalized `exists_no_three_collinear` — for every prime `p`, a `Finset (ℕ×ℕ)`
+with `q.1 < 2p ∧ q.2 < 2p`, `card = 3(p−1)`, `NoThreeCollinear` — i.e. a **logically-equivalent** statement to
+our `hjsw_lower_bound`. It also proved (axiom-clean) `collinear_iff_cross_zero`: Mathlib's `Collinear ℝ` on three
+grid points ⟺ the 2×2 orientation determinant vanishes — an independent certificate that our `Collinear ℝ`-based
+`NoThreeCollinear` is the right notion. Two independent formalizations converging on the same statement +
+the same collinearity criterion ⇒ high confidence the audit surface is faithful. (Job now harvested/IDLE.)
 
 ---
 
