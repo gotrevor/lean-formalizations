@@ -73,17 +73,22 @@ feared v4.29.0→v4.29.1 drift did not materialize. New modules under
   before `rw`).
 - **`primeSumDiv_div_log_tendsto_one`**: the boundary term `→ 1` (so it is `1 + o(1)`, i.e. `O(1)`).
 
-**ONE PIECE REMAINS — the integral estimate** `∫_2^N primeSumDiv ⌊t⌋₊ /(t (log t)²) dt = log log N + O(1)`:
-- Split `primeSumDiv ⌊t⌋₊ = log t + (primeSumDiv ⌊t⌋₊ − log t)` (needs each piece integrable on `Ioc 2 N`
-  to split `∫(f+g)=∫f+∫g`). **Main term:** `∫_2^N (log t)/(t (log t)²) = ∫_2^N 1/(t log t) = log log N − log log 2`
-  (`integral_inv_log_mul` — note `(log t)/(t (log t)²) = 1/(t log t)`). **Remainder:**
-  `|∫_2^N (primeSumDiv ⌊t⌋₊ − log t)/(t (log t)²)| ≤ C·∫_2^N 1/(t (log t)²) = C(1/log2 − 1/log N) ≤ C/log2`
-  (`integral_inv_mul_sq_log`), where `|primeSumDiv ⌊t⌋₊ − log t| ≤ C` uniformly for `t ≥ 2`:
-  `≤ |primeSumDiv ⌊t⌋₊ − log⌊t⌋₊| + |log⌊t⌋₊ − log t| ≤ (log4+5+2∑'_b log b/b²) + log(3/2)`
-  (`abs_primeSumDiv_sub_log_le` at `⌊t⌋₊≥2`; floor-gap `log(t/⌊t⌋₊) < log(3/2)` since `2 ≤ ⌊t⌋₊ ≤ t < ⌊t⌋₊+1`).
-- The genuinely-new bit is the **floor-gap bound** `|log⌊t⌋₊ − log t| ≤ log(3/2)` for `t≥2` and the integral
-  splitting/integrability bookkeeping. Then assemble `∑1/p − log log N` is `O(1)` (or `Tendsto (∑1/p − log log N)`).
-  ~1 lap. Good Aristotle feed when `c6d615ee` idles: the floor-gap bound, or the remainder-integral `O(1)` bound.
+**✅ MERTENS' SECOND THEOREM DONE** (`9a3303d`): `mertens_second : (∑_{p≤N} 1/p − log log N) =O[atTop] 1`,
+axiom-clean, mathlib-absent. Integral split (`intervalIntegral.integral_sub`) into the `log log N` main
+term + an `O(1)` remainder (`norm_integral_le_abs_of_norm_le` with `abs_primeSumDiv_floor_sub_log_le` +
+`integral_inv_mul_sq_log`); step-function integrability from `integrableOn_primeSumDiv_floor_div` (mathlib
+`integrableOn_mul_sum_Icc`). Both Mertens' 1st and 2nd theorems now complete in `Mertens.lean`.
+
+### 🎯 NEXT TARGET — Mertens' third theorem `∏_{p≤x}(1−1/p) ~ e^{−γ}/log x` (mathlib-absent)
+- Harder: involves the Euler–Mascheroni constant `γ`. `log ∏(1−1/p) = ∑ log(1−1/p)`. Expand
+  `log(1−1/p) = −1/p − ∑_{k≥2} 1/(k p^k)`; sum over `p≤x`: `−∑1/p − (bounded tail) = −log log x − M + o(1)`
+  (M = Meissel–Mertens). The `e^{−γ}` identification needs `M = γ − ∑_p [log(1−1/p)+1/p]`... the constant
+  identification with `γ` is the deep part (requires relating to `ζ` / the Euler product near `s=1`).
+  A tractable **first milestone**: `∑_{p≤x} log(1−1/p) = −log log x − M + O(1/log x)` (or `=O 1` form) — i.e.
+  Mertens' 3rd *up to the constant*, reusing the prime-reciprocal machinery (`primeRecipSum`, the geometric
+  tail bound `summable_log_div_sq`/`sum_geom_Icc_two_le`). The `e^{−γ}` constant is a separate (deeper) lap.
+- Alternative lower-hanging PNT-layer targets if Mertens 3rd stalls: explicit Chebyshev `ψ/θ` two-sided
+  bounds, or `∑_{p≤x} (log p)/p − log x → −M` style refinements.
 
 ### (superseded) nagura wall — FINAL for elementary methods
 - **nagura_prime wall is FINAL for elementary methods (sharpened this lap).** The refined constant

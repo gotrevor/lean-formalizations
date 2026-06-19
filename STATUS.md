@@ -1,5 +1,5 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8296 jobs, kernel-reverified) · **Updated**: review lap · 2026-06-19 · `a2b4891` · **Branch `ntl-hjsw`** · **`weakPNT` DISCHARGED → the flagship `maxNoThreeInLine_ge_three_halves_sub` (HJSW-optimal `3/2−o(N)`) is now UNCONDITIONAL and axiom-clean** (`[propext, Classical.choice, Quot.sound]`). Full Wiener–Ikehara PNT tower ported in-repo (PNTAnd, zero math edits). General-`N` constant ladder CLOSED: Bertrand 3/4 → 15/16 → 6/5 → 3/2−o(N), all axiom-clean. **Mertens' first theorem added** (vonMangoldt + sharp prime form `∑_{p≤x}log p/p = log x + O(1)`, both `~ log`), mathlib-absent. Remaining `sorry`s: `nagura_prime` (superseded, non-blocking) + `prelim_decay_2/3` (dead code, gating nothing).**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8296 jobs, kernel-reverified) · **Updated**: review lap · 2026-06-19 · `a2b4891` · **Branch `ntl-hjsw`** · **`weakPNT` DISCHARGED → the flagship `maxNoThreeInLine_ge_three_halves_sub` (HJSW-optimal `3/2−o(N)`) is now UNCONDITIONAL and axiom-clean** (`[propext, Classical.choice, Quot.sound]`). Full Wiener–Ikehara PNT tower ported in-repo (PNTAnd, zero math edits). General-`N` constant ladder CLOSED: Bertrand 3/4 → 15/16 → 6/5 → 3/2−o(N), all axiom-clean. **Mertens' first AND second theorems** now complete & axiom-clean (`Mertens.lean`): 1st (vonMangoldt + sharp prime form `∑_{p≤x}log p/p = log x + O(1)`, both `~ log`); 2nd (`∑_{p≤x} 1/p = log log x + O(1)`, via Abel summation) — both mathlib-absent. Remaining `sorry`s: `nagura_prime` (superseded, non-blocking) + `prelim_decay_2/3` (dead code, gating nothing).**
 
 > **Branch note (refreshed reflection lap, 2026-06-19).** On `ntl-hjsw` the mandated audit-surface
 > headlines are proven & axiom-clean (`[propext, Classical.choice, Quot.sound]`, kernel-reverified this
@@ -22,13 +22,14 @@
 **Every headline is axiom-free** — each headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]` (kernel-verified this lap: the flagship `..._three_halves_sub`, all six complete threads, the NTL audit surface, the unconditional `6/5`/`15/16` rungs, and the new Mertens theorems), and `grep '^axiom' src/` shows **none**. `src/` carries **zero math axioms**. Open `sorry`s: `nagura_prime` (PrimeGap.lean, superseded by the unconditional `3/2`, non-blocking) and `prelim_decay_2/3` (a self-contained dead-code island in `Wiener.lean` — clean `#print axioms WeakPNT''` confirms they gate nothing; Aristotle `c6d615ee` attempting `prelim_decay_2`). All threads green. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
-- **2026-06-19 (review lap cont. — Mertens' 2nd ~90%, `ff010ae`):** On the unlocked PNT layer, drove
-  Mertens' second theorem `∑_{p≤x}1/p = log log x + O(1)` to the brink: core Abel identity
-  `mertens_second_identity` (`∑1/p = primeSumDiv N/log N + ∫_2^N primeSumDiv⌊t⌋/(t log²t)`, via mathlib
-  `sum_mul_eq_sub_integral_mul₁`), boundary term `→1` (`primeSumDiv_div_log_tendsto_one`), and every
-  analytic sub-bound (`integral_inv_log_mul` = log log main term; `integral_inv_mul_sq_log` = remainder;
-  `log_sub_log_floor_le`, `abs_primeSumDiv_floor_sub_log_le` = uniform remainder-numerator bound) — all
-  axiom-clean. Only integral-splitting/integrability bookkeeping remains (see `HANDOFF-2026-06-19-1308.md`).
+- **2026-06-19 (review lap cont. — MERTENS' SECOND THEOREM COMPLETE, `9a3303d`):** Finished
+  `mertens_second : (∑_{p≤N} 1/p − log log N) =O[atTop] 1` — **axiom-clean, mathlib-absent**. Assembly:
+  core Abel identity `mertens_second_identity` (`∑1/p = primeSumDiv N/log N + ∫_2^N primeSumDiv⌊t⌋/(t log²t)`,
+  via mathlib `sum_mul_eq_sub_integral_mul₁`); integral split (`intervalIntegral.integral_sub`) into the
+  `log log N` main term (`integral_inv_log_mul`) + an `O(1)` remainder (`norm_integral_le_abs_of_norm_le`
+  with `abs_primeSumDiv_floor_sub_log_le` + `integral_inv_mul_sq_log`); step-function integrability from
+  `integrableOn_primeSumDiv_floor_div` (mathlib `integrableOn_mul_sum_Icc`). **Both Mertens' 1st and 2nd
+  theorems now complete & axiom-clean.** Next target: Mertens' 3rd `∏_{p≤x}(1−1/p) ~ e^{−γ}/log x`.
 - **2026-06-19 (review lap — Mertens prime form sharp + asymptotic capstones, `a2b4891`):** Re-verified
   the ledger from real `#print axioms` (build green, 8296 jobs): flagship `..._three_halves_sub` is
   axiom-clean (`weakPNT` discharged in a prior lap; STATUS header was stale, now corrected). Discharged
@@ -251,7 +252,8 @@ headline's critical path).
 | `PrimeGap.weakPNT` / `Consequences.WeakPNT''` | the PNT `ψ(x) ∼ x` (Hadamard–de la Vallée Poussin 1896) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **discharged** (PNTAnd Wiener tower ported, zero math edits); also `chebyshev_asymptotic` (θ∼x), `pi_alt'` (π(x)∼x/log x), `nth_prime_asymp` |
 | `Mertens.{abs_vonMangoldtSumDiv_sub_log_le, mertens_first}` | Mertens' 1st (vonMangoldt form) `∑_{n≤N}Λ(n)/n = log N + O(1)`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **mathlib-absent**; explicit bound `log4+5` |
 | `Mertens.{vonMangoldtSumDiv_sub_primeSumDiv_le, abs_primeSumDiv_sub_log_le, mertens_first_prime}` | Mertens' 1st (**prime form**) `∑_{p≤N}(log p)/p = log N + O(1)`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **mathlib-absent**; proper-prime-power tail bounded by `2∑'(log b)/b²` (this lap) |
-| `Mertens.{primeSumDiv_isEquivalent_log, vonMangoldtSumDiv_isEquivalent_log}` | prime/vonMangoldt sums `~ log N` (multiplicative Mertens 1st), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — this lap |
+| `Mertens.{primeSumDiv_isEquivalent_log, vonMangoldtSumDiv_isEquivalent_log}` | prime/vonMangoldt sums `~ log N` (multiplicative Mertens 1st), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
+| `Mertens.{mertens_second_identity, mertens_second}` | **Mertens' 2nd** `∑_{p≤N} 1/p = log log N + O(1)`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **mathlib-absent**; via Abel summation (`sum_mul_eq_sub_integral_mul₁`) + `log log` primitive + `O(1)` remainder (this lap) |
 
 **Math-axiom counts (🟢+🟡+🟠), kernel-verified this lap:** **0 across every headline in the repo** —
 all NTL constants (incl. the formerly-`weakPNT`-bearing `..._three_halves_sub`), all six complete threads,

@@ -17,11 +17,10 @@ carries **zero math axioms**. On the unlocked PNT layer, **Mertens' first theore
 — vonMangoldt form, sharp **prime form** `∑_{p≤x}log p/p = log x + O(1)`, and `~ log` capstones, all
 mathlib-absent and axiom-clean. Remaining open `sorry`s (all non-blocking, off every headline):
 `nagura_prime` (superseded by the unconditional `3/2`) and `prelim_decay_2/3` (dead-code island in
-`Wiener.lean`). **Mertens' second theorem is ~90% done** — core Abel identity `mertens_second_identity`,
-the boundary-term limit, and every analytic sub-bound (`integral_inv_log_mul`, `integral_inv_mul_sq_log`,
-floor-gap, uniform remainder-numerator bound) are proved & axiom-clean; only integral-splitting/integrability
-bookkeeping remains. **Next:** finish `mertens_second` — see `HANDOFF-2026-06-19-1308.md` "Next action".
-Aristotle `c6d615ee` RUNNING on `prelim_decay_2`.
+`Wiener.lean`). **Mertens' FIRST and SECOND theorems are both COMPLETE & axiom-clean** (`Mertens.lean`):
+1st (`∑log p/p = log x + O(1)`, prime + vonMangoldt forms, both `~ log`); 2nd
+(`∑1/p = log log x + O(1)`, `mertens_second`, via Abel summation). **Next:** Mertens' third theorem
+`∏(1−1/p) ~ e^{−γ}/log x` — see PENDING_WORK "NEXT TARGET". Aristotle `c6d615ee` RUNNING on `prelim_decay_2`.
 
 ## Build
 `lake build` (whole repo, ~seconds — mathlib prebuilt) or
