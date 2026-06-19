@@ -95,10 +95,72 @@ theorem lt_fastGrowing (o : ONote) {n : ℕ} (hn : 1 ≤ n) : n < fastGrowing o 
 termination_by o
 decreasing_by all_goals exact hlt
 
-/-- **Monotonicity in the argument** (successor/zero levels). Placeholder for the
-full `Monotone (fastGrowing o)`: the limit case requires index-monotonicity of the
-hierarchy (the A3 crux), so the general statement is developed alongside that. -/
-lemma fastGrowing_monotone (o : ONote) (h : o.NF) : Monotone (fastGrowing o) := by
+/-- **Index step at a successor** (a genuine A3 stepping stone, proved directly).
+If `o` is the successor of `a` (`fundamentalSequence o = inl (some a)`), then for a
+positive argument the next index can only grow the value:
+`f_a(n) ≤ f_o(n)`. Indeed `f_o n = (f_a)^[n] n ≥ (f_a)^[1] n = f_a n` once `1 ≤ n`. -/
+theorem fastGrowing_le_succ_index {o a : ONote}
+    (h : fundamentalSequence o = Sum.inl (some a)) {n : ℕ} (hn : 1 ≤ n) :
+    fastGrowing a n ≤ fastGrowing o n := by
+  rw [fastGrowing_succ o h]
+  have hexp : (id : ℕ → ℕ) ≤ fastGrowing a := fun m => le_fastGrowing a m
+  simpa using (Function.monotone_iterate_of_id_le hexp hn) n
+
+/-- **The index-monotonicity crux (A3), limit step.**  *(disclosed `sorry` — this is
+the genuine hard core of the growth theory, banged on across laps.)*
+
+For a limit notation `o` with fundamental sequence `f` (`o[i] = f i`), stepping from
+index `f n` to the next index `f (n+1)` does not decrease the value at the argument
+`n+1`:  `f_{o[n]}(n+1) ≤ f_{o[n+1]}(n+1)`.
+
+This is the single inequality the monotonicity proof needs in the limit case (the
+argument `n+1` outpaces the index norm, which is exactly why the classical
+Wainer/Cichoń–Wainer proof works here). The successor analogue is
+`fastGrowing_le_succ_index` (proved). Reducing `fastGrowing_le_succ`/`fastGrowing_monotone`
+to *this* statement isolates all remaining difficulty into one clean lemma. -/
+theorem fastGrowing_fundSeq_step {o : ONote} {f : ℕ → ONote}
+    (h : fundamentalSequence o = Sum.inr f) (n : ℕ) :
+    fastGrowing (f n) (n + 1) ≤ fastGrowing (f (n + 1)) (n + 1) := by
   sorry
+
+/-- **Monotonicity in the argument, successor form** `f_o(n) ≤ f_o(n+1)`.
+Well-founded recursion on `o`; the limit case is reduced to the single crux
+`fastGrowing_fundSeq_step`, everything else is `le_fastGrowing` + iterate monotonicity. -/
+theorem fastGrowing_le_succ (o : ONote) (n : ℕ) :
+    fastGrowing o n ≤ fastGrowing o (n + 1) := by
+  rcases e : fundamentalSequence o with (_ | a) | g
+  · rw [fastGrowing_zero' o e]
+    exact Nat.le_succ _
+  · -- successor: `(f_a)^[n] n ≤ (f_a)^[n+1] (n+1)`
+    have hlt : a < o := by
+      have hp := fundamentalSequence_has_prop o
+      rw [e] at hp
+      rw [lt_def, hp.1]; exact Order.lt_succ _
+    rw [fastGrowing_succ o e]
+    have hmono_a : Monotone (fastGrowing a) :=
+      monotone_nat_of_le_succ fun k => fastGrowing_le_succ a k
+    calc (fastGrowing a)^[n] n
+        ≤ (fastGrowing a)^[n] (n + 1) := hmono_a.iterate n (Nat.le_succ n)
+      _ ≤ (fastGrowing a)^[n + 1] (n + 1) := by
+            rw [Function.iterate_succ_apply']
+            exact le_fastGrowing a _
+  · -- limit: `f_{g n}(n) ≤ f_{g (n+1)}(n+1)`
+    have hlt : g n < o := by
+      have hp := fundamentalSequence_has_prop o
+      rw [e] at hp
+      exact (hp.2.1 n).2.1
+    rw [fastGrowing_limit o e]
+    have hmono_gn : Monotone (fastGrowing (g n)) :=
+      monotone_nat_of_le_succ fun k => fastGrowing_le_succ (g n) k
+    calc fastGrowing (g n) n
+        ≤ fastGrowing (g n) (n + 1) := hmono_gn (Nat.le_succ n)
+      _ ≤ fastGrowing (g (n + 1)) (n + 1) := fastGrowing_fundSeq_step e n
+termination_by o
+decreasing_by all_goals exact hlt
+
+/-- **Monotonicity in the argument.** Each level `f_o` is a monotone function of `n`.
+Immediate from `fastGrowing_le_succ` via `monotone_nat_of_le_succ`. -/
+theorem fastGrowing_monotone (o : ONote) : Monotone (fastGrowing o) :=
+  monotone_nat_of_le_succ (fastGrowing_le_succ o)
 
 end LeanFormalizations.Logic.FastGrowing
