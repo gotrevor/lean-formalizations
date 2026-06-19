@@ -5,22 +5,20 @@ never touch the sibling `~/src/lean-formalizations`. This file is a **thin point
 content lives in the three docs below.
 
 ## Read these, in order
-1. **`PENDING_WORK.md`** — top section is **`## Reflection — 2026-06-19`**: the durable direction call
-   (KEEP / STOP / single highest-value next target). START HERE.
-2. **`STATUS.md`** — the living overview (axiom ledger re-verified, what's happened). REFRESHED this lap.
-3. **newest dated `HANDOFF-2026-06-19-1040.md`** — the per-lap baton (reflection-lap outcome + next actions).
+1. **`STATUS.md`** — the living overview (axiom ledger re-verified, what's happened). REFRESHED this lap.
+2. **`PENDING_WORK.md`** — top section is **`## ⭐ weakPNT DISCHARGED`**: open items + attack paths. START HERE for the next target.
+3. **newest dated `HANDOFF-2026-06-19-*.md`** — the per-lap baton (latest lap's outcome + next actions).
 
 ## One-line state
-**The general-`N` no-three-in-line constant frontier is CLOSED to HJSW's optimal `3/2 − o(N)`.** The
-original mandated target (`hjsw_lower_bound`, 3N/2 at N=2p, axiom-clean in `Statement.lean`) is COMPLETE;
-the audit surface + the two **unconditional** improvements past Bertrand `3/4` (`15/16`, `6/5`) are
-axiom-clean. The flagship `maxNoThreeInLine_ge_three_halves_sub` (`3/2−o(N)`) rests on **one cited deep
-axiom `weakPNT`** (the PNT, **🟠**). The six other threads (Curtis, power-tower, constructibles,
-e/π-transcendence, Goodstein) are complete & axiom-clean. `src/` carries exactly one math axiom (`weakPNT`)
-+ one non-blocking disclosed `sorry` (`nagura_prime`). **Next (per the Reflection):** decisively resolve
-`weakPNT` — cheap dep-test → else wait-and-cite mathlib (it already has ζ≠0 on `Re=1`; only the
-Wiener–Ikehara bridge is missing). Do NOT grind tighter elementary Chebyshev constants. Aristotle: only
-IDLE jobs, nothing live.
+**The general-`N` no-three-in-line frontier is CLOSED to HJSW's optimal `3/2 − o(N)`, and it is now
+UNCONDITIONAL & axiom-clean** — `weakPNT` (the PNT) was discharged by porting PNTAnd's Wiener–Ikehara tower
+in-repo. **Every headline in the repo is axiom-free** (`[propext, Classical.choice, Quot.sound]`); `src/`
+carries **zero math axioms**. On the unlocked PNT layer, **Mertens' first theorem** is now in `Mertens.lean`
+— vonMangoldt form, sharp **prime form** `∑_{p≤x}log p/p = log x + O(1)`, and `~ log` capstones, all
+mathlib-absent and axiom-clean. Remaining open `sorry`s (all non-blocking, off every headline):
+`nagura_prime` (superseded by the unconditional `3/2`) and `prelim_decay_2/3` (dead-code island in
+`Wiener.lean`). **Next:** Mertens' second theorem `∑_{p≤x}1/p = log log x + O(1)` via mathlib's
+`sum_mul_eq_sub_integral_mul` (Abel summation). Aristotle `c6d615ee` RUNNING on `prelim_decay_2`.
 
 ## Build
 `lake build` (whole repo, ~seconds — mathlib prebuilt) or
