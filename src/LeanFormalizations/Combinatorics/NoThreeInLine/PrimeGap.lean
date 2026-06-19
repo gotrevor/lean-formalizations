@@ -540,6 +540,21 @@ theorem logFactorial_comb_lower {n : ℕ} (hn : 30 ≤ n) :
   norm_num at hU2 hU3 hU5 hL30 hID f2 f3 f5 hS ⊢
   linarith [hS, hU2, hU3, hU5, hL30, hID, f2, f3, f5]
 
+/-- **Refined Chebyshev `ψ` lower bound** (the capstone). For `n ≥ 30`,
+`A·n + O(log n) ≤ ψ(n)` with leading constant `A = (7/15)log2+(3/10)log3+(1/6)log5 > 0.91`
+(`chebyshev_const_gt`) — **strictly beating** the elementary `log4/2 ≈ 0.69` (`psi_lower`/`theta_lower`)
+that mathlib's central-binomial argument caps at. Immediate from the combinatorial half
+`logFactorial_comb_le_psi` (`f(n) ≤ ψ(n)`) and the analytic half `logFactorial_comb_lower`
+(`A·n + O(log n) ≤ f(n)`). This is the bound mathlib entirely lacks and the *only* route to a
+no-three-in-line general-`N` constant past Bertrand's `3/4`. Remaining downstream: the dual upper
+iterate `ψ(n) ≲ (6/5)A·n`, then the central-binomial split for a prime in `(n, c·n]`, `c < 2`. -/
+theorem psi_refined_lower {n : ℕ} (hn : 30 ≤ n) :
+    (n : ℝ) * ((7 / 15) * Real.log 2 + (3 / 10) * Real.log 3 + (1 / 6) * Real.log 5)
+        + Real.log n / 2 + Real.log (2 * Real.pi) / 2 - 3 * Real.log (2 * n) / 2
+        + 3 * Real.log 2 / 2 - Real.log ((n : ℝ) / 30) - 7
+      ≤ Chebyshev.psi n :=
+  le_trans (logFactorial_comb_lower hn) (logFactorial_comb_le_psi n)
+
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
 
