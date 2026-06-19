@@ -1,10 +1,14 @@
 # HANDOFF — Davies / planar Kakeya (branch `kakeya-davies`)
 
-**Thin pointer.** Durable overview = `STATUS.md`. Sharpened ask = `ON-LINE-REQUEST.md` §UPDATE 6.
-Crux analysis = `Kakeya2D/CASE_B_ANALYSIS.md`. **Newest dated baton = `HANDOFF-2026-06-19-1115.md` —
-read that to resume.** The headline now rests on ONE **Kakeya-agnostic** axiom `kakeya_borel_selection`
-(textbook von Neumann / Jankov–von Neumann measurable selection); every Kakeya-specific fact is PROVEN
-(`Kakeya2D/Selection.lean`). Next = discharge that selection (deep DST, multi-lap).
+**Thin pointer.** Durable overview = `STATUS.md`. **Newest dated baton = `HANDOFF-2026-06-19-2030.md`
+— read that to resume.** 🎉 **The headline `davies_kakeya_2d` (planar Kakeya, Davies 1971) is COMPLETE
+and AXIOM-CLEAN** (`#print axioms = [propext, Classical.choice, Quot.sound]`). The former lone axiom
+`kakeya_borel_selection` (von Neumann measurable selection) is **eliminated** via an elementary
+open-cover route (compact segment in open set ⟹ tube ⟹ dense base point gives full coverage), no
+descriptive set theory — `Selection.exists_measurable_selection_of_isOpen` +
+`kakeya_hausdorffContentBound_elementary`. Defs match `formal-conjectures` `kakeya_2d` verbatim. Only an
+off-headline, superseded legacy axiom `kakeya_subresolution_content` remains in `Kakeya2D/` (not on the
+headline). Remaining work is OPTIONAL (see the dated baton).
 
 Unbounded expedition to prove `davies_kakeya_2d : KakeyaSetConjectureDim 2` (planar Kakeya, Davies
 1971). The whole job is the lower bound `two_le_dimH`. Lane: only `Kakeya2D/`.
