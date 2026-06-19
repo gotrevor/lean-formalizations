@@ -25,24 +25,24 @@ import LeanFormalizations.Logic.Goodstein.Defs
 namespace LeanFormalizations.Logic.Goodstein
 
 -- m = 0 : already 0
-example : goodsteinSeq 0 0 = 0 := by sorry
+example : goodsteinSeq 0 0 = 0 := by native_decide
 
 -- m = 1 : 1, 0
-example : goodsteinSeq 1 0 = 1 := by sorry
-example : goodsteinSeq 1 1 = 0 := by sorry
+example : goodsteinSeq 1 0 = 1 := by native_decide
+example : goodsteinSeq 1 1 = 0 := by native_decide
 
 -- m = 2 : 2, 2, 1, 0
-example : goodsteinSeq 2 0 = 2 := by sorry
-example : goodsteinSeq 2 1 = 2 := by sorry
-example : goodsteinSeq 2 2 = 1 := by sorry
-example : goodsteinSeq 2 3 = 0 := by sorry
+example : goodsteinSeq 2 0 = 2 := by native_decide
+example : goodsteinSeq 2 1 = 2 := by native_decide
+example : goodsteinSeq 2 2 = 1 := by native_decide
+example : goodsteinSeq 2 3 = 0 := by native_decide
 
 -- m = 3 : 3, 3, 3, 2, 1, 0  (the classic short-but-not-trivial trajectory)
-example : goodsteinSeq 3 0 = 3 := by sorry
-example : goodsteinSeq 3 1 = 3 := by sorry
-example : goodsteinSeq 3 2 = 3 := by sorry
-example : goodsteinSeq 3 3 = 2 := by sorry
-example : goodsteinSeq 3 4 = 1 := by sorry
-example : goodsteinSeq 3 5 = 0 := by sorry
+example : goodsteinSeq 3 0 = 3 := by native_decide
+example : goodsteinSeq 3 1 = 3 := by native_decide
+example : goodsteinSeq 3 2 = 3 := by native_decide
+example : goodsteinSeq 3 3 = 2 := by native_decide
+example : goodsteinSeq 3 4 = 1 := by native_decide
+example : goodsteinSeq 3 5 = 0 := by native_decide
 
 end LeanFormalizations.Logic.Goodstein
