@@ -179,7 +179,7 @@ theorem pinCorner_not_collinear {p k r : ℕ} (hp : 0 < p) {i j l : Fin 4}
   have hd := collinear_imp_det3_zero hcol
   simp only [toReal, det3, pinCorner] at hd
   fin_cases i <;> fin_cases j <;> fin_cases l <;>
-    simp_all only [ne_eq, not_true_eq_false, Fin.reduceEq] <;>
+    simp_all only [ne_eq, not_true_eq_false] <;>
     · push_cast at hd
       nlinarith [hd, hp', mul_pos hp' hp']
 
