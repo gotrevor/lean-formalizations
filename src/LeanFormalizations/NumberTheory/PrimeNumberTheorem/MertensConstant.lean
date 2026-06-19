@@ -902,4 +902,14 @@ lemma sub_one_mul_integral_exp_neg {s : ℝ} (hs : 1 < s) :
   have hne : s - 1 ≠ 0 := ne_of_gt (by linarith)
   field_simp
 
+/-- **Mertens 2nd along `x ↦ ⌊eˣ⌋`** (prerequisite for the Tauberian error of brick B2):
+`primeRecipSum ⌊eˣ⌋ − log log ⌊eˣ⌋ → M` as `x → ∞`.  Just `mertens_second_tendsto` composed with
+`⌊eˣ⌋ → ∞`.  Combined with `log log⌊eˣ⌋ − log x → 0`, this gives `r(x) := A(eˣ) − log x − M → 0`, the
+input to the Abelian final-value step `(s−1)∫_0^∞ r(x)e^{−(s−1)x} → 0`. -/
+lemma tendsto_primeRecipSum_floor_exp :
+    Tendsto (fun x : ℝ =>
+        primeRecipSum ⌊Real.exp x⌋₊ - Real.log (Real.log ⌊Real.exp x⌋₊)) atTop
+      (nhds meisselMertensM) :=
+  mertens_second_tendsto.comp (tendsto_nat_floor_atTop.comp Real.tendsto_exp_atTop)
+
 end LeanFormalizations.Mertens

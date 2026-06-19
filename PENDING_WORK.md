@@ -158,20 +158,27 @@ imported (`Mathlib.NumberTheory.Harmonic.EulerMascheroni`, `Real.eulerMascheroni
         `integral_comp_mul_left_Ioi`) + the **γ-injection** `integral_log_mul_exp_neg_Ioi_eq_neg_gamma`
         (`∫_0^∞ log u·e^{−u}=−γ`, via complex `hasDerivAt_GammaIntegral`+`Real.hasDerivAt_Gamma_one`+ofReal)
         + `integrableOn_log_mul_exp_neg`. **This is the full `−γ` contribution.**
-      - ✅ **M-part DONE** (`tendsto_sub_one_mul_integral_rpow`, `6ed4543`): `(s−1)∫_2^∞ t^{−s}→1` (=`2^{1−s}`),
-        so the M-term → M. (In the eˣ form the analogue is `(s−1)∫_0^∞ M·e^{−(s−1)x}=M` exactly.)
-      - ⏳ **(1) exp substitution of B1** — `(s−1)∫_1^∞ t^{−s}A(t) dt = (s−1)∫_0^∞ A(eˣ)·e^{−(s−1)x} dx`.
-        Use `integral_image_eq_integral_abs_deriv_smul` (f=exp on `Ioi 0`: `Real.hasDerivAt_exp`,
-        `Real.exp_injective.injOn`, `exp''Ioi 0 = Ioi 1`). NOTE: `A=primeRecipSum⌊·⌋` is a **step function**,
-        so the continuous-`g` lemma `integral_comp_mul_deriv_Ioi` does NOT apply — must use the measurable
-        change-of-variables. `(e^x)^{−s}·e^x = e^{−(s−1)x}` via `Real.rpow_def_of_pos`/`Real.exp_log`.
-      - ⏳ **(2) Tauberian/Abelian error** — `(s−1)∫_0^∞ r(x)·e^{−(s−1)x} dx → 0` where
-        `r(x)=A(eˣ)−log x−M → 0` (as x→∞, from `mertens_second_tendsto` + `log log ⌊eˣ⌋ − log x → 0`).
-        This is the deep step: an Abelian "final-value" theorem `lim_{δ→0⁺} δ·∫_0^∞ r(x)e^{−δx}dx = lim_{x→∞} r(x)`.
-        Not in mathlib; prove via dominated convergence on the rescaled integrand (sub `u=(s−1)x`,
-        `δ∫ r e^{−δx} = ∫ r(u/δ)e^{−u} du`, and `r(u/δ)→0` pointwise as δ→0⁺, dominated by a constant).
-      - **Then assemble:** B1 (eˣ form) = log-part + M-part + error → `(−γ−log(s−1)) + M + 0`, so
-        `primeZeta s + log(s−1) → M − γ` = **Limit B**, feeding `mertens_third_classical_of_tauberian`.
+      - ✅ **M-part DONE** (`tendsto_sub_one_mul_integral_rpow`, `6ed4543`; eˣ-form
+        `sub_one_mul_integral_exp_neg`, `b7627f4`): `(s−1)∫_0^∞ e^{−(s−1)x}=1`, so the M-term
+        `(s−1)∫_0^∞ M·e^{−(s−1)x}=M` exactly.
+      - ✅ **(1) exp substitution of B1 DONE** (`primeZeta_eq_abel_integral_exp`, `d059c3d`):
+        `primeZeta s = (s−1)∫_0^∞ A(eˣ)·e^{−(s−1)x} dx`. Via `integral_image_eq_integral_abs_deriv_smul`
+        (f=exp on `Ioi 0`: `Real.hasDerivAt_exp`, `Real.exp_injective.injOn`, `exp''Ioi 0 = Ioi 1`) — the
+        measurable Jacobian change-of-variables, since `A=primeRecipSum⌊·⌋` is a step function (the
+        continuous-`g` lemma `integral_comp_mul_deriv_Ioi` does NOT apply). `(eˣ)^{−s}·eˣ = e^{−(s−1)x}`.
+      - ⏳ **(2) THE Tauberian/Abelian error — the SOLE remaining piece of Limit B.** Goal:
+        `(s−1)∫_0^∞ r(x)·e^{−(s−1)x} dx → 0` as `s→1⁺`, where `r(x)=A(eˣ)−log x−M`. Sub-steps next lap:
+        (a) **`r(x)→0`** as `x→∞`: from `mertens_second_tendsto` (`primeRecipSum N − log log N → M`)
+        composed with `⌊eˣ⌋→∞`, plus `log log⌊eˣ⌋ − log x → 0` (`e^x−1<⌊eˣ⌋≤eˣ` ⟹ `log⌊eˣ⌋−x→0` ⟹
+        `log log⌊eˣ⌋/log x... `; care near small x). (b) **integrability + the additive split**
+        `(s−1)∫_0^∞ A(eˣ)e^{−(s−1)x} = (s−1)∫ log x·e^{−(s−1)x} + (s−1)∫ M·e^{−(s−1)x} + (s−1)∫ r·e^{−(s−1)x}`
+        — NOTE `r` is unbounded near `x=0` (`A(eˣ)=0` for `x<log 2`, so `r(x)=−log x−M → +∞`), but
+        `r·e^{−(s−1)x}` is integrable (log singularity). (c) **the Abelian limit**
+        `lim_{δ→0⁺} δ∫_0^∞ r(x)e^{−δx}dx = lim_{x→∞}r(x) = 0` (final-value theorem; not in mathlib). Sub
+        `u=(s−1)x`: `δ∫ r e^{−δx} = ∫ r(u/δ)e^{−u}du`, `r(u/δ)→0` pointwise as δ→0⁺, dominated convergence.
+      - **Then assemble** (`tendsto_primeZeta_add_logSub_limitB`): log-part (`sub_one_mul_integral_log_exp`,
+        `−γ−log(s−1)`) + M-part (`M`) + error (`→0`) ⟹ `primeZeta s + log(s−1) → M − γ` = **Limit B**, which
+        feeds `mertens_third_classical_of_tauberian` to discharge the classical `e^{−γ}` headline.
 - Lower-hanging PNT-layer alternatives if the constant stalls: explicit Chebyshev `ψ/θ` two-sided bounds.
 
 ### (superseded) nagura wall — FINAL for elementary methods
