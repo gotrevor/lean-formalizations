@@ -5,7 +5,7 @@
 This file is a **thin pointer**. The durable overview is **`STATUS.md`**; the per-lap baton
 is the newest **`HANDOFF-<date>.md`**; open items/attack paths live in **`PENDING_WORK.md`**.
 
-## Where things stand (2026-06-19 lap 8 — DEEP-REFLECTION lap; newest baton: `HANDOFF-2026-06-19-1045.md`)
+## Where things stand (2026-06-19 lap 8 — DEEP-REFLECTION lap; newest baton: `HANDOFF-2026-06-19-1117.md`)
 - **DONE + axiom-clean:** A1–A4 (fast-growing growth theory, incl. `f_{ε₀}` domination =
   Kirby–Paris growth gap); B1–B3 (Hardy); C1, C2, **C3 — the Cichoń identity
   `goodsteinLength m = H_{seqONote m 0}(2) − 2`** (borrowing crux discharged lap 5); `f_1` dominated;
