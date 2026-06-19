@@ -1,21 +1,38 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8285 jobs) · **Updated**: 2026-06-19 · **MATH AXIOMS: 0**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8295 jobs) · **Updated**: lap 2026-06-19 (review) · `aa43f7e` · **0 custom axioms; 2 disclosed `sorry` (Kakeya crux + dormant FastGrowing)**
 
 > ♾️ **ACTIVE EXPEDITION — branch `kakeya-davies` (2026-06-19): planar Kakeya conjecture
 > (Davies 1971).** Read `DIRECTION.md`. Target `davies_kakeya_2d : KakeyaSetConjectureDim 2`
 > (`GeometricMeasureTheory/Kakeya2D/`). Upper bound `dimH_le_two` done; the job is the lower
-> bound `two_le_dimH`. **Progress: K1 (reduction to `μH[d] S≠0`) + the WHOLE K2 ladder
-> (`Tube.lean`: tube infra, thinness, single-tube area `≤6δ`, and the two-tube OVERLAP bound
-> `≤12δ²/(s+δ)` — the geometric heart) + K3 brick 1 (`Discretize.lean`: a δ-tube of every
-> direction lies in `Sδ`) — all PROVEN + axiom-clean.** One open `sorry`:
-> `Engine.hausdorffMeasure_pos_of_isKakeya`, fed by the remaining K3-net → K4 (Córdoba L²) → K5
-> (content→Frostman→Hausdorff) ladder. See `HANDOFF.md`/`PENDING_WORK.md`. The threads below are
-> COMPLETE/axiom-clean and frozen — do not touch them.
+> bound `two_le_dimH`, reduced (K1) to `μH[d] S≠0` for all `d<2`.
+> **Progress: K1–K4 COMPLETE + axiom-clean — the whole Córdoba `L²` ladder: K2 (`Tube.lean`,
+> two-tube overlap `≤12δ²/(s+δ)`), K3 (`Discretize`/`Directions`, δ-net of tubes in `Sδ`), K4
+> (`Cordoba`/`CordobaL2`, the content bound `volume_thickening_log_ge`: `vol(Sδ) ≳ 1/log(1/δ)`).
+> K5 SWITCHED to the measure-free cover route (`Cover.lean`): the reduction `HausdorffContentBound
+> ⟹ μH[d]S≠0` (via `hausdorffMeasure_apply`), the covering geometry `vol(Sδ)≤∑vol((Uₙ)δ')`, the
+> per-piece area bound, and a weighted pigeonhole — all PROVEN + axiom-clean.** The lone Kakeya
+> `sorry` is now `Engine.kakeya_hausdorffContentBound` = the **multi-scale Córdoba content bound**
+> (an arbitrary cover ⟹ `∑ediam^d ≳ 1`); attack plan in `PENDING_WORK.md` §A. The threads below
+> are COMPLETE/axiom-clean and frozen — do not touch them. (`Logic/FastGrowing/Basic.lean` carries
+> one dormant disclosed `sorry`, a separate fast-growing-hierarchy thread, out of the Kakeya lane.)
 
 ## Where it stands
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 (review lap — Kakeya K5 measure-free route + 4 axiom-clean bricks):**
+  reframed the crux. Engine no longer reduces to "construct a Frostman measure"
+  (which forces a weak-* limit mathlib lacks) but to a **Hausdorff content bound**
+  `kakeya_hausdorffContentBound` — the honest, mathlib-native form. New `Cover.lean`,
+  all `#print axioms`-clean: `hausdorffMeasure_ne_zero_of_content_bound` (+`_diam`/`_contentBound`)
+  turning a uniform cover lower bound into `μH[d]S≠0` via `hausdorffMeasure_apply`;
+  `thickening_subset_iUnion_thickening` + `volume_thickening_le_tsum` (a cover of `S`
+  thickens to a cover of `Sδ`, the strict slack `δ<δ'` dissolving the closed-thickening
+  inf boundary); `volume_thickening_le_of_ediam_le` (per-piece area `≤π(ρ+δ')²`);
+  `exists_index_ge_of_tsum_lt` (weighted pigeonhole). `davies_kakeya_2d` axioms =
+  `[propext, sorryAx, Classical.choice, Quot.sound]` (single `sorryAx`, now pinned to
+  the multi-scale Córdoba content bound). Remaining: the dyadic double-pigeonhole +
+  localized Córdoba count (multi-lap; `PENDING_WORK.md` §A).
 - **2026-06-19 (Goodstein — PROVED, axiom-clean):** `goodstein_terminates`
   (`∀ m, ∃ N, goodsteinSeq m N = 0`) is fully machine-checked,
   `#print axioms = [propext, Classical.choice, Quot.sound]`. `Defs.lean` carries
@@ -97,17 +114,22 @@ The repo is **100% axiom-free** — every headline `#print axioms` is the bare t
 - **2026-06-14 1511 & earlier:** Curtis crux `substCurve_eq_zero` closed (reformulation bypassing Lemma 1); repo sorry-free + axiom-clean. Engine, Step B, Lemma 2 (Brauer–Shockley, via Aristotle, verified) built.
 
 ## Outstanding
-The transcendence / squaring-the-circle thread AND the power-tower sharp `iff` are
-**COMPLETE and axiom-free**. Remaining open work is elsewhere:
+The five complete threads (Curtis, power-tower sharp `iff`, Wantzel, e-/π-transcendence,
+squaring-the-circle) are **COMPLETE and axiom-free** and frozen. The active work is the Kakeya
+expedition.
+### Short-term (mirror PENDING_WORK §A top)
+- **`Engine.kakeya_hausdorffContentBound`** — the planar-Kakeya **multi-scale Córdoba content
+  bound** (`∀ 0<d<2`, arbitrary fine cover ⟹ `∑ediam^d ≳ 1`). The K5 measure-free reduction +
+  covering geometry feed it; remaining = the dyadic double-pigeonhole + a localized Córdoba count.
 ### Long-term
-- General Hermite–Lindemann for arbitrary algebraic α (e.g. `log 2`, `cos 1`): the π assembly
-  generalizes (its `no_intPoly_exp_relation` + symmetric-function descent are α-agnostic); a
-  bounded extension, not required for any current headline.
+- General Hermite–Lindemann for arbitrary algebraic α (e.g. `log 2`, `cos 1`) — bounded extension.
 - PARKED P2/P3 (Curtis mathlib upstream; not-algebraic framing) — web/CLA-gated.
+- `Logic/FastGrowing/Basic.lean : fastGrowing_fundSeq_step` — a dormant disclosed `sorry` (limit-step
+  index monotonicity of the fast-growing hierarchy), a separate thread, out of the Kakeya lane.
 ### To completion
-- Curtis ✅ · **Power-tower SHARP iff ✅** · Wantzel iff ✅ · **e-transcendence ✅** ·
-  **π-transcendence ✅ (axiom-clean)** · **squaring-the-circle ✅ (unconditional, axiom-clean)**.
-  Repo math-axiom count: **0**.
+- Curtis ✅ · Power-tower SHARP iff ✅ · Wantzel iff ✅ · e-transcendence ✅ · π-transcendence ✅ ·
+  squaring-the-circle ✅. **Kakeya (Davies):** K1–K4 ✅ + K5 reduction/geometry ✅; crux
+  `kakeya_hausdorffContentBound` open (1 `sorry`). Repo custom-axiom count: **0**.
 
 ## Axiom ledger (the fidelity spine)
 | headline theorem | paper claim | `#print axioms` shows | status |
@@ -120,9 +142,15 @@ The transcendence / squaring-the-circle thread AND the power-tower sharp `iff` a
 | `Constructible.squaring_the_circle_impossible_uncond` | impossibility, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **axiom-clean** (uses `transcendental_pi_axiomClean`) |
 | `Transcendence.transcendental_pi_axiomClean` | `π` transcendental (Lindemann 1882), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **fully proved (axiom deleted)** |
 | `Transcendence.e_transcendental` (+ `transcendental_exp_{nat,int,rat}`) | `e`, `eⁿ`, `eᵃ`, `e^q` transcendental (Hermite 1873; rational-exponent Hermite–Lindemann), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
+| `Kakeya2D.davies_kakeya_2d` | planar Kakeya = `dimH S = 2` (Davies 1971), uncond. | `[propext, sorryAx, Classical.choice, Quot.sound]` | 🚧 **1 disclosed `sorry`** = `kakeya_hausdorffContentBound` (the multi-scale Córdoba content bound). K1–K4 + K5 reduction/geometry all axiom-clean; no custom axiom smuggled — the crux is an open `sorry`, not an axiom. |
 
-**Math-axiom count (🟢+🟡+🟠): 0.** The repo is **fully axiom-free** — `grep '^axiom' src/` is empty, every headline `#print axioms` is the bare trust base, and there is no `sorry` in `src/`. The `hermite_lindemann` axiom was discharged (full Lindemann assembly for `π`) and deleted this lap. No 🟡/🟠/🔴 anywhere.
+**Custom-axiom count: 0** across the whole repo (`grep '^axiom' src/` is empty); every *complete*
+headline's `#print axioms` is the bare trust base. **Two disclosed `sorry`s remain**, both honest
+checkpoints (never faked, never an axiom stand-in): the active Kakeya crux
+`Engine.kakeya_hausdorffContentBound` (`davies_kakeya_2d`'s single `sorryAx`), and the dormant
+`FastGrowing.fastGrowing_fundSeq_step`. No 🟡/🟠/🔴 math axioms anywhere.
 
 ## Pointers
-- Open items / attack paths: **`PENDING_WORK.md`** · resume baton: newest **`HANDOFF-*.md`** · online asks: `ON-LINE-REQUEST.md`
-- Frontier files: `NumberTheory/Transcendence/{HermiteLindemann,ETranscendental}.lean`
+- Open items / attack paths: **`PENDING_WORK.md`** (§A = Kakeya K5) · resume baton: newest
+  **`HANDOFF-*.md`** · online asks: `ON-LINE-REQUEST.md` · frozen plan: `Kakeya2D/PLAN.md`
+- Active frontier file: `GeometricMeasureTheory/Kakeya2D/Cover.lean` (K5 cover route) + `Engine.lean`

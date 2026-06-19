@@ -1,36 +1,42 @@
-# HANDOFF — Davies / planar Kakeya (branch `kakeya-davies`, 2026-06-19)
+# HANDOFF — Davies / planar Kakeya (branch `kakeya-davies`)
 
-**Read `DIRECTION.md` first.** Unbounded expedition to prove `davies_kakeya_2d :
-KakeyaSetConjectureDim 2` (planar Kakeya, Davies 1971). The whole job is the lower bound
-`two_le_dimH`. Lane: only `src/LeanFormalizations/GeometricMeasureTheory/Kakeya2D/`.
+**Thin pointer.** Durable overview = `STATUS.md`. Attack plan = `PENDING_WORK.md` §A. Frozen plan =
+`Kakeya2D/PLAN.md`. Newest dated baton = `HANDOFF-2026-06-19-*.md`. **Read `DIRECTION.md` first.**
 
-## State — **K1+K2+K3+K4 COMPLETE + axiom-clean. K5 reduced.** One `sorry` left.
-`lake build` green (8294 jobs). The ONLY open `sorry` in the Kakeya thread:
-- `Engine.lean : hausdorffMeasure_pos_of_isKakeya` — now reduced (K5 brick 1) to exactly
-  `Frostman.FrostmanMeasureExists S d` = *construct a Frostman measure of every exponent `d<2`*.
+Unbounded expedition to prove `davies_kakeya_2d : KakeyaSetConjectureDim 2` (planar Kakeya, Davies
+1971). The whole job is the lower bound `two_le_dimH`. Lane: only
+`src/LeanFormalizations/GeometricMeasureTheory/Kakeya2D/`.
 
-### Done — the whole Córdoba `L²` content ladder
-- **K1 (`Engine`).** `two_le_dimH` ⟸ `hausdorffMeasure_pos_of_isKakeya` (Frostman + `ENNReal` density).
-- **K2 (`Tube`).** δ-tube infra; `volume_tube_le` (`≤6δ`), `volume_tube_ge` (`≥2δ`),
-  `volume_inter_tube_le` (overlap `≤12δ²/(s+δ)`, `s=|sin∠|`). 100% axiom-clean.
-- **K3 (`Discretize`, `Directions`).** `exists_tube_subset_thickening`; trig net `dir θ=(cos,sin)`
-  with `norm_dir`/`dir_det`(`=sin(φ−θ)`)/`dir_sep`(Jordan `(2/π)|φ−θ|≤|det|`)/`exists_tube_family`;
-  K2↔K3 interface `volume_inter_dirTube_le` (overlap `≤6πδ/(|k−j|+1)`).
-- **K4 (`Cordoba`, `CordobaL2`).** Harmonic `double_sum_le_log` (`∑1/(|k−j|+1)≤2n(1+logn)`),
-  geometric `sum_overlap_le`, numerator `sum_tube_ge`, ∫ identities `lintegral_sum_indicator` /
-  `lintegral_sq_sum_indicator`, Cauchy–Schwarz `lintegral_sq_le_measure_mul` (Hölder p=q=2),
-  `volume_thickening_mul_ge`, and the capstone **`volume_thickening_log_ge`:
-  `1 ≤ vol(Sδ)·12π(1+log(1/δ))`** (δ≤1/2) — i.e. `vol(Sδ) ≳ 1/log(1/δ)`.
-- **K5 brick 1 (`Frostman`).** `hausdorffMeasure_ne_zero_of_frostman_const` (mathlib
-  `Measure.le_hausdorffMeasure`, rescaled by `C⁻¹`) ⟹ Engine's sorry = `FrostmanMeasureExists S d`.
+## State — K1–K4 COMPLETE + K5 reduction/geometry COMPLETE, all axiom-clean. One Kakeya `sorry`.
+`lake build` green (8295 jobs). The lone Kakeya `sorry` is now:
+- `Engine.lean : kakeya_hausdorffContentBound` — for a planar Kakeya `S` and every `0<d<2`, the
+  **Hausdorff content bound** `∃ r>0, c≠0, ∀ fine cover S⊆⋃tₙ, c ≤ ∑ ediam(tₙ)^d`. This is the
+  multi-scale Córdoba estimate (an arbitrary cover ⟹ `∑ediam^d ≳ 1`).
 
-## Next brick — K5 brick 2: construct the Frostman measure (the deep multi-lap core).
-Single-scale content does NOT give Hausdorff dim (box dim ≥ Hausdorff dim). Build the measure from
-`volume_thickening_log_ge` across dyadic scales. **Three attack paths in `PENDING_WORK.md` §A**;
-recommended path 2 (dyadic discretized-Kakeya cover, bypasses building a measure). See newest
-`HANDOFF-2026-06-19-0541.md` for the detailed bootstrap.
+`davies_kakeya_2d` `#print axioms` = `[propext, sorryAx, Classical.choice, Quot.sound]` (single
+`sorryAx`, pinned to that content bound). (A *separate, dormant* `sorry` lives in
+`Logic/FastGrowing/Basic.lean` — out of the Kakeya lane, do not touch.)
+
+## Done this lap (2026-06-19 review) — K5 switched to the measure-free cover route (`Cover.lean`)
+Engine no longer reduces to "construct a Frostman measure" (which forces a weak-* limit mathlib
+lacks). It reduces to the honest, mathlib-native **Hausdorff content bound**. New `Cover.lean`, all
+`#print axioms`-clean:
+- `hausdorffMeasure_ne_zero_of_content_bound` / `_diam_content` / `_contentBound` + the packaged
+  `HausdorffContentBound` Prop — content bound ⟹ `μH[d]S≠0` via `hausdorffMeasure_apply`.
+- `thickening_subset_iUnion_thickening` + `volume_thickening_le_tsum` — a cover of `S` thickens to a
+  cover of `Sδ` (strict slack `δ<δ'` dissolves the closed-thickening `iInf` boundary issue), giving
+  `vol(Sδ) ≤ ∑ vol((Uₙ)δ')`.
+- `volume_thickening_le_of_ediam_le` — per-piece area `vol((U)δ') ≤ ofReal((ρ+δ')²)·vol(closedBall 0 1)`.
+- `exists_index_ge_of_tsum_lt` — weighted pigeonhole `c≤∑aₙ`, `∑wₙ<c ⟹ ∃n, wₙ≤aₙ`.
+
+## Next brick — the multi-scale Córdoba content bound (multi-lap; `PENDING_WORK.md` §A)
+Recommended entry: **refactor the K4 `L²` machine into `volume_thickening_tubes_ge`** — the bound
+for an *explicit* tube family of N tubes in net directions (drop the `IsKakeya`/`exists_tube_family`
+wrapper), allowing *fractional* tube lengths. That is the "localized Córdoba" needed at the dominant
+scale after the dyadic double-pigeonhole (steps 1–3 in §A). Online ref requested in
+`ON-LINE-REQUEST.md` (cleanest write-up / existing formalization) — not blocking.
 
 ## Invariants
 - Defs (`IsKakeya`, `KakeyaSetConjectureDim`) are the frozen audit surface — do not edit.
-- `dimH_le_two`, `two_le_dimH`, all of `Tube`/`Directions`/`Cordoba`/`CordobaL2`/`Frostman` are done.
-- Commit every green build; never push; never fake green; disclosed `sorry` only.
+- `dimH_le_two`, `two_le_dimH`, K2–K4, and the whole K5 reduction/geometry are done + axiom-clean.
+- Commit every green build; never push; never fake green; disclosed `sorry` only; no axiom-smuggling.

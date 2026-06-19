@@ -2,8 +2,9 @@
 
 ## ♾️ ACTIVE (2026-06-19): planar Kakeya (Davies) — open `sorry` inventory + attack paths
 
-Branch `kakeya-davies`. **K1 + K2 + K3 + K4 are COMPLETE + axiom-clean.** ONE open `sorry`,
-now pinned precisely to the K5 measure construction.
+Branch `kakeya-davies`. **K1 + K2 + K3 + K4 are COMPLETE + axiom-clean, and K5's measure-free
+reduction + covering geometry are DONE + axiom-clean.** ONE open `sorry` (`kakeya_hausdorffContentBound`),
+now pinned precisely to the K5 **multi-scale Córdoba Hausdorff content bound** (§A below).
 
 ### ✅ DONE — K2 (`Tube.lean`): `volume_inter_tube_le` (overlap `≤ 12δ²/(s+δ)`, `s=|sin∠|`),
 `volume_tube_le` (`≤6δ`), `volume_tube_ge` (`≥2δ`). Determinant/`addHaar_preimage_linearMap` route.
@@ -18,24 +19,45 @@ every direction ⊆ Sδ); explicit trig net `dir θ=(cos θ,sin θ)` with `norm_
 (Cauchy–Schwarz via Hölder p=q=2), `volume_thickening_mul_ge` (`(N·2δ)² ≤ vol(Sδ)·denom`), and the
 capstone **`volume_thickening_log_ge`: `1 ≤ vol(Sδ)·12π(1+log(1/δ))`** for `δ≤1/2`. All axiom-clean.
 
-### A. `Engine.lean : hausdorffMeasure_pos_of_isKakeya` — `∀ d<2, μH[d] S ≠ 0`. The deep crux.
-**K5 brick 1 DONE** (`Frostman.lean`): `hausdorffMeasure_ne_zero_of_frostmanExists` packages
-mathlib's `Measure.le_hausdorffMeasure`; Engine now reduces the crux to **`FrostmanMeasureExists S d`**
-(a measure `μ` with `μ S ≠ 0` and `μ s ≤ diam(s)^d` for small `s`). The lone `sorry` is exactly
-this measure construction. Three attack paths for K5 brick 2 (build the measure from K4):
-1. **Limit of normalised tube mass.** At scale `δₙ=2⁻ⁿ` put `μₙ := vol(Sδₙ)⁻¹·(vol ↾ Sδₙ)`
-   (mass 1 on Sδₙ). The K4 bound `vol(Sδ)≳1/log` controls normalisation; a weak-* limit `μ`
-   concentrates on `S=⋂Sδ`. The Frostman bound `μ(B(x,r))≲r^d` comes from running the K4 overlap
-   estimate *restricted to a single ball* (a ball meets `≲r/δ·δ⁻¹` tubes…). Hardest: weak-* limit
-   + lower semicontinuity in mathlib (`Measure` topology / `tendsto`).
-2. **Dyadic cover / discretized Kakeya (the honest route).** Bypass the measure: prove `μH[d]S≠0`
-   directly via `hausdorffMeasure_apply` — for an arbitrary countable cover `S⊆⋃tᵢ` with
-   `diam tᵢ≤r`, pigeonhole the directions across dyadic scales and apply the single-scale tube count
-   to the dominant scale to get `∑diam(tᵢ)^d ≳ 1`. No measure to build; all the work is the
-   pigeonhole + applying `volume_thickening_log_ge` to sub-collections. Most faithful to Córdoba.
-3. **Frostman via `exists_frostman`-style induction.** If mathlib gains/has a general
-   "content bound at all scales ⟹ Frostman measure" lemma, instantiate it. (Search: mathlib
-   currently has only the *spreading* direction `le_hausdorffMeasure`, not the construction.)
+### A. `Engine.lean : kakeya_hausdorffContentBound` — the deep crux (NEW framing 2026-06-19).
+**Strategy switched to the measure-free cover route (path 2).** The weak-* limit (path 1) and the
+mathlib-Frostman-construction (path 3) are both retired as primary — see "retired" note below.
+Engine's crux is now the single named obligation **`kakeya_hausdorffContentBound`**: for a planar
+Kakeya `S` and every `0<d<2`, a **Hausdorff content lower bound** — `∃ r>0, ∃ c≠0, ∀ countable cover
+S⊆⋃tₙ with ediam tₙ ≤ r, c ≤ ∑ₙ ediam(tₙ)^d`. The `d=0` endpoint is free (μH monotone in `d`).
+
+**Reduction machinery — DONE + axiom-clean (`Cover.lean`, 2026-06-19):**
+- `hausdorffMeasure_ne_zero_of_content_bound` / `_of_diam_content` / `_of_contentBound`: the content
+  bound ⟹ `μH[d] S ≠ 0`, straight from mathlib's `Measure.hausdorffMeasure_apply`. **No measure to
+  build, no weak-* limit.** (`HausdorffContentBound S d` is the packaged Prop.)
+- `thickening_subset_iUnion_thickening` / `volume_thickening_le_tsum`: a cover `S⊆⋃Uₙ` thickens to
+  `Sδ⊆⋃(Uₙ)δ'`, so `vol(Sδ) ≤ ∑ vol((Uₙ)δ')` — **strict slack `δ<δ'` dissolves the closed-thickening
+  inf boundary issue** (`iInf_lt_iff`). The cover-side upper bound pairing with K4's lower bound.
+- `volume_thickening_le_of_ediam_le`: per piece, `vol((U)δ') ≤ ofReal((ρ+δ')²)·vol(closedBall 0 1)`
+  when `ediam U ≤ ρ` (disc containment + `addHaar_closedBall'`, `finrank=2`).
+- `exists_index_ge_of_tsum_lt`: weighted pigeonhole `c≤∑aₙ`, `∑wₙ<c` ⟹ `∃ n, wₙ≤aₙ`.
+
+**Remaining = `kakeya_hausdorffContentBound` (the multi-scale Córdoba estimate, multi-lap).** Given a
+cover `{Uₙ}`, `ediam Uₙ ≤ r`, show `∑ ediam(Uₙ)^d ≳ 1`. The obstruction is **mixed scales** (the
+single-scale bricks above only lower-bound the *count* of pieces, never `∑ediam^d`, since pieces can
+be arbitrarily small). Plan (finite-net double pigeonhole — cleaner than a measure on S¹):
+  1. Group pieces by dyadic scale `j` (`ediam ∈ (2⁻ʲ⁻¹,2⁻ʲ]`); `∑ⱼ Mⱼ·2⁻⁽ʲ⁺¹⁾ᵈ ≤ ∑ediam^d`.
+  2. For each net direction `θₖ` (`exists_tube_family`, K3): `ℓ_{θₖ}⊆⋃Uₙ`, so `∑ⱼ Lⱼ(k) ≥ 1`
+     (`Lⱼ(k)` = length of `ℓ_{θₖ}` covered by scale-`j` pieces). Pigeonhole over `j` (weights
+     `6/π²(j+1)²`, via `exists_index_ge_of_tsum_lt`) ⟹ a good scale `j(k)` with `L_{j(k)}(k)≳1/j²`.
+  3. Pigeonhole over the `N≈2^{j*}` net directions ⟹ a **dominant scale `j*`** carrying a definite
+     fraction of directions, each `≳1/j*²`-covered at scale `2⁻ʲ*`.
+  4. **Localized Córdoba** at `δ=2⁻ʲ*` (the hard new derivation — a variant of K4 for fractional
+     coverage / a sub-family of tubes): forces `M_{j*} ≳ 2^{2j*}/poly(j*)`, hence
+     `∑_{scale j*} ediam^d ≳ M_{j*}·2⁻ʲ*ᵈ ≳ 2^{j*(2-d)}/poly ≥ c` for `r` small (`d<2`).
+Next-lap entry: formalize step 4's localized count (likely a `Cordoba.lean` variant restricted to a
+ball / a fractional-length tube family), or step 1–3's scale/direction bookkeeping. Reference asked
+in `ON-LINE-REQUEST.md` (cleanest write-up / existing formalization of Córdoba-for-Hausdorff).
+
+**Retired (do NOT relitigate):** path 1 (weak-* limit) needs `Measure`-topology/lsc support mathlib
+lacks cleanly; path 3 needs a Frostman *construction* mathlib doesn't have (only the spreading
+direction `le_hausdorffMeasure`). `Frostman.lean` is kept as the documented mass-distribution
+alternative but is no longer on the critical path.
 
 ---
 
