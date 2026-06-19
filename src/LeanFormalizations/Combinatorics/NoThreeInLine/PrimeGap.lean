@@ -26,6 +26,56 @@ import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
 
 namespace LeanFormalizations.NoThreeInLine
 
+/-! ### Towards the missing prerequisite: a Chebyshev lower bound
+
+Nagura's product argument needs a *lower* bound on `∏_{p ≤ m} p` (Chebyshev `θ`), which mathlib
+lacks. The ℕ-level foundation is `lcm(1,…,2n) ≥ 4ⁿ / n` (`four_pow_lt_mul_lcm`): the central binomial
+divides `lcm(1,…,2n)` (every prime power dividing `C(2n,n)` is `≤ 2n`), and `4ⁿ < n·C(2n,n)`. This is
+the ℕ analogue of `ψ(2n) ≥ n·log 4 − log n`; combined with `Chebyshev.abs_psi_sub_theta_le_sqrt_mul_log`
+it would yield the `θ` lower bound feeding Nagura. These bricks are axiom-clean. -/
+
+open Finset in
+/-- **The central binomial divides `lcm(1,…,2n)`.** Every prime power `pᵏ ∥ C(2n,n)` satisfies
+`pᵏ ≤ 2n` (`Nat.pow_factorization_choose_le`), so `pᵏ ∈ [1,2n]` and divides the lcm; as `C(2n,n)` is
+the product of these prime powers it divides the lcm too. -/
+theorem centralBinom_dvd_lcm_Icc {n : ℕ} (hn : 0 < n) :
+    Nat.centralBinom n ∣ (Finset.Icc 1 (2 * n)).lcm id := by
+  have h2n : 0 < 2 * n := by omega
+  have hC : Nat.centralBinom n ≠ 0 := (Nat.centralBinom_pos n).ne'
+  have hL : (Finset.Icc 1 (2 * n)).lcm id ≠ 0 := by
+    rw [Ne, Finset.lcm_eq_zero_iff]
+    rintro ⟨a, ha, ha0⟩
+    rw [Finset.mem_Icc] at ha
+    simp only [id_eq] at ha0; omega
+  rw [← Nat.factorization_le_iff_dvd hC hL, Finsupp.le_def]
+  intro p
+  by_cases hp : p.Prime
+  · set k := (Nat.centralBinom n).factorization p with hk
+    have hple : p ^ k ≤ 2 * n := by
+      have := Nat.pow_factorization_choose_le (n := 2 * n) (k := n) (p := p) h2n
+      rwa [← Nat.centralBinom, ← hk] at this
+    have hmem : p ^ k ∈ Finset.Icc 1 (2 * n) :=
+      Finset.mem_Icc.mpr ⟨Nat.one_le_pow _ _ hp.pos, hple⟩
+    have hdvd : p ^ k ∣ (Finset.Icc 1 (2 * n)).lcm id := by
+      simpa using Finset.dvd_lcm (f := id) hmem
+    exact (Nat.Prime.pow_dvd_iff_le_factorization hp hL).mp hdvd
+  · rw [Nat.factorization_eq_zero_of_non_prime _ hp]; exact Nat.zero_le _
+
+/-- **ℕ Chebyshev lower bound.** `4ⁿ < n · lcm(1,…,2n)` for `n ≥ 4` — the integer form of
+`ψ(2n) ≳ n·log 4`, and the foundation for a `θ` lower bound (the ingredient Nagura needs that mathlib
+is missing). Proof: `4ⁿ < n·C(2n,n)` (`Nat.four_pow_lt_mul_centralBinom`) and `C(2n,n) ≤ lcm(1,…,2n)`
+(`centralBinom_dvd_lcm_Icc`). -/
+theorem four_pow_lt_mul_lcm {n : ℕ} (hn : 4 ≤ n) :
+    4 ^ n < n * (Finset.Icc 1 (2 * n)).lcm id := by
+  have hdvd := centralBinom_dvd_lcm_Icc (n := n) (by omega)
+  have hL0 : 0 < (Finset.Icc 1 (2 * n)).lcm id :=
+    Nat.pos_of_ne_zero (by
+      rw [Ne, Finset.lcm_eq_zero_iff]; rintro ⟨a, ha, ha0⟩
+      rw [Finset.mem_Icc] at ha; simp only [id_eq] at ha0; omega)
+  calc 4 ^ n < n * Nat.centralBinom n := Nat.four_pow_lt_mul_centralBinom n hn
+    _ ≤ n * (Finset.Icc 1 (2 * n)).lcm id :=
+        Nat.mul_le_mul_left n (Nat.le_of_dvd hL0 hdvd)
+
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
 
