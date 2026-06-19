@@ -1,5 +1,26 @@
 # PENDING_WORK — lean-formalizations
 
+## 🛑 2026-06-19 (END-OF-LAP inventory) — all open items below are Trevor-ABANDONED (STATUS.md stop)
+Per `STATUS.md`'s FINISH-AND-STOP banner, the planar-Kakeya headline is the deliverable (DONE,
+`#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound]`, re-verified this lap) and
+the threads below are abandoned side quests. Recorded here as durable state only; **do not resume
+without Trevor reversing the stop.** Full open-`sorry` inventory + three attack paths each:
+
+1. **`Capacitability.choquet_core_range` — ✅ DISCHARGED this lap** (no longer open). Axiom-clean
+   from-scratch Lusin-scheme proof (Aristotle-authored, verified in our mathlib). Brick A is DONE.
+2. **`VonNeumannSelection.analyticSet_nullMeasurableSet`** (1 sorry, the 2nd-route consumer):
+   (a) **port the now-proven `Capacitability.analyticSet_nullMeasurableSet`** (add `[SigmaFinite]`) —
+   essentially trivial now; (b) re-prove inline via the same `ChoquetAux`; (c) drop the route entirely
+   (headline doesn't need it). → Path (a) is ~1 lap and finishes the unconditional 2nd route.
+3. **`FastGrowing.fastGrowing_fundSeq_step`** (FGH index-monotonicity crux): (a) finish
+   `Bachmann.fundSeq_bachmann` then build conditional index-monotonicity by WF recursion; (b) submit to
+   Aristotle (pure ordinal case-bash, well-suited); (c) prove more structural special cases (successor
+   case already done). NB: general fixed-arg index-mono is FALSE (`f₅(2)≫f_ω(2)`).
+4. **`FastGrowing.Bachmann.fundSeq_bachmann`** (sole sorry = `b=0` zero-tail case; recursive backbone
+   PROVEN): (a) finish the 4-way split on `fundamentalSequence e`/`m.natPred` — B/C close by
+   `oadd_le_oadd_tail` prefix-domination, D/E recurse on the exponent `e` (mirror the proven `b`-limit
+   case); (b) Aristotle (`wip/aristotle/bachmann/Problem.lean` ready); (c) prove B+C inline, sorry D+E.
+
 ## ⏸️ 2026-06-19 (host decision, harvested) — Choquet route is PAUSED for import, not from-scratch
 **`archive/findings/ON-LINE-FINDINGS-2026-06-19-import-not-vendor.md` (Trevor/host) supersedes the
 from-scratch capacitability lane AND the vendor ask.** Plan: consume `RemyDegenne/brownian-motion` as a
