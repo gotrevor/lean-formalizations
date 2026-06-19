@@ -505,6 +505,22 @@ theorem hardy_omega_pow_ofNat (k x : ℕ) :
 -- anti-vacuity: B4 at `ω^2` — `H_{ω^2}(2) + 1 = 23 + 1 = 24 = f_2(3)`
 example : hardy (oadd (ofNat 2) 1 0) 2 + 1 = fastGrowing (ofNat 2) 3 := by native_decide
 
+/-- **B4 at the first LIMIT level `ω^ω`:** `H_{ω^ω}(n) + 1 = f_{n+1}(n+1)`. Unlike finite `α`, the
+clean `H_{ω^α}(n)+1 = f_α(n+1)` is FALSE at limit `α` (the `ω[n]=n+1` convention makes `H` and `f`
+pick different tower levels); the TRUE limit form reads off the fundamental sequence:
+`(ω^ω)[n] = ω^{n+1}`, so `H_{ω^ω}(n) = H_{ω^{n+1}}(n)` and finite B4 gives `f_{n+1}(n+1) − 1`. Note the
+diagonal `n+1` argument — this is `f_{ε₀}`-flavoured (cf. `fastGrowingε₀`). Concrete witness that the
+limit case is tractable with the right (non-`f_α(n+1)`) closed form. -/
+theorem hardy_omega_pow_omega (n : ℕ) :
+    hardy (oadd (oadd 1 1 0) 1 0) n + 1 = fastGrowing (ofNat (n + 1)) (n + 1) := by
+  have hω : fundamentalSequence (oadd 1 1 0) = Sum.inr (fun i => ONote.ofNat (i + 1)) := rfl
+  rw [hardy_limit _ (fundamentalSequence_omega_pow_limit hω)]
+  show hardy (oadd (ofNat (n + 1)) 1 0) n + 1 = fastGrowing (ofNat (n + 1)) (n + 1)
+  exact hardy_omega_pow_ofNat (n + 1) n
+
+-- anti-vacuity: B4 at `ω^ω` — `H_{ω^ω}(1) + 1 = 7 + 1 = 8 = f_2(2)`
+example : hardy (oadd (oadd 1 1 0) 1 0) 1 + 1 = fastGrowing (ofNat 2) 2 := by native_decide
+
 /-- **Hardy is dominated by fast-growing at the same index.** For `n ≥ 2`,
 `hardy o n ≤ fastGrowing o n` (no `NF` needed). By well-founded recursion on the notation, mirroring
 `le_fastGrowing`: the limit case is the IH verbatim; the successor case chains
