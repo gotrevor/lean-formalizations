@@ -28,10 +28,12 @@ namespace LeanFormalizations.Kakeya2D
 
 /-- **The Hausdorff content bound from a measurable base-point selection (the wiring W).**
 Given, for every measurable cover `C` of the Kakeya set `S`, a **measurable** selection
-`a : ℝ → Plane` whose unit segments over the direction arc `θ∈[0,1]` lie in `⋃ C n` (`hsel`), the
-Hausdorff content bound `HausdorffContentBound S d` holds for every `d∈(0,2)`. No new axioms: the
-selection is a *hypothesis* here (it is the one deep input, Jankov–von Neumann, to be discharged
-separately). The proof reduces the cover to closed pieces, takes the measurable selection, extracts
+`a : ℝ → Plane` whose unit segment over each direction `θ∈[0,1]` covers length `≥ 1` in `⋃ C n` —
+the **a.e. / measure form** `1 ≤ vol{t∈[0,1] : aθ+t·dirθ ∈ ⋃ C n}`, which is all the continuum
+pigeonhole consumes (`hsel`) — the Hausdorff content bound `HausdorffContentBound S d` holds for every
+`d∈(0,2)`. No new axioms: the selection is a *hypothesis* here (the one deep input, Jankov–von Neumann,
+to be discharged separately; the a.e./measure form makes its graph Borel — see `Selection.lean`). The
+proof reduces the cover to closed pieces, takes the measurable selection, extracts
 the cap-free continuum dominant scale + base angle via `exists_continuum_caseA_numerator`, and feeds
 the genuine scale-`j` sub-fiber to `caseA_content` (the zero-`ediam` pieces are dropped via
 `volume_coveredFiber_biUnion_subsingleton_zero` — they carry no covered length). NO Case B. -/
@@ -39,7 +41,8 @@ theorem kakeya_hausdorffContentBound_of_measurableSelection
     {S : Set Plane} {d : ℝ} (hd0 : 0 < d) (hd2 : d < 2)
     (hsel : ∀ (C : ℕ → Set Plane), (∀ n, MeasurableSet (C n)) → S ⊆ ⋃ n, C n →
         ∃ a : ℝ → Plane, Measurable a ∧
-          ∀ θ ∈ Set.Icc (0 : ℝ) 1, Set.Icc (0 : ℝ) 1 ⊆ {t | a θ + t • dir θ ∈ ⋃ n, C n}) :
+          ∀ᵐ θ ∂(volume : Measure ℝ), θ ∈ Set.Icc (0 : ℝ) 1 →
+            1 ≤ volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1 ∧ a θ + t • dir θ ∈ ⋃ n, C n}) :
     HausdorffContentBound S d := by
   obtain ⟨cR, hcRpos, hcR⟩ := content_ratio_lower hd0 hd2
   set D : ℝ≥0∞ := volume (Metric.closedBall (0 : Plane) 1) with hD
@@ -58,13 +61,13 @@ theorem kakeya_hausdorffContentBound_of_measurableSelection
     have hUdiam : ∀ n, Metric.ediam (U n) ≤ 1 := fun n => (hediam_eq n).le.trans (hdiam n)
     rw [show (∑' n, Metric.ediam (t n) ^ d) = ∑' n, Metric.ediam (U n) ^ d from by
       simp_rw [hediam_eq]]
-    -- The measurable base-point selection (the hypothesis).
-    obtain ⟨a, ha, hcov_arc⟩ := hsel U hUmeas hUcov
+    -- The measurable base-point selection (the hypothesis), already in a.e. / measure form.
+    obtain ⟨a, ha, hcov_ae⟩ := hsel U hUmeas hUcov
     -- Uncapped dyadic scale function (zero-diameter pieces → bucket `0`).
     set g : ℕ → ℕ := fun n =>
       if 0 < (Metric.ediam (U n)).toReal then dyadicIdx (Metric.ediam (U n)).toReal else 0 with hgdef
     -- Cap-free continuum dominant scale + base angle, with the discrete numerator in hand.
-    obtain ⟨j, α, hnum⟩ := exists_continuum_caseA_numerator ha hUmeas g hcov_arc
+    obtain ⟨j, α, hnum⟩ := exists_continuum_caseA_numerator ha hUmeas g hcov_ae
     -- Genuine scale-`j` sub-fiber (`ediam > 0`) and the null zero-`ediam` part.
     set s0 : Set ℕ := {n | g n = j ∧ 0 < (Metric.ediam (U n)).toReal} with hs0def
     set Z : Set ℕ := {n | g n = j ∧ (Metric.ediam (U n)).toReal = 0} with hZdef
@@ -217,9 +220,15 @@ selection axiom. This is the content-bound source the headline now uses, replaci
 Case-B route `Engine.kakeya_hausdorffContentBound`. -/
 theorem kakeya_hausdorffContentBound_sel
     {S : Set Plane} (h : IsKakeya S) {d : ℝ} (hd0 : 0 < d) (hd2 : d < 2) :
-    HausdorffContentBound S d :=
-  kakeya_hausdorffContentBound_of_measurableSelection hd0 hd2
-    (fun C hC hcov => kakeya_measurable_selection h C hC hcov)
+    HausdorffContentBound S d := by
+  apply kakeya_hausdorffContentBound_of_measurableSelection hd0 hd2
+  intro C hC hcov
+  obtain ⟨a, ha, hcovpt⟩ := kakeya_measurable_selection h C hC hcov
+  refine ⟨a, ha, Filter.Eventually.of_forall (fun θ hθIcc => ?_)⟩
+  calc (1 : ℝ≥0∞) = volume (Set.Icc (0 : ℝ) 1) := by
+          rw [Real.volume_Icc, sub_zero, ENNReal.ofReal_one]
+    _ ≤ volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1 ∧ a θ + t • dir θ ∈ ⋃ n, C n} :=
+          measure_mono (fun t ht => ⟨ht, hcovpt θ hθIcc ht⟩)
 
 /-- **The concrete crux (Davies 1971, measure form), via the measurable-selection route.** For a
 Kakeya set `S ⊆ ℝ²`, every `d`-dimensional Hausdorff measure with `d < 2` is positive. Free

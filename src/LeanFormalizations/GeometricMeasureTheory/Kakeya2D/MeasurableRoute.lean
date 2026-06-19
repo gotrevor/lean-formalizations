@@ -96,7 +96,8 @@ The only missing input to deploy this on a real Kakeya set is the **measurable s
 this integrated covered length into the Hausdorff content bound, with no Case-B residual. -/
 theorem exists_continuum_dominant_scale {a : ℝ → Plane} (ha : Measurable a)
     {C : ℕ → Set Plane} (hC : ∀ n, MeasurableSet (C n)) (g : ℕ → ℕ)
-    (hcov : ∀ θ ∈ Set.Icc (0 : ℝ) 1, Set.Icc (0 : ℝ) 1 ⊆ {t | a θ + t • dir θ ∈ ⋃ n, C n}) :
+    (hcov : ∀ᵐ θ ∂(volume : Measure ℝ), θ ∈ Set.Icc (0 : ℝ) 1 →
+        1 ≤ volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1 ∧ a θ + t • dir θ ∈ ⋃ n, C n}) :
     ∃ j : ℕ, scaleWeight j
       ≤ ∫⁻ θ in Set.Icc (0 : ℝ) 1,
           volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1 ∧ a θ + t • dir θ ∈ ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), C n} := by
@@ -125,17 +126,19 @@ theorem exists_continuum_dominant_scale {a : ℝ → Plane} (ha : Measurable a)
       change volume (⋃ n ∈ (g ⁻¹' {j} : Set ℕ), T n θ) = _
       rw [hfiberset j θ]
     rw [heq]; exact hkey
-  -- per direction: total covered length over scales is `≥ 1`
-  have hpt : ∀ θ ∈ Set.Icc (0 : ℝ) 1, 1 ≤ ∑' j, ℓ j θ := by
-    intro θ hθ
+  -- the scale-fiber union equals the "covered by `⋃ C n`" set (per direction)
+  have hTunion : ∀ θ, (⋃ n, T n θ)
+      = {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1 ∧ a θ + t • dir θ ∈ ⋃ n, C n} := by
+    intro θ; ext t
+    simp only [hT, Set.mem_iUnion, Set.mem_setOf_eq]
+    constructor
+    · rintro ⟨n, ht, hmem⟩; exact ⟨ht, n, hmem⟩
+    · rintro ⟨ht, n, hmem⟩; exact ⟨n, ht, hmem⟩
+  -- per direction (a.e.): total covered length over scales is `≥ 1`
+  have hpt : ∀ᵐ θ ∂(volume : Measure ℝ), θ ∈ Set.Icc (0 : ℝ) 1 → 1 ≤ ∑' j, ℓ j θ := by
+    filter_upwards [hcov] with θ hθ hθIcc
     refine one_le_tsum_volume_fiber_union g ?_
-    have hsub : Set.Icc (0 : ℝ) 1 ⊆ ⋃ n, T n θ := by
-      intro t ht
-      obtain ⟨n, hn⟩ := Set.mem_iUnion.mp (hcov θ hθ ht)
-      exact Set.mem_iUnion.mpr ⟨n, ht, hn⟩
-    calc (1 : ℝ≥0∞) = volume (Set.Icc (0 : ℝ) 1) := by
-            rw [Real.volume_Icc, sub_zero, ENNReal.ofReal_one]
-      _ ≤ volume (⋃ n, T n θ) := measure_mono hsub
+    rw [hTunion θ]; exact hθ hθIcc
   -- integrate the per-direction bound, swap sum/integral (Tonelli)
   have hone : (1 : ℝ≥0∞) ≤ ∑' j, ∫⁻ θ in Set.Icc (0 : ℝ) 1, ℓ j θ := by
     have hμ : volume (Set.Icc (0 : ℝ) 1) = 1 := by
@@ -144,8 +147,7 @@ theorem exists_continuum_dominant_scale {a : ℝ → Plane} (ha : Measurable a)
         = ∫⁻ _θ in Set.Icc (0 : ℝ) 1, (1 : ℝ≥0∞) := by
           rw [setLIntegral_const, hμ, mul_one]
       _ ≤ ∫⁻ θ in Set.Icc (0 : ℝ) 1, ∑' j, ℓ j θ :=
-          setLIntegral_mono_ae (by fun_prop)
-            (Filter.Eventually.of_forall (fun θ hθ => hpt θ hθ))
+          setLIntegral_mono_ae (by fun_prop) hpt
       _ = ∑' j, ∫⁻ θ in Set.Icc (0 : ℝ) 1, ℓ j θ :=
           lintegral_tsum (fun j => (hℓmeas j).aemeasurable)
   -- the `scaleWeight` pigeonhole over scales (direct index form — no subtype)
@@ -304,7 +306,8 @@ with `2ʲ·∫ℓⱼ ≤ ∑ᵢ ℓⱼ(α+i·2⁻ʲ)`; chaining and the `2·2⁻
 (identical to `Engine`'s) closes it. No new axioms. -/
 theorem exists_continuum_caseA_numerator {a : ℝ → Plane} (ha : Measurable a)
     {C : ℕ → Set Plane} (hC : ∀ n, MeasurableSet (C n)) (g : ℕ → ℕ)
-    (hcov : ∀ θ ∈ Set.Icc (0 : ℝ) 1, Set.Icc (0 : ℝ) 1 ⊆ {t | a θ + t • dir θ ∈ ⋃ n, C n}) :
+    (hcov : ∀ᵐ θ ∂(volume : Measure ℝ), θ ∈ Set.Icc (0 : ℝ) 1 →
+        1 ≤ volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1 ∧ a θ + t • dir θ ∈ ⋃ n, C n}) :
     ∃ (j : ℕ) (α : ℝ),
       ENNReal.ofReal (1 / (((j : ℝ) + 1) * ((j : ℝ) + 2)))
         ≤ ∑ i ∈ Finset.range (2 ^ j),
