@@ -42,6 +42,7 @@ coverage (mechanical: `exists_continuum_dominant_scale` already only consumes th
 -/
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.MeasurableRoute
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Wiring
+import Mathlib.MeasureTheory.Constructions.Polish.Basic
 
 open MeasureTheory
 open scoped NNReal ENNReal
@@ -128,6 +129,24 @@ theorem kakeya_aeMeasurable_selection_of_jvn
     exact ⟨p, by rw [hGdef, Set.mem_setOf_eq, hp]⟩
   obtain ⟨a, ha, hsel⟩ := jvn G hG hsec
   exact ⟨a, ha, fun θ hθ => hsel θ hθ⟩
+
+/-! ### First step toward discharging `kakeya_borel_selection` (the von Neumann route) -/
+
+/-- **The projection of the Borel selection graph is analytic, and `[0,1]` lies inside it.** This is
+the opening move of the von Neumann / Jankov–von Neumann selection proof for `kakeya_borel_selection`:
+the parameter set actually covered by the graph is `Prod.fst '' G`, which is **analytic** (the image of
+a measurable/Borel set under the continuous projection `fst`, via `MeasurableSet.analyticSet_image`),
+and the non-empty-sections hypothesis puts the whole direction arc `[0,1]` inside it. What remains for
+the full selector is the Souslin-scheme / "von Neumann derivative" construction on `G` (needing
+analytic-set universal measurability — the genuine mathlib gap; see the file header and
+`ON-LINE-REQUEST.md` UPDATE 6). Proven here as an axiom-clean down payment. -/
+theorem analyticSet_proj_and_Icc_subset
+    (G : Set (ℝ × Plane)) (hG : MeasurableSet G)
+    (hsec : ∀ θ ∈ Set.Icc (0 : ℝ) 1, ∃ p : Plane, (θ, p) ∈ G) :
+    AnalyticSet (Prod.fst '' G) ∧ Set.Icc (0 : ℝ) 1 ⊆ Prod.fst '' G := by
+  refine ⟨hG.analyticSet_image measurable_fst, fun θ hθ => ?_⟩
+  obtain ⟨p, hp⟩ := hsec θ hθ
+  exact ⟨(θ, p), hp, rfl⟩
 
 /-! ### The headline, routed through the standard Jankov–von Neumann selection -/
 
