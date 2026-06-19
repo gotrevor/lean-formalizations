@@ -546,18 +546,299 @@ theorem shearSel_xres_of_yres {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P R : �
     simpa using this
   exact mul_left_cancel₀ h2 (by linear_combination hu)
 
-/-- **The slope-`±1` diagonal core** — the irreducible heart of HJSW, now isolated to the case where
-`P,Q` (lifts of one column) differ in BOTH coordinates (a diagonal/antidiagonal pair, slope `±1`),
-and `R` is a kept lift of a different column. This is where the closed-form drop rule does its work:
-no third kept lift lands on a kept slope-`±1` line. Verified for all primes `≤ 109`; `native_decide`
-at `p ≤ 13`. -/
+/-- A kept lift of column `x` is never the (single) dropped corner of that column. -/
+theorem shearKept_ne_drop {p x : ℕ} {q : ℕ × ℕ} (hq : q ∈ shearKept p x) :
+    q ≠ shearDrop p x (shearY p x) := by
+  rw [shearKept, Finset.mem_erase] at hq
+  exact hq.1
+
+/-- The kept/drop fact in coordinate form: a kept lift's coordinates do not *both* match the
+dropped corner `(x + p·[x≤pl], shearY p x + p·[shearY p x ≤ pl])`. -/
+theorem shearKept_corner_drop {p x : ℕ} {P : ℕ × ℕ} (hP : P ∈ shearKept p x) :
+    ¬ (P.1 = x + (if x ≤ (p - 1) / 2 then p else 0) ∧
+       P.2 = shearY p x + (if shearY p x ≤ (p - 1) / 2 then p else 0)) := by
+  have hne := shearKept_ne_drop hP
+  intro h
+  exact hne (by rw [shearDrop]; exact Prod.ext h.1 h.2)
+
+/-- **Slope-`+1` partner lemma.** A kept lift `R` of column `c` lying on the slope-`+1` line through
+column `a`'s kept diagonal pair must equal `c`'s *dropped* corner. The curve factors to the partner
+relation `2c+2sₐ+1 ≡ 0` and `2s_c+2a+1 ≡ 0 (mod p)`; the closed-form drop tie-break then forces the
+landing corner to be the dropped one. -/
+theorem shear_diag_partner {p a c : ℕ} (hp : p.Prime) (hp2 : p ≠ 2)
+    (hap : a < p) (hane : a ≠ (p - 1) / 2) (hcp : c < p) (hcne : c ≠ (p - 1) / 2)
+    (hca : c ≠ a) {R : ℕ × ℕ}
+    (hR1 : R.1 = c ∨ R.1 = c + p) (hR2 : R.2 = shearY p c ∨ R.2 = shearY p c + p)
+    (hline : (R.2 : ℤ) - (R.1 : ℤ) = (shearY p a : ℤ) - (a : ℤ))
+    (hopp : (a ≤ (p - 1) / 2 ∧ ¬ shearY p a ≤ (p - 1) / 2) ∨
+            (¬ a ≤ (p - 1) / 2 ∧ shearY p a ≤ (p - 1) / 2)) :
+    R = shearDrop p c (shearY p c) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  have hp0 := hp.pos
+  have hp3 : 3 ≤ p := lt_of_le_of_ne hp.two_le hp2.symm
+  have hpodd : 2 * ((p - 1) / 2) + 1 = p := by
+    obtain ⟨k, hk⟩ := hp.odd_of_ne_two hp2; omega
+  have hsa : shearY p a < p := shearY_lt a
+  have hsc : shearY p c < p := shearY_lt c
+  have hR1res : (R.1 : ZMod p) = (c : ZMod p) := by
+    rcases hR1 with h | h <;> simp [h, ZMod.natCast_self]
+  have hR2res : (R.2 : ZMod p) = (shearY p c : ZMod p) := by
+    rcases hR2 with h | h <;> simp [h, ZMod.natCast_self]
+  have hlinez : (shearY p c : ZMod p) - (c : ZMod p) = (shearY p a : ZMod p) - (a : ZMod p) := by
+    have h := congrArg (fun z : ℤ => (z : ZMod p)) hline
+    push_cast at h
+    rw [hR1res, hR2res] at h
+    exact h
+  have hccur : (2 * (c : ZMod p) + 1) * (shearY p c : ZMod p) = 1 := shear_curve hp hcp hcne
+  have hacur : (2 * (a : ZMod p) + 1) * (shearY p a : ZMod p) = 1 := shear_curve hp hap hane
+  have hscval : (shearY p c : ZMod p) = (shearY p a : ZMod p) - a + c := by linear_combination hlinez
+  have h1 : (2 * (c : ZMod p) + 1) * ((shearY p a : ZMod p) - a + c) = 1 := by
+    rw [← hscval]; exact hccur
+  have hfac : ((c : ZMod p) - (a : ZMod p)) *
+      (2 * (c : ZMod p) + 2 * (shearY p a : ZMod p) + 1) = 0 := by
+    linear_combination h1 - hacur
+  rcases mul_eq_zero.mp hfac with h | h
+  · exfalso; apply hca
+    have hh : (c : ZMod p) = (a : ZMod p) := by linear_combination h
+    have hmod : c % p = a % p := (ZMod.natCast_eq_natCast_iff' c a p).mp hh
+    rwa [Nat.mod_eq_of_lt hcp, Nat.mod_eq_of_lt hap] at hmod
+  · have hB : (2 * (c : ZMod p) + 2 * (shearY p a : ZMod p) + 1) = 0 := h
+    have hB' : (2 * (shearY p c : ZMod p) + 2 * (a : ZMod p) + 1) = 0 := by
+      linear_combination 2 * hscval + hB
+    have hd1 : p ∣ (2 * c + 2 * shearY p a + 1) := by
+      apply (ZMod.natCast_eq_zero_iff _ p).mp; push_cast; linear_combination hB
+    have hd2 : p ∣ (2 * shearY p c + 2 * a + 1) := by
+      apply (ZMod.natCast_eq_zero_iff _ p).mp; push_cast; linear_combination hB'
+    have hXc : 2 * c + 2 * shearY p a + 1 = p ∨ 2 * c + 2 * shearY p a + 1 = 3 * p := by
+      obtain ⟨m, hm⟩ := hd1
+      have hm4 : m < 4 := by
+        by_contra hge; push_neg at hge
+        have : p * 4 ≤ p * m := Nat.mul_le_mul (le_refl p) hge
+        omega
+      interval_cases m <;> omega
+    have hXs : 2 * shearY p c + 2 * a + 1 = p ∨ 2 * shearY p c + 2 * a + 1 = 3 * p := by
+      obtain ⟨m, hm⟩ := hd2
+      have hm4 : m < 4 := by
+        by_contra hge; push_neg at hge
+        have : p * 4 ≤ p * m := Nat.mul_le_mul (le_refl p) hge
+        omega
+      interval_cases m <;> omega
+    -- clean ℕ form of the slope-`+1` line equation
+    have hlineN : R.2 + a = R.1 + shearY p a := by
+      have h : (R.2 : ℤ) + a = R.1 + shearY p a := by linarith [hline]
+      exact_mod_cast h
+    clear hline
+    rw [shearDrop]
+    refine Prod.ext ?_ ?_ <;> split_ifs <;> omega
+
+/-- **Slope-`−1` partner lemma.** The antidiagonal analogue of `shear_diag_partner`: a kept lift `R`
+of column `c` on the slope-`−1` line through column `a`'s kept antidiagonal pair is `c`'s dropped
+corner. Partner relations `2sₐ ≡ 2c+1`, `2s_c ≡ 2a+1 (mod p)`. -/
+theorem shear_anti_partner {p a c : ℕ} (hp : p.Prime) (hp2 : p ≠ 2)
+    (hap : a < p) (hane : a ≠ (p - 1) / 2) (hcp : c < p) (hcne : c ≠ (p - 1) / 2)
+    (hca : c ≠ a) {R : ℕ × ℕ}
+    (hR1 : R.1 = c ∨ R.1 = c + p) (hR2 : R.2 = shearY p c ∨ R.2 = shearY p c + p)
+    (hline : (R.2 : ℤ) + (R.1 : ℤ) = (shearY p a : ℤ) + (a : ℤ) + p)
+    (hsame : (a ≤ (p - 1) / 2 ∧ shearY p a ≤ (p - 1) / 2) ∨
+             (¬ a ≤ (p - 1) / 2 ∧ ¬ shearY p a ≤ (p - 1) / 2)) :
+    R = shearDrop p c (shearY p c) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  have hp0 := hp.pos
+  have hp3 : 3 ≤ p := lt_of_le_of_ne hp.two_le hp2.symm
+  have hpodd : 2 * ((p - 1) / 2) + 1 = p := by
+    obtain ⟨k, hk⟩ := hp.odd_of_ne_two hp2; omega
+  have hsa : shearY p a < p := shearY_lt a
+  have hsc : shearY p c < p := shearY_lt c
+  have hR1res : (R.1 : ZMod p) = (c : ZMod p) := by
+    rcases hR1 with h | h <;> simp [h, ZMod.natCast_self]
+  have hR2res : (R.2 : ZMod p) = (shearY p c : ZMod p) := by
+    rcases hR2 with h | h <;> simp [h, ZMod.natCast_self]
+  have hlinez : (shearY p c : ZMod p) + (c : ZMod p) = (shearY p a : ZMod p) + (a : ZMod p) := by
+    have h := congrArg (fun z : ℤ => (z : ZMod p)) hline
+    push_cast at h
+    rw [hR1res, hR2res] at h
+    simpa [ZMod.natCast_self] using h
+  have hccur : (2 * (c : ZMod p) + 1) * (shearY p c : ZMod p) = 1 := shear_curve hp hcp hcne
+  have hacur : (2 * (a : ZMod p) + 1) * (shearY p a : ZMod p) = 1 := shear_curve hp hap hane
+  have hscval : (shearY p c : ZMod p) = (shearY p a : ZMod p) + a - c := by linear_combination hlinez
+  have h1 : (2 * (c : ZMod p) + 1) * ((shearY p a : ZMod p) + a - c) = 1 := by
+    rw [← hscval]; exact hccur
+  have hfac : ((c : ZMod p) - (a : ZMod p)) *
+      (-2 * (c : ZMod p) + 2 * (shearY p a : ZMod p) - 1) = 0 := by
+    linear_combination h1 - hacur
+  rcases mul_eq_zero.mp hfac with h | h
+  · exfalso; apply hca
+    have hh : (c : ZMod p) = (a : ZMod p) := by linear_combination h
+    have hmod : c % p = a % p := (ZMod.natCast_eq_natCast_iff' c a p).mp hh
+    rwa [Nat.mod_eq_of_lt hcp, Nat.mod_eq_of_lt hap] at hmod
+  · have hB : (2 * (shearY p a : ZMod p)) = 2 * (c : ZMod p) + 1 := by linear_combination h
+    have hB' : (2 * (shearY p c : ZMod p)) = 2 * (a : ZMod p) + 1 := by
+      linear_combination 2 * hscval + hB
+    have hcong1 : (2 * shearY p a) % p = (2 * c + 1) % p := by
+      apply (ZMod.natCast_eq_natCast_iff' _ _ _).mp; push_cast; linear_combination hB
+    have hcong2 : (2 * shearY p c) % p = (2 * a + 1) % p := by
+      apply (ZMod.natCast_eq_natCast_iff' _ _ _).mp; push_cast; linear_combination hB'
+    have hXc := coord_diff_of_residue_eq (p := p) (a := 2 * shearY p a) (b := 2 * c + 1)
+      (by omega) (by omega) hcong1
+    have hXs := coord_diff_of_residue_eq (p := p) (a := 2 * shearY p c) (b := 2 * a + 1)
+      (by omega) (by omega) hcong2
+    -- clean ℕ form of the slope-`−1` line equation
+    have hlineN : R.2 + R.1 = shearY p a + a + p := by exact_mod_cast hline
+    clear hline
+    rw [shearDrop]
+    refine Prod.ext ?_ ?_ <;> split_ifs <;> omega
+
+/-- **The slope-`±1` diagonal core** — the irreducible heart of HJSW. `P,Q` (lifts of one column)
+differ in BOTH coordinates (a diagonal/antidiagonal pair, slope `±1`), and `R` is a kept lift of a
+different column. The closed-form drop rule forces any third kept lift on a kept slope-`±1` line to
+*be* a dropped corner — contradiction. Discharged via `shear_diag_partner`/`shear_anti_partner`. -/
 theorem shearSel_cross_diag {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R : ℕ × ℕ}
     (hP : P ∈ shearSel p) (hQ : Q ∈ shearSel p) (hR : R ∈ shearSel p)
     (hres : (P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p))
     (hRdiff : ¬ ((R.1 : ZMod p) = (P.1 : ZMod p) ∧ (R.2 : ZMod p) = (P.2 : ZMod p)))
     (hPQ : P ≠ Q) (hPR : P ≠ R) (hQR : Q ≠ R) (hx1 : P.1 ≠ Q.1) (hy1 : P.2 ≠ Q.2) :
     ¬ Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)) := by
-  sorry
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  intro hcol
+  have hp0 := hp.pos
+  have hpne : (p : ℤ) ≠ 0 := by exact_mod_cast hp.pos.ne'
+  -- extract columns
+  simp only [shearSel, Finset.mem_biUnion, Finset.mem_erase, Finset.mem_range] at hP hQ hR
+  obtain ⟨a, ⟨hane, hap⟩, hPk⟩ := hP
+  obtain ⟨b, ⟨hbne, hbp⟩, hQk⟩ := hQ
+  obtain ⟨c, ⟨hcne, hcp⟩, hRk⟩ := hR
+  have hPxy := mem_shearKept hPk
+  have hQxy := mem_shearKept hQk
+  have hRxy := mem_shearKept hRk
+  -- P, Q lie in the same column a
+  have hba : b = a := by
+    have h1 : (P.1 : ZMod p) = (a : ZMod p) := by
+      rcases hPxy.1 with h | h <;> simp [h, ZMod.natCast_self]
+    have h2 : (Q.1 : ZMod p) = (b : ZMod p) := by
+      rcases hQxy.1 with h | h <;> simp [h, ZMod.natCast_self]
+    have hh : (b : ZMod p) = (a : ZMod p) := by rw [← h2, ← h1]; exact hres.1.symm
+    have hmod : b % p = a % p := (ZMod.natCast_eq_natCast_iff' b a p).mp hh
+    rwa [Nat.mod_eq_of_lt hbp, Nat.mod_eq_of_lt hap] at hmod
+  rw [hba] at hQk hQxy
+  -- R lies in a different column c ≠ a
+  have hca : c ≠ a := by
+    intro hh
+    apply hRdiff
+    have hpp1 : (P.1 : ZMod p) = (a : ZMod p) := by
+      rcases hPxy.1 with h | h <;> simp [h, ZMod.natCast_self]
+    have hpp2 : (P.2 : ZMod p) = (shearY p a : ZMod p) := by
+      rcases hPxy.2 with h | h <;> simp [h, ZMod.natCast_self]
+    have hr1 : (R.1 : ZMod p) = (c : ZMod p) := by
+      rcases hRxy.1 with h | h <;> simp [h, ZMod.natCast_self]
+    have hr2 : (R.2 : ZMod p) = (shearY p c : ZMod p) := by
+      rcases hRxy.2 with h | h <;> simp [h, ZMod.natCast_self]
+    exact ⟨by rw [hr1, hpp1, hh], by rw [hr2, hpp2, hh]⟩
+  -- orientation determinant vanishes
+  have hdet := collinear_imp_det3_zero hcol
+  simp only [det3, toReal] at hdet
+  have hZ : ((Q.1 : ℤ) - (P.1 : ℤ)) * ((R.2 : ℤ) - (P.2 : ℤ)) -
+      ((R.1 : ℤ) - (P.1 : ℤ)) * ((Q.2 : ℤ) - (P.2 : ℤ)) = 0 := by exact_mod_cast hdet
+  -- four leaf configurations for (P, Q); the other coordinate of Q is forced by hx1 / hy1
+  rcases hPxy.1 with hP1 | hP1 <;> rcases hPxy.2 with hP2 | hP2
+  · -- P = (a, shearY p a) — diagonal, Q = (a+p, shearY p a + p)
+    have hQ1 : Q.1 = a + p := by
+      rcases hQxy.1 with h | h
+      · exact absurd (hP1.trans h.symm) hx1
+      · exact h
+    have hQ2 : Q.2 = shearY p a + p := by
+      rcases hQxy.2 with h | h
+      · exact absurd (hP2.trans h.symm) hy1
+      · exact h
+    have hline : (R.2 : ℤ) - (R.1 : ℤ) = (shearY p a : ℤ) - (a : ℤ) := by
+      rw [hP1, hP2, hQ1, hQ2] at hZ; push_cast at hZ
+      have hkey : (p : ℤ) * (((R.2 : ℤ) - R.1) - ((shearY p a : ℤ) - a)) = 0 := by
+        first | linear_combination hZ | linear_combination -hZ
+      rcases mul_eq_zero.mp hkey with h | h
+      · exact absurd h hpne
+      · linarith
+    have hopp : (a ≤ (p - 1) / 2 ∧ ¬ shearY p a ≤ (p - 1) / 2) ∨
+        (¬ a ≤ (p - 1) / 2 ∧ shearY p a ≤ (p - 1) / 2) := by
+      have hPnd := shearKept_corner_drop hPk
+      have hQnd := shearKept_corner_drop hQk
+      rw [hP1, hP2] at hPnd; rw [hQ1, hQ2] at hQnd
+      split_ifs at hPnd hQnd <;> omega
+    exact (shearKept_ne_drop hRk)
+      (shear_diag_partner hp hp2 hap hane hcp hcne hca hRxy.1 hRxy.2 hline hopp)
+  · -- P = (a, shearY p a + p) — antidiagonal, Q = (a+p, shearY p a)
+    have hQ1 : Q.1 = a + p := by
+      rcases hQxy.1 with h | h
+      · exact absurd (hP1.trans h.symm) hx1
+      · exact h
+    have hQ2 : Q.2 = shearY p a := by
+      rcases hQxy.2 with h | h
+      · exact h
+      · exact absurd (hP2.trans h.symm) hy1
+    have hline : (R.2 : ℤ) + (R.1 : ℤ) = (shearY p a : ℤ) + (a : ℤ) + p := by
+      rw [hP1, hP2, hQ1, hQ2] at hZ; push_cast at hZ
+      have hkey : (p : ℤ) * (((R.2 : ℤ) + R.1) - ((shearY p a : ℤ) + a + p)) = 0 := by
+        first | linear_combination hZ | linear_combination -hZ
+      rcases mul_eq_zero.mp hkey with h | h
+      · exact absurd h hpne
+      · linarith
+    have hsame : (a ≤ (p - 1) / 2 ∧ shearY p a ≤ (p - 1) / 2) ∨
+        (¬ a ≤ (p - 1) / 2 ∧ ¬ shearY p a ≤ (p - 1) / 2) := by
+      have hPnd := shearKept_corner_drop hPk
+      have hQnd := shearKept_corner_drop hQk
+      rw [hP1, hP2] at hPnd; rw [hQ1, hQ2] at hQnd
+      split_ifs at hPnd hQnd <;> omega
+    exact (shearKept_ne_drop hRk)
+      (shear_anti_partner hp hp2 hap hane hcp hcne hca hRxy.1 hRxy.2 hline hsame)
+  · -- P = (a+p, shearY p a) — antidiagonal, Q = (a, shearY p a + p)
+    have hQ1 : Q.1 = a := by
+      rcases hQxy.1 with h | h
+      · exact h
+      · exact absurd (hP1.trans h.symm) hx1
+    have hQ2 : Q.2 = shearY p a + p := by
+      rcases hQxy.2 with h | h
+      · exact absurd (hP2.trans h.symm) hy1
+      · exact h
+    have hline : (R.2 : ℤ) + (R.1 : ℤ) = (shearY p a : ℤ) + (a : ℤ) + p := by
+      rw [hP1, hP2, hQ1, hQ2] at hZ; push_cast at hZ
+      have hkey : (p : ℤ) * (((R.2 : ℤ) + R.1) - ((shearY p a : ℤ) + a + p)) = 0 := by
+        first | linear_combination hZ | linear_combination -hZ
+      rcases mul_eq_zero.mp hkey with h | h
+      · exact absurd h hpne
+      · linarith
+    have hsame : (a ≤ (p - 1) / 2 ∧ shearY p a ≤ (p - 1) / 2) ∨
+        (¬ a ≤ (p - 1) / 2 ∧ ¬ shearY p a ≤ (p - 1) / 2) := by
+      have hPnd := shearKept_corner_drop hPk
+      have hQnd := shearKept_corner_drop hQk
+      rw [hP1, hP2] at hPnd; rw [hQ1, hQ2] at hQnd
+      split_ifs at hPnd hQnd <;> omega
+    exact (shearKept_ne_drop hRk)
+      (shear_anti_partner hp hp2 hap hane hcp hcne hca hRxy.1 hRxy.2 hline hsame)
+  · -- P = (a+p, shearY p a + p) — diagonal, Q = (a, shearY p a)
+    have hQ1 : Q.1 = a := by
+      rcases hQxy.1 with h | h
+      · exact h
+      · exact absurd (hP1.trans h.symm) hx1
+    have hQ2 : Q.2 = shearY p a := by
+      rcases hQxy.2 with h | h
+      · exact h
+      · exact absurd (hP2.trans h.symm) hy1
+    have hline : (R.2 : ℤ) - (R.1 : ℤ) = (shearY p a : ℤ) - (a : ℤ) := by
+      rw [hP1, hP2, hQ1, hQ2] at hZ; push_cast at hZ
+      have hkey : (p : ℤ) * (((R.2 : ℤ) - R.1) - ((shearY p a : ℤ) - a)) = 0 := by
+        first | linear_combination hZ | linear_combination -hZ
+      rcases mul_eq_zero.mp hkey with h | h
+      · exact absurd h hpne
+      · linarith
+    have hopp : (a ≤ (p - 1) / 2 ∧ ¬ shearY p a ≤ (p - 1) / 2) ∨
+        (¬ a ≤ (p - 1) / 2 ∧ shearY p a ≤ (p - 1) / 2) := by
+      have hPnd := shearKept_corner_drop hPk
+      have hQnd := shearKept_corner_drop hQk
+      rw [hP1, hP2] at hPnd; rw [hQ1, hQ2] at hQnd
+      split_ifs at hPnd hQnd <;> omega
+    exact (shearKept_ne_drop hRk)
+      (shear_diag_partner hp hp2 hap hane hcp hcne hca hRxy.1 hRxy.2 hline hopp)
 
 /-- **The cross-column slope crux.** Two distinct kept lifts `P,Q` of one column, and a kept point
 `R` of a *different* column (its residues differ from `P`'s), are never collinear. The slope `0`/`∞`
