@@ -13,6 +13,8 @@ Both go through `collinear_iff_of_mem`, sidestepping the general
 linear-dependence ↔ determinant machinery.
 -/
 import LeanFormalizations.Combinatorics.NoThreeInLine.Defs
+import Mathlib.Tactic.FieldSimp
+import Mathlib.Tactic.LinearCombination
 
 namespace LeanFormalizations.NoThreeInLine
 
@@ -39,6 +41,59 @@ theorem collinear_imp_det3_zero {p q r : ℝ × ℝ}
   have hr2 : r.2 - p.2 = cr * v.2 := by
     rw [hr]; simp only [vadd_eq_add, Prod.snd_add, Prod.smul_snd, smul_eq_mul]; ring
   simp only [det3, hq1, hq2, hr1, hr2]; ring
+
+/-- **Converse: a vanishing determinant forces collinearity.** Together with
+`collinear_imp_det3_zero` this gives the exact criterion `Collinear ℝ {P,Q,R} ↔ det3 P Q R = 0`. -/
+theorem det3_zero_imp_collinear {P Q R : ℝ × ℝ} (h : det3 P Q R = 0) :
+    Collinear ℝ ({P, Q, R} : Set (ℝ × ℝ)) := by
+  rw [collinear_iff_of_mem (Set.mem_insert P _)]
+  by_cases hQ1 : Q.1 - P.1 = 0
+  · by_cases hQ2 : Q.2 - P.2 = 0
+    · -- Q = P : direction R − P works
+      have hQeq : Q = P := Prod.ext (by linarith) (by linarith)
+      refine ⟨R - P, fun x hx => ?_⟩
+      simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
+      rcases hx with rfl | rfl | rfl
+      · exact ⟨0, by simp⟩
+      · exact ⟨0, by simp [hQeq]⟩
+      · exact ⟨1, by simp⟩
+    · -- vertical line : Q.1 = P.1 and the determinant forces R.1 = P.1
+      have hR1 : R.1 - P.1 = 0 := by
+        have hd : (Q.1 - P.1) * (R.2 - P.2) - (R.1 - P.1) * (Q.2 - P.2) = 0 := h
+        rw [hQ1, zero_mul, zero_sub, neg_eq_zero, mul_eq_zero] at hd
+        exact hd.resolve_right hQ2
+      refine ⟨Q - P, fun x hx => ?_⟩
+      simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
+      rcases hx with rfl | rfl | rfl
+      · exact ⟨0, by simp⟩
+      · exact ⟨1, by simp⟩
+      · refine ⟨(x.2 - P.2) / (Q.2 - P.2), ?_⟩
+        apply Prod.ext
+        · simp only [vadd_eq_add, Prod.fst_add, Prod.smul_fst, smul_eq_mul, Prod.fst_sub]
+          rw [hQ1]; ring_nf; linarith
+        · simp only [vadd_eq_add, Prod.snd_add, Prod.smul_snd, smul_eq_mul, Prod.snd_sub]
+          field_simp
+          ring
+  · -- generic : direction Q − P, coefficient from the first coordinate
+    refine ⟨Q - P, fun x hx => ?_⟩
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
+    rcases hx with rfl | rfl | rfl
+    · exact ⟨0, by simp⟩
+    · exact ⟨1, by simp⟩
+    · refine ⟨(x.1 - P.1) / (Q.1 - P.1), ?_⟩
+      apply Prod.ext
+      · simp only [vadd_eq_add, Prod.fst_add, Prod.smul_fst, smul_eq_mul, Prod.fst_sub]
+        field_simp
+        ring
+      · simp only [vadd_eq_add, Prod.snd_add, Prod.smul_snd, smul_eq_mul, Prod.snd_sub]
+        have hd : (Q.1 - P.1) * (x.2 - P.2) - (x.1 - P.1) * (Q.2 - P.2) = 0 := h
+        field_simp
+        linear_combination hd
+
+/-- The exact collinearity criterion: `Collinear ℝ {P,Q,R} ↔ det3 P Q R = 0`. -/
+theorem collinear_iff_det3_zero {P Q R : ℝ × ℝ} :
+    Collinear ℝ ({P, Q, R} : Set (ℝ × ℝ)) ↔ det3 P Q R = 0 :=
+  ⟨collinear_imp_det3_zero, det3_zero_imp_collinear⟩
 
 /-- Three points sharing a `y`-coordinate lie on a (horizontal) line. -/
 theorem collinear_of_eq_snd {p q r : ℝ × ℝ}
