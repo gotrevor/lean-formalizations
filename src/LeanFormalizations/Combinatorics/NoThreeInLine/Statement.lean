@@ -96,4 +96,12 @@ theorem maxNoThreeInLine_ge_three_quarters {N : ℕ} (hN : 4 ≤ N) :
       ⟨shearSel p, (shearSel_card hp).symm, (shearSel_grid hp).mono h2pN, shearSel_noThree hp⟩
   omega
 
+/-- **State of the art at even grid sizes.** For prime `p`, the `2p × 2p` grid maximum is sandwiched
+`3(p−1) ≤ maxNoThreeInLine (2p) ≤ 4p` — the HJSW construction from below, the pigeonhole ceiling from
+above (`= 2·(2p)`). At `N = 2p` this is `3N/2 − 3 ≤ maxNoThreeInLine N ≤ 2N`: the best proven
+two-sided bounds of the no-three-in-line problem. -/
+theorem maxNoThreeInLine_two_mul_prime_bounds {p : ℕ} (hp : p.Prime) :
+    3 * (p - 1) ≤ maxNoThreeInLine (2 * p) ∧ maxNoThreeInLine (2 * p) ≤ 4 * p :=
+  ⟨hjsw_lower hp, by have := maxNoThreeInLine_le (N := 2 * p); omega⟩
+
 end LeanFormalizations.NoThreeInLine
