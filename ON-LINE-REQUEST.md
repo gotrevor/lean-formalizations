@@ -82,3 +82,21 @@ The full HJSW `3/2 − o(N)` constant is now formalized (`maxNoThreeInLine_ge_th
 `PrimeNumberTheoremAnd` as a lake dependency vs. our mathlib/toolchain pin) is a **local build-integration
 task**, doable on-box next lap — not an online question. If that integration proves to need a specific
 compatible mathlib rev or a known cross-version porting trick, THAT would become a new online ask.
+
+---
+
+## 2026-06-19 (UPDATE 3) — `weakPNT` FULLY DISCHARGED (port done); one LOW-PRIORITY infra question
+
+`weakPNT` is no longer a cited axiom — it is a machine-checked theorem. The PrimeNumberTheoremAnd
+Wiener–Ikehara tower was **ported on-box** onto our mathlib `v4.29.1` (no lake dep needed; zero math
+edits). Flagship `maxNoThreeInLine_ge_three_halves_sub` is axiom-clean. **Still no blocking online ask.**
+
+**Optional, low-priority (off the critical path):** the ported `Wiener.lean` carries two verbatim
+upstream sorries, `prelim_decay_2`/`prelim_decay_3` (Fourier decay for BV / AC-with-BV-derivative
+functions), which are DEAD CODE here (gate nothing; clean `#print axioms WeakPNT''`). Closing them needs
+mathlib infrastructure I verified is ABSENT in our pin: (a) Lebesgue–Stieltjes integration-by-parts for
+BV functions (for the sharp `TV/(2π|u|)` bound), or (b) the L¹-translation bound
+`∫‖ψ(t+h)−ψ(t)‖dt ≤ |h|·eVariationOn ψ univ` (for the elementary weaker `TV/(4|u|)` bound). **If a
+networked lap can check whether recent mathlib / an open PR provides either**, that would let a future
+lap close these (or confirm they need building from scratch). Not urgent — Aristotle job `c6d615ee` is
+also attempting `prelim_decay_2`.
