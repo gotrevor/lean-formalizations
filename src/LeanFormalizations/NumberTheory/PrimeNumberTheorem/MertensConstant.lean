@@ -1025,4 +1025,69 @@ theorem tendsto_sub_one_mul_integral_abelian {f : ℝ → ℝ}
   have hclear : δ * (2 * (K + 1)) < ε := by rw [← lt_div_iff₀ hpos]; exact hδlt
   nlinarith [hclear, hKnonneg, hδ]
 
+/-! ### Integrability of the three `eˣ`-form pieces on `(0,∞)` (for the assembly of Limit B). -/
+
+open MeasureTheory in
+/-- `x·e^{−δx}` is integrable on `(0,∞)` for `δ>0` (the `Γ(2)` integrand rescaled), from
+`integrableOn_rpow_mul_exp_neg_mul_rpow` at `s = p = 1`. -/
+lemma integrableOn_id_mul_exp_neg_mul {δ : ℝ} (hδ : 0 < δ) :
+    IntegrableOn (fun x => x * Real.exp (-(δ * x))) (Set.Ioi (0:ℝ)) := by
+  have h := integrableOn_rpow_mul_exp_neg_mul_rpow (s := 1) (p := 1) (b := δ)
+    (by norm_num) le_rfl hδ
+  refine h.congr_fun (fun x hx => ?_) measurableSet_Ioi
+  simp only [Real.rpow_one, neg_mul]
+
+open MeasureTheory in
+/-- The linear envelope `(1+x)·e^{−δx}` is integrable on `(0,∞)` for `δ>0`. -/
+lemma integrableOn_one_add_id_mul_exp_neg_mul {δ : ℝ} (hδ : 0 < δ) :
+    IntegrableOn (fun x => (1 + x) * Real.exp (-(δ * x))) (Set.Ioi (0:ℝ)) := by
+  have h1 : IntegrableOn (fun x => Real.exp (-(δ * x))) (Set.Ioi (0:ℝ)) := by
+    have h := integrableOn_exp_mul_Ioi (a := -δ) (by linarith) 0
+    simpa only [neg_mul] using h
+  have h2 := integrableOn_id_mul_exp_neg_mul hδ
+  refine (h1.add h2).congr_fun (fun x _ => by simp only [Pi.add_apply]; ring) measurableSet_Ioi
+
+open MeasureTheory in
+/-- **Integrability of the `primeRecipSum` piece**: `primeRecipSum⌊eˣ⌋·e^{−δx}` is integrable on
+`(0,∞)` for `δ>0`, dominated by the envelope `(1+x)·e^{−δx}` since `primeRecipSum⌊eˣ⌋ ≤ 1 + log⌊eˣ⌋
+≤ 1 + x` on `(0,∞)`. -/
+lemma integrableOn_primeRecipSum_exp {δ : ℝ} (hδ : 0 < δ) :
+    IntegrableOn (fun x => primeRecipSum ⌊Real.exp x⌋₊ * Real.exp (-(δ * x))) (Set.Ioi (0:ℝ)) := by
+  refine (integrableOn_one_add_id_mul_exp_neg_mul hδ).mono' ?_ ?_
+  · refine Measurable.aestronglyMeasurable (Measurable.mul ?_ ?_)
+    · exact (Measurable.of_discrete (f := primeRecipSum)).comp Real.measurable_exp.nat_floor
+    · exact (Real.measurable_exp.comp ((measurable_const.mul measurable_id).neg))
+  · filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
+    rw [Set.mem_Ioi] at hx
+    rw [Real.norm_eq_abs, abs_mul, abs_of_pos (Real.exp_pos _),
+      abs_of_nonneg (primeRecipSum_nonneg _)]
+    refine mul_le_mul_of_nonneg_right ?_ (Real.exp_pos _).le
+    have hfloorpos : (0:ℝ) < (⌊Real.exp x⌋₊ : ℝ) := by
+      have h1 : 1 ≤ ⌊Real.exp x⌋₊ := Nat.le_floor (by simpa using Real.one_le_exp hx.le)
+      exact_mod_cast Nat.lt_of_lt_of_le Nat.zero_lt_one h1
+    have hlog_le : Real.log ⌊Real.exp x⌋₊ ≤ x := by
+      calc Real.log ⌊Real.exp x⌋₊
+          ≤ Real.log (Real.exp x) := Real.log_le_log hfloorpos (Nat.floor_le (Real.exp_pos x).le)
+        _ = x := Real.log_exp x
+    have := primeRecipSum_le_one_add_log ⌊Real.exp x⌋₊
+    linarith
+
+open MeasureTheory in
+/-- **Integrability of the `log` piece**: `log x·e^{−δx}` is integrable on `(0,∞)` for `δ>0`, by the
+scaling `x ↦ δx` (`integrableOn_Ioi_comp_mul_left_iff`) from `(log u − log δ)·e^{−u}` (integrable as
+`log·e^{−u}` minus a constant multiple of `e^{−u}`). -/
+lemma integrableOn_log_mul_exp_neg_mul {δ : ℝ} (hδ : 0 < δ) :
+    IntegrableOn (fun x => Real.log x * Real.exp (-(δ * x))) (Set.Ioi (0:ℝ)) := by
+  have hG : IntegrableOn (fun u => (Real.log u - Real.log δ) * Real.exp (-u)) (Set.Ioi (0:ℝ)) := by
+    have h2 : IntegrableOn (fun u => Real.log δ * Real.exp (-u)) (Set.Ioi (0:ℝ)) :=
+      (integrableOn_exp_neg_Ioi 0).const_mul _
+    refine (integrableOn_log_mul_exp_neg.sub h2).congr_fun
+      (fun u _ => by simp only [Pi.sub_apply]; ring) measurableSet_Ioi
+  have key := (integrableOn_Ioi_comp_mul_left_iff
+    (fun u => (Real.log u - Real.log δ) * Real.exp (-u)) 0 hδ).mpr (by rwa [mul_zero])
+  refine key.congr_fun (fun x hx => ?_) measurableSet_Ioi
+  rw [Set.mem_Ioi] at hx
+  show (Real.log (δ * x) - Real.log δ) * Real.exp (-(δ * x)) = Real.log x * Real.exp (-(δ * x))
+  rw [Real.log_mul (ne_of_gt hδ) (ne_of_gt hx)]; ring
+
 end LeanFormalizations.Mertens
