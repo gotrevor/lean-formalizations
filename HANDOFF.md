@@ -30,10 +30,12 @@ The charter headline **C3 is done**; ladder A–C complete. Both directions mach
 ## Next (the lap-12 frontier — START HERE)
 **The charter ladder is COMPLETE (A1–A4, B1–B4-finite, C1–C3 + two-sided "grows like `f_{ε₀}`").** Only
 genuine extensions remain — none clearly high-value; pick by appetite:
-1. **B4 at LIMIT α.** Finite B4 `H_{ω^k}(n)+1=f_k(n+1)` is DONE+axiom-clean (`hardy_omega_pow_ofNat`,
-   `6a63e12`) via the new `hardy_oadd_tail` (additive law) + `hardy_oadd_coeff` (coefficient lemma).
-   The clean form is FALSE at limit α (`H_{ω^ω}(1)+1=8≠f_ω(2)=2048`). A correct limit statement
-   (inequality sandwich, or the successor-cofinal subsequence) is the open piece — subtle.
+1. **B4 at LIMIT α (general).** Finite B4 `H_{ω^k}(n)+1=f_k(n+1)` DONE (`hardy_omega_pow_ofNat`,
+   `6a63e12`) AND the first limit `H_{ω^ω}(n)+1=f_{n+1}(n+1)` DONE (`hardy_omega_pow_omega`, `558e5bd`)
+   — both axiom-clean, via `hardy_oadd_tail` (additive law) + `hardy_oadd_coeff` (coefficient lemma).
+   The clean `f_α(n+1)` form is FALSE at limit α; the TRUE limit form is `H_{ω^α}(n)+1 = f_{α[n]}(n+1)`
+   (peel `(ω^α)[n]=ω^{α[n]}` + finite/IH). A uniform general-α statement is non-uniform succ-vs-limit —
+   provable but fiddly, and the charter goal is already met. Open if wanted.
 2. **Optional sharpenings:** strict domination removing `+2` (needs general index monotonicity,
    A3-hard); a single ε₀ capstone via `ε₀ = sup_o repr o`; a tighter `f_{ε₀}` upper bound.
 3. If nothing here appeals, the project's headline goals are met — a reflection/audit lap or

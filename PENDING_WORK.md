@@ -70,10 +70,13 @@ exact behavior — record before re-attacking:**
     (`H_{ω^β·j}=(H_{ω^β})^[j]`, β≠0) via `hardy_oadd_coeff_step`; the transfer `iterate_offset`; and
     **FINITE B4 `hardy_omega_pow_ofNat`: `H_{ω^k}(n)+1 = f_k(n+1)`** for every finite k. All in
     `Logic/FastGrowing/Hardy.lean`, with a `native_decide` anti-vacuity anchor (`H_{ω^2}(2)+1=24=f_2(3)`).
-  - **REMAINING (B4 at LIMIT α):** the clean form is FALSE at limit α (`H_{ω^ω}(1)+1=8≠f_ω(2)=2048`).
-    A correct limit statement would be an inequality sandwich or restricted to the successor-cofinal
-    subsequence. Genuinely subtle; not clearly high-value — the finite case + the two-sided growth
-    theorem already deliver the charter's "grows like `f_{ε₀}`".
+  - **B4 at LIMIT α — first limit DONE (`558e5bd`):** `hardy_omega_pow_omega`:
+    `H_{ω^ω}(n)+1 = f_{n+1}(n+1)` (axiom-clean). The clean `H_{ω^α}(n)+1=f_α(n+1)` is FALSE at limit α
+    (`H_{ω^ω}(1)+1=8≠f_ω(2)=2048`); the TRUE limit form reads off the fund seq: `(ω^ω)[n]=ω^{n+1}` ⇒
+    `H_{ω^ω}(n)=H_{ω^{n+1}}(n) = f_{n+1}(n+1)−1` by finite B4. **General limit-α pattern (next lap if
+    wanted):** `H_{ω^α}(n)+1 = f_{α[n]}(n+1)` for limit α (same `(ω^α)[n]=ω^{α[n]}` peel + finite/IH);
+    a uniform B4 statement is non-uniform across succ/limit α — provable but fiddly, and the charter
+    "grows like `f_{ε₀}`" is already delivered by finite B4 + the two-sided growth theorem.
   - For limit α, do NOT chase the clean identity (false). The honest general statement is likely an
     *inequality* sandwich or a statement along the successor-α cofinal subsequence only.
   - `hardy_le_fastGrowing` (lap 11, axiom-clean) already gives the `≤`-at-same-index half generally.
