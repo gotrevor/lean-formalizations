@@ -199,6 +199,58 @@ theorem theta_lower {n : ℕ} (hn : 4 ≤ n) :
   push_cast at hpsi habs ⊢
   linarith [habs.2]
 
+/-! ### Chebyshev's `T`-function: the keystone of the *refined* lower bound
+
+The elementary central-binomial lower bound (`psi_lower`/`theta_lower`) caps at constant `log 4 / 2 ≈
+0.69` — provably too weak for any prime-gap ratio `< 2` (a careful central-binomial split needs the
+*upper* constant pushed below `log 4` AND the *lower* constant above `log 4 / 2`; the crude pair gives
+exactly Bertrand). Chebyshev's sharper bounds (`ψ(x) ≳ 0.92 x`, `θ(x) ≲ 1.11 x`) come from the
+summatory function `T(n) = ∑_{d ≤ n} Λ(d)⌊n/d⌋ = log(n!)` and its linear combination at shifts
+`1, 1/2, 1/3, 1/5, 1/30`. The identity below is that keystone — mathlib has neither it nor any refined
+Chebyshev bound. From it the `2,3,5,30` combination yields a lower constant `≈ 0.92`, enough (via the
+central-binomial split) for a prime in `(n, c·n]` with `c < 2`, hence a general-`N` no-three-in-line
+constant strictly above Bertrand's `3/4`. -/
+
+open scoped ArithmeticFunction in
+open Finset in
+/-- **Chebyshev's summatory identity** `∑_{d=1}^{n} Λ(d)·⌊n/d⌋ = log(n!)`. Double-counting:
+`⌊n/d⌋` is the number of multiples of `d` in `[1,n]`, so `∑_d Λ(d)·#{k≤n : d∣k}` reindexes to
+`∑_{k≤n} ∑_{d∣k} Λ(d) = ∑_{k≤n} log k = log(n!)` (`vonMangoldt_sum` + `log_prod`). The keystone of the
+refined Chebyshev bounds; absent from mathlib. -/
+theorem sum_vonMangoldt_mul_floor_div (n : ℕ) :
+    ∑ d ∈ Finset.Ioc 0 n, Λ d * ((n / d : ℕ) : ℝ) = Real.log (Nat.factorial n : ℝ) := by
+  classical
+  have hIoc : Finset.Ioc 0 n = Finset.Ico 1 (n + 1) := by
+    ext x; simp only [Finset.mem_Ioc, Finset.mem_Ico]; omega
+  -- `log(n!) = ∑_{k ∈ (0,n]} log k`
+  have hfact : (Nat.factorial n : ℝ) = ∏ k ∈ Finset.Ioc 0 n, (k : ℝ) := by
+    rw [hIoc, ← Nat.cast_prod]; exact_mod_cast (Finset.prod_Ico_id_eq_factorial n).symm
+  have hlogfact : Real.log (Nat.factorial n : ℝ) = ∑ k ∈ Finset.Ioc 0 n, Real.log (k : ℝ) := by
+    rw [hfact, Real.log_prod]
+    intro k hk; rw [Finset.mem_Ioc] at hk
+    exact_mod_cast hk.1.ne'
+  rw [hlogfact]
+  -- each `log k = ∑_{d ∣ k} Λ d`, and `divisors k = {d ∈ (0,n] : d ∣ k}` for `k ∈ (0,n]`
+  have hlog : ∀ k ∈ Finset.Ioc 0 n,
+      Real.log (k : ℝ) = ∑ d ∈ (Finset.Ioc 0 n).filter (· ∣ k), Λ d := by
+    intro k hk; rw [Finset.mem_Ioc] at hk
+    rw [← ArithmeticFunction.vonMangoldt_sum (n := k)]
+    refine Finset.sum_congr ?_ (fun _ _ => rfl)
+    ext d
+    simp only [Nat.mem_divisors, Finset.mem_filter, Finset.mem_Ioc]
+    constructor
+    · rintro ⟨hdk, _⟩
+      exact ⟨⟨Nat.pos_of_dvd_of_pos hdk hk.1, (Nat.le_of_dvd hk.1 hdk).trans hk.2⟩, hdk⟩
+    · rintro ⟨_, hdk⟩; exact ⟨hdk, hk.1.ne'⟩
+  rw [Finset.sum_congr rfl hlog]
+  -- swap the order of summation
+  simp_rw [Finset.sum_filter]
+  rw [Finset.sum_comm]
+  -- inner sum is constant `Λ d` over the `(n/d)` multiples of `d`
+  refine Finset.sum_congr rfl (fun d _ => ?_)
+  rw [← Finset.sum_filter, Finset.sum_const, Nat.Ioc_filter_dvd_card_eq_div, nsmul_eq_mul,
+    mul_comm]
+
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
 
