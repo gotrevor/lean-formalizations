@@ -5,17 +5,16 @@
 This file is a **thin pointer**. The durable overview is **`STATUS.md`**; the per-lap baton
 is the newest **`HANDOFF-<date>.md`**; open items/attack paths live in **`PENDING_WORK.md`**.
 
-## Where things stand (2026-06-19 lap 5 — newest baton: `HANDOFF-2026-06-19-0859.md`)
-- **C3 CICHOŇ IDENTITY + Hardy↔fastGrowing BRIDGE + cofinality all PROVED, axiom-clean.**
-  `goodsteinLength m = H_{seqONote m 0}(2) − 2` (`goodsteinLength_eq_hardy`); the bridge
-  `fastGrowing_le_hardy_pow : f_α ≤ H_{ω^α}` (matching args, `Logic/Goodstein/Domination.lean`)
-  via `hardy_split` + the iteration law `hardy_oadd_iter`; `toOrdinal_two_cofinal` (Goodstein
-  ordinals cofinal in ε₀). `src/` is **sorry-free, 0 math axioms**; build 🟢 green (8289 jobs).
-- **Next crux = the FINAL domination headline** ("`goodsteinLength` dominates every `f_o`").
-  **OBSTRUCTION (lap 5):** `hardy_le_of_lt`'s `norm α ≤ x` budget makes Hardy index-monotonicity
-  FAIL at fixed small arg (`H_ω(2)=5 < H_5(2)=7`), so the diagonal `H_{toONote 2 m}(2)` needs a
-  BUDGET-AWARE argument (route via `fastGrowingε₀` + A4). Full plan in the dated baton +
-  `PENDING_WORK.md`. Bridge + cofinality are the banked prerequisites.
+## Where things stand (2026-06-19 lap 7 — newest baton: `HANDOFF-2026-06-19-1045.md`)
+- **`f_1` DOMINATED unconditionally + `goodsteinLength` proven NON-ELEMENTARY, axiom-clean.**
+  Sub-fact (ii) cracked at low levels via per-step rate bounds + plateau lemmas + the
+  leading-exponent recursion skeleton (`bump_gt`, `goodsteinSeq_ge_init`, `log_bump`,
+  `leadExp_drop_le_one`, the ordinal bridges, `fastGrowing_ofNat_log_le_goodsteinLength`). All in
+  `Logic/Goodstein/Domination.lean`. `src/` **sorry-free, 0 math axioms**; build 🟢 green (8289 jobs).
+- **The ONE remaining deep crux = the diagonal `f_o(m)` (true domination headline).** Gap is entirely
+  the budget `log₂ m → m`: needs the descent to keep `leadExp ≥ n` for `≥ m` steps, i.e. the
+  **steps-between-leading-exponent-drops = sub-Goodstein-length recursion**. Full mental model +
+  attack in the dated baton + `PENDING_WORK.md`. The local skeleton is the banked running start.
 
 ## Where things stood (2026-06-19 lap 2)
 - Branch `no-three-in-line`. Build 🟢 green (8287 jobs). `src/` is **sorry-free** and
