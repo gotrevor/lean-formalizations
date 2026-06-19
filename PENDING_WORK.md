@@ -1,5 +1,70 @@
 # PENDING_WORK — no-three-in-line / HJSW frontier (branch `ntl-hjsw`)
 
+## Reflection — 2026-06-19 (deep-reflection lap, strong model)
+
+*Whole-project altitude pass. Build green (8286 jobs); entire axiom ledger re-verified from real
+`#print axioms`; faithfulness re-audited. This section is the durable direction call — grind laps inherit it.*
+
+### The direction call
+**The no-three-in-line thread is at its natural, valuable endpoint — do NOT mistake "one cited axiom
+remains" for "unfinished."** Concretely:
+- The **originally-mandated target** (`DIRECTION.md`: HJSW `3N/2` proved, axiom-clean, in `Statement.lean`)
+  is **COMPLETE** — `hjsw_lower_bound : 3(p−1) ≤ maxNoThreeInLine(2p)`, kernel-clean.
+- The treadmill then **overshot** it (healthily — real new theorem every lap, NOT circling): it built the
+  full general-`N` constant ladder `3/4 → 15/16 → 6/5 → 3/2−o(N)`, reaching **HJSW's optimal constant**.
+- The flagship `maxNoThreeInLine_ge_three_halves_sub` rests on **exactly one** cited deep axiom, `weakPNT`
+  (the PNT, `ψ(x)∼x`). The **audit surface** (`Statement.lean`) and the **two unconditional improvements
+  past Bertrand's `3/4`** (`15/16`, `6/5`) are **fully axiom-clean**. This is the textbook legitimate
+  endpoint the reflection charter names: *"one narrow cited axiom + a fully-built remainder."*
+
+### `weakPNT` is 🟠, and that's the honest classification (named reason)
+It is the Prime Number Theorem — *proven* (so never 🔴), but absent from mathlib and **not chippable in
+lap-sized pieces** (so not 🟡). Discharging it = porting PNTAnd's **~4000-line Wiener–Ikehara Fourier tower**
+(`Wiener.lean`+`Fourier.lean`+`SmoothExistence.lean`+Mathlib patches). **De-risking finding this lap:** the
+historically-hard *arithmetic* crux — ζ≠0 on `Re=1` — is **already in our mathlib pin**
+(`riemannZeta_ne_zero_of_one_le_re`, `LSeries/Nonvanishing.lean:411`). The *only* gap to `weakPNT` is the
+**tauberian bridge** (Wiener–Ikehara), and mathlib is visibly on-trajectory to land it
+(`LSeries/PrimesInAP.lean` already wires the L-series machinery). So the realistic path is **wait-and-cite**,
+not a heroic port.
+
+### KEEP doing
+- The clean architecture: the deep axiom is isolated to `PrimeGap.lean`; the mandated audit surface
+  `Statement.lean` stays axiom-clean. Never let `weakPNT`/`sorryAx` leak into `Statement.lean`.
+- Verified-ledger discipline: re-run real `#print axioms` before claiming clean; commit only green.
+
+### STOP doing
+- **STOP squeezing tighter elementary Chebyshev constants** (the `nagura_prime`/exact-`5/4` thread): the
+  `T`-method ratio is provably exactly `6/5` with no slack — diminishing returns at the elementary ceiling.
+- **STOP re-feeding Aristotle the cold `nagura_prime`** (job `1644a603` already IDLE'd on it cold). Re-submitting
+  the same statement is not "advancing the attack."
+- **STOP treating `weakPNT` as a lap-sized grind.** It is 🟠. Either the cheap dep test, or wait-and-cite.
+
+### Single highest-value next target (with reasoning)
+**Decisively resolve `weakPNT`** — it is the *only* thing between the flagship `3/2` result and full
+axiom-cleanliness; everything else in NTL is done, open-math (Main Conjecture), or diminishing-returns.
+Execute in this order:
+1. **(cheap, decisive, ~1 lap)** In a throwaway branch, add `~/src/PrimeNumberTheoremAnd` as a local lake
+   dependency and try `theorem weakPNT := PrimeNumberTheoremAnd.WeakPNT''`. *Expected* to fail on the
+   mathlib-rev pin (ours `v4.29.1`/`5e932f97`, PNTAnd `v4.30.0`/`8a178386`). **Record the exact `lake` error**
+   so the blocker is documented, then revert the branch. (Do NOT bump the whole project's toolchain to v4.30.0
+   to force it — that risks the six complete axiom-clean threads + an 8286-job re-verification; not worth it.)
+2. **(lowest effort, preferred)** Treat `weakPNT` as wait-and-cite: periodically check whether mathlib has
+   landed Wiener–Ikehara / `ψ∼x` (grep the pin for `WienerIkehara`, a `Chebyshev.psi` asymptotic). When it
+   does, replace `axiom weakPNT` with the mathlib citation → flagship becomes axiom-clean for free.
+3. **(genuine 🟠, multi-lap, only if 1–2 both dead-end and a real bite is wanted)** Port the Wiener–Ikehara
+   tower from PNTAnd (Apache-2.0, license-clean to port; do NOT submit upstream per `[[feedback_no_pnt_plus_submission]]`).
+   First produce a decl-by-decl burn-down: `Wiener.lean`'s top theorem cone vs. what v4.29.1 already supplies.
+4. **(fallback grind, low value)** If a green-producing lap is wanted and 1–3 stall: `nagura_prime` →
+   unconditional `6/5 → 5/4`. Modest, hard (elementary ceiling). Documented; don't fixate.
+
+### Faithfulness (re-audited this lap — all ✓)
+HJSW `3(p−1)` at `N=2p` = `3(N−2)/2` (matches `DIRECTION.md` / the paper); `NoThreeCollinear` = no three
+*distinct* points `Collinear ℝ` (every slope incl. vertical — the corrected `Green72.AllowedSet`);
+`maxNoThreeInLine_ge_three_halves_sub` = `∀ε>0, ∀ᶠN, (3/2−ε)N ≤ max N` (HJSW's actual `3N/2−o(N)`), and it
+transparently carries `weakPNT` in `#print axioms`. No transcription drift.
+
+---
+
 ## ✅✅ 2026-06-19 (two-sided refined-Chebyshev lap) — DONE: unconditional `3/4 → 15/16 → 6/5`
 
 The refined-Chebyshev program below is **COMPLETE and exploited**. The full two-sided stack is built and

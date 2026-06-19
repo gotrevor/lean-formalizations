@@ -1,24 +1,40 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8286 jobs) · **Updated**: 2026-06-19 · **Branch `ntl-hjsw`** · **General-`N` no-three-in-line constant FRONTIER CLOSED: Bertrand 3/4 → 15/16 → 6/5 (axiom-clean) → 3/2−o(1) = HJSW optimal (via one cited PNT axiom `weakPNT`). Elementary headlines axiom-clean; `nagura_prime` lone `sorry` (non-blocking)**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8286 jobs, kernel-reverified) · **Updated**: reflection lap · 2026-06-19 · `4cb31c1` · **Branch `ntl-hjsw`** · **General-`N` no-three-in-line constant FRONTIER CLOSED: Bertrand 3/4 → 15/16 → 6/5 (axiom-clean) → 3/2−o(1) = HJSW optimal (via one cited PNT axiom `weakPNT`, 🟠). The original mandated target (HJSW 3N/2 axiom-clean in `Statement.lean`) is COMPLETE; the extension rests on a single clearly-cited deep axiom. `nagura_prime` lone `sorry` (non-blocking).**
 
-> **Branch note.** On `ntl-hjsw` every **headline** is proven & axiom-clean (`[propext,
-> Classical.choice, Quot.sound]`), kernel-verified this lap: HJSW `hjsw_lower : 3(p−1) ≤ max(2p)`
-> (crux `shearSel_cross_diag` via `shear_diag_partner`/`shear_anti_partner`), the `2N` upper bound,
-> Erdős `Θ(N)`, and the general-`N` `3N/4` bound (`maxNoThreeInLine_ge_three_quarters`, via Bertrand).
-> The other five threads (Curtis, power-tower, constructibles, e/π-transcendence, Goodstein) are
-> complete & axiom-clean.
-> **NEW active frontier (this lap):** the general-`N` lower *constant* is genuine 🟡 debt — HJSW's
-> theorem is `3N/2 − o(N)` for *all* large `N`, but here it is only `3/4` (Bertrand-limited). Opened
-> `PrimeGap.lean`: a reusable prime-gap interface (`maxNoThreeInLine_ge_of_two_mul_prime_le`), the
-> wired `5/4` payoff (`maxNoThreeInLine_ge_five_fourths`), and the crux `nagura_prime` (prime in
-> `(n,6n/5]`, Nagura 1952) as a **disclosed `sorry`** — proven math, gated on a Chebyshev θ *lower*
-> bound mathlib lacks. Landed the ℕ foundation toward it (`four_pow_lt_mul_lcm`, axiom-clean).
-> So `src/` now carries **one** disclosed `sorry` (`nagura_prime`, the frontier — NOT a headline).
+> **Branch note (refreshed reflection lap, 2026-06-19).** On `ntl-hjsw` the mandated audit-surface
+> headlines are proven & axiom-clean (`[propext, Classical.choice, Quot.sound]`, kernel-reverified this
+> lap): HJSW `hjsw_lower_bound : 3(p−1) ≤ max(2p)` (crux `shearSel_cross_diag`), the `2N` upper bound,
+> Erdős `Θ(N)`, the general-`N` `3N/4` (`maxNoThreeInLine_ge_three_quarters`, via Bertrand), AND the two
+> **unconditional** improvements past Bertrand `3/4` (`maxNoThreeInLine_ge_{fifteen_sixteenths,six_fifths}`,
+> via the refined two-sided Chebyshev stack). The six other threads (Curtis, power-tower, constructibles,
+> e/π-transcendence, Goodstein) are complete & axiom-clean.
+> **Frontier state:** the general-`N` constant ladder is **CLOSED to HJSW's optimal `3/2 − o(N)`**
+> (`maxNoThreeInLine_ge_three_halves_sub`), resting on the single cited deep axiom **`weakPNT`** (the PNT,
+> **🟠** — see ledger + `PENDING_WORK` `## Reflection`). `src/` carries exactly **one math axiom**
+> (`weakPNT`) + **one disclosed `sorry`** (`nagura_prime`, non-blocking, superseded). The `weakPNT`-bearing
+> `3/2` headline lives in `PrimeGap.lean`, NOT in the axiom-clean audit surface `Statement.lean`.
 
 ## Where it stands
-**Every headline is axiom-free** — each headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]` (kernel-verified this lap), and `grep '^axiom' src/` is empty. `src/` now carries exactly **one disclosed `sorry`** — `nagura_prime` in `PrimeGap.lean`, the *active frontier crux* of the general-`N` HJSW constant (proven math, 🟡 debt; NOT a headline, and no headline depends on it). All six threads, green. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
+**Reflection-lap call (2026-06-19): the no-three-in-line thread is at its natural, valuable endpoint.** The originally-mandated target — HJSW `3N/2` proved & axiom-clean, surfaced in `Statement.lean` — is **COMPLETE** (`hjsw_lower_bound`, kernel-clean this lap). The treadmill then *overshot* it, building the full general-`N` constant ladder up to HJSW's optimal `3/2 − o(N)` (`maxNoThreeInLine_ge_three_halves_sub`). That flagship `3/2` headline rests on **exactly one** clearly-cited deep axiom, **`weakPNT`** (the Prime Number Theorem `ψ(x) ∼ x`) — while the **audit surface** (`Statement.lean`) and **two unconditional improvements past Bertrand's `3/4`** (`maxNoThreeInLine_ge_fifteen_sixteenths`, `maxNoThreeInLine_ge_six_fifths`) are **fully axiom-clean** (re-verified by `#print axioms` this lap). `weakPNT` is **🟠** (named reason below): discharging it needs porting PNTAnd's ~4000-line Wiener–Ikehara Fourier-analytic tower — multi-month — though mathlib v4.29.1 *already* supplies the historically-hard arithmetic crux `riemannZeta_ne_zero_of_one_le_re` (ζ≠0 on `Re = 1`), so the remaining gap is *only* the tauberian bridge, which mathlib is visibly on-trajectory to land (`LSeries/PrimesInAP.lean`). This is exactly the legitimate **"one narrow cited axiom + a fully-built remainder"** endpoint. See `PENDING_WORK.md` top (`## Reflection — 2026-06-19`).
+
+**Every other headline is axiom-free** — each headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]` (kernel-verified this lap across all six complete threads + the NTL audit surface + the unconditional `6/5`/`15/16` rungs), and `grep '^axiom' src/` shows only `weakPNT`. `src/` now carries exactly **one disclosed `sorry`** — `nagura_prime` in `PrimeGap.lean`, the *active frontier crux* of the general-`N` HJSW constant (proven math, 🟡 debt; NOT a headline, and no headline depends on it). All six threads, green. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 (deep-reflection lap — direction confirmed, `weakPNT` feasibility mapped):** Stepped back
+  to whole-project altitude. **Re-verified the entire axiom ledger from real `#print axioms`** (build green,
+  8286 jobs): all six complete threads + the NTL audit surface (`hjsw_lower_bound`, `..._three_quarters`,
+  `..._upper`) + the two unconditional improvements (`..._six_fifths`, `..._fifteen_sixteenths`) are
+  `[propext, Classical.choice, Quot.sound]`; `..._three_halves_sub` carries `weakPNT`; `..._five_fourths`
+  carries `sorryAx` (nagura_prime). Ledger 100% accurate. **Faithfulness re-audited:** HJSW `3(p−1)` at
+  `N=2p` = `3(N−2)/2` ✓; `NoThreeCollinear` = real collinearity over distinct points ✓; the `3/2−ε` headline
+  transparently discloses its PNT dependency ✓. **Direction call:** the NTL thread is at its natural valuable
+  endpoint — original target COMPLETE, extension built to HJSW-optimal `3/2−o(N)` on one cited deep axiom.
+  **Key feasibility finding (de-risks the only debt):** mathlib v4.29.1 *already has* `riemannZeta_ne_zero_of_one_le_re`
+  (ζ≠0 on `Re=1`, the hard PNT crux); the gap to `weakPNT` is purely the **Wiener–Ikehara tauberian bridge**,
+  absent from mathlib but a ~4000-line Fourier tower in PNTAnd (`Wiener.lean`+`Fourier.lean`+`SmoothExistence.lean`)
+  → genuine **🟠** port, OR await mathlib (PrimesInAP shows it on-trajectory). STOP squeezing elementary
+  Chebyshev constants (6/5 ceiling, diminishing returns); KEEP the clean architecture (deep axiom isolated to
+  `PrimeGap.lean`, audit surface clean). Full synthesis in `PENDING_WORK.md` (`## Reflection — 2026-06-19`).
 - **2026-06-19 (PNT lap — FULL HJSW `3N/2 − o(N)` general-`N` constant, frontier CLOSED):** After the
   two-sided refined Chebyshev stack hit its elementary ceiling (`5/4`; the Chebyshev ratio `6/5` is a
   hard wall), broke through to HJSW's **optimal `3/2 − o(1)`** via the Prime Number Theorem. **Key
@@ -158,70 +174,35 @@
   limit). Headline `Statement.tower_converges_iff_full` (`x>0` converges **iff**
   `x ∈ [e^(-e), e^(1/e)]`), `#print axioms`-clean. Also factored the subsequence
   construction shared by both directions into `tower_subseq_limits`.
-- **2026-06-16 (π COMPLETE modulo one Aristotle fact):** the **entire** Lindemann
-  π-transcendence is now machine-checked and axiom-clean, reduced to a SINGLE open input.
-  `MonicRootSums.transcendental_pi_of_subsetSumEsymm : (hsse) → Transcendental ℚ Real.pi`,
-  where `hsse` is exactly `subsetSum_esymm_rational` (esymm of the subset-sums of the iπ
-  conjugates is rational — Aristotle job `b7252abe`, running). Full chain, all axiom-clean:
-  combinatorial reduction (★) → non-monic analytic engine → `hsum` bridge → conjugate-poly
-  descent (`subsetSum_poly_lifts`) → zero-root removal → clear denominators → integer `F` →
-  fact (a) `sum_aeval_roots_int` (PROVEN, Aristotle `9a19f72e`) → iπ-conjugate instantiation.
-  When `b7252abe` lands (kernel-verified), `hsse` is discharged, `hermite_lindemann` dies, and
-  `squaring_the_circle_impossible_uncond` becomes fully axiom-clean.
-- **2026-06-16 (π algebraic-part lap, cont.):** **fact (a) DISCHARGED.** `sum_aeval_roots_int`
-  (monic root-sum integrality, via `roots_esymm_int` + `power_sum_int` / Newton's identities)
-  proved by Aristotle (job `9a19f72e`) and **independently kernel-verified** axiom-clean in
-  `MonicRootSums.lean`. Wired: `subsetSum_relation_impossible_of_conjugatePoly` drops the
-  `monic_rootsum` hypothesis; `subsetSum_poly_lifts` + `esymm_aroots_mem_range` reduce fact
-  (b) to a SINGLE open fact `subsetSum_esymm_rational` (esymm of subset-sums is rational —
-  the symmetric-function core). That fact is now an Aristotle job (`b7252abe`, RUNNING).
-  Once it lands, π-transcendence is complete and `hermite_lindemann` dies.
-- **2026-06-16 (π PROVEN — axiom deleted):** the algebraic part landed.
-  `SubsetSumEsymm.subsetSum_esymm_rational` (fundamental theorem of symmetric polynomials over
-  the subset-sums of the `iπ` conjugates) — Aristotle `b7252abe`, **kernel-verified axiom-clean**
-  (the same 4-helper decomposition was independently developed locally this lap). Combined with
-  the conjugate-machinery assembly → `transcendental_pi_axiomClean : Transcendental ℚ Real.pi`,
-  axiom-clean. `squaring_the_circle_impossible_uncond` rewired to it; the `hermite_lindemann`
-  axiom (and its dependent theorem) **deleted**. Repo now carries **0 math axioms**.
-- **2026-06-16 (π algebraic-part lap):** drove the `hermite_lindemann`-at-π crux hard. New
-  file `PiLindemann.lean`, **all axiom-clean**, reduces π-transcendence to exactly two named
-  facts: (a) the monic root-sum integrality `sum_aeval_roots_int` (Aristotle job `9a19f72e`),
-  (b) the symmetric-function construction of the integer conjugate polynomial. Everything
-  else is machine-checked: `prod_one_add_exp_eq_sum_subsetSum` + `pi_exp_relation` (★) (the
-  combinatorial reduction `e^{iπ}=−1 ⟹ K + ∑_{σ_t≠0} e^{σ_t}=0`); `no_intPoly_exp_relation`
-  (the **general non-monic analytic engine** — the full integer-`N`/mod-`p` assembly over an
-  arbitrary `F.aroots`, generalizing the `e` proof); `aroots_integralNormalization` +
-  `hsum_of_monic_rootsum` (discharge `hsum` for **every** integer `F` from the monic case via
-  `integralNormalization`/`scaleRoots`); and the capstone `subsetSum_relation_impossible`
-  (assembles all three — the precise remaining frontier). The **entire analytic part of
-  Hermite–Lindemann at π is now done**; only the algebraic conjugate-polynomial construction
-  (the "algebraic part" PR #28013 supplies) remains.
+- **2026-06-16 (π-transcendence — PROVED end-to-end, axiom deleted; condensed from 4 laps):** the full Lindemann π-transcendence landed across four laps: combinatorial reduction (★) → general non-monic analytic engine (`no_intPoly_exp_relation`) → `hsum` bridge → conjugate-poly descent → fact (a) `sum_aeval_roots_int` (Aristotle `9a19f72e`) → algebraic part `subsetSum_esymm_rational` (Aristotle `b7252abe`, both kernel-verified axiom-clean locally). Result `transcendental_pi_axiomClean` axiom-clean; `squaring_the_circle_impossible_uncond` rewired to it; the `hermite_lindemann` axiom **deleted**.
 - **2026-06-16 (review lap):** π-transcendence narrowing shipped: stated **Hermite–Lindemann** (nonzero algebraic α ⟹ `exp α` transcendental) as ONE disclosed `axiom`, machine-checked `Transcendental ℚ π` from it (Euler `exp(iπ) = -1`) → `squaring_the_circle_impossible_uncond`. Then **PROVED transcendence of `e`** end-to-end (`ETranscendental.lean`): algebraic reduction + analytic decay/prime-selection + Hermite-polynomial roots + the full integer-`N`/mod-`p` assembly of `exp_polynomial_approx`. `e_transcendental` is `#print axioms`-clean — the α=1 instance of the cited axiom discharged. New dir `NumberTheory/Transcendence/`.
 - **2026-06-15 2358/2343:** Constructible/Wantzel thread COMPLETE — full equivalence `isConstructible_iff_constructiblePoint` both directions (forward = degree obstruction; converse = explicit compass arithmetic). 5 impossibilities (cube, trisection, nonagon, heptagon, + geometric-point versions), pentagon positive. All axiom-clean.
-- **2026-06-15:** Constructible Layer 1 (algebraic degree engine `IsSqrtTower.finrank_eq_pow_two`) + 3 classical impossibilities; Layer 2 geometric faithfulness bridge.
-- **2026-06-14 (operator redirect):** Curtis verification-hardening run (n=2 boundary / Sylvester hypersurface, extra Frobenius anchors, refuted-candidate witness, findings doc) — complete, self-stopped.
 
 ## Outstanding
-Every **headline** is COMPLETE and axiom-free. The ONE open obligation in `src/` is the active
-general-`N` constant frontier (`nagura_prime`, disclosed `sorry`).
+The mandated NTL target and all six other threads are COMPLETE and axiom-clean. `src/` carries exactly
+**one math axiom** (`weakPNT`, 🟠) and **one disclosed `sorry`** (`nagura_prime`, non-blocking).
 ### Short-term (active frontier — mirror PENDING_WORK top)
-- **`nagura_prime`** (prime in `(n,6n/5]`, `n≥25`): the crux for the `5/4` general-`N` constant.
-  Proven math (Nagura 1952), 🟡 debt, gated on a Chebyshev **θ lower bound** mathlib lacks. Next
-  prerequisite, well-scoped: the bridge `Real.log(lcm(1..N)) = ψ N` (via `vonMangoldt_sum`) → ψ lower
-  bound (`four_pow_lt_mul_lcm` already gives the ℕ form) → θ lower (`abs_psi_sub_theta_le_sqrt_mul_log`)
-  → Nagura's product bound. Aristotle job `1644a603` grinding it. Payoff `maxNoThreeInLine_ge_five_fourths`
-  is wired and ready.
+- **`weakPNT` (THE single open debt; 🟠).** The flagship `maxNoThreeInLine_ge_three_halves_sub`
+  (HJSW-optimal `3/2 − o(N)`) is fully built on it. Discharge options, best-first: **(1)** add PNTAnd as a
+  local lake dep — cheap to test, expected to fail on the mathlib-rev pin (v4.29.1 vs PNTAnd's), record the
+  exact error; **(2)** await mathlib's native Wiener–Ikehara (it already has the hard crux `riemannZeta_ne_zero_of_one_le_re`;
+  `LSeries/PrimesInAP.lean` shows the tauberian bridge is on-trajectory) — lowest effort, just cite when it lands;
+  **(3)** port PNTAnd's ~4000-line Wiener tower (`Wiener.lean`+`Fourier.lean`+`SmoothExistence.lean`+Mathlib
+  patches) onto v4.29.1 — multi-month, the genuine 🟠 build-plan.
 ### Long-term
-- Push the general-`N` constant `5/4 → 3/2 − o(1)` (PNT-strength prime gaps; mathlib lacks full PNT).
+- `nagura_prime` (prime in `(n,6n/5]`, `n≥25`): would raise the **unconditional** axiom-clean constant
+  `6/5 → 5/4`. LOW priority — modest gain, and "unreachable from the current elementary stack" (the
+  `T`-method ratio is exactly `6/5`, no slack); needs Nagura's sharper finite inequality. Fallback grind only.
 - General Hermite–Lindemann for arbitrary algebraic α (π assembly generalizes) — main-branch thread.
 - The no-three-in-line **Main Conjecture** (`max N ~ c·N`, `c≈1.87`) — open *mathematics*, not formalizable.
 - PARKED P2/P3 (Curtis mathlib upstream; not-algebraic framing) — web/CLA-gated.
 ### To completion
 - Curtis ✅ · **Power-tower SHARP iff ✅** · Wantzel iff ✅ · **e-transcendence ✅** ·
   **π-transcendence ✅ (axiom-clean)** · **squaring-the-circle ✅ (unconditional, axiom-clean)** ·
-  **no-three-in-line: 2N upper + Erdős Θ(N) + HJSW `3N/2` + general-`N` `3N/4` ✅ all axiom-clean;
-  general-`N` `5/4` rung wired, crux `nagura_prime` open.**
-  Headline math-axiom count: **0**. Open obligations in `src/`: **1** (`nagura_prime`, the frontier).
+  **no-three-in-line: 2N upper + Erdős Θ(N) + HJSW `3N/2` + general-`N` `3N/4` + unconditional `15/16` & `6/5`
+  ✅ all axiom-clean; general-`N` `3/2 − o(N)` ✅ built, on the cited PNT axiom `weakPNT` (🟠).**
+  Audit-surface + unconditional math-axiom count: **0**. Extended `3/2` headline: **1** (`weakPNT`).
+  Open obligations in `src/`: 1 math axiom (`weakPNT`) + 1 disclosed `sorry` (`nagura_prime`, non-blocking).
 
 ## Axiom ledger (the fidelity spine)
 | headline theorem | paper claim | `#print axioms` shows | status |
@@ -242,10 +223,21 @@ general-`N` constant frontier (`nagura_prime`, disclosed `sorry`).
 | `NoThreeInLine.four_pow_lt_mul_lcm` (+ `centralBinom_dvd_lcm_Icc`) | ℕ Chebyshev lower bound `4ⁿ < n·lcm(1..2n)`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — mathlib-missing |
 | `NoThreeInLine.{log_lcm_Icc_eq_psi, psi_lower, theta_lower}` (+ `factorization_finset_lcm`, `primePow_dvd_lcm_Icc_iff`) | Chebyshev ψ/θ **lower** bounds + von Mangoldt↔lcm bridge (`log(lcm(1..N))=ψ N`, `n·log4−log n < ψ(2n)`, θ analogue), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — the elementary θ lower bound mathlib lacks (capped at `log4/2≈0.69`); PR-worthy |
 | `NoThreeInLine.{sum_vonMangoldt_mul_floor_div, floor_comb_bounds, logFactorial_comb_le_psi, log_factorial_le, chebyshev_const_gt}` (refined-Chebyshev stack) | Chebyshev's `T=log(n!)` identity, the `2,3,5,30` floor combo `∈{0,1}`, `T`-combination `≤ ψ(n)`, explicit Stirling **upper** bound on `log(m!)`, leading constant `A>0.91`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — full prerequisite stack for the refined `ψ≳0.91n` bound (only route past `3/4`); built this lap; PR-worthy |
-| `NoThreeInLine.maxNoThreeInLine_ge_five_fourths` (via `nagura_prime`) | general-`N` `5/4` constant `3⌊5N/12⌋ ≤ max N`, uncond. | `[propext, **sorryAx**, Classical.choice, Quot.sound]` | 🟡 frontier — `sorryAx` via `nagura_prime` (disclosed); payoff wired, crux open |
+| `NoThreeInLine.{maxNoThreeInLine_ge_fifteen_sixteenths, ..._ge_six_fifths}` | **UNCONDITIONAL** improvements past Bertrand `3/4`: `15/16` (`N≥2⁴¹`) and `6/5` (`N≥5·2⁴⁰`), via the refined two-sided Chebyshev stack | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **kernel-reverified this lap**; the highest *axiom-clean* general-`N` constants |
+| `NoThreeInLine.maxNoThreeInLine_ge_five_fourths` (via `nagura_prime`) | general-`N` `5/4` constant `3⌊5N/12⌋ ≤ max N`, uncond. | `[propext, **sorryAx**, Classical.choice, Quot.sound]` | 🟡 frontier — `sorryAx` via `nagura_prime` (disclosed); NON-blocking, superseded by unconditional `6/5` + PNT `3/2` |
+| `NoThreeInLine.maxNoThreeInLine_ge_three_halves_sub` (via `weakPNT`) | **HJSW-optimal `3/2 − o(N)`**: `∀ε>0, ∀ᶠN, (3/2−ε)N ≤ max N`, uncond. (paper's actual claim) | `[propext, Classical.choice, Quot.sound, **weakPNT**]` | **🟠 — 1 math axiom** (`weakPNT` = PNT `ψ∼x`); NOT in audit surface `Statement.lean`; built remainder fully kernel-checked |
 
-**Headline math-axiom count (🟢+🟡+🟠): 0** across all headlines (kernel-verified this lap). **Active frontier:** `nagura_prime` is a single **disclosed `sorry`** (NOT a math axiom — honest open work; the `--allow-stop` gate is correctly armed). It is **🟡-grade debt**: *proven* mathematics (Nagura 1952), formalizable, but gated on a Chebyshev θ *lower* bound mathlib lacks (it has only θ/primorial *upper* bounds). The ℕ foundation (`four_pow_lt_mul_lcm`) is landed & axiom-clean; the next prerequisite is the bridge `log(lcm(1..N))=ψ N`. No 🔴 anywhere (no unconditional headline depends on an open conjecture; `maxNoThreeInLine_ge_five_fourths` carries `sorryAx`, not a math axiom, and is explicitly the frontier rung).
+**Math-axiom counts (🟢+🟡+🟠), kernel-verified this lap:** audit-surface NTL headlines + all six complete
+threads + the unconditional `6/5`/`15/16` rungs = **0**. The single extended flagship
+`maxNoThreeInLine_ge_three_halves_sub` = **1** (`weakPNT`, 🟠). **`weakPNT` (🟠, named reason):** it is the
+Prime Number Theorem `ψ(x) ∼ x` — a *proven* theorem (170 yrs old; complete Lean proof in PNTAnd via
+Wiener–Ikehara), but absent from mathlib and discharged only by porting a ~4000-line Fourier-analytic tower
+(or awaiting mathlib's native version). Not 🔴 (it is proven, not conjectural) and not 🟡 (not chippable in
+lap-sized pieces). The arithmetic crux (`riemannZeta_ne_zero_of_one_le_re`, ζ≠0 on `Re=1`) is *already* in
+our mathlib pin; only the tauberian bridge is missing. **`nagura_prime`** is a separate **disclosed `sorry`**
+(NOT a math axiom; non-blocking, low priority — superseded). **No 🔴 anywhere** — no headline depends on an
+open conjecture; `weakPNT` is a cited *proven* theorem and is transparently disclosed, off the audit surface.
 
 ## Pointers
-- Open items / attack paths: **`PENDING_WORK.md`** · resume baton: newest **`HANDOFF-*.md`** · online asks: `ON-LINE-REQUEST.md` · frozen plan: `NoThreeInLine/PLAN.md`
-- Active frontier files: `Combinatorics/NoThreeInLine/{Hyperbola,Anchors}.lean`
+- Reflection synthesis + open items/attack paths: **`PENDING_WORK.md`** (top = `## Reflection — 2026-06-19`) · resume baton: newest **`HANDOFF-2026-06-19-1018.md`** · online asks: `ON-LINE-REQUEST.md` (all resolved) · frozen plan: `NoThreeInLine/PLAN.md`
+- Active frontier file: `Combinatorics/NoThreeInLine/PrimeGap.lean` (the `weakPNT` axiom + the entire `3/2−o(N)` build are at its end; the `Hyperbola.lean`/`Anchors.lean` HJSW construction is complete)
