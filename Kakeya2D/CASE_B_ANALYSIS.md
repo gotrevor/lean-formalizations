@@ -1,3 +1,16 @@
+> ⚠️ **SUPERSEDED & PARTIALLY INVALIDATED (2026-06-19 review lap).** This note analyzes how to *prove*
+> `kakeya_subresolution_content`. That statement is now known to be **FALSE** (kernel-checked refutation
+> `Engine.kakeya_subresolution_content_is_unsound`): as written it dropped the `hcR` link cR↔d (so its
+> conclusion had to hold for arbitrary `cR>0` vs a fixed finite `∑'ediam^d`), and even with `hcR` it
+> fails for `d>1` (arbitrary base points ⟹ unshared sub-resolution pieces, `∑ediam^d→0`). So the
+> discrete route genuinely cannot close Case B, exactly as this note suspected — but the resolution was
+> NOT "discharge measurable selection then wire it"; it was the **elementary open-cover selection**
+> (`Selection.kakeya_hausdorffContentBound_elementary`), which closes the WHOLE lower bound soundly and
+> is what the axiom-clean headline `davies_kakeya_2d` uses. **Do NOT** follow the "honest route" / "(W)
+> wiring + (S) selection" plan below to prove `kakeya_subresolution_content` — it is false. The
+> measurability keystones in `MeasurableRoute.lean`/`Wiring.lean` are kept as honest axiom-free
+> structure but are off the headline path. The analysis below is retained for historical context only.
+
 # Case B / `kakeya_subresolution_content` — the crux pinned to measurable selection
 
 **Date**: 2026-06-19 (analysis lap). Branch `kakeya-davies`. This note records the result of an
