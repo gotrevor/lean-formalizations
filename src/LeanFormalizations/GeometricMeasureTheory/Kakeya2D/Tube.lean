@@ -368,4 +368,69 @@ theorem volume_inter_tube_le {a b v w : Plane} (hv : ‖v‖ = 1) (hw : ‖w‖ 
           rw [div_le_div_iff₀ (by linarith : (0:ℝ) < s) (by linarith : (0:ℝ) < s + δ)]
           nlinarith
 
+/-! ### Single-tube area *lower* bound (K4 prerequisite)
+
+The Córdoba `L²` numerator needs each δ-tube to have area `≳ δ`. We prove `vol(tube) ≥ 2δ` by
+exhibiting the `[0,1]×[-δ,δ]` frame sub-rectangle inside the tube, via the orthonormal
+decomposition `x - a = ⟪v,x-a⟫•v + ⟪perp v,x-a⟫•perp v`. -/
+
+/-- Orthonormal decomposition of `x - a` in the frame `(v, perp v)` (for unit `v`). -/
+theorem frame_decomp {v : Plane} (hv : ‖v‖ = 1) (a x : Plane) :
+    x - a = ⟪v, x - a⟫ • v + ⟪perp v, x - a⟫ • perp v := by
+  have hb := (frame hv (norm_perp hv) (inner_perp v)).sum_repr' (x - a)
+  rw [Fin.sum_univ_two, frame_zero, frame_one] at hb
+  exact hb.symm
+
+/-- The `[0,1]×[-δ,δ]` frame sub-rectangle is contained in the δ-tube: a point with longitudinal
+coordinate in `[0,1]` and transverse coordinate in `[-δ,δ]` is `δ`-close to the core segment. -/
+theorem subBox_subset_tube {a v : Plane} {δ : ℝ} (hv : ‖v‖ = 1) :
+    {x : Plane | ⟪v, x - a⟫ ∈ Icc (0 : ℝ) 1 ∧ ⟪perp v, x - a⟫ ∈ Icc (-δ) δ} ⊆ tube a v δ := by
+  intro x hx
+  obtain ⟨⟨hs0, hs1⟩, hr0, hr1⟩ := hx
+  set s := ⟪v, x - a⟫
+  set r := ⟪perp v, x - a⟫
+  refine mem_cthickening_of_dist_le x (a + s • v) δ _ ?_ ?_
+  · rw [affineSegment_eq]; exact ⟨s, ⟨hs0, hs1⟩, rfl⟩
+  · have hd : x - (a + s • v) = r • perp v := by
+      have := frame_decomp hv a x
+      rw [show x - (a + s • v) = (x - a) - s • v by abel, this]; abel
+    rw [dist_eq_norm, hd, norm_smul, norm_perp hv, mul_one, Real.norm_eq_abs, abs_le]
+    exact ⟨hr0, hr1⟩
+
+/-- Exact area of a general frame box `{x | ⟪v,x-a⟫ ∈ I ∧ ⟪perp v,x-a⟫ ∈ J}` (generalises
+`volume_coordBox`): the product of the side measures, via the measure-preserving frame isometry. -/
+theorem volume_frame_box {v : Plane} (hv : ‖v‖ = 1) (a : Plane) {I J : Set ℝ}
+    (hI : MeasurableSet I) (hJ : MeasurableSet J) :
+    volume {x : Plane | ⟪v, x - a⟫ ∈ I ∧ ⟪perp v, x - a⟫ ∈ J} = volume I * volume J := by
+  have hmp : MeasurePreserving
+      (fun x : Plane => WithLp.ofLp ((frame hv (norm_perp hv) (inner_perp v)).repr (x - a)))
+      volume volume :=
+    (PiLp.volume_preserving_ofLp (Fin 2)).comp
+      ((frame hv (norm_perp hv) (inner_perp v)).measurePreserving_repr.comp
+        (measurePreserving_sub_right volume a))
+  have hset : {x : Plane | ⟪v, x - a⟫ ∈ I ∧ ⟪perp v, x - a⟫ ∈ J}
+      = (fun x : Plane => WithLp.ofLp ((frame hv (norm_perp hv) (inner_perp v)).repr (x - a))) ⁻¹'
+          (Set.univ.pi (fun i : Fin 2 => ![I, J] i)) := by
+    ext x
+    simp only [mem_setOf_eq, mem_preimage, Set.mem_univ_pi, Fin.forall_fin_two,
+      Matrix.cons_val_zero, Matrix.cons_val_one,
+      frame_coord_zero hv (norm_perp hv) (inner_perp v) a x,
+      frame_coord_one hv (norm_perp hv) (inner_perp v) a x]
+  rw [hset, hmp.measure_preimage
+      (MeasurableSet.univ_pi fun i => by fin_cases i <;> assumption).nullMeasurableSet,
+    volume_pi_pi]
+  simp [Fin.prod_univ_two]
+
+/-- **Single-tube area lower bound.** A δ-tube about a unit segment has area `≥ 2δ` (it contains
+the `1 × 2δ` core rectangle). Together with `volume_tube_le` this pins the area at `≍ δ`. -/
+theorem volume_tube_ge {a v : Plane} (hv : ‖v‖ = 1) {δ : ℝ} :
+    ENNReal.ofReal (2 * δ) ≤ volume (tube a v δ) := by
+  calc ENNReal.ofReal (2 * δ)
+      = volume (Icc (0:ℝ) 1) * volume (Icc (-δ) δ) := by
+        rw [Real.volume_Icc, Real.volume_Icc, ← ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 1 - 0)]
+        congr 1; ring
+    _ = volume {x : Plane | ⟪v, x - a⟫ ∈ Icc (0:ℝ) 1 ∧ ⟪perp v, x - a⟫ ∈ Icc (-δ) δ} :=
+        (volume_frame_box hv a measurableSet_Icc measurableSet_Icc).symm
+    _ ≤ volume (tube a v δ) := measure_mono (subBox_subset_tube hv)
+
 end LeanFormalizations.Kakeya2D
