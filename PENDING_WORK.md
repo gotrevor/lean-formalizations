@@ -1,5 +1,53 @@
 # PENDING_WORK — no-three-in-line / HJSW frontier (branch `ntl-hjsw`)
 
+## ⭐ weakPNT DISCHARGED — 2026-06-19 (grind lap, strong model)
+
+**The single deep axiom `weakPNT` (the Prime Number Theorem, `ψ∼x`) is now a fully machine-checked
+theorem.** The flagship `maxNoThreeInLine_ge_three_halves_sub` (HJSW-optimal `3/2−o(N)`) is
+**axiom-clean** (`#print axioms` = `[propext, Classical.choice, Quot.sound]`) — UNCONDITIONAL.
+
+**How:** ported PrimeNumberTheoremAnd's Wiener–Ikehara tower onto our mathlib `v4.29.1` with ZERO
+math edits (only `Architect`/`@[blueprint]`/`blueprint_comment` stripping + import redirection). The
+feared v4.29.0→v4.29.1 drift did not materialize. New modules under
+`src/LeanFormalizations/NumberTheory/PrimeNumberTheorem/`: `Support`, `Sobolev`, `Fourier`,
+`SmoothExistence`, `Asymptotics` (faithful Asymptotics+Log patches), `Wiener` (4118), `Defs`,
+`Consequences` (full). `PrimeGap.weakPNT := Consequences.WeakPNT''`.
+
+**Now in-repo & axiom-clean:** `WeakPNT''` (ψ∼x), `chebyshev_asymptotic` (θ∼x), `pi_alt'`
+(π(x)∼x/log x — the classic PNT), `nth_prime_asymp` (pₙ∼n log n), + PNTAnd's whole consequences layer.
+
+### Remaining open `sorry`s (the ONLY three in the repo — all OFF the flagship critical path)
+1. **`Wiener.prelim_decay_2`** (`Wiener.lean:244`): `‖𝓕 ψ u‖ ≤ TV(ψ)/(2π|u|)` for integrable BV ψ.
+   Verbatim upstream sorry. DEAD CODE (unused anywhere; clean `#print axioms WeakPNT''` confirms it
+   gates nothing). Aristotle job `c6d615ee` was attempting it. Attack paths:
+   - (a) Sharp route = Lebesgue–Stieltjes IBP: `2πiu·𝓕ψ(u) = ∫𝐞(-tu)dψ`, then `≤ ∫|dψ| = TV`. Needs
+     Stieltjes-measure IBP for BV (mathlib has `StieltjesFunction`, `VectorMeasure/BoundedVariation`,
+     `IntervalIntegral/IntegrationByParts` — assemble via Jordan decomposition ψ = monotone − monotone).
+   - (b) Shift trick gives only the WEAKER `TV/(4|u|)` (1/4 > 1/(2π)), so it does NOT prove the stated
+     constant — useful only if one weakens the (dead) statement.
+   - (c) Port whatever Aristotle / a newer mathlib lands.
+2. **`Wiener.prelim_decay_3`** (`Wiener.lean:252`): 2nd-order, `≤ TV(ψ')/(2π|u|)²` for AC ψ with ψ' BV.
+   Used only by the dead `decay_alt`. PNTAnd note: "should follow from prelim_decay_2" via
+   `𝓕(ψ')(u) = 2πiu·𝓕ψ(u)` — but mathlib's `Real.fourier_deriv` needs EVERYWHERE-differentiable, while
+   the hyp is only `AbsolutelyContinuous` (a.e. diff + FTC). Attack: build FT-of-deriv for AC functions
+   (IBP via `IntervalIntegral/AbsolutelyContinuousFun`), then chain prelim_decay_2.
+3. **`nagura_prime`** (`PrimeGap.lean:1120`): prime in (n,6n/5] for n≥25. Now FULLY SUPERSEDED — the
+   unconditional `3/2−o(N)` dominates its conditional `5/4`. Needs Nagura's sharp finite inequality
+   (paper, in ON-LINE-REQUEST). Lowest value; leave disclosed.
+
+### Cleanup option (judgement call for a future lap)
+The `{prelim_decay_2, prelim_decay_3, decay_alt, AbsolutelyContinuous}` cluster is a fully self-contained
+DEAD-CODE island in `Wiener.lean`. Either prove (paths above) or excise it to make the port 100%
+sorry-free with no warnings. Kept for now: faithful to upstream + a genuine open sub-problem + Aristotle
+attempting. If excised, document the omission in the `Wiener` header.
+
+---
+
+## (ARCHIVED — superseded by the discharge above) Reflection — 2026-06-19
+*The section below predates the discharge; it argued weakPNT was 🟠 / not lap-sized / wait-and-cite.
+That was WRONG — the port worked in one grind lap. Retained for the historical attack-map only.*
+
+
 ## Reflection — 2026-06-19 (deep-reflection lap, strong model)
 
 *Whole-project altitude pass. Build green (8286 jobs); entire axiom ledger re-verified from real
