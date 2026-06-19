@@ -503,6 +503,332 @@ theorem hstep_oadd_one_zero_finite (b : ℕ) (hb : 2 ≤ b) :
       congr 1
       exact (toONote_single (b + 1) (by omega) (show 1 ≤ e + 1 by omega) (by omega)).symm
 
+/-! ### Closing the borrowing core: the `Good`/`Canon` invariant + general predecessor
+
+The lone gap (`hstep_oadd_one_zero`) is the `c = 1` predecessor of `ω^E` for general NF `E`.
+We prove a general statement `hstep_pred_pow` for every NF `E` satisfying a coefficient
+invariant `Good b E`, by well-founded recursion on `repr E`, then specialize to `E = toONote b L`.
+
+Invariant: throughout the `fundamentalSequence` descent the notation is *canonical in base
+`b+1`* (`Canon`: all coefficients `≤ b`) except for at most one coefficient `b+1` parked at the
+"active frontier" (`Good`). `Good` is preserved by the limit descent (`Good_fundSeq`); for a
+*successor* the `b+1` is forced into the finite lowest term, so its predecessor is fully `Canon`
+(`Canon_pred`). A `Canon` NF notation round-trips through `evalNat`
+(`canon_round_trip : toONote (b+1) (evalNat b E) = E`) — exactly the successor reconstruction. -/
+
+/-- `toOrdinal B (B^k) = ω^(toOrdinal B k)`: a pure power is a single leading `ω`-power. -/
+theorem toOrdinal_pow (B : ℕ) (hB : 2 ≤ B) (k : ℕ) :
+    toOrdinal B (B ^ k) = ω ^ toOrdinal B k := by
+  have hBk : B ^ k ≠ 0 := pow_ne_zero _ (by omega)
+  rw [toOrdinal_pos B _ hBk, Nat.log_pow (by omega), Nat.div_self (Nat.pow_pos (by omega)),
+    Nat.mod_self, toOrdinal_zero, Nat.cast_one, mul_one, add_zero]
+
+/-- Constructor form of `toOrdinal` (the ordinal twin of `toONote_oadd`): for `1 ≤ c < B` and
+`s < B^k`, `toOrdinal B (c·B^k + s) = ω^(toOrdinal B k)·c + toOrdinal B s`. -/
+theorem toOrdinal_oadd (B : ℕ) (hB : 2 ≤ B) {c k s : ℕ} (hc : 1 ≤ c) (hcB : c < B)
+    (hs : s < B ^ k) :
+    toOrdinal B (c * B ^ k + s) = ω ^ toOrdinal B k * (c : Ordinal) + toOrdinal B s := by
+  have hBk_pos : 0 < B ^ k := Nat.pow_pos (by omega)
+  have hn0 : c * B ^ k + s ≠ 0 := by positivity
+  have hlow : c * B ^ k + s < B ^ (k + 1) := by
+    calc c * B ^ k + s < c * B ^ k + B ^ k := by omega
+      _ = (c + 1) * B ^ k := by ring
+      _ ≤ B * B ^ k := Nat.mul_le_mul_right _ (by omega)
+      _ = B ^ (k + 1) := by rw [pow_succ]; ring
+  have hge : B ^ k ≤ c * B ^ k + s :=
+    (Nat.le_mul_of_pos_left (B ^ k) hc).trans (Nat.le_add_right _ _)
+  have hlog : Nat.log B (c * B ^ k + s) = k := Nat.log_eq_of_pow_le_of_lt_pow hge hlow
+  have hdiv : (c * B ^ k + s) / B ^ k = c := by
+    rw [Nat.add_comm, Nat.add_mul_div_right _ _ hBk_pos, Nat.div_eq_of_lt hs, Nat.zero_add]
+  have hmod : (c * B ^ k + s) % B ^ k = s := by
+    rw [Nat.add_comm, Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt hs]
+  rw [toOrdinal_pos B _ hn0, hlog, hdiv, hmod]
+
+/-- `Canon b o`: the notation `o` is in canonical base-`(b+1)` form — every coefficient is
+`≤ b` (a valid base-`(b+1)` digit), recursively on exponents and tails. -/
+def Canon (b : ℕ) : ONote → Prop
+  | 0 => True
+  | oadd e n r => (n : ℕ) ≤ b ∧ Canon b e ∧ Canon b r
+
+theorem Canon_zero (b : ℕ) : Canon b 0 := trivial
+
+theorem Canon_oadd (b : ℕ) (e : ONote) (n : ℕ+) (r : ONote) :
+    Canon b (oadd e n r) ↔ (n : ℕ) ≤ b ∧ Canon b e ∧ Canon b r := Iff.rfl
+
+/-- A `Canon` NF notation is recovered by reading `evalNat` back at the ordinal level:
+`toOrdinal (b+1) (evalNat b E) = repr E`. Structural induction; the leading-term remainder
+bound for `toOrdinal_oadd` comes from `NF` via the engine's strict monotonicity. -/
+theorem canon_repr (b : ℕ) (hb : 2 ≤ b) :
+    ∀ E : ONote, Canon b E → E.NF → toOrdinal (b + 1) (evalNat b E) = E.repr := by
+  have hSM : StrictMono (toOrdinal (b + 1)) := fun a c hac =>
+    (toOrdinal_mono_and_bound (b + 1) (by omega) c).1 a hac
+  intro E
+  induction E with
+  | zero => intro _ _; simp
+  | oadd e n r ihe ihr =>
+    intro hcanon hNF
+    obtain ⟨hn, hce, hcr⟩ := (Canon_oadd b e n r).1 hcanon
+    have hNFe : e.NF := hNF.fst
+    have hNFr : r.NF := hNF.snd
+    have hbelow : r.repr < ω ^ e.repr := hNF.snd'.repr_lt
+    have hre := ihe hce hNFe
+    have hrr := ihr hcr hNFr
+    have hbound : evalNat b r < (b + 1) ^ evalNat b e := by
+      apply hSM.lt_iff_lt.1
+      rw [toOrdinal_pow (b + 1) (by omega), hre, hrr]
+      exact hbelow
+    rw [evalNat_oadd, toOrdinal_oadd (b + 1) (by omega) n.pos (by omega) hbound, hre, hrr]
+    simp
+
+/-- A `Canon` NF notation round-trips through `evalNat`: `toONote (b+1) (evalNat b E) = E`. -/
+theorem canon_round_trip (b : ℕ) (hb : 2 ≤ b) (E : ONote) (hcanon : Canon b E) (hNF : E.NF) :
+    toONote (b + 1) (evalNat b E) = E := by
+  haveI : (toONote (b + 1) (evalNat b E)).NF := toONote_NF (b + 1) (by omega) (evalNat b E)
+  haveI : E.NF := hNF
+  rw [← repr_inj, repr_toONote (b + 1) (by omega), canon_repr b hb E hcanon hNF]
+
+/-- `Good b o`: `o` is `Canon` except for at most one coefficient `= b+1`, parked at the active
+frontier of the descent — the lowest term, deeper in the tail, or (when `o = ω^e`) inside the
+exponent. Preserved by the descent; on a *successor* the `b+1` is forced low. -/
+def Good (b : ℕ) : ONote → Prop
+  | 0 => True
+  | oadd e n r =>
+      (Canon b e ∧ (n : ℕ) ≤ b ∧ Good b r) ∨
+      (Canon b e ∧ (n : ℕ) = b + 1 ∧ r = 0) ∨
+      ((n : ℕ) = 1 ∧ r = 0 ∧ Good b e)
+
+theorem Good_zero (b : ℕ) : Good b 0 := trivial
+
+theorem Good_oadd (b : ℕ) (e : ONote) (n : ℕ+) (r : ONote) :
+    Good b (oadd e n r) ↔
+      (Canon b e ∧ (n : ℕ) ≤ b ∧ Good b r) ∨
+      (Canon b e ∧ (n : ℕ) = b + 1 ∧ r = 0) ∨
+      ((n : ℕ) = 1 ∧ r = 0 ∧ Good b e) := Iff.rfl
+
+theorem Good_of_Canon (b : ℕ) : ∀ E, Canon b E → Good b E := by
+  intro E
+  induction E with
+  | zero => intro _; exact trivial
+  | oadd e n r _ ihr =>
+    intro hc
+    obtain ⟨hn, hce, hcr⟩ := (Canon_oadd b e n r).1 hc
+    exact (Good_oadd b e n r).2 (Or.inl ⟨hce, hn, ihr hcr⟩)
+
+theorem Canon_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ L, Canon b (toONote b L) := by
+  intro L
+  induction L using Nat.strong_induction_on with
+  | _ L ih =>
+    rcases eq_or_ne L 0 with rfl | hL
+    · rw [toONote_zero]; exact Canon_zero b
+    · have hlog : Nat.log b L < L := Nat.log_lt_self b hL
+      have hbe_pos : 0 < b ^ Nat.log b L := Nat.pow_pos (by omega)
+      have hbe_le : b ^ Nat.log b L ≤ L := Nat.pow_log_le_self b hL
+      have hr_lt : L % b ^ Nat.log b L < L := lt_of_lt_of_le (Nat.mod_lt _ hbe_pos) hbe_le
+      have hcb : L / b ^ Nat.log b L < b := by
+        apply Nat.div_lt_of_lt_mul
+        have h := Nat.lt_pow_succ_log_self (show 1 < b by omega) L
+        rwa [pow_succ] at h
+      rw [toONote, dif_neg hL]
+      refine (Canon_oadd b _ _ _).2 ⟨?_, ih _ hlog, ih _ hr_lt⟩
+      rw [PNat.toPNat'_coe (Nat.div_pos hbe_le hbe_pos)]
+      omega
+
+/-- For a `Good` *successor* notation, the predecessor is fully `Canon`: the parked `b+1`
+coefficient (if any) is forced into the finite lowest term, which `pred` decrements to `≤ b`. -/
+theorem Canon_pred (b : ℕ) : ∀ E E', Good b E → fundamentalSequence E = Sum.inl (some E') →
+    Canon b E' := by
+  intro E
+  induction E with
+  | zero => intro E' _ h; exact absurd h (by simp [fundamentalSequence])
+  | oadd a m r _ ihr =>
+    intro E' hgood h
+    rw [fundamentalSequence] at h
+    rcases hr : fundamentalSequence r with (_ | r') | g
+    · -- r = 0
+      rw [hr] at h
+      have hrz : r = 0 :=
+        (fundamentalSequenceProp_inl_none r).1 (hr ▸ fundamentalSequence_has_prop r)
+      subst hrz
+      rcases ha : fundamentalSequence a with (_ | a') | p
+      · -- a = 0
+        rw [ha] at h
+        have haz : a = 0 :=
+          (fundamentalSequenceProp_inl_none a).1 (ha ▸ fundamentalSequence_has_prop a)
+        subst haz
+        rcases hm : m.natPred with _ | k
+        · -- m = 1, E' = 0
+          rw [hm] at h
+          obtain rfl : (0 : ONote) = E' := by simpa using h
+          exact Canon_zero b
+        · -- m = k+2, E' = oadd 0 k.succPNat 0
+          rw [hm] at h
+          obtain rfl : oadd 0 k.succPNat 0 = E' := by simpa using h
+          have hmk : (m : ℕ) = k + 2 := by have := PNat.natPred_add_one m; omega
+          have hmb : (m : ℕ) ≤ b + 1 := by
+            rcases (Good_oadd b 0 m 0).1 hgood with ⟨_, hh, _⟩ | ⟨_, hh, _⟩ | ⟨hh, _, _⟩ <;> omega
+          refine (Canon_oadd b _ _ _).2 ⟨?_, Canon_zero b, Canon_zero b⟩
+          rw [Nat.succPNat_coe]; omega
+      · -- a successor → inr, contradicts h (inl)
+        rw [ha] at h; rcases hm : m.natPred with _ | k <;> rw [hm] at h <;> simp at h
+      · -- a limit → inr, contradicts h (inl)
+        rw [ha] at h; rcases hm : m.natPred with _ | k <;> rw [hm] at h <;> simp at h
+    · -- r successor: E' = oadd a m r', recurse on r
+      rw [hr] at h
+      obtain rfl : oadd a m r' = E' := by simpa using h
+      have hrne : r ≠ 0 := by intro h0; rw [h0] at hr; simp [fundamentalSequence] at hr
+      obtain ⟨hca, hmb, hgr⟩ : Canon b a ∧ (m : ℕ) ≤ b ∧ Good b r := by
+        rcases (Good_oadd b a m r).1 hgood with H | ⟨_, _, hrz⟩ | ⟨_, hrz, _⟩
+        · exact H
+        · exact absurd hrz hrne
+        · exact absurd hrz hrne
+      exact (Canon_oadd b a m r').2 ⟨hmb, hca, ihr r' hgr hr⟩
+    · -- r limit → inr, contradicts h (inl)
+      rw [hr] at h; simp at h
+
+/-- `Good` is preserved by one step of the limit descent at the working index `b`:
+if `Good b E` and `fundamentalSequence E = inr f`, then `Good b (f b)`. -/
+theorem Good_fundSeq (b : ℕ) : ∀ E f, Good b E → fundamentalSequence E = Sum.inr f →
+    Good b (f b) := by
+  intro E
+  induction E with
+  | zero => intro f _ h; exact absurd h (by simp [fundamentalSequence])
+  | oadd a m r iha ihr =>
+    intro f hgood h
+    rw [fundamentalSequence] at h
+    have hbpnat : (b.succPNat : ℕ+) = ⟨b + 1, by omega⟩ := rfl
+    have hbnat : ((b.succPNat : ℕ+) : ℕ) = b + 1 := by simp [Nat.succPNat]
+    rcases hr : fundamentalSequence r with (_ | r') | g
+    · -- r = 0
+      rw [hr] at h
+      have hrz : r = 0 :=
+        (fundamentalSequenceProp_inl_none r).1 (hr ▸ fundamentalSequence_has_prop r)
+      subst hrz
+      rcases ha : fundamentalSequence a with (_ | a') | p
+      · -- a = 0 → inl, contradicts h (inr)
+        rw [ha] at h; rcases hm : m.natPred with _ | k <;> rw [hm] at h <;> simp at h
+      · -- a successor a'
+        rw [ha] at h
+        have hga : Good b a := by
+          rcases (Good_oadd b a m 0).1 hgood with ⟨hca, _, _⟩ | ⟨hca, _, _⟩ | ⟨_, _, hga⟩
+          · exact Good_of_Canon b a hca
+          · exact Good_of_Canon b a hca
+          · exact hga
+        have hca' : Canon b a' := Canon_pred b a a' hga ha
+        rcases hm : m.natPred with _ | k
+        · -- m = 1: f b = oadd a' b.succPNat 0
+          rw [hm] at h
+          obtain rfl : (fun i => oadd a' i.succPNat 0) = f := by simpa using h
+          show Good b (oadd a' b.succPNat 0)
+          exact (Good_oadd b a' b.succPNat 0).2 (Or.inr (Or.inl ⟨hca', hbnat, rfl⟩))
+        · -- m = k+2: f b = oadd a k.succPNat (oadd a' b.succPNat 0)
+          rw [hm] at h
+          obtain rfl : (fun i => oadd a k.succPNat (oadd a' i.succPNat 0)) = f := by simpa using h
+          have hmk : (m : ℕ) = k + 2 := by have := PNat.natPred_add_one m; omega
+          have hcam : Canon b a ∧ (m : ℕ) ≤ b + 1 := by
+            rcases (Good_oadd b a m 0).1 hgood with ⟨hca, hh, _⟩ | ⟨hca, hh, _⟩ | ⟨hh, _, _⟩
+            · exact ⟨hca, by omega⟩
+            · exact ⟨hca, by omega⟩
+            · exfalso; omega
+          show Good b (oadd a k.succPNat (oadd a' b.succPNat 0))
+          refine (Good_oadd b a k.succPNat _).2 (Or.inl ⟨hcam.1, ?_, ?_⟩)
+          · rw [Nat.succPNat_coe]; omega
+          · exact (Good_oadd b a' b.succPNat 0).2 (Or.inr (Or.inl ⟨hca', hbnat, rfl⟩))
+      · -- a limit p
+        rw [ha] at h
+        have hga : Good b a := by
+          rcases (Good_oadd b a m 0).1 hgood with ⟨hca, _, _⟩ | ⟨hca, _, _⟩ | ⟨_, _, hga⟩
+          · exact Good_of_Canon b a hca
+          · exact Good_of_Canon b a hca
+          · exact hga
+        have hgpb : Good b (p b) := iha p hga ha
+        rcases hm : m.natPred with _ | k
+        · -- m = 1: f b = oadd (p b) 1 0
+          rw [hm] at h
+          obtain rfl : (fun i => oadd (p i) 1 0) = f := by simpa using h
+          show Good b (oadd (p b) 1 0)
+          exact (Good_oadd b (p b) 1 0).2 (Or.inr (Or.inr ⟨PNat.one_coe, rfl, hgpb⟩))
+        · -- m = k+2: f b = oadd a k.succPNat (oadd (p b) 1 0)
+          rw [hm] at h
+          obtain rfl : (fun i => oadd a k.succPNat (oadd (p i) 1 0)) = f := by simpa using h
+          have hmk : (m : ℕ) = k + 2 := by have := PNat.natPred_add_one m; omega
+          have hcam : Canon b a ∧ (m : ℕ) ≤ b + 1 := by
+            rcases (Good_oadd b a m 0).1 hgood with ⟨hca, hh, _⟩ | ⟨hca, hh, _⟩ | ⟨hh, _, _⟩
+            · exact ⟨hca, by omega⟩
+            · exact ⟨hca, by omega⟩
+            · exfalso; omega
+          show Good b (oadd a k.succPNat (oadd (p b) 1 0))
+          refine (Good_oadd b a k.succPNat _).2 (Or.inl ⟨hcam.1, ?_, ?_⟩)
+          · rw [Nat.succPNat_coe]; omega
+          · exact (Good_oadd b (p b) 1 0).2 (Or.inr (Or.inr ⟨PNat.one_coe, rfl, hgpb⟩))
+    · -- r successor → inl, contradicts h (inr)
+      rw [hr] at h; simp at h
+    · -- r limit g: f b = oadd a m (g b)
+      rw [hr] at h
+      obtain rfl : (fun i => oadd a m (g i)) = f := by simpa using h
+      have hrne : r ≠ 0 := by intro h0; rw [h0] at hr; simp [fundamentalSequence] at hr
+      obtain ⟨hca, hmb, hgr⟩ : Canon b a ∧ (m : ℕ) ≤ b ∧ Good b r := by
+        rcases (Good_oadd b a m r).1 hgood with H | ⟨_, _, hrz⟩ | ⟨_, hrz, _⟩
+        · exact H
+        · exact absurd hrz hrne
+        · exact absurd hrz hrne
+      show Good b (oadd a m (g b))
+      exact (Good_oadd b a m (g b)).2 (Or.inl ⟨hca, hmb, ihr g hgr hr⟩)
+
+/-- **The general borrowing predecessor.** For every NF `E ≠ 0` satisfying the frontier
+invariant `Good b E`, one Hardy step on `ω^E` (`= oadd E 1 0`) at argument `b` is the
+all-digits-`b` base-`(b+1)` notation of `(b+1)^(evalNat b E) − 1`. Well-founded recursion on
+`repr E`: the limit case closes via the IH on `f b` and `evalNat_fundSeq`; the successor case
+peels the coefficient (`hstep_oadd_coeff`), applies the IH to the predecessor `E'`, and
+reconstructs `E'` via `canon_round_trip` (valid since `Canon_pred` makes `E'` canonical). -/
+theorem hstep_pred_pow (b : ℕ) (hb : 2 ≤ b) :
+    ∀ E : ONote, E.NF → E ≠ 0 → Good b E →
+      hstep (oadd E 1 0) b = toONote (b + 1) ((b + 1) ^ evalNat b E - 1) := by
+  suffices H : ∀ o : Ordinal, ∀ E : ONote, E.repr = o → E.NF → E ≠ 0 → Good b E →
+      hstep (oadd E 1 0) b = toONote (b + 1) ((b + 1) ^ evalNat b E - 1) by
+    exact fun E => H E.repr E rfl
+  intro o
+  induction o using Ordinal.induction with
+  | _ o ih =>
+    intro E hrepr hNF hne hgood
+    have hbpnat : (b.succPNat : ℕ+) = ⟨b + 1, by omega⟩ := rfl
+    rcases hfs : fundamentalSequence E with (_ | E') | f
+    · exact absurd ((fundamentalSequenceProp_inl_none E).1 (hfs ▸ fundamentalSequence_has_prop E)) hne
+    · -- successor: peel the coefficient, recurse on the predecessor, reconstruct
+      obtain ⟨hsucc, hNFimp⟩ :=
+        (fundamentalSequenceProp_inl_some E E').1 (hfs ▸ fundamentalSequence_has_prop E)
+      have hNFE' : E'.NF := hNFimp hNF
+      have hltE' : E'.repr < o := by rw [← hrepr, hsucc]; exact Order.lt_succ _
+      have hcanonE' : Canon b E' := Canon_pred b E E' hgood hfs
+      have hevalE : evalNat b E = evalNat b E' + 1 := evalNat_succ b hfs
+      rcases eq_or_ne E' 0 with hE'0 | hE'0
+      · subst hE'0
+        rw [hstep_oadd_one_of_succ hfs b, hbpnat, hstep_finite_pred (b + 1) (by omega) b,
+          hevalE, evalNat_zero,
+          show (b + 1) ^ (0 + 1) - 1 = b from by rw [pow_succ, pow_zero, one_mul]; omega]
+        exact (toONote_single (b + 1) (by omega) (show 1 ≤ b by omega) (by omega)).symm
+      · rw [hstep_oadd_one_of_succ hfs b, hbpnat,
+          hstep_oadd_coeff b hE'0 (by omega : 2 ≤ b + 1) (by omega : 1 ≤ b + 1),
+          ih E'.repr hltE' E' rfl hNFE' hE'0 (Good_of_Canon b E' hcanonE'), hevalE]
+        have hpos : 1 ≤ (b + 1) ^ evalNat b E' := Nat.one_le_pow _ _ (by omega)
+        rw [show (b + 1) ^ (evalNat b E' + 1) - 1
+              = b * (b + 1) ^ evalNat b E' + ((b + 1) ^ evalNat b E' - 1) from by
+            rw [pow_succ']
+            have hX : (b + 1) * (b + 1) ^ evalNat b E'
+                    = b * (b + 1) ^ evalNat b E' + (b + 1) ^ evalNat b E' := by ring
+            omega,
+          toONote_oadd (b + 1) (by omega) (show 1 ≤ b by omega) (by omega) (by omega),
+          canon_round_trip b hb E' hcanonE' hNFE']
+        rfl
+    · -- limit: recurse on `f b`; `evalNat_fundSeq` lands the size, no reconstruction
+      obtain ⟨_, hbody, _⟩ :=
+        (fundamentalSequenceProp_inr E f).1 (hfs ▸ fundamentalSequence_has_prop E)
+      have hfbne : f b ≠ 0 := fundamentalSequence_inr_ne_zero hfs b
+      have hNFfb : (f b).NF := (hbody b).2.2 hNF
+      have hltfb : (f b).repr < o := by rw [← hrepr]; exact repr_lt_repr (hbody b).2.1
+      rw [hstep_oadd_one_of_limit hfs b,
+        ih (f b).repr hltfb (f b) rfl hNFfb hfbne (Good_fundSeq b E f hgood hfs),
+        evalNat_fundSeq b hfs]
+
 /-- **Lemma B (the `c = 1` predecessor — the lone open core of C3).** One Hardy step on
 `oadd (toONote b L) 1 0` (i.e. `ω^E` for `E = toONote b L`, `L ≥ 1`) at argument `b` is the
 base-`(b+1)` notation of `(b+1)^(bump b L) − 1` — the fully-filled (all-digits-`b`) expansion
@@ -535,7 +861,10 @@ toONote (b+1) ((b+1)^(evalNat b E) − 1)` by well-founded recursion on `repr E`
 Verified syntactically by `native_decide` on small cases (see anchors). -/
 theorem hstep_oadd_one_zero (b : ℕ) (hb : 2 ≤ b) (L : ℕ) (hL : 1 ≤ L) :
     hstep (oadd (toONote b L) 1 0) b = toONote (b + 1) ((b + 1) ^ bump b L - 1) := by
-  sorry
+  have hE : toONote b L ≠ 0 := by rw [Ne, toONote_eq_zero_iff]; omega
+  have hNF : (toONote b L).NF := toONote_NF b hb L
+  have hgood : Good b (toONote b L) := Good_of_Canon b _ (Canon_toONote b hb L)
+  rw [hstep_pred_pow b hb (toONote b L) hNF hE hgood, evalNat_toONote b hb L]
 
 /-- **The Cichoń step (THE C3 CRUX).** One budget-incrementing Hardy step on the base-`b`
 notation of `p ≠ 0`, at argument `b`, equals the notation (in base `b+1`) of the
