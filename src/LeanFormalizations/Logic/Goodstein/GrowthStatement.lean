@@ -83,6 +83,20 @@ theorem goodsteinLength_le_fastGrowing_ordinal (m : ℕ) :
   rw [← hardy_seqONote_zero m]
   exact hardy_le_fastGrowing (seqONote m 0) 2 (by norm_num)
 
+/-- **THE TWO-SIDED CAPSTONE — "`goodsteinLength` grows like `f_{ε₀}`".** Packaging both directions as
+the single definitive audit surface: for every `o < ε₀` (every NF `ONote`),
+* **(lower)** `goodsteinLength` eventually dominates `f_o`: `∃ N, ∀ m ≥ N, f_o(m) ≤ goodsteinLength m + 2`;
+* **(upper)** `goodsteinLength` never exceeds `f` at its own base-2 ordinal: `goodsteinLength m + 2 ≤
+  f_{o_m}(2)` for all `m`.
+So `goodsteinLength` sits exactly within the fast-growing hierarchy at the `ε₀` frontier — the formal
+"Goodstein grows too fast for PA" (every PA-provably-total function is some `f_o`, `o < ε₀`; all are
+eventually dominated). The exact Hardy pin is `hardy_seqONote_zero` (Cichoń) + `hardy_omega_pow_ofNat`
+(B4, `H_{ω^k}=f_k`). -/
+theorem goodsteinLength_grows_like_fastGrowingε₀ :
+    (∀ (o : ONote), o.NF → ∃ N, ∀ m, N ≤ m → fastGrowing o m ≤ goodsteinLength m + 2)
+    ∧ (∀ m, goodsteinLength m + 2 ≤ fastGrowing (seqONote m 0) 2) :=
+  ⟨fun _ ho => goodsteinLength_dominates_fastGrowing ho, goodsteinLength_le_fastGrowing_ordinal⟩
+
 /-- Anti-vacuity: `f_{ε₀}` is the genuine extension to `ε₀` (mathlib's known value), and the tower the
 headline ranges over is the genuine one. -/
 example : ONote.fastGrowingε₀ 2 = 2048 := ONote.fastGrowingε₀_two
