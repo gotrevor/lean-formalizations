@@ -429,4 +429,24 @@ theorem mertens_first_prime :
   rw [heq]
   exact mertens_first.sub htail
 
+/-- `(1 : ℝ)` is `o(log N)` as `N → ∞` (since `log N → ∞`).  Bridge for the `~ log` capstones. -/
+private lemma one_isLittleO_log :
+    (fun _ : ℕ ↦ (1 : ℝ)) =o[atTop] (fun N : ℕ ↦ Real.log N) := by
+  have hlog : Tendsto (fun N : ℕ ↦ Real.log N) atTop atTop :=
+    Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop
+  refine (Asymptotics.isLittleO_one_left_iff ℝ).mpr ?_
+  simp only [Real.norm_eq_abs]
+  exact tendsto_abs_atTop_atTop.comp hlog
+
+/-- **The prime sum is asymptotic to `log`.** `∑_{p ≤ N} (log p)/p ~ log N` — the multiplicative form
+of Mertens' first theorem, immediate from the `O(1)` bound. -/
+theorem primeSumDiv_isEquivalent_log :
+    primeSumDiv ~[atTop] (fun N : ℕ ↦ Real.log N) :=
+  mertens_first_prime.trans_isLittleO one_isLittleO_log
+
+/-- **The von Mangoldt sum is asymptotic to `log`.** `∑_{n ≤ N} Λ(n)/n ~ log N`. -/
+theorem vonMangoldtSumDiv_isEquivalent_log :
+    vonMangoldtSumDiv ~[atTop] (fun N : ℕ ↦ Real.log N) :=
+  mertens_first.trans_isLittleO one_isLittleO_log
+
 end LeanFormalizations.Mertens
