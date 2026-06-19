@@ -206,16 +206,18 @@ theorem theta_lower {n : ℕ} (hn : 4 ≤ n) :
 *theorem* (proven by Nagura in 1952), not a conjecture; it is 🟡 debt, formalizable but gated on
 infrastructure mathlib does not yet provide.
 
-**Attack plan** (mirrors mathlib's `Nat.exists_prime_lt_and_le_two_mul`, sharpened):
-* Lower bound on the central binomial: `4^n ≤ n · C(2n,n)` (`Nat.four_pow_lt_mul_centralBinom`).
-* If there were **no** prime in `(n, 6n/5]`, the primes `> n` dividing `C(2n,n)` lie in `(6n/5, 2n]`,
-  so by `centralBinom_factorization_small`-style bounds plus `primorial_le_four_pow` the coefficient is
-  bounded above by `(2n)^√(2n) · 4^(6n/5) · (contribution of (6n/5,2n])`.
-* The missing ingredient vs. Bertrand: one must *lower-bound* the prime mass in `(6n/5, 2n]` — i.e. a
-  Chebyshev lower bound `θ(x) ≥ c·x` (equivalently `ψ(x) ≥ log C(2n,n) ≥ n·log 4 − log n` via
-  `C(2n,n) ≤ ∏_{p^k ≤ 2n} p = exp(ψ(2n))`). mathlib has the upper Chebyshev bound only.
-* Small `n ∈ [25, N₀)` are discharged by an explicit descending prime list (as in Bertrand's small
-  cases). Submitted to Aristotle as a self-contained job. -/
+**Attack plan** (mirrors mathlib's `Nat.exists_prime_lt_and_le_two_mul`, sharpened). The Chebyshev
+lower-bound infrastructure above (`psi_lower`/`theta_lower`) is the elementary part; what remains is
+the *precise* numerical inequality.
+* `4^n ≤ n · C(2n,n)` (`Nat.four_pow_lt_mul_centralBinom`); split `C(2n,n)`'s factorization keeping the
+  `(6n/5, 2n]` primes (sharpen `centralBinom_factorization_small`/`centralBinom_le_of_no_bertrand_prime`).
+* ⚠️ DEFINITIVE (computed): the *crude* elementary constants are **insufficient** for ratio `6/5` —
+  with `theta_lower` (`θ(x) ≳ (log4/2)x`) the bound is `C(2n,n) ≤ (2n)^√(2n)·4^(31n/15)`, and
+  `31/15 ≈ 2.07 > 1`, so it does NOT contradict `4ⁿ ≤ n·C(2n,n)`. (`log4/2 ≈ 0.69` is the best
+  *elementary* `θ` constant; the true `θ(x)~x` needs PNT.) Nagura needs the precise *tuned* inequality
+  — the analogue of `bertrand_main_inequality` re-derived for `6/5`, valid `n ≥ N₀`, with
+  `n ∈ [25, N₀)` by `decide`. That analytic computation is the genuine remaining content.
+* Submitted to Aristotle (`1644a603`). -/
 theorem nagura_prime {n : ℕ} (hn : 25 ≤ n) : ∃ p, p.Prime ∧ n < p ∧ 5 * p ≤ 6 * n := by
   sorry
 

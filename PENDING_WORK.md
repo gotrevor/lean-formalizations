@@ -17,15 +17,19 @@ except `nagura_prime`):
   Chebyshev θ LOWER bound mathlib was missing — built from scratch this lap, axiom-clean.**
 
 **The crux `nagura_prime` — remaining work (the θ-lower infra is now DONE):**
-1. **The refined central-binomial argument (PRIMARY).** ⚠️ IMPORTANT: `theta_lower`'s constant is the
-   *crude* Chebyshev one (`θ(x) ≳ (log4/2)x ≈ 0.69x`); with the crude upper `θ(x) ≤ log4·x ≈ 1.386x`,
-   `θ(cn) − θ(n) > 0` needs `c > 2` — i.e. these bounds ALONE only recover Bertrand, NOT Nagura's `6/5`.
-   Nagura genuinely needs the *factorization split* of `C(2n,n)` (sharpen mathlib's
-   `centralBinom_le_of_no_bertrand_prime`): under "no prime in `(n,6n/5]`", primes `>n` dividing
-   `C(2n,n)` lie in `(6n/5,2n]`, so `C(2n,n) ≤ (2n)^√(2n)·4^(2n/3)·∏_{6n/5<p≤2n}p`; bound the product by
-   `exp(θ(2n)−θ(6n/5))` (`theta_lower`/`theta_le_log4_mul_x` now available) and contradict
-   `4ⁿ ≤ n·C(2n,n)` for large `n`. The delicate part is the constant accounting across the ranges —
-   this is the real multi-lap content. Small `n∈[25,N₀)` by explicit prime list / `decide`.
+1. **The precise tuned numerical inequality (PRIMARY).** ⚠️⚠️ DEFINITIVE FINDING (computed this lap —
+   do NOT chase the crude path): the crude elementary Chebyshev bounds are **provably insufficient** for
+   `6/5`. With `theta_lower` (`θ(x) ≳ (log4/2)x`) + crude upper (`θ(x) ≤ log4·x`), the central-binomial
+   split gives, under "no prime in `(n,6n/5]`",
+   `C(2n,n) ≤ (2n)^√(2n)·4^(2n/3)·∏_{6n/5<p≤2n}p ≤ (2n)^√(2n)·4^(2n/3)·4^(2n−3n/5) = (2n)^√(2n)·4^(31n/15)`,
+   and `31/15 ≈ 2.07 > 1`, so it does **not** contradict `4ⁿ ≤ n·C(2n,n)`. (`θ(x) ≳ 0.69x` is the best
+   *elementary* lower constant — lcm/central-binom cap it at `log4/2`; the true `θ(x)~x` needs PNT.)
+   So Nagura's `6/5` genuinely requires the **precise tuned numerical inequality** — the analogue of
+   mathlib's `bertrand_main_inequality` (`Mathlib/NumberTheory/Bertrand.lean:126`) re-derived for ratio
+   `6/5` and valid for `n ≥ N₀`, with `n ∈ [25, N₀)` by `decide`/explicit prime list. That is a real
+   analytic computation — the genuine multi-lap content, best started fresh. The factorization split
+   (sharpen `centralBinom_factorization_small`/`centralBinom_le_of_no_bertrand_prime` to keep the
+   `(6n/5,2n]` primes) is the mechanical scaffolding around it.
 2. **Aristotle.** Job `1644a603` (`aris-nagura`) grinding the self-contained statement. Harvest when
    IDLE: download, kernel-verify, `#print axioms`, port.
 3. **Weaker explicit rung.** Any ratio `c<2` with a provable gap gives constant `3/(2c) > 3/4`. Same
