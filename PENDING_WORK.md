@@ -9,30 +9,26 @@
 reachability), `osucc` + strict step. General index monotonicity `fastGrowing_le_of_lt` /
 `hardy_le_of_lt` added. `Logic/FastGrowing/*` is sorry-free.
 
-### NEXT CRUX: C2 — the semantic bridge `toOrdinal` ↔ `ONote.repr` (then C3)
-The crown jewel C3 ("`goodsteinLength` grows like `f_{ε₀}`") = C2 + A4. C2 is the prerequisite.
-`Engine.toOrdinal b n` reads `n` in hereditary base `b` and replaces `b` by `ω` — i.e. it IS
-the ordinal of the CNF tree of `n`. So it equals `ONote.repr` of the corresponding notation.
+### C2 — the semantic bridge `toOrdinal` ↔ `ONote.repr`  ✅ DONE (2026-06-19 lap 2)
+`Logic/Goodstein/Growth.lean` (axiom-clean): `toONote b n` (the computable notation),
+`repr_toONote : (toONote b n).repr = toOrdinal b n`, `toONote_NF`, and the descent on `ONote`:
+`seqONote m k := toONote (k+2) (goodsteinSeq m k)`, `repr_seqONote = Engine.seqOrd m k`, and
+**`seqONote_lt`** (`goodsteinSeq m k ≠ 0 ⟹ seqONote m (k+1) < seqONote m k`). The Goodstein
+ε₀-descent now lives on the same `ONote` as the fast-growing growth theory.
 
-**Three attack paths for C2 (pick path 1):**
-1. **`toONote` bridge (most direct).** Define `toONote : ℕ → ℕ → ONote` mirroring
-   `toOrdinal`'s recursion: `toONote b n = if n=0 then 0 else oadd (toONote b (log b n))
-   ⟨n / b^(log b n), _pos_⟩ (toONote b (n % b^(log b n)))`. Prove (a) `repr (toONote b n) =
-   toOrdinal b n` (same recursion, `toOrdinal_pos` unfolding); (b) `(toONote b n).NF` (the
-   leading-exponent ordering mirrors `toOrdinal_mono_and_bound`'s bound part — `log b r < e'`
-   gives the tail exponent `<` head exponent). The coefficient is positive since
-   `b^(log b n) ≤ n`. This makes the Goodstein descent (`seqOrd_step`) an `ONote` `<`-descent.
-2. **Direct on `Ordinal`.** Skip `toONote`; relate `seqOrd m k` descent to `fastGrowingε₀`
-   via the Hardy hierarchy on `Ordinal` (`exists_fundamental_sequence`). Heavier; the abstract
-   `Ordinal` fundamental-sequence API is separate from `ONote`'s computable one.
-3. **Feed Aristotle** a bounded `repr (toONote b n) = toOrdinal b n` once `toONote` is defined
-   (self-contained, inlines `toOrdinal`/`log`/`pow` facts).
-
-### C3 — the growth theorem (after C2)
-`goodsteinLength` eventually dominates every `fastGrowing o` (`o < ε₀`) ↔ tracks
-`fastGrowingε₀`. State as a thin audit-surface theorem delegating to the engine. Classical:
-`goodsteinLength` ≈ a Hardy function `H` of the starting CNF; combine `hardy_le_of_lt` (now
-available) with the bridge. Deep, multi-lap.
+### NEXT CRUX: C3 — the growth theorem (`goodsteinLength` tracks `f_{ε₀}`)
+The crown jewel = C2 + A4. `goodsteinLength m` = the length of the strict descent
+`seqONote m 0 > seqONote m 1 > … > 0`. Classically this step-count is a **Hardy** function of
+the starting notation `seqONote m 0` (read in base 2): `goodsteinLength m ≈ H_{seqONote m 0}(2)`
+— the Hardy hierarchy is exactly "number of steps of the unit-decrement descent". Attack:
+1. **Hardy-counts-steps.** Define/relate: for the standard fundamental-sequence descent,
+   `H_α(n)` = the number of `n`-budget steps from `α` to `0`. Then identify `goodsteinLength`
+   with `H_{seqONote m 0}(·)` via `seqONote_lt` (the per-step drop). Needs a Hardy "step
+   counter" lemma — likely a new induction on the descent length. **The genuine remaining work.**
+2. **Domination corollary.** With C3's identity + A4 (`fastGrowing_lt_fastGrowingε₀`) +
+   `hardy_le_of_lt`, derive `goodsteinLength` eventually outgrows every `fastGrowing o`.
+3. State the headline as a thin audit-surface theorem delegating to the engine (like
+   `Goodstein/Statement.lean`). Deep, multi-lap; `seqONote_lt` is the running start.
 
 ### B ladder (Hardy) — lower priority
 B2/B3 done. **B4** (`H_{ω^α}=f_α`) is a trap under mathlib's `ω[n]=n+1` (measured: not a

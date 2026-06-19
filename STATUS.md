@@ -7,14 +7,24 @@
 > `goodsteinLength` → `fastGrowingε₀`. **Section A (growth theory of `fastGrowing`) is now
 > COMPLETE and axiom-clean — A1/A2/A3/A4 all proved**, incl. the headline domination crux
 > `fastGrowing_lt_fastGrowingε₀` (every fixed `f_o` is eventually `< f_{ε₀}`). Modules
-> `Logic/FastGrowing/{Basic,Hardy,Domination}.lean` are **`sorry`-free**. Next frontier:
-> **C2/C3** (the `goodsteinLength` ↔ hierarchy bridge — the crown jewel) and the Hardy `B`
-> ladder. The five threads below are COMPLETE/axiom-clean and frozen — don't touch them.
+> `Logic/FastGrowing/{Basic,Hardy,Domination}.lean` are **`sorry`-free**. **C2 (the
+> `toOrdinal` ↔ `ONote.repr` bridge) is also done** (`Logic/Goodstein/Growth.lean`): the
+> Goodstein descent is now on `ONote` (`seqONote_lt`). Next frontier: **C3** (the crown jewel
+> — `goodsteinLength` tracks `f_{ε₀}` via Hardy-counts-steps) and the Hardy `B` ladder. The
+> five threads below are COMPLETE/axiom-clean and frozen — don't touch them.
 
 ## Where it stands
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 lap 2b (C2 bridge built — axiom-clean):** new `Logic/Goodstein/Growth.lean`
+  crosses `Engine.toOrdinal` ↔ `ONote.repr`: `toONote b n` (computable notation),
+  `repr_toONote : repr (toONote b n) = toOrdinal b n`, `toONote_NF`, and the Goodstein
+  descent on `ONote` — `seqONote m k := toONote (k+2) (goodsteinSeq m k)` with
+  `seqONote_lt` (`G_k ≠ 0 ⟹ seqONote m (k+1) < seqONote m k`), transported from
+  `Engine.seqOrd_step`. The termination descent now lives on the same `ONote` as the A4
+  growth theory. 5 `native_decide` anchors; all `#print axioms`-clean. **Remaining: C3**
+  (`goodsteinLength` tracks `f_{ε₀}` — the Hardy-counts-steps identity).
 - **2026-06-19 lap 2 (A4 CLOSED — the headline growth crux, axiom-clean):** proved
   `fastGrowing_lt_fastGrowingε₀` (`∀ NF o, ∃ N, ∀ n ≥ N, f_o(n) < f_{ε₀}(n)`) — the
   unboundedness that *is* the Kirby–Paris growth gap. The lone `Domination.lean` sorry is
@@ -147,5 +157,5 @@ expedition is the growth theory; **Section A is now done**. Remaining:
 
 ## Pointers
 - Open items / attack paths: **`PENDING_WORK.md`** · resume baton: newest **`HANDOFF-*.md`** · charter: `DIRECTION.md`
-- Frontier files: `Logic/FastGrowing/{Basic,Domination,Hardy}.lean` (Section A ✅ sorry-free) · `Logic/Goodstein/{Engine,Length}.lean` (C2/C3 next)
+- Frontier files: `Logic/FastGrowing/{Basic,Domination,Hardy}.lean` (Section A ✅) · `Logic/Goodstein/Growth.lean` (C2 ✅ bridge+descent) · `Logic/Goodstein/Engine.lean` (C3 reuses `seqOrd`/`toOrdinal`)
 - No `ON-LINE-REQUEST.md` open (the fast-growing norm ask was self-resolved this lap).

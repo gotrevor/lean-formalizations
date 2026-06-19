@@ -16,11 +16,15 @@ is the newest **`HANDOFF-<date>.md`**; open items/attack paths live in **`PENDIN
 - The `ON-LINE-REQUEST` fast-growing-norm ask was **self-resolved** (the `norm` derivation);
   request file removed.
 
+- **C2 DONE** (`Logic/Goodstein/Growth.lean`): `toONote`, `repr_toONote`, `toONote_NF`, and
+  the descent on `ONote` `seqONote_lt`. All axiom-clean.
+
 ## Next (see PENDING_WORK "ACTIVE FRONTIER")
-1. **C2 — the bridge `toOrdinal` ↔ `ONote.repr`** (path 1: define `toONote`, prove
-   `repr ∘ toONote = toOrdinal` + NF). The crown-jewel prerequisite.
-2. **C3** — `goodsteinLength` tracks `fastGrowingε₀` (= C2 + A4). Deep, multi-lap.
-3. B4 (`H_{ω^α}=f_α`) — long-horizon trap under mathlib's `ω[n]=n+1`.
+1. **C3 — the growth theorem** (crown jewel): `goodsteinLength` tracks `fastGrowingε₀`.
+   `goodsteinLength m` = length of the `seqONote m ·` descent; classically a **Hardy**
+   function of `seqONote m 0`. Needs a "Hardy-counts-steps" identity, then combine with A4 +
+   `hardy_le_of_lt`. Deep, multi-lap; `seqONote_lt` is the running start.
+2. B4 (`H_{ω^α}=f_α`) — long-horizon trap under mathlib's `ω[n]=n+1`.
 
 ## Discipline
 - Commit every green `lake build`. NEVER push. Verify `#print axioms` clean on closed theorems.
