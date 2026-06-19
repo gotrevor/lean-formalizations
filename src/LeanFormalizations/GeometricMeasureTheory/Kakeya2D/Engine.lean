@@ -12,7 +12,7 @@ The headline `dimH S = 2` splits into the two inequalities:
 Only `two_le_dimH` uses `IsKakeya`; the upper bound holds for every set in the plane.
 -/
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Defs
-import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Frostman
+import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Cover
 import Mathlib.Analysis.Normed.Lp.MeasurableSpace
 
 open Set MeasureTheory
@@ -28,29 +28,51 @@ theorem dimH_le_two (S : Set (EuclideanSpace ℝ (Fin 2))) : dimH S ≤ 2 := by
   calc dimH S ≤ dimH (univ : Set (EuclideanSpace ℝ (Fin 2))) := dimH_mono (subset_univ S)
     _ = 2 := huniv
 
+/-- **The deep crux (Davies 1971, Hausdorff content form), as one named obligation.** For a planar
+Kakeya set `S` and every exponent `0 < d < 2`, the `d`-dimensional **Hausdorff content** of `S` is
+bounded below: there is a scale `r > 0` and a constant `c > 0` such that every fine countable cover
+of `S` has `∑ₙ ediam(tₙ)^d ≥ c`.
+
+This is the genuine remaining content of the planar Kakeya theorem and the lone `sorry` of the run.
+The proof (multi-lap) is Córdoba's argument run on an arbitrary cover: a dyadic pigeonhole reduces
+the cover to a dominant scale `δ`, where the K4 single-scale tube count `volume_thickening_log_ge`
+(`vol(Sδ) ≳ 1/log(1/δ)`) forces enough cover pieces that `∑ ediam^d ≳ δ^{d-2}/log ≥ c`. The reduction
+machinery (`Cover.lean`) turns this content bound into `μH[d] S ≠ 0`. See `PLAN.md` / `PENDING_WORK.md`. -/
+theorem kakeya_hausdorffContentBound
+    {S : Set (EuclideanSpace ℝ (Fin 2))} (h : IsKakeya S) {d : ℝ} (hd0 : 0 < d) (hd2 : d < 2) :
+    HausdorffContentBound S d := by
+  -- **The remaining deep obligation (K5 core):** the multi-scale Córdoba cover-content estimate.
+  sorry
+
 /-- **The concrete crux (Davies 1971, measure form).** For a Kakeya set `S ⊆ ℝ²`, every
 `d`-dimensional Hausdorff measure with `d < 2` is *positive*: `μH[d] S ≠ 0`.
 
 This is the genuine analytic content; `two_le_dimH` is a free `ℝ≥0∞`-density wrapper around it.
 The route to discharge it is the Córdoba `L²`/bush argument (`PLAN.md`, ladder K2–K5):
-δ-tube overlap bound ⟹ Minkowski-content lower bound `vol(Sδ) ≳ 1/log(1/δ)` ⟹ a Frostman
-measure witnessing `μH[d] S > 0` for every `d < 2`.
+δ-tube overlap bound ⟹ Minkowski-content lower bound `vol(Sδ) ≳ 1/log(1/δ)` ⟹ a Hausdorff content
+lower bound witnessing `μH[d] S > 0` for every `d < 2`.
 
-**Status (this run).** K2–K4 are **proven, axiom-clean**: the content bound
-`vol(Sδ) ≳ 1/log(1/δ)` is `volume_thickening_log_ge`. K5 brick 1 (`hausdorffMeasure_ne_zero_of_frostmanExists`,
-`Frostman.lean`) reduces this crux to **constructing a Frostman measure** of every exponent `d < 2`
-on `S` (`FrostmanMeasureExists S d`) — done below via that wrapper. The lone remaining `sorry` is
-now exactly that measure construction (the dyadic mass-distribution limit fed by K4), not the raw
-Hausdorff statement. -/
+**Status (this run).** K2–K4 are **proven, axiom-clean**: the content bound `vol(Sδ) ≳ 1/log(1/δ)`
+is `volume_thickening_log_ge`. K5's measure-free reduction (`Cover.lean`,
+`hausdorffMeasure_ne_zero_of_contentBound`) turns the crux into the **Hausdorff content bound**
+`kakeya_hausdorffContentBound` — the lone remaining `sorry`. The `d = 0` endpoint is free from
+monotonicity of `μH` in `d` against the `d = 1` content bound. -/
 theorem hausdorffMeasure_pos_of_isKakeya
     (S : Set (EuclideanSpace ℝ (Fin 2))) (h : IsKakeya S) :
     ∀ d : ℝ≥0, (d : ℝ≥0∞) < 2 → μH[(d : ℝ)] S ≠ 0 := by
-  intro d _
-  refine hausdorffMeasure_ne_zero_of_frostmanExists (S := S) (d := (d : ℝ)) ?_
-  -- **The remaining deep obligation (K5 core):** build the Frostman measure of exponent `d` on the
-  -- Kakeya set from the K4 content bound, by distributing mass over the δ-tube family across dyadic
-  -- scales. See `PLAN.md` / `PENDING_WORK.md`.
-  sorry
+  -- For every real exponent `0 < e < 2`, content bound ⟹ positive Hausdorff measure.
+  have key : ∀ e : ℝ, 0 < e → e < 2 → μH[e] S ≠ 0 := fun e he0 he2 =>
+    hausdorffMeasure_ne_zero_of_contentBound he0 (kakeya_hausdorffContentBound h he0 he2)
+  intro d hd
+  rcases eq_or_lt_of_le (zero_le d) with hd0 | hd0
+  · -- `d = 0`: `μH[0] S ≥ μH[1] S ≠ 0` by monotonicity of `μH` in the exponent.
+    have hd0R : (d : ℝ) = 0 := by exact_mod_cast hd0.symm
+    have hmono : μH[(1 : ℝ)] S ≤ μH[(d : ℝ)] S := by
+      rw [hd0R]; exact Measure.hausdorffMeasure_mono (by norm_num) S
+    exact fun hz => key 1 one_pos (by norm_num) (le_antisymm (hz ▸ hmono) (zero_le _))
+  · -- `0 < d < 2`.
+    have hd2R : (d : ℝ) < 2 := by exact_mod_cast hd
+    exact key d (by exact_mod_cast hd0) hd2R
 
 /-- **Davies 1971.** A Kakeya set in `ℝ²` has Hausdorff dimension at least `2`.
 
