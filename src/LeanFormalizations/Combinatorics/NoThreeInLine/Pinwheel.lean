@@ -312,18 +312,104 @@ theorem pinwheel_eq_fst_same_xres {p : ℕ} {P Q : ℕ × ℕ} (hfst : P.1 = Q.1
     (P.1 : ZMod p) = (Q.1 : ZMod p) :=
   congrArg (fun n : ℕ => (n : ZMod p)) hfst
 
-/-- **Crux (disclosed).** The HJSW pinwheel is no-three-in-line. The mechanical scaffolding
-(`pinwheel_card`, `pinwheel_grid`), the reduction to two same-class points
-(`pinwheel_collinear_same_xres`), the same-class impossibility (`pinKeep_not_collinear`), the slope
-`0`/`∞` safety (`pinwheel_eq_*`) and the σ-reflection algebra (`hyperbola_slope_one_reflection` /
-`_neg_one_reflection`) are all in place; the remaining content is the cross-class slope-`±1` incidence
-— the partner class's three kept points sit on lines offset by exactly `±p` from the diagonal.
+/-- A kept point of a valid class is a pinwheel point. -/
+theorem pinKeep_mem_pinwheel {p k a : ℕ} (ha1 : 1 ≤ a) (ha2 : a < p) {x : ℕ × ℕ}
+    (hx : x ∈ pinKeep p k a) : x ∈ pinwheel p k :=
+  Finset.mem_biUnion.mpr ⟨a, Finset.mem_Ico.mpr ⟨ha1, ha2⟩, hx⟩
 
-This statement is **true** (brute-verified no-three for all primes `p ≤ 17`, every `k`), unlike the
-earlier `{0,p}²`-corner construction which was infeasible. -/
+/-- On a collinear triple whose first two points share an `x`-coordinate (but differ), the third
+shares it too (the line is vertical). -/
+private theorem third_fst_eq {P Q R : ℕ × ℕ}
+    (hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)))
+    (hx : P.1 = Q.1) (hy : P.2 ≠ Q.2) : R.1 = P.1 := by
+  have hd := collinear_imp_det3_zero hcol
+  simp only [toReal, det3] at hd
+  have h1 : (Q.1 : ℝ) = P.1 := by exact_mod_cast hx.symm
+  have h2 : (Q.2 : ℝ) ≠ P.2 := fun h => hy (by exact_mod_cast h.symm)
+  rw [h1, sub_self, zero_mul, zero_sub, neg_eq_zero] at hd
+  have hr : (R.1 : ℝ) - P.1 = 0 := (mul_eq_zero.mp hd).resolve_right (sub_ne_zero.mpr h2)
+  have : (R.1 : ℝ) = P.1 := by linarith
+  exact_mod_cast this
+
+/-- On a collinear triple whose first two points share a `y`-coordinate (but differ), the third
+shares it too (the line is horizontal). -/
+private theorem third_snd_eq {P Q R : ℕ × ℕ}
+    (hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)))
+    (hy : P.2 = Q.2) (hx : P.1 ≠ Q.1) : R.2 = P.2 := by
+  have hd := collinear_imp_det3_zero hcol
+  simp only [toReal, det3] at hd
+  have h1 : (Q.2 : ℝ) = P.2 := by exact_mod_cast hy.symm
+  have h2 : (Q.1 : ℝ) ≠ P.1 := fun h => hx (by exact_mod_cast h.symm)
+  rw [h1, sub_self, mul_zero, sub_zero] at hd
+  have hr : (R.2 : ℝ) - P.2 = 0 := (mul_eq_zero.mp hd).resolve_left (sub_ne_zero.mpr h2)
+  have : (R.2 : ℝ) = P.2 := by linarith
+  exact_mod_cast this
+
+/-- **Same-class core.** If `P, Q` lie in the *same* residue class `a`, `R` is any other pinwheel
+point, the three are distinct and collinear — then they cannot exist. Vertical (`P.1 = Q.1`) and
+horizontal (`P.2 = Q.2`) configurations force `R` into class `a` too (then `pinKeep_not_collinear`);
+the remaining configuration is the cross-class slope-`±1` diagonal — the genuine HJSW incidence. -/
+theorem pinwheel_same_class_aux {p k : ℕ} (hp : p.Prime) (hodd : Odd p) (hk : (k : ZMod p) ≠ 0)
+    {a : ℕ} (ha1 : 1 ≤ a) (ha2 : a < p) {P Q R : ℕ × ℕ}
+    (hPa : P ∈ pinKeep p k a) (hQa : Q ∈ pinKeep p k a) (hR : R ∈ pinwheel p k)
+    (hPQ : P ≠ Q) (hPR : P ≠ R) (hQR : Q ≠ R)
+    (hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ))) : False := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  obtain ⟨c, hc1, hc2, hRc⟩ := mem_pinwheel hR
+  by_cases hRa : R ∈ pinKeep p k a
+  · exact pinKeep_not_collinear hodd ha2 hPa hQa hRa hPQ hPR hQR hcol
+  have hca : c ≠ a := by rintro rfl; exact hRa hRc
+  by_cases hx : P.1 = Q.1
+  · -- vertical line: `R` shares the `x`-coordinate, hence class `a`
+    have hPy : P.2 ≠ Q.2 := fun h => hPQ (Prod.ext hx h)
+    have hRx : R.1 = P.1 := third_fst_eq hcol hx hPy
+    have he : (R.1 : ZMod p) = (P.1 : ZMod p) := by rw [hRx]
+    exact hca (pinKeep_xres_eq_class hodd hc2 ha2 hRc hPa he)
+  by_cases hy : P.2 = Q.2
+  · -- horizontal line: `R` shares the `y`-coordinate, hence class `a`
+    have hRy : R.2 = P.2 := third_snd_eq hcol hy hx
+    have hP_pw : P ∈ pinwheel p k := pinKeep_mem_pinwheel ha1 ha2 hPa
+    have he : (R.1 : ZMod p) = (P.1 : ZMod p) :=
+      pinwheel_eq_snd_same_xres hp hodd hk hR hP_pw hRy
+    exact hca (pinKeep_xres_eq_class hodd hc2 ha2 hRc hPa he)
+  · -- the cross-class slope-`±1` diagonal incidence (the genuine HJSW crux)
+    sorry
+
+/-- Collinearity depends only on the underlying set, so the triple may be reordered. -/
+private theorem collinear_reorder {a b c d e f : ℝ × ℝ}
+    (hsub : ({d, e, f} : Set (ℝ × ℝ)) ⊆ {a, b, c})
+    (h : Collinear ℝ ({a, b, c} : Set (ℝ × ℝ))) : Collinear ℝ ({d, e, f} : Set (ℝ × ℝ)) :=
+  h.subset hsub
+
+/-- **Crux (one disclosed sorry, now isolated to the slope-`±1` diagonal).** The HJSW pinwheel is
+no-three-in-line. Reduced to `pinwheel_same_class_aux` (whose only open case is the cross-class
+slope-`±1` incidence). True — brute-verified for all primes `p ≤ 17`, every `k`. -/
 theorem pinwheel_noThree {p k : ℕ} (hp : p.Prime) (hodd : Odd p) (hk : (k : ZMod p) ≠ 0) :
     NoThreeCollinear (pinwheel p k) := by
-  sorry
+  haveI : Fact p.Prime := ⟨hp⟩
+  intro P hP Q hQ R hR hcol
+  by_contra hcon
+  push_neg at hcon
+  obtain ⟨hPQ, hPR, hQR⟩ := hcon
+  obtain ⟨aP, haP1, haP2, hPaP⟩ := mem_pinwheel hP
+  obtain ⟨aQ, haQ1, haQ2, hQaQ⟩ := mem_pinwheel hQ
+  obtain ⟨aR, haR1, haR2, hRaR⟩ := mem_pinwheel hR
+  rcases pinwheel_collinear_same_xres hp hodd hk hP hQ hR hcol with h | h | h
+  · -- P, Q share a class
+    obtain rfl : aP = aQ := pinKeep_xres_eq_class hodd haP2 haQ2 hPaP hQaQ h
+    exact pinwheel_same_class_aux hp hodd hk haP1 haP2 hPaP hQaQ hR hPQ hPR hQR hcol
+  · -- P, R share a class; reorder to (P, R, Q)
+    obtain rfl : aP = aR := pinKeep_xres_eq_class hodd haP2 haR2 hPaP hRaR h
+    refine pinwheel_same_class_aux hp hodd hk haP1 haP2 hPaP hRaR hQ hPR hPQ hQR.symm
+      (collinear_reorder ?_ hcol)
+    intro y hy
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hy ⊢; tauto
+  · -- Q, R share a class; reorder to (Q, R, P)
+    obtain rfl : aQ = aR := pinKeep_xres_eq_class hodd haQ2 haR2 hQaQ hRaR h
+    refine pinwheel_same_class_aux hp hodd hk haQ1 haQ2 hQaQ hRaR hP hQR hPQ.symm hPR.symm
+      (collinear_reorder ?_ hcol)
+    intro y hy
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hy ⊢; tauto
 
 /-- **The HJSW `3(p−1)` lower bound (existence form).** For an odd prime `p` the `2p × 2p` grid
 carries `3(p−1)` points with no three collinear — modulo the slope-incidence crux `pinwheel_noThree`. -/
