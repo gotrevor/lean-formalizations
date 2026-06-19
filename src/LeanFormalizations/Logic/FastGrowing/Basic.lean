@@ -179,6 +179,21 @@ theorem fastGrowing_fundSeq_step {o : ONote} {f : ℕ → ONote}
     fastGrowing (f n) (n + 1) ≤ fastGrowing (f (n + 1)) (n + 1) := by
   sorry
 
+/-- **The crux for "successor-chain" limits** — proved in full (axiom-clean).
+Whenever the fundamental sequence of `o` is a *successor chain*, i.e. each `f (n+1)`
+is the notation-successor of `f n` (`fundamentalSequence (f (n+1)) = inl (some (f n))`),
+the index step is just `fastGrowing_le_succ_index`. This covers every limit of the form
+`β + ω` (e.g. `ω, ω·k, ω+k`), whose fundamental sequence increments a finite tail.
+
+Consequently the remaining genuine difficulty in `fastGrowing_fundSeq_step` lives
+*only* at limits-of-limits (`ω^ω`, `ω^(ω+1)`, …), where `f n` is itself a limit and the
+chain is not successor-stepwise — that is the sharp residue of the A3 crux. -/
+theorem fastGrowing_fundSeq_step_of_succ {o : ONote} {f : ℕ → ONote}
+    (_h : fundamentalSequence o = Sum.inr f)
+    (hsucc : ∀ k, fundamentalSequence (f (k + 1)) = Sum.inl (some (f k))) (n : ℕ) :
+    fastGrowing (f n) (n + 1) ≤ fastGrowing (f (n + 1)) (n + 1) :=
+  fastGrowing_le_succ_index (hsucc n) (Nat.succ_le_succ (Nat.zero_le n))
+
 /-- **Monotonicity in the argument, successor form** `f_o(n) ≤ f_o(n+1)`.
 Well-founded recursion on `o`; the limit case is reduced to the single crux
 `fastGrowing_fundSeq_step`, everything else is `le_fastGrowing` + iterate monotonicity. -/
