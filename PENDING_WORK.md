@@ -1,5 +1,26 @@
 # PENDING_WORK — no-three-in-line / HJSW frontier (branch `ntl-hjsw`)
 
+## 📋 2026-06-19 (final) — FULL INVENTORY (per how-to-get-unblocked.md)
+**Open `sorry` in `src/`: 0.** **Custom `axiom` declarations in `src/`: 0.** Verified by
+`grep -rnE '^[[:space:]]*axiom '` (only a docstring word-wrap hit) and `grep -rnw sorry` (only
+comments). Every headline `#print axioms = [propext, Classical.choice, Quot.sound]`. This is a
+genuinely empty inventory, not a fixation on one blocked thread — the hard crux was *solved* this lap.
+
+**The only non-formalizable thing left in NTL is the open Main Conjecture.** Future *formalizable*
+directions, three paths each (none required; all optional next-lap menu):
+1. **Sharper general-`N` constant (`3/4 → 3/2`).** (a) Formalize Nagura's theorem (prime in
+   `(n, 1.2n]`, n≥25) → constant `≈1.25`; (b) formalize a Baker–Harman–Pintz-style gap → `→3/2`;
+   (c) reformulate to only claim the bound at `N=2p` (already done — `hjsw_lower_bound`). Paths
+   (a)/(b) are real prime-gap infrastructure projects (mathlib lacks them), not quick laps.
+2. **Faithfulness audit.** (a) Harvest Aristotle `72891d77` (independent NL→Lean of the headline) and
+   diff its `no-three-collinear`/box/card encoding vs `Statement.lean`; (b) add `native_decide`
+   anchors for the construction at more primes (LOW value — `shearSel_noThree` is already proven ∀p,
+   so anchors add nothing the kernel didn't); (c) hand-audit `Defs.lean` against the literature def.
+   Path (a) is the genuine one.
+3. **Strengthen the construction itself (toward 2N).** (a) Search for a base of size `> p` reaching
+   `> 3(p-1)`; (b) two-curve / union constructions (prior laps found single-curve caps); (c) port a
+   published `(2-ε)N` construction if one exists. Open research; (a)/(b) need exhaustive search first.
+
 ## ✅✅ 2026-06-19 (later) — NOTHING OPEN. HJSW COMPLETE.
 `shearSel_cross_diag` (the lone `sorry`) is **PROVEN** ⇒ `hjsw_lower` is fully proven, axiom-clean
 (`[propext, Classical.choice, Quot.sound]`). Discharged via `shear_diag_partner`/`shear_anti_partner`
