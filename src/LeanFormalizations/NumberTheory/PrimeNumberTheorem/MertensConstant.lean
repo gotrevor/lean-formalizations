@@ -461,6 +461,33 @@ lemma hasDerivAt_rpow_one_sub {s t : ℝ} (ht : 0 < t) :
   have h := Real.hasDerivAt_rpow_const (x := t) (p := 1 - s) (Or.inl (ne_of_gt ht))
   simpa only [show (1 : ℝ) - s - 1 = -s by ring] using h
 
+/-- `f(t) = t^{1−s}` is differentiable at every `t > 0` (the `hf_diff` hypothesis of the Abel theorem
+on `Ici 1`). -/
+lemma differentiableAt_rpow_one_sub {s t : ℝ} (ht : 0 < t) :
+    DifferentiableAt ℝ (fun u : ℝ => u ^ (1 - s)) t :=
+  (hasDerivAt_rpow_one_sub ht).differentiableAt
+
+/-- The derivative value: `deriv (·^{1−s}) t = (1−s)·t^{−s}` for `t > 0`. -/
+lemma deriv_rpow_one_sub {s t : ℝ} (ht : 0 < t) :
+    deriv (fun u : ℝ => u ^ (1 - s)) t = (1 - s) * t ^ (-s) :=
+  (hasDerivAt_rpow_one_sub ht).deriv
+
+open MeasureTheory in
+/-- `deriv (·^{1−s})` is locally integrable on `Ici 1` (it agrees with the continuous `(1−s)·t^{−s}`
+there) — the `hf_int` hypothesis of `tendsto_sum_mul_atTop_nhds_one_sub_integral₀`. -/
+lemma locallyIntegrableOn_deriv_rpow_one_sub {s : ℝ} :
+    LocallyIntegrableOn (deriv (fun u : ℝ => u ^ (1 - s))) (Set.Ici 1) := by
+  refine ContinuousOn.locallyIntegrableOn ?_ measurableSet_Ici
+  refine ContinuousOn.congr (f := fun t : ℝ => (1 - s) * t ^ (-s)) ?_ ?_
+  · refine continuousOn_const.mul (continuousOn_id.rpow_const (fun t ht => ?_))
+    refine Or.inl ?_
+    simp only [Set.mem_Ici] at ht
+    simp only [id_eq]
+    linarith
+  · intro t ht
+    simp only [Set.mem_Ici] at ht
+    exact deriv_rpow_one_sub (by linarith)
+
 /-- Prime-reciprocal coefficient `c(k) = [k prime]/k` — the Abel-summation coefficient whose partial
 sums are `∑_{p≤n} 1/p = primeRecipSum`. -/
 noncomputable def primeRecipCoeff (k : ℕ) : ℝ := if k.Prime then (k : ℝ)⁻¹ else 0
