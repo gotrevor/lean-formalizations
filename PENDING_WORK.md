@@ -68,12 +68,21 @@ Combined with `hardy_seqONote_zero`: **`goodsteinLength m + 2 = H_{seqONote m j}
 - `H_{seqONote m j}(j+2) ≥ H_{oadd o 1 0}(j+2)` by `hardy_le_of_lt` (NOW norm-valid: `norm(ω^o)
   ≤ j+2`) **provided `oadd o 1 0 ≤ seqONote m j`** (index lower bound);
 - `H_{oadd o 1 0}(j+2) ≥ f_o(j+2) ≥ f_o(m)` by the bridge + `fastGrowing_monotone` (need `j+2 ≥ m`).
-**The two remaining sub-facts (the real work):**
-  (i) a **Goodstein-length lower bound** `goodsteinLength m ≥ m` (so `j = m-2` is valid), and
-  (ii) an **index lower bound** `oadd o 1 0 ≤ seqONote m j` at the chosen `j` (the Goodstein term
-       is still `≥ ω^o` that far in) — for fixed `o`, large `m`.
-Both (i),(ii) are honest sub-lemmas; (i) likely from the telescope + `le_hardy`, (ii) from the
-descent structure. This is the cleanest concrete route; START HERE next lap.
+**Sub-facts:**
+  (i) ✅ **DONE lap 5** — `le_goodsteinLength : m ≤ goodsteinLength m` (`Domination.lean`, via
+      `le_bump`+`goodsteinSeq_ge_sub`, axiom-clean). So any `j ≤ m` is a valid telescope step.
+  (ii) **the real remaining depth — needs a STRONG term lower bound, NOT the linear one.**
+       ⚠ Checked lap 5: at `j = m-2` (budget `m`), `goodsteinSeq m (m-2) ≥ m-(m-2) = 2` only, so
+       `seqONote m (m-2)` reads as `finite 2` (repr 2) — FAR below `ω^o`. The linear bound (i) is
+       insufficient for the index. **The sweet-spot tension:** small `j` ⇒ huge index but small
+       budget (`< m`, bridge needs arg `≥ m`); large `j` ⇒ big budget but tiny index. The needed
+       index bound `oadd o 1 0 ≤ seqONote m j` at a `j` with budget `≥ m` requires
+       `goodsteinSeq m j ≥ (j+2)^(big)` — a **super-exponential** Goodstein-term lower bound (the
+       term IS astronomically large early on). That strong term bound is essentially the growth
+       content itself; it is the genuine deep crux. Next-lap target: prove a super-linear lower
+       bound on `goodsteinSeq m j` for `j` in the early/middle range (e.g. via `bump b n ≥ n+...`
+       or tracking the leading CNF term across steps), enough that `seqONote m j ≥ ω^o` at a
+       budget-`≥m` step.
 
 **OLD (pre-2026-06-19-lap5) C3 close-out notes — kept for reference, now all DONE:**
 The whole C3 chain was built and the headline held modulo a single isolated lemma. Identity

@@ -40,7 +40,10 @@ The repo is **100% axiom-free** — every headline `#print axioms` is the bare t
   `toOrdinal_two_cofinal` (Goodstein ordinals cofinal in ε₀). **Negative finding** for the final
   domination headline: `hardy_le_of_lt`'s `norm α ≤ x` budget makes Hardy index-monotonicity FAIL
   at fixed small arg (`H_ω(2)=5 < H_5(2)=7`), so the diagonal `H_{toONote 2 m}(2)` needs a
-  budget-aware argument (multi-lap; bridge+cofinality are the banked prerequisites).
+  budget-aware argument. Banked the telescope enabler (`goodsteinLength m + 2 = H_{seqONote m j}(j+2)`
+  for all `j`) and **a linear length lower bound `le_goodsteinLength : m ≤ goodsteinLength m`**
+  (via `le_bump`; axiom-clean). Remaining: a super-exponential Goodstein-term lower bound for the
+  index sweet-spot (the genuine deep crux; multi-lap).
 - **2026-06-19 lap 4 (C3 borrowing crux — massively narrowed; 6 commits, all axiom-clean):**
   the `r=0 ∧ L≥1` borrowing case of `hstep_toONote` is now FULLY PROVED modulo a single
   isolated lemma `hstep_oadd_one_zero` (the `c=1` predecessor of `ω^E`). Proved this lap, all
