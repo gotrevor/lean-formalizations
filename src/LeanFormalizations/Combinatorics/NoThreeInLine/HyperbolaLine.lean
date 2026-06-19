@@ -125,4 +125,27 @@ theorem hyperbola_slope_one_reflection {p k : ℕ} [Fact p.Prime] (hk : (k : ZMo
     linear_combination hrs
   exact ⟨hr', hs'⟩
 
+/-- **Slope-`−1` reflection (Vieta).** Two distinct congruence classes `(r,s) ≠ (r',s')` of the
+hyperbola `x·y ≡ k` lying on a common slope-`−1` line (`r + s ≡ r' + s'`) are main-diagonal
+reflections: `r' = s` and `s' = r`. In particular `r·r' = k`. -/
+theorem hyperbola_slope_neg_one_reflection {p k : ℕ} [Fact p.Prime] (hk : (k : ZMod p) ≠ 0)
+    {r s r' s' : ZMod p} (hr : r ≠ 0)
+    (hrs : r * s = k) (hrs' : r' * s' = k)
+    (hslope : r + s = r' + s') (hne : r ≠ r') : r' = s ∧ s' = r := by
+  have hs : s ≠ 0 := by rintro rfl; simp at hrs; exact hk hrs.symm
+  have hss' : s - s' = r' - r := by linear_combination hslope
+  have hfac : (r * r' - k) * (r' - r) = 0 := by
+    linear_combination (-(r * r')) * hss' + r' * hrs - r * hrs'
+  have hrr : r * r' = k := by
+    have hne' : r' - r ≠ 0 := sub_ne_zero.mpr (fun h => hne h.symm)
+    have := (mul_eq_zero.mp hfac).resolve_right hne'
+    linear_combination this
+  have hr' : r' = s := by
+    apply mul_left_cancel₀ hr; rw [hrr]; linear_combination -hrs
+  have hs' : s' = r := by
+    apply mul_left_cancel₀ hs
+    have : s * s' = k := by rw [← hr']; exact hrs'
+    rw [this]; linear_combination -hrs
+  exact ⟨hr', hs'⟩
+
 end LeanFormalizations.NoThreeInLine
