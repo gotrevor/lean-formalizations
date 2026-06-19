@@ -81,16 +81,55 @@ theorem tower_lt_succ (i : ℕ) : tower i < tower (i + 1) := by
 theorem tower_strictMono : StrictMono tower :=
   strictMono_nat_of_lt_succ tower_lt_succ
 
+/-- `repr (tower (i+1)) = ω ^ repr (tower i)`. -/
+theorem repr_tower_succ (i : ℕ) : (tower (i + 1)).repr = ω ^ (tower i).repr := by
+  rw [tower_succ]
+  simp only [ONote.repr, PNat.one_coe, Nat.cast_one, mul_one, add_zero]
+
+/-- **Cofinality of the tower in `ε₀`.** Every normal-form notation is below some tower
+level. Structural induction: for `o = ω^e·n + a`, the IH gives `e < tower j`, and then
+`o < ω^(repr e + 1) ≤ ω^(repr (tower j)) = repr (tower (j+1))`, so `o < tower (j+1)`. -/
+theorem tower_cofinal : ∀ (o : ONote), o.NF → ∃ k, o < tower k
+  | 0, _ => ⟨1, by rw [lt_def]; simp [tower_succ]⟩
+  | oadd e n a, h => by
+      obtain ⟨j, hj⟩ := tower_cofinal e h.fst
+      refine ⟨j + 1, ?_⟩
+      rw [lt_def, repr_tower_succ]
+      have hej : e.repr < (tower j).repr := (lt_def).mp hj
+      have hbelow : NFBelow (oadd e n a) (e.repr + 1) :=
+        NFBelow.oadd h.fst h.snd' (Order.lt_succ _)
+      have h1 : (oadd e n a).repr < ω ^ (e.repr + 1) := hbelow.repr_lt
+      have h2 : ω ^ (e.repr + 1) ≤ ω ^ (tower j).repr :=
+        opow_le_opow_right omega0_pos (Order.succ_le_of_lt hej)
+      exact lt_of_lt_of_le h1 h2
+
 /-- `fastGrowingε₀ i = f_{tower i}(i)` — the definitional unfolding, as a named lemma. -/
 theorem fastGrowingε₀_eq (i : ℕ) : fastGrowingε₀ i = fastGrowing (tower i) i := rfl
 
-/-- **A4 — domination (the headline crux).** Every fixed level of the fast-growing
-hierarchy is eventually strictly dominated by `fastGrowingε₀`. *(disclosed `sorry`: the
-index-domination core, see the file header's attack plan; A1–A3 it builds on are all
-proved axiom-clean.)* -/
-theorem fastGrowing_lt_fastGrowingε₀ (o : ONote) (_ho : o.NF) :
-    ∃ N, ∀ n ≥ N, fastGrowing o n < fastGrowingε₀ n := by
+/-- **Index domination — the sharp remaining A4 core** *(disclosed `sorry`)*. Once a tower
+level has overtaken `o` (`o < tower n`), it dominates `o` pointwise at the diagonal
+argument: `f_o(n) < f_{tower n}(n)`. This is the full Bachmann reachability strength —
+`tower n` reaches every `α < tower n` with budget `n` (generalizing
+`fastGrowing_bachmann_reach`, which handles only the consecutive `o[n+1] → o[n]`) — plus
+one strict step. It is the last unproved ingredient of the independence growth gap. -/
+theorem fastGrowing_lt_of_lt_tower {o : ONote} (n : ℕ) (_hn : 1 ≤ n) (_h : o < tower n) :
+    fastGrowing o n < fastGrowing (tower n) n := by
   sorry
+
+/-- **A4 — domination (the headline crux).** Every fixed level of the fast-growing
+hierarchy is eventually strictly dominated by `fastGrowingε₀`. Reduced (axiom-clean modulo
+the index-domination core) to `tower_cofinal` + `fastGrowing_lt_of_lt_tower`: pick `k` with
+`o < tower k`; for `n ≥ max k 1`, `o < tower k ≤ tower n`, so `f_o(n) < f_{tower n}(n) =
+fastGrowingε₀ n`. -/
+theorem fastGrowing_lt_fastGrowingε₀ (o : ONote) (ho : o.NF) :
+    ∃ N, ∀ n ≥ N, fastGrowing o n < fastGrowingε₀ n := by
+  obtain ⟨k, hk⟩ := tower_cofinal o ho
+  refine ⟨max k 1, fun n hn => ?_⟩
+  have hkn : k ≤ n := le_trans (le_max_left k 1) hn
+  have h1n : 1 ≤ n := le_trans (le_max_right k 1) hn
+  have hlt : o < tower n := lt_of_lt_of_le hk (tower_strictMono.monotone hkn)
+  rw [fastGrowingε₀_eq]
+  exact fastGrowing_lt_of_lt_tower n h1n hlt
 
 /-! ### Anti-vacuity anchors for `fastGrowingε₀` (`native_decide`) -/
 
