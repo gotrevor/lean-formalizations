@@ -455,4 +455,47 @@ lemma primeRecipSum_le_one_add_log (n : ℕ) : primeRecipSum n ≤ 1 + Real.log 
     _ = (harmonic n : ℝ) := h2.symm
     _ ≤ 1 + Real.log n := harmonic_le_one_add_log n
 
+/-- Derivative of the Abel weight `f(t) = t^{1−s}`: `f'(t) = (1−s)·t^{−s}` for `t > 0`. -/
+lemma hasDerivAt_rpow_one_sub {s t : ℝ} (ht : 0 < t) :
+    HasDerivAt (fun u : ℝ => u ^ (1 - s)) ((1 - s) * t ^ (-s)) t := by
+  have h := Real.hasDerivAt_rpow_const (x := t) (p := 1 - s) (Or.inl (ne_of_gt ht))
+  simpa only [show (1 : ℝ) - s - 1 = -s by ring] using h
+
+/-- Prime-reciprocal coefficient `c(k) = [k prime]/k` — the Abel-summation coefficient whose partial
+sums are `∑_{p≤n} 1/p = primeRecipSum`. -/
+noncomputable def primeRecipCoeff (k : ℕ) : ℝ := if k.Prime then (k : ℝ)⁻¹ else 0
+
+/-- `c(0) = 0` (the `hc` hypothesis of `tendsto_sum_mul_atTop_nhds_one_sub_integral₀`). -/
+lemma primeRecipCoeff_zero : primeRecipCoeff 0 = 0 := by
+  rw [primeRecipCoeff, if_neg Nat.not_prime_zero]
+
+/-- The Abel partial sum of `primeRecipCoeff` over `Icc 0 n` is exactly `primeRecipSum n`. -/
+lemma sum_Icc_primeRecipCoeff (n : ℕ) :
+    ∑ k ∈ Finset.Icc 0 n, primeRecipCoeff k = primeRecipSum n := by
+  rw [primeRecipSum]
+  simp only [primeRecipCoeff]
+  rw [Finset.sum_ite, Finset.sum_const_zero, add_zero]
+  have hset : (Finset.Icc 0 n).filter Nat.Prime = (Finset.Ioc 0 n).filter Nat.Prime := by
+    ext p
+    constructor
+    · intro h
+      rw [Finset.mem_filter, Finset.mem_Icc] at h
+      rw [Finset.mem_filter, Finset.mem_Ioc]
+      exact ⟨⟨h.2.pos, h.1.2⟩, h.2⟩
+    · intro h
+      rw [Finset.mem_filter, Finset.mem_Ioc] at h
+      rw [Finset.mem_filter, Finset.mem_Icc]
+      exact ⟨⟨Nat.zero_le _, h.1.2⟩, h.2⟩
+  rw [hset]
+
+/-- The Abel product `f(k)·c(k) = k^{1−s}·[k prime]/k = [k prime]·k^{−s} = primeZetaCoeff s k`. -/
+lemma rpow_one_sub_mul_primeRecipCoeff (s : ℝ) (k : ℕ) :
+    (k : ℝ) ^ (1 - s) * primeRecipCoeff k = primeZetaCoeff s k := by
+  rw [primeRecipCoeff, primeZetaCoeff]
+  split_ifs with hp
+  · have hk0 : (0 : ℝ) < (k : ℝ) := by exact_mod_cast hp.pos
+    rw [← Real.rpow_neg_one (k : ℝ), ← Real.rpow_add hk0]
+    ring_nf
+  · rw [mul_zero]
+
 end LeanFormalizations.Mertens
