@@ -412,6 +412,51 @@ theorem goodsteinSeq_ge_init (m : ℕ) : ∀ k, k + 1 ≤ m → m ≤ goodsteinS
     show m ≤ bump (base k) (goodsteinSeq m k) - 1
     rw [hbase]; omega
 
+/-- **The ordinal of a numeral dominates `ω` raised to its leading-exponent ordinal:**
+`ω ^ (toOrdinal b (Nat.log b v)) ≤ toOrdinal b v` (for `v ≠ 0`, `b ≥ 2`). Immediate from
+`toOrdinal_pos`: the leading Cantor term is `ω ^ (…) · c` with digit `c ≥ 1`. The bridge from the
+**leading exponent** (a natural number, controlled by `leadExp_ge_sub`) to the **descent ordinal**
+(`seqOrd`), needed to turn `leadExp ≥ k` into `seqOrd ≥ ω^k`. -/
+theorem opow_toOrdinal_log_le (b : ℕ) (hb : 2 ≤ b) {v : ℕ} (hv : v ≠ 0) :
+    ω ^ toOrdinal b (Nat.log b v) ≤ toOrdinal b v := by
+  rw [toOrdinal_pos b v hv]
+  have hc : (1 : Ordinal) ≤ (v / b ^ Nat.log b v : ℕ) := by
+    have h0 : 0 < v / b ^ Nat.log b v :=
+      Nat.div_pos (Nat.pow_log_le_self b hv) (Nat.pow_pos (by omega))
+    exact_mod_cast h0
+  calc ω ^ toOrdinal b (Nat.log b v)
+      = ω ^ toOrdinal b (Nat.log b v) * 1 := (mul_one _).symm
+    _ ≤ ω ^ toOrdinal b (Nat.log b v) * (v / b ^ Nat.log b v : ℕ) := mul_le_mul_left' hc _
+    _ ≤ ω ^ toOrdinal b (Nat.log b v) * (v / b ^ Nat.log b v : ℕ)
+          + toOrdinal b (v % b ^ Nat.log b v) := le_self_add
+
+/-- **From leading exponent to descent ordinal:** if the leading exponent `leadExp_i =
+Nat.log (base i)(G_i)` is `≥ k` (and `k < base i`, so `k` reads as the ordinal `k`), then the
+descent ordinal dominates `ω^k`: `ω^k ≤ (seqONote m i).repr`. Chains `opow_toOrdinal_log_le` with
+`toOrdinal`-monotonicity of the exponent and `toOrdinal b k = k` for `k < b`. The general bridge
+behind sub-fact (ii) at level `o = k` — combine with `leadExp_ge_sub`. -/
+theorem opow_le_seqONote_repr {m i k : ℕ} (hk : k ≤ Nat.log (base i) (goodsteinSeq m i))
+    (hv : goodsteinSeq m i ≠ 0) (hkb : k < base i) :
+    (ω : Ordinal) ^ (k : Ordinal) ≤ (seqONote m i).repr := by
+  have hb : 2 ≤ base i := Nat.le_add_left 2 i
+  rw [repr_seqONote]
+  show (ω : Ordinal) ^ (k : Ordinal) ≤ toOrdinal (base i) (goodsteinSeq m i)
+  have htk : toOrdinal (base i) k = (k : Ordinal) := by
+    rcases Nat.eq_zero_or_pos k with hk0 | hkpos
+    · subst hk0; simp
+    · have hlog0 : Nat.log (base i) k = 0 := Nat.log_eq_zero_iff.2 (Or.inl hkb)
+      rw [toOrdinal_pos (base i) k (by omega), hlog0]
+      simp [pow_zero, Nat.div_one, Nat.mod_one, toOrdinal_zero]
+  have hmono : toOrdinal (base i) k
+      ≤ toOrdinal (base i) (Nat.log (base i) (goodsteinSeq m i)) := by
+    rcases eq_or_lt_of_le hk with h | h
+    · rw [h]
+    · exact le_of_lt ((toOrdinal_mono_and_bound (base i) hb _).1 k h)
+  calc (ω : Ordinal) ^ (k : Ordinal) = ω ^ toOrdinal (base i) k := by rw [htk]
+    _ ≤ ω ^ toOrdinal (base i) (Nat.log (base i) (goodsteinSeq m i)) :=
+        opow_le_opow_right omega0_pos hmono
+    _ ≤ toOrdinal (base i) (goodsteinSeq m i) := opow_toOrdinal_log_le (base i) hb hv
+
 /-- **The descent ordinal stays `≥ ω` for the first `m` steps.** For `m = n + 2` and any step
 `j ≤ n`, the term value is `≥ m ≥ base j = j + 2`, so its ordinal `seqOrd m j` is `≥ ω`. This is
 sub-fact (ii) at level `o = 1`: the Goodstein notation `seqONote m j` dominates `ω = ω^(repr 1)`. -/
@@ -451,6 +496,22 @@ theorem leadExp_ge_sub (m : ℕ) : ∀ i, i + 1 ≤ m →
     have hdrop := leadExp_drop_le_one m i hib
     have hih := ih (by omega)
     omega
+
+/-- **The descent ordinal reaches `ω^k` for the first `~log₂ m` steps.** Combining the telescoped
+leading-exponent bound `leadExp_ge_sub` (`leadExp_i ≥ log₂ m − i`) with the bridge
+`opow_le_seqONote_repr`: whenever `k + i ≤ log₂ m` (and `k < i + 2`), the Goodstein descent ordinal
+satisfies `ω^k ≤ (seqONote m i).repr`. Generalizes `omega_le_seqONote_repr` (the `k = 1` case) to
+every fixed level `k` — the ordinal stays `≥ ω^k` for the first `log₂ m − k` steps. (Reaching `ω^k`
+for `≥ m` steps — the full sub-fact (ii) at `o = k` — needs the steps-between-drops recursion.) -/
+theorem omega_opow_le_seqONote_repr {m i k : ℕ} (hi : i + 1 ≤ m)
+    (hk : k + i ≤ Nat.log 2 m) (hkb : k < i + 2) :
+    (ω : Ordinal) ^ (k : Ordinal) ≤ (seqONote m i).repr := by
+  have hle := leadExp_ge_sub m i hi
+  have hkle : k ≤ Nat.log (base i) (goodsteinSeq m i) := by omega
+  have hv : goodsteinSeq m i ≠ 0 := by
+    have := goodsteinSeq_ge_init m i hi; omega
+  have hkb' : k < base i := by simp only [base]; omega
+  exact opow_le_seqONote_repr hkle hv hkb'
 
 /-- The Goodstein value drops by **at most one** per step (`bump b v ≥ v`, so
 `goodsteinSeq m (j+1) = bump _ v − 1 ≥ v − 1`). Telescoped: `goodsteinSeq m j ≤
