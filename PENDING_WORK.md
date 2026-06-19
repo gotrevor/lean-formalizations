@@ -44,10 +44,14 @@ not a heroic port.
 axiom-cleanliness; everything else in NTL is done, open-math (Main Conjecture), or diminishing-returns.
 Execute in this order:
 1. **(cheap, decisive, ~1 lap)** In a throwaway branch, add `~/src/PrimeNumberTheoremAnd` as a local lake
-   dependency and try `theorem weakPNT := PrimeNumberTheoremAnd.WeakPNT''`. *Expected* to fail on the
-   mathlib-rev pin (ours `v4.29.1`/`5e932f97`, PNTAnd `v4.30.0`/`8a178386`). **Record the exact `lake` error**
-   so the blocker is documented, then revert the branch. (Do NOT bump the whole project's toolchain to v4.30.0
-   to force it — that risks the six complete axiom-clean threads + an 8286-job re-verification; not worth it.)
+   dependency and try `theorem weakPNT := PrimeNumberTheoremAnd.WeakPNT''`. **Expected to fail** — the *local*
+   PNTAnd clone (`~/src/PrimeNumberTheoremAnd`, last commit 2026-05-25) is lean **`v4.29.0`** + mathlib inputRev
+   `v4.29.0` (rev `8a178386`), while ours is lean **`v4.29.1`** + mathlib `v4.29.1` (rev `5e932f97`). Different
+   lean *patch* version ⇒ incompatible `.olean`s, and lake enforces one toolchain per workspace; the two mathlib
+   revs also can't coexist. **Record the exact `lake` error**, then revert. (Do NOT bump our toolchain to match —
+   that risks the six complete axiom-clean threads + an 8286-job re-verification; not worth it. Upstream PNTAnd
+   has since moved to `v4.30.0`, widening the gap further.) The target theorem in PNTAnd is `WienerIkeharaTheorem'`
+   (`Wiener.lean:2398`) → `WeakPNT''` (`Consequences.lean:105`).
 2. **(lowest effort, preferred)** Treat `weakPNT` as wait-and-cite: periodically check whether mathlib has
    landed Wiener–Ikehara / `ψ∼x` (grep the pin for `WienerIkehara`, a `Chebyshev.psi` asymptotic). When it
    does, replace `axiom weakPNT` with the mathlib citation → flagship becomes axiom-clean for free.
