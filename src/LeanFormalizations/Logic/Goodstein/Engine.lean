@@ -25,6 +25,7 @@ strong induction; `bump` gets the parallel pair over `ℕ`.
 import LeanFormalizations.Logic.Goodstein.Defs
 import Mathlib.SetTheory.Ordinal.Exponential
 import Mathlib.Algebra.Order.SuccPred
+import Mathlib.Tactic.Ring
 
 namespace LeanFormalizations.Logic.Goodstein
 
@@ -179,5 +180,105 @@ theorem toOrdinal_mono_and_bound (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
         _ ≤ ω ^ toOrdinal b (Nat.log b n) * ω :=
               mul_le_mul_right (by rw [← Nat.cast_add_one]; exact (natCast_lt_omega0 _).le) _
         _ = ω ^ (toOrdinal b (Nat.log b n) + 1) := by rw [← opow_succ, Order.succ_eq_add_one]
+
+/-- **Crux (ℕ side).** The exact analog of `toOrdinal_mono_and_bound` for `bump`:
+`bump b` is strictly monotone with leading bound `(b+1)^(bump b (log b n) + 1)`.
+Same proof, with `(b+1)` in place of `ω`. Used to read off the base-`(b+1)`
+digit structure of `bump b n` in the invariance lemma. -/
+theorem bump_mono_and_bound (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
+    (∀ m, m < n → bump b m < bump b n) ∧
+      (n ≠ 0 → bump b n < (b + 1) ^ (bump b (Nat.log b n) + 1)) := by
+  have hb1 : 1 < b := by omega
+  have hb1' : 1 ≤ b + 1 := by omega
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    have rb : ∀ r e', e' < n → r < b ^ e' → r < n →
+        bump b r < (b + 1) ^ bump b e' := by
+      intro r e' he'n hre' hrn
+      rcases eq_or_ne r 0 with rfl | hr0
+      · simpa using Nat.pow_pos (show 0 < b + 1 by omega)
+      · have hlogr : Nat.log b r < e' := (Nat.log_lt_iff_lt_pow hb1 hr0).2 hre'
+        have h1 : bump b (Nat.log b r) < bump b e' := (ih e' he'n).1 _ hlogr
+        have h2 : bump b r < (b + 1) ^ (bump b (Nat.log b r) + 1) := (ih r hrn).2 hr0
+        exact h2.trans_le (Nat.pow_le_pow_right hb1' h1)
+    constructor
+    · intro m hmn
+      have hn0 : n ≠ 0 := by omega
+      have hbe_pos : 0 < b ^ Nat.log b n := Nat.pow_pos (by omega)
+      have hbe_le : b ^ Nat.log b n ≤ n := Nat.pow_log_le_self b hn0
+      have hc_pos : 0 < n / b ^ Nat.log b n := Nat.div_pos hbe_le hbe_pos
+      have hr_lt : n % b ^ Nat.log b n < b ^ Nat.log b n := Nat.mod_lt _ hbe_pos
+      have hr_lt_n : n % b ^ Nat.log b n < n := lt_of_lt_of_le hr_lt hbe_le
+      have he_lt_n : Nat.log b n < n := Nat.log_lt_self b hn0
+      have hn_eq := bump_pos b n hn0
+      have hrb : bump b (n % b ^ Nat.log b n) < (b + 1) ^ bump b (Nat.log b n) :=
+        rb _ _ he_lt_n hr_lt hr_lt_n
+      have hpe : 0 < (b + 1) ^ bump b (Nat.log b n) := Nat.pow_pos (by omega)
+      rcases eq_or_ne m 0 with rfl | hm0
+      · rw [bump_zero, hn_eq]
+        have : 0 < n / b ^ Nat.log b n * (b + 1) ^ bump b (Nat.log b n) :=
+          Nat.mul_pos hc_pos hpe
+        omega
+      · have hem_le : Nat.log b m ≤ Nat.log b n := Nat.log_mono_right hmn.le
+        rcases lt_or_eq_of_le hem_le with hem_lt | hem_eq
+        · have hmb : bump b m < (b + 1) ^ (bump b (Nat.log b m) + 1) := (ih m hmn).2 hm0
+          have hexp : bump b (Nat.log b m) + 1 ≤ bump b (Nat.log b n) :=
+            (ih _ he_lt_n).1 _ hem_lt
+          calc bump b m
+              < (b + 1) ^ (bump b (Nat.log b m) + 1) := hmb
+            _ ≤ (b + 1) ^ bump b (Nat.log b n) := Nat.pow_le_pow_right hb1' hexp
+            _ ≤ n / b ^ Nat.log b n * (b + 1) ^ bump b (Nat.log b n) :=
+                  Nat.le_mul_of_pos_left _ hc_pos
+            _ ≤ bump b n := by rw [hn_eq]; exact Nat.le_add_right _ _
+        · have hbem_pos : 0 < b ^ Nat.log b m := Nat.pow_pos (by omega)
+          have hrm_lt : m % b ^ Nat.log b m < b ^ Nat.log b m := Nat.mod_lt _ hbem_pos
+          have hm_eq := bump_pos b m hm0
+          rw [hm_eq, hn_eq, hem_eq]
+          have hcm_le : m / b ^ Nat.log b n ≤ n / b ^ Nat.log b n := by
+            rw [← hem_eq]; exact Nat.div_le_div_right hmn.le
+          have hrm_lt' : m % b ^ Nat.log b n < b ^ Nat.log b n := by
+            rw [← hem_eq]; exact hrm_lt
+          have hrm_lt_n : m % b ^ Nat.log b n < n := lt_of_lt_of_le hrm_lt' hbe_le
+          have hrbm : bump b (m % b ^ Nat.log b n) < (b + 1) ^ bump b (Nat.log b n) :=
+            rb _ _ he_lt_n hrm_lt' hrm_lt_n
+          rcases lt_or_eq_of_le hcm_le with hcm_lt | hcm_eq
+          · calc m / b ^ Nat.log b n * (b + 1) ^ bump b (Nat.log b n)
+                  + bump b (m % b ^ Nat.log b n)
+                < m / b ^ Nat.log b n * (b + 1) ^ bump b (Nat.log b n)
+                  + (b + 1) ^ bump b (Nat.log b n) := Nat.add_lt_add_left hrbm _
+              _ = (m / b ^ Nat.log b n + 1) * (b + 1) ^ bump b (Nat.log b n) := by ring
+              _ ≤ n / b ^ Nat.log b n * (b + 1) ^ bump b (Nat.log b n) :=
+                    Nat.mul_le_mul_right _ hcm_lt
+              _ ≤ n / b ^ Nat.log b n * (b + 1) ^ bump b (Nat.log b n)
+                  + bump b (n % b ^ Nat.log b n) := Nat.le_add_right _ _
+          · rw [hcm_eq]
+            have hrm_rn : m % b ^ Nat.log b n < n % b ^ Nat.log b n := by
+              have em := Nat.div_add_mod m (b ^ Nat.log b n)
+              have en := Nat.div_add_mod n (b ^ Nat.log b n)
+              rw [← hcm_eq] at en
+              omega
+            have hlt : bump b (m % b ^ Nat.log b n) < bump b (n % b ^ Nat.log b n) :=
+              (ih _ hr_lt_n).1 _ hrm_rn
+            exact Nat.add_lt_add_left hlt _
+    · intro hn0
+      have hbe_pos : 0 < b ^ Nat.log b n := Nat.pow_pos (by omega)
+      have hbe_le : b ^ Nat.log b n ≤ n := Nat.pow_log_le_self b hn0
+      have hc_lt : n / b ^ Nat.log b n < b := by
+        rw [Nat.div_lt_iff_lt_mul hbe_pos, ← pow_succ']
+        exact Nat.lt_pow_succ_log_self hb1 n
+      have hr_lt : n % b ^ Nat.log b n < b ^ Nat.log b n := Nat.mod_lt _ hbe_pos
+      have hr_lt_n : n % b ^ Nat.log b n < n := lt_of_lt_of_le hr_lt hbe_le
+      have he_lt_n : Nat.log b n < n := Nat.log_lt_self b hn0
+      have hrb : bump b (n % b ^ Nat.log b n) < (b + 1) ^ bump b (Nat.log b n) :=
+        rb _ _ he_lt_n hr_lt hr_lt_n
+      rw [bump_pos b n hn0]
+      calc n / b ^ Nat.log b n * (b + 1) ^ bump b (Nat.log b n)
+            + bump b (n % b ^ Nat.log b n)
+          < n / b ^ Nat.log b n * (b + 1) ^ bump b (Nat.log b n)
+            + (b + 1) ^ bump b (Nat.log b n) := Nat.add_lt_add_left hrb _
+        _ = (n / b ^ Nat.log b n + 1) * (b + 1) ^ bump b (Nat.log b n) := by ring
+        _ ≤ (b + 1) * (b + 1) ^ bump b (Nat.log b n) :=
+              Nat.mul_le_mul_right _ (by omega)
+        _ = (b + 1) ^ (bump b (Nat.log b n) + 1) := by rw [pow_succ]; ring
 
 end LeanFormalizations.Logic.Goodstein
