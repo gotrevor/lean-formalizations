@@ -71,6 +71,18 @@ theorem fastGrowingε₀_eq_towerO (k : ℕ) :
     ONote.fastGrowingε₀ (k + 1) = fastGrowing (towerO k) (k + 1) := by
   rw [ONote.fastGrowingε₀, iterate_oadd_eq_towerO]
 
+/-- **The matching UPPER bound.** `goodsteinLength m + 2 ≤ f_{o_m}(2)`, where `o_m = seqONote m 0` is
+the base-2 ordinal of `m` (`= toONote 2 m`). Immediate from the Cichoń identity
+`goodsteinLength m + 2 = H_{o_m}(2)` (`hardy_seqONote_zero`) and `hardy_le_fastGrowing` (Hardy ≤
+fast-growing at the same index). Together with `goodsteinLength_dominates_fastGrowing` this squeezes
+`goodsteinLength` inside the fast-growing hierarchy at the `ε₀` frontier — the two-sided "grows like
+`f_{ε₀}`": from below it eventually beats every fixed `f_o` (`o < ε₀`); from above it never exceeds
+`f` at its own ordinal `o_m < ε₀` (argument `2`). -/
+theorem goodsteinLength_le_fastGrowing_ordinal (m : ℕ) :
+    goodsteinLength m + 2 ≤ fastGrowing (seqONote m 0) 2 := by
+  rw [← hardy_seqONote_zero m]
+  exact hardy_le_fastGrowing (seqONote m 0) 2 (by norm_num)
+
 /-- Anti-vacuity: `f_{ε₀}` is the genuine extension to `ε₀` (mathlib's known value), and the tower the
 headline ranges over is the genuine one. -/
 example : ONote.fastGrowingε₀ 2 = 2048 := ONote.fastGrowingε₀_two
