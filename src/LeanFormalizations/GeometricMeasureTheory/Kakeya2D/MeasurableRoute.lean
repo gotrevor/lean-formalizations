@@ -283,4 +283,89 @@ theorem exists_shift_ge_integral (j : ℕ) {f : ℝ → ℝ≥0∞} (hf : Measur
   rw [hcell, hμw] at haeeq
   exact (ENNReal.ofReal_pos.mpr hwpos).ne' haeeq
 
+/-- **The continuum-route numerator — the core glue of the wiring (W).** Composing the two proven
+spine lemmas, for a measurable base-point selection `a` whose unit segments cover the direction arc
+`θ∈[0,1]` (`hcov`), there is a dominant dyadic scale `j` and a base angle `α` at which the discrete
+base-angle Córdoba *numerator* holds:
+
+  `1/((j+1)(j+2)) ≤ ∑_{i<2ʲ} 2·2⁻ʲ · vol(Aᵢ)`,
+  `Aᵢ = {t∈[0,1] : a(α+i·2⁻ʲ) + t·dir(α+i·2⁻ʲ) ∈ ⋃_{g n=j} C n}`.
+
+This is *exactly* the `hnum` hypothesis consumed by `NetThinning.caseA_content`: it is the bridge from
+the **cap-free** continuum dominant scale (so the genuine scale-`j` diameter window, NO Case B) to the
+already-proven single-scale content brick. It is the meat of the measurable-selection route's wiring;
+what remains for the full `kakeya_hausdorffContentBound_of_measurableSelection` is the finite-fiber
+diameter bookkeeping (`hediam_lo/hi` on `s = {n : g n = j}`) and the closed-piece reduction, both of
+which `Engine.kakeya_hausdorffContentBound` already performs verbatim at the *capped* scale.
+
+Proof: `exists_continuum_dominant_scale` gives `scaleWeight j ≤ ∫ℓⱼ`; `measurable_coveredLength` makes
+`ℓⱼ` measurable and `ℓⱼ ≤ vol([0,1]) = 1` makes `∫ℓⱼ ≠ ⊤`, so `exists_shift_ge_integral` extracts `α`
+with `2ʲ·∫ℓⱼ ≤ ∑ᵢ ℓⱼ(α+i·2⁻ʲ)`; chaining and the `2·2⁻ʲ·2ʲ·scaleWeight j = 1/((j+1)(j+2))` arithmetic
+(identical to `Engine`'s) closes it. No new axioms. -/
+theorem exists_continuum_caseA_numerator {a : ℝ → Plane} (ha : Measurable a)
+    {C : ℕ → Set Plane} (hC : ∀ n, MeasurableSet (C n)) (g : ℕ → ℕ)
+    (hcov : ∀ θ ∈ Set.Icc (0 : ℝ) 1, Set.Icc (0 : ℝ) 1 ⊆ {t | a θ + t • dir θ ∈ ⋃ n, C n}) :
+    ∃ (j : ℕ) (α : ℝ),
+      ENNReal.ofReal (1 / (((j : ℝ) + 1) * ((j : ℝ) + 2)))
+        ≤ ∑ i ∈ Finset.range (2 ^ j),
+            ENNReal.ofReal (2 * (1 / 2 : ℝ) ^ j)
+              * volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1 ∧
+                  a (α + (i : ℝ) * (1 / 2 : ℝ) ^ j) + t • dir (α + (i : ℝ) * (1 / 2 : ℝ) ^ j)
+                    ∈ ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), C n} := by
+  obtain ⟨j, hj⟩ := exists_continuum_dominant_scale ha hC g hcov
+  have hFmeas : MeasurableSet (⋃ n ∈ (g ⁻¹' {j} : Set ℕ), C n) :=
+    MeasurableSet.biUnion (Set.to_countable _) (fun n _ => hC n)
+  have hfmeas : Measurable (fun θ : ℝ => volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1
+      ∧ a θ + t • dir θ ∈ ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), C n}) :=
+    measurable_coveredLength ha measurable_dir hFmeas
+  have hμ : volume (Set.Icc (0 : ℝ) 1) = 1 := by rw [Real.volume_Icc, sub_zero, ENNReal.ofReal_one]
+  have hfle1 : ∀ θ : ℝ, volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1
+      ∧ a θ + t • dir θ ∈ ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), C n} ≤ 1 := by
+    intro θ
+    calc volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1 ∧ a θ + t • dir θ ∈ ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), C n}
+        ≤ volume (Set.Icc (0 : ℝ) 1) := measure_mono (fun t ht => ht.1)
+      _ = 1 := hμ
+  have hfin : (∫⁻ θ in Set.Icc (0 : ℝ) 1, volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1
+      ∧ a θ + t • dir θ ∈ ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), C n}) ≠ ⊤ := by
+    have hb : (∫⁻ θ in Set.Icc (0 : ℝ) 1, volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1
+        ∧ a θ + t • dir θ ∈ ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), C n}) ≤ 1 := by
+      calc (∫⁻ θ in Set.Icc (0 : ℝ) 1, volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1
+              ∧ a θ + t • dir θ ∈ ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), C n})
+          ≤ ∫⁻ _θ in Set.Icc (0 : ℝ) 1, (1 : ℝ≥0∞) := lintegral_mono hfle1
+        _ = 1 := by rw [setLIntegral_const, hμ, mul_one]
+    exact ne_top_of_le_ne_top ENNReal.one_ne_top hb
+  obtain ⟨α, _hα, hshiftI⟩ := exists_shift_ge_integral j hfmeas hfin
+  refine ⟨j, α, ?_⟩
+  -- chain `scaleWeight j ≤ ∫ℓⱼ` with the shift to land the discrete numerator (explicit volume form)
+  have hshift : ((2 ^ j : ℕ) : ℝ≥0∞) * scaleWeight j
+      ≤ ∑ i ∈ Finset.range (2 ^ j), volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1
+          ∧ a (α + (i : ℝ) * (1 / 2 : ℝ) ^ j) + t • dir (α + (i : ℝ) * (1 / 2 : ℝ) ^ j)
+            ∈ ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), C n} := by
+    calc ((2 ^ j : ℕ) : ℝ≥0∞) * scaleWeight j
+        ≤ ((2 ^ j : ℕ) : ℝ≥0∞) * ∫⁻ θ in Set.Icc (0 : ℝ) 1, volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1
+            ∧ a θ + t • dir θ ∈ ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), C n} := mul_le_mul_left' hj _
+      _ ≤ ∑ i ∈ Finset.range (2 ^ j), volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1
+            ∧ a (α + (i : ℝ) * (1 / 2 : ℝ) ^ j) + t • dir (α + (i : ℝ) * (1 / 2 : ℝ) ^ j)
+              ∈ ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), C n} := hshiftI
+  calc ENNReal.ofReal (1 / (((j : ℝ) + 1) * ((j : ℝ) + 2)))
+      = ENNReal.ofReal (2 * (1 / 2 : ℝ) ^ j) * (((2 ^ j : ℕ) : ℝ≥0∞) * scaleWeight j) := by
+        rw [scaleWeight,
+          show ((2 ^ j : ℕ) : ℝ≥0∞) = ENNReal.ofReal ((2 : ℝ) ^ j) from by
+            rw [← ENNReal.ofReal_natCast, Nat.cast_pow, Nat.cast_ofNat],
+          ← ENNReal.ofReal_mul (by positivity), ← ENNReal.ofReal_mul (by positivity)]
+        congr 1
+        rw [show (2 * (1 / 2 : ℝ) ^ j)
+              * ((2 : ℝ) ^ j * (1 / (2 * ((j : ℝ) + 1) * ((j : ℝ) + 2))))
+            = ((1 / 2 : ℝ) ^ j * (2 : ℝ) ^ j) * (1 / (((j : ℝ) + 1) * ((j : ℝ) + 2))) from by
+              field_simp,
+          show (1 / 2 : ℝ) ^ j * (2 : ℝ) ^ j = 1 from by rw [← mul_pow]; norm_num, one_mul]
+    _ ≤ ENNReal.ofReal (2 * (1 / 2 : ℝ) ^ j)
+          * ∑ i ∈ Finset.range (2 ^ j), volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1
+              ∧ a (α + (i : ℝ) * (1 / 2 : ℝ) ^ j) + t • dir (α + (i : ℝ) * (1 / 2 : ℝ) ^ j)
+                ∈ ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), C n} := mul_le_mul_left' hshift _
+    _ = ∑ i ∈ Finset.range (2 ^ j), ENNReal.ofReal (2 * (1 / 2 : ℝ) ^ j)
+          * volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1
+              ∧ a (α + (i : ℝ) * (1 / 2 : ℝ) ^ j) + t • dir (α + (i : ℝ) * (1 / 2 : ℝ) ^ j)
+                ∈ ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), C n} := by rw [Finset.mul_sum]
+
 end LeanFormalizations.Kakeya2D
