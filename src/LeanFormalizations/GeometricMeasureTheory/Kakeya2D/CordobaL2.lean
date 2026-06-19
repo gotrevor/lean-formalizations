@@ -90,22 +90,21 @@ numerator `∫ f = ∑ vol(Tₖ) ≥ N·2δ` (`sum_tube_ge`) and denominator `�
 6π δ·2N(1+log N)` (`sum_overlap_le`). Choosing `N ≈ δ⁻¹` and dividing yields
 `vol(Sδ) ≳ 1/log(1/δ)` — the Minkowski-content lower bound that K5 lifts to Hausdorff
 positivity. -/
-theorem volume_thickening_mul_ge {S : Set Plane} (h : IsKakeya S) {δ : ℝ}
-    (hδ : 0 < δ) (hδ1 : δ ≤ 1) {N : ℕ} (hN : (N : ℝ) * δ ≤ 1) :
+theorem volume_thickening_tubes_ge {E : Set Plane} (hE : MeasurableSet E) {δ : ℝ}
+    (hδ : 0 < δ) (hδ1 : δ ≤ 1) {N : ℕ} (hN : (N : ℝ) * δ ≤ 1)
+    (b : ℕ → Plane) (hsub : ∀ k, tube (b k) (dir ((k : ℝ) * δ)) δ ⊆ E) :
     ((N : ℝ≥0∞) * ENNReal.ofReal (2 * δ)) ^ 2
-      ≤ volume (thickening S δ) * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
-  obtain ⟨a, ha⟩ := exists_tube_family h δ
-  set b : ℕ → Plane := fun k => a ((k : ℝ) * δ) with hb_def
+      ≤ volume E * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
   set T : ℕ → Set Plane := fun k => tube (b k) (dir ((k : ℝ) * δ)) δ with hT_def
   have hTmeas : ∀ k, MeasurableSet (T k) := fun k => measurableSet_tube _ _ _
-  have hTsub : ∀ k, T k ⊆ thickening S δ := fun k => ha ((k : ℝ) * δ)
+  have hTsub : ∀ k, T k ⊆ E := hsub
   set f : Plane → ℝ≥0∞ := fun x => ∑ k ∈ range N, (T k).indicator 1 x with hf_def
   have hfval : ∀ x, f x = ∑ k ∈ range N, (T k).indicator (1 : Plane → ℝ≥0∞) x := fun x => by
     rw [hf_def]
   have hfmeas : Measurable f := by
     rw [hf_def]
     exact Finset.measurable_sum _ (fun k _ => measurable_one.indicator (hTmeas k))
-  have hsupp : ∀ x, x ∉ thickening S δ → f x = 0 := by
+  have hsupp : ∀ x, x ∉ E → f x = 0 := by
     intro x hx
     rw [hfval]
     exact Finset.sum_eq_zero (fun k _ => Set.indicator_of_notMem (fun hxk => hx (hTsub k hxk)) _)
@@ -120,10 +119,20 @@ theorem volume_thickening_mul_ge {S : Set Plane} (h : IsKakeya S) {δ : ℝ}
     rw [hint2]; exact sum_overlap_le hδ hδ1 hN b
   calc ((N : ℝ≥0∞) * ENNReal.ofReal (2 * δ)) ^ 2
       ≤ (∫⁻ x, f x ∂volume) ^ 2 := by gcongr
-    _ ≤ volume (thickening S δ) * ∫⁻ x, (f x) ^ 2 ∂volume :=
-        lintegral_sq_le_measure_mul hfmeas (measurableSet_thickening S δ) hsupp
-    _ ≤ volume (thickening S δ) * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
+    _ ≤ volume E * ∫⁻ x, (f x) ^ 2 ∂volume :=
+        lintegral_sq_le_measure_mul hfmeas hE hsupp
+    _ ≤ volume E * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
         gcongr
+
+/-- The Kakeya specialization of `volume_thickening_tubes_ge`: the `N` net-direction δ-tubes
+furnished by `exists_tube_family` all lie in `Sδ`, so `E := thickening S δ`. -/
+theorem volume_thickening_mul_ge {S : Set Plane} (h : IsKakeya S) {δ : ℝ}
+    (hδ : 0 < δ) (hδ1 : δ ≤ 1) {N : ℕ} (hN : (N : ℝ) * δ ≤ 1) :
+    ((N : ℝ≥0∞) * ENNReal.ofReal (2 * δ)) ^ 2
+      ≤ volume (thickening S δ) * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
+  obtain ⟨a, ha⟩ := exists_tube_family h δ
+  exact volume_thickening_tubes_ge (measurableSet_thickening S δ) hδ hδ1 hN
+    (fun k => a ((k : ℝ) * δ)) (fun k => ha ((k : ℝ) * δ))
 
 /-- **K4 — the Minkowski-content lower bound `vol(Sδ) ≳ 1/log(1/δ)`.** Specialising
 `volume_thickening_mul_ge` to the maximal net `N = ⌊1/δ⌋` (so the numerator `N·2δ ≥ 1` and the
