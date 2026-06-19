@@ -408,6 +408,16 @@ theorem goodsteinLength_dominates_fastGrowing_omega_pow_omega
   have h1 : 2 ^ (2 ^ 16) ≤ Nat.log 2 m := Nat.le_log_of_pow_le Nat.one_lt_two hm
   exact Nat.le_log_of_pow_le Nat.one_lt_two h1
 
+/-- **Explicit-threshold form of the `o = ω^j` domination** (every finite `j ≥ 1`). For `m` with
+`m ≥ 2^{2^{2^16}}` and `j < m`, `fastGrowing (ω^j) m ≤ goodsteinLength m + 2`. The big threshold forces
+`(log₂)^[2] m ≥ 2^16`; the `j < m` is the (mild) requirement that the level fit under the budget. -/
+theorem goodsteinLength_dominates_fastGrowing_omega_pow {m j : ℕ}
+    (hm : 2 ^ (2 ^ (2 ^ 16)) ≤ m) (hj1 : 1 ≤ j) (hjm : j < m) :
+    fastGrowing (oadd (ONote.ofNat j) 1 0) m ≤ goodsteinLength m + 2 := by
+  apply fastGrowing_omega_pow_le_goodsteinLength _ hj1 hjm
+  have h1 : 2 ^ (2 ^ 16) ≤ Nat.log 2 m := Nat.le_log_of_pow_le Nat.one_lt_two hm
+  exact Nat.le_log_of_pow_le Nat.one_lt_two h1
+
 /-- Anti-vacuity: `ω = oadd 1 1 0` really has `repr = ω`, and `oadd ω 1 0` has `repr = ω^ω` — so the
 reduction targets the genuine limit level, not a finite stand-in. -/
 example : (oadd 1 1 0 : ONote).repr = ω := by simp [ONote.repr]
