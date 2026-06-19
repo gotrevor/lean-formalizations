@@ -1149,4 +1149,22 @@ theorem mertens_third_tendsto :
   have h := primeCorr_tendsto.sub mertens_second_tendsto
   exact Filter.Tendsto.congr (fun N => (heq N).symm) h
 
+/-- The prime product `∏_{p≤N}(1−1/p)` is strictly positive. -/
+lemma primeProd_pos (N : ℕ) : 0 < primeProd N := by
+  apply Finset.prod_pos
+  intro p hp
+  rw [Finset.mem_filter] at hp
+  exact one_sub_inv_pos_of_prime hp.2
+
+/-- **Mertens' third theorem, literal product form.**  `∏_{p≤N}(1−1/p)·log N → e^{C₃}` (classically
+`e^{−γ}`).  The exponential of `mertens_third_tendsto`, made literal via `exp(log a + log b) = a·b`. -/
+theorem mertens_third_tendsto_exp :
+    Tendsto (fun N : ℕ => primeProd N * Real.log N) atTop (nhds (Real.exp mertensThirdConst)) := by
+  have h := (Real.continuous_exp.tendsto mertensThirdConst).comp mertens_third_tendsto
+  refine h.congr' ?_
+  filter_upwards [eventually_ge_atTop 2] with N hN
+  have hNR : (2 : ℝ) ≤ N := by exact_mod_cast hN
+  have hlogN : 0 < Real.log N := Real.log_pos (by linarith)
+  rw [Function.comp_apply, Real.exp_add, Real.exp_log (primeProd_pos N), Real.exp_log hlogN]
+
 end LeanFormalizations.Mertens
