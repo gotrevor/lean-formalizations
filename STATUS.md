@@ -35,11 +35,13 @@ The repo is **100% axiom-free** — every headline `#print axioms` is the bare t
   `leadExp_ge_of_base_le` (non-decreasing while `≥ base`). Telescoped (`leadExp_ge_sub`) +
   ordinal bridge (`opow_toOrdinal_log_le`, `opow_le_seqONote_repr`, `omega_opow_le_seqONote_repr`):
   the descent stays `≥ ω^k` for the first `log₂ m − k` steps. **Capstone — `goodsteinLength` is
-  SUPER-LINEAR:** `fastGrowing_two_log_le_goodsteinLength` (`f_2(log₂ m) ≤ goodsteinLength m + 2`,
-  i.e. `goodsteinLength m ≳ m·log₂ m`) via the non-diagonal reduction
-  `fastGrowing_step_le_goodsteinLength` — the first proof `goodsteinLength` beats the polynomial
-  regime. Remaining deep crux sharpened to: **steps-between-leading-exponent-drops is itself a
-  Goodstein length** (upgrades the step-range `log₂ m → m`, closing sub-fact (ii); see `PENDING_WORK.md`).
+  NON-ELEMENTARY:** `fastGrowing_two_log_le_goodsteinLength` (`f_2(log₂ m) ≤ goodsteinLength m + 2`)
+  and its generalization `fastGrowing_ofNat_log_le_goodsteinLength` (`f_n(log₂ m − n + 2) ≤
+  goodsteinLength m + 2`, every finite `n`) via the non-diagonal reduction
+  `fastGrowing_step_le_goodsteinLength` — at `n ≈ (log₂ m)/2` a tower of height `~log₂ m`, so
+  `goodsteinLength` outgrows **every elementary function**. Remaining deep crux sharpened to:
+  **steps-between-leading-exponent-drops is itself a Goodstein length** (upgrades the budget
+  `log₂ m → m`, the only gap to the diagonal `f_n(m)`; see `PENDING_WORK.md`).
 - **2026-06-19 lap 6 (DOMINATION HEADLINE REDUCED to one descent-count fact; norm obstruction
   RESOLVED; 4 commits, all axiom-clean, `src/` still sorry-free):** turned lap-5's negative
   finding into a clean reduction. (1) `goodstein_dominates_of_index` — the full Cichoń assembly

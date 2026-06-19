@@ -65,16 +65,20 @@ blocked on sub-fact (ii)" to "level `o = 1` CLOSED + the per-step recursion mach
    non-diagonal reduction: `seqOrd ≥ ω^o` at step `j` ⟹ `f_o(j+2) ≤ goodsteinLength m + 2`, no
    diagonal budget) instantiated at `o=2`, `j=log₂ m − 2` ⟹ **`fastGrowing_two_log_le_goodsteinLength`**:
    `f_2(log₂ m) ≤ goodsteinLength m + 2`, i.e. `goodsteinLength m ≳ m·log₂ m`. First proof it beats
-   the polynomial regime. **STRONG NEXT EXTENSION (worked out, ~clean):** generalize `o=2` to level
-   `o = ↑n`. At step `i = L − n` (`L = log₂ m`), `leadExp_i ≥ n` (`leadExp_ge_sub`), so
-   `omega_opow_le_seqONote_repr` gives `seqOrd ≥ ω^n`; the non-diagonal reduction yields
-   **`fastGrowing (↑n) (L − n + 2) ≤ goodsteinLength m + 2`** for `2n ≤ L`. Note the *budget* is
-   `L − n + 2`, not `L` (can't have both budget `L` and `leadExp ≥ n` — they trade off). This is
-   already NON-ELEMENTARY: at `n = L/2` it gives `goodsteinLength m ≥ f_{L/2}(L/2 + 2)` with
-   `L = log₂ m` — a tower of height `~log m`. The only Lean friction is `norm (↑n) ≤ n` and
-   `repr (↑n) = n` for the ℕ→ONote coercion (use `ONote.repr_ofNat`; the `↑`/`ofNat`/`NatCast`
-   naming needs care — `(↑n).NF` is `inferInstance`). The diagonal `f_n(m)` (true domination, the
-   headline) still needs the steps-between-drops recursion (the deep crux).
+   the polynomial regime. **✅ DONE — generalized to all `n`: `goodsteinLength` is NON-ELEMENTARY.**
+   `fastGrowing_ofNat_log_le_goodsteinLength`: `fastGrowing (ofNat n) (L − n + 2) ≤ goodsteinLength
+   m + 2` for `1 ≤ m`, `2n ≤ L = log₂ m` (helpers `norm_ofNat`, `ONote.repr_ofNat`, `(ofNat n).NF =
+   inferInstance`). The budget is `L − n + 2` not `L` (leadExp ≥ n and budget trade off). Taking
+   `n ≈ L/2` gives `goodsteinLength m ≥ f_{L/2}(L/2 + 2)` — a tower of height `~log₂ m`, so
+   `goodsteinLength` outgrows every elementary function. Axiom-clean.
+
+   **THE ONE REMAINING DEEP CRUX — the diagonal `f_n(m)` (true domination, the headline):** the gap
+   is entirely the budget `L − n → m` (we have `f_n` at argument `~log m`; the headline wants
+   argument `m`). This needs the descent to keep `leadExp ≥ n` for `≥ m` steps (not just `~log m`),
+   i.e. the **steps-between-leading-exponent-drops = sub-Goodstein-length recursion**. All the local
+   machinery (`leadExp_drop_le_one`, `leadExp_ge_of_base_le`, `log_bump`, the ordinal bridges) is the
+   running start; the recursion itself (induction on the leading exponent mirroring `hardy_oadd_iter`)
+   is the genuine multi-lap obligation.
 
 **THE SHARPENED CRUX (what remains for `o ≥ 2`, i.e. the headline):** the per-step facts give only
 a **`log m`-step** guarantee that `L_k ≥ 2` (rate-bound `drop ≤ 1`/step from `L_0 = log_2 m`; and
