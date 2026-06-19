@@ -505,6 +505,41 @@ theorem log_factorial_div_ge {n k : ℕ} (hk : 1 ≤ k) (hkn : k ≤ n) :
     mul_le_mul_of_nonneg_right hfrac (by linarith)
   linarith [hlb, hsec, hprod, hle, hloghalf, hlog2pi]
 
+/-- **Lower bound on Chebyshev's `T`-combination `f(n) ≥ A·n − (O(log n) error)`.** Assembles the five
+per-term Stirling bounds (`Stirling.le_log_factorial_stirling` at `n`; `log_factorial_div_le` for
+`k=2,3,5`; `log_factorial_div_ge` for `k=30`) via the leading identity `logFactorial_leading_identity`
+(which collapses the continuous `(n/k)·log(n/k)` combination to `A·n`) and the floor slop
+(`−n+⌊n/2⌋+⌊n/3⌋+⌊n/5⌋−n/30 ≥ −3`, the linear-in-`n` part being `0`). The trailing `log`/constant terms
+are a genuine `O(log n)` error. This is the analytic half of `ψ(n) ≳ A·n`. -/
+theorem logFactorial_comb_lower {n : ℕ} (hn : 30 ≤ n) :
+    (n : ℝ) * ((7 / 15) * Real.log 2 + (3 / 10) * Real.log 3 + (1 / 6) * Real.log 5)
+        + Real.log n / 2 + Real.log (2 * Real.pi) / 2 - 3 * Real.log (2 * n) / 2
+        + 3 * Real.log 2 / 2 - Real.log ((n : ℝ) / 30) - 7
+      ≤ Real.log (Nat.factorial n) - Real.log (Nat.factorial (n / 2))
+          - Real.log (Nat.factorial (n / 3)) - Real.log (Nat.factorial (n / 5))
+          + Real.log (Nat.factorial (n / 30)) := by
+  have hnpos : (0 : ℝ) < n := by positivity
+  have hS := Stirling.le_log_factorial_stirling (n := n) (by omega)
+  have hU2 := log_factorial_div_le (n := n) (k := 2) (by norm_num) (by omega)
+  have hU3 := log_factorial_div_le (n := n) (k := 3) (by norm_num) (by omega)
+  have hU5 := log_factorial_div_le (n := n) (k := 5) (by norm_num) (by omega)
+  have hL30 := log_factorial_div_ge (n := n) (k := 30) (by norm_num) (by omega)
+  have hID := logFactorial_leading_identity (x := (n : ℝ)) hnpos
+  -- floor slop: ⌊n/k⌋ ≥ n/k − 1
+  have fge : ∀ k : ℕ, 1 ≤ k → (n : ℝ) / k - 1 ≤ ((n / k : ℕ) : ℝ) := by
+    intro k hk
+    have hkpos : (0 : ℝ) < k := by positivity
+    have h1 : n < (n / k + 1) * k := by
+      have e := Nat.div_add_mod n k; have m := Nat.mod_lt n (show 0 < k by omega); nlinarith [e, m]
+    have h2 : (n : ℝ) ≤ (((n / k : ℕ) : ℝ) + 1) * k := by exact_mod_cast h1.le
+    have h3 : (n : ℝ) / k ≤ ((n / k : ℕ) : ℝ) + 1 := by rw [div_le_iff₀ hkpos]; linarith [h2]
+    linarith [h3]
+  have f2 := fge 2 (by norm_num)
+  have f3 := fge 3 (by norm_num)
+  have f5 := fge 5 (by norm_num)
+  norm_num at hU2 hU3 hU5 hL30 hID f2 f3 f5 hS ⊢
+  linarith [hS, hU2, hU3, hU5, hL30, hID, f2, f3, f5]
+
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
 
