@@ -503,6 +503,49 @@ theorem leadExp_ge_of_not_pow (m k : ℕ)
   rw [hbb1, hstep, log_bump_pred_of_not_pow (base k) hb hv0 hnp]
   exact le_bump (base k) hb _
 
+/-- **`bump` fixes single digits:** `bump b n = n` for `n < b`. A value below its base is a single
+base-`b` digit, so peeling the top power leaves it unchanged (no base substitution happens). The
+mechanism that makes the leading exponent *flat* in the small regime (`leadExp < base`). -/
+theorem bump_eq_of_lt (b n : ℕ) (h : n < b) : bump b n = n := by
+  rcases Nat.eq_zero_or_pos n with h0 | hpos
+  · subst h0; exact bump_zero b
+  · have hlog : Nat.log b n = 0 :=
+      Nat.log_eq_of_pow_le_of_lt_pow (by simpa using hpos) (by simpa using h)
+    have hbp := bump_pos b n (by omega)
+    rw [hlog] at hbp
+    simpa [Nat.mod_one] using hbp
+
+/-- **The leading exponent is NON-INCREASING in the small regime** (`leadExp < base`). Below its
+base, the leading exponent `e` is a single digit: off pure powers it bumps to itself (`bump_eq_of_lt`)
+so `leadExp` is unchanged, and at a pure power it drops by exactly one (`log_bump_pred_of_pow`). So
+once the descent enters the small regime, the leading exponent only ever falls — the qualitative
+companion to `leadExp_ge_of_not_pow` (growth in the large regime). Together they pin the full leadExp
+trajectory: grows while `≥ base`, monotonically decreases once `< base`. The `o = 2` difficulty lives
+entirely in this small regime, where the (rare) pure-power drops are the only events. -/
+theorem leadExp_small_nonincreasing (m k : ℕ) (hv0 : goodsteinSeq m k ≠ 0)
+    (hsmall : Nat.log (base k) (goodsteinSeq m k) < base k) :
+    Nat.log (base (k + 1)) (goodsteinSeq m (k + 1)) ≤ Nat.log (base k) (goodsteinSeq m k) := by
+  have hb : 2 ≤ base k := Nat.le_add_left 2 k
+  have hbb1 : base (k + 1) = base k + 1 := by simp only [base]
+  have hstep : goodsteinSeq m (k + 1) = bump (base k) (goodsteinSeq m k) - 1 := rfl
+  have hbeq : bump (base k) (Nat.log (base k) (goodsteinSeq m k))
+      = Nat.log (base k) (goodsteinSeq m k) := bump_eq_of_lt (base k) _ hsmall
+  by_cases hpp : base k ^ Nat.log (base k) (goodsteinSeq m k) = goodsteinSeq m k
+  · -- pure power: the exponent drops by exactly one (or is already 0)
+    rcases Nat.eq_zero_or_pos (Nat.log (base k) (goodsteinSeq m k)) with he0 | hepos
+    · -- e = 0 ⟹ G_k = base^0 = 1 ⟹ G_{k+1} = bump _ 1 − 1 = 0 ⟹ leadExp = 0
+      have hG1 : goodsteinSeq m k = 1 := by rw [← hpp, he0, pow_zero]
+      rw [hbb1, hstep, hG1, bump_eq_of_lt (base k) 1 (by omega)]
+      simp
+    · -- e ≥ 1: log_bump_pred_of_pow gives bump (base k) e − 1; hbeq collapses bump (base k) e = e
+      rw [hbb1, hstep, log_bump_pred_of_pow (base k) hb hepos hpp.symm]
+      omega
+  · -- not a pure power: the exponent bumps to itself (= e, since e < base k)
+    have hlt : base k ^ Nat.log (base k) (goodsteinSeq m k) < goodsteinSeq m k := by
+      have hle := Nat.pow_log_le_self (base k) hv0; omega
+    rw [hbb1, hstep, log_bump_pred_of_not_pow (base k) hb hv0 hlt]
+    omega
+
 /-- **The Goodstein term stays `≥ m` for the first `m` steps:** `m ≤ goodsteinSeq m k` whenever
 `k + 1 ≤ m`. Induction on `k` using `bump_gt`: while `k + 2 ≤ m ≤ goodsteinSeq m k` the value is
 above the base, so `goodsteinSeq m (k+1) = bump (k+2) (goodsteinSeq m k) − 1 ≥ goodsteinSeq m k`. -/
@@ -996,6 +1039,11 @@ example : ppCount 3 1 = 0 := by native_decide
 -- the sharpened telescope `leadExp_ge_sub_ppCount`, witnessed: `log_2 4 = 2 ≤ log_3 26 + ppCount 4 1
 -- = 2 + 1 = 3`. A vacuous/backwards bound would fail this.
 example : Nat.log 2 4 ≤ Nat.log (base 1) (goodsteinSeq 4 1) + ppCount 4 1 := by native_decide
+-- `bump_eq_of_lt`: a single digit below its base is fixed (`bump 5 3 = 3`, `3 < 5`).
+example : bump 5 3 = 3 := by native_decide
+-- `leadExp_small_nonincreasing`: in the small regime the leading exponent only falls. `G(2,0)=2`,
+-- `log_2 2 = 1 < base 0 = 2` (small); `G(2,1)=2`, `log_3 2 = 0 ≤ 1`. Non-increasing.
+example : Nat.log (base 1) (goodsteinSeq 2 1) ≤ Nat.log (base 0) (goodsteinSeq 2 0) := by native_decide
 
 -- the super-linear bound's interpretation, witnessed: `f_2(n) = 2^n·n` (`fastGrowing_two`), and the
 -- step index `Nat.log 2 8 = 3` ⟹ the bound reads `f_2(3) = 24 ≤ goodsteinLength 8 + 2` (RHS huge).
