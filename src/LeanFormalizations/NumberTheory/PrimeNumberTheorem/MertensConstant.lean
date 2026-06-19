@@ -525,4 +525,39 @@ lemma rpow_one_sub_mul_primeRecipCoeff (s : ℝ) (k : ℕ) :
     ring_nf
   · rw [mul_zero]
 
+/-- **Abel boundary-decay** (general): for `s > 1` and any nonnegative `a(n) ≤ 1 + log n`, the boundary
+`n^{1−s}·a(n) → 0` (polynomial decay beats log growth).  Verified-in-kernel port of an Aristotle proof
+(`tendsto_pow_mul_exp_neg`, `tendsto_rpow_neg_atTop`, squeeze). -/
+theorem boundary_decay (s : ℝ) (hs : 1 < s) (a : ℕ → ℝ)
+    (ha0 : ∀ n, 0 ≤ a n) (haC : ∀ n, a n ≤ 1 + Real.log n) :
+    Tendsto (fun n : ℕ => (n : ℝ) ^ (1 - s) * a n) atTop (nhds 0) := by
+  have h_log : Tendsto (fun n : ℕ => (n : ℝ) ^ (1 - s) * Real.log n) atTop (nhds 0) := by
+    suffices h_log : Tendsto (fun u : ℝ => Real.exp ((1 - s) * u) * u) atTop (nhds 0) by
+      have := h_log.comp (Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop)
+      refine this.congr' ?_
+      filter_upwards [eventually_gt_atTop 0] with n hn
+      simp +decide [Real.rpow_def_of_pos (Nat.cast_pos.mpr hn), mul_comm]
+    suffices h_y : Tendsto (fun y : ℝ => y * Real.exp (-y)) atTop (nhds 0) by
+      have := h_y.comp (Filter.tendsto_id.const_mul_atTop (sub_pos.mpr hs))
+      convert this.div_const (s - 1) using 2 <;> norm_num <;> grind
+    convert (Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 1) using 2; norm_num
+  refine squeeze_zero (fun n => mul_nonneg (Real.rpow_nonneg (Nat.cast_nonneg _) _) (ha0 _))
+    (fun n => mul_le_mul_of_nonneg_left (haC _) (Real.rpow_nonneg (Nat.cast_nonneg _) _)) ?_
+  simpa [mul_add] using Filter.Tendsto.add
+    (tendsto_rpow_neg_atTop (by linarith : 0 < s - 1) |> Filter.Tendsto.comp <| tendsto_natCast_atTop_atTop) h_log
+
+/-- `primeRecipSum n ≥ 0` (a sum of positive prime reciprocals). -/
+lemma primeRecipSum_nonneg (n : ℕ) : 0 ≤ primeRecipSum n := by
+  rw [primeRecipSum]; exact Finset.sum_nonneg (fun p _ => by positivity)
+
+/-- **Abel boundary limit for the prime zeta** (`h_lim` of `tendsto_sum_mul_atTop_nhds_one_sub_integral₀`):
+`(n^{1−s})·(∑_{k≤n} primeRecipCoeff k) → 0` for `s > 1`.  This is the `l = 0` boundary that, with the
+remaining bigO/integrability hypotheses, yields `primeZeta s = (s−1)∫_1^∞ (∑_{p≤t}1/p)·t^{−s} dt` (brick B1). -/
+lemma abel_boundary_tendsto {s : ℝ} (hs : 1 < s) :
+    Tendsto (fun n : ℕ => (n : ℝ) ^ (1 - s) * ∑ k ∈ Finset.Icc 0 n, primeRecipCoeff k)
+      atTop (nhds 0) := by
+  refine (boundary_decay s hs primeRecipSum primeRecipSum_nonneg primeRecipSum_le_one_add_log).congr' ?_
+  filter_upwards with n
+  rw [sum_Icc_primeRecipCoeff]
+
 end LeanFormalizations.Mertens
