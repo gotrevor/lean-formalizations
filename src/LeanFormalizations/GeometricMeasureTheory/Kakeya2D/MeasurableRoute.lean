@@ -28,6 +28,7 @@ count (`cordoba_continuum_count`, the remaining analytic brick). See `CASE_B_ANA
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.NetThinning
 import Mathlib.MeasureTheory.Measure.Prod
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
+import Mathlib.MeasureTheory.Integral.Lebesgue.Markov
 
 open MeasureTheory
 open scoped ENNReal
@@ -153,5 +154,133 @@ theorem exists_continuum_dominant_scale {a : ℝ → Plane} (ha : Measurable a)
   refine lintegral_congr (fun θ => ?_)
   change volume (⋃ n ∈ (g ⁻¹' {j} : Set ℕ), T n θ) = _
   rw [hfiberset j θ]
+
+/-- **Continuous shift-average — the bridge to the discrete count (no deep machinery).** For a
+measurable `f : ℝ → ℝ≥0∞` with finite integral over `[0,1]`, partition `[0,1)` into the `2ʲ` cells
+`[i·2⁻ʲ, (i+1)·2⁻ʲ)`; translating each back to `[0,2⁻ʲ)` and averaging shows **some base offset `α`**
+captures `2ʲ` times the whole integral:
+
+  `2ʲ · ∫_{[0,1]} f  ≤  ∑_{i<2ʲ} f(α + i·2⁻ʲ)`,  for some `α ∈ [0, 2⁻ʲ)`.
+
+This is the continuous analogue of the proven discrete `exists_shift_ge`; it was the step blocked by
+non-measurability of the covered-length profile in the discrete `2ᴶ`-net route, which
+`measurable_coveredLength` now unblocks. Applied to `f = ℓ_{j*}` (the dominant-scale covered length
+from `exists_continuum_dominant_scale`) it produces, at base angle `α`, exactly the aggregate
+covered-length numerator the discrete base-angle Córdoba count (`caseA_content`) consumes — at the
+dominant scale's *own* resolution `2⁻ʲ*`, so with no resolution cap and no Case B.
+
+Proof: `lintegral_finset_sum` + the translation `map_add_right_eq_self` (Lebesgue measure is
+translation-invariant) + the dyadic tiling of `[0,1)` (`lintegral_biUnion_finset`) give
+`∫_{[0,2⁻ʲ)} (∑_i f(·+i·2⁻ʲ)) = ∫_{[0,1]} f`; then if no offset reached the average the integrand
+would be `< 2ʲ·∫f` everywhere, forcing (via `ae_eq_of_ae_le_of_lintegral_le`) equality a.e. with the
+constant — impossible on a positive-measure cell. -/
+theorem exists_shift_ge_integral (j : ℕ) {f : ℝ → ℝ≥0∞} (hf : Measurable f)
+    (hfin : ∫⁻ θ in Set.Icc (0 : ℝ) 1, f θ ≠ ⊤) :
+    ∃ α ∈ Set.Ico (0 : ℝ) ((1 / 2 : ℝ) ^ j),
+      ((2 ^ j : ℕ) : ℝ≥0∞) * (∫⁻ θ in Set.Icc (0 : ℝ) 1, f θ)
+        ≤ ∑ i ∈ Finset.range (2 ^ j), f (α + (i : ℝ) * (1 / 2 : ℝ) ^ j) := by
+  set w : ℝ := (1 / 2 : ℝ) ^ j with hw
+  have hwpos : 0 < w := by rw [hw]; positivity
+  set N : ℕ := 2 ^ j with hN
+  have hNw : (N : ℝ) * w = 1 := by
+    rw [hN, hw, Nat.cast_pow, Nat.cast_ofNat, ← mul_pow]; norm_num
+  set I : ℝ≥0∞ := ∫⁻ θ in Set.Icc (0 : ℝ) 1, f θ with hI
+  -- the per-offset sum
+  set g : ℝ → ℝ≥0∞ := fun α => ∑ i ∈ Finset.range N, f (α + (i : ℝ) * w) with hg
+  -- ∫ over Icc 0 1 = ∫ over Ico 0 1 (endpoint null)
+  have hIco : I = ∫⁻ θ in Set.Ico (0 : ℝ) 1, f θ := by
+    rw [hI]; exact (setLIntegral_congr Ico_ae_eq_Icc).symm
+  -- translation: the `i`-th cell integral equals the base-cell integral of the shifted function
+  have htrans : ∀ i : ℕ, ∫⁻ θ in Set.Ico ((i : ℝ) * w) ((i : ℝ) * w + w), f θ
+      = ∫⁻ α in Set.Ico (0 : ℝ) w, f (α + (i : ℝ) * w) := by
+    intro i
+    have hg' : Measurable (fun x : ℝ => x + (i : ℝ) * w) := measurable_id.add_const _
+    have hmap := setLIntegral_map (μ := volume)
+      (s := Set.Ico ((i : ℝ) * w) ((i : ℝ) * w + w)) measurableSet_Ico hf hg'
+    rw [map_add_right_eq_self] at hmap
+    rw [hmap]
+    have hpre : (fun x => x + (i : ℝ) * w) ⁻¹' Set.Ico ((i : ℝ) * w) ((i : ℝ) * w + w)
+        = Set.Ico (0 : ℝ) w := by
+      ext x
+      simp only [Set.mem_preimage, Set.mem_Ico]
+      constructor
+      · rintro ⟨h1, h2⟩; exact ⟨by linarith, by linarith⟩
+      · rintro ⟨h1, h2⟩; exact ⟨by linarith, by linarith⟩
+    rw [hpre]
+  -- dyadic tiling of `[0,1)` into the `N` cells
+  have htile : Set.Ico (0 : ℝ) 1 = ⋃ i ∈ Finset.range N, Set.Ico ((i : ℝ) * w) ((i : ℝ) * w + w) := by
+    ext x
+    simp only [Set.mem_Ico, Set.mem_iUnion, Finset.mem_range, exists_prop]
+    constructor
+    · rintro ⟨hx0, hx1⟩
+      have hxw0 : 0 ≤ x / w := div_nonneg hx0 hwpos.le
+      refine ⟨⌊x / w⌋₊, ?_, ?_, ?_⟩
+      · rw [Nat.floor_lt hxw0, div_lt_iff₀ hwpos, hNw]; exact hx1
+      · rw [← le_div_iff₀ hwpos]; exact Nat.floor_le hxw0
+      · have hlt1 := Nat.lt_floor_add_one (x / w)
+        rw [div_lt_iff₀ hwpos, add_mul, one_mul] at hlt1; exact hlt1
+    · rintro ⟨i, _, h1, h2⟩
+      have hi0 : (0 : ℝ) ≤ (i : ℝ) * w := by positivity
+      refine ⟨by linarith, ?_⟩
+      have : (i : ℝ) * w + w ≤ (N : ℝ) * w := by
+        have : ((i : ℝ) + 1) * w ≤ (N : ℝ) * w := by
+          apply mul_le_mul_of_nonneg_right _ hwpos.le
+          have : i + 1 ≤ N := by omega
+          exact_mod_cast this
+        linarith [this]
+      linarith [hNw, this]
+  -- pairwise disjointness of the cells
+  have hdisj : (Finset.range N : Set ℕ).PairwiseDisjoint
+      (fun i => Set.Ico ((i : ℝ) * w) ((i : ℝ) * w + w)) := by
+    intro i _ k _ hik
+    rcases lt_or_gt_of_ne hik with h | h
+    · refine Set.disjoint_left.mpr (fun x hx1 hx2 => ?_)
+      simp only [Set.mem_Ico] at hx1 hx2
+      have : (i : ℝ) + 1 ≤ (k : ℝ) := by exact_mod_cast (by omega : i + 1 ≤ k)
+      nlinarith [hx1.2, hx2.1, hwpos]
+    · refine Set.disjoint_left.mpr (fun x hx1 hx2 => ?_)
+      simp only [Set.mem_Ico] at hx1 hx2
+      have : (k : ℝ) + 1 ≤ (i : ℝ) := by exact_mod_cast (by omega : k + 1 ≤ i)
+      nlinarith [hx2.2, hx1.1, hwpos]
+  -- assemble: ∫_{Ico 0 w} g = I
+  have hsum : ∫⁻ α in Set.Ico (0 : ℝ) w, g α = I := by
+    simp only [hg]
+    rw [lintegral_finset_sum (Finset.range N) (f := fun i α => f (α + (i : ℝ) * w))
+      (fun i _ => hf.comp (measurable_id.add_const _))]
+    rw [hIco, htile, lintegral_biUnion_finset hdisj (fun i _ => measurableSet_Ico)]
+    exact Finset.sum_congr rfl (fun i _ => (htrans i).symm)
+  -- the offset measure of the base cell
+  have hμw : volume (Set.Ico (0 : ℝ) w) = ENNReal.ofReal w := by
+    rw [Real.volume_Ico, sub_zero]
+  -- existence of a good offset, by contradiction
+  by_contra hcon
+  push_neg at hcon
+  -- `hcon : ∀ α ∈ Ico 0 w, g α < N · I`  (after unfolding the goal's negation on the base cell)
+  have hlt : ∀ α ∈ Set.Ico (0 : ℝ) w, g α < ((N : ℕ) : ℝ≥0∞) * I := hcon
+  -- `g ≤ᵐ const (N·I)` on the base cell; integral of the constant equals `I`
+  have hconst : (∫⁻ _α in Set.Ico (0 : ℝ) w, ((N : ℕ) : ℝ≥0∞) * I) = I := by
+    rw [setLIntegral_const, hμw]
+    rw [show ((N : ℕ) : ℝ≥0∞) = ENNReal.ofReal ((N : ℕ) : ℝ) from (ENNReal.ofReal_natCast N).symm,
+      mul_comm (ENNReal.ofReal _) I, mul_assoc,
+      ← ENNReal.ofReal_mul (by positivity)]
+    rw [show ((N : ℕ) : ℝ) * w = 1 from by exact_mod_cast hNw, ENNReal.ofReal_one, mul_one]
+  have hle : g ≤ᵐ[volume.restrict (Set.Ico (0 : ℝ) w)] (fun _ => ((N : ℕ) : ℝ≥0∞) * I) := by
+    refine (ae_restrict_iff' measurableSet_Ico).mpr (Filter.Eventually.of_forall ?_)
+    exact fun α hα => (hlt α hα).le
+  have hgmeas : Measurable g := by
+    rw [hg]; exact Finset.measurable_sum _ (fun i _ => hf.comp (measurable_id.add_const _))
+  have haeeq := ae_eq_of_ae_le_of_lintegral_le hle (by rw [hsum]; exact hfin)
+    measurable_const.aemeasurable (by rw [hsum, hconst])
+  -- but `g < const` everywhere on the base cell, so `g ≠ const` on all of it — contradiction
+  rw [Filter.EventuallyEq, ae_restrict_iff' measurableSet_Ico, ae_iff] at haeeq
+  have hcell : {α | ¬ (α ∈ Set.Ico (0 : ℝ) w → g α = ((N : ℕ) : ℝ≥0∞) * I)}
+      = Set.Ico (0 : ℝ) w := by
+    ext α
+    simp only [Set.mem_setOf_eq, Classical.not_imp]
+    constructor
+    · rintro ⟨h, _⟩; exact h
+    · intro hα; exact ⟨hα, (hlt α hα).ne⟩
+  rw [hcell, hμw] at haeeq
+  exact (ENNReal.ofReal_pos.mpr hwpos).ne' haeeq
 
 end LeanFormalizations.Kakeya2D
