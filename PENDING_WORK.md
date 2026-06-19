@@ -63,10 +63,14 @@ Full open-`sorry` inventory + three attack paths each:
    Next lap: with Bachmann ported, prove `fastGrowing_coupled_mono` (the boxed residual) by WF
    recursion on the structural depth, using Bachmann at each descent — then `fastGrowing_fundSeq_step`
    is the proven reduction above. Do NOT expect a one-lap close; advance the coupled-mono invariant.
-4. **`FastGrowing.Bachmann.fundSeq_bachmann`** (sole sorry = `b=0` zero-tail case; recursive backbone
-   PROVEN): (a) finish the 4-way split on `fundamentalSequence e`/`m.natPred` — B/C close by
-   `oadd_le_oadd_tail` prefix-domination, D/E recurse on the exponent `e` (mirror the proven `b`-limit
-   case); (b) Aristotle (`wip/aristotle/bachmann/Problem.lean` ready); (c) prove B+C inline, sorry D+E.
+4. **`FastGrowing.Bachmann.fundSeq_bachmann`** — ✅ **FULLY PROVEN this lap, axiom-clean.** The `b=0`
+   zero-tail case was discharged locally via the 4-way split (B/C close by `oadd_le_oadd_tail`
+   prefix-domination over `zero_le'`; D/E recurse on the exponent `e` via `fundSeq_bachmann e hNF.fst`
+   + a new `oadd_le_oadd_exp_mul` repr-level monotonicity helper). `Bachmann.lean` is sorry-free;
+   `#print axioms fundSeq_bachmann = [propext, Classical.choice, Quot.sound]`. (Aristotle job for this
+   was canceled — proven locally first.) **So the A3 crux's Bachmann prerequisite is DONE.** Next: wire
+   `fundSeq_bachmann` into the `fastGrowing_fundSeq_step` reduction (item 3) — but the residual
+   coupled-index-monotonicity remains the research-grade core.
 
 ## ⏸️ 2026-06-19 (host decision, harvested) — Choquet route is PAUSED for import, not from-scratch
 **`archive/findings/ON-LINE-FINDINGS-2026-06-19-import-not-vendor.md` (Trevor/host) supersedes the
