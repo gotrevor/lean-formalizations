@@ -5,11 +5,16 @@
 This file is a **thin pointer**. The durable overview is **`STATUS.md`**; the per-lap baton
 is the newest **`HANDOFF-<date>.md`**; open items/attack paths live in **`PENDING_WORK.md`**.
 
-## Where things stand (2026-06-19 lap 3 — newest baton: `HANDOFF-2026-06-19-0641.md`)
-- **C3 BUILT modulo one sorry.** The Cichoń identity `goodsteinLength m = H_{seqONote m 0}(2) − 2`
-  is proved end-to-end except the `r=0 ∧ L≥1` "borrowing" case of `hstep_toONote`. New intrinsic
-  Hardy machinery (`hstep`, `hardy_hstep`, `hstep_oadd_tail`) is axiom-clean. Crux submitted to
-  Aristotle (job `77c99f0e`). Build 🟢 green (8288 jobs). See the dated baton for the full model.
+## Where things stand (2026-06-19 lap 5 — newest baton: `HANDOFF-2026-06-19-0823.md`)
+- **C3 CICHOŇ IDENTITY PROVED + axiom-clean.** The borrowing crux `hstep_oadd_one_zero` is
+  discharged (the `Good`/`Canon` frontier invariant + `hstep_pred_pow`), so
+  `goodsteinLength m = H_{seqONote m 0}(2) − 2` is fully machine-checked
+  (`#print axioms = [propext, Classical.choice, Quot.sound]`). `src/` is **sorry-free, 0 math
+  axioms**; build 🟢 green (8288 jobs).
+- **Next crux = the domination corollary** (Hardy↔fastGrowing bridge, the "B4 trap"): turn the
+  identity into "`goodsteinLength` dominates every `f_o`". Linchpin = the Hardy iteration law
+  `H_{ω^e·k} = (H_{ω^e})^[k]` (fed to Aristotle job `26c3a445`); needs the Hardy additive law with
+  the absorption side condition. Full plan in the dated baton + `PENDING_WORK.md`.
 
 ## Where things stood (2026-06-19 lap 2)
 - Branch `no-three-in-line`. Build 🟢 green (8287 jobs). `src/` is **sorry-free** and
