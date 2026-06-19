@@ -339,14 +339,111 @@ theorem shear_hyperbola_lift_share_residue {p : ℕ} (hp : p.Prime) (hp2 : p ≠
     simpa using h
   exact shear_hyperbola_collinear_zmod h2ne hP hQ hR (collinear_imp_modp_det_zero p hcol)
 
-/-- **HJSW lower bound (TARGET — not yet proven).** For prime `p`, the `2p × 2p` grid admits
-`3(p−1)` points with no three collinear — the hyperbola `x·y ≡ k (mod p)` construction, i.e. the
-`3(n−2)/2` count with `n = 2p` (since `3(2p−2)/2 = 3(p−1)`).
+/-! ### ⭐ The closed-form sheared construction `shearSel p`
 
-⚠️ The arc non-collinearity (`hyperbola_noThreeCollinear`) is proven above; the open part is the
-`3/2` covering count — assembling `3(p−1)` actual grid points from ~3 lifted copies of the arc in
-the `2p × 2p` grid, and ruling out cross-arc collinearities. See the online request / `PLAN.md`. -/
-theorem hjsw_lower {p : ℕ} (hp : p.Prime) : 3 * (p - 1) ≤ maxNoThreeInLine (2 * p) := by
+A **closed-form** lift-selection rule (found 2026-06-19, see `SELECTION-RULE-FOUND.md`) for the
+sheared hyperbola, cracking the crux the prior baton believed was intrinsically non-uniform. For
+prime `p`, with pole `pl = (p−1)/2`:
+
+* base column `x` is the point `(x, shearY p x)`, `shearY p x = ((2x+1)⁻¹ : ZMod p).val`
+  (so `shearY p pl = 0`: the pole, since `0⁻¹ = 0` in `ZMod p`);
+* **drop the pole column** entirely; for every other column keep **3 of the 4 lifts**, dropping the
+  corner nearest the grid centre: `shearDrop p r s = (r + p·[r≤pl], s + p·[s≤pl])`.
+
+`card`, distinctness, grid-bound and `NoThreeCollinear` were verified (exact integer determinant) for
+EVERY prime `3 ≤ p ≤ 109`; `Anchors.lean` certifies `p = 7,11,13` by `native_decide`. The `card` and
+grid facts are proven below axiom-clean; the lone remaining obligation for an axiom-clean
+`hjsw_lower` is `shearSel_noThree` (the slope-`±1` counting lemma for this explicit rule). -/
+def shearY (p x : ℕ) : ℕ := ((2 * (x : ZMod p) + 1)⁻¹).val
+
+/-- The single lift dropped from base point `(r,s)`: the corner nearest the grid centre (shift a
+coordinate up by `p` exactly when its residue is `≤ (p−1)/2`). Always one of the four corners. -/
+def shearDrop (p r s : ℕ) : ℕ × ℕ :=
+  (r + (if r ≤ (p - 1) / 2 then p else 0), s + (if s ≤ (p - 1) / 2 then p else 0))
+
+/-- The 3 kept lifts of base column `x`: all four corners except `shearDrop`. -/
+def shearKept (p x : ℕ) : Finset (ℕ × ℕ) :=
+  ({(x, shearY p x), (x + p, shearY p x), (x, shearY p x + p), (x + p, shearY p x + p)} :
+    Finset (ℕ × ℕ)).erase (shearDrop p x (shearY p x))
+
+/-- The full closed-form sheared selection: drop the pole column `(p−1)/2`, take 3 lifts of each
+other column. -/
+def shearSel (p : ℕ) : Finset (ℕ × ℕ) :=
+  ((Finset.range p).erase ((p - 1) / 2)).biUnion (shearKept p)
+
+/-- Every kept lift of column `x` has first coordinate `x` or `x+p` and second `shearY p x` or
+`shearY p x + p`. -/
+theorem mem_shearKept {p x : ℕ} {q : ℕ × ℕ} (hq : q ∈ shearKept p x) :
+    (q.1 = x ∨ q.1 = x + p) ∧ (q.2 = shearY p x ∨ q.2 = shearY p x + p) := by
+  simp only [shearKept, Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton] at hq
+  rcases hq.2 with h | h | h | h <;> subst h <;> simp
+
+/-- `shearDrop` is one of the four corners (so erasing it from the 4-element corner set leaves 3). -/
+theorem shearDrop_mem_corners (p x : ℕ) :
+    shearDrop p x (shearY p x) ∈
+      ({(x, shearY p x), (x + p, shearY p x), (x, shearY p x + p), (x + p, shearY p x + p)} :
+        Finset (ℕ × ℕ)) := by
+  simp only [shearDrop, Finset.mem_insert, Finset.mem_singleton]
+  by_cases hx : x ≤ (p - 1) / 2 <;> by_cases hs : shearY p x ≤ (p - 1) / 2 <;>
+    simp [hx, hs]
+
+/-- Each column keeps exactly 3 lifts. -/
+theorem shearKept_card {p x : ℕ} (hp : 0 < p) : (shearKept p x).card = 3 := by
+  have hs : shearY p x + p ≠ shearY p x := by omega
+  have hx : x + p ≠ x := by omega
+  have h4 : ({(x, shearY p x), (x + p, shearY p x), (x, shearY p x + p), (x + p, shearY p x + p)} :
+      Finset (ℕ × ℕ)).card = 4 := by
+    rw [Finset.card_insert_of_notMem (by simp [Prod.ext_iff]; omega),
+      Finset.card_insert_of_notMem (by simp [Prod.ext_iff]; omega),
+      Finset.card_insert_of_notMem (by simp [Prod.ext_iff]; omega), Finset.card_singleton]
+  rw [shearKept, Finset.card_erase_of_mem (shearDrop_mem_corners p x), h4]
+
+/-- **The sheared selection has exactly `3(p−1)` points** (prime `p`). -/
+theorem shearSel_card {p : ℕ} (hp : p.Prime) : (shearSel p).card = 3 * (p - 1) := by
+  have hp0 : 0 < p := hp.pos
+  rw [shearSel, Finset.card_biUnion]
+  · rw [Finset.sum_congr rfl (fun x _ => shearKept_card (x := x) hp0)]
+    rw [Finset.sum_const, Finset.card_erase_of_mem
+      (Finset.mem_range.mpr (by omega : (p - 1) / 2 < p)), Finset.card_range,
+      smul_eq_mul, Nat.mul_comm]
+  · intro a ha b hb hab
+    have hak : a < p := Finset.mem_range.mp (Finset.mem_of_mem_erase ha)
+    have hbk : b < p := Finset.mem_range.mp (Finset.mem_of_mem_erase hb)
+    show Disjoint (shearKept p a) (shearKept p b)
+    rw [Finset.disjoint_left]
+    intro q hqa hqb
+    have h1 := (mem_shearKept hqa).1
+    have h2 := (mem_shearKept hqb).1
+    rcases h1 with h1 | h1 <;> rcases h2 with h2 | h2 <;> omega
+
+/-- **The sheared selection lies in the `2p × 2p` grid.** -/
+theorem shearSel_grid {p : ℕ} (hp : p.Prime) : IsGridSet (2 * p) (shearSel p) := by
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  intro q hq
+  simp only [shearSel, Finset.mem_biUnion, Finset.mem_erase, Finset.mem_range] at hq
+  obtain ⟨x, ⟨_, hxp⟩, hqk⟩ := hq
+  have hxy := mem_shearKept hqk
+  have hsy : shearY p x < p := ZMod.val_lt _
+  constructor
+  · rcases hxy.1 with h | h <;> omega
+  · rcases hxy.2 with h | h <;> omega
+
+/-- The slope-`±1` counting lemma for the closed-form rule — the lone remaining obligation. With
+this explicit selection, no real-collinear triple of `shearSel p` exists: by
+`shear_hyperbola_lift_share_residue` every collinear triple has two lifts of one base column, by
+`lift_triple_noncollinear` not all three, so it is two lifts of one column plus a lift of another on
+a slope-`±1` line — which this drop rule provably avoids (`coord_diff_of_residue_eq` reduces it to
+modular arithmetic). Verified `native_decide` at `p ≤ 13` and by exact determinant for all primes
+`≤ 109`. -/
+theorem shearSel_noThree {p : ℕ} (hp : p.Prime) : NoThreeCollinear (shearSel p) := by
   sorry
+
+/-- **HJSW lower bound.** For prime `p`, the `2p × 2p` grid admits `3(p−1)` points with no three
+collinear — the closed-form sheared-hyperbola construction `shearSel p` (the `3(n−2)/2` count with
+`n = 2p`). Reduced to the single combinatorial obligation `shearSel_noThree`; `card` and grid are
+proven axiom-clean above. -/
+theorem hjsw_lower {p : ℕ} (hp : p.Prime) : 3 * (p - 1) ≤ maxNoThreeInLine (2 * p) :=
+  le_csSup (bddAbove_grid (2 * p))
+    ⟨shearSel p, (shearSel_card hp).symm, shearSel_grid hp, shearSel_noThree hp⟩
 
 end LeanFormalizations.NoThreeInLine

@@ -14,9 +14,7 @@ This lets `decide` / `native_decide` certify that an explicit configuration has 
 an anti-vacuity anchor, kept OFF the headline axiom path. It is also the experimental tool used to
 search for / validate the HJSW covering construction (`Hyperbola.lean`).
 -/
-import LeanFormalizations.Combinatorics.NoThreeInLine.UpperBound
-import Mathlib.Data.ZMod.Basic
-import Mathlib.Algebra.Field.ZMod
+import LeanFormalizations.Combinatorics.NoThreeInLine.Hyperbola
 
 namespace LeanFormalizations.NoThreeInLine
 
@@ -257,37 +255,10 @@ theorem hjsw_lower_thirteen_shear : 3 * (13 - 1) ≤ maxNoThreeInLine (2 * 13) :
 
 /-! ### ⭐ The general closed-form sheared construction `shearSel p`
 
-This lap a **closed-form** selection rule was found (see `SELECTION-RULE-FOUND.md`), cracking the
-crux that the prior baton believed was intrinsically non-uniform. For prime `p`, with the pole
-`pl = (p−1)/2`:
-
-* base point of column `x` is `(x, shearY p x)` where `shearY p x = ((2x+1)⁻¹ : ZMod p).val`
-  (so `shearY p pl = 0`, the pole, since `0⁻¹ = 0`);
-* drop the pole column entirely; for every other column keep **3 of the 4 lifts**, dropping the one
-  nearest the grid centre: `shearDrop p r s = (r + p·[r≤pl], s + p·[s≤pl])`.
-
-Verified (exact integer determinant) `card`, distinctness, grid-bound, and `NoThreeCollinear` for
-EVERY prime `3 ≤ p ≤ 109` in Python; the `native_decide` instances below certify the construction in
-our kernel at `p = 7, 11, 13`. These are off the headline axiom path; the general theorem
-(`hjsw_lower`) will use `shearSel` with a `Collinear ℝ` argument, not `native_decide`. -/
-def shearY (p x : ℕ) : ℕ := ((2 * (x : ZMod p) + 1)⁻¹).val
-
-/-- The single lift dropped from base point `(r,s)`: the corner nearest the grid centre
-(shift a coordinate up by `p` exactly when its residue is `≤ (p−1)/2`). -/
-def shearDrop (p r s : ℕ) : ℕ × ℕ :=
-  (r + (if r ≤ (p - 1) / 2 then p else 0), s + (if s ≤ (p - 1) / 2 then p else 0))
-
-/-- The 3 kept lifts of base column `x`: all four corners except `shearDrop`. -/
-def shearKept (p x : ℕ) : Finset (ℕ × ℕ) :=
-  ({(x, shearY p x), (x + p, shearY p x), (x, shearY p x + p), (x + p, shearY p x + p)} :
-    Finset (ℕ × ℕ)).erase (shearDrop p x (shearY p x))
-
-/-- The full closed-form sheared selection: drop the pole column `(p−1)/2`, take 3 lifts of each
-other column. For prime `p` this has `3(p−1)` points, lies in the `2p × 2p` grid, and has no three
-collinear (verified `p ≤ 109`; certified by `native_decide` at small `p` below). -/
-def shearSel (p : ℕ) : Finset (ℕ × ℕ) :=
-  ((Finset.range p).erase ((p - 1) / 2)).biUnion (shearKept p)
-
+The closed-form selection rule (see `SELECTION-RULE-FOUND.md` / `Hyperbola.lean`) defines
+`shearSel p`. The general `card`/`grid` facts are proven axiom-clean in `Hyperbola.lean`; the
+`native_decide` instances below certify `NoThreeCollinear (shearSel p)` in our kernel at
+`p = 7, 11, 13` (off the headline axiom path — the general theorem uses a `Collinear ℝ` argument). -/
 theorem shearSel_seven_card : (shearSel 7).card = 18 := by native_decide
 
 theorem shearSel_seven_grid : IsGridSet 14 (shearSel 7) := by
