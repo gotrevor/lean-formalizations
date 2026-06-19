@@ -454,6 +454,23 @@ theorem log_factorial_div_le {n k : ℕ} (hk : 1 ≤ k) (hkn : k ≤ n) :
     linarith
   linarith [hub, hmono, hlog2]
 
+/-- **Secant bound for `t·log t`** (convexity): `b·log b − a·log a ≤ (b−a)(log b + 1)` for
+`0 < a ≤ b`. Algebraic proof: `b log b − a log a = (b−a)log b + a·log(b/a)` and `a·log(b/a) ≤ b−a`
+(from `log y ≤ y−1`). Bounds the `O(log n)` floor slop on the `+⌊n/30⌋` term (the hard *lower*
+direction) in the `f(n)` lower bound. -/
+theorem mul_log_sub_le {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) :
+    b * Real.log b - a * Real.log a ≤ (b - a) * (Real.log b + 1) := by
+  have hb : 0 < b := lt_of_lt_of_le ha hab
+  have hlog : a * Real.log (b / a) ≤ b - a := by
+    have h := Real.log_le_sub_one_of_pos (x := b / a) (by positivity)
+    have hba : a * (b / a) = b := by field_simp
+    nlinarith [h, ha.le]
+  have hsplit : b * Real.log b - a * Real.log a
+      = (b - a) * Real.log b + a * Real.log (b / a) := by
+    rw [Real.log_div hb.ne' ha.ne']; ring
+  have hexp : (b - a) * (Real.log b + 1) = (b - a) * Real.log b + (b - a) := by ring
+  rw [hsplit, hexp]; linarith [hlog]
+
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
 
