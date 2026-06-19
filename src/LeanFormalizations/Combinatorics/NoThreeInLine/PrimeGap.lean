@@ -435,6 +435,25 @@ theorem mul_log_le_mul_log {m x : ℝ} (h1 : 1 ≤ m) (hmx : m ≤ x) :
     (Set.mem_setOf_eq ▸ le_trans h1 hmx) hmx
   simpa [mul_comm] using h
 
+/-- **Per-term upper bound for the subtracted log-factorials** (continuous form). For `1 ≤ k ≤ n`,
+`log(⌊n/k⌋!) ≤ (n/k)·log(n/k) − ⌊n/k⌋ + log(2n)/2 + 1 − log2/2`: `log_factorial_le` at `m=⌊n/k⌋`,
+then the floored `m·log m` is raised to the continuous `(n/k)·log(n/k)` via `mul_log_le_mul_log`, and
+`log(2⌊n/k⌋) ≤ log(2n)`. Used on the `k∈{2,3,5}` terms of `f(n)`. -/
+theorem log_factorial_div_le {n k : ℕ} (hk : 1 ≤ k) (hkn : k ≤ n) :
+    Real.log (Nat.factorial (n / k))
+      ≤ ((n : ℝ) / k) * Real.log ((n : ℝ) / k) - ((n / k : ℕ) : ℝ)
+        + Real.log (2 * n) / 2 + 1 - Real.log 2 / 2 := by
+  have hm1 : 1 ≤ n / k := (Nat.one_le_div_iff (by omega)).mpr hkn
+  have hub := log_factorial_le (m := n / k) (by omega)
+  have hmono : ((n / k : ℕ) : ℝ) * Real.log ((n / k : ℕ) : ℝ)
+      ≤ ((n : ℝ) / k) * Real.log ((n : ℝ) / k) :=
+    mul_log_le_mul_log (by exact_mod_cast hm1) Nat.cast_div_le
+  have hlog2 : Real.log (2 * ((n / k : ℕ) : ℝ)) ≤ Real.log (2 * (n : ℝ)) := by
+    refine Real.log_le_log (by positivity) ?_
+    have : ((n / k : ℕ) : ℝ) ≤ (n : ℝ) := by exact_mod_cast Nat.div_le_self n k
+    linarith
+  linarith [hub, hmono, hlog2]
+
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
 
