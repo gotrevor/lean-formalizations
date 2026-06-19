@@ -20,12 +20,15 @@ Two results, both fully proven and axiom-clean (`#print axioms` = the bare trust
   postulate this lifts to **every** `N ≥ 2` (`maxNoThreeInLine_gt_half`), pinning the order
   at `Θ(N)` (`maxNoThreeInLine_order`).
 
-What is **not** here (the frontier): the Hall–Jackson–Sudbery–Wild `3N/2` constant, and the
-Main Conjecture (open). See `README.md` / `PLAN.md`.
+Now also here (2026-06-19): the **Hall–Jackson–Sudbery–Wild `3N/2`** constant — the best *proven*
+no-three-in-line density (1975, unimproved) — fully formalized and axiom-clean
+(`three_mul_pred_le_maxNoThreeInLine`). What remains the frontier: the all-`N` `(3/2−ε)N` corollary
+(needs PNT-grade primes near `N/2`) and the Main Conjecture (open). See `README.md` / `PLAN.md`.
 -/
 import LeanFormalizations.Combinatorics.NoThreeInLine.UpperBound
 import LeanFormalizations.Combinatorics.NoThreeInLine.Parabola
 import LeanFormalizations.Combinatorics.NoThreeInLine.Hyperbola
+import LeanFormalizations.Combinatorics.NoThreeInLine.Pinwheel
 import Mathlib.NumberTheory.Bertrand
 
 namespace LeanFormalizations.NoThreeInLine
@@ -104,6 +107,25 @@ theorem two_mul_pred_le_maxNoThreeInLine {p : ℕ} (hp : p.Prime) :
   exact le_csSup (bddAbove_grid (2 * p))
     ⟨hyperbolaWide p 1, hyperbolaWide_card.symm, hyperbolaWide_grid hp.pos,
       hyperbolaWide_noThreeCollinear hp hk⟩
+
+/-! ### HJSW `3(p−1)` — the best proven `3N/2` density (Hall–Jackson–Sudbery–Wild 1975)
+
+The headline of the hard mile. The half-band "pinwheel" carved from a single modular hyperbola
+`H(k,p)` realizes `3(p−1)` no-three-collinear points in the `2p × 2p` grid (`Pinwheel.lean`,
+axiom-clean). This is the best *proven* constant for the problem; the all-`N` `(3/2−ε)N` density is
+the corollary obtained by choosing a prime `p ≈ N/2` (needs prime-in-short-interval input). -/
+
+/-- **The HJSW `3(p−1)` lower bound (existence form).** For an odd prime `p`, the `2p × 2p` grid
+contains `3(p−1)` points with no three collinear. -/
+theorem hjsw_3n2_exists {p : ℕ} (hp : p.Prime) (hodd : Odd p) :
+    ∃ s : Finset (ℕ × ℕ), IsGridSet (2 * p) s ∧ NoThreeCollinear s ∧ s.card = 3 * (p - 1) :=
+  hjsw_pinwheel_exists hp hodd
+
+/-- **The HJSW `3N/2` bound.** For an odd prime `p`, `maxNoThreeInLine (2p) ≥ 3(p−1)` — density
+`3/2` at `N = 2p`, the best proven constant for the no-three-in-line problem. -/
+theorem hjsw_three_mul_pred_le_maxNoThreeInLine {p : ℕ} (hp : p.Prime) (hodd : Odd p) :
+    3 * (p - 1) ≤ maxNoThreeInLine (2 * p) :=
+  three_mul_pred_le_maxNoThreeInLine hp hodd
 
 /-! ### Order Θ(N) -/
 
