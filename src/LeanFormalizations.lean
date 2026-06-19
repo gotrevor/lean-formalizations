@@ -26,3 +26,4 @@ import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Discretize
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Directions
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Cordoba
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.CordobaL2
+import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Frostman

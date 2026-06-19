@@ -12,6 +12,7 @@ The headline `dimH S = 2` splits into the two inequalities:
 Only `two_le_dimH` uses `IsKakeya`; the upper bound holds for every set in the plane.
 -/
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Defs
+import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Frostman
 import Mathlib.Analysis.Normed.Lp.MeasurableSpace
 
 open Set MeasureTheory
@@ -33,10 +34,22 @@ theorem dimH_le_two (S : Set (EuclideanSpace ℝ (Fin 2))) : dimH S ≤ 2 := by
 This is the genuine analytic content; `two_le_dimH` is a free `ℝ≥0∞`-density wrapper around it.
 The route to discharge it is the Córdoba `L²`/bush argument (`PLAN.md`, ladder K2–K5):
 δ-tube overlap bound ⟹ Minkowski-content lower bound `vol(Sδ) ≳ 1/log(1/δ)` ⟹ a Frostman
-measure witnessing `μH[d] S > 0` for every `d < 2`. **Open crux of this run (`sorry`).** -/
+measure witnessing `μH[d] S > 0` for every `d < 2`.
+
+**Status (this run).** K2–K4 are **proven, axiom-clean**: the content bound
+`vol(Sδ) ≳ 1/log(1/δ)` is `volume_thickening_log_ge`. K5 brick 1 (`hausdorffMeasure_ne_zero_of_frostmanExists`,
+`Frostman.lean`) reduces this crux to **constructing a Frostman measure** of every exponent `d < 2`
+on `S` (`FrostmanMeasureExists S d`) — done below via that wrapper. The lone remaining `sorry` is
+now exactly that measure construction (the dyadic mass-distribution limit fed by K4), not the raw
+Hausdorff statement. -/
 theorem hausdorffMeasure_pos_of_isKakeya
     (S : Set (EuclideanSpace ℝ (Fin 2))) (h : IsKakeya S) :
     ∀ d : ℝ≥0, (d : ℝ≥0∞) < 2 → μH[(d : ℝ)] S ≠ 0 := by
+  intro d _
+  refine hausdorffMeasure_ne_zero_of_frostmanExists (S := S) (d := (d : ℝ)) ?_
+  -- **The remaining deep obligation (K5 core):** build the Frostman measure of exponent `d` on the
+  -- Kakeya set from the K4 content bound, by distributing mass over the δ-tube family across dyadic
+  -- scales. See `PLAN.md` / `PENDING_WORK.md`.
   sorry
 
 /-- **Davies 1971.** A Kakeya set in `ℝ²` has Hausdorff dimension at least `2`.
