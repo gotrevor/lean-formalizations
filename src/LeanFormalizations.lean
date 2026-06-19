@@ -22,6 +22,7 @@ import LeanFormalizations.Logic.FastGrowing.Basic
 import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Statement
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Tube
+import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.TubeFractional
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Discretize
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Directions
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Cordoba

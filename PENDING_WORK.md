@@ -59,9 +59,14 @@ be arbitrarily small). Plan (finite-net double pigeonhole — cleaner than a mea
      ≥ c` for `r` small (`d<2`).
 **Next-lap entry (well-scoped): the fractional `volume_tube_ge`.** The localized numerator needs
 `vol(δ-tube about a length-`w` segment) ≥ 2δw` (sub-unit `‖v‖=w`); the current `Tube.lean`
-`volume_tube_ge` assumes `‖v‖=1`. This generalization ripples through the frame/coordBox machinery
-(`frame`, `volume_coordBox`, `subBox_subset_tube`) — a NEW standalone area lower bound in a fresh
-file is safer than mutating the delicate green Tube.lean. Then assemble steps 1–4 (the dyadic
+`volume_tube_ge` assumes `‖v‖=1`. **Exact construction (worked out, just transcribe):** let
+`u = perp(v/‖v‖)` (unit ⊥ `v`). The parallelogram `R = {a + s•v + t•u : s∈[0,1], t∈[-δ,δ]}` sits in
+`tube a v δ` (each point is within `|t|≤δ` of core point `a+s•v`). `R` is the image of
+`[0,1]×[-δ,δ]` under the affine map `x ↦ a + L x` with `L = ![v, u]` (columns `v`,`u`), so
+`vol R = |det L|·vol([0,1]×[-δ,δ]) = ‖v‖·1·2δ = 2δ‖v‖` (`det[v|u]=‖v‖` since `u⊥v` unit). Hence
+`vol(tube) ≥ vol R = 2δ‖v‖`. Use `Measure.addHaar_image_linearMap`/`addHaar_preimage_linearMap`
+(same idiom as `Tube.lean`'s `volume_coordBox`) for the det transform. Do this in a NEW file (additive,
+no risk to delicate green `Tube.lean`). Then assemble steps 1–4 (the dyadic
 scale/direction bookkeeping + the two pigeonholes via `exists_index_ge_of_tsum_lt`). Reference asked
 in `ON-LINE-REQUEST.md` (cleanest write-up / existing formalization of Córdoba-for-Hausdorff).
 
