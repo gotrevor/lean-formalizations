@@ -20,11 +20,17 @@ Two results, both fully proven and axiom-clean (`#print axioms` = the bare trust
   postulate this lifts to **every** `N ≥ 2` (`maxNoThreeInLine_gt_half`), pinning the order
   at `Θ(N)` (`maxNoThreeInLine_order`).
 
-What is **not** here (the frontier): the Hall–Jackson–Sudbery–Wild `3N/2` constant, and the
-Main Conjecture (open). See `README.md` / `PLAN.md`.
+* **Hall–Jackson–Sudbery–Wild lower bound** (`hjsw_lower_bound`): for prime `p`, the `2p × 2p`
+  grid admits `3(p−1)` points with no three collinear — i.e. `3N/2 − 3` at `N = 2p` — via the
+  closed-form sheared-hyperbola construction `shearSel p` (proven axiom-clean in `Hyperbola.lean`).
+  Via Bertrand this lifts to a `3N/4` lower bound for **every** `N ≥ 4` (`maxNoThreeInLine_ge_three_quarters`),
+  improving the Erdős `Θ(N)` constant from `1/2` to `3/4`.
+
+What is **not** here (the frontier): the Main Conjecture (open). See `README.md` / `PLAN.md`.
 -/
 import LeanFormalizations.Combinatorics.NoThreeInLine.UpperBound
 import LeanFormalizations.Combinatorics.NoThreeInLine.Parabola
+import LeanFormalizations.Combinatorics.NoThreeInLine.Hyperbola
 import Mathlib.NumberTheory.Bertrand
 
 namespace LeanFormalizations.NoThreeInLine
@@ -69,5 +75,25 @@ Erdős's parabola from below, the pigeonhole ceiling from above. -/
 theorem maxNoThreeInLine_order {p : ℕ} (hp : p.Prime) :
     p ≤ maxNoThreeInLine p ∧ maxNoThreeInLine p ≤ 2 * p :=
   ⟨prime_le_maxNoThreeInLine hp, maxNoThreeInLine_le⟩
+
+/-! ### Hall–Jackson–Sudbery–Wild `3N/2` lower bound -/
+
+/-- **The HJSW lower bound.** For prime `p`, the `2p × 2p` grid contains `3(p−1)` points with no
+three collinear — the closed-form sheared-hyperbola construction. At `N = 2p` this is `3N/2 − 3`,
+beating the `2N`-pigeonhole gap below the trivial `2N` ceiling. -/
+theorem hjsw_lower_bound {p : ℕ} (hp : p.Prime) : 3 * (p - 1) ≤ maxNoThreeInLine (2 * p) :=
+  hjsw_lower hp
+
+/-- **HJSW for all `N ≥ 4`** (via Bertrand's postulate). A prime `p ∈ (N/4, N/2]` gives the sheared
+construction `shearSel p` of `3(p−1) ≥ 3·⌊N/4⌋` points inside `[0, 2p)² ⊆ [0, N)²`. This pins the
+`Θ(N)` lower constant at `3/4`, improving on Erdős's `1/2` (`maxNoThreeInLine_gt_half`). -/
+theorem maxNoThreeInLine_ge_three_quarters {N : ℕ} (hN : 4 ≤ N) :
+    3 * (N / 4) ≤ maxNoThreeInLine N := by
+  obtain ⟨p, hp, hlo, hhi⟩ := Nat.exists_prime_lt_and_le_two_mul (N / 4) (by omega)
+  have h2pN : 2 * p ≤ N := by omega
+  have hcard : 3 * (p - 1) ≤ maxNoThreeInLine N :=
+    le_csSup (bddAbove_grid N)
+      ⟨shearSel p, (shearSel_card hp).symm, (shearSel_grid hp).mono h2pN, shearSel_noThree hp⟩
+  omega
 
 end LeanFormalizations.NoThreeInLine

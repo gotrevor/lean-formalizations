@@ -1,14 +1,17 @@
 /-
-# Hall–Jackson–Sudbery–Wild `3N/2` lower bound — FRONTIER (in progress)
+# Hall–Jackson–Sudbery–Wild `3N/2` lower bound — PROVEN, axiom-clean
 
 The best *proven* lower bound for the no-three-in-line problem (1975), unimproved since.
-Improves Erdős's `~N` parabola to `3(N−2)/2` via the hyperbola `x·y ≡ k (mod p)`.
+Improves Erdős's `~N` parabola to `3(N−2)/2` via a sheared modular hyperbola.
 
-**This file is the active treadmill target.** The headline `hjsw_lower` below is still a `sorry`
-placeholder (the `3/2` covering count is the hard mile). What IS proven and axiom-clean here is the
-reusable building block: **the modular-hyperbola arc has no three collinear points** — the analogue
-of `parabola_noThreeCollinear`, with the Vandermonde determinant identity worked out for the
-hyperbola `x·y ≡ k (mod p)`. See `PLAN.md` and `HANDOFF.md`.
+**The headline `hjsw_lower : 3*(p−1) ≤ maxNoThreeInLine (2*p)` is fully proven**
+(`#print axioms hjsw_lower = [propext, Classical.choice, Quot.sound]`, no `sorry`, no custom axiom).
+The construction is the closed-form sheared hyperbola `shearSel p`: base column `x ↦ (x, (2x+1)⁻¹)`,
+drop the pole column `(p−1)/2`, keep 3 of the 4 lifts of every other column (drop the corner nearest
+the grid centre). `|shearSel p| = 3(p−1)`. The combinatorial heart — no kept slope-`±1` line carries
+three points — is `shearSel_cross_diag`, discharged via the partner lemmas
+`shear_diag_partner` / `shear_anti_partner` (curve-factoring → partner relation → drop tie-break).
+See `SELECTION-RULE-FOUND.md`, `PLAN.md`, `HANDOFF.md`.
 
 ## The arc non-collinearity argument (proven below)
 Three grid points `(aᵢ, yᵢ)` on the arc satisfy `aᵢ · yᵢ ≡ k (mod p)`. Collinearity over `ℝ`
@@ -494,9 +497,9 @@ theorem shearSel_mem_curve {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P : ℕ × 
   have hxy := mem_shearKept hPk
   have hsy : shearY p a < p := shearY_lt a
   have hc1 : (P.1 : ZMod p) = (a : ZMod p) := by
-    rcases hxy.1 with h | h <;> simp [h, ZMod.natCast_self]
+    rcases hxy.1 with h | h <;> simp [h]
   have hc2 : (P.2 : ZMod p) = (shearY p a : ZMod p) := by
-    rcases hxy.2 with h | h <;> simp [h, ZMod.natCast_self]
+    rcases hxy.2 with h | h <;> simp [h]
   refine ⟨?_, ?_, ?_⟩
   · rcases hxy.1 with h | h <;> omega
   · rcases hxy.2 with h | h <;> omega
@@ -582,9 +585,9 @@ theorem shear_diag_partner {p a c : ℕ} (hp : p.Prime) (hp2 : p ≠ 2)
   have hsa : shearY p a < p := shearY_lt a
   have hsc : shearY p c < p := shearY_lt c
   have hR1res : (R.1 : ZMod p) = (c : ZMod p) := by
-    rcases hR1 with h | h <;> simp [h, ZMod.natCast_self]
+    rcases hR1 with h | h <;> simp [h]
   have hR2res : (R.2 : ZMod p) = (shearY p c : ZMod p) := by
-    rcases hR2 with h | h <;> simp [h, ZMod.natCast_self]
+    rcases hR2 with h | h <;> simp [h]
   have hlinez : (shearY p c : ZMod p) - (c : ZMod p) = (shearY p a : ZMod p) - (a : ZMod p) := by
     have h := congrArg (fun z : ℤ => (z : ZMod p)) hline
     push_cast at h
@@ -652,9 +655,9 @@ theorem shear_anti_partner {p a c : ℕ} (hp : p.Prime) (hp2 : p ≠ 2)
   have hsa : shearY p a < p := shearY_lt a
   have hsc : shearY p c < p := shearY_lt c
   have hR1res : (R.1 : ZMod p) = (c : ZMod p) := by
-    rcases hR1 with h | h <;> simp [h, ZMod.natCast_self]
+    rcases hR1 with h | h <;> simp [h]
   have hR2res : (R.2 : ZMod p) = (shearY p c : ZMod p) := by
-    rcases hR2 with h | h <;> simp [h, ZMod.natCast_self]
+    rcases hR2 with h | h <;> simp [h]
   have hlinez : (shearY p c : ZMod p) + (c : ZMod p) = (shearY p a : ZMod p) + (a : ZMod p) := by
     have h := congrArg (fun z : ℤ => (z : ZMod p)) hline
     push_cast at h
@@ -716,9 +719,9 @@ theorem shearSel_cross_diag {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R : �
   -- P, Q lie in the same column a
   have hba : b = a := by
     have h1 : (P.1 : ZMod p) = (a : ZMod p) := by
-      rcases hPxy.1 with h | h <;> simp [h, ZMod.natCast_self]
+      rcases hPxy.1 with h | h <;> simp [h]
     have h2 : (Q.1 : ZMod p) = (b : ZMod p) := by
-      rcases hQxy.1 with h | h <;> simp [h, ZMod.natCast_self]
+      rcases hQxy.1 with h | h <;> simp [h]
     have hh : (b : ZMod p) = (a : ZMod p) := by rw [← h2, ← h1]; exact hres.1.symm
     have hmod : b % p = a % p := (ZMod.natCast_eq_natCast_iff' b a p).mp hh
     rwa [Nat.mod_eq_of_lt hbp, Nat.mod_eq_of_lt hap] at hmod
@@ -728,13 +731,13 @@ theorem shearSel_cross_diag {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R : �
     intro hh
     apply hRdiff
     have hpp1 : (P.1 : ZMod p) = (a : ZMod p) := by
-      rcases hPxy.1 with h | h <;> simp [h, ZMod.natCast_self]
+      rcases hPxy.1 with h | h <;> simp [h]
     have hpp2 : (P.2 : ZMod p) = (shearY p a : ZMod p) := by
-      rcases hPxy.2 with h | h <;> simp [h, ZMod.natCast_self]
+      rcases hPxy.2 with h | h <;> simp [h]
     have hr1 : (R.1 : ZMod p) = (c : ZMod p) := by
-      rcases hRxy.1 with h | h <;> simp [h, ZMod.natCast_self]
+      rcases hRxy.1 with h | h <;> simp [h]
     have hr2 : (R.2 : ZMod p) = (shearY p c : ZMod p) := by
-      rcases hRxy.2 with h | h <;> simp [h, ZMod.natCast_self]
+      rcases hRxy.2 with h | h <;> simp [h]
     exact ⟨by rw [hr1, hpp1, hh], by rw [hr2, hpp2, hh]⟩
   -- orientation determinant vanishes
   have hdet := collinear_imp_det3_zero hcol
