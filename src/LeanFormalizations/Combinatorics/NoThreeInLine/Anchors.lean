@@ -198,4 +198,59 @@ theorem hjsw_lower_seven_shear : 3 * (7 - 1) ≤ maxNoThreeInLine (2 * 7) :=
   le_csSup (bddAbove_grid (2 * 7))
     ⟨witness7_shear, witness7_shear_card.symm, witness7_shear_grid, witness7_shear_noThree⟩
 
+/-! ### Structured witnesses: the **uniform** drop-pole + 3-of-4 sheared construction at `p = 11, 13`
+
+These extend `witness7_shear` to a *uniform* description of the sheared-hyperbola family, the current
+lead for the general `hjsw_lower`. The selection rule, refined this lap (see `PENDING_WORK.md` Path B
+/ `Hyperbola.lean`), is:
+
+> **drop the pole base point `(p−1)/2` entirely, then keep exactly 3 of the 4 lifts of every other
+> base point** (i.e. break exactly one of each base point's two slope-`±1` corner pairs — the
+> diagonal `{(r,s),(r+p,s+p)}` or the antidiagonal `{(r+p,s),(r,s+p)}`).
+
+This gives exactly `3·(p−1)` points and was verified feasible at `p = 7,11,13,17,19`. (It strictly
+replaces the prior baton's "non-uniform 3,2,3,1,3,4,3" framing — a uniform per-point count of 3
+exists.) The single open crux is now the *orientation* (which pair each point breaks); the explicit
+selections below are concrete instances, `native_decide`-certified, off the headline axiom path. -/
+def witness11_shear : Finset (ℕ × ℕ) :=
+  {(0, 1), (0, 12), (1, 4), (1, 15), (2, 9), (2, 20), (3, 8), (3, 19), (4, 5), (4, 16), (6, 17),
+    (7, 3), (8, 2), (9, 7), (9, 18), (10, 21), (11, 1), (12, 15), (13, 20), (14, 19), (15, 5),
+    (17, 6), (17, 17), (18, 3), (18, 14), (19, 2), (19, 13), (20, 18), (21, 10), (21, 21)}
+
+theorem witness11_shear_card : witness11_shear.card = 30 := by decide
+
+theorem witness11_shear_grid : IsGridSet 22 witness11_shear := by
+  intro p hp; fin_cases hp <;> exact ⟨by decide, by decide⟩
+
+theorem witness11_shear_noThree : NoThreeCollinear witness11_shear :=
+  decNoThree_imp (by native_decide)
+
+/-- **HJSW count via the uniform sheared construction at `p = 11`:** the `22 × 22` grid admits
+`30 = 3·(11−1)` points (drop pole + 3-of-4 lifts of `y·(2x+1) ≡ 1 (mod 11)`) with no three
+collinear. -/
+theorem hjsw_lower_eleven_shear : 3 * (11 - 1) ≤ maxNoThreeInLine (2 * 11) :=
+  le_csSup (bddAbove_grid (2 * 11))
+    ⟨witness11_shear, witness11_shear_card.symm, witness11_shear_grid, witness11_shear_noThree⟩
+
+def witness13_shear : Finset (ℕ × ℕ) :=
+  {(0, 1), (0, 14), (1, 9), (1, 22), (2, 8), (2, 21), (3, 2), (3, 15), (4, 3), (4, 16), (5, 6),
+    (5, 19), (7, 20), (8, 23), (9, 24), (10, 5), (11, 4), (12, 25), (13, 1), (14, 22), (15, 21),
+    (16, 2), (17, 3), (18, 6), (20, 7), (20, 20), (21, 10), (21, 23), (22, 11), (22, 24), (23, 5),
+    (23, 18), (24, 4), (24, 17), (25, 12), (25, 25)}
+
+theorem witness13_shear_card : witness13_shear.card = 36 := by decide
+
+theorem witness13_shear_grid : IsGridSet 26 witness13_shear := by
+  intro p hp; fin_cases hp <;> exact ⟨by decide, by decide⟩
+
+theorem witness13_shear_noThree : NoThreeCollinear witness13_shear :=
+  decNoThree_imp (by native_decide)
+
+/-- **HJSW count via the uniform sheared construction at `p = 13`:** the `26 × 26` grid admits
+`36 = 3·(13−1)` points (drop pole + 3-of-4 lifts of `y·(2x+1) ≡ 1 (mod 13)`) with no three
+collinear. -/
+theorem hjsw_lower_thirteen_shear : 3 * (13 - 1) ≤ maxNoThreeInLine (2 * 13) :=
+  le_csSup (bddAbove_grid (2 * 13))
+    ⟨witness13_shear, witness13_shear_card.symm, witness13_shear_grid, witness13_shear_noThree⟩
+
 end LeanFormalizations.NoThreeInLine
