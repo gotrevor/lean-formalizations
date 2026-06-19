@@ -16,19 +16,40 @@ reachability), `osucc` + strict step. General index monotonicity `fastGrowing_le
 **`seqONote_lt`** (`goodsteinSeq m k ≠ 0 ⟹ seqONote m (k+1) < seqONote m k`). The Goodstein
 ε₀-descent now lives on the same `ONote` as the fast-growing growth theory.
 
-### NEXT CRUX: C3 — the growth theorem (`goodsteinLength` tracks `f_{ε₀}`)
-The crown jewel = C2 + A4. `goodsteinLength m` = the length of the strict descent
-`seqONote m 0 > seqONote m 1 > … > 0`. Classically this step-count is a **Hardy** function of
-the starting notation `seqONote m 0` (read in base 2): `goodsteinLength m ≈ H_{seqONote m 0}(2)`
-— the Hardy hierarchy is exactly "number of steps of the unit-decrement descent". Attack:
-1. **Hardy-counts-steps.** Define/relate: for the standard fundamental-sequence descent,
-   `H_α(n)` = the number of `n`-budget steps from `α` to `0`. Then identify `goodsteinLength`
-   with `H_{seqONote m 0}(·)` via `seqONote_lt` (the per-step drop). Needs a Hardy "step
-   counter" lemma — likely a new induction on the descent length. **The genuine remaining work.**
-2. **Domination corollary.** With C3's identity + A4 (`fastGrowing_lt_fastGrowingε₀`) +
-   `hardy_le_of_lt`, derive `goodsteinLength` eventually outgrows every `fastGrowing o`.
-3. State the headline as a thin audit-surface theorem delegating to the engine (like
-   `Goodstein/Statement.lean`). Deep, multi-lap; `seqONote_lt` is the running start.
+### NEXT CRUX: C3 — `goodsteinLength m = H_{seqONote m 0}(2) − 2`  (the Cichoń identity)
+**MEASURED + PROVED modulo ONE narrow sorry (2026-06-19 lap 3).** The whole C3 chain is built
+and the headline holds modulo a single isolated lemma. Identity (native_decide-confirmed):
+`hardy (seqONote m 0) 2 = goodsteinLength m + 2`. Done this lap:
+- **Intrinsic Hardy machinery** (`FastGrowing/Hardy.lean`, axiom-clean): `hstep` (budget-
+  incrementing Hardy step on `ONote`), `hardy_hstep : o≠0 → H_o(n)=H_{hstep o n}(n+1)`,
+  `fundamentalSequence_inr_ne_zero`, `hstep_oadd_tail` (peel leading `oadd` term).
+- **C3 assembly** (`Goodstein/Growth.lean`): `hstep_seqONote`, `hardy_seqONote_step` (per-step
+  invariance), `hardy_seqONote_telescope`, `hardy_seqONote_zero`, `goodsteinLength_eq_hardy`
+  (HEADLINE). Helpers `toONote_bump`, `toONote_oadd`, `toONote_single`,
+  `fundamentalSequence_oadd_zero_zero`, `hstep_oadd_zero_zero`.
+- **The crux `hstep_toONote`** (`hstep (toONote b p) b = toONote (b+1) (bump b p − 1)`): strong
+  induction on `p = c·b^L + r`. PROVED: `r≠0` (tail recursion via `hstep_oadd_tail` + IH +
+  `toONote_oadd`/`toONote_bump`) and `r=0 ∧ L=0` (finite, `hstep_oadd_zero_zero`).
+
+**THE LONE OPEN CORE: `r=0 ∧ L≥1`** — predecessor of `c·(b+1)^(bump b L)` (borrowing). Target
+(native_decide-confirmed): `hstep (oadd (toONote b L) ⟨c,_⟩ 0) b = toONote (b+1) (c·(b+1)^(bump b L) − 1)`.
+Attack (next lap):
+1. **c≥2 → c=1 reduction.** For `c≥2`, `fundamentalSequence (oadd E ⟨c⟩ 0)` (E=toONote b L≠0)
+   gives fund seq `i ↦ oadd E ⟨c-1⟩ (…)`; `hstep` + `hstep_oadd_tail` peels the leading
+   `oadd E ⟨c-1⟩` term → reduces to the `c=1` core (predecessor of a pure power `ω^δ`).
+2. **c=1 core (predecessor of `ω^δ`, δ=repr E).** Well-founded recursion on `E` (= on `L`):
+   `fundamentalSequence (oadd E 1 0)` branches on `E` successor (→ drop the power by one, fill
+   with `b`'s) vs limit (→ descend `E`); the descent fills the `(b+1)`-ary expansion
+   `b·(b+1)^(K-1)+…+b` of `(b+1)^K − 1`, `K=bump b L`. New lemma `hstep_oadd_one_zero`.
+3. **Aristotle: SUBMITTED 2026-06-19 lap 3** — job `77c99f0e-57cd-43c7-8688-62f2ef8cb896`
+   (`hstep_pred_pow`, the narrow borrowing lemma; prompt archived at
+   `tools/aristotle/hstep_pred_pow_prompt.lean`). When IDLE: download, VERIFY in our kernel +
+   `#print axioms`, then port onto `Goodstein/Growth.lean`'s `r=0 ∧ L≥1` branch (it discharges
+   exactly that sub-goal — note the branch context already has `E = toONote b L`, `hLpos`).
+
+### Domination corollary (after the C3 identity closes)
+With `goodsteinLength_eq_hardy` + A4 (`fastGrowing_lt_fastGrowingε₀`) + `hardy_le_of_lt`, derive
+`goodsteinLength` eventually outgrows every `fastGrowing o`; then a thin audit-surface headline.
 
 ### B ladder (Hardy) — lower priority
 B2/B3 done. **B4** (`H_{ω^α}=f_α`) is a trap under mathlib's `ω[n]=n+1` (measured: not a
