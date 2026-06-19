@@ -483,6 +483,25 @@ theorem shearY_injective {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {x x' : ℕ} (
     _ = ((x' : ZMod p)).val := by rw [hxx]
     _ = x' := ZMod.val_cast_of_lt hx'
 
+/-- **Every point of `shearSel p` lies (mod `p`) on the sheared hyperbola** and inside `[0,2p)²`.
+The reusable input to `shear_hyperbola_lift_share_residue` for each of `P,Q,R`. -/
+theorem shearSel_mem_curve {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P : ℕ × ℕ}
+    (hP : P ∈ shearSel p) :
+    P.1 < 2 * p ∧ P.2 < 2 * p ∧ (2 * (P.1 : ZMod p) + 1) * (P.2 : ZMod p) = 1 := by
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  simp only [shearSel, Finset.mem_biUnion, Finset.mem_erase, Finset.mem_range] at hP
+  obtain ⟨a, ⟨hane, hap⟩, hPk⟩ := hP
+  have hxy := mem_shearKept hPk
+  have hsy : shearY p a < p := shearY_lt a
+  have hc1 : (P.1 : ZMod p) = (a : ZMod p) := by
+    rcases hxy.1 with h | h <;> simp [h, ZMod.natCast_self]
+  have hc2 : (P.2 : ZMod p) = (shearY p a : ZMod p) := by
+    rcases hxy.2 with h | h <;> simp [h, ZMod.natCast_self]
+  refine ⟨?_, ?_, ?_⟩
+  · rcases hxy.1 with h | h <;> omega
+  · rcases hxy.2 with h | h <;> omega
+  · rw [hc1, hc2]; exact shear_curve hp hap hane
+
 /-- **The pure-arithmetic crux** (no reals): every pairwise-distinct triple of `shearSel p` has
 nonzero integer orientation determinant. This is exactly the statement Aristotle job `1c2a55b7`
 (`aris-hjsw-shear`) is grinding; once returned it ports here verbatim. Verified by exact integer
