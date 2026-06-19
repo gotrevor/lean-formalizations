@@ -112,6 +112,22 @@ theorem tube_longitudinal {a v : Plane} {δ : ℝ} (hδ : 0 ≤ δ) (hv : ‖v�
   rw [abs_le] at key
   exact ⟨by linarith [key.1], by linarith [key.2]⟩
 
+/-- The **coordinate box** of a unit tube in an orthonormal frame `(v, u)` (with `u ⊥ v`):
+`⟪v, x-a⟫ ∈ [-δ, 1+δ]` (longitudinal) and `⟪u, x-a⟫ ∈ [-δ, δ]` (transverse). A `(1+2δ)×(2δ)`
+rectangle in the rotated coordinates `(⟪v,·⟫, ⟪u,·⟫)`. -/
+def coordBox (a v u : Plane) (δ : ℝ) : Set Plane :=
+  {x | ⟪v, x - a⟫ ∈ Icc (-δ) (1 + δ) ∧ ⟪u, x - a⟫ ∈ Icc (-δ) δ}
+
+/-- **The tube sits inside its coordinate box.** Combines longitudinal extent and transverse
+thinness: this is the precise rectangle-containment underlying the single-tube area bound. -/
+theorem tube_subset_coordBox {a v u : Plane} {δ : ℝ} (hδ : 0 ≤ δ) (hv : ‖v‖ = 1)
+    (hu : ‖u‖ = 1) (huv : ⟪u, v⟫ = 0) : tube a v δ ⊆ coordBox a v u δ := by
+  intro x hx
+  refine ⟨tube_longitudinal hδ hv hx, ?_⟩
+  have h := tube_transverse hδ hu huv hx
+  rw [abs_le] at h
+  exact ⟨h.1, h.2⟩
+
 /-- **Single-tube volume bound.** A δ-tube about a *unit* segment has area `≲ δ`.
 
 Geometrically the tube sits inside the `(1+2δ) × 2δ` rectangle aligned with `v`, so its area is
