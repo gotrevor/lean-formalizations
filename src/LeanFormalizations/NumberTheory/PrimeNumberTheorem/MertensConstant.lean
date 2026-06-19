@@ -116,4 +116,26 @@ lemma riemannZeta_eq_ofReal_exp {s : ℝ} (hs : 1 < s) :
       = ((Real.exp (∑' p : Nat.Primes, -Real.log (1 - (p : ℝ) ^ (-s))) : ℝ) : ℂ) := by
   rw [← riemannZeta_eulerProduct_ofReal hs, clog_tsum_eq_ofReal hs, ← Complex.ofReal_exp]
 
+/-- The Riemann ζ as a **real** function on `(1,∞)` (its real part; it is real there). -/
+noncomputable def realZeta (s : ℝ) : ℝ := (riemannZeta (s : ℂ)).re
+
+/-- On `(1,∞)`, `ζ` equals the coercion of its real value `realZeta`. -/
+lemma riemannZeta_ofReal_eq {s : ℝ} (hs : 1 < s) : riemannZeta (s : ℂ) = (realZeta s : ℂ) := by
+  rw [realZeta, riemannZeta_eq_ofReal_exp hs, Complex.ofReal_re]
+
+/-- `realZeta s = exp(∑'_p −log(1−p^{−s}))`, hence positive on `(1,∞)`. -/
+lemma realZeta_eq_exp {s : ℝ} (hs : 1 < s) :
+    realZeta s = Real.exp (∑' p : Nat.Primes, -Real.log (1 - (p : ℝ) ^ (-s))) := by
+  rw [realZeta, riemannZeta_eq_ofReal_exp hs, Complex.ofReal_re]
+
+lemma realZeta_pos {s : ℝ} (hs : 1 < s) : 0 < realZeta s := by
+  rw [realZeta_eq_exp hs]; exact Real.exp_pos _
+
+/-- **Real log-ζ identity** (brick (i)): `log ζ(s) = ∑'_p −log(1−p^{−s})` for `s > 1`.  Taking `Real.log`
+of the real Euler product.  Next: expand `−log(1−p^{−s}) = p^{−s} + ∑_{k≥2} p^{−ks}/k` to split this as
+`primeZeta s + G(s)`. -/
+lemma log_realZeta_eq {s : ℝ} (hs : 1 < s) :
+    Real.log (realZeta s) = ∑' p : Nat.Primes, -Real.log (1 - (p : ℝ) ^ (-s)) := by
+  rw [realZeta_eq_exp hs, Real.log_exp]
+
 end LeanFormalizations.Mertens
