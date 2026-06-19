@@ -1,5 +1,45 @@
 # PENDING_WORK — lean-formalizations
 
+## 🎉🎉 lap 10 — CLIMBED THE LIMIT LEVELS: o=ω, o=ω^j (all finite j), o=ω^ω all CLOSED
+
+**Done + committed (`ca30077`, `69550cd`, `df89a28`, `1278df6`, `1fb59f8`); build 🟢 (8293 jobs).**
+In one lap the diagonal domination `f_o(m) ≤ goodsteinLength m + 2` went from finite-`o`-only to
+**every `o` up to `ω^ω`**, all unconditional + machine-checked:
+- `fastGrowing_omega_le_goodsteinLength` (o=ω, m≥2^16) — `DominationOmega.lean`.
+- `fastGrowing_omega_pow_le_goodsteinLength` (o=ω^j, all finite j≥1).
+- `fastGrowing_omega_pow_omega_le_goodsteinLength` (o=ω^ω).
+
+**The two engines (reusable):**
+1. **The self-similarity TOWER** (`GoodsteinLike.lean`, axiom-clean): `GoodsteinLike a` (the Goodstein
+   lower-bound recursion); `goodsteinLike_logSeq` (leading exponent of a Goodstein-like seq is
+   Goodstein-like); `iterLeadExp_dominates m j` (the `j`-fold iterated leading exponent dominates
+   `goodsteinSeq ((log₂)^[j] m)`). This is the precise self-reference: level-`j` leadExp ≥ a Goodstein
+   value seeded at the `j`-fold log of `m`.
+2. **The length BOOTSTRAP** (`two_mul_le_goodsteinLength_loglog`): `goodsteinLength ((log₂)^[2] m) ≥ 2m`,
+   proved by bootstrapping `o=ω` against itself — `goodsteinLength t ≥ f_ω(t)−2 = f_{t+1}(t)−2 ≥
+   f_3(t)−2 ≥ 2^{2^t·t}−2 ≥ 2(m+1)−2` (`fastGrowing_omega_eq` + `fastGrowing_ofNat_mono` +
+   `two_pow_le_fastGrowing_ofNat_three`). The `f_ω` length bound is *tower-strength* — that's what
+   lifts the leading exponent into the LARGE regime at the deep seed.
+
+**Ordinal bridges built (`DominationOmega.lean`):** `omega_omega_le_seqONote_repr` (ω^ω from leadExp≥base),
+`opow_le_toOrdinal` + `omega_pow_pow_le_seqONote_repr` (ω^{ω^j} from secondLeadExp≥j),
+`omega_omega_le_toOrdinal` + `omega_pow_omega_le_seqONote_repr` (ω^{ω^ω} from secondLeadExp≥base).
+
+### 🎯 NEXT FRONTIER — the FULL tower up to ε₀ (`ω^{ω^ω}`, …, `ε₀`)
+The pattern is now self-propelling and should be made GENERAL (one induction, not per-level):
+  - **General ordinal bridge:** `descent ≥ ω^β` from `β ≤ toOrdinal (base i) (leadExp_i)` (have the
+    pieces: `opow_le_toOrdinal`, `omega_omega_le_toOrdinal`, `opow_toOrdinal_log_le`). Induct on
+    ω-tower height `k` to get `descent ≥ ω↑↑(k+1)` from the `k`-th leadExp in the large regime.
+  - **General length bootstrap:** `goodsteinLength ((log₂)^[k] m) ≥ 2m` by induction on `k`, using the
+    previous level's domination as the length bound. The recursive crux is a fastGrowing lower bound
+    `f_{tower_{k-1}}(t) ≥ 2m` — iterate `two_pow_le_fastGrowing_ofNat_three`/index-monotonicity. THIS
+    is the genuinely hard recursive piece; everything else is mechanical.
+  - Concrete next rung if not general: **o = ω^{ω^ω}** needs the THIRD leadExp in large regime, hence
+    `goodsteinLength ((log₂)^[3] m) ≥ 2m` — bootstrap `o=ω^ω` (already proved) at the triple-log seed.
+  - Good Aristotle candidate: the recursive fastGrowing lower bound (bounded, self-contained).
+
+---
+
 ## 🎉 lap 9 — DIAGONAL DOMINATION CLOSED for all finite levels (the 8-lap crux)
 
 **Done + committed (`da05776`, `9b186a8`); build 🟢 (8291 jobs).** The headline open problem —

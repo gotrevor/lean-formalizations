@@ -5,7 +5,15 @@
 This file is a **thin pointer**. The durable overview is **`STATUS.md`**; the per-lap baton
 is the newest **`HANDOFF-<date>.md`**; open items/attack paths live in **`PENDING_WORK.md`**.
 
-## Where things stand (2026-06-19 lap 9 — 🎉 FINITE DIAGONAL CLOSED; newest baton: `HANDOFF-2026-06-19-1215.md`)
+## Where things stand (2026-06-19 lap 10 — 🎉🎉 CLIMBED TO o=ω^ω; see `PENDING_WORK.md` top)
+- **NEW this lap (all unconditional + machine-checked):** `f_ω(m)`, `f_{ω^j}(m)` (all finite j), and
+  `f_{ω^ω}(m)` ≤ `goodsteinLength m + 2` — Cichoń's lower bound at the limit ordinals up to ω^ω.
+  Engines: the **self-similarity TOWER** (`GoodsteinLike.lean`) + the **length BOOTSTRAP**
+  (`two_mul_le_goodsteinLength_loglog`: `goodsteinLength((log₂)^[2] m) ≥ 2m`, by bootstrapping o=ω
+  against itself through the tower-strength f_ω length bound). Commits `ca30077`→`1fb59f8`.
+- **NEXT:** generalize to the full ω-power tower up to **ε₀**. See `PENDING_WORK.md` → "NEXT FRONTIER".
+
+## (lap 9 — FINITE DIAGONAL CLOSED; baton `HANDOFF-2026-06-19-1215.md`)
 - **DONE + axiom-clean:** A1–A4 (fast-growing growth theory); B1–B3 (Hardy); C1–C3 (Cichoń identity);
   and **🎉 THE FINITE-LEVEL DIAGONAL DOMINATION** `f_n(m) ≤ goodsteinLength m + 2` for every finite
   `n` (`fastGrowing_ofNat_le_goodsteinLength`, hyps `16≤m ∧ n+1≤log₂m`) — the 8-lap open crux
