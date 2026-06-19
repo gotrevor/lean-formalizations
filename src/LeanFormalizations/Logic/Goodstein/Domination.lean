@@ -215,6 +215,58 @@ theorem toOrdinal_two_cofinal : ∀ β : ONote, β.NF → ∃ N : ℕ, β.repr <
       _ ≤ ω ^ toOrdinal 2 Ne := opow_le_opow_right omega0_pos hle
       _ = toOrdinal 2 (2 ^ Ne) := (toOrdinal_pow 2 le_rfl Ne).symm
 
+/-! ### A linear lower bound on the Goodstein length
+
+`goodsteinLength m ≥ m`: a concrete (citable) growth lower bound, and sub-fact (i) toward the
+full domination headline (it makes the high-budget step `j = m-2` of the telescope available).
+The engine is `le_bump` (the hereditary bump never decreases its argument), which gives
+`G_{k+1} = bump(..) − 1 ≥ G_k − 1`, hence `G_k ≥ m − k`, so `G_k ≠ 0` for `k < m`. -/
+
+/-- **The hereditary bump never decreases:** `n ≤ bump b n` for `b ≥ 2`. Reading `n` in
+hereditary base `b` and replacing `b` by `b+1` can only grow each digit's place value. Strong
+induction mirroring `bump`'s recursion: `(b+1)^(bump b L) ≥ b^L` (via the IH `L ≤ bump b L`). -/
+theorem le_bump (b : ℕ) (hb : 2 ≤ b) : ∀ n, n ≤ bump b n := by
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    rcases eq_or_ne n 0 with rfl | hn
+    · simp
+    · rw [bump_pos b n hn]
+      set L := Nat.log b n with hL
+      have hbe_pos : 0 < b ^ L := Nat.pow_pos (by omega)
+      have hbe_le : b ^ L ≤ n := Nat.pow_log_le_self b hn
+      have hlog : L < n := Nat.log_lt_self b hn
+      have hr_lt : n % b ^ L < n := lt_of_lt_of_le (Nat.mod_lt _ hbe_pos) hbe_le
+      have h1 : b ^ L ≤ (b + 1) ^ bump b L :=
+        calc b ^ L ≤ (b + 1) ^ L := Nat.pow_le_pow_left (by omega) L
+          _ ≤ (b + 1) ^ bump b L := Nat.pow_le_pow_right (by omega) (ih L hlog)
+      have h2 : n % b ^ L ≤ bump b (n % b ^ L) := ih _ hr_lt
+      have key : n / b ^ L * b ^ L + n % b ^ L
+          ≤ n / b ^ L * (b + 1) ^ bump b L + bump b (n % b ^ L) := by gcongr
+      have hdm : n / b ^ L * b ^ L + n % b ^ L = n := Nat.div_add_mod' n (b ^ L)
+      omega
+
+/-- Each Goodstein term is at least `m − k` (truncated): `m − k ≤ goodsteinSeq m k`. Induction
+on `k` using `le_bump` (`G_{k+1} = bump(base k, G_k) − 1 ≥ G_k − 1`). -/
+theorem goodsteinSeq_ge_sub (m : ℕ) : ∀ k, m - k ≤ goodsteinSeq m k := by
+  intro k
+  induction k with
+  | zero => have h0 : goodsteinSeq m 0 = m := rfl; omega
+  | succ k ih =>
+    have hb : goodsteinSeq m k ≤ bump (base k) (goodsteinSeq m k) :=
+      le_bump (base k) (Nat.le_add_left 2 k) _
+    show m - (k + 1) ≤ bump (base k) (goodsteinSeq m k) - 1
+    omega
+
+/-- **Goodstein length grows at least linearly:** `m ≤ goodsteinLength m`. Since
+`goodsteinSeq m k ≥ m − k ≥ 1` for every `k < m`, the sequence is nonzero before step `m`, so its
+first zero is at step `≥ m`. -/
+theorem le_goodsteinLength (m : ℕ) : m ≤ goodsteinLength m := by
+  rw [goodsteinLength, Nat.le_find_iff]
+  intro k hk
+  have hge := goodsteinSeq_ge_sub m k
+  omega
+
 /-! ### Anti-vacuity anchors (off any headline axiom path). -/
 
 example : hardy (oadd 1 2 (oadd 0 3 0)) 4 = hardy (oadd 1 2 0) (hardy (oadd 0 3 0) 4) := by
