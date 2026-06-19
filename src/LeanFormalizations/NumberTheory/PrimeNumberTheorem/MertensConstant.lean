@@ -586,4 +586,98 @@ lemma abel_hg_dom {s : ℝ} (hs : 1 < s) :
     abs_of_nonneg hprod1, abs_of_nonneg hprod2]
   exact mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hps_le htneg.le) (abs_nonneg _)
 
+open MeasureTheory in
+/-- **Abel dominator integrability** (`hg_int` of `tendsto_sum_mul_atTop_nhds_one_sub_integral₀`):
+the dominator `g(t) = t^{−s}·(1+log t)` is integrable at `atTop` for `s > 1`.
+
+Proof: with `ε = (s−1)/2 > 0` and `s' = s − ε = (s+1)/2 ∈ (1, s)`, the dominator is `O(t^{−s'})`
+at `∞` — because `1 + log t = O(t^{ε})` (`isLittleO_log_rpow_atTop`, log beats any positive power) so
+`t^{−s}·(1+log t) = O(t^{−s}·t^{ε}) = O(t^{−s+ε})` — and `t^{−s+ε} = t^{−s'}` is integrable at `atTop`
+since `−s' < −1` (`integrableAtFilter_rpow_atTop_iff`).  The function is continuous on `Ioi 0` so
+strongly measurable at `atTop`; `IsBigO.integrableAtFilter` then transfers integrability. -/
+lemma integrableAtFilter_rpow_neg_mul_log {s : ℝ} (hs : 1 < s) :
+    IntegrableAtFilter (fun t : ℝ => t ^ (-s) * (1 + Real.log t)) atTop := by
+  set ε : ℝ := (s - 1) / 2 with hε_def
+  have hε : 0 < ε := by rw [hε_def]; linarith
+  -- `1 + log t = O(t^ε)`: the constant is bounded by `t^ε` and `log = o(t^ε)`.
+  have hlog : (fun t : ℝ => 1 + Real.log t) =O[atTop] (fun t : ℝ => t ^ ε) := by
+    have h1 : (fun _ : ℝ => (1 : ℝ)) =O[atTop] (fun t : ℝ => t ^ ε) := by
+      rw [Asymptotics.isBigO_iff]
+      refine ⟨1, ?_⟩
+      filter_upwards [eventually_ge_atTop (1 : ℝ)] with t ht
+      rw [one_mul, Real.norm_eq_abs, Real.norm_eq_abs, abs_one,
+        abs_of_nonneg (Real.rpow_nonneg (by linarith) _)]
+      exact Real.one_le_rpow ht hε.le
+    exact h1.add (isLittleO_log_rpow_atTop hε).isBigO
+  -- main domination `t^{−s}·(1+log t) = O(t^{−s+ε})`.
+  have hmain : (fun t : ℝ => t ^ (-s) * (1 + Real.log t))
+      =O[atTop] (fun t : ℝ => t ^ (-s + ε)) := by
+    have hmul := (Asymptotics.isBigO_refl (fun t : ℝ => t ^ (-s)) atTop).mul hlog
+    have heq : (fun t : ℝ => t ^ (-s) * t ^ ε) =ᶠ[atTop] (fun t : ℝ => t ^ (-s + ε)) := by
+      filter_upwards [eventually_gt_atTop (0 : ℝ)] with t ht
+      rw [← Real.rpow_add ht]
+    exact hmul.trans heq.isBigO
+  -- strong measurability at `atTop` (continuous on `Ioi 0`).
+  have hfm : StronglyMeasurableAtFilter (fun t : ℝ => t ^ (-s) * (1 + Real.log t)) atTop := by
+    refine ⟨Set.Ioi 0, Ioi_mem_atTop 0, ?_⟩
+    refine ContinuousOn.aestronglyMeasurable ?_ measurableSet_Ioi
+    refine ContinuousOn.mul ?_ ?_
+    · exact continuousOn_id.rpow_const (fun t ht => Or.inl (ne_of_gt (Set.mem_Ioi.mp ht)))
+    · exact continuousOn_const.add (Real.continuousOn_log.mono (fun t ht => (Set.mem_Ioi.mp ht).ne'))
+  -- dominator integrable at `atTop` (`−s + ε < −1`).
+  have hg : IntegrableAtFilter (fun t : ℝ => t ^ (-s + ε)) atTop :=
+    integrableAtFilter_rpow_atTop_iff.mpr (by rw [hε_def]; linarith)
+  exact hmain.integrableAtFilter hfm hg
+
+open MeasureTheory in
+/-- **Brick B1 — Abel-summation integral representation of the prime zeta.**  For `s > 1`,
+`P(s) = (s−1)·∫_1^∞ (∑_{p≤⌊t⌋} 1/p)·t^{−s} dt`.
+
+Obtained from mathlib's Abel summation `tendsto_sum_mul_atTop_nhds_one_sub_integral₀` with weight
+`f(t)=t^{1−s}` and coefficients `c(k)=[k prime]/k`: the partial sums
+`∑_{k≤n} f(k)·c(k) = ∑_{p≤n} p^{−s} → P(s)` (B0), while the boundary term `f(n)·∑_{p≤n}1/p → 0`
+vanishes (`abel_boundary_tendsto`), leaving `−∫_1^∞ f'(t)·∑_{p≤⌊t⌋}1/p dt` with `f'(t)=(1−s)t^{−s}`.
+
+Combined with `mertens_second_tendsto` (`∑_{p≤t}1/p = log log t + M + o(1)`), this is the launch
+point for brick B2 (the `s→1⁺` limit, where `−γ = Γ'(1)` enters). -/
+theorem primeZeta_eq_abel_integral {s : ℝ} (hs : 1 < s) :
+    primeZeta s = (s - 1) * ∫ t in Set.Ioi (1 : ℝ), t ^ (-s) * primeRecipSum ⌊t⌋₊ := by
+  -- `f(t) = t^{1−s}` is differentiable on `Ici 1`.
+  have hf_diff : ∀ t ∈ Set.Ici (1 : ℝ), DifferentiableAt ℝ (fun u : ℝ => u ^ (1 - s)) t := by
+    intro t ht
+    rw [Set.mem_Ici] at ht
+    exact differentiableAt_rpow_one_sub (by linarith)
+  -- Apply Abel summation with all six (now-proven) hypotheses; the boundary limit `l = 0`.
+  have habel := tendsto_sum_mul_atTop_nhds_one_sub_integral₀ (f := fun u : ℝ => u ^ (1 - s))
+    primeRecipCoeff primeRecipCoeff_zero hf_diff locallyIntegrableOn_deriv_rpow_one_sub
+    (abel_boundary_tendsto hs) (abel_hg_dom hs) (integrableAtFilter_rpow_neg_mul_log hs)
+  -- The Abel partial sums `∑_{k≤n} f(k)·c(k)` are exactly `∑_{p≤n} p^{−s}` (the prime-zeta coeffs).
+  have habel2 : Tendsto (fun n : ℕ => ∑ k ∈ Finset.Icc 0 n, primeZetaCoeff s k) atTop
+      (𝓝 ((0 : ℝ) - ∫ t in Set.Ioi (1 : ℝ),
+        deriv (fun u : ℝ => u ^ (1 - s)) t * ∑ k ∈ Finset.Icc 0 ⌊t⌋₊, primeRecipCoeff k)) := by
+    refine habel.congr (fun n => ?_)
+    exact Finset.sum_congr rfl (fun k _ => rpow_one_sub_mul_primeRecipCoeff s k)
+  -- The same partial sums converge to `primeZeta s` (B0; reconcile `Icc 0 n` with `range (n+1)`).
+  have hL : Tendsto (fun n : ℕ => ∑ k ∈ Finset.Icc 0 n, primeZetaCoeff s k) atTop
+      (𝓝 (primeZeta s)) := by
+    have h2 := (primeZetaCoeff_tendsto hs).comp (tendsto_add_atTop_nat 1)
+    refine h2.congr (fun n => ?_)
+    simp only [Function.comp_apply]
+    rw [Nat.range_succ_eq_Icc_zero]
+  -- On `Ioi 1` the integrand is `(1−s)·(t^{−s}·∑_{p≤⌊t⌋}1/p)`; pull the constant out.
+  have key : (∫ t in Set.Ioi (1 : ℝ),
+        deriv (fun u : ℝ => u ^ (1 - s)) t * ∑ k ∈ Finset.Icc 0 ⌊t⌋₊, primeRecipCoeff k)
+      = (1 - s) * ∫ t in Set.Ioi (1 : ℝ), t ^ (-s) * primeRecipSum ⌊t⌋₊ := by
+    rw [← integral_const_mul]
+    refine setIntegral_congr_fun measurableSet_Ioi (fun t ht => ?_)
+    rw [Set.mem_Ioi] at ht
+    rw [deriv_rpow_one_sub (by linarith), sum_Icc_primeRecipCoeff]
+    ring
+  -- Uniqueness of limits, then simplify the integral.
+  calc primeZeta s
+      = (0 : ℝ) - ∫ t in Set.Ioi (1 : ℝ),
+          deriv (fun u : ℝ => u ^ (1 - s)) t * ∑ k ∈ Finset.Icc 0 ⌊t⌋₊, primeRecipCoeff k :=
+        tendsto_nhds_unique hL habel2
+    _ = (s - 1) * ∫ t in Set.Ioi (1 : ℝ), t ^ (-s) * primeRecipSum ⌊t⌋₊ := by rw [key]; ring
+
 end LeanFormalizations.Mertens
