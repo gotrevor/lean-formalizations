@@ -787,7 +787,7 @@ theorem hstep_pred_pow (b : ℕ) (hb : 2 ≤ b) :
       hstep (oadd E 1 0) b = toONote (b + 1) ((b + 1) ^ evalNat b E - 1) by
     exact fun E => H E.repr E rfl
   intro o
-  induction o using Ordinal.induction with
+  induction o using WellFoundedLT.induction with
   | _ o ih =>
     intro E hrepr hNF hne hgood
     have hbpnat : (b.succPNat : ℕ+) = ⟨b + 1, by omega⟩ := rfl
