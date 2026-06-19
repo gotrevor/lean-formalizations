@@ -319,6 +319,44 @@ theorem cover_count_lower {δ ρ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) (hρ : 
     _ ≤ (s.card : ℝ≥0∞) * ENNReal.ofReal ((ρ + δ) ^ 2) * volume (closedBall (0 : Plane) 1)
           * ENNReal.ofReal (6 * Real.pi * δ * (2 * N * (1 + Real.log N))) := by gcongr
 
+/-- **Single-scale Hausdorff-content contribution — the last reusable single-scale brick.** Folds
+the per-piece *lower* diameter bound `η ≤ ediam(Uₙ)` (pieces genuinely at scale `δ`, not merely
+`≤ ρ`) into the Córdoba count `cover_count_lower`, turning the piece *count* `|s|` into a lower bound
+on the content sum `∑_{n∈s} ediam(Uₙ)^d`. In division-free form (avoiding `ℝ≥0∞` division hypotheses):
+
+  `(∑ₖ 2δ·vol(A k))² · η^d  ≤  (∑_{n∈s} ediam(Uₙ)^d) · C₀`,
+
+where `C₀ = (ρ+δ)²·vol(disc)·6πδ·2N(1+log N)` is the Córdoba per-piece coefficient. Dividing by `C₀`
+(finite, nonzero) reads off `∑_{n∈s} ediam^d ≥ (∑ₖ 2δ·vol A k)²·η^d / C₀`. At the dominant scale
+`δ = ρ = 2⁻ʲ`, `N = 2ʲ`, `η = 2⁻⁽ʲ⁺¹⁾` this is the `δ^{-(2-d)}/poly` content gain that closes
+`kakeya_hausdorffContentBound` once the cross-scale orchestration supplies `∑ₖ vol(A k) ≳ N/poly`. -/
+theorem cover_content_per_scale {δ ρ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) (hρ : 0 ≤ ρ)
+    {N : ℕ} (hN : (N : ℝ) * δ ≤ 1)
+    (a : ℕ → Plane) (A : ℕ → Set ℝ) (hAmeas : ∀ k, MeasurableSet (A k))
+    (hA01 : ∀ k, A k ⊆ Icc (0 : ℝ) 1)
+    (s : Finset ℕ) (U : ℕ → Set Plane) (hediam : ∀ n ∈ s, Metric.ediam (U n) ≤ ENNReal.ofReal ρ)
+    (hcov : ∀ k, (fun t => a k + t • dir ((k : ℝ) * δ)) '' (A k) ⊆ ⋃ n ∈ s, U n)
+    {d : ℝ} (hd : 0 ≤ d) {η : ℝ≥0∞} (hediam_lo : ∀ n ∈ s, η ≤ Metric.ediam (U n)) :
+    (∑ k ∈ Finset.range N, ENNReal.ofReal (2 * δ) * volume (A k)) ^ 2 * η ^ d
+      ≤ (∑ n ∈ s, Metric.ediam (U n) ^ d)
+        * (ENNReal.ofReal ((ρ + δ) ^ 2) * volume (closedBall (0 : Plane) 1)
+          * ENNReal.ofReal (6 * Real.pi * δ * (2 * N * (1 + Real.log N)))) := by
+  set C0 : ℝ≥0∞ := ENNReal.ofReal ((ρ + δ) ^ 2) * volume (closedBall (0 : Plane) 1)
+      * ENNReal.ofReal (6 * Real.pi * δ * (2 * N * (1 + Real.log N))) with hC0
+  have hcount : (∑ k ∈ Finset.range N, ENNReal.ofReal (2 * δ) * volume (A k)) ^ 2
+      ≤ (s.card : ℝ≥0∞) * C0 := by
+    refine (cover_count_lower hδ hδ1 hρ hN a A hAmeas hA01 s U hediam hcov).trans_eq ?_
+    rw [hC0]; ring
+  have hsum : (s.card : ℝ≥0∞) * η ^ d ≤ ∑ n ∈ s, Metric.ediam (U n) ^ d := by
+    have h1 : (s.card : ℝ≥0∞) * η ^ d = ∑ _n ∈ s, η ^ d := by
+      rw [Finset.sum_const, nsmul_eq_mul]
+    rw [h1]
+    exact Finset.sum_le_sum (fun n hn => ENNReal.rpow_le_rpow (hediam_lo n hn) hd)
+  calc (∑ k ∈ Finset.range N, ENNReal.ofReal (2 * δ) * volume (A k)) ^ 2 * η ^ d
+      ≤ ((s.card : ℝ≥0∞) * C0) * η ^ d := by gcongr
+    _ = ((s.card : ℝ≥0∞) * η ^ d) * C0 := by ring
+    _ ≤ (∑ n ∈ s, Metric.ediam (U n) ^ d) * C0 := by gcongr
+
 /-! ### Per-direction length bound: a covered unit segment forces `∑ₙ ediam(Uₙ) ≥ 1`
 
 The foundation of the dyadic pigeonhole. Pull the cover `ℓ ⊆ ⋃Uₙ` of a *unit* segment back along the

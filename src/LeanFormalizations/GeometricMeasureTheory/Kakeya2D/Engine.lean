@@ -28,6 +28,68 @@ theorem dimH_le_two (S : Set (EuclideanSpace ℝ (Fin 2))) : dimH S ≤ 2 := by
   calc dimH S ≤ dimH (univ : Set (EuclideanSpace ℝ (Fin 2))) := dimH_mono (subset_univ S)
     _ = 2 := huniv
 
+/-! ### Exponential-beats-polynomial constant (the content-bound constant)
+
+The cross-scale assembly produces, at the cover's dominant scale `j*`, a content contribution
+`≳ b^{j*}/(1+j*)^m` with `b = 2^{2-d} > 1` (since `d < 2`) and a fixed polynomial denominator from
+the Córdoba/pigeonhole losses. Since `j*` is the *output* of the pigeonhole (not under our control),
+the Hausdorff-content constant `c` must be a uniform lower bound valid for *every* `j*`. As `b^j/(1+j)^m
+→ ∞`, the infimum over `j` is attained and positive: this is exactly the `c > 0` the content bound
+needs. The lemma is proven root-free (Bernoulli + a `√b` induction), so it carries no extra axioms. -/
+
+/-- Bernoulli base case: for `b > 1`, `min(1,b-1)·(1+j) ≤ b^j` for all `j`. -/
+theorem exists_const_mul_succ_le {b : ℝ} (hb : 1 < b) :
+    ∃ c : ℝ, 0 < c ∧ ∀ j : ℕ, c * (1 + (j : ℝ)) ≤ b ^ j := by
+  refine ⟨min 1 (b - 1), lt_min one_pos (by linarith), fun j => ?_⟩
+  have hbern : 1 + (j : ℝ) * (b - 1) ≤ b ^ j := by
+    have h := one_add_mul_le_pow (a := b - 1) (by linarith) j
+    have he : (1 : ℝ) + (b - 1) = b := by ring
+    rwa [he] at h
+  have hm1 : min 1 (b - 1) ≤ 1 := min_le_left _ _
+  have hmb : min 1 (b - 1) ≤ b - 1 := min_le_right _ _
+  have hj : (0 : ℝ) ≤ (j : ℝ) := by positivity
+  calc min 1 (b - 1) * (1 + (j : ℝ)) = min 1 (b - 1) + min 1 (b - 1) * j := by ring
+    _ ≤ 1 + (b - 1) * j := add_le_add hm1 (mul_le_mul_of_nonneg_right hmb hj)
+    _ = 1 + (j : ℝ) * (b - 1) := by ring
+    _ ≤ b ^ j := hbern
+
+/-- **Exponential beats any fixed polynomial (multiplicative form).** For `b > 1` and any `m`, there
+is `c > 0` with `c·(1+j)^m ≤ b^j` for all `j`. Proven by induction on `m` using a `√b` split:
+`c₁(1+j)^m ≤ (√b)^j` and `c₂(1+j) ≤ (√b)^j` multiply to `c₁c₂(1+j)^{m+1} ≤ b^j`. -/
+theorem exists_const_mul_pow_le : ∀ (m : ℕ) {b : ℝ}, 1 < b →
+    ∃ c : ℝ, 0 < c ∧ ∀ j : ℕ, c * (1 + (j : ℝ)) ^ m ≤ b ^ j := by
+  intro m
+  induction m with
+  | zero => intro b hb; exact ⟨1, one_pos, fun j => by simpa using one_le_pow₀ hb.le⟩
+  | succ m ih =>
+    intro b hb
+    have hb0 : (0 : ℝ) ≤ b := by linarith
+    set s := Real.sqrt b with hs
+    have hs1 : 1 < s := by
+      rw [hs]; exact (Real.lt_sqrt (by norm_num)).mpr (by simpa using hb)
+    have hss : s * s = b := Real.mul_self_sqrt hb0
+    obtain ⟨c1, hc1, h1⟩ := ih hs1
+    obtain ⟨c2, hc2, h2⟩ := exists_const_mul_succ_le hs1
+    refine ⟨c1 * c2, by positivity, fun j => ?_⟩
+    have hsj : (0 : ℝ) ≤ s ^ j := by positivity
+    calc c1 * c2 * (1 + (j : ℝ)) ^ (m + 1)
+        = (c1 * (1 + (j : ℝ)) ^ m) * (c2 * (1 + (j : ℝ))) := by ring
+      _ ≤ s ^ j * s ^ j := by
+          refine mul_le_mul (h1 j) (h2 j) ?_ hsj
+          have : (0 : ℝ) ≤ c2 * (1 + (j : ℝ)) := by positivity
+          exact this
+      _ = b ^ j := by rw [← mul_pow, hss]
+
+/-- **The content-bound constant.** For `b > 1` and any `m`, there is `c > 0` with `c ≤ b^j/(1+j)^m`
+for *all* `j` — the uniform positive lower bound on the dominant-scale content contribution. -/
+theorem exists_pos_le_pow_div {b : ℝ} (hb : 1 < b) (m : ℕ) :
+    ∃ c : ℝ, 0 < c ∧ ∀ j : ℕ, c ≤ b ^ j / (1 + (j : ℝ)) ^ m := by
+  obtain ⟨c, hc, h⟩ := exists_const_mul_pow_le m hb
+  refine ⟨c, hc, fun j => ?_⟩
+  have hden : (0 : ℝ) < (1 + (j : ℝ)) ^ m := by positivity
+  rw [le_div_iff₀ hden]
+  exact h j
+
 /-- **The deep crux (Davies 1971, Hausdorff content form), as one named obligation.** For a planar
 Kakeya set `S` and every exponent `0 < d < 2`, the `d`-dimensional **Hausdorff content** of `S` is
 bounded below: there is a scale `r > 0` and a constant `c > 0` such that every fine countable cover
