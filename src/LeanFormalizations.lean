@@ -22,3 +22,4 @@ import LeanFormalizations.Logic.FastGrowing.Basic
 import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Statement
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Tube
+import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Discretize
