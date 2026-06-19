@@ -207,6 +207,26 @@ theorem primeSumDiv_le {N : ℕ} (hN : 1 ≤ N) :
   rw [abs_le] at hvm
   linarith [hvm.2, hd, htail]
 
+/-- `∑_{p ≤ N} (log p)/p ≥ 0`. -/
+lemma primeSumDiv_nonneg (N : ℕ) : 0 ≤ primeSumDiv N := by
+  refine Finset.sum_nonneg fun p hp => ?_
+  rw [Finset.mem_filter] at hp
+  exact div_nonneg (Real.log_nonneg (by exact_mod_cast hp.2.one_lt.le)) (by positivity)
+
+/-- **The prime sum has order `log N`.** `∑_{p ≤ N} (log p)/p = O(log N)` — the right order of
+magnitude (upper bound), from `primeSumDiv_le` and nonnegativity.  (The sharp `log N + O(1)` needs the
+tail to be `O(1)`; see the follow-up note.) -/
+theorem primeSumDiv_isBigO_log :
+    primeSumDiv =O[atTop] (fun N : ℕ ↦ Real.log N) := by
+  rw [Asymptotics.isBigO_iff]
+  refine ⟨2, ?_⟩
+  have hlog : Tendsto (fun N : ℕ ↦ Real.log N) atTop atTop :=
+    Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop
+  filter_upwards [eventually_ge_atTop 1, hlog.eventually_ge_atTop (Real.log 4 + 5)] with N hN hbig
+  have hlogN0 : (0 : ℝ) ≤ Real.log N := Real.log_nonneg (by exact_mod_cast hN)
+  rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_nonneg (primeSumDiv_nonneg N), abs_of_nonneg hlogN0]
+  linarith [primeSumDiv_le hN, hbig]
+
 /-!
 ## Follow-up: the prime form `∑_{p ≤ x} (log p)/p = log x + O(1)`
 
