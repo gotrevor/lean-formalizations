@@ -158,6 +158,35 @@ theorem exists_dominant_scale {f : ℕ → ℝ≥0∞} (g : ℕ → ℕ) (h : 1 
     ENNReal.tsum_fiberwise f g
   exact exists_index_ge_of_tsum_lt (hfib ▸ h) tsum_scaleWeight_lt_one
 
+/-- **Global dominant scale across a direction net (sub-brick (b)).** Given a finite nonempty set `s`
+of directions and, for each `k ∈ s`, a per-scale covered-length profile `L k · : ℕ → ℝ≥0∞` with total
+`1 ≤ ∑ⱼ L k j` (the per-direction covered unit segment), there is a single scale `j` whose pieces
+cover a definite fraction of the *aggregate* length:
+
+  `s.card · scaleWeight j ≤ ∑_{k ∈ s} L k j`,   i.e. total covered length at scale `j ≳ |s|/(j+1)²`.
+
+This is the second pigeonhole: sum the per-direction totals to `≥ |s|`, swap finite-sum with the
+scale `tsum`, and pigeonhole the aggregate against the weights `|s|·scaleWeight` (total `< |s|`). The
+output is the input to the localized Córdoba count (sub-brick (c)): `|s|/poly` directions worth of
+covered length concentrated at one scale `δ = 2⁻ʲ`. -/
+theorem exists_global_dominant_scale {ι : Type*} {s : Finset ι} (hs : s.Nonempty)
+    (L : ι → ℕ → ℝ≥0∞) (hL : ∀ k ∈ s, 1 ≤ ∑' j, L k j) :
+    ∃ j : ℕ, (s.card : ℝ≥0∞) * scaleWeight j ≤ ∑ k ∈ s, L k j := by
+  have hcard0 : (s.card : ℝ≥0∞) ≠ 0 :=
+    (Nat.cast_pos.mpr (Finset.card_pos.mpr hs)).ne'
+  have hcardtop : (s.card : ℝ≥0∞) ≠ ⊤ := ENNReal.natCast_ne_top _
+  have hsum : (s.card : ℝ≥0∞) ≤ ∑' j, ∑ k ∈ s, L k j := by
+    rw [Summable.tsum_finsetSum (fun _ _ => ENNReal.summable)]
+    have hcard : (s.card : ℝ≥0∞) = ∑ _k ∈ s, (1 : ℝ≥0∞) := by simp
+    rw [hcard]
+    exact Finset.sum_le_sum (fun k hk => hL k hk)
+  have hw : ∑' j, ((s.card : ℝ≥0∞) * scaleWeight j) < (s.card : ℝ≥0∞) := by
+    rw [ENNReal.tsum_mul_left, mul_comm (s.card : ℝ≥0∞)]
+    calc (∑' j, scaleWeight j) * (s.card : ℝ≥0∞)
+        < 1 * (s.card : ℝ≥0∞) := ENNReal.mul_lt_mul_left hcard0 hcardtop tsum_scaleWeight_lt_one
+      _ = (s.card : ℝ≥0∞) := one_mul _
+  exact exists_index_ge_of_tsum_lt hsum hw
+
 /-! ### Covering geometry: a cover of `S` thickens to a cover of `Sδ`
 
 The bridge from the K4 single-scale content `vol(Sδ) ≳ 1/log(1/δ)` to a Hausdorff content lower
