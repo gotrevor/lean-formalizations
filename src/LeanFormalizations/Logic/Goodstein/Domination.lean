@@ -399,4 +399,13 @@ example : hardy (oadd 1 2 (oadd 0 3 0)) 4 = hardy (oadd 1 2 0) (hardy (oadd 0 3 
 example : hardy (oadd 1 3 0) 3 = (hardy (oadd 1 1 0))^[3] 3 := by native_decide
 example : fastGrowing 2 3 ≤ hardy (oadd 2 1 0) 3 := by native_decide
 
+-- The domination inequality `fastGrowing o m ≤ goodsteinLength m + 2` holds concretely in the
+-- computable regime (small `o`, where it already kicks in at small `m`). A *backwards* or
+-- vacuous headline would fail these. (For `o ≥ 2` the inequality is asymptotic — it first holds
+-- at `m = 4`, where `goodsteinLength` is already astronomically large and beyond `native_decide`.)
+example : fastGrowing 0 2 ≤ goodsteinLength 2 + 2 := by native_decide  -- 3 ≤ 5
+example : fastGrowing 1 2 ≤ goodsteinLength 2 + 2 := by native_decide  -- 4 ≤ 5
+example : fastGrowing 0 3 ≤ goodsteinLength 3 + 2 := by native_decide  -- 4 ≤ 7
+example : fastGrowing 1 3 ≤ goodsteinLength 3 + 2 := by native_decide  -- 6 ≤ 7
+
 end LeanFormalizations.Logic.Goodstein
