@@ -125,4 +125,53 @@ theorem volume_thickening_mul_ge {S : Set Plane} (h : IsKakeya S) {δ : ℝ}
     _ ≤ volume (thickening S δ) * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
         gcongr
 
+/-- **K4 — the Minkowski-content lower bound `vol(Sδ) ≳ 1/log(1/δ)`.** Specialising
+`volume_thickening_mul_ge` to the maximal net `N = ⌊1/δ⌋` (so the numerator `N·2δ ≥ 1` and the
+denominator `6π δ·2N(1+log N) ≤ 12π(1+log(1/δ))`), the δ-neighbourhood of a planar Kakeya set
+satisfies
+
+  `1 ≤ vol(Sδ) · 12π(1 + log(1/δ))`,
+
+i.e. `vol(Sδ) ≥ 1 / (12π(1 + log(1/δ)))`. This is the uniform-content input that K5 lifts (via a
+mass-distribution / Frostman argument across scales) to `μH[d] S ≠ 0` for every `d < 2`. -/
+theorem volume_thickening_log_ge {S : Set Plane} (h : IsKakeya S) {δ : ℝ}
+    (hδ : 0 < δ) (hδ2 : δ ≤ 1 / 2) :
+    1 ≤ volume (thickening S δ) * ENNReal.ofReal (12 * π * (1 + Real.log (1 / δ))) := by
+  set N : ℕ := ⌊1 / δ⌋₊ with hN_def
+  have hr2 : (2 : ℝ) ≤ 1 / δ := by rw [le_div_iff₀ hδ]; linarith
+  have hN2 : 2 ≤ N := Nat.le_floor (by exact_mod_cast hr2)
+  have hNpos : 0 < N := by omega
+  have hN1R : (1 : ℝ) ≤ (N : ℝ) := by exact_mod_cast (by omega : 1 ≤ N)
+  have hNposR : (0 : ℝ) < (N : ℝ) := by exact_mod_cast hNpos
+  have hNle : (N : ℝ) ≤ 1 / δ := Nat.floor_le (by positivity)
+  have hNδ : (N : ℝ) * δ ≤ 1 := (le_div_iff₀ hδ).mp hNle
+  -- numerator ≥ 1
+  have hNlow : 1 / δ - 1 < (N : ℝ) := by linarith [Nat.lt_floor_add_one (1 / δ : ℝ)]
+  have hδNlow : 1 - δ < (N : ℝ) * δ := by
+    have h1 : (1 / δ - 1) * δ < (N : ℝ) * δ := by
+      apply mul_lt_mul_of_pos_right hNlow hδ
+    have h2 : (1 / δ - 1) * δ = 1 - δ := by field_simp
+    linarith
+  have h2δN : (1 : ℝ) ≤ (N : ℝ) * (2 * δ) := by nlinarith [hδNlow, hδ2]
+  have hnum1 : (1 : ℝ≥0∞) ≤ ((N : ℝ≥0∞) * ENNReal.ofReal (2 * δ)) ^ 2 := by
+    have heq : ENNReal.ofReal ((N : ℝ) * (2 * δ)) = (N : ℝ≥0∞) * ENNReal.ofReal (2 * δ) := by
+      rw [ENNReal.ofReal_mul (Nat.cast_nonneg N), ENNReal.ofReal_natCast]
+    rw [← heq, ← ENNReal.ofReal_pow (by positivity), ← ENNReal.ofReal_one]
+    exact ENNReal.ofReal_le_ofReal (by nlinarith [h2δN])
+  -- denominator ≤ 12π(1+log(1/δ))
+  have hlogN : Real.log N ≤ Real.log (1 / δ) := Real.log_le_log hNposR hNle
+  have h1logN : (0 : ℝ) ≤ 1 + Real.log N := by linarith [Real.log_nonneg hN1R]
+  have hden_le : ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N)))
+      ≤ ENNReal.ofReal (12 * π * (1 + Real.log (1 / δ))) := by
+    apply ENNReal.ofReal_le_ofReal
+    have hprod : δ * N * (1 + Real.log N) ≤ 1 * (1 + Real.log (1 / δ)) :=
+      mul_le_mul (by rw [mul_comm]; exact hNδ) (by linarith [hlogN]) h1logN zero_le_one
+    nlinarith [hprod, Real.pi_pos, h1logN]
+  calc (1 : ℝ≥0∞)
+      ≤ ((N : ℝ≥0∞) * ENNReal.ofReal (2 * δ)) ^ 2 := hnum1
+    _ ≤ volume (thickening S δ) * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) :=
+        volume_thickening_mul_ge h hδ (by linarith) hNδ
+    _ ≤ volume (thickening S δ) * ENNReal.ofReal (12 * π * (1 + Real.log (1 / δ))) := by
+        gcongr
+
 end LeanFormalizations.Kakeya2D
