@@ -786,6 +786,53 @@ convergent correction `∑_p (log(1−1/p)+1/p)` (comparison with `∑ 1/p²`). 
 identification is the deep remaining part.
 -/
 
+/-- **Correction-term bound** for Mertens' third theorem: `|log(1−x) + x| ≤ x²` for `0 < x ≤ 1/2`.
+This makes the correction series `∑_p (log(1−1/p)+1/p)` absolutely convergent (comparison `∑ 1/p²`).
+Upper half: `log(1−x) ≤ −x` (`log_le_sub_one_of_pos`).  Lower half `−x² ≤ log(1−x)+x`: the function
+`g(y) = log(1−y)+y+y²` has `g'(y) = y(1−2y)/(1−y) ≥ 0` on `[0,1/2]`, so `g(x) ≥ g(0) = 0`. -/
+lemma log_one_sub_add_self_abs_le {x : ℝ} (hx0 : 0 < x) (hx : x ≤ 1 / 2) :
+    |Real.log (1 - x) + x| ≤ x ^ 2 := by
+  have h1x : (0 : ℝ) < 1 - x := by linarith
+  have hupper : Real.log (1 - x) + x ≤ 0 := by
+    have := Real.log_le_sub_one_of_pos h1x; linarith
+  -- derivative of `g y = log(1-y) + y + y²`
+  have hderiv : ∀ y : ℝ, 0 < 1 - y →
+      HasDerivAt (fun z => Real.log (1 - z) + z + z ^ 2) (-(1 - y)⁻¹ + 1 + 2 * y) y := by
+    intro y hy
+    have hlog : HasDerivAt (fun z => Real.log (1 - z)) (-(1 - y)⁻¹) y := by
+      have hinner : HasDerivAt (fun z : ℝ => 1 - z) (-1) y := by
+        simpa using (hasDerivAt_id y).const_sub 1
+      simpa using (Real.hasDerivAt_log (ne_of_gt hy)).comp y hinner
+    have h2 : HasDerivAt (fun z : ℝ => z ^ 2) (2 * y) y := by simpa using hasDerivAt_pow 2 y
+    convert (hlog.add (hasDerivAt_id y)).add h2 using 1
+  have hmono : MonotoneOn (fun y => Real.log (1 - y) + y + y ^ 2) (Set.Icc (0 : ℝ) (1 / 2)) := by
+    apply monotoneOn_of_deriv_nonneg (convex_Icc 0 (1 / 2))
+    · -- ContinuousOn
+      have : ∀ y ∈ Set.Icc (0 : ℝ) (1 / 2), 0 < 1 - y := by
+        intro y hy; simp only [Set.mem_Icc] at hy; linarith [hy.2]
+      exact fun y hy => ((hderiv y (this y hy)).continuousAt).continuousWithinAt
+    · -- DifferentiableOn on the interior
+      intro y hy
+      rw [interior_Icc, Set.mem_Ioo] at hy
+      exact ((hderiv y (by linarith [hy.2])).differentiableAt).differentiableWithinAt
+    · -- deriv ≥ 0
+      intro y hy
+      rw [interior_Icc, Set.mem_Ioo] at hy
+      have hy1 : (0 : ℝ) < 1 - y := by linarith [hy.2]
+      rw [(hderiv y hy1).deriv]
+      have hcancel : (1 - y)⁻¹ * (1 - y) = 1 := inv_mul_cancel₀ (ne_of_gt hy1)
+      nlinarith [hcancel, hy.1, hy.2, mul_nonneg hy.1.le (show (0 : ℝ) ≤ 1 - 2 * y by linarith [hy.2]),
+        inv_nonneg.mpr hy1.le]
+  have hg0 : (fun y => Real.log (1 - y) + y + y ^ 2) 0
+      ≤ (fun y => Real.log (1 - y) + y + y ^ 2) x :=
+    hmono (by simp) (by simp only [Set.mem_Icc]; constructor <;> linarith) (le_of_lt hx0)
+  simp only [sub_zero, Real.log_one, add_zero, zero_add, ne_eq, OfNat.ofNat_ne_zero,
+    not_false_eq_true, zero_pow] at hg0
+  rw [abs_le]
+  constructor
+  · linarith [hg0]
+  · nlinarith [hupper, sq_nonneg x]
+
 /-- `∏_{p ≤ N} (1 − 1/p)`, the prime product of Mertens' third theorem. -/
 noncomputable def primeProd (N : ℕ) : ℝ :=
   ∏ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, (1 - (p : ℝ)⁻¹)
