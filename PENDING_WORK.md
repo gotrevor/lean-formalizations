@@ -71,8 +71,17 @@ tied to the `2p×2p` grid), and the extra pole point (`|B|` goes p−1 → p) re
 NB: plain hyperbola + origin (`xy=1 ∪ {(0,0)}`) does NOT work — the shear is essential.
 
 Still open: the lift **selection rule is non-uniform** (a found p=7 selection keeps 3,2,3,1,3,4,3
-lifts across the 7 base points; uniform 3-of-4 = 21 pts does NOT exist even for the sheared base).
-So a *closed-form* selection rule is not yet pinned down — that is the next target.
+lifts across the 7 base points; uniform 3-of-4 = 21 pts does NOT exist for ANY of the winning bases
+`(0,1,2,1),(0,1,4,2),(1,1,2,4),(2,3,1,3),(2,1,4,0)`). So the count is intrinsically `3(p−1) = 3p−3`,
+a **deficit of 3** below "3 per base point" — and a *closed-form* selection rule is not yet pinned.
+
+**Collision-graph structure of the sheared base (for the rule search):** classify base points by
+`y−x mod p` (slope-`+1` classes) and `y+x mod p` (slope-`−1`). At `p≡1 (mod 4)` (e.g. p=13) all
+classes have size ≤2 (clean); at `p≡3 (mod 4)` (p=7,11) there is a **size-3 class** on each side —
+those are where the deficit/over-constraint concentrates. A character-only rule
+(keep-set by `χ(2x+1) ∈ {+1,−1,0}`) does NOT work (tested p=7,11). The rule must use the
+collision-class structure, likely splitting on `p mod 4` and the size-3 classes. **This is the heart
+of the HJSW combinatorics** — the realistic next-lap target (or await Aristotle `083292d5` / paper).
 
 ## Three attack paths for `hjsw_lower`
 
