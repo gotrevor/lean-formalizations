@@ -19,9 +19,14 @@ is the newest **`HANDOFF-<date>.md`**; open items/attack paths live in **`PENDIN
 ## Next (the lap-8 sharpened target — START HERE)
 1. **The `o=2` diagonal `f_2(m) ≤ goodsteinLength m + 2`** — smallest open instance of the headline.
    Crack it by proving the **steps-between-drops base case**: leading CNF exponent stays `≥ 2` for
-   `≥ m` steps (⟺ `goodsteinSeq m j ≥ (j+2)²` sustained to `j ≈ m`). Running start: lap-7
-   `omega_opow_le_seqONote_repr` (`≥ ω²` for `j ≤ log₂ m − 2`) + `fastGrowing_step_le_goodsteinLength`;
-   the gap is the budget `log₂ m → m`. Feed Aristotle a bounded carve (a slot is free).
+   `≥ m` steps. **Lap 8 completed the per-step leading-exponent characterization** (the prerequisite):
+   `log_bump_pred_of_not_pow` (NO drop off pure powers) + `log_bump_pred_of_pow` (drop by EXACTLY 1
+   at a pure power `n = b^log_b n`). So the leading exponent bumps-itself/grows everywhere except at
+   the rare pure-power "borrow" events. **Remaining = the step-COUNT**: bound the number of steps
+   between consecutive pure-power events below; each gap is itself a sub-Goodstein-length (likely
+   induction mirroring `hardy_oadd_iter`). Running start also: `omega_opow_le_seqONote_repr` (`≥ ω²`
+   for `j ≤ log₂ m − 2`) + `fastGrowing_step_le_goodsteinLength`; the gap is the budget `log₂ m → m`.
+   A clean self-contained carve of the step-count is now feedable to Aristotle (a slot is free).
 2. **DO NOT** chase further *non-diagonal* lower-bound refinements — NON-ELEMENTARY is a complete,
    bankable result; iterating it would simulate progress without advancing sub-fact (ii).
 3. B4 (`H_{ω^α}=f_α`) — long-horizon trap under mathlib's `ω[n]=n+1`. Lower priority.

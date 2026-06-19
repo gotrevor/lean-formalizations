@@ -55,6 +55,16 @@ drops are *rare* — the number of steps between consecutive drops of the leadin
 a `dropTime`-style count showing leadExp `≥ 2` persists for `≥ m` steps (induction mirroring
 `hardy_oadd_iter`). **Feed Aristotle** a bounded, self-contained carve of this (a slot is free).
 
+**Lap-8 proof progress (committed, axiom-clean):** the **per-step leading-exponent characterization**
+is now COMPLETE, which is the prerequisite below the `dropTime` count:
+- `log_bump_pred_of_not_pow` — at a NON-pure-power step (`b^{log_b n} < n`), the leading exponent is
+  exactly preserved: `log_{b+1}(bump b n − 1) = bump b (log_b n)` (the `−1` is absorbed by lower terms).
+- `log_bump_pred_of_pow` — at a pure power (`n = b^{log_b n}`, `log_b n ≥ 1`), it drops by EXACTLY one:
+  `log_{b+1}(bump b n − 1) = bump b (log_b n) − 1` (the `−1` borrows from the top).
+So the leading exponent bumps-itself/grows everywhere except at the **rare pure-power "borrow" events**.
+**Remaining = the step-COUNT** between consecutive pure-power events (each gap = a sub-Goodstein-length).
+That count is the next brick and the cleanest Aristotle carve.
+
 *Detailed attack notes for sub-fact (ii) / the steps-between-drops recursion are in the lap-6/lap-7
 sections below — unchanged and still the operative plan.*
 
