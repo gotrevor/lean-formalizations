@@ -20,6 +20,7 @@ The definition uses the *same* well-founded `<`-recursion on `ONote` that define
 -/
 import Mathlib.SetTheory.Ordinal.Notation
 import LeanFormalizations.Logic.FastGrowing.Basic
+import LeanFormalizations.Logic.FastGrowing.Domination
 
 namespace LeanFormalizations.Logic.FastGrowing
 
@@ -204,6 +205,15 @@ theorem hardy_monotone_omega : Monotone (hardy (oadd 1 1 0)) := by
   calc hardy (ofNat (n + 1)) n
       ≤ hardy (ofNat (n + 1)) (n + 1) := hardy_ofNat_monotone (n + 1) (Nat.le_succ n)
     _ ≤ hardy (ofNat (n + 2)) (n + 1) := hardy_ofNat_mono (Nat.le_succ (n + 1)) (n + 1)
+
+/-- **General index monotonicity of the Hardy hierarchy.** For normal-form `α < β` and
+budget `x ≥ norm α`, `H_α(x) ≤ H_β(x)`. From general reachability (`reaches_of_lt`) and the
+Hardy value transfer (`hardy_le_of_reaches`), discharging the latter's monotonicity side
+condition with `hardy_monotone` (every Hardy level is monotone). The Hardy companion of
+`fastGrowing_le_of_lt`. -/
+theorem hardy_le_of_lt {x : ℕ} {α β : ONote} (hα : α.NF) (hβ : β.NF)
+    (hαβ : α < β) (hnorm : norm α ≤ x) : hardy α x ≤ hardy β x :=
+  hardy_le_of_reaches (reaches_of_lt β hβ α hα hαβ hnorm) (fun γ _ => hardy_monotone γ)
 
 /-! ### Anti-vacuity anchors (`native_decide`)
 

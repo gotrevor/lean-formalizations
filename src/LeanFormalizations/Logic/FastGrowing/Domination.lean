@@ -316,6 +316,16 @@ theorem fastGrowing_lt_succ_index {o a : ONote}
     _ = (fastGrowing a)^[2] n := h2eq.symm
     _ ≤ (fastGrowing a)^[n] n := hstep2
 
+/-- **General index monotonicity of the fast-growing hierarchy** (the full A3, lifted off
+the consecutive-index restriction of `fastGrowing_bachmann_reach`). For normal-form `α < β`
+and budget `x ≥ norm α` (with `1 ≤ x`), `f_α(x) ≤ f_β(x)`. Immediate from general
+reachability (`reaches_of_lt`) and value transfer (`fastGrowing_le_of_reaches`). The budget
+condition `norm α ≤ x` is essential: below it the inequality can fail (small-`n` index
+reversal). -/
+theorem fastGrowing_le_of_lt {x : ℕ} (hx : 1 ≤ x) {α β : ONote} (hα : α.NF) (hβ : β.NF)
+    (hαβ : α < β) (hnorm : norm α ≤ x) : fastGrowing α x ≤ fastGrowing β x :=
+  fastGrowing_le_of_reaches hx (reaches_of_lt β hβ α hα hαβ hnorm)
+
 /-! ### The notation successor `osucc` (for the strict step in index domination)
 
 To bump the `≤` from `Reaches` to a strict `<` we route the descent through the
@@ -337,7 +347,7 @@ theorem repr_osucc : ∀ {o : ONote}, o.NF → (osucc o).repr = o.repr + 1
       have ha0 : a = 0 := by
         have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
         rw [repr_zero, opow_zero] at hlt
-        exact (@repr_inj a 0 h.snd NF.zero).1 (by rw [repr_zero]; exact lt_one_iff_zero.1 hlt)
+        exact (@repr_inj a 0 h.snd NF.zero).1 (by rw [repr_zero]; exact Order.lt_one_iff.1 hlt)
       subst ha0
       show (oadd 0 (n + 1) 0).repr = (oadd 0 n 0).repr + 1
       simp only [ONote.repr, opow_zero, one_mul, add_zero, PNat.add_coe,
@@ -367,7 +377,7 @@ theorem fundamentalSequence_osucc : ∀ {o : ONote}, o.NF →
       have ha0 : a = 0 := by
         have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
         rw [repr_zero, opow_zero] at hlt
-        exact (@repr_inj a 0 h.snd NF.zero).1 (by rw [repr_zero]; exact lt_one_iff_zero.1 hlt)
+        exact (@repr_inj a 0 h.snd NF.zero).1 (by rw [repr_zero]; exact Order.lt_one_iff.1 hlt)
       subst ha0
       obtain ⟨k, rfl⟩ : ∃ k : ℕ, n = k.succPNat := ⟨n.natPred, (PNat.succPNat_natPred n).symm⟩
       rfl
