@@ -81,3 +81,25 @@ theorem WeakPNT'' : ψ ~[atTop] (fun x ↦ x) := by
       linarith [Nat.lt_floor_add_one b]
     rw [sub_nonneg]
     exact floor_le hb'
+
+/-- `√x · log x = o(x)` as `x → ∞`. -/
+lemma isLittleO_sqrt_mul_log : (fun x : ℝ ↦ x.sqrt * x.log) =o[atTop] _root_.id := by
+  have : (fun x : ℝ ↦ x.sqrt * x.log) =o[atTop] fun x ↦ x := by
+    refine (isLittleO_mul_iff_isLittleO_div ?_).mpr ?_
+    · filter_upwards [eventually_gt_atTop 0] with x hx; exact (sqrt_ne_zero hx.le).mpr hx.ne'
+    · convert isLittleO_log_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 2) using 2 with x
+      rw [div_sqrt, sqrt_eq_rpow]
+  exact this
+
+/-- **The Prime Number Theorem for `θ` (discharged).** `θ(x) ∼ x`, i.e. `∑_{p ≤ x} log p = x + o(x)`.
+Port of `PrimeNumberTheoremAnd.chebyshev_asymptotic`: `ψ ∼ x` (`WeakPNT''`) together with the
+elementary `|ψ − θ| ≤ 2√x·log x = o(x)` bound. Axiom-clean (verified by `#print axioms`). -/
+theorem chebyshev_asymptotic : Chebyshev.theta ~[atTop] _root_.id := by
+  refine WeakPNT''.add_isLittleO'' (IsBigO.trans_isLittleO (g := fun x ↦ 2 * x.sqrt * x.log) ?_ ?_)
+  · rw [isBigO_iff']; refine ⟨1, one_pos, ?_⟩
+    simp only [one_mul, eventually_atTop, ge_iff_le]
+    exact ⟨2, fun x hx ↦ by
+      rw [Pi.sub_apply, norm_eq_abs, norm_eq_abs, abs_of_nonneg (by bound : 0 ≤ 2 * √x * log x)]
+      exact (abs_of_nonneg (sub_nonneg.mpr (Chebyshev.theta_le_psi x))).symm ▸
+        Chebyshev.abs_psi_sub_theta_le_sqrt_mul_log (by linarith : 1 ≤ x)⟩
+  · simpa only [mul_assoc] using isLittleO_sqrt_mul_log.const_mul_left 2
