@@ -72,7 +72,11 @@ Execute in this order:
    `Wiener.lean`'s cone imports only `Architect` (strippable) + `Mathlib.*` + `PrimeNumberTheoremAnd.*`; it does
    NOT use `PrimeCert`/`leancert`/`checkdecls` (those are the prime-certificate/sieve parts), so a source-copy
    build against OUR mathlib needs none of the missing transitive deps. Since option 1 is now dead, this is the
-   only *active* discharge route besides wait-and-cite.
+   only *active* discharge route besides wait-and-cite. **Patch-layer probed 2026-06-19:** the patch lemmas
+   (`Real.tendsto_pow_log_div_pow_atTop`, `Asymptotics.isLittleO_const_id_cocompact`, `Filter.Eventually.natCast`,
+   `IsBigO.natCast`, `Real.isLittleO_log_rpow_rpow_atTop`) are NOT in our v4.29.1 under those names — so the
+   ~525-line patch layer genuinely needs porting (some have differently-named relatives, e.g. we already use
+   `isLittleO_log_rpow_atTop`). Confirms the ~5000-line estimate; start a port here (patches are small & self-contained).
 4. **(fallback grind, low value)** If a green-producing lap is wanted and 1–3 stall: `nagura_prime` →
    unconditional `6/5 → 5/4`. Modest, hard (elementary ceiling). Documented; don't fixate.
 
