@@ -1,6 +1,25 @@
 # PENDING_WORK — lean-formalizations
 
-## 🧭 lap 13 — NO-THREE-IN-LINE: HJSW `3(p−1)` covering UNBLOCKED + scaffolded; crux narrowed to slope-±1 incidence
+## 🚨 lap 14 — CRITICAL: the lap-13 `pinwheel` construction is FALSE; rewriting to the real HJSW half-band form
+
+**Brute-force discovery (2026-06-19 lap 14):** the lap-13 `Pinwheel.lean` construction — single
+hyperbola, four `{0,p}²` translates per residue class, drop ONE corner (keep 3) — is **NOT
+no-three-in-line for ANY drop rule**. Verified exhaustively (`/tmp/brute.py`): INFEASIBLE for `p=7`
+(all `k`), `p=5` (`k∈{2,3}`). Root cause: the symmetric `{0,p}²` corner layout couples each class to a
+`+1`-line partner AND a `−1`-line partner simultaneously, forcing it to break BOTH its `+1` and `−1`
+diagonal with a single drop — impossible. So **`pinwheel_exists_noThree` as lap-13 stated it is FALSE**
+(a `sorry` on a false statement is a landmine — it could be "closed" by any soundness slip).
+
+**The fix = the genuine HJSW construction with the half-band shift.** The x-translate DIRECTION depends
+on the half-band: a left-half class (`a ≤ h=(p−1)/2`) uses columns `{a, a+p}`, a right-half class uses
+`{a−p, a}` — then a global `+h` shift lands everything in `[0,2p)`. The dropped corner is in the OUTER
+column, opposite `b`'s band. Verified no-three + `card=3(p−1)` + grid `⊂[0,2p)²` for all primes `p≤17`,
+all `k` (`/tmp/hjsw.py`). The reflection/general lemmas in `HyperbolaLine.lean` are UNAFFECTED (pure
+ZMod p) and are reused verbatim. The no-three proof: slopes 0/∞ safe (residue-uniqueness); slope ±1 via
+the σ-reflection — the partner class's three points sit on lines offset by exactly `±p` from the
+diagonal, so none lands on it. THIS is the real, now-TRUE crux. See `Pinwheel.lean` rewrite (lap 14).
+
+## 🧭 lap 13 — NO-THREE-IN-LINE: HJSW `3(p−1)` covering UNBLOCKED + scaffolded; crux narrowed to slope-±1 incidence (⚠️ construction was FALSE — see lap-14 note above)
 
 **Findings harvested** (`archive/findings/ON-LINE-FINDINGS-2026-06-19-hjsw-3n2-construction.md`): the
 real HJSW construction is a **12-of-16-block "pinwheel"** carved from a single hyperbola `H(k,p)` over
