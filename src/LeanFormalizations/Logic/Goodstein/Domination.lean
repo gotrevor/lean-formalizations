@@ -426,7 +426,7 @@ theorem opow_toOrdinal_log_le (b : ℕ) (hb : 2 ≤ b) {v : ℕ} (hv : v ≠ 0) 
     exact_mod_cast h0
   calc ω ^ toOrdinal b (Nat.log b v)
       = ω ^ toOrdinal b (Nat.log b v) * 1 := (mul_one _).symm
-    _ ≤ ω ^ toOrdinal b (Nat.log b v) * (v / b ^ Nat.log b v : ℕ) := mul_le_mul_left' hc _
+    _ ≤ ω ^ toOrdinal b (Nat.log b v) * (v / b ^ Nat.log b v : ℕ) := by gcongr
     _ ≤ ω ^ toOrdinal b (Nat.log b v) * (v / b ^ Nat.log b v : ℕ)
           + toOrdinal b (v % b ^ Nat.log b v) := le_self_add
 
