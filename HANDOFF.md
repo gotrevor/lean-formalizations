@@ -8,7 +8,7 @@ content lives in the three docs below.
 1. **`PENDING_WORK.md`** — top section is **`## Reflection — 2026-06-19`**: the durable direction call
    (KEEP / STOP / single highest-value next target). START HERE.
 2. **`STATUS.md`** — the living overview (axiom ledger re-verified, what's happened). REFRESHED this lap.
-3. **newest dated `HANDOFF-2026-06-19-1018.md`** — the per-lap baton (mental model + next actions).
+3. **newest dated `HANDOFF-2026-06-19-1040.md`** — the per-lap baton (reflection-lap outcome + next actions).
 
 ## One-line state
 **The general-`N` no-three-in-line constant frontier is CLOSED to HJSW's optimal `3/2 − o(N)`.** The
