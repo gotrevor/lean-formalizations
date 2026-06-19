@@ -227,7 +227,8 @@ theorem kakeya_hausdorffContentBound
     have hps := cover_content_per_scale (δ := (1 / 2 : ℝ) ^ j) (ρ := (1 / 2 : ℝ) ^ j) (N := 2 ^ j)
       (η := ENNReal.ofReal ((1 / 2 : ℝ) ^ (j + 1)))
       (by positivity) (pow_le_one₀ (by norm_num) (by norm_num)) (by positivity)
-      (by rw [Nat.cast_pow, ← mul_pow]; norm_num) a A hAmeas hA01 s t hediam_hi hscov hd0.le hediam_lo
+      (by rw [Nat.cast_pow, ← mul_pow]; norm_num) a A hAmeas hA01 (0 : ℝ) s t hediam_hi
+      (by simpa only [zero_add] using hscov) hd0.le hediam_lo
     rw [← hD] at hps
     set C0 : ℝ≥0∞ := ENNReal.ofReal (((1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j) ^ 2) * D
         * ENNReal.ofReal (6 * Real.pi * (1 / 2 : ℝ) ^ j

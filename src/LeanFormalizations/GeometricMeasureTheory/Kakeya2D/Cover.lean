@@ -297,8 +297,8 @@ theorem cover_count_lower {δ ρ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) (hρ : 
     {N : ℕ} (hN : (N : ℝ) * δ ≤ 1)
     (a : ℕ → Plane) (A : ℕ → Set ℝ) (hAmeas : ∀ k, MeasurableSet (A k))
     (hA01 : ∀ k, A k ⊆ Icc (0 : ℝ) 1)
-    (s : Finset ℕ) (U : ℕ → Set Plane) (hediam : ∀ n ∈ s, Metric.ediam (U n) ≤ ENNReal.ofReal ρ)
-    (hcov : ∀ k, (fun t => a k + t • dir ((k : ℝ) * δ)) '' (A k) ⊆ ⋃ n ∈ s, U n) :
+    (c : ℝ) (s : Finset ℕ) (U : ℕ → Set Plane) (hediam : ∀ n ∈ s, Metric.ediam (U n) ≤ ENNReal.ofReal ρ)
+    (hcov : ∀ k, (fun t => a k + t • dir (c + (k : ℝ) * δ)) '' (A k) ⊆ ⋃ n ∈ s, U n) :
     (∑ k ∈ Finset.range N, ENNReal.ofReal (2 * δ) * volume (A k)) ^ 2
       ≤ (s.card : ℝ≥0∞) * ENNReal.ofReal ((ρ + δ) ^ 2) * volume (closedBall (0 : Plane) 1)
         * ENNReal.ofReal (6 * Real.pi * δ * (2 * N * (1 + Real.log N))) := by
@@ -315,7 +315,7 @@ theorem cover_count_lower {δ ρ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) (hρ : 
   calc (∑ k ∈ Finset.range N, ENNReal.ofReal (2 * δ) * volume (A k)) ^ 2
       ≤ volume (Metric.cthickening δ (⋃ n ∈ s, U n))
           * ENNReal.ofReal (6 * Real.pi * δ * (2 * N * (1 + Real.log N))) :=
-        cordoba_cover_count hδ hδ1 hN a A hAmeas hA01 (⋃ n ∈ s, U n) hcov
+        cordoba_cover_count hδ hδ1 hN a A hAmeas hA01 c (⋃ n ∈ s, U n) hcov
     _ ≤ (s.card : ℝ≥0∞) * ENNReal.ofReal ((ρ + δ) ^ 2) * volume (closedBall (0 : Plane) 1)
           * ENNReal.ofReal (6 * Real.pi * δ * (2 * N * (1 + Real.log N))) := by gcongr
 
@@ -334,8 +334,8 @@ theorem cover_content_per_scale {δ ρ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) (
     {N : ℕ} (hN : (N : ℝ) * δ ≤ 1)
     (a : ℕ → Plane) (A : ℕ → Set ℝ) (hAmeas : ∀ k, MeasurableSet (A k))
     (hA01 : ∀ k, A k ⊆ Icc (0 : ℝ) 1)
-    (s : Finset ℕ) (U : ℕ → Set Plane) (hediam : ∀ n ∈ s, Metric.ediam (U n) ≤ ENNReal.ofReal ρ)
-    (hcov : ∀ k, (fun t => a k + t • dir ((k : ℝ) * δ)) '' (A k) ⊆ ⋃ n ∈ s, U n)
+    (c : ℝ) (s : Finset ℕ) (U : ℕ → Set Plane) (hediam : ∀ n ∈ s, Metric.ediam (U n) ≤ ENNReal.ofReal ρ)
+    (hcov : ∀ k, (fun t => a k + t • dir (c + (k : ℝ) * δ)) '' (A k) ⊆ ⋃ n ∈ s, U n)
     {d : ℝ} (hd : 0 ≤ d) {η : ℝ≥0∞} (hediam_lo : ∀ n ∈ s, η ≤ Metric.ediam (U n)) :
     (∑ k ∈ Finset.range N, ENNReal.ofReal (2 * δ) * volume (A k)) ^ 2 * η ^ d
       ≤ (∑ n ∈ s, Metric.ediam (U n) ^ d)
@@ -345,7 +345,7 @@ theorem cover_content_per_scale {δ ρ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) (
       * ENNReal.ofReal (6 * Real.pi * δ * (2 * N * (1 + Real.log N))) with hC0
   have hcount : (∑ k ∈ Finset.range N, ENNReal.ofReal (2 * δ) * volume (A k)) ^ 2
       ≤ (s.card : ℝ≥0∞) * C0 := by
-    refine (cover_count_lower hδ hδ1 hρ hN a A hAmeas hA01 s U hediam hcov).trans_eq ?_
+    refine (cover_count_lower hδ hδ1 hρ hN a A hAmeas hA01 c s U hediam hcov).trans_eq ?_
     rw [hC0]; ring
   have hsum : (s.card : ℝ≥0∞) * η ^ d ≤ ∑ n ∈ s, Metric.ediam (U n) ^ d := by
     have h1 : (s.card : ℝ≥0∞) * η ^ d = ∑ _n ∈ s, η ^ d := by

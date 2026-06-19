@@ -70,23 +70,25 @@ arithmetic-net angles `j·δ` and `k·δ` overlap in area `≤ 6π δ / (|k − 
 (`s ≥ (2/π)|k−j|δ`) collapses the geometric overlap to the harmonic profile `δ/(|k−j|+1)`.
 Summing it over the `≈ δ⁻¹ × δ⁻¹` index pairs gives the `δ·log(1/δ)` `L²` mass (K4). -/
 theorem volume_inter_dirTube_le {a b : Plane} {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1)
-    {j k : ℕ} (hsep : |(k : ℝ) - j| * δ ≤ π / 2) :
-    volume (tube a (dir ((j : ℝ) * δ)) δ ∩ tube b (dir ((k : ℝ) * δ)) δ)
+    (c : ℝ) {j k : ℕ} (hsep : |(k : ℝ) - j| * δ ≤ π / 2) :
+    volume (tube a (dir (c + (j : ℝ) * δ)) δ ∩ tube b (dir (c + (k : ℝ) * δ)) δ)
       ≤ ENNReal.ofReal (6 * π * δ / (|(k : ℝ) - j| + 1)) := by
   have hπ := Real.pi_pos
   have hm0 : 0 ≤ |(k : ℝ) - j| := abs_nonneg _
-  have hgap : |(k : ℝ) * δ - (j : ℝ) * δ| = |(k : ℝ) - j| * δ := by
-    rw [← sub_mul, abs_mul, abs_of_pos hδ]
+  -- the base angle `c` cancels in the gap: `(c+kδ)-(c+jδ) = (k-j)δ` (shift invariance)
+  have hgap : |(c + (k : ℝ) * δ) - (c + (j : ℝ) * δ)| = |(k : ℝ) - j| * δ := by
+    rw [show (c + (k : ℝ) * δ) - (c + (j : ℝ) * δ) = ((k : ℝ) - j) * δ from by ring,
+      abs_mul, abs_of_pos hδ]
   have hov := volume_inter_tube_le (a := a) (b := b)
-      (norm_dir ((j : ℝ) * δ)) (norm_dir ((k : ℝ) * δ)) hδ hδ1
+      (norm_dir (c + (j : ℝ) * δ)) (norm_dir (c + (k : ℝ) * δ)) hδ hδ1
   have hslow : 2 / π * (|(k : ℝ) - j| * δ)
-      ≤ |dir ((j : ℝ) * δ) 0 * dir ((k : ℝ) * δ) 1
-          - dir ((j : ℝ) * δ) 1 * dir ((k : ℝ) * δ) 0| := by
-    have h := dir_sep (θ := (j : ℝ) * δ) (φ := (k : ℝ) * δ) (by rw [hgap]; exact hsep)
+      ≤ |dir (c + (j : ℝ) * δ) 0 * dir (c + (k : ℝ) * δ) 1
+          - dir (c + (j : ℝ) * δ) 1 * dir (c + (k : ℝ) * δ) 0| := by
+    have h := dir_sep (θ := c + (j : ℝ) * δ) (φ := c + (k : ℝ) * δ) (by rw [hgap]; exact hsep)
     rwa [hgap] at h
   refine hov.trans (ENNReal.ofReal_le_ofReal ?_)
-  set s := |dir ((j : ℝ) * δ) 0 * dir ((k : ℝ) * δ) 1
-      - dir ((j : ℝ) * δ) 1 * dir ((k : ℝ) * δ) 0| with hs_def
+  set s := |dir (c + (j : ℝ) * δ) 0 * dir (c + (k : ℝ) * δ) 1
+      - dir (c + (j : ℝ) * δ) 1 * dir (c + (k : ℝ) * δ) 0| with hs_def
   set m := |(k : ℝ) - j| with hm_def
   have hs0 : 0 ≤ s := abs_nonneg _
   have hden1 : 0 < s + δ := by linarith

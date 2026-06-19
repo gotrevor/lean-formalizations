@@ -110,9 +110,9 @@ and feeding `double_sum_le_log` converts the geometric `∑_{j,k} vol(Tⱼ ∩ T
 `≤ 6π δ · 2N(1 + log N)`. The base points `b j` are arbitrary — overlap depends only on the
 directions. This is the `∫ f²` denominator of the Córdoba Cauchy–Schwarz estimate. -/
 theorem sum_overlap_le {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) {N : ℕ} (hN : (N : ℝ) * δ ≤ 1)
-    (b : ℕ → Plane) :
+    (c : ℝ) (b : ℕ → Plane) :
     ∑ j ∈ range N, ∑ k ∈ range N,
-        volume (tube (b j) (dir ((j : ℝ) * δ)) δ ∩ tube (b k) (dir ((k : ℝ) * δ)) δ)
+        volume (tube (b j) (dir (c + (j : ℝ) * δ)) δ ∩ tube (b k) (dir (c + (k : ℝ) * δ)) δ)
       ≤ ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
   have hπ := Real.pi_pos
   have h1π : (1 : ℝ) ≤ π / 2 := by linarith [Real.two_le_pi]
@@ -131,10 +131,10 @@ theorem sum_overlap_le {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) {N : ℕ} (hN
       _ ≤ 1 := hN
       _ ≤ π / 2 := h1π
   calc ∑ j ∈ range N, ∑ k ∈ range N,
-          volume (tube (b j) (dir ((j : ℝ) * δ)) δ ∩ tube (b k) (dir ((k : ℝ) * δ)) δ)
+          volume (tube (b j) (dir (c + (j : ℝ) * δ)) δ ∩ tube (b k) (dir (c + (k : ℝ) * δ)) δ)
       ≤ ∑ j ∈ range N, ∑ k ∈ range N, ENNReal.ofReal (6 * π * δ / (|(k : ℝ) - j| + 1)) := by
         apply sum_le_sum; intro j hj; apply sum_le_sum; intro k hk
-        exact volume_inter_dirTube_le hδ hδ1 (hsep j hj k hk)
+        exact volume_inter_dirTube_le hδ hδ1 c (hsep j hj k hk)
     _ = ENNReal.ofReal (∑ j ∈ range N, ∑ k ∈ range N, 6 * π * δ / (|(k : ℝ) - j| + 1)) := by
         rw [ENNReal.ofReal_sum_of_nonneg
           (fun j _ => Finset.sum_nonneg (fun k _ => div_nonneg hc (by positivity)))]
@@ -153,13 +153,13 @@ theorem sum_overlap_le {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) {N : ℕ} (hN
 /-- **K4 numerator.** `∫ f = ∑ₖ vol(Tₖ) ≥ N · 2δ` — each tube of the family has area `≥ 2δ`
 (`volume_tube_ge`). With `N ≈ δ⁻¹` the numerator is `≳ 2`, the `∫ f ≳ 1` mass of the Córdoba
 Cauchy–Schwarz estimate. -/
-theorem sum_tube_ge {δ : ℝ} (b : ℕ → Plane) (N : ℕ) :
+theorem sum_tube_ge {δ : ℝ} (c : ℝ) (b : ℕ → Plane) (N : ℕ) :
     (N : ℝ≥0∞) * ENNReal.ofReal (2 * δ)
-      ≤ ∑ k ∈ range N, volume (tube (b k) (dir ((k : ℝ) * δ)) δ) := by
+      ≤ ∑ k ∈ range N, volume (tube (b k) (dir (c + (k : ℝ) * δ)) δ) := by
   calc (N : ℝ≥0∞) * ENNReal.ofReal (2 * δ)
       = ∑ _k ∈ range N, ENNReal.ofReal (2 * δ) := by
         rw [sum_const, card_range, nsmul_eq_mul]
-    _ ≤ ∑ k ∈ range N, volume (tube (b k) (dir ((k : ℝ) * δ)) δ) :=
+    _ ≤ ∑ k ∈ range N, volume (tube (b k) (dir (c + (k : ℝ) * δ)) δ) :=
         sum_le_sum (fun k _ => volume_tube_ge (norm_dir _))
 
 end LeanFormalizations.Kakeya2D

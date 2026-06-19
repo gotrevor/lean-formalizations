@@ -93,10 +93,10 @@ numerator `∫ f = ∑ vol(Tₖ) ≥ N·2δ` (`sum_tube_ge`) and denominator `�
 positivity. -/
 theorem volume_thickening_tubes_ge {E : Set Plane} (hE : MeasurableSet E) {δ : ℝ}
     (hδ : 0 < δ) (hδ1 : δ ≤ 1) {N : ℕ} (hN : (N : ℝ) * δ ≤ 1)
-    (b : ℕ → Plane) (hsub : ∀ k, tube (b k) (dir ((k : ℝ) * δ)) δ ⊆ E) :
+    (c : ℝ) (b : ℕ → Plane) (hsub : ∀ k, tube (b k) (dir (c + (k : ℝ) * δ)) δ ⊆ E) :
     ((N : ℝ≥0∞) * ENNReal.ofReal (2 * δ)) ^ 2
       ≤ volume E * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
-  set T : ℕ → Set Plane := fun k => tube (b k) (dir ((k : ℝ) * δ)) δ with hT_def
+  set T : ℕ → Set Plane := fun k => tube (b k) (dir (c + (k : ℝ) * δ)) δ with hT_def
   have hTmeas : ∀ k, MeasurableSet (T k) := fun k => measurableSet_tube _ _ _
   have hTsub : ∀ k, T k ⊆ E := hsub
   set f : Plane → ℝ≥0∞ := fun x => ∑ k ∈ range N, (T k).indicator 1 x with hf_def
@@ -114,10 +114,10 @@ theorem volume_thickening_tubes_ge {E : Set Plane} (hE : MeasurableSet E) {δ : 
   have hint2 : ∫⁻ x, (f x) ^ 2 ∂volume = ∑ j ∈ range N, ∑ k ∈ range N, volume (T j ∩ T k) := by
     rw [lintegral_congr (fun x => by rw [hfval])]; exact lintegral_sq_sum_indicator T hTmeas N
   have hnum : (N : ℝ≥0∞) * ENNReal.ofReal (2 * δ) ≤ ∫⁻ x, f x ∂volume := by
-    rw [hint1]; exact sum_tube_ge b N
+    rw [hint1]; exact sum_tube_ge c b N
   have hden : ∫⁻ x, (f x) ^ 2 ∂volume
       ≤ ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
-    rw [hint2]; exact sum_overlap_le hδ hδ1 hN b
+    rw [hint2]; exact sum_overlap_le hδ hδ1 hN c b
   calc ((N : ℝ≥0∞) * ENNReal.ofReal (2 * δ)) ^ 2
       ≤ (∫⁻ x, f x ∂volume) ^ 2 := by gcongr
     _ ≤ volume E * ∫⁻ x, (f x) ^ 2 ∂volume :=
@@ -139,11 +139,11 @@ is the δ-thickening of the *covered set* `φₖ(Aₖ)` of direction `k` at the 
 measurable set, not a single sub-segment — whose mass `vol(R k) ≥ 2δ·vol(Aₖ)` is the covered length. -/
 theorem volume_thickening_sets_ge {E : Set Plane} (hE : MeasurableSet E) {δ : ℝ}
     (hδ : 0 < δ) (hδ1 : δ ≤ 1) {N : ℕ} (hN : (N : ℝ) * δ ≤ 1)
-    (b : ℕ → Plane) (R : ℕ → Set Plane) (hRmeas : ∀ k, MeasurableSet (R k))
-    (hRfull : ∀ k, R k ⊆ tube (b k) (dir ((k : ℝ) * δ)) δ) (hRE : ∀ k, R k ⊆ E) :
+    (c : ℝ) (b : ℕ → Plane) (R : ℕ → Set Plane) (hRmeas : ∀ k, MeasurableSet (R k))
+    (hRfull : ∀ k, R k ⊆ tube (b k) (dir (c + (k : ℝ) * δ)) δ) (hRE : ∀ k, R k ⊆ E) :
     (∑ k ∈ range N, volume (R k)) ^ 2
       ≤ volume E * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
-  set Tfull : ℕ → Set Plane := fun k => tube (b k) (dir ((k : ℝ) * δ)) δ with hTfull_def
+  set Tfull : ℕ → Set Plane := fun k => tube (b k) (dir (c + (k : ℝ) * δ)) δ with hTfull_def
   set f : Plane → ℝ≥0∞ := fun x => ∑ k ∈ range N, (R k).indicator 1 x with hf_def
   have hfval : ∀ x, f x = ∑ k ∈ range N, (R k).indicator (1 : Plane → ℝ≥0∞) x := fun x => by
     rw [hf_def]
@@ -168,7 +168,7 @@ theorem volume_thickening_sets_ge {E : Set Plane} (hE : MeasurableSet E) {δ : �
           have hss : R j ∩ R k ⊆ Tfull j ∩ Tfull k :=
             Set.inter_subset_inter (hRfull j) (hRfull k)
           exact measure_mono hss
-      _ ≤ ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := sum_overlap_le hδ hδ1 hN b
+      _ ≤ ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := sum_overlap_le hδ hδ1 hN c b
   calc (∑ k ∈ range N, volume (R k)) ^ 2
       = (∫⁻ x, f x ∂volume) ^ 2 := by rw [hint1]
     _ ≤ volume E * ∫⁻ x, (f x) ^ 2 ∂volume := lintegral_sq_le_measure_mul hfmeas hE hsupp
@@ -181,27 +181,27 @@ theorem volume_thickening_sets_ge {E : Set Plane} (hE : MeasurableSet E) {δ : �
   `(∑ₖ 2δ·wₖ)²  ≤  vol(E) · (6π δ · 2N(1 + log N))`. -/
 theorem volume_thickening_fracTubes_ge {E : Set Plane} (hE : MeasurableSet E) {δ : ℝ}
     (hδ : 0 < δ) (hδ1 : δ ≤ 1) {N : ℕ} (hN : (N : ℝ) * δ ≤ 1)
-    (b : ℕ → Plane) (w : ℕ → ℝ) (hw0 : ∀ k, 0 ≤ w k) (hw1 : ∀ k, w k ≤ 1)
-    (hsub : ∀ k, tube (b k) (w k • dir ((k : ℝ) * δ)) δ ⊆ E) :
+    (c : ℝ) (b : ℕ → Plane) (w : ℕ → ℝ) (hw0 : ∀ k, 0 ≤ w k) (hw1 : ∀ k, w k ≤ 1)
+    (hsub : ∀ k, tube (b k) (w k • dir (c + (k : ℝ) * δ)) δ ⊆ E) :
     (∑ k ∈ range N, ENNReal.ofReal (2 * δ * w k)) ^ 2
       ≤ volume E * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
   have hnumk : ∀ k, ENNReal.ofReal (2 * δ * w k)
-      ≤ volume (tube (b k) (w k • dir ((k : ℝ) * δ)) δ) := by
+      ≤ volume (tube (b k) (w k • dir (c + (k : ℝ) * δ)) δ) := by
     intro k
     rcases eq_or_lt_of_le (hw0 k) with hk0 | hk0
     · rw [← hk0, mul_zero, ENNReal.ofReal_zero]; exact zero_le _
-    · have hdir : dir ((k : ℝ) * δ) ≠ 0 := norm_ne_zero_iff.mp (by rw [norm_dir]; norm_num)
-      have hv : w k • dir ((k : ℝ) * δ) ≠ 0 := smul_ne_zero (ne_of_gt hk0) hdir
-      have hnorm : ‖w k • dir ((k : ℝ) * δ)‖ = w k := by
+    · have hdir : dir (c + (k : ℝ) * δ) ≠ 0 := norm_ne_zero_iff.mp (by rw [norm_dir]; norm_num)
+      have hv : w k • dir (c + (k : ℝ) * δ) ≠ 0 := smul_ne_zero (ne_of_gt hk0) hdir
+      have hnorm : ‖w k • dir (c + (k : ℝ) * δ)‖ = w k := by
         rw [norm_smul, norm_dir, mul_one, Real.norm_eq_abs, abs_of_nonneg (hw0 k)]
       have hfr := volume_tube_ge_frac (a := b k) (δ := δ) hv
       rw [hnorm] at hfr
       exact hfr
   calc (∑ k ∈ range N, ENNReal.ofReal (2 * δ * w k)) ^ 2
-      ≤ (∑ k ∈ range N, volume (tube (b k) (w k • dir ((k : ℝ) * δ)) δ)) ^ 2 := by
+      ≤ (∑ k ∈ range N, volume (tube (b k) (w k • dir (c + (k : ℝ) * δ)) δ)) ^ 2 := by
         gcongr with k _; exact hnumk k
     _ ≤ volume E * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) :=
-        volume_thickening_sets_ge hE hδ hδ1 hN b _ (fun k => measurableSet_tube _ _ _)
+        volume_thickening_sets_ge hE hδ hδ1 hN c b _ (fun k => measurableSet_tube _ _ _)
           (fun k => tube_smul_subset (hw0 k) (hw1 k)) hsub
 
 /-- **Localized Córdoba count, in cover-piece form — sub-brick (c) assembled (per scale).** The full
@@ -221,16 +221,16 @@ numerator `vol(R k) ≥ 2δ·vol(A k)` is `volume_thickening_covered_ge`. -/
 theorem cordoba_cover_count {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) {N : ℕ} (hN : (N : ℝ) * δ ≤ 1)
     (a : ℕ → Plane) (A : ℕ → Set ℝ) (hAmeas : ∀ k, MeasurableSet (A k))
     (hA01 : ∀ k, A k ⊆ Set.Icc (0 : ℝ) 1)
-    (P : Set Plane) (hcov : ∀ k, (fun t => a k + t • dir ((k : ℝ) * δ)) '' (A k) ⊆ P) :
+    (c : ℝ) (P : Set Plane) (hcov : ∀ k, (fun t => a k + t • dir (c + (k : ℝ) * δ)) '' (A k) ⊆ P) :
     (∑ k ∈ range N, ENNReal.ofReal (2 * δ) * volume (A k)) ^ 2
       ≤ volume (Metric.cthickening δ P)
         * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
-  set φ : ℕ → ℝ → Plane := fun k t => a k + t • dir ((k : ℝ) * δ) with hφ
+  set φ : ℕ → ℝ → Plane := fun k t => a k + t • dir (c + (k : ℝ) * δ) with hφ
   set R : ℕ → Set Plane := fun k => Metric.cthickening δ (φ k '' (A k)) with hR
   -- R k ⊆ full δ-tube about direction k (covered segment ⊆ unit segment)
-  have hRfull : ∀ k, R k ⊆ tube (a k) (dir ((k : ℝ) * δ)) δ := by
+  have hRfull : ∀ k, R k ⊆ tube (a k) (dir (c + (k : ℝ) * δ)) δ := by
     intro k
-    have hseg : φ k '' (A k) ⊆ affineSegment ℝ (a k) (a k + dir ((k : ℝ) * δ)) := by
+    have hseg : φ k '' (A k) ⊆ affineSegment ℝ (a k) (a k + dir (c + (k : ℝ) * δ)) := by
       rintro y ⟨t, htA, rfl⟩
       rw [affineSegment_eq]; exact ⟨t, hA01 k htA, rfl⟩
     rw [hR, tube_def]
@@ -245,7 +245,7 @@ theorem cordoba_cover_count {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) {N : ℕ
       ≤ (∑ k ∈ range N, volume (R k)) ^ 2 := by gcongr with k _; exact hnumk k
     _ ≤ volume (Metric.cthickening δ P)
           * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) :=
-        volume_thickening_sets_ge Metric.isClosed_cthickening.measurableSet hδ hδ1 hN a R
+        volume_thickening_sets_ge Metric.isClosed_cthickening.measurableSet hδ hδ1 hN c a R
           (fun k => Metric.isClosed_cthickening.measurableSet) hRfull hRE
 
 /-- The Kakeya specialization of `volume_thickening_tubes_ge`: the `N` net-direction δ-tubes
@@ -256,7 +256,7 @@ theorem volume_thickening_mul_ge {S : Set Plane} (h : IsKakeya S) {δ : ℝ}
       ≤ volume (thickening S δ) * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
   obtain ⟨a, ha⟩ := exists_tube_family h δ
   exact volume_thickening_tubes_ge (measurableSet_thickening S δ) hδ hδ1 hN
-    (fun k => a ((k : ℝ) * δ)) (fun k => ha ((k : ℝ) * δ))
+    0 (fun k => a (0 + (k : ℝ) * δ)) (fun k => ha (0 + (k : ℝ) * δ))
 
 /-- **K4 — the Minkowski-content lower bound `vol(Sδ) ≳ 1/log(1/δ)`.** Specialising
 `volume_thickening_mul_ge` to the maximal net `N = ⌊1/δ⌋` (so the numerator `N·2δ ≥ 1` and the
