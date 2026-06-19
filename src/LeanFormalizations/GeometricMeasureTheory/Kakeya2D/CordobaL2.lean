@@ -46,4 +46,38 @@ theorem lintegral_sq_sum_indicator (T : ℕ → Set Plane) (hT : ∀ k, Measurab
   rw [lintegral_finset_sum _ (fun k _ => measurable_one.indicator ((hT j).inter (hT k)))]
   exact sum_congr rfl (fun k _ => lintegral_indicator_one ((hT j).inter (hT k)))
 
+/-- **Cauchy–Schwarz against the support.** For a measurable `f ≥ 0` supported in a measurable set
+`E`, `(∫ f)² ≤ vol(E) · ∫ f²`. This is Hölder with `p = q = 2` applied to `f = f · 1_E`
+(`lintegral_mul_le_Lp_mul_Lq`, `Real.HolderConjugate.two_two`), then squared. -/
+theorem lintegral_sq_le_measure_mul {f : Plane → ℝ≥0∞} (hf : Measurable f)
+    {E : Set Plane} (hE : MeasurableSet E) (hsupp : ∀ x, x ∉ E → f x = 0) :
+    (∫⁻ x, f x ∂volume) ^ 2 ≤ volume E * ∫⁻ x, (f x) ^ 2 ∂volume := by
+  set g : Plane → ℝ≥0∞ := E.indicator 1 with hg_def
+  have hg : Measurable g := measurable_one.indicator hE
+  have hfg : ∀ x, f x = (f * g) x := by
+    intro x
+    by_cases hx : x ∈ E
+    · simp [hg_def, Set.indicator_of_mem hx]
+    · simp [hsupp x hx]
+  have h1 : ∫⁻ x, f x ∂volume = ∫⁻ x, (f * g) x ∂volume := lintegral_congr hfg
+  have hhold := ENNReal.lintegral_mul_le_Lp_mul_Lq volume Real.HolderConjugate.two_two
+    hf.aemeasurable hg.aemeasurable
+  have hg2 : ∫⁻ x, (g x) ^ (2 : ℝ) ∂volume = volume E := by
+    rw [show (fun x => (g x) ^ (2 : ℝ)) = g by
+      funext x; rw [ENNReal.rpow_two]; by_cases hx : x ∈ E <;>
+        simp [hg_def, Set.indicator_of_mem, Set.indicator_of_notMem, hx], hg_def,
+      lintegral_indicator_one hE]
+  rw [h1]
+  calc (∫⁻ x, (f * g) x ∂volume) ^ 2
+      ≤ ((∫⁻ x, f x ^ (2 : ℝ) ∂volume) ^ (1 / 2 : ℝ)
+          * (∫⁻ x, g x ^ (2 : ℝ) ∂volume) ^ (1 / 2 : ℝ)) ^ 2 := by gcongr
+    _ = (∫⁻ x, f x ^ (2 : ℝ) ∂volume) * (∫⁻ x, g x ^ (2 : ℝ) ∂volume) := by
+        rw [mul_pow, ← ENNReal.rpow_two, ← ENNReal.rpow_two, ← ENNReal.rpow_mul,
+          ← ENNReal.rpow_mul]
+        simp only [show (1 / 2 : ℝ) * 2 = 1 by norm_num, ENNReal.rpow_one]
+    _ = volume E * ∫⁻ x, (f x) ^ 2 ∂volume := by
+        have hr : ∫⁻ x, f x ^ (2 : ℝ) ∂volume = ∫⁻ x, (f x) ^ 2 ∂volume :=
+          lintegral_congr (fun x => ENNReal.rpow_two (f x))
+        rw [hg2, hr, mul_comm]
+
 end LeanFormalizations.Kakeya2D
