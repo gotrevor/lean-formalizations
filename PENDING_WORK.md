@@ -544,6 +544,17 @@ proof path doesn't consume all of them. Do not strip them. The two unused-simp-a
 are inside Aristotle-verified tactic blocks — not worth the regression risk to touch.
 
 ## Aristotle
-Nothing genuinely open → Aristotle correctly idle. The old Lemma-1 job (`80d9166c`) is
-OBSOLETE (the proof needs no Lemma 1). Do not feed redundant cross-confirms. The verification
-items 1–4 are all elementary and do NOT need Aristotle.
+**(2026-06-19 deep-reflection lap) Free slot available** — `aristotle list` shows all jobs IDLE and
+they are OTHER projects (`aris_pi`, `hardy_iter_proj`, `nagura`, `hjsw-shear`), none are this repo.
+Two genuinely-open targets exist; architect ONE as a clean self-contained job next lap (don't rush a
+sloppy submission — a bad one wastes the slot and won't port; the corpus flags Aristotle is weak on
+measure theory, so isolate the *combinatorial* skeleton and supply the measure bricks as axioms):
+- **(W) the wiring assembly** — `kakeya_hausdorffContentBound_of_measurableSelection`, with
+  `caseA_content`, `exists_continuum_caseA_numerator`, `volume_coveredFiber_biUnion_subsingleton_zero`,
+  `content_ratio_lower`, `dyadicIdx_window` inlined as axioms (correct sigs), `HausdorffContentBound`
+  + `dir` + `Plane` inlined, goal = `sorry`. Mostly plumbing around proven bricks ⟹ tractable for it.
+- **(S) measurable selection** — the deep crux; lower odds (descriptive set theory), but a failed
+  attempt maps the wall. Lower priority than (W).
+Do NOT feed redundant cross-confirms (the spine + glue + negligibility lemmas are proven locally;
+re-submitting them adds zero assurance — see the charter).
+The old Curtis Lemma-1 job (`80d9166c`) is OBSOLETE.
