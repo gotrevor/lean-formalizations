@@ -188,6 +188,33 @@ theorem fastGrowing_le_hardy_pow (α : ONote) (hNF : α.NF) (n : ℕ) :
       show fastGrowing (g n) n ≤ hardy (oadd (g n) 1 0) n
       exact ih (g n).repr hgnlt (g n) rfl hNFgn n
 
+/-- **`toOrdinal 2` is cofinal below ε₀.** Every notation `β` is eventually exceeded by some
+`toOrdinal 2 N` — the Goodstein ordinals `repr (toONote 2 m)` reach arbitrarily high below ε₀.
+Structural induction on `β`: for `oadd e c r`, `repr β < ω^(repr e + 1) ≤ ω^(toOrdinal 2 Ne)
+= toOrdinal 2 (2^Ne)` using `toOrdinal_pow` and the IH on the exponent `e`. -/
+theorem toOrdinal_two_cofinal : ∀ β : ONote, β.NF → ∃ N : ℕ, β.repr < toOrdinal 2 N := by
+  intro β
+  induction β with
+  | zero =>
+    intro _
+    refine ⟨1, ?_⟩
+    have h1 : toOrdinal 2 1 = 1 := by have h := toOrdinal_pow 2 le_rfl 0; simpa using h
+    have h0 : (ONote.zero : ONote).repr = 0 := rfl
+    rw [h0, h1]; exact zero_lt_one
+  | oadd e c r ihe _ =>
+    intro hNF
+    obtain ⟨Ne, hNe⟩ := ihe hNF.fst
+    refine ⟨2 ^ Ne, ?_⟩
+    have hbound : (oadd e c r).repr < ω ^ (e.repr + 1) := by
+      have h := (NF.below_of_lt (b := e.repr + 1)
+        (by rw [← Order.succ_eq_add_one]; exact Order.lt_succ _) hNF).repr_lt
+      exact h
+    have hle : e.repr + 1 ≤ toOrdinal 2 Ne := by
+      rw [← Order.succ_eq_add_one]; exact Order.succ_le_of_lt hNe
+    calc (oadd e c r).repr < ω ^ (e.repr + 1) := hbound
+      _ ≤ ω ^ toOrdinal 2 Ne := opow_le_opow_right omega0_pos hle
+      _ = toOrdinal 2 (2 ^ Ne) := (toOrdinal_pow 2 le_rfl Ne).symm
+
 /-! ### Anti-vacuity anchors (off any headline axiom path). -/
 
 example : hardy (oadd 1 2 (oadd 0 3 0)) 4 = hardy (oadd 1 2 0) (hardy (oadd 0 3 0) 4) := by
