@@ -20,3 +20,4 @@ import LeanFormalizations.Logic.Goodstein.Anchors
 import LeanFormalizations.Logic.Goodstein.Length
 import LeanFormalizations.Logic.FastGrowing.Basic
 import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
+import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Statement
