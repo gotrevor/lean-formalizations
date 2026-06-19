@@ -75,16 +75,53 @@ theorem analyticSet_cylImg {X : Type*} [TopologicalSpace X] {f : (ℕ → ℕ) �
 
 /-! ## Brick A, decomposed: the whole reduction is proven, the sole hole is the finite Choquet core -/
 
-/-- **The finite Choquet core (THE crux; the sole remaining `sorry` of the `jvn` route).** For a
-**finite** measure `μ`, every analytic set is inner-approximated by compacts: for `ε > 0` there is a
-compact `K ⊆ s` with `μ s ≤ μ K + ε` (`μ s` = outer measure). This is the genuine content of Choquet's
-capacitability theorem; see the file header for the Souslin-scheme argument and the port alternative. -/
+/-- A nonempty analytic set is a continuous image of Baire space `ℕ → ℕ` (from the mathlib
+*definition* of `AnalyticSet`, peeling the empty disjunct). -/
+theorem analyticSet_exists_range {X : Type*} [TopologicalSpace X] {s : Set X}
+    (hs : AnalyticSet s) (hne : s.Nonempty) :
+    ∃ f : (ℕ → ℕ) → X, Continuous f ∧ range f = s := by
+  rw [AnalyticSet] at hs
+  rcases hs with h | h
+  · exact absurd h hne.ne_empty
+  · exact h
+
+/-- The "bounded box" `{α : ℕ → ℕ | ∀ i, α i ≤ b i}` is **compact**: it is the product
+`∏ᵢ Iic (b i)` of finite (hence compact) sets, compact by Tychonoff. This is the pruned subtree whose
+continuous image is the compact `K` extracted in the Choquet argument. -/
+theorem isCompact_setOf_forall_le (b : ℕ → ℕ) :
+    IsCompact {α : ℕ → ℕ | ∀ i, α i ≤ b i} := by
+  have h : {α : ℕ → ℕ | ∀ i, α i ≤ b i} = Set.univ.pi (fun i => Set.Iic (b i)) := by
+    ext α; simp only [Set.mem_setOf_eq, Set.mem_univ_pi, Set.mem_Iic]
+  rw [h]
+  exact isCompact_univ_pi (fun i => (Set.finite_Iic (b i)).isCompact)
+
+/-- **The finite Choquet core, range form (THE crux; the sole remaining `sorry` of the `jvn` route).**
+For a **finite** measure `μ` and a continuous `f : (ℕ→ℕ) → X`, the analytic set `range f` is
+inner-approximated by compacts: for `ε > 0` there is a compact `K ⊆ range f` with
+`μ (range f) ≤ μ K + ε`. This is the genuine content of Choquet's capacitability theorem (inner
+regularity of analytic sets by compacts); see the file header / `PENDING_WORK.md` for the Lusin-scheme
+argument (the naive cumulative-bound regularisation has a real diameter-control gap) and the
+`brownian-motion` port alternative (`ON-LINE-REQUEST.md`). -/
+theorem choquet_core_range
+    {X : Type*} [TopologicalSpace X] [PolishSpace X] [MeasurableSpace X] [BorelSpace X]
+    (μ : Measure X) [IsFiniteMeasure μ] {f : (ℕ → ℕ) → X} (hf : Continuous f)
+    {ε : ℝ≥0∞} (hε : 0 < ε) :
+    ∃ K, IsCompact K ∧ K ⊆ range f ∧ μ (range f) ≤ μ K + ε := by
+  sorry
+
+/-- **The finite Choquet core, analytic-set form (PROVEN from the range form).** For a finite measure,
+every analytic set is inner-approximated by compacts. Empty case: `K = ∅`. Nonempty case: write
+`s = range f` (`analyticSet_exists_range`) and apply `choquet_core_range`. -/
 theorem exists_isCompact_subset_outerMeasure_le
     {X : Type*} [TopologicalSpace X] [PolishSpace X] [MeasurableSpace X] [BorelSpace X]
     (μ : Measure X) [IsFiniteMeasure μ] {s : Set X} (hs : AnalyticSet s)
     {ε : ℝ≥0∞} (hε : 0 < ε) :
     ∃ K, IsCompact K ∧ K ⊆ s ∧ μ s ≤ μ K + ε := by
-  sorry
+  rcases s.eq_empty_or_nonempty with rfl | hne
+  · exact ⟨∅, isCompact_empty, Subset.rfl, by simp⟩
+  · obtain ⟨f, hf, hfr⟩ := analyticSet_exists_range hs hne
+    obtain ⟨K, hKc, hKs, hKμ⟩ := choquet_core_range μ hf hε
+    exact ⟨K, hKc, hfr ▸ hKs, by rw [← hfr]; exact hKμ⟩
 
 /-- **Finite-measure capacitability (PROVEN from the core).** For a finite measure, every analytic set
 is `μ`-`NullMeasurable`. Build `F = ⋃ₙ Kₙ ⊆ s` from compacts `Kₙ` with `μ s ≤ μ Kₙ + n⁻¹`; then
