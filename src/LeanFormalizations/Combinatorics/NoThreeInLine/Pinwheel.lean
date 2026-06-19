@@ -205,11 +205,36 @@ theorem pinwheel_collinear_same_xres {p k : ℕ} (hp : p.Prime) (hk : (k : ZMod 
     (pinCorner_rel (res_ne_zero hP1 hP2) iP) (pinCorner_rel (res_ne_zero hQ1 hQ2) iQ)
     (pinCorner_rel (res_ne_zero hR1 hR2) iR) hcol
 
+/-- **Slope-0 safety.** Two pinwheel points sharing a `y`-coordinate have the same `x`-residue, hence
+lie in the same class. (The `y`-residue determines the class: `s ↦ r = k·s⁻¹`.) Combined with
+`pinCorner_not_collinear`, a horizontal line never carries a *cross-class* pair — so the cross-class
+crux is purely slope-`±1`. The slope-∞ analogue is trivial (equal `x`-coordinate ⇒ equal `x`-residue). -/
+theorem pinwheel_eq_snd_eq_xres {p k : ℕ} (hp : p.Prime) (hk : (k : ZMod p) ≠ 0)
+    {drop : ℕ → Fin 4} {P Q : ℕ × ℕ}
+    (hP : P ∈ pinwheel p k drop) (hQ : Q ∈ pinwheel p k drop) (hsnd : P.2 = Q.2) :
+    (P.1 : ZMod p) = (Q.1 : ZMod p) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  obtain ⟨rP, hP1, hP2, iP, _, rfl⟩ := mem_pinwheel hP
+  obtain ⟨rQ, hQ1, hQ2, iQ, _, rfl⟩ := mem_pinwheel hQ
+  have hy : (hyperbolaY p k rP : ZMod p) = (hyperbolaY p k rQ : ZMod p) := by
+    have h2 : ((pinCorner p k rP iP).2 : ZMod p) = ((pinCorner p k rQ iQ).2 : ZMod p) :=
+      congrArg (fun n : ℕ => (n : ZMod p)) hsnd
+    rwa [pinCorner_yres, pinCorner_yres] at h2
+  have relP := pinCorner_rel (k := k) (res_ne_zero hP1 hP2) iP
+  have relQ := pinCorner_rel (k := k) (res_ne_zero hQ1 hQ2) iQ
+  rw [pinCorner_xres, pinCorner_yres] at relP
+  rw [pinCorner_xres, pinCorner_yres] at relQ
+  have hsP : (hyperbolaY p k rP : ZMod p) ≠ 0 := by
+    intro h; rw [h, mul_zero] at relP; exact hk relP.symm
+  rw [pinCorner_xres, pinCorner_xres]
+  exact mul_right_cancel₀ hsP (by rw [relP, hy, relQ])
+
 /-! ### Reduction of the headline to the crux
 
 The mechanical `card`/`grid` facts wire any no-three pinwheel straight into the bound. What remains
-is to exhibit a drop-rule making the pinwheel no-three-collinear — and by `pinwheel_collinear_same_xres`
-+ `pinCorner_not_collinear` that is now exactly the cross-class slope-`±1` incidence. -/
+is to exhibit a drop-rule making the pinwheel no-three-collinear — and by `pinwheel_collinear_same_xres`,
+`pinwheel_eq_snd_eq_xres` + `pinCorner_not_collinear` that is now exactly the cross-class slope-`±1`
+incidence. -/
 
 /-- **Crux (disclosed).** There is a drop-rule whose pinwheel is no-three-in-line. This is the HJSW
 slope-`±1` incidence argument (Theorem 2, pp. 339–340): the family assignment routes the two roots of
