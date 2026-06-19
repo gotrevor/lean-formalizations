@@ -31,3 +31,4 @@ import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Defs
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Consequences
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.PNT
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Mertens
+import LeanFormalizations.NumberTheory.PrimeNumberTheorem.MertensConstant
