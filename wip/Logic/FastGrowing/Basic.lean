@@ -106,8 +106,39 @@ theorem fastGrowing_le_succ_index {o a : ONote}
   have hexp : (id : ℕ → ℕ) ≤ fastGrowing a := fun m => le_fastGrowing a m
   simpa using (Function.monotone_iterate_of_id_le hexp hn) n
 
+/-- The fundamental sequence of a limit notation is **strictly increasing**
+(`f i < f (i+1)` adjacent, hence `StrictMono`). A basic structural fact about
+`fundamentalSequence`, packaged for the growth theory. -/
+theorem fundSeq_strictMono {o : ONote} {f : ℕ → ONote}
+    (h : fundamentalSequence o = Sum.inr f) : StrictMono f := by
+  have hp := fundamentalSequence_has_prop o
+  rw [h] at hp
+  exact strictMono_nat_of_lt_succ fun i => (hp.2.1 i).1
+
+/-- **Crux, successor-consecutive case (PROVEN).** If consecutive fundamental-sequence
+terms differ by a single successor step (`f (n+1)` is the successor of `f n`), the index
+step does not decrease the value: immediate from `fastGrowing_le_succ_index`. This is the
+one case of `fastGrowing_fundSeq_step` that closes without the Bachmann property. -/
+theorem fastGrowing_fundSeq_step_of_succ {f : ℕ → ONote} {n : ℕ}
+    (hsucc : fundamentalSequence (f (n + 1)) = Sum.inl (some (f n))) :
+    fastGrowing (f n) (n + 1) ≤ fastGrowing (f (n + 1)) (n + 1) :=
+  fastGrowing_le_succ_index hsucc (Nat.succ_pos n)
+
 /-- **The index-monotonicity crux (A3), limit step.**  *(disclosed `sorry` — this is
 the genuine hard core of the growth theory, banged on across laps.)*
+
+**Roadmap (verified-literature, 2026-06-19 lap).** General index-monotonicity at a
+*fixed* argument is **FALSE**: e.g. `5 < ω` but `f₅(2) ≫ f_ω(2) = f₂(2) = 8`. So this
+step is *not* reducible to "`a < b ⟹ fₐ(m) ≤ f_b(m)`". The value comes from the coupling
+between the index *level* `n` and the argument `n+1`; the standard tool is the **Bachmann
+property** of the fundamental-sequence system: with it, *all* `fastGrowing` levels are
+monotone (Fernández-Duque–Weiermann, arXiv:2203.07758; Buchholz). Concretely the limit
+descent uses, when `f (n+1)` is a limit with fundamental sequence `g`, that
+`f n ≤ g (n+1)` (Bachmann), reducing the index gap by one structural level for induction;
+when `f (n+1)` is a successor it is `fastGrowing_fundSeq_step_of_succ` / index-descent.
+Next lap: formalize the Bachmann property `λ[n] ≤ λ[n+1][n+1]` for `ONote.fundamentalSequence`
+(case analysis on the `oadd` recursion, lines 924–935 of `Mathlib/SetTheory/Ordinal/Notation`),
+then the conditional index-monotonicity by well-founded recursion.
 
 For a limit notation `o` with fundamental sequence `f` (`o[i] = f i`), stepping from
 index `f n` to the next index `f (n+1)` does not decrease the value at the argument

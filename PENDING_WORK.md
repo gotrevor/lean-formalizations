@@ -1,5 +1,94 @@
 # PENDING_WORK — lean-formalizations
 
+## ⏸️ 2026-06-19 (host decision, harvested) — Choquet route is PAUSED for import, not from-scratch
+**`archive/findings/ON-LINE-FINDINGS-2026-06-19-import-not-vendor.md` (Trevor/host) supersedes the
+from-scratch capacitability lane AND the vendor ask.** Plan: consume `RemyDegenne/brownian-motion` as a
+**direct `.lake` dependency** (external `require`, no copied source) once a shared mathlib pin is set up
+(BM is v4.30.0; `lean-universe` base is v4.31.0 ⇒ davies bumps to v4.31 and `require`s pre-built BM).
+**The treadmill is paused while that import infra is set up — infra a no-egress lap CANNOT build**
+(needs the v4.31 bump + shared store + a network clone of BM). After import the ONLY work left is a
+small bridge: `mathlib.AnalyticSet s → BM.IsMeasurableAnalytic s` (Souslin/paving vs continuous-image
+of ℕ→ℕ), then `BrownianMotion.Choquet.IsPavingAnalyticFor.isCapacitable` (`Capacity.lean:346`) +
+the capacity→`NullMeasurableSet` step. **So: do NOT sink local laps into from-scratch `choquet_core_range`.**
+The Aristotle `choquet` job (below) may still land it for free; if so, great, but the sanctioned path is
+import. The from-scratch material below is retained as the fallback if import infra never materialises.
+
+## 🔨 2026-06-19 (FastGrowing LAP) — index-monotonicity crux mapped; general index-mono is FALSE
+`wip/Logic/FastGrowing/Basic.lean`. The growth theory (`fastGrowing_le_succ`/`_monotone`) is fully
+proven EXCEPT the single limit-step crux `fastGrowing_fundSeq_step`:
+`fastGrowing (f n) (n+1) ≤ fastGrowing (f (n+1)) (n+1)` for a limit `o` with fund seq `f`.
+- **Finding (corrects a tempting wrong path):** general fixed-argument index-monotonicity
+  `a < b ⟹ ∀ m≥1, fₐ(m) ≤ f_b(m)` is **FALSE** — `5 < ω` yet `f₅(2) ≫ f_ω(2)=f₂(2)=8`. So the crux is
+  NOT reducible to plain index-mono; the value comes from the *coupling* of index level `n` and
+  argument `n+1`. The correct tool is the **Bachmann property** of the fund-seq system (with it, all
+  `fastGrowing` levels are monotone — Fernández-Duque–Weiermann arXiv:2203.07758; Buchholz).
+- **PROVEN this lap (kernel-checked, axiom-clean):** `fundSeq_strictMono` (`StrictMono f`);
+  `fastGrowing_fundSeq_step_of_succ` (crux closes when `f(n+1)` is the successor of `f n`, via
+  `fastGrowing_le_succ_index`).
+- **Next lap:** formalize the Bachmann property `λ[n] ≤ λ[n+1][n+1]` for `ONote.fundamentalSequence`
+  (case analysis on the `oadd` recursion, `Mathlib/SetTheory/Ordinal/Notation` lines 924–935), then
+  conditional index-monotonicity by well-founded recursion ⇒ discharge `fastGrowing_fundSeq_step`.
+
+## 🔨 2026-06-19 (capacitability LAP) — reduction PROVEN; sole hole = the finite Choquet core
+*(RETAINED as the from-scratch fallback — superseded by the import decision above unless infra stalls.)*
+
+**Where the `jvn` route stands now.** The headline `davies_kakeya_2d` is DONE + axiom-clean (elementary
+route, untouched). The independent 2nd route (`jvn`) is proven in `wip/.../VonNeumannSelection.lean`
+EXCEPT capacitability. This lap I restructured `wip/.../Capacitability.lean` so capacitability itself is
+now **reduced to a single, clean hole** — `#print axioms analyticSet_nullMeasurableSet` =
+`[propext, sorryAx, Classical.choice, Quot.sound]` (exactly ONE `sorryAx`, no hidden holes):
+
+**PROVEN this lap (kernel-checked, no sorry):**
+- `analyticSet_nullMeasurableSet_finite` — finite-μ capacitability **from** the core. Sandwich
+  `F = ⋃ₙ Kₙ ⊆ s ⊆ G = toMeasurable μ s`, `μ F = μ s = μ G` ⇒ `μ(s\F)=0` ⇒ `s =ᵐ F` (`ae_eq_set`).
+- `analyticSet_nullMeasurableSet` (σ-finite) — **from** the finite case: `spanningSets` decomposition +
+  `nullMeasurableSet_restrict` transfer + `NullMeasurableSet.iUnion`. (Headline now needs `[SigmaFinite μ]`;
+  fine — application is `volume` on `ℝ`. When porting into VonNeumannSelection, add `[SigmaFinite μ]`
+  to `analyticSet_nullMeasurableSet`/`exists_aemeasurable_section_of_continuous_range`/
+  `measurableSelection_aemeasurable`; `jvn_of_measurableSelection` uses `volume` ✓.)
+- `exists_isCompact_subset_outerMeasure_le` — analytic-set core **from** the range-f core (empty: K=∅;
+  nonempty: `analyticSet_exists_range` + `choquet_core_range`).
+- `analyticSet_exists_range`, `isCompact_setOf_forall_le` (`{α | ∀ i, α i ≤ b i} = ∏ᵢ Iic(bᵢ)` compact
+  by `isCompact_univ_pi` + finite `Iic`).
+
+**THE SOLE REMAINING HOLE: `choquet_core_range`** (finite μ, `f : (ℕ→ℕ)→X` continuous, ε>0 ⟹
+∃ compact `K ⊆ range f`, `μ (range f) ≤ μ K + ε`). This is the genuine content of Choquet's
+capacitability theorem (Kechris 29.7). **Multi-lap; do not expect a one-shot.**
+
+**Wall mapped precisely (READ before re-attacking):**
+- The naive "cumulative-bound regularisation" is a **DEAD END**. Pick `bⱼ` (continuity from below,
+  `Monotone.measure_iUnion` — works for arbitrary non-measurable monotone sets ✓) so the level-`j`
+  measure drop is `< ε·2⁻ʲ`; set `boxⱼ = {α | ∀ i<j, αᵢ≤bᵢ}`, `C = ⋂ⱼ boxⱼ = {α | ∀i, αᵢ≤bᵢ}` compact,
+  `K = f''C`. Telescoping gives `∀ j, μ s ≤ μ(f''boxⱼ) + ε`, and continuity from above on the closed
+  decreasing `closure(f''boxⱼ)` gives `μ s ≤ μ L + ε` with `L = ⋂ⱼ closure(f''boxⱼ)`. **BUT `L ⊆ K` is
+  FALSE**: free coords (≥ j) escape to ∞, so `L` can contain limit points with no preimage in the
+  compact `C`. No diameter control ⇒ unfixable. (Confirmed by hand; don't redo this route.)
+- **Correct route = a Lusin scheme with vanishing diameter.** mathlib HAS the scheme→map infra in
+  `Mathlib/Topology/MetricSpace/CantorScheme.lean`: `CantorScheme.inducedMap`, `VanishingDiam`,
+  `ClosureAntitone`, `VanishingDiam.map_continuous`, `ClosureAntitone.map_of_vanishingDiam` (complete
+  space ⇒ total map), `VanishingDiam.dist_lt`. It does NOT have measure-theoretic capacitability.
+  Next-lap construction: from continuous `f : ℕ→ℕ → X` (X complete metric) build a closed-set scheme
+  `B : List ℕ → Set X` with (a) `ClosureAntitone B`, (b) `VanishingDiam B`, (c) the Souslin/branch
+  union `= range f` (refine cylinders so each `B w` has diam `< 2^⁻ˡᵉⁿ ʷ` — the substantive step,
+  Kechris 7.x "analytic = image of a vanishing-diam scheme"). THEN regularise on `B`: the pruned
+  finitely-branching subtree's branch set is compact, its induced image is the compact `K`, and the
+  diameter control makes `⋂ⱼ closure = K` hold. THIS is what makes the regularisation land.
+- **Port alternative (mechanical, network-gated):** `ON-LINE-REQUEST.md` asks a networked lap to vendor
+  `RemyDegenne/brownian-motion`'s `Choquet/` stack (proven capacitability + measurable section,
+  mathlib v4.30.0). Whichever lands first (from-scratch Lusin scheme vs port) discharges `choquet_core_range`.
+
+**Aristotle:** job `1b34087b-5d6e-419e-87d4-1bfa803616fa` ("choquet") submitted on `choquet_core_range`
+(self-contained, guidance points at the Lusin scheme). Low EV (corpus: Aristotle weak on measure theory,
+pins v4.28.0) — DO NOT WAIT; verify+#print axioms before trusting if it returns anything usable.
+
+**Next-lap resume:** open `wip/.../Capacitability.lean` at `choquet_core_range`. Either (a) build the
+vanishing-diameter Lusin scheme on top of `CantorScheme` (multi-lap; start with the diam-refinement of
+cylinders), or (b) if a findings/vendor doc landed, port the brownian-motion `Choquet/` stack. Then port
+the now-sorry-free `analyticSet_nullMeasurableSet` into VonNeumannSelection (with `[SigmaFinite]`) and
+wire `jvn_of_measurableSelection` into `Selection.kakeya_aeMeasurable_selection_of_jvn`.
+
+---
+
 ## 🔨 2026-06-19 (jvn LAP) — von Neumann selection: decomposed + glue PROVEN, hole isolated
 
 Attacked the one genuinely-mathematical open target: discharging the abstract `jvn` hypothesis of
