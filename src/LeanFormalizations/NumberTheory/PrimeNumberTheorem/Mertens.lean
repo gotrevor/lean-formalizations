@@ -553,4 +553,45 @@ lemma sum_inv_log_mul_primeLogDivCoeff_eq (N : ℕ) :
   have hlog : Real.log p ≠ 0 := ne_of_gt (Real.log_pos (by exact_mod_cast hp.2.one_lt))
   rw [div_eq_mul_inv, ← mul_assoc, inv_mul_cancel₀ hlog, one_mul]
 
+open MeasureTheory in
+/-- **Abel-summation identity for the prime reciprocal sum** (toward Mertens' second theorem). For
+every `N`,
+`∑_{p≤N} 1/p = (∑_{p≤N}(log p)/p)/log N + ∫_2^N (∑_{p≤⌊t⌋}(log p)/p)/(t·(log t)²) dt`.
+With `∑_{p≤x}(log p)/p = log x + O(1)` (`mertens_first_prime`) this reduces Mertens' 2nd to the
+integral estimate `∫_2^N (log t + O(1))/(t log²t) = log log N + O(1)`. -/
+theorem mertens_second_identity (N : ℕ) :
+    primeRecipSum N
+      = primeSumDiv N / Real.log N
+        + ∫ t in Set.Ioc (2 : ℝ) (N : ℝ), primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2) := by
+  have hderiv_eq : ∀ t : ℝ, 1 < t →
+      deriv (fun s => (Real.log s)⁻¹) t = -(t * (Real.log t) ^ 2)⁻¹ :=
+    fun t ht => (hasDerivAt_inv_log ht).deriv
+  have hdiff : ∀ t ∈ Set.Icc (2 : ℝ) (N : ℝ), DifferentiableAt ℝ (fun s => (Real.log s)⁻¹) t := by
+    intro t ht; rw [Set.mem_Icc] at ht
+    exact (hasDerivAt_inv_log (by linarith [ht.1])).differentiableAt
+  have hint : IntegrableOn (deriv (fun s => (Real.log s)⁻¹)) (Set.Icc (2 : ℝ) (N : ℝ)) := by
+    have hcont : ContinuousOn (fun t : ℝ => -(t * (Real.log t) ^ 2)⁻¹) (Set.Icc (2 : ℝ) N) := by
+      apply ContinuousOn.neg; apply ContinuousOn.inv₀
+      · exact continuousOn_id.mul ((Real.continuousOn_log.mono
+          (fun t ht => ne_of_gt (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))).pow 2)
+      · exact fun t ht => ne_of_gt (mul_pos (by simp only [Set.mem_Icc] at ht; linarith [ht.1])
+          (pow_pos (Real.log_pos (by simp only [Set.mem_Icc] at ht; linarith [ht.1])) 2))
+    refine (hcont.integrableOn_compact isCompact_Icc).congr_fun ?_ measurableSet_Icc
+    intro t ht; rw [Set.mem_Icc] at ht
+    exact (hderiv_eq t (by linarith [ht.1])).symm
+  have habel := sum_mul_eq_sub_integral_mul₁ primeLogDivCoeff (f := fun s => (Real.log s)⁻¹)
+    primeLogDivCoeff_zero primeLogDivCoeff_one (N : ℝ) hdiff hint
+  rw [Nat.floor_natCast] at habel
+  simp only [sum_inv_log_mul_primeLogDivCoeff_eq, sum_primeLogDivCoeff_eq] at habel
+  have heq_int : ∫ t in Set.Ioc (2 : ℝ) (N : ℝ),
+        deriv (fun s => (Real.log s)⁻¹) t * primeSumDiv ⌊t⌋₊
+      = - ∫ t in Set.Ioc (2 : ℝ) (N : ℝ), primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2) := by
+    rw [← integral_neg]
+    apply setIntegral_congr_fun measurableSet_Ioc
+    intro t ht; rw [Set.mem_Ioc] at ht
+    simp only []
+    rw [hderiv_eq t (by linarith [ht.1]), div_eq_mul_inv]; ring
+  rw [heq_int] at habel
+  rw [habel]; ring
+
 end LeanFormalizations.Mertens
