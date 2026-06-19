@@ -77,6 +77,15 @@ Execute in this order:
    `IsBigO.natCast`, `Real.isLittleO_log_rpow_rpow_atTop`) are NOT in our v4.29.1 under those names — so the
    ~525-line patch layer genuinely needs porting (some have differently-named relatives, e.g. we already use
    `isLittleO_log_rpow_atTop`). Confirms the ~5000-line estimate; start a port here (patches are small & self-contained).
+   **PORT STARTED 2026-06-19 — brick 1 DONE (axiom-clean, build green 8287):**
+   `src/LeanFormalizations/NumberTheory/PrimeNumberTheorem/Asymptotics.lean` — the 5 Asymptotics lemmas
+   (`isLittleO_const_id_{cocompact,atTop,atBot}`, `eventually_natCast`, `isBigO_natCast`); all deps were already
+   in our pin → clean port, no API drift. **Next bricks (in dependency order, each small/self-contained first):**
+   `Mathlib/Analysis/SpecialFunctions/Log/Basic` patch (`tendsto_pow_log_div_pow_atTop`; needs
+   `isLittleO_log_rpow_rpow_atTop` — check our pin / our `isLittleO_log_rpow_atTop`), `Mathlib/Analysis/Asymptotics/Uniformly`
+   (164), PNTAnd `Mathlib/NumberTheory/Chebyshev` patch (303), then `Defs.lean` slice → `Fourier.lean` (70) →
+   `SmoothExistence.lean` (107) → the big one `Wiener.lean` (4118) → `Consequences` `WeakPNT''` slice. Strip
+   `@[blueprint]`/`import Architect` throughout. (Reminder: speculative — `wait-and-cite` still preferred.)
 4. **(fallback grind, low value)** If a green-producing lap is wanted and 1–3 stall: `nagura_prime` →
    unconditional `6/5 → 5/4`. Modest, hard (elementary ceiling). Documented; don't fixate.
 
