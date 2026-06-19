@@ -513,17 +513,38 @@ theorem shearSel_share_residue {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R :
   shear_hyperbola_lift_share_residue hp hp2 (shearSel_mem_curve hp hp2 hP).2.2
     (shearSel_mem_curve hp hp2 hQ).2.2 (shearSel_mem_curve hp hp2 hR).2.2 hcol
 
-/-- **The same-column line crux** (the genuinely hard counting, now isolated). Two distinct kept
-lifts `P,Q` of ONE base column span a slope `0/∞/±1` line; a third distinct kept point `R` is never
-on it. The slope `0`/`∞` cases follow from `shearY_injective` (distinct rows/cols); the same-column
-`R` case from `lift_triple_noncollinear`; the slope `±1` cross-column case is exactly what the
-closed-form drop rule forbids (verified for all primes `≤ 109`; `native_decide` at `p ≤ 13`). -/
+/-- **The cross-column slope crux** (the irreducible counting core). Two distinct kept lifts `P,Q`
+of one column, and a kept point `R` of a *different* column (its residues differ from `P`'s), are
+never collinear. `P,Q` lie on a slope `0/∞/±1` line; `shearY_injective` kills `0`/`∞`; the
+closed-form drop rule kills `±1` (no third kept lift lands on a kept diagonal/antidiagonal line —
+the heart of HJSW). Verified for all primes `≤ 109`; `native_decide` at `p ≤ 13`. -/
+theorem shearSel_cross_column {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R : ℕ × ℕ}
+    (hP : P ∈ shearSel p) (hQ : Q ∈ shearSel p) (hR : R ∈ shearSel p)
+    (hres : (P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p))
+    (hRdiff : ¬ ((R.1 : ZMod p) = (P.1 : ZMod p) ∧ (R.2 : ZMod p) = (P.2 : ZMod p)))
+    (hPQ : P ≠ Q) (hPR : P ≠ R) (hQR : Q ≠ R) :
+    ¬ Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)) := by
+  sorry
+
 theorem shearSel_two_lifts_line {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R : ℕ × ℕ}
     (hP : P ∈ shearSel p) (hQ : Q ∈ shearSel p) (hR : R ∈ shearSel p)
     (hres : (P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p))
     (hPQ : P ≠ Q) (hPR : P ≠ R) (hQR : Q ≠ R) :
     ¬ Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)) := by
-  sorry
+  have hP1 := (shearSel_mem_curve hp hp2 hP).1
+  have hP2 := (shearSel_mem_curve hp hp2 hP).2.1
+  have hQ1 := (shearSel_mem_curve hp hp2 hQ).1
+  have hQ2 := (shearSel_mem_curve hp hp2 hQ).2.1
+  have hR1 := (shearSel_mem_curve hp hp2 hR).1
+  have hR2 := (shearSel_mem_curve hp hp2 hR).2.1
+  have e1Q : P.1 % p = Q.1 % p := (ZMod.natCast_eq_natCast_iff _ _ _).mp hres.1
+  have e2Q : P.2 % p = Q.2 % p := (ZMod.natCast_eq_natCast_iff _ _ _).mp hres.2
+  by_cases hRres : (R.1 : ZMod p) = (P.1 : ZMod p) ∧ (R.2 : ZMod p) = (P.2 : ZMod p)
+  · -- all three same column ⇒ lift_triple_noncollinear
+    have e1R : P.1 % p = R.1 % p := ((ZMod.natCast_eq_natCast_iff _ _ _).mp hRres.1).symm
+    have e2R : P.2 % p = R.2 % p := ((ZMod.natCast_eq_natCast_iff _ _ _).mp hRres.2).symm
+    exact lift_triple_noncollinear hp.pos hP1 hP2 hQ1 hQ2 hR1 hR2 e1Q e1R e2Q e2R hPQ hPR hQR
+  · exact shearSel_cross_column hp hp2 hP hQ hR hres hRres hPQ hPR hQR
 
 /-- **The pure-arithmetic crux** (no reals): every pairwise-distinct triple of `shearSel p` has
 nonzero integer orientation determinant. Reduced (via `shearSel_share_residue`, symmetrised over the
