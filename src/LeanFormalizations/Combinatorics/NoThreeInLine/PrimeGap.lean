@@ -25,6 +25,7 @@ central-binomial attack plan. The repo's **headline** theorems (`hjsw_lower_boun
 import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
 import Mathlib.NumberTheory.Chebyshev
 import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt
+import Mathlib.Analysis.SpecialFunctions.Stirling
 
 namespace LeanFormalizations.NoThreeInLine
 
@@ -344,6 +345,29 @@ theorem logFactorial_comb_le_psi (n : ℕ) :
     linarith
   calc Λ d * _ ≤ Λ d * 1 := by exact mul_le_mul_of_nonneg_left hbr hΛ
     _ = Λ d := mul_one _
+
+/-- **Explicit Stirling *upper* bound on `log(m!)`** for `m ≥ 1`:
+`log(m!) ≤ m·log m − m + log(2m)/2 + 1 − log 2 / 2`. mathlib has only the matching *lower* bound
+(`Stirling.le_log_factorial_stirling`); this is the missing companion, derived from
+`log_stirlingSeq_formula` and the fact that `log ∘ stirlingSeq` is antitone with maximum
+`log(stirlingSeq 1) = 1 − log 2 / 2`. Needed (with the lower bound) to pin the leading constant of
+Chebyshev's `T`-combination. -/
+theorem log_factorial_le {m : ℕ} (hm : m ≠ 0) :
+    Real.log (Nat.factorial m) ≤ m * Real.log m - m + Real.log (2 * m) / 2 + 1 - Real.log 2 / 2 := by
+  obtain ⟨j, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hm
+  have hform := Stirling.log_stirlingSeq_formula (j + 1)
+  have hanti : Real.log (Stirling.stirlingSeq (j + 1)) ≤ Real.log (Stirling.stirlingSeq 1) :=
+    Stirling.log_stirlingSeq'_antitone (Nat.zero_le j)
+  have hs1 : Real.log (Stirling.stirlingSeq 1) = 1 - Real.log 2 / 2 := by
+    rw [Stirling.stirlingSeq_one, Real.log_div (by positivity) (by positivity), Real.log_exp,
+      Real.log_sqrt (by norm_num)]
+  have hpos : (0 : ℝ) < (↑(j + 1) : ℝ) := by positivity
+  have hlogdiv : (↑(j + 1) : ℝ) * Real.log ((↑(j + 1) : ℝ) / Real.exp 1)
+      = (↑(j + 1) : ℝ) * Real.log (↑(j + 1) : ℝ) - (↑(j + 1) : ℝ) := by
+    rw [Real.log_div hpos.ne' (Real.exp_pos 1).ne', Real.log_exp]; ring
+  rw [hs1] at hanti
+  rw [hlogdiv] at hform
+  linarith [hform, hanti]
 
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
