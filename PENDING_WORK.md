@@ -88,8 +88,13 @@ deriv-monotonicity proof), `abs_primeCorr_le`. The classical Mertens trilogy is 
    — out to **Aristotle `0fa80268`**; verify on our pin when it returns (Aristotle defaults to v4.28.0). Or
    prove locally (comparison with `∑ 1/p² ≤ ∑ 1/n²` over the `Nat.Primes` subtype).
 2. **Upgrade Mertens' 2nd to convergence**: `∑_{p≤x} 1/p − log log x → M` (Meissel–Mertens `M`). Needs the
-   remainder integral `∫_2^∞ (primeSumDiv⌊t⌋−log t)/(t log²t)` to CONVERGE (improper), not just be bounded —
-   i.e. tail `∫_X^∞ → 0`. Real-analysis upgrade of the existing `=O 1` argument.
+   remainder integral `R(N)=∫_2^N (primeSumDiv⌊t⌋−log t)/(t log²t)` to CONVERGE (improper). **Exact route
+   (lemmas found):** `MeasureTheory.integrableOn_Ioi_of_intervalIntegral_norm_bounded` (I=`Cr/log2`, from
+   `abs_primeSumDiv_floor_sub_log_le`+`integral_inv_mul_sq_log` bounding `∫_2^N ‖f‖`) gives `IntegrableOn f
+   (Ioi 2)`; then `MeasureTheory.intervalIntegral_tendsto_integral_Ioi 2 hfi tendsto_id` gives
+   `R(N) → ∫_{Ioi 2} f`. With `primeSumDiv_div_log_tendsto_one` (→1) and `hJ` (`∫_2^N log t/(t log²t) =
+   log log N − log log 2`), assemble `∑1/p − log log N → 1 − log log 2 + ∫_{Ioi 2} f =: M`. ~80 lines;
+   coherent fresh-lap unit. (f = the remainder integrand; reuse `mertens_second`'s `h_ae`/`hI1`/`hI2`.)
 3. **The `e^{−γ}` identification** (`M_meissel = γ`): the genuinely deep part — relate to `ζ(s)`'s Euler
    product as `s → 1⁺` / the Euler–Mascheroni constant `γ`. Generational; multi-lap.
 - Lower-hanging PNT-layer alternatives if the constants stall: explicit Chebyshev `ψ/θ` two-sided bounds.
