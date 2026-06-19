@@ -1,5 +1,5 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8296 jobs, kernel-reverified) · **Updated**: sharp-Mertens lap · 2026-06-19 · `1fc0cb1`+ · **Branch `ntl-hjsw`** · **`weakPNT` DISCHARGED → the flagship `maxNoThreeInLine_ge_three_halves_sub` (HJSW-optimal `3/2−o(N)`) is now UNCONDITIONAL and axiom-clean** (`[propext, Classical.choice, Quot.sound]`). Full Wiener–Ikehara PNT tower ported in-repo (PNTAnd, zero math edits). General-`N` constant ladder CLOSED: Bertrand 3/4 → 15/16 → 6/5 → 3/2−o(N), all axiom-clean. **Mertens' first AND second theorems** now complete & axiom-clean (`Mertens.lean`): 1st (vonMangoldt + sharp prime form `∑_{p≤x}log p/p = log x + O(1)`, both `~ log`); 2nd (`∑_{p≤x} 1/p = log log x + O(1)`, via Abel summation) — both mathlib-absent. Remaining `sorry`s: `nagura_prime` (superseded, non-blocking) + `prelim_decay_2/3` (dead code, gating nothing).**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8296 jobs, kernel-reverified) · **Updated**: Limit B / C₃=−γ lap · 2026-06-19 · `3b56a77` · **Branch `ntl-hjsw`** · **`weakPNT` DISCHARGED → the flagship `maxNoThreeInLine_ge_three_halves_sub` (HJSW-optimal `3/2−o(N)`) is now UNCONDITIONAL and axiom-clean** (`[propext, Classical.choice, Quot.sound]`). Full Wiener–Ikehara PNT tower ported in-repo (PNTAnd, zero math edits). General-`N` constant ladder CLOSED: Bertrand 3/4 → 15/16 → 6/5 → 3/2−o(N), all axiom-clean. **Mertens' first AND second theorems** now complete & axiom-clean (`Mertens.lean`): 1st (vonMangoldt + sharp prime form `∑_{p≤x}log p/p = log x + O(1)`, both `~ log`); 2nd (`∑_{p≤x} 1/p = log log x + O(1)`, via Abel summation) — both mathlib-absent. Remaining `sorry`s: `nagura_prime` (superseded, non-blocking) + `prelim_decay_2/3` (dead code, gating nothing).**
 
 > **Branch note (refreshed reflection lap, 2026-06-19).** On `ntl-hjsw` the mandated audit-surface
 > headlines are proven & axiom-clean (`[propext, Classical.choice, Quot.sound]`, kernel-reverified this
@@ -17,11 +17,25 @@
 > lives in `Mertens.lean` (vonMangoldt form + sharp prime form, both mathlib-absent).
 
 ## Where it stands
-**Review-lap call (2026-06-19): the no-three-in-line flagship is COMPLETE and UNCONDITIONAL; the productive frontier is now extending the unlocked PNT/Chebyshev layer.** The originally-mandated target — HJSW `3N/2` proved & axiom-clean in `Statement.lean` — is **COMPLETE** (`hjsw_lower_bound`). The treadmill then built the full general-`N` constant ladder up to HJSW's optimal `3/2 − o(N)` (`maxNoThreeInLine_ge_three_halves_sub`), and a prior grind lap **discharged the lone deep axiom `weakPNT`** (the PNT `ψ(x)∼x`) by porting PNTAnd's Wiener–Ikehara tower onto mathlib v4.29.1 with **zero math edits** — so that flagship is now `#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`, re-verified this lap). **Every headline in the repo is now axiom-free.** With the PNT layer unlocked, this lap added **Mertens' first theorem** (`Mertens.lean`): the sharp prime form `∑_{p≤x}(log p)/p = log x + O(1)` (discharging the proper-prime-power tail regrouping), the vonMangoldt form, and the multiplicative `~ log` capstones — all mathlib-absent, all axiom-clean. The next productive target is **Mertens' second theorem** (`∑_{p≤x}1/p = log log x + O(1)`), via mathlib's Abel-summation toolkit. See `PENDING_WORK.md` top.
+**Review-lap call (2026-06-19): the no-three-in-line flagship is COMPLETE and UNCONDITIONAL; the productive frontier is now extending the unlocked PNT/Chebyshev layer.** The originally-mandated target — HJSW `3N/2` proved & axiom-clean in `Statement.lean` — is **COMPLETE** (`hjsw_lower_bound`). The treadmill then built the full general-`N` constant ladder up to HJSW's optimal `3/2 − o(N)` (`maxNoThreeInLine_ge_three_halves_sub`), and a prior grind lap **discharged the lone deep axiom `weakPNT`** (the PNT `ψ(x)∼x`) by porting PNTAnd's Wiener–Ikehara tower onto mathlib v4.29.1 with **zero math edits** — so that flagship is now `#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`, re-verified this lap). **Every headline in the repo is now axiom-free.** With the PNT layer unlocked, this lap added **Mertens' first theorem** (`Mertens.lean`): the sharp prime form `∑_{p≤x}(log p)/p = log x + O(1)` (discharging the proper-prime-power tail regrouping), the vonMangoldt form, and the multiplicative `~ log` capstones — all mathlib-absent, all axiom-clean. Mertens' 2nd and 3rd (sharp convergence forms) followed; the classical `e^{−γ}` Mertens 3rd is now reduced to the **single Tauberian limit `Limit B`** (`P(s)+log(s−1)→M−γ`), and this lap built its analytic spine in `MertensConstant.lean` (brick B1 Abel integral rep + the γ-injection `∫_0^∞ log u·e^{−u}=−γ` + M-part + the log-part fully evaluated to `−γ−log(s−1)`), all axiom-clean. **The active frontier is finishing Limit B** (exp substitution of B1 + the Tauberian error →0). See `PENDING_WORK.md` top.
 
 **Every headline is axiom-free** — each headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]` (kernel-verified this lap: the flagship `..._three_halves_sub`, all six complete threads, the NTL audit surface, the unconditional `6/5`/`15/16` rungs, and the new Mertens theorems), and `grep '^axiom' src/` shows **none**. `src/` carries **zero math axioms**. Open `sorry`s: `nagura_prime` (PrimeGap.lean, superseded by the unconditional `3/2`, non-blocking) and `prelim_decay_2/3` (a self-contained dead-code island in `Wiener.lean` — clean `#print axioms WeakPNT''` confirms they gate nothing; Aristotle `c6d615ee` attempting `prelim_decay_2`). All threads green. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 (LIMIT B / C₃=−γ — Abel rep + γ-injection + log-part fully evaluated, `3b56a77`):** the
+  classical `e^{−γ}` is reduced (`mertens_third_classical_of_tauberian`) to the single Tauberian limit
+  **Limit B** `primeZeta s + log(s−1) → M − γ` (`s→1⁺`); this lap built the analytic spine of Limit B in
+  `MertensConstant.lean`, all axiom-clean: (i) **brick B1** `primeZeta_eq_abel_integral`
+  `P(s) = (s−1)∫_1^∞ (∑_{p≤⌊t⌋}1/p)·t^{−s} dt` (mathlib Abel summation
+  `tendsto_sum_mul_atTop_nhds_one_sub_integral₀`, all 6 hypotheses now proven — incl. `hg_int`
+  `integrableAtFilter_rpow_neg_mul_log`, done locally, superseding Aristotle `2919e0d2`); (ii) the
+  **γ-injection** `integral_log_mul_exp_neg_Ioi_eq_neg_gamma` `∫_0^∞ log u·e^{−u} du = −γ` (via complex
+  `hasDerivAt_GammaIntegral` + `Real.hasDerivAt_Gamma_one` + ofReal bridge); (iii) the **M-part**
+  `tendsto_sub_one_mul_integral_rpow` `(s−1)∫_2^∞ t^{−s} → 1`; (iv) the **log-part FULLY evaluated**
+  `sub_one_mul_integral_log_exp` `(s−1)∫_0^∞ log x·e^{−(s−1)x} dx = −γ − log(s−1)` (change of variables
+  `u=(s−1)x` + the γ-injection + `integrableOn_log_mul_exp_neg`). **Remaining for Limit B:** the exp
+  substitution `t=eˣ` of B1 (needs `integral_image_eq_integral_abs_deriv_smul` — A is a step function, so
+  the continuous-`g` substitution lemma won't apply) + the Tauberian error `(s−1)∫r(x)e^{−(s−1)x}→0`.
 - **2026-06-19 (SHARP MERTENS — convergence forms + e^{−γ} reduced to one equation):** the whole Mertens
   trilogy upgraded from `O(1)` to *convergence*, all axiom-clean & mathlib-absent (`Mertens.lean`):
   **`mertens_second_tendsto`** `∑_{p≤N}1/p − log log N → M` (Meissel–Mertens; bounded remainder integral
@@ -220,11 +234,17 @@ The mandated NTL target, the unconditional `3/2−o(N)` flagship, and all six ot
 and axiom-clean. `src/` carries **ZERO math axioms**. Open `sorry`s are all non-blocking (off every
 headline's critical path).
 ### Short-term (active frontier — mirror PENDING_WORK top)
-- **Mertens' second theorem** `∑_{p≤x} 1/p = log log x + O(1)` (mathlib-absent; the natural next step on the
-  unlocked PNT layer). Attack path: mathlib's `sum_mul_eq_sub_integral_mul` (in `NumberTheory/AbelSummation.lean`)
-  with coefficients `c(n)=[n prime]·log n/n` (partial sums = `primeSumDiv`, our `= log + O(1)`) and weight
-  `f(t)=1/log t`; the resulting `∫ A(t)/(t log²t)` splits into `∫1/(t log t)=log log t` (FTC via
-  `deriv (log∘log)`) + a convergent `O(1)` remainder. Multi-lap; START by stating it + the Abel scaffold.
+- **Limit B / C₃=−γ** (the sole gap to the classical sharp `e^{−γ}` Mertens 3rd). The headline
+  `mertens_third_classical_of_tauberian` is proven modulo `Limit B`: `primeZeta s + log(s−1) → M − γ`
+  (`s→1⁺`). Spine built this lap (`MertensConstant.lean`, all axiom-clean): brick B1 (Abel integral rep),
+  the γ-injection `∫_0^∞ log u·e^{−u}=−γ`, the M-part `(s−1)∫_2^∞ t^{−s}→1`, and the log-part fully
+  evaluated `(s−1)∫_0^∞ log x·e^{−(s−1)x}=−γ−log(s−1)`. **Two pieces remain** (next-lap, ordered):
+  (1) **exp substitution** of B1, `(s−1)∫_1^∞ t^{−s}A(t) dt = (s−1)∫_0^∞ A(eˣ)e^{−(s−1)x} dx`, via
+  `integral_image_eq_integral_abs_deriv_smul` (f=exp, InjOn, `exp''Ioi 0=Ioi 1`; A=`primeRecipSum⌊·⌋` is a
+  step function so the continuous-`g` lemma `integral_comp_mul_deriv_Ioi` does NOT apply); (2) the
+  **Tauberian/Abelian error** `(s−1)∫_0^∞ r(x)e^{−(s−1)x} dx → 0` where `r(x)=A(eˣ)−log x−M → 0`
+  (from `mertens_second_tendsto`) — the genuinely deep remaining step. Then assemble: B-pieces give
+  `M − γ` and feed `mertens_third_classical_of_tauberian`. See `PENDING_WORK.md`.
 - **`prelim_decay_2/3`** (`Wiener.lean`, dead code): sharp BV-Fourier decay `≤ TV/(2π|u|)`. Needs a
   Lebesgue–Stieltjes IBP for BV that mathlib lacks. Aristotle `c6d615ee` attempting `prelim_decay_2`.
   Either prove or excise the island to make the port 100% sorry-free. Low value (gates nothing).
@@ -273,6 +293,9 @@ headline's critical path).
 | `Mertens.{primeSumDiv_isEquivalent_log, vonMangoldtSumDiv_isEquivalent_log}` | prime/vonMangoldt sums `~ log N` (multiplicative Mertens 1st), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 | `Mertens.{mertens_second_identity, mertens_second}` | **Mertens' 2nd** `∑_{p≤N} 1/p = log log N + O(1)`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **mathlib-absent**; via Abel summation (`sum_mul_eq_sub_integral_mul₁`) + `log log` primitive + `O(1)` remainder (this lap) |
 | `Mertens.mertens_third_up_to_const` | **Mertens' 3rd (up to constant)** `∏_{p≤N}(1−1/p) ≍ 1/log N`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **mathlib-absent**; sharp `e^{−γ}` constant is the deeper open refinement (this lap) |
+| `Mertens.{mertens_third_tendsto_exp, mertens_third_isEquivalent}` | **Mertens' 3rd sharp (convergence)** `∏(1−1/p)·log N → e^{C₃}`, `∏ ~ e^{C₃}/log N`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **mathlib-absent**; `C₃ = (∑'_p(log(1−1/p)+1/p)) − M` (`mertensThirdConst`) |
+| `Mertens.mertens_third_classical_of_tauberian` | **classical `e^{−γ}` Mertens 3rd** `∏(1−1/p)·log N → e^{−γ}`, **cond.** on `Limit B` (`P(s)+log(s−1)→M−γ`) | `[propext, Classical.choice, Quot.sound]` | 🟡 frontier — clean modulo the Limit B *hypothesis* (a true, provable Tauberian fact; spine built this lap: B1 + γ-injection + M-part + log-part). NOT a 🔴: the hypothesis is provable, not an open conjecture |
+| `MertensConstant.{primeZeta_eq_abel_integral, integral_log_mul_exp_neg_Ioi_eq_neg_gamma, sub_one_mul_integral_log_exp, tendsto_sub_one_mul_integral_rpow}` | Limit-B spine: Abel integral rep of `P(s)`; `∫_0^∞ log u·e^{−u}=−γ`; `(s−1)∫_0^∞ log x·e^{−(s−1)x}=−γ−log(s−1)`; `(s−1)∫_2^∞ t^{−s}→1` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **mathlib-absent**; the analytic bricks toward Limit B (this lap) |
 
 **Math-axiom counts (🟢+🟡+🟠), kernel-verified this lap:** **0 across every headline in the repo** —
 all NTL constants (incl. the formerly-`weakPNT`-bearing `..._three_halves_sub`), all six complete threads,
@@ -283,5 +306,5 @@ returns nothing. **No 🔴 anywhere** — no headline depends on an open conject
 clean on all targets confirms it).
 
 ## Pointers
-- Open items/attack paths: **`PENDING_WORK.md`** (top = `## ⭐ weakPNT DISCHARGED`) · resume baton: newest dated **`HANDOFF-2026-06-19-*.md`** · online asks: none open · frozen plan: `NoThreeInLine/PLAN.md`
-- Active frontier file: `Combinatorics/NoThreeInLine/PrimeGap.lean` (the `weakPNT` axiom + the entire `3/2−o(N)` build are at its end; the `Hyperbola.lean`/`Anchors.lean` HJSW construction is complete)
+- Open items/attack paths: **`PENDING_WORK.md`** (top = the C₃=−γ / Limit B decomposition) · resume baton: newest dated **`HANDOFF-2026-06-19-*.md`** · online asks: none open · frozen plan: `NoThreeInLine/PLAN.md`
+- Active frontier file: `NumberTheory/PrimeNumberTheorem/MertensConstant.lean` (Limit-B spine: B1 + γ-injection + M-part + log-part at the bottom; the crux-isolation theorem `mertensThirdConst_eq_neg_gamma_of_tauberian` mid-file). The HJSW/PNT layer (`PrimeGap.lean`, `Hyperbola.lean`, `Mertens.lean`) is complete & axiom-clean.

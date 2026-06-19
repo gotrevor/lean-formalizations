@@ -143,26 +143,35 @@ imported (`Mathlib.NumberTheory.Harmonic.EulerMascheroni`, `Real.eulerMascheroni
   - ✅ **brick B0** `primeZetaCoeff_tendsto` : `primeZeta s = lim_N ∑_{p≤N} p^{−s}` (`primeZetaCoeff`,
     `summable_primeZetaCoeff`, `tsum_primeZetaCoeff_eq`) — the Finset-partial-sum form Abel summation consumes.
   - **REMAINING = Limit B only** (`primeZeta s + log(s−1) → M − γ`). All mathlib footholds identified.
-    - **B1** (Abel rep): `tendsto_sum_mul_atTop_nhds_one_sub_integral₀` (`Mathlib/NumberTheory/AbelSummation.lean`)
-      with `c(k)=primeRecipCoeff k=[k prime]/k`, `f(t)=t^{1−s}`. **5 of 6 hypotheses PROVEN this lap, all
-      axiom-clean:**
-      - `hc` = `primeRecipCoeff_zero`; `hf_diff` = `differentiableAt_rpow_one_sub` (∀ t>0);
-        `hf_int` = `locallyIntegrableOn_deriv_rpow_one_sub`; `h_lim` (l=0) = `abel_boundary_tendsto`
-        (uses ported+kernel-verified Aristotle `boundary_decay` + `primeRecipSum_le_one_add_log`);
-        `hg_dom` = `abel_hg_dom` (`O(t^{−s}(1+log t))`).
-      - ⏳ `hg_int` = `IntegrableAtFilter (fun t => t^{−s}(1+log t)) atTop` — **delegated to Aristotle job
-        `2919e0d2`** (`integrable_rpow_neg_mul_log`; prompt in `tools/mk/`). HARVEST FIRST next lap.
-      - **Assembly recipe (next lap, once hg_int in hand):** apply the Abel theorem → get
-        `Tendsto (fun n => ∑ k ∈ Icc 0 n, f k * c k) atTop (𝓝 (0 − ∫_1^∞ deriv f t · ∑_{k≤⌊t⌋} c k))`.
-        `f k * c k = primeZetaCoeff s k` (`rpow_one_sub_mul_primeRecipCoeff`); the LHS partial sums → `primeZeta s`
-        (`primeZetaCoeff_tendsto`, B0 — note B0 uses `Finset.range`; Icc 0 n = range (n+1), reconcile via
-        `tendsto_add_atTop_nat 1` or restate B0 over Icc). Uniqueness of limits ⟹
-        `primeZeta s = (s−1)∫_1^∞ (∑_{p≤t}1/p)·t^{−s} dt` (**brick B1**).
-    - **B2** (s→1⁺ limit of the integral) — **THE remaining hard wall**: feed `∑_{p≤t}1/p = log log t + M + o(1)`
-      (`mertens_second_tendsto`). `M`-part → `M·2^{1−s}→M`; `log log t`-part, after `u=(s−1)log t`, →
-      `∫_0^∞(log u−log(s−1))e^{−u}du = −γ − log(s−1)`, where `−γ = Γ'(1)` from `Real.hasDerivAt_Gamma_one`
-      (`Harmonic/GammaDeriv.lean`). Net: `primeZeta s = −log(s−1) + (M−γ) + o(1)`. Dominated convergence +
-      substitution; multi-lap. Entry point after B1 lands.
+    - ✅ **B1 DONE** (`primeZeta_eq_abel_integral`, axiom-clean, `65298e6`):
+      `primeZeta s = (s−1)·∫_1^∞ (∑_{p≤⌊t⌋}1/p)·t^{−s} dt`. All 6 Abel hypotheses proven; the last,
+      `hg_int = integrableAtFilter_rpow_neg_mul_log` (`IntegrableAtFilter (t^{−s}(1+log t)) atTop`), was
+      proven **locally** (g=O(t^{−s'}), s'=(s+1)/2, via `isLittleO_log_rpow_atTop` +
+      `integrableAtFilter_rpow_atTop_iff` + `IsBigO.integrableAtFilter`) — **superseding Aristotle `2919e0d2`**.
+      Assembly: Abel theorem + `rpow_one_sub_mul_primeRecipCoeff` + `tendsto_nhds_unique` (Icc↔range via
+      `Nat.range_succ_eq_Icc_zero`) + `integral_const_mul`/`setIntegral_congr_fun`.
+    - **B2** (s→1⁺ limit) — the spine is now built; TWO pieces remain. Plan: substitute `t=eˣ` so
+      `primeZeta s = (s−1)∫_0^∞ A(eˣ)·e^{−(s−1)x} dx` (`A(t)=∑_{p≤⌊t⌋}1/p`); then `A(eˣ)=log x+M+r(x)`
+      (`mertens_second_tendsto`, since `log log eˣ = log x`) splits it into three:
+      - ✅ **log-part DONE** (`sub_one_mul_integral_log_exp`, `3b56a77`): `(s−1)∫_0^∞ log x·e^{−(s−1)x} dx =
+        −γ − log(s−1)`. Via change of variables `u=(s−1)x` (`sub_one_mul_integral_log_exp_eq`,
+        `integral_comp_mul_left_Ioi`) + the **γ-injection** `integral_log_mul_exp_neg_Ioi_eq_neg_gamma`
+        (`∫_0^∞ log u·e^{−u}=−γ`, via complex `hasDerivAt_GammaIntegral`+`Real.hasDerivAt_Gamma_one`+ofReal)
+        + `integrableOn_log_mul_exp_neg`. **This is the full `−γ` contribution.**
+      - ✅ **M-part DONE** (`tendsto_sub_one_mul_integral_rpow`, `6ed4543`): `(s−1)∫_2^∞ t^{−s}→1` (=`2^{1−s}`),
+        so the M-term → M. (In the eˣ form the analogue is `(s−1)∫_0^∞ M·e^{−(s−1)x}=M` exactly.)
+      - ⏳ **(1) exp substitution of B1** — `(s−1)∫_1^∞ t^{−s}A(t) dt = (s−1)∫_0^∞ A(eˣ)·e^{−(s−1)x} dx`.
+        Use `integral_image_eq_integral_abs_deriv_smul` (f=exp on `Ioi 0`: `Real.hasDerivAt_exp`,
+        `Real.exp_injective.injOn`, `exp''Ioi 0 = Ioi 1`). NOTE: `A=primeRecipSum⌊·⌋` is a **step function**,
+        so the continuous-`g` lemma `integral_comp_mul_deriv_Ioi` does NOT apply — must use the measurable
+        change-of-variables. `(e^x)^{−s}·e^x = e^{−(s−1)x}` via `Real.rpow_def_of_pos`/`Real.exp_log`.
+      - ⏳ **(2) Tauberian/Abelian error** — `(s−1)∫_0^∞ r(x)·e^{−(s−1)x} dx → 0` where
+        `r(x)=A(eˣ)−log x−M → 0` (as x→∞, from `mertens_second_tendsto` + `log log ⌊eˣ⌋ − log x → 0`).
+        This is the deep step: an Abelian "final-value" theorem `lim_{δ→0⁺} δ·∫_0^∞ r(x)e^{−δx}dx = lim_{x→∞} r(x)`.
+        Not in mathlib; prove via dominated convergence on the rescaled integrand (sub `u=(s−1)x`,
+        `δ∫ r e^{−δx} = ∫ r(u/δ)e^{−u} du`, and `r(u/δ)→0` pointwise as δ→0⁺, dominated by a constant).
+      - **Then assemble:** B1 (eˣ form) = log-part + M-part + error → `(−γ−log(s−1)) + M + 0`, so
+        `primeZeta s + log(s−1) → M − γ` = **Limit B**, feeding `mertens_third_classical_of_tauberian`.
 - Lower-hanging PNT-layer alternatives if the constant stalls: explicit Chebyshev `ψ/θ` two-sided bounds.
 
 ### (superseded) nagura wall — FINAL for elementary methods
