@@ -1,0 +1,198 @@
+/-
+# The Hardy ↔ fast-growing bridge: `f_α ≤ H_{ω^α}`
+
+The Cichoń identity (`Logic/Goodstein/Growth.lean`) gives
+`goodsteinLength m = H_{toONote 2 m}(2) − 2`. To turn that into "Goodstein grows like the
+fast-growing hierarchy" we relate the Hardy hierarchy `H_α` to the fast-growing hierarchy
+`f_α`. The classical identity `H_{ω^α} = f_α` holds under the `ω[n]=n` convention; mathlib uses
+`ω[n] = n+1`, which makes `H_{ω^α}` strictly *bigger*, so we prove the robust one-sided bound
+
+  `fastGrowing α n ≤ hardy (oadd α 1 0) n`   (`fastGrowing_le_hardy_pow`).
+
+The linchpin is the **Hardy iteration law** `H_{ω^e·(k+1)} = (H_{ω^e})^[k+1]`
+(`hardy_oadd_iter`), whose engine is the **leading-term split**
+`H_{ω^e·c + R}(n) = H_{ω^e·c}(H_R(n))` (`hardy_split`) — valid because the `NF` condition
+`repr R < ω^(repr e)` is exactly the no-absorption side condition the Hardy additive law needs.
+-/
+import LeanFormalizations.Logic.Goodstein.Growth
+
+namespace LeanFormalizations.Logic.Goodstein
+
+open ONote Ordinal
+open LeanFormalizations.Logic.FastGrowing
+
+/-- **Iterate domination.** If `f ≤ g` pointwise and `g` is monotone, then `f^[j] ≤ g^[j]`
+pointwise. -/
+theorem iterate_le_iterate {f g : ℕ → ℕ} (hfg : ∀ m, f m ≤ g m) (hg : Monotone g) :
+    ∀ j x, f^[j] x ≤ g^[j] x := by
+  intro j
+  induction j with
+  | zero => intro x; simp
+  | succ j ih =>
+    intro x
+    rw [Function.iterate_succ_apply, Function.iterate_succ_apply]
+    exact (ih (f x)).trans ((hg.iterate j) (hfg x))
+
+/-- `(· + 1)^[j] n = n + j`. -/
+theorem succ_iterate (j n : ℕ) : (fun m => m + 1)^[j] n = n + j := by
+  induction j with
+  | zero => simp
+  | succ j ih => simp only [Function.iterate_succ_apply', ih]; omega
+
+/-- **Leading-term split for the Hardy hierarchy.** For a normal-form notation `oadd e c R`
+(so `repr R < ω^(repr e)`), the Hardy function splits its leading Cantor term off the tail:
+`H_{ω^e·c + R}(n) = H_{ω^e·c}(H_R(n))`. Well-founded recursion on `repr R`. The `NF` hypothesis
+is the no-absorption side condition that makes the Hardy additive law hold. -/
+theorem hardy_split (e : ONote) (c : ℕ+) (R : ONote) (hNF : (oadd e c R).NF) (n : ℕ) :
+    hardy (oadd e c R) n = hardy (oadd e c 0) (hardy R n) := by
+  suffices H : ∀ o : Ordinal, ∀ R : ONote, R.repr = o → (oadd e c R).NF → ∀ n,
+      hardy (oadd e c R) n = hardy (oadd e c 0) (hardy R n) by
+    exact H R.repr R rfl hNF n
+  intro o
+  induction o using WellFoundedLT.induction with
+  | _ o ih =>
+    intro R hrepr hNFR n
+    have hNFe : e.NF := hNFR.fst
+    have hbelowR : R.repr < ω ^ e.repr := hNFR.snd'.repr_lt
+    rcases hfs : fundamentalSequence R with (_ | R') | g
+    · -- R = 0
+      have hR0 : R = 0 :=
+        (fundamentalSequenceProp_inl_none R).1 (hfs ▸ fundamentalSequence_has_prop R)
+      subst hR0
+      simp
+    · -- R successor R'
+      have hsucc := (fundamentalSequenceProp_inl_some R R').1 (hfs ▸ fundamentalSequence_has_prop R)
+      have hNFR' : R'.NF := hsucc.2 hNFR.snd
+      have hltR' : R'.repr < o := by rw [← hrepr, hsucc.1]; exact Order.lt_succ _
+      have hbelowR' : R'.repr < ω ^ e.repr :=
+        lt_trans (by rw [hrepr]; exact hltR') hbelowR
+      have hNFnew : (oadd e c R').NF := NF.oadd hNFe c (NF.below_of_lt' hbelowR' hNFR')
+      have hfsnew : fundamentalSequence (oadd e c R) = Sum.inl (some (oadd e c R')) := by
+        rw [fundamentalSequence, hfs]
+      simp only [hardy_succ _ hfsnew, hardy_succ _ hfs]
+      exact ih R'.repr hltR' R' rfl hNFnew (n + 1)
+    · -- R limit g
+      have hprop := hfs ▸ fundamentalSequence_has_prop R
+      have hgnlt : (g n).repr < o := by rw [← hrepr]; exact repr_lt_repr (hprop.2.1 n).2.1
+      have hNFgn : (g n).NF := (hprop.2.1 n).2.2 hNFR.snd
+      have hbelowgn : (g n).repr < ω ^ e.repr :=
+        lt_trans (by rw [hrepr]; exact hgnlt) hbelowR
+      have hNFnew : (oadd e c (g n)).NF := NF.oadd hNFe c (NF.below_of_lt' hbelowgn hNFgn)
+      have hfsnew : fundamentalSequence (oadd e c R) = Sum.inr (fun i => oadd e c (g i)) := by
+        rw [fundamentalSequence, hfs]
+      simp only [hardy_limit _ hfsnew, hardy_limit _ hfs]
+      exact ih (g n).repr hgnlt (g n) rfl hNFnew n
+
+/-- Finite Hardy values: `H_{j+1}(n) = n + (j+1)` (the notation `oadd 0 ⟨j+1⟩ 0`). -/
+theorem hardy_finite : ∀ j n, hardy (oadd 0 ⟨j + 1, Nat.succ_pos j⟩ 0) n = n + (j + 1) := by
+  intro j
+  induction j with
+  | zero =>
+    intro n
+    show hardy (oadd 0 1 0) n = n + 1
+    rw [show (oadd (0 : ONote) 1 0) = 1 from rfl, hardy_one]
+  | succ j ih =>
+    intro n
+    have hfs : fundamentalSequence (oadd 0 ⟨j + 2, Nat.succ_pos _⟩ 0)
+        = Sum.inl (some (oadd 0 ⟨j + 1, Nat.succ_pos j⟩ 0)) := by
+      rw [fundamentalSequence_oadd_zero_zero]; rfl
+    simp only [hardy_succ _ hfs]
+    rw [ih (n + 1)]; omega
+
+/-- **Hardy coefficient step (nonzero exponent).** For `e ≠ 0`,
+`H_{ω^e·(k+2)}(n) = H_{ω^e·(k+1)}(H_{ω^e}(n))`. The descent peels one coefficient
+(`fundSeq_oadd_coeff`), then `hardy_split` separates the freshly-created lowest term, whose
+Hardy value is exactly `H_{ω^e}(n)` (it is the index-`n` fundamental term of `ω^e`). -/
+theorem hardy_oadd_coeff_step_ne (e : ONote) (he : e ≠ 0) (hNFe : e.NF) (k n : ℕ) :
+    hardy (oadd e ⟨k + 2, Nat.succ_pos _⟩ 0) n
+      = hardy (oadd e ⟨k + 1, Nat.succ_pos k⟩ 0) (hardy (oadd e 1 0) n) := by
+  obtain ⟨g, hg1, hgk⟩ := fundSeq_oadd_coeff e he k
+  have hNFe1 : (oadd e 1 0).NF := NF.oadd hNFe 1 NFBelow.zero
+  have hprop := hg1 ▸ fundamentalSequence_has_prop (oadd e 1 0)
+  have hgnlt : (g n).repr < (oadd e 1 0).repr := repr_lt_repr (hprop.2.1 n).2.1
+  have hNFgn : (g n).NF := (hprop.2.1 n).2.2 hNFe1
+  have hbelow : (g n).repr < ω ^ e.repr := by
+    have he1 : (oadd e 1 0).repr = ω ^ e.repr := by simp
+    rwa [he1] at hgnlt
+  have hNFsplit : (oadd e k.succPNat (g n)).NF :=
+    NF.oadd hNFe _ (NF.below_of_lt' hbelow hNFgn)
+  simp only [hardy_limit _ hgk]
+  show hardy (oadd e k.succPNat (g n)) n
+      = hardy (oadd e k.succPNat 0) (hardy (oadd e 1 0) n)
+  rw [hardy_split e k.succPNat (g n) hNFsplit n]
+  have heq : hardy (oadd e 1 0) n = hardy (g n) n := by simp only [hardy_limit _ hg1]
+  rw [heq]
+
+/-- **The Hardy iteration law.** `H_{ω^e·(k+1)} = (H_{ω^e})^[k+1]`. For `e = 0` this is
+`H_{k+1}(n) = n+(k+1) = (·+1)^[k+1] n`; for `e ≠ 0` it is induction on `k` via the coefficient
+step `hardy_oadd_coeff_step_ne`. The linchpin tying Hardy coefficients to iteration. -/
+theorem hardy_oadd_iter (e : ONote) (hNFe : e.NF) :
+    ∀ k n, hardy (oadd e ⟨k + 1, Nat.succ_pos k⟩ 0) n = (hardy (oadd e 1 0))^[k + 1] n := by
+  rcases eq_or_ne e 0 with rfl | he
+  · -- e = 0
+    have hg : hardy (oadd (0 : ONote) 1 0) = fun n => n + 1 := by
+      rw [show (oadd (0 : ONote) 1 0) = 1 from rfl]; exact hardy_one
+    intro k n
+    rw [hardy_finite k n, hg, succ_iterate]
+  · -- e ≠ 0: induction on k via the coefficient step
+    intro k
+    induction k with
+    | zero => intro n; simp
+    | succ k ih =>
+      intro n
+      have hcoeff := hardy_oadd_coeff_step_ne e he hNFe k n
+      have hk2 : (⟨k + 1 + 1, Nat.succ_pos (k + 1)⟩ : ℕ+) = ⟨k + 2, Nat.succ_pos _⟩ := rfl
+      rw [hk2, hcoeff, ih (hardy (oadd e 1 0) n), ← Function.iterate_succ_apply]
+
+/-- **The Hardy ↔ fast-growing bridge.** `fastGrowing α n ≤ hardy (oadd α 1 0) n`, i.e.
+`f_α ≤ H_{ω^α}`. Well-founded recursion on `repr α`: base/limit are direct; the successor case
+`f_{α'+1}(n) = (f_{α'})^[n](n)` is dominated by `(H_{ω^{α'}})^[n+1](n) = H_{ω^{α'+1}}(n)` via the
+iteration law, the IH lifted through `iterate_le_iterate`, and one extra expansive iterate. -/
+theorem fastGrowing_le_hardy_pow (α : ONote) (hNF : α.NF) (n : ℕ) :
+    fastGrowing α n ≤ hardy (oadd α 1 0) n := by
+  suffices H : ∀ o : Ordinal, ∀ α : ONote, α.repr = o → α.NF → ∀ n,
+      fastGrowing α n ≤ hardy (oadd α 1 0) n by
+    exact H α.repr α rfl hNF n
+  intro o
+  induction o using WellFoundedLT.induction with
+  | _ o ih =>
+    intro α hrepr hNFα n
+    rcases hfs : fundamentalSequence α with (_ | α') | g
+    · -- α = 0
+      have hα0 : α = 0 :=
+        (fundamentalSequenceProp_inl_none α).1 (hfs ▸ fundamentalSequence_has_prop α)
+      subst hα0
+      rw [fastGrowing_zero' 0 rfl]
+      show Nat.succ n ≤ hardy (oadd 0 1 0) n
+      rw [show (oadd (0 : ONote) 1 0) = 1 from rfl, hardy_one]
+    · -- α successor α'
+      have hsucc := (fundamentalSequenceProp_inl_some α α').1 (hfs ▸ fundamentalSequence_has_prop α)
+      have hNFα' : α'.NF := hsucc.2 hNFα
+      have hltα' : α'.repr < o := by rw [← hrepr, hsucc.1]; exact Order.lt_succ _
+      rw [fastGrowing_succ α hfs]
+      simp only [hardy_limit _ (fundSeq_oadd_one_of_succ hfs)]
+      show (fastGrowing α')^[n] n ≤ hardy (oadd α' n.succPNat 0) n
+      rw [show (n.succPNat : ℕ+) = ⟨n + 1, Nat.succ_pos n⟩ from rfl, hardy_oadd_iter α' hNFα' n n]
+      calc (fastGrowing α')^[n] n
+          ≤ (hardy (oadd α' 1 0))^[n] n :=
+            iterate_le_iterate (fun m => ih α'.repr hltα' α' rfl hNFα' m) (hardy_monotone _) n n
+        _ ≤ (hardy (oadd α' 1 0))^[n + 1] n := by
+            rw [Function.iterate_succ_apply']
+            exact le_hardy (oadd α' 1 0) _
+    · -- α limit g
+      have hprop := hfs ▸ fundamentalSequence_has_prop α
+      have hgnlt : (g n).repr < o := by rw [← hrepr]; exact repr_lt_repr (hprop.2.1 n).2.1
+      have hNFgn : (g n).NF := (hprop.2.1 n).2.2 hNFα
+      rw [fastGrowing_limit α hfs]
+      simp only [hardy_limit _ (fundSeq_oadd_one_of_limit hfs)]
+      show fastGrowing (g n) n ≤ hardy (oadd (g n) 1 0) n
+      exact ih (g n).repr hgnlt (g n) rfl hNFgn n
+
+/-! ### Anti-vacuity anchors (off any headline axiom path). -/
+
+example : hardy (oadd 1 2 (oadd 0 3 0)) 4 = hardy (oadd 1 2 0) (hardy (oadd 0 3 0) 4) := by
+  native_decide
+example : hardy (oadd 1 3 0) 3 = (hardy (oadd 1 1 0))^[3] 3 := by native_decide
+example : fastGrowing 2 3 ≤ hardy (oadd 2 1 0) 3 := by native_decide
+
+end LeanFormalizations.Logic.Goodstein
