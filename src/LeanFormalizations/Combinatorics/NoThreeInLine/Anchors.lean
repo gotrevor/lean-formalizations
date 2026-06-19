@@ -50,6 +50,24 @@ theorem decNoThree_imp {s : Finset (ℕ × ℕ)} (h : decNoThree s) : NoThreeCol
   rw [det3_toReal_eq_detZ] at hdet
   exact h p hp q hq r hr hpq hpr hqr (by exact_mod_cast hdet)
 
+/-- **The certificate is exact:** `decNoThree` is logically equivalent to `NoThreeCollinear`. The
+forward direction uses `collinear_of_det3_zero` (a vanishing determinant *is* collinearity), so a
+`decNoThree` computation neither over- nor under-reports — in particular a `decide`-`false` is a
+genuine proof that the configuration *does* have three in line. -/
+theorem decNoThree_iff (s : Finset (ℕ × ℕ)) : decNoThree s ↔ NoThreeCollinear s := by
+  refine ⟨decNoThree_imp, fun h p hp q hq r hr hpq hpr hqr hz => ?_⟩
+  have hcol : Collinear ℝ ({toReal p, toReal q, toReal r} : Set (ℝ × ℝ)) :=
+    collinear_of_det3_zero (by rw [det3_toReal_eq_detZ]; exact_mod_cast hz)
+  rcases h p hp q hq r hr hcol with h | h | h
+  · exact hpq h
+  · exact hpr h
+  · exact hqr h
+
+/-- Consequently `NoThreeCollinear` is decidable on a concrete `Finset` — so `decide` /
+`native_decide` can settle it directly. -/
+instance (s : Finset (ℕ × ℕ)) : Decidable (NoThreeCollinear s) :=
+  decidable_of_iff _ (decNoThree_iff s)
+
 /-! ### Concrete witness anchor: the HJSW count `3(p−1)` at `p = 5`
 
 An explicit `12`-point configuration in the `10 × 10` grid with no three collinear — a genuine
