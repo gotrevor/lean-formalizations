@@ -56,4 +56,26 @@ theorem davies_kakeya_2d_disc_anchor :
     dimH (Metric.closedBall (0 : EuclideanSpace ℝ (Fin 2)) 1) = 2 :=
   davies_kakeya_2d _ isKakeya_closedBall
 
+/-- **Discriminating anti-triviality anchor.** A single straight line — here the `x`-axis
+`{p : ℝ² | p 1 = 0}` — is **not** a Kakeya set: it contains a unit segment only in its own direction,
+not in the perpendicular direction `e₁`. This guards the most dangerous possible mis-statement of
+`IsKakeya` — a `∃`-direction (or otherwise too-weak) form in place of the intended `∀`-direction one,
+which would make `davies_kakeya_2d` vacuous on thin sets. Together with `isKakeya_closedBall` it pins
+`IsKakeya` from both sides: a genuinely 2-dimensional set satisfies it, a 1-dimensional one does not. -/
+theorem not_isKakeya_xAxis :
+    ¬ IsKakeya {p : EuclideanSpace ℝ (Fin 2) | p 1 = 0} := by
+  intro h
+  -- the perpendicular unit direction `e₁`
+  set v : EuclideanSpace ℝ (Fin 2) := EuclideanSpace.single 1 (1 : ℝ) with hv
+  obtain ⟨a, ha⟩ := h v (by rw [hv, PiLp.norm_single]; exact norm_one)
+  -- both endpoints of the segment must lie on the axis
+  have h0 : a ∈ {p : EuclideanSpace ℝ (Fin 2) | p 1 = 0} :=
+    ha (left_mem_affineSegment ℝ a (a + v))
+  have h1 : a + v ∈ {p : EuclideanSpace ℝ (Fin 2) | p 1 = 0} :=
+    ha (right_mem_affineSegment ℝ a (a + v))
+  simp only [Set.mem_setOf_eq] at h0 h1
+  -- but `(a + e₁) 1 = a 1 + 1 = 0 + 1 = 1 ≠ 0`
+  rw [PiLp.add_apply, hv, PiLp.single_apply, if_pos rfl, h0, zero_add] at h1
+  exact one_ne_zero h1
+
 end LeanFormalizations.Kakeya2D
