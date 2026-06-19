@@ -331,6 +331,48 @@ theorem log_bump (b : ℕ) (hb : 2 ≤ b) {n : ℕ} (hn : n ≠ 0) :
       _ ≤ (b + 1) * (b + 1) ^ bump b e := Nat.mul_le_mul_right _ (by omega)
       _ = (b + 1) ^ (bump b e + 1) := by rw [pow_succ]; ring
 
+/-- **Decrementing lowers a logarithm by at most one:** `Nat.log b x ≤ Nat.log b (x − 1) + 1`
+(for `1 < b`). If `L = log b x ≥ 1` then `b^L ≤ x`, so `b^(L−1) < b^L ≤ x`, hence `b^(L−1) ≤ x−1`
+and `L − 1 ≤ log b (x − 1)`. The general fact that a single decrement crosses at most one power. -/
+theorem log_le_log_pred_succ (b : ℕ) (hb : 1 < b) (x : ℕ) :
+    Nat.log b x ≤ Nat.log b (x - 1) + 1 := by
+  rcases Nat.eq_zero_or_pos (Nat.log b x) with hL0 | hLpos
+  · omega
+  · have hx0 : x ≠ 0 := by
+      intro h; rw [h, Nat.log_zero_right] at hLpos; exact Nat.lt_irrefl 0 hLpos
+    have hbL : b ^ Nat.log b x ≤ x := Nat.pow_log_le_self b hx0
+    have hb1L : b ^ 1 ≤ b ^ Nat.log b x := Nat.pow_le_pow_right (by omega) hLpos
+    have hge : b ≤ x := by rw [pow_one] at hb1L; omega
+    have hx1 : x - 1 ≠ 0 := by omega
+    have hpowlt : b ^ (Nat.log b x - 1) < b ^ Nat.log b x := Nat.pow_lt_pow_right hb (by omega)
+    have hpow : b ^ (Nat.log b x - 1) ≤ x - 1 := by omega
+    have := (Nat.pow_le_iff_le_log hb hx1).1 hpow
+    omega
+
+/-- **The leading CNF exponent drops by at most one per Goodstein step** (while the term is at
+least its base). Reading the leading exponent `L_k = log_{base k}(G_k)`, the step gives
+`L_k ≤ L_{k+1} + 1`: `log_bump` sends the exponent `L_k` to `bump (base k) L_k ≥ L_k` in the new
+base, and the `− 1` in `G_{k+1} = bump _ G_k − 1` lowers that log by at most one
+(`log_le_log_pred_succ`). This is the recursion's per-level skeleton: the leading exponent itself
+descends Goodstein-style, so it cannot fall below a fixed level `o` until astronomically many
+steps have passed — the structural reason sub-fact (ii) holds for every fixed `o`. -/
+theorem leadExp_drop_le_one (m k : ℕ) (h : base k ≤ goodsteinSeq m k) :
+    Nat.log (base k) (goodsteinSeq m k)
+      ≤ Nat.log (base (k + 1)) (goodsteinSeq m (k + 1)) + 1 := by
+  have hb : 2 ≤ base k := Nat.le_add_left 2 k
+  have hv0 : goodsteinSeq m k ≠ 0 := by omega
+  have hbb1 : base (k + 1) = base k + 1 := by simp only [base]
+  have hstep : goodsteinSeq m (k + 1) = bump (base k) (goodsteinSeq m k) - 1 := rfl
+  rw [hbb1, hstep]
+  have h1 : Nat.log (base k + 1) (bump (base k) (goodsteinSeq m k))
+      ≤ Nat.log (base k + 1) (bump (base k) (goodsteinSeq m k) - 1) + 1 :=
+    log_le_log_pred_succ (base k + 1) (by omega) _
+  have h2 : Nat.log (base k + 1) (bump (base k) (goodsteinSeq m k))
+      = bump (base k) (Nat.log (base k) (goodsteinSeq m k)) := log_bump (base k) hb hv0
+  have h3 : Nat.log (base k) (goodsteinSeq m k)
+      ≤ bump (base k) (Nat.log (base k) (goodsteinSeq m k)) := le_bump (base k) hb _
+  omega
+
 /-- **The Goodstein term stays `≥ m` for the first `m` steps:** `m ≤ goodsteinSeq m k` whenever
 `k + 1 ≤ m`. Induction on `k` using `bump_gt`: while `k + 2 ≤ m ≤ goodsteinSeq m k` the value is
 above the base, so `goodsteinSeq m (k+1) = bump (k+2) (goodsteinSeq m k) − 1 ≥ goodsteinSeq m k`. -/
@@ -594,6 +636,12 @@ example : 4 + 1 ≤ bump 2 4 := by native_decide
 example : 4 ≤ goodsteinSeq 4 2 := by native_decide
 -- `log_bump`: the leading exponent bumps itself. `bump 2 5 = 28`, `log_3 28 = 3 = bump 2 (log_2 5)`.
 example : Nat.log 3 (bump 2 5) = bump 2 (Nat.log 2 5) := by native_decide
+-- `log_le_log_pred_succ`: one decrement lowers a log by ≤ 1 (`log_3 9 = 2`, `log_3 8 = 1`).
+example : Nat.log 3 9 ≤ Nat.log 3 8 + 1 := by native_decide
+-- `leadExp_drop_le_one`: leading exponent drops by ≤ 1 per step. `G(4,2)=41` (`log_4 41 = 2`),
+-- `G(4,3)=60` (`log_5 60 = 2`): `2 ≤ 2 + 1`.
+example : Nat.log (base 2) (goodsteinSeq 4 2) ≤ Nat.log (base 3) (goodsteinSeq 4 3) + 1 := by
+  native_decide
 
 example : fastGrowing 0 2 ≤ goodsteinLength 2 + 2 := by native_decide  -- 3 ≤ 5
 example : fastGrowing 1 2 ≤ goodsteinLength 2 + 2 := by native_decide  -- 4 ≤ 5
