@@ -23,6 +23,23 @@
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 lap 9 (🎉 DIAGONAL DOMINATION CLOSED for all finite levels — the 8-lap crux):**
+  The headline open problem — `f_o(m) ≤ goodsteinLength m + 2` (sub-fact (ii), **Cichoń's lower
+  bound**) — is now PROVED for every finite level, machine-checked:
+  `fastGrowing_ofNat_le_goodsteinLength : 16 ≤ m → n+1 ≤ log₂ m → fastGrowing (ofNat n) m ≤
+  goodsteinLength m + 2`. So `goodsteinLength` **diagonally dominates the entire finite fast-growing
+  hierarchy** `f_0, f_1, f_2, …`. The mechanism (axiom-clean engine): **self-similarity**
+  (`leadExp_ge_goodsteinSeq_log` — the leading-exponent sequence dominates the Goodstein sequence one
+  scale down, via the per-step floor `leadExp_step_ge` + `bump_mono` through the `toOrdinal` bridge),
+  a **strong induction** making the exponential length bound `goodsteinLength m ≥ 2^{m+1}+m` reproduce
+  itself one scale up (`goodsteinLength_exp_lower` / `exp_le_goodsteinLength_step`), and the
+  **small-regime termination law** (`goodsteinLength_le_of_small` → `n_le_goodsteinSeq`) lifting `o=2`
+  to all finite `o`. The induction bottoms out at finitely many computational base cases
+  `goodsteinLength M ≥ 2^{M+1}+M` (`4≤M<16`), discharged by a tail-recursive forward evaluator
+  (`gpos`) under `native_decide` (heaviest: `M=15`, a 65551-step run), isolated in
+  `DominationBaseCases.lean`. The unconditional closures carry `Lean.ofReduceBool` (finite base-case
+  computation); the math engine + all conditional reductions stay `[propext, Classical.choice,
+  Quot.sound]`. **Next frontier = transfinite `o` (start `o=ω`) toward `f_{ε₀}`.** Build 🟢 (8290 jobs).
 - **2026-06-19 lap 8 (DEEP-REFLECTION lap — altitude audit, no proof churn):** full read-down of
   STATUS/HANDOFF/PENDING/DIRECTION + git log; re-ran `#print axioms` on all 12 headlines (every one
   = bare trust base `[propext, Classical.choice, Quot.sound]`, **0 math axioms**) and re-audited the
