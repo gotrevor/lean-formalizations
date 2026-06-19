@@ -199,4 +199,193 @@ lemma mertensCorr_term_nonneg {s : ℝ} (hs : 1 < s) (p : Nat.Primes) :
 lemma mertensCorr_nonneg {s : ℝ} (hs : 1 < s) : 0 ≤ mertensCorr s :=
   tsum_nonneg (fun p => mertensCorr_term_nonneg hs p)
 
+/-! ### Limit A — `P(s) + log(s−1) → −G(1)` as `s → 1⁺`
+
+The ζ side of the constant.  Combining the split `log ζ(s) = P(s) + G(s)` with the mathlib asymptotic
+`ζ(s) − 1/(s−1) → γ` (`tendsto_riemannZeta_sub_one_div_nhds_right`, real version) and the continuity of
+`G = mertensCorr` at `1`.  This pins one of the two limits of `P(s)+log(s−1)`; Limit B (the Abel/Tauberian
+transfer to `∑_{p≤x}1/p`) pins the other at `M − γ`, and uniqueness forces `C₃ = −γ`. -/
+
+/-- **Real specialisation of `ζ(s) − 1/(s−1) → γ`.**  mathlib's
+`tendsto_riemannZeta_sub_one_div_nhds_right` is `ℂ`-valued (along `𝓝[>] 1`); on `(1,∞)` the value is the
+real `realZeta`, so taking real parts gives the real limit. -/
+lemma tendsto_realZeta_sub_one_div :
+    Tendsto (fun s : ℝ => realZeta s - 1 / (s - 1)) (𝓝[>] 1)
+      (𝓝 Real.eulerMascheroniConstant) := by
+  have hc := ZetaAsymptotics.tendsto_riemannZeta_sub_one_div_nhds_right
+  have hre := (Complex.continuous_re.tendsto _).comp hc
+  simp only [Function.comp_def, Complex.ofReal_re] at hre
+  refine hre.congr' ?_
+  filter_upwards [self_mem_nhdsWithin] with s hs
+  have hs1 : (1 : ℝ) < s := hs
+  rw [riemannZeta_ofReal_eq hs1]
+  push_cast
+  rw [Complex.sub_re, Complex.ofReal_re]
+  congr 1
+  rw [show ((s : ℂ) - 1) = ((s - 1 : ℝ) : ℂ) by push_cast; ring, ← Complex.ofReal_one,
+    ← Complex.ofReal_div, Complex.ofReal_re]
+
+/-- `(s−1)·ζ(s) → 1` as `s → 1⁺` (the simple pole of ζ). -/
+lemma tendsto_sub_one_mul_realZeta :
+    Tendsto (fun s : ℝ => (s - 1) * realZeta s) (𝓝[>] 1) (𝓝 1) := by
+  have hs1 : Tendsto (fun s : ℝ => s - 1) (𝓝[>] 1) (𝓝 0) := by
+    have : Tendsto (fun s : ℝ => s - 1) (𝓝 1) (𝓝 0) := by
+      simpa using (continuous_sub_right (1 : ℝ)).tendsto 1
+    exact this.mono_left nhdsWithin_le_nhds
+  have hprod : Tendsto (fun s : ℝ => (s - 1) * (realZeta s - 1 / (s - 1))) (𝓝[>] 1) (𝓝 0) := by
+    have := hs1.mul tendsto_realZeta_sub_one_div
+    simpa using this
+  have := hprod.add (tendsto_const_nhds (x := (1 : ℝ)))
+  simp only [zero_add] at this
+  refine this.congr' ?_
+  filter_upwards [self_mem_nhdsWithin] with s hs
+  have hs1' : (1 : ℝ) < s := hs
+  have hne : s - 1 ≠ 0 := by linarith
+  field_simp
+  ring
+
+/-- **A1**: `log ζ(s) + log(s−1) → 0` as `s → 1⁺` — because `(s−1)·ζ(s) → 1` and `log` is continuous at
+`1` (`log((s−1)·ζ(s)) = log(s−1) + log ζ(s)`, both factors positive on `(1,∞)`). -/
+lemma tendsto_logRealZeta_add_logSub :
+    Tendsto (fun s : ℝ => Real.log (realZeta s) + Real.log (s - 1)) (𝓝[>] 1) (𝓝 0) := by
+  have hcont : Tendsto (fun s : ℝ => Real.log ((s - 1) * realZeta s)) (𝓝[>] 1) (𝓝 0) := by
+    have h := (Real.continuousAt_log (by norm_num : (1 : ℝ) ≠ 0)).tendsto.comp
+      tendsto_sub_one_mul_realZeta
+    simpa [Function.comp_def, Real.log_one] using h
+  refine hcont.congr' ?_
+  filter_upwards [self_mem_nhdsWithin] with s hs
+  have hs1' : (1 : ℝ) < s := hs
+  have hz : 0 < realZeta s := realZeta_pos hs1'
+  have hsub : 0 < s - 1 := by linarith
+  rw [Real.log_mul (by linarith) (ne_of_gt hz), add_comm]
+
+/-- For `s ≥ 1` and a prime `p`, `p^{−s} ≤ 1/2` (so `1 − p^{−s} ≥ 1/2 > 0`). -/
+lemma prime_rpow_le_half {s : ℝ} (hs : 1 ≤ s) (p : Nat.Primes) : (p : ℝ) ^ (-s) ≤ 1 / 2 := by
+  have hp2 : (2 : ℝ) ≤ (p : ℝ) := by exact_mod_cast p.2.two_le
+  have h1 : (p : ℝ) ^ (-s) ≤ (p : ℝ) ^ (-1 : ℝ) :=
+    Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith)
+  rw [Real.rpow_neg_one] at h1
+  have h2 : (p : ℝ)⁻¹ ≤ 1 / 2 := by rw [one_div]; exact inv_anti₀ (by norm_num) hp2
+  linarith
+
+/-- Each correction term is continuous on `[1,∞)` (`p^{−s}` is continuous, and `1 − p^{−s} ≥ 1/2 > 0`
+there so `log` is too). -/
+lemma continuousOn_mertensCorr_term (p : Nat.Primes) :
+    ContinuousOn (fun s : ℝ => -Real.log (1 - (p : ℝ) ^ (-s)) - (p : ℝ) ^ (-s)) (Set.Ici 1) := by
+  have hp_ne : (p : ℝ) ≠ 0 := by
+    have : (2 : ℝ) ≤ (p : ℝ) := by exact_mod_cast p.2.two_le
+    positivity
+  have hg : Continuous (fun s : ℝ => (p : ℝ) ^ (-s)) :=
+    (Real.continuous_const_rpow hp_ne).comp continuous_neg
+  refine ContinuousOn.sub ?_ hg.continuousOn
+  refine ContinuousOn.neg (ContinuousOn.log (continuousOn_const.sub hg.continuousOn) ?_)
+  intro s hs
+  have hs1 : (1 : ℝ) ≤ s := hs
+  have := prime_rpow_le_half hs1 p
+  -- `1 − p^{−s} ≥ 1/2 ≠ 0`
+  have : (0 : ℝ) < 1 - (p : ℝ) ^ (-s) := by linarith
+  exact ne_of_gt this
+
+/-- Termwise sup-norm bound for `s ≥ 1`: `|−log(1−p^{−s}) − p^{−s}| ≤ p^{−2}` (from `|log(1−x)+x| ≤ x²`
+and `x = p^{−s} ≤ p^{−1}`), the summable dominator (`∑_p p^{−2} < ∞`). -/
+lemma abs_mertensCorr_term_le {s : ℝ} (hs : 1 ≤ s) (p : Nat.Primes) :
+    |(-Real.log (1 - (p : ℝ) ^ (-s)) - (p : ℝ) ^ (-s))| ≤ (p : ℝ) ^ (-(2 : ℝ)) := by
+  have hp2 : (2 : ℝ) ≤ (p : ℝ) := by exact_mod_cast p.2.two_le
+  have hppos : (0 : ℝ) < (p : ℝ) := by linarith
+  have hx0 : 0 < (p : ℝ) ^ (-s) := Real.rpow_pos_of_pos hppos _
+  have hxle : (p : ℝ) ^ (-s) ≤ 1 / 2 := prime_rpow_le_half hs p
+  have hb := log_one_sub_add_self_abs_le hx0 hxle
+  -- rewrite `-log(1-x)-x = -(log(1-x)+x)`
+  have heq : -Real.log (1 - (p : ℝ) ^ (-s)) - (p : ℝ) ^ (-s)
+      = -(Real.log (1 - (p : ℝ) ^ (-s)) + (p : ℝ) ^ (-s)) := by ring
+  rw [heq, abs_neg]
+  refine hb.trans ?_
+  -- `x² ≤ p^{−2}` :  `x = p^{−s} ≤ p^{−1}`, square monotone on `≥0`.
+  have hxle1 : (p : ℝ) ^ (-s) ≤ (p : ℝ) ^ (-1 : ℝ) :=
+    Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith)
+  have hsq : ((p : ℝ) ^ (-1 : ℝ)) ^ 2 = (p : ℝ) ^ (-(2 : ℝ)) := by
+    rw [← Real.rpow_natCast ((p : ℝ) ^ (-1 : ℝ)) 2, ← Real.rpow_mul hppos.le]
+    norm_num
+  calc ((p : ℝ) ^ (-s)) ^ 2 ≤ ((p : ℝ) ^ (-1 : ℝ)) ^ 2 :=
+        pow_le_pow_left₀ hx0.le hxle1 2
+    _ = (p : ℝ) ^ (-(2 : ℝ)) := hsq
+
+/-- **A2 (continuity of `G`)**: `mertensCorr` is continuous on `[1,∞)` — a uniformly (by `p^{−2}`)
+dominated series of functions continuous there.  In particular `mertensCorr s → mertensCorr 1` as
+`s → 1⁺`. -/
+lemma continuousOn_mertensCorr : ContinuousOn mertensCorr (Set.Ici 1) := by
+  apply continuousOn_tsum continuousOn_mertensCorr_term
+    (summable_primeZeta_term (show (1 : ℝ) < 2 by norm_num))
+  intro p s hs
+  rw [Real.norm_eq_abs]
+  exact abs_mertensCorr_term_le hs p
+
+lemma tendsto_mertensCorr_one : Tendsto mertensCorr (𝓝[>] 1) (𝓝 (mertensCorr 1)) := by
+  have hC := (continuousOn_mertensCorr 1 (by simp)).tendsto
+  exact hC.mono_left (nhdsWithin_mono _ Set.Ioi_subset_Ici_self)
+
+/-- **Limit A**: `P(s) + log(s−1) → −G(1)` as `s → 1⁺`, where `G(1) = mertensCorr 1`.  Combine the split
+`P(s) = log ζ(s) − G(s)` (`log_realZeta_split`) with A1 (`log ζ(s)+log(s−1)→0`) and A2 (`G(s)→G(1)`). -/
+lemma tendsto_primeZeta_add_logSub :
+    Tendsto (fun s : ℝ => primeZeta s + Real.log (s - 1)) (𝓝[>] 1) (𝓝 (-mertensCorr 1)) := by
+  have h := tendsto_logRealZeta_add_logSub.sub tendsto_mertensCorr_one
+  simp only [zero_sub] at h
+  refine h.congr' ?_
+  filter_upwards [self_mem_nhdsWithin] with s hs
+  have hs1 : (1 : ℝ) < s := hs
+  rw [log_realZeta_split hs1]; ring
+
+/-! ### The bridge and the final reduction
+
+`∑'_n primeCorrCoeff n = −G(1)` (the repo's ℕ-indexed correction series equals the negative of the
+`Nat.Primes`-indexed `mertensCorr` at `1`), turning `mertensThirdConst = (∑'_n primeCorrCoeff n) − M`
+into `mertensThirdConst = −G(1) − M`.  Combined with Limit A and the (deep) Limit B, uniqueness of
+limits forces `mertensThirdConst = −γ`. -/
+
+/-- **Bridge**: `∑'_n primeCorrCoeff n = −mertensCorr 1`.  The ℕ-indexed correction series (supported on
+primes) reindexes to the `Nat.Primes`-indexed `mertensCorr`, with `p^{−1} = 1/p` and an overall sign. -/
+lemma tsum_primeCorrCoeff_eq : (∑' n : ℕ, primeCorrCoeff n) = -mertensCorr 1 := by
+  have hinj : Function.Injective (fun p : Nat.Primes => (p : ℕ)) := Nat.Primes.coe_nat_injective
+  have hsupp : Function.support primeCorrCoeff ⊆ Set.range (fun p : Nat.Primes => (p : ℕ)) := by
+    intro n hn
+    rw [Function.mem_support] at hn
+    have hp : n.Prime := by
+      by_contra h
+      rw [primeCorrCoeff, if_neg h] at hn; exact hn rfl
+    exact ⟨⟨n, hp⟩, rfl⟩
+  rw [← hinj.tsum_eq hsupp]
+  have hneg : -mertensCorr 1
+      = ∑' p : Nat.Primes, (Real.log (1 - (p : ℝ) ^ (-(1 : ℝ))) + (p : ℝ) ^ (-(1 : ℝ))) := by
+    rw [mertensCorr, ← tsum_neg]
+    exact tsum_congr (fun p => by ring)
+  rw [hneg]
+  refine tsum_congr (fun p => ?_)
+  have hp : (p : ℕ).Prime := p.2
+  rw [primeCorrCoeff, if_pos hp, Real.rpow_neg_one]
+
+/-- **The final reduction (crux isolated).**  `mertensThirdConst = −γ` follows from the single deep
+**Tauberian limit** `Limit B`: `P(s) + log(s−1) → M − γ` as `s → 1⁺`.  Everything else — Limit A (the ζ
+Euler-product side), the bridge, and the algebra — is machine-checked here.  This concentrates the entire
+remaining difficulty of the classical `e^{−γ}` Mertens constant into one precisely-stated real-analysis
+fact (the Abel summation `P(s) = −log(s−1) + (M − γ) + o(1)`, where the `γ` enters via `Γ'(1) = −γ`). -/
+theorem mertensThirdConst_eq_neg_gamma_of_tauberian
+    (hTauber : Tendsto (fun s : ℝ => primeZeta s + Real.log (s - 1)) (𝓝[>] 1)
+        (𝓝 (meisselMertensM - Real.eulerMascheroniConstant))) :
+    mertensThirdConst = -Real.eulerMascheroniConstant := by
+  have huniq : -mertensCorr 1 = meisselMertensM - Real.eulerMascheroniConstant :=
+    tendsto_nhds_unique tendsto_primeZeta_add_logSub hTauber
+  rw [mertensThirdConst, tsum_primeCorrCoeff_eq, huniq]
+  ring
+
+/-- **Classical Mertens 3rd, `e^{−γ}` form — modulo only the clean Tauberian limit.**
+`∏_{p≤N}(1−1/p)·log N → e^{−γ}`, machine-checked given exactly `Limit B`
+(`P(s)+log(s−1) → M − γ`).  Drops the opaque `mertensThirdConst = −γ` hypothesis of
+`mertens_third_classical` in favour of a precise analytic statement about the prime zeta. -/
+theorem mertens_third_classical_of_tauberian
+    (hTauber : Tendsto (fun s : ℝ => primeZeta s + Real.log (s - 1)) (𝓝[>] 1)
+        (𝓝 (meisselMertensM - Real.eulerMascheroniConstant))) :
+    Tendsto (fun N : ℕ => primeProd N * Real.log N) atTop
+      (nhds (Real.exp (-Real.eulerMascheroniConstant))) :=
+  mertens_third_classical (mertensThirdConst_eq_neg_gamma_of_tauberian hTauber)
+
 end LeanFormalizations.Mertens
