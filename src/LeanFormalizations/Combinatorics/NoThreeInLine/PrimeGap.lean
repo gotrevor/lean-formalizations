@@ -279,6 +279,72 @@ theorem floor_comb_bounds (n : ℕ) :
     interval_cases r <;> decide
   omega
 
+open scoped ArithmeticFunction in
+/-- `log(⌊n/k⌋!) = ∑_{d ≤ n} Λ(d)·⌊n/(k·d)⌋` for `k ≥ 1` — the keystone
+(`sum_vonMangoldt_mul_floor_div`) at `⌊n/k⌋`, re-indexed over the common range `(0,n]` (the extra
+terms `d > n/k` vanish since `⌊n/(k·d)⌋ = ⌊⌊n/k⌋/d⌋ = 0`). Lets the five shifts of Chebyshev's `T`
+share one index set. -/
+theorem logFactorial_div_eq_sum (n k : ℕ) (hk : 0 < k) :
+    Real.log (Nat.factorial (n / k)) = ∑ d ∈ Finset.Ioc 0 n, Λ d * ((n / (k * d) : ℕ) : ℝ) := by
+  rw [← sum_vonMangoldt_mul_floor_div (n / k)]
+  rw [Finset.sum_congr rfl (fun d _ => by rw [Nat.div_div_eq_div_mul] :
+    ∀ d ∈ Finset.Ioc 0 (n / k), Λ d * (((n / k) / d : ℕ) : ℝ) = Λ d * ((n / (k * d) : ℕ) : ℝ))]
+  refine Finset.sum_subset (Finset.Ioc_subset_Ioc_right (Nat.div_le_self n k)) (fun d hd hd' => ?_)
+  rw [Finset.mem_Ioc] at hd
+  simp only [Finset.mem_Ioc, not_and, not_le] at hd'
+  have : n / (k * d) = 0 := by
+    rw [← Nat.div_div_eq_div_mul]; exact Nat.div_eq_of_lt (hd' hd.1)
+  rw [this]; simp
+
+open scoped ArithmeticFunction in
+open Finset in
+/-- **Chebyshev's `T`-combination is `∑ Λ(d)·g(n/d)`** with `g ∈ {0,1}`. The five log-factorials
+combine (over the common range `(0,n]`, via `logFactorial_div_eq_sum`) into a single `Λ`-weighted sum
+whose `d`-th coefficient is the floor combination `g(n/d) = ⌊n/d⌋−⌊n/2d⌋−⌊n/3d⌋−⌊n/5d⌋+⌊n/30d⌋`
+(using `⌊n/(k d)⌋ = ⌊(n/d)/k⌋`). -/
+theorem logFactorial_comb_eq (n : ℕ) :
+    Real.log (Nat.factorial n) - Real.log (Nat.factorial (n / 2)) - Real.log (Nat.factorial (n / 3))
+        - Real.log (Nat.factorial (n / 5)) + Real.log (Nat.factorial (n / 30))
+      = ∑ d ∈ Ioc 0 n, Λ d * (((n / d : ℕ) : ℝ) - ((n / (2 * d) : ℕ) : ℝ) - ((n / (3 * d) : ℕ) : ℝ)
+          - ((n / (5 * d) : ℕ) : ℝ) + ((n / (30 * d) : ℕ) : ℝ)) := by
+  have h1 : Real.log (Nat.factorial n) = ∑ d ∈ Ioc 0 n, Λ d * ((n / d : ℕ) : ℝ) :=
+    (sum_vonMangoldt_mul_floor_div n).symm
+  rw [h1, logFactorial_div_eq_sum n 2 (by norm_num), logFactorial_div_eq_sum n 3 (by norm_num),
+    logFactorial_div_eq_sum n 5 (by norm_num), logFactorial_div_eq_sum n 30 (by norm_num),
+    ← Finset.sum_sub_distrib, ← Finset.sum_sub_distrib, ← Finset.sum_sub_distrib,
+    ← Finset.sum_add_distrib]
+  exact Finset.sum_congr rfl (fun d _ => by ring)
+
+open scoped ArithmeticFunction in
+open Finset in
+/-- **Refined Chebyshev `ψ` lower bound (combinatorial half).** The `T`-combination is `≤ ψ(n)`:
+each coefficient `g(n/d) ∈ {0,1}` (`floor_comb_bounds`) and `Λ ≥ 0`, so the `Λ`-weighted sum is at
+most `∑_{d ≤ n} Λ(d) = ψ(n)`. Combined with the Stirling lower bound on the left-hand combination of
+`log(⌊n/k⌋!)` (`≈ 0.9213·n`), this yields `ψ(n) ≳ 0.92 n` — strictly beating the elementary
+`log 4 / 2 ≈ 0.69` and the route to a prime gap of ratio `< 2`. -/
+theorem logFactorial_comb_le_psi (n : ℕ) :
+    Real.log (Nat.factorial n) - Real.log (Nat.factorial (n / 2)) - Real.log (Nat.factorial (n / 3))
+        - Real.log (Nat.factorial (n / 5)) + Real.log (Nat.factorial (n / 30))
+      ≤ Chebyshev.psi n := by
+  rw [logFactorial_comb_eq, Chebyshev.psi, Nat.floor_natCast]
+  refine Finset.sum_le_sum (fun d hd => ?_)
+  have hΛ : 0 ≤ Λ d := ArithmeticFunction.vonMangoldt_nonneg
+  have hbr : ((n / d : ℕ) : ℝ) - ((n / (2 * d) : ℕ) : ℝ) - ((n / (3 * d) : ℕ) : ℝ)
+      - ((n / (5 * d) : ℕ) : ℝ) + ((n / (30 * d) : ℕ) : ℝ) ≤ 1 := by
+    have hb := floor_comb_bounds (n / d)
+    have e2 : n / d / 2 = n / (2 * d) := by rw [Nat.div_div_eq_div_mul, Nat.mul_comm]
+    have e3 : n / d / 3 = n / (3 * d) := by rw [Nat.div_div_eq_div_mul, Nat.mul_comm]
+    have e5 : n / d / 5 = n / (5 * d) := by rw [Nat.div_div_eq_div_mul, Nat.mul_comm]
+    have e30 : n / d / 30 = n / (30 * d) := by rw [Nat.div_div_eq_div_mul, Nat.mul_comm]
+    rw [e2, e3, e5, e30] at hb
+    have := hb.2
+    push_cast
+    rw [← Nat.cast_le (α := ℝ)] at this
+    push_cast at this
+    linarith
+  calc Λ d * _ ≤ Λ d * 1 := by exact mul_le_mul_of_nonneg_left hbr hΛ
+    _ = Λ d := mul_one _
+
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
 
