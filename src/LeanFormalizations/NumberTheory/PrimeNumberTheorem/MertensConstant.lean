@@ -724,4 +724,31 @@ theorem integral_log_mul_exp_neg_Ioi_eq_neg_gamma :
     push_cast; ring
   exact_mod_cast hcast
 
+open MeasureTheory in
+/-- **Power-integral identity**: for `s > 1` and `c > 0`, `(s−1)·∫_c^∞ t^{−s} dt = c^{1−s}`.
+(`∫_c^∞ t^{−s} = c^{1−s}/(s−1)` by `integral_Ioi_rpow_of_lt`.)  The `M`-part of brick B2 uses this at
+`c = 2`: `M·(s−1)∫_2^∞ t^{−s} = M·2^{1−s} → M`. -/
+lemma sub_one_mul_integral_rpow_neg {s : ℝ} (hs : 1 < s) {c : ℝ} (hc : 0 < c) :
+    (s - 1) * ∫ t in Set.Ioi c, t ^ (-s) = c ^ (1 - s) := by
+  rw [integral_Ioi_rpow_of_lt (by linarith : (-s) < (-1 : ℝ)) hc, show (-s) + 1 = 1 - s by ring]
+  have hne : (1 : ℝ) - s ≠ 0 := ne_of_lt (by linarith)
+  field_simp
+  ring
+
+open MeasureTheory in
+/-- **M-part core of brick B2**: `(s−1)·∫_2^∞ t^{−s} dt → 1` as `s → 1⁺` (since it equals `2^{1−s}`,
+which `→ 2^0 = 1`).  Hence the `M`-term `M·(s−1)∫_2^∞ t^{−s} → M` — one of the three pieces of
+`primeZeta s + log(s−1) → M − γ`. -/
+lemma tendsto_sub_one_mul_integral_rpow :
+    Tendsto (fun s : ℝ => (s - 1) * ∫ t in Set.Ioi (2 : ℝ), t ^ (-s)) (𝓝[>] 1) (𝓝 1) := by
+  have hcont : Continuous (fun s : ℝ => (2 : ℝ) ^ (1 - s)) := by
+    have h : (fun s : ℝ => (2 : ℝ) ^ (1 - s)) = fun s => Real.exp (Real.log 2 * (1 - s)) := by
+      funext s; rw [Real.rpow_def_of_pos (by norm_num)]
+    rw [h]; fun_prop
+  have htend : Tendsto (fun s : ℝ => (2 : ℝ) ^ (1 - s)) (𝓝 1) (𝓝 1) := by
+    simpa using hcont.tendsto (1 : ℝ)
+  refine (htend.mono_left nhdsWithin_le_nhds).congr' ?_
+  filter_upwards [self_mem_nhdsWithin] with s hs
+  exact (sub_one_mul_integral_rpow_neg (Set.mem_Ioi.mp hs) (by norm_num)).symm
+
 end LeanFormalizations.Mertens
