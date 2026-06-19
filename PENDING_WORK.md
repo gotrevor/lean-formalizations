@@ -67,10 +67,40 @@ not established — a possibly-unprovable lemma. **The provably-true form is the
 which is both the faithfulness fix AND the form the proven bricks discharge. Don't try to prove the
 unshifted form — it may be false. (See `ON-LINE-REQUEST` UPDATE 3.)
 
-**NEXT-LAP ENTRY (precise):** (i) do (R2) — base-angle generalize the Córdoba chain (or rotation);
-(ii) restate `kakeya_dominant_scale_count` to the shifted form `∃ c, …`; (iii) wire steps 1–4 (bricks
-all proven) to discharge Case A; (iv) isolate Case B (R1) as a final smaller axiom. This converts the
-one monolithic axiom into: PROVEN(Case A) + small-axiom(Case B), with the retention core already done.
+**NEXT-LAP ENTRY (precise):** (i) ✅ (R2) DONE this lap — the Córdoba chain
+(`volume_inter_dirTube_le`…`cover_content_per_scale`) is base-angle generalized (`c`); (ii) restate
+`kakeya_dominant_scale_count` to the shifted form `∃ c, …` (or delete it and prove
+`kakeya_hausdorffContentBound` directly); (iii) wire the assembly (Case A); (iv) isolate Case B (R1).
+
+**UPDATE (retention lap, cont.) — bricks now ALL built; assembly + Case B are what's left:**
+This lap proved, all `#print axioms`-clean (`NetThinning.lean`): `exists_measurable_pullback_cover`
+(closed-piece cover ⟶ measurable pullback `Tₙ`, `φ(Tₙ)⊆Uₙ`, `vol(⋃Tₙ)≥1`), `one_le_tsum_volume_fiber_union`,
+`exists_dominant_shift` (fine-net profiles ⟶ dominant scale `j≤J` + shift `β`, retained covered
+length), and base-angle `cover_content_per_scale`. **The assembly is now a (mechanical) integration:**
+  • Reduce to CLOSED cover pieces `Uₙ = closure tₙ` (same `ediam`, still covers `S`) — gives
+    measurable covered sets via `exists_measurable_pullback_cover`. [prove `kakeya_hausdorffContentBound`
+    directly; the axiom's `Finset s`/numerator shape is for the unshifted form we're discarding.]
+  • For `k < 2ᴶ`: `v_k = dir(k·2⁻ᴶ)` (`norm_dir`), `IsKakeya` ⟹ base point `a_k` (`choose`),
+    `exists_measurable_pullback_cover` ⟹ `T^k`. Capped scale `g_J n = min(scale n, J)`,
+    `L k j = vol(⋃_{g_J n=j} T^k_n)`; `one_le_tsum_volume_fiber_union ⟹ 1 ≤ ∑ⱼ L k j`, `hsupp` from cap.
+  • `exists_dominant_shift ⟹ j≤J, β`; subnet covered sets `A_i = ⋃_{g_J n=j} T^{β+2^{J-j}i}_n`
+    (measurable), base angle `c = β·2⁻ᴶ`, directions `dir(c + i·2⁻ʲ)`. Numerator
+    `∑ᵢ 2δ vol(A_i) ≥ 2·scaleWeight j = 1/((j+1)(j+2))` at `δ=2⁻ʲ`.
+  • **Finset-truncation worry DISSOLVES via a finite/infinite split on the scale-`j` fiber
+    `{n : g_J n = j}`:** if INFINITE, there are ∞-many pieces each `ediam ≥ 2⁻⁽ʲ⁺¹⁾`, so
+    `∑'ₙ ediam^d = ∞ ≥ c` trivially; if FINITE, take `s = ` that fiber (`Set.Finite.toFinset`) and run
+    base-angle `cover_content_per_scale`. No ε-truncation needed.
+  • Feed `c, A_i, s` to base-angle `cover_content_per_scale` ⟹ `∑_{n∈s} ediam(Uₙ)^d ≥` const; and
+    `ediam(closure tₙ)=ediam tₙ` ⟹ `∑'ₙ ediam(tₙ)^d ≥ c`. Done — EXCEPT Case B.
+  • **Case B = `j = J` (cap saturated):** the bucket `{n : g_J n = J} = {n : ediam tₙ ≤ 2⁻ᴶ}` is NOT a
+    single scale, so `cover_content_per_scale` (needs `2⁻⁽ʲ⁺¹⁾ ≤ ediam ≤ 2⁻ʲ`) doesn't apply, and the
+    pieces can be arbitrarily small so the count `|s|` doesn't bound `∑ediam^d`. **This is the genuine
+    remaining obstacle (R1)** — it is exactly the Hausdorff-vs-box gap (box-dim-2 = K4 is proven;
+    promoting to Hausdorff for an arbitrarily-fine cover is the deep part). Hypotheses to try next lap:
+    pick `J` adaptively so `j < J` (needs a bound on the dominant scale — unclear it exists for general
+    covers); OR a separate sub-lemma handling sub-resolution covers via K4 (`volume_thickening_log_ge`)
+    at scale `2⁻ᴶ` (gives `|s| ≳ 2^{2J}/poly` but still needs an `ediam` lower bound — the crux).
+    See `ON-LINE-REQUEST` UPDATE 3 ask 3b (how the literature handles this for non-measurable Kakeya sets).
 
 ### A0. ⭐ MILESTONE (2026-06-19, late lap): crux narrowed to ONE crisp axiom + machine-checked reduction.
 `davies_kakeya_2d` now `#print axioms`-reduces to `[propext, Classical.choice, Quot.sound,
