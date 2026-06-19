@@ -120,14 +120,13 @@ honest route (steps 2–4) is now proven: `measurable_coveredLength` → `exists
    is closed. **The zero-`ediam` subtlety is ALSO discharged this lap** (commit `76db3db`):
    `volume_coveredFiber_subsingleton_zero` + `volume_coveredFiber_biUnion_subsingleton_zero`
    (axiom-clean) show subsingleton (`ediam=0`) pieces carry zero covered length, so the uncapped `g`'s
-   `else 0` bucket is droppable from the `j=0` fiber. **So EVERY mathematical brick of (W) is now
-   proven; the remainder is mechanical assembly.** NEXT-LAP: create `Kakeya2D/Wiring.lean` importing
-   BOTH `Engine` and `MeasurableRoute` (do NOT add `import Engine` to `MeasurableRoute` — that forces a
-   cycle when the headline later calls the wiring), and assemble
-   `kakeya_hausdorffContentBound_of_measurableSelection` around `exists_continuum_caseA_numerator` +
-   the negligibility helpers + `caseA_content`, mirroring `Engine.kakeya_hausdorffContentBound`'s
-   closed-piece reduction and finite/infinite-fiber split (drop the `min(·,J)` cap and the Case-B
-   branch). Full skeleton in `HANDOFF-2026-06-19-1700.md`.
+   `else 0` bucket is droppable from the `j=0` fiber.
+   **✅✅ (W) NOW COMPLETE (commit `7797183`):** `Kakeya2D/Wiring.lean` ·
+   `kakeya_hausdorffContentBound_of_measurableSelection` PROVEN + axiom-clean (`[propext,
+   Classical.choice, Quot.sound]` — selection is a *hypothesis*, no new axioms). Closed-piece
+   reduction → `exists_continuum_caseA_numerator` → genuine sub-fiber `s0` (window via
+   `dyadicIdx_window`) → zero-`ediam` transport (`volume_coveredFiber_biUnion_subsingleton_zero`) →
+   `caseA_content`, with the finite/infinite split. NO Case B. The honest route is built end-to-end.
 2. **(S) Measurable selection** `∃ measurable a, ∀θ, segment(a θ,θ) ⊆ E` for the Fσ Kakeya set. The
    ONE genuine mathlib gap (descriptive set theory; KRN/JvN; true theorem). Reference-gated
    (`ON-LINE-REQUEST.md` UPDATE 5 ask 1). Possibly a bespoke explicit selection (argmin-‖a‖ over the
