@@ -117,12 +117,17 @@ honest route (steps 2–4) is now proven: `measurable_coveredLength` → `exists
    it composes `exists_continuum_dominant_scale` + `exists_shift_ge_integral` into *exactly* the
    `hnum` numerator that `caseA_content` consumes — `∃ j α, 1/((j+1)(j+2)) ≤ ∑_{i<2ʲ} 2·2⁻ʲ·vol(Aᵢ)`
    with `Aᵢ = {t∈[0,1] : a(α+i·2⁻ʲ)+t·dir(α+i·2⁻ʲ) ∈ ⋃_{g n=j} C n}`. So the continuum→discrete bridge
-   is closed. **Remaining for the full (W):** feed this `j, α, Aᵢ` into `caseA_content` with the
-   finite-fiber diameter bookkeeping (`hediam_lo/hi` on `s = {n : g n = j}`, finite/infinite split) and
-   the closed-piece reduction + per-direction `hcov` construction from the selection — all of which
-   `Engine.kakeya_hausdorffContentBound` already does verbatim at the *capped* scale (copy that
-   skeleton, drop the `min(·,J)` cap and the Case-B branch). NEXT-LAP: assemble the headline-shaped
-   `kakeya_hausdorffContentBound_of_measurableSelection` around `exists_continuum_caseA_numerator`.
+   is closed. **The zero-`ediam` subtlety is ALSO discharged this lap** (commit `76db3db`):
+   `volume_coveredFiber_subsingleton_zero` + `volume_coveredFiber_biUnion_subsingleton_zero`
+   (axiom-clean) show subsingleton (`ediam=0`) pieces carry zero covered length, so the uncapped `g`'s
+   `else 0` bucket is droppable from the `j=0` fiber. **So EVERY mathematical brick of (W) is now
+   proven; the remainder is mechanical assembly.** NEXT-LAP: create `Kakeya2D/Wiring.lean` importing
+   BOTH `Engine` and `MeasurableRoute` (do NOT add `import Engine` to `MeasurableRoute` — that forces a
+   cycle when the headline later calls the wiring), and assemble
+   `kakeya_hausdorffContentBound_of_measurableSelection` around `exists_continuum_caseA_numerator` +
+   the negligibility helpers + `caseA_content`, mirroring `Engine.kakeya_hausdorffContentBound`'s
+   closed-piece reduction and finite/infinite-fiber split (drop the `min(·,J)` cap and the Case-B
+   branch). Full skeleton in `HANDOFF-2026-06-19-1700.md`.
 2. **(S) Measurable selection** `∃ measurable a, ∀θ, segment(a θ,θ) ⊆ E` for the Fσ Kakeya set. The
    ONE genuine mathlib gap (descriptive set theory; KRN/JvN; true theorem). Reference-gated
    (`ON-LINE-REQUEST.md` UPDATE 5 ask 1). Possibly a bespoke explicit selection (argmin-‖a‖ over the

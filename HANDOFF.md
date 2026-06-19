@@ -9,11 +9,11 @@ Unbounded expedition to prove `davies_kakeya_2d : KakeyaSetConjectureDim 2` (pla
 
 ## State (one line)
 `lake build` green (8298 jobs). The whole lower bound is machine-checked **down to ONE cited axiom**
-`Engine.kakeya_subresolution_content` (NO `sorry`). Deep-reflection lap (HEAD `f57d64c`): STATUS fully
-resynced + axiom-honesty recalibrated, and the **core glue of the wiring (W) is now PROVEN** —
-`exists_continuum_caseA_numerator` (`MeasurableRoute.lean`, axiom-clean) composes the spine into the
-exact `caseA_content` numerator. Remaining for (W): zero-`ediam` negligibility helper + the final
-`caseA_content` assembly (next-action skeleton in `HANDOFF-2026-06-19-1700.md`); then the selection axiom.
+`Engine.kakeya_subresolution_content` (NO `sorry`). Deep-reflection lap (HEAD `76db3db`): STATUS fully
+resynced + axiom-honesty recalibrated, and **ALL mathematical bricks of the wiring (W) are now PROVEN**
+(axiom-clean, `MeasurableRoute.lean`) — `exists_continuum_caseA_numerator` (the continuum→discrete
+glue) + the zero-`ediam` negligibility helpers. Remaining for (W) = mechanical assembly in a new
+`Kakeya2D/Wiring.lean` (skeleton in `HANDOFF-2026-06-19-1700.md`); then the clean selection axiom (S).
 `#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound, kakeya_subresolution_content]`.
 The entire dominant-scale orchestration (the historic blocker) is now PROVEN — the shifted, faithful
 Case A assembly. The lone axiom is the strictly-narrower **Case B** residual (cover dominated by pieces
