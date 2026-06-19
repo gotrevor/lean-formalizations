@@ -59,6 +59,22 @@ fixed argument — measured: `H_ω(2)=5 < H_5(2)=7` although `ω > 5`. So you CA
    `H_{ω^α}(n) ≤ f_{α+1}(n)` (matching args) would let the diagonal be squeezed.
 Bank: bridge + cofinality are the prerequisites; this is a multi-lap crux.
 
+**🔑 THE CONCRETE ENABLER (found lap 5) — the telescope unlocks the budget.** Already proved:
+`hardy_seqONote_telescope : j ≤ goodsteinLength m → H_{seqONote m 0}(2) = H_{seqONote m j}(j+2)`.
+Combined with `hardy_seqONote_zero`: **`goodsteinLength m + 2 = H_{seqONote m j}(j+2)` for ALL
+`j ≤ goodsteinLength m`** — so we may evaluate the invariant at a HIGH-budget step `j+2` where
+`norm` becomes available. Sketch to finish the headline `f_o(m) ≤ goodsteinLength m + 2`:
+- pick `j` with budget `j+2 ≥ max(m, norm(oadd o 1 0))` and `j ≤ goodsteinLength m`;
+- `H_{seqONote m j}(j+2) ≥ H_{oadd o 1 0}(j+2)` by `hardy_le_of_lt` (NOW norm-valid: `norm(ω^o)
+  ≤ j+2`) **provided `oadd o 1 0 ≤ seqONote m j`** (index lower bound);
+- `H_{oadd o 1 0}(j+2) ≥ f_o(j+2) ≥ f_o(m)` by the bridge + `fastGrowing_monotone` (need `j+2 ≥ m`).
+**The two remaining sub-facts (the real work):**
+  (i) a **Goodstein-length lower bound** `goodsteinLength m ≥ m` (so `j = m-2` is valid), and
+  (ii) an **index lower bound** `oadd o 1 0 ≤ seqONote m j` at the chosen `j` (the Goodstein term
+       is still `≥ ω^o` that far in) — for fixed `o`, large `m`.
+Both (i),(ii) are honest sub-lemmas; (i) likely from the telescope + `le_hardy`, (ii) from the
+descent structure. This is the cleanest concrete route; START HERE next lap.
+
 **OLD (pre-2026-06-19-lap5) C3 close-out notes — kept for reference, now all DONE:**
 The whole C3 chain was built and the headline held modulo a single isolated lemma. Identity
 (native_decide-confirmed): `hardy (seqONote m 0) 2 = goodsteinLength m + 2`. Done across laps 3–5:
