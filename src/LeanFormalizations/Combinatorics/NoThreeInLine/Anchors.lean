@@ -92,4 +92,30 @@ with no three collinear. (A `native_decide`-certified witness; off the headline 
 theorem hjsw_lower_five : 3 * (5 - 1) ≤ maxNoThreeInLine (2 * 5) :=
   le_csSup (bddAbove_grid 10) ⟨witness5, witness5_card.symm, witness5_grid, witness5_noThree⟩
 
+/-! ### Concrete witness anchor: the HJSW count `3(p−1)` at `p = 7`
+
+A `19`-point configuration in the `14 × 14` grid with no three collinear (found by greedy search,
+certified by `native_decide`), giving the HJSW count `3·(7−1) = 18 ≤ maxNoThreeInLine 14` with one to
+spare. The single modular hyperbola cannot reach `18` at `p = 7` (see `Hyperbola.lean` / `PLAN.md`);
+this witness confirms the count is nonetheless achievable in the `14 × 14` grid. Off the headline
+axiom path (`native_decide`). -/
+def witness7 : Finset (ℕ × ℕ) :=
+  {(0, 0), (0, 1), (1, 0), (1, 1), (2, 3), (2, 4), (3, 2), (3, 9), (4, 2), (4, 11), (5, 7), (5, 8),
+    (6, 13), (7, 11), (8, 5), (8, 6), (11, 8), (12, 3), (13, 9)}
+
+theorem witness7_card : witness7.card = 19 := by decide
+
+theorem witness7_grid : IsGridSet 14 witness7 := by
+  intro p hp; fin_cases hp <;> exact ⟨by decide, by decide⟩
+
+theorem witness7_noThree : NoThreeCollinear witness7 :=
+  decNoThree_imp (by native_decide)
+
+/-- **HJSW count, verified instance at `p = 7`:** the `14 × 14` grid admits `≥ 18 = 3·(7−1)` points
+with no three collinear (the `19`-point `witness7`). -/
+theorem hjsw_lower_seven : 3 * (7 - 1) ≤ maxNoThreeInLine (2 * 7) := by
+  have h : 19 ≤ maxNoThreeInLine (2 * 7) :=
+    le_csSup (bddAbove_grid (2 * 7)) ⟨witness7, witness7_card.symm, witness7_grid, witness7_noThree⟩
+  exact le_trans (by norm_num) h
+
 end LeanFormalizations.NoThreeInLine
