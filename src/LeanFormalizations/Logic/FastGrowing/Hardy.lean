@@ -385,6 +385,43 @@ example : hstep (oadd 1 1 0) 3 = 3 := by native_decide
 -- the step invariant in action: `H_ω(3) = H_{hstep ω 3}(4) = H_3(4)`
 example : hardy (oadd 1 1 0) 3 = hardy (hstep (oadd 1 1 0) 3) 4 := by native_decide
 
+/-- **Hardy tail-peeling — the additive law, ONote-native form.** Splitting off the tail of an `oadd`
+composes the Hardy functions: `hardy (oadd a m b) n = hardy (oadd a m 0) (hardy b n)` (i.e.
+`H_{ω^{repr a}·m + repr b}(n) = H_{ω^{repr a}·m}(H_{repr b}(n))`, valid since the tail `b` cannot absorb
+the leading term). By well-founded recursion on the tail `b` — the same recursion `hardy`/
+`fundamentalSequence` use (the fund. seq. of `oadd a m b` acts on the tail `b`): the successor and
+limit tail cases each reduce to the IH at the smaller tail; the `b = 0` case is `hardy 0 = id`. No
+ordinal-addition machinery needed — purely structural.
+
+This is the **non-absorbing Hardy additive law** (the general `H_{α+β}=H_α∘H_β` is false —
+`1+ω=ω` makes `H_{1+ω}=H_ω ≠ H_1∘H_ω`). It is the key brick for the coefficient lemma
+`H_{ω^β·j} = (H_{ω^β})^[j]` and hence for B4 (`H_{ω^α} = f_α` at finite `α`). -/
+theorem hardy_oadd_tail (a : ONote) (m : ℕ+) (b : ONote) (n : ℕ) :
+    hardy (oadd a m b) n = hardy (oadd a m 0) (hardy b n) := by
+  rcases e : fundamentalSequence b with (_ | b') | f
+  · have hb0 : b = 0 := by
+      have hp := fundamentalSequence_has_prop b; rw [e] at hp; simpa using hp
+    rw [hardy_zero' b e, hb0]; rfl
+  · have hlt : b' < b := by
+      have hp := fundamentalSequence_has_prop b; rw [e] at hp
+      rw [lt_def, hp.1]; exact Order.lt_succ _
+    have hfs : fundamentalSequence (oadd a m b) = Sum.inl (some (oadd a m b')) := by
+      conv_lhs => rw [fundamentalSequence]; rw [e]
+    rw [hardy_succ _ hfs, hardy_succ b e]
+    exact hardy_oadd_tail a m b' (n + 1)
+  · have hlt : f n < b := by
+      have hp := fundamentalSequence_has_prop b; rw [e] at hp
+      exact (hp.2.1 n).2.1
+    have hfs : fundamentalSequence (oadd a m b) = Sum.inr (fun i => oadd a m (f i)) := by
+      conv_lhs => rw [fundamentalSequence]; rw [e]
+    rw [hardy_limit _ hfs, hardy_limit b e]
+    exact hardy_oadd_tail a m (f n) n
+termination_by b
+decreasing_by all_goals exact hlt
+
+/-- Anti-vacuity for `hardy_oadd_tail`: `H_{ω·2 + 1}(2) = H_{ω·2}(H_1(2)) = H_{ω·2}(3)`. -/
+example : hardy (oadd 1 2 1) 2 = hardy (oadd 1 2 0) (hardy 1 2) := hardy_oadd_tail 1 2 1 2
+
 /-- **Hardy is dominated by fast-growing at the same index.** For `n ≥ 2`,
 `hardy o n ≤ fastGrowing o n` (no `NF` needed). By well-founded recursion on the notation, mirroring
 `le_fastGrowing`: the limit case is the IH verbatim; the successor case chains

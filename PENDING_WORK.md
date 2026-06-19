@@ -56,10 +56,19 @@ exact behavior — record before re-attacking:**
 - **Consequences / correct next attack:**
   - A *restricted* B4 `H_{ω^k}(n)+1 = f_k(n+1)` for FINITE k (α = ofNat k) is TRUE (measured) and is a
     legitimate bankable target — but even its successor step `k→k+1` needs the **coefficient lemma**
-    `H_{ω^β·j} = (H_{ω^β})^[j]` (since `(ω^{k+1})[n] = ω^k·(n+1)`). That coefficient lemma — really the
-    **Hardy additive law `H_{α+β}(n) = H_α(H_β(n))`** specialized to `ω^β·j = ω^β+…+ω^β` — is the
-    genuine key brick. Build the additive law FIRST (clean, true, reusable; needs ordinal-addition +
-    fund-seq-of-sum on ONote). Good bounded Aristotle candidate.
+    `H_{ω^β·j}(n) = (H_{ω^β})^[j](n)` (since `(ω^{k+1})[n] = ω^k·(n+1)`). **This coefficient lemma is
+    MEASURED+VERIFIED true** (lap 11: `H_{ω·2}=(H_ω)^[2]`, `H_{ω·3}=(H_ω)^[3]` exact). Its proof (by
+    induction on j) needs, in the step, `H_{ω^β·(j-1)+(ω^β)[n]}(n) = H_{ω^β·(j-1)}(H_{ω^β}(n))` — i.e.
+    the **Hardy additive law `H_{α+γ}(n) = H_α(H_γ(n))` for non-absorbing γ** (γ's CNF terms `≤` α's
+    trailing term). NOTE the absorption caveat: the *general* `H_{α+β}=H_α∘H_β` is FALSE
+    (`1+ω=ω` ⇒ `H_{1+ω}=H_ω` but `H_1∘H_ω ≠ H_ω`); only the non-absorbing form holds.
+  - **ROOT BRICK = the non-absorbing Hardy additive law.** Build it FIRST (clean, reusable; needs
+    ONote addition `ONote.add`/`repr_add` + the fundamental-sequence-of-a-sum relation
+    `fundamentalSequence (oadd a m b)` peeling the tail `b`, which the mathlib def already does:
+    `fundSeq(oadd a m b)` with `fundSeq b = inr f` gives `inr (fun i => oadd a m (f i))` — i.e. the
+    fund. seq. acts on the TAIL, exactly the additive-law recursion). The fund-seq def at
+    `Notation.lean:922` is the key — the tail-peeling branch is the additive step. Good Aristotle
+    candidate once scoped.
   - For limit α, do NOT chase the clean identity (false). The honest general statement is likely an
     *inequality* sandwich or a statement along the successor-α cofinal subsequence only.
   - `hardy_le_fastGrowing` (lap 11, axiom-clean) already gives the `≤`-at-same-index half generally.
