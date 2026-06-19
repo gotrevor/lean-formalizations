@@ -492,6 +492,32 @@ theorem chebyshev_const_gt :
   have h5 := log_five_gt
   linarith [h2, h3, h5]
 
+/-- **Chebyshev's constant `A < 2`** (crude upper bound). Since `3, 5 ≤ e²` gives `log 3, log 5 ≤ 2`
+and `log 2 < 0.7`, `A = (7/15)log2+(3/10)log3+(1/6)log5 < (7/15)·0.7 + (3/10)·2 + (1/6)·2 < 2`. Needed
+(with `chebyshev_const_gt`) to keep `A` as a *bounded* atom in the prime-gap contradiction, where the
+net `A·n` coefficient `(5/4 − 6/5)A = A/20 > 0` must beat the `O(√n) + O(log² n)` error. -/
+theorem chebyshev_const_lt :
+    (7 / 15) * Real.log 2 + (3 / 10) * Real.log 3 + (1 / 6) * Real.log 5 < 2 := by
+  have he2le8 : Real.exp 2 ≤ 8 := by
+    have h := Real.exp_one_lt_d9
+    have hp := Real.exp_pos 1
+    have he : Real.exp 2 = Real.exp 1 * Real.exp 1 := by
+      rw [show (2 : ℝ) = 1 + 1 by norm_num, Real.exp_add]
+    nlinarith [he, h, hp]
+  have he2ge : (5 : ℝ) ≤ Real.exp 2 := by
+    have h := Real.exp_one_gt_d9
+    have he : Real.exp 2 = Real.exp 1 * Real.exp 1 := by
+      rw [show (2 : ℝ) = 1 + 1 by norm_num, Real.exp_add]
+    nlinarith [he, h, Real.exp_pos 1]
+  have hlog3 : Real.log 3 ≤ 2 := by
+    rw [show (2 : ℝ) = Real.log (Real.exp 2) by rw [Real.log_exp]]
+    exact Real.log_le_log (by norm_num) (by linarith [he2ge])
+  have hlog5 : Real.log 5 ≤ 2 := by
+    rw [show (2 : ℝ) = Real.log (Real.exp 2) by rw [Real.log_exp]]
+    exact Real.log_le_log (by norm_num) (by linarith [he2ge])
+  have hlog2 := Real.log_two_lt_d9
+  nlinarith [hlog3, hlog5, hlog2]
+
 /-- **Leading-term identity for Chebyshev's `T`-combination.** The continuous (un-floored) main terms
 of `T(x) − T(x/2) − T(x/3) − T(x/5) + T(x/30)` collapse to exactly `A·x`: the `x·log x` terms cancel
 (coeffs `1−½−⅓−⅕+1/30 = 0`) and `∑±(x/k)log k = A·x` with `A = (7/15)log2+(3/10)log3+(1/6)log5`
@@ -825,6 +851,30 @@ theorem sqrt_log_small (z : ℝ) (hz : (2 : ℝ) ^ 40 ≤ z) :
   rw [hmss] at heq
   linarith [hstep, heq]
 
+/-- **`log z` is small relative to `√z`.** For `z ≥ 2⁴⁰`, `log z ≤ (40·log2/2²⁰)·√z`. The `√z`-version
+of `sqrt_log_small`, from the same antitonicity of `log z/√z`; used to dominate the `O(log² n)` error of
+the refined *upper* bound (`(log z)² ≤ (40log2/2²⁰)²·z`) in the Nagura-strength prime gap. -/
+theorem log_le_sqrt_small (z : ℝ) (hz : (2 : ℝ) ^ 40 ≤ z) :
+    Real.log z ≤ (40 * Real.log 2 / 2 ^ 20) * Real.sqrt z := by
+  have hzpos : (0 : ℝ) < z := lt_of_lt_of_le (by positivity) hz
+  have he2le8 : Real.exp 2 ≤ 8 := by
+    have h := Real.exp_one_lt_d9
+    have hp := Real.exp_pos 1
+    have he : Real.exp 2 = Real.exp 1 * Real.exp 1 := by
+      rw [show (2 : ℝ) = 1 + 1 by norm_num, Real.exp_add]
+    nlinarith [he, h, hp]
+  have he2 : Real.exp 2 ≤ (2 : ℝ) ^ 40 := le_trans he2le8 (by norm_num)
+  have hanti := Real.log_div_sqrt_antitoneOn (he2) (le_trans he2 hz) hz
+  have hsqrt40 : Real.sqrt ((2 : ℝ) ^ 40) = 2 ^ 20 := by
+    rw [show ((2 : ℝ) ^ 40) = ((2 : ℝ) ^ 20) ^ 2 by ring, Real.sqrt_sq (by positivity)]
+  have hlog40 : Real.log ((2 : ℝ) ^ 40) = 40 * Real.log 2 := by
+    rw [Real.log_pow]; push_cast; ring
+  simp only at hanti
+  rw [hsqrt40, hlog40] at hanti
+  have hsz : 0 < Real.sqrt z := Real.sqrt_pos.mpr hzpos
+  rw [div_le_iff₀ hsz] at hanti
+  exact hanti
+
 /-- **Prime in `(n, 8n/5]`** for `n ≥ 5·2³⁷` — a sub-`2` prime gap, *unconditional and axiom-clean*.
 This is the first prime-gap ratio below Bertrand's `2` reached in this development, and it is the lever
 that pushes the no-three-in-line general-`N` constant strictly above Bertrand's `3/4`
@@ -924,6 +974,123 @@ theorem maxNoThreeInLine_ge_fifteen_sixteenths {N : ℕ} (hN : 2 ^ 41 ≤ N) :
   have hn : 5 * 2 ^ 37 ≤ 5 * N / 16 := by
     rw [Nat.le_div_iff_mul_le (by norm_num)]; omega
   obtain ⟨p, hp, hlo, hhi⟩ := exists_prime_in_eight_fifths (n := 5 * N / 16) hn
+  have h2p : 2 * p ≤ N := by omega
+  have := maxNoThreeInLine_ge_of_two_mul_prime_le hp h2p
+  omega
+
+set_option maxHeartbeats 1000000 in
+/-- **Prime in `(n, 5n/4]`** for `n ≥ 2⁴¹` — a *Nagura-strength* prime gap (`5/4 < 6/5`-side of `2`),
+unconditional and axiom-clean. Both Chebyshev bounds are now refined: the lower `θ(5n/4) ≥ A·(5n/4)`
+(`theta_refined_lower`, `A > 0.91` so `(5/4)A > 1.13`) and the *upper* `θ(n) ≤ ψ(n) ≤ (6/5)A·n`
+(`psi_refined_upper`, `(6/5)A < 1.11`). Since `(5/4)A > (6/5)A`, the "no prime in `(n, ⌊5n/4⌋]`"
+hypothesis (which forces `θ(5n/4) = θ(n)`) is contradicted once the `O(√n) + O(log² n)` error is
+dominated — using `sqrt_log_small` and `log_le_sqrt_small`. The ratio `5/4 < 8/5` improves the
+no-three-in-line constant from `15/16` to `6/5` (`maxNoThreeInLine_ge_six_fifths`); driving the gap to
+any `c > 6/5` would reach Nagura's exact `5/4` constant. -/
+theorem exists_prime_in_five_fourths {n : ℕ} (hn : 2 ^ 41 ≤ n) :
+    ∃ p, p.Prime ∧ n < p ∧ 4 * p ≤ 5 * n := by
+  by_contra hcon
+  push_neg at hcon
+  have hprime : ∀ p, p.Prime → n < p → 5 * n < 4 * p := by
+    intro p hp hnp; have := hcon p hp hnp; omega
+  set M := 5 * n / 4 with hMdef
+  have hnM : n ≤ M := by rw [hMdef]; omega
+  have h4M : 4 * M ≤ 5 * n := by rw [hMdef]; omega
+  have h5n : 5 * n < 4 * (M + 1) := by rw [hMdef]; omega
+  have hθeq : Chebyshev.theta ((M : ℕ) : ℝ) = Chebyshev.theta (n : ℝ) := by
+    rw [Chebyshev.theta, Chebyshev.theta, Nat.floor_natCast, Nat.floor_natCast]
+    apply Finset.sum_congr _ (fun _ _ => rfl)
+    ext p
+    simp only [Finset.mem_filter, Finset.mem_Ioc]
+    constructor
+    · rintro ⟨⟨hp0, hpM⟩, hpp⟩
+      refine ⟨⟨hp0, ?_⟩, hpp⟩
+      by_contra hpn
+      push_neg at hpn
+      have hgt := hprime p hpp hpn
+      have : 4 * p ≤ 5 * n := le_trans (by omega) h4M
+      omega
+    · rintro ⟨⟨hp0, hpn⟩, hpp⟩
+      exact ⟨⟨hp0, le_trans hpn hnM⟩, hpp⟩
+  set A := (7 / 15) * Real.log 2 + (3 / 10) * Real.log 3 + (1 / 6) * Real.log 5 with hAdef
+  have hA0 : (0 : ℝ) ≤ A := by rw [hAdef]; nlinarith [chebyshev_const_gt]
+  have hAlt : A < 2 := by rw [hAdef]; exact chebyshev_const_lt
+  have hAgt : (0.91 : ℝ) < A := by rw [hAdef]; exact chebyshev_const_gt
+  clear_value A
+  have hM30 : 30 ≤ M := by omega
+  have hMnn : (0 : ℝ) ≤ (M : ℝ) := by positivity
+  have hnR : (2 ^ 41 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+  have hM2_40 : (2 : ℝ) ^ 40 ≤ (M : ℝ) := by
+    have hN : (2 : ℕ) ^ 40 ≤ M := by rw [hMdef, Nat.le_div_iff_mul_le (by norm_num)]; omega
+    calc (2 : ℝ) ^ 40 = ((2 ^ 40 : ℕ) : ℝ) := by push_cast; ring
+      _ ≤ (M : ℝ) := by exact_mod_cast hN
+  have hn1_40 : (2 : ℝ) ^ 40 ≤ (n : ℝ) + 1 := by nlinarith [hnR]
+  have hMub : (M : ℝ) ≤ 5 * (n : ℝ) / 4 := by
+    rw [le_div_iff₀ (by norm_num)]
+    have : (4 * M : ℝ) ≤ 5 * n := by exact_mod_cast h4M
+    linarith
+  have hMlo : 5 * (n : ℝ) / 4 - 1 ≤ (M : ℝ) := by
+    rw [div_sub_one (by norm_num), div_le_iff₀ (by norm_num)]
+    have : (5 * n : ℝ) < 4 * (M + 1) := by exact_mod_cast h5n
+    linarith
+  have hθlow := theta_refined_lower hM30
+  rw [← hAdef] at hθlow
+  have hθψ := Chebyshev.theta_le_psi (n : ℝ)
+  have hψup := psi_refined_upper n
+  rw [← hAdef] at hψup
+  have hlog2 := Real.log_two_lt_d9
+  have hlog2nn : (0 : ℝ) ≤ Real.log 2 := Real.log_nonneg (by norm_num)
+  have hsl := sqrt_log_small (M : ℝ) hM2_40
+  have hcnn : (0 : ℝ) ≤ 40 * Real.log 2 / 2 ^ 20 := by positivity
+  have hprodM : (40 * Real.log 2 / 2 ^ 20) * (M : ℝ)
+      ≤ (40 * Real.log 2 / 2 ^ 20) * (5 * (n : ℝ) / 4) := mul_le_mul_of_nonneg_left hMub hcnn
+  have hn0 : (0 : ℝ) ≤ (n : ℝ) := by positivity
+  have h3 : 4 * Real.sqrt (M : ℝ) * Real.log (M : ℝ) ≤ (1 / 5000) * (n : ℝ) := by
+    nlinarith [hsl, hprodM, hlog2, hlog2nn, hn0]
+  have hls := log_le_sqrt_small ((n : ℝ) + 1) hn1_40
+  have hLnn : (0 : ℝ) ≤ Real.log ((n : ℝ) + 1) :=
+    Real.log_nonneg (by have : (0 : ℝ) ≤ n := Nat.cast_nonneg n; linarith)
+  have hsqle : Real.sqrt ((n : ℝ) + 1) ≤ (n : ℝ) + 1 := by
+    have h1 : (1 : ℝ) ≤ (n : ℝ) + 1 := by linarith [hn0]
+    calc Real.sqrt ((n : ℝ) + 1) ≤ Real.sqrt (((n : ℝ) + 1) ^ 2) := by
+          apply Real.sqrt_le_sqrt; nlinarith [h1]
+      _ = (n : ℝ) + 1 := by rw [Real.sqrt_sq (by linarith)]
+  have hLsq : (Real.log ((n : ℝ) + 1)) ^ 2 ≤ (40 * Real.log 2 / 2 ^ 20) ^ 2 * ((n : ℝ) + 1) := by
+    have hsqrt2 : Real.sqrt ((n : ℝ) + 1) * Real.sqrt ((n : ℝ) + 1) = (n : ℝ) + 1 :=
+      Real.mul_self_sqrt (by linarith [hn0])
+    nlinarith [hls, hLnn, Real.sqrt_nonneg ((n : ℝ) + 1), hsqrt2]
+  have hLlin : Real.log ((n : ℝ) + 1) ≤ (40 * Real.log 2 / 2 ^ 20) * ((n : ℝ) + 1) := by
+    calc Real.log ((n : ℝ) + 1) ≤ (40 * Real.log 2 / 2 ^ 20) * Real.sqrt ((n : ℝ) + 1) := hls
+      _ ≤ (40 * Real.log 2 / 2 ^ 20) * ((n : ℝ) + 1) := mul_le_mul_of_nonneg_left hsqle hcnn
+  have h4err : 2 * (Real.log ((n : ℝ) + 1)) ^ 2 + 7 * Real.log ((n : ℝ) + 1) ≤ (1 / 2000) * (n : ℝ) := by
+    nlinarith [hLsq, hLlin, hlog2, hlog2nn, hnR, hn0]
+  rw [hθeq] at hθlow
+  have hchain := le_trans hθlow (le_trans hθψ hψup)
+  have hprodMA := mul_le_mul_of_nonneg_right hMlo hA0
+  have eMA : (5 * (n : ℝ) / 4 - 1) * A = 5 * ((n : ℝ) * A) / 4 - A := by ring
+  have hAn := mul_le_mul_of_nonneg_right (le_of_lt hAgt) hn0
+  have eU : (6 / 5) * A * (n : ℝ) = 6 * ((n : ℝ) * A) / 5 := by ring
+  have hnbig : (5000 : ℝ) ≤ (n : ℝ) := le_trans (by norm_num) hnR
+  have hc1 : (M : ℝ) * A ≤ 6 * ((n : ℝ) * A) / 5 + (7 / 10000) * (n : ℝ) + 209 := by
+    linarith only [hchain, h3, h4err, eU]
+  have hc2 : 5 * ((n : ℝ) * A) / 4 - A ≤ (M : ℝ) * A := by
+    linarith only [hprodMA, eMA]
+  linarith only [hc1, hc2, hAn, hAlt, hnbig]
+
+/-- **HJSW general-`N` lower bound at constant `6/5`** (unconditional, axiom-clean). For `N ≥ 5·2⁴⁰`,
+the Nagura-strength gap `exists_prime_in_five_fourths` at `n = ⌊2N/5⌋` yields a prime
+`p ∈ (⌊2N/5⌋, N/2]`, giving `3(p−1) ≥ 3⌊2N/5⌋ ≈ 6N/5`. This improves `maxNoThreeInLine_ge_fifteen_sixteenths`
+(`15/16`) — the inner coefficient climbs `5/16 → 2/5 = 6.4/16`, constant `15/16 → 6/5` — and is the
+second rung above Bertrand's `3/4`, made unconditional by the two-sided refined Chebyshev estimate
+(`theta_refined_lower` + `psi_refined_upper`). Toward HJSW's `3/2 − o(1)`: shrinking the gap ratio
+`5/4 → 6/5⁺` lifts the constant `6/5 → 5/4`; PNT-strength gaps would reach `3/2`. -/
+theorem maxNoThreeInLine_ge_six_fifths {N : ℕ} (hN : 5 * 2 ^ 40 ≤ N) :
+    3 * (2 * N / 5) ≤ maxNoThreeInLine N := by
+  have hn : (2 : ℕ) ^ 41 ≤ 2 * N / 5 := by
+    rw [Nat.le_div_iff_mul_le (by norm_num)]
+    have e : (2 : ℕ) ^ 41 = 2 * 2 ^ 40 := by norm_num [pow_succ]
+    omega
+  obtain ⟨p, hp, hlo, hhi⟩ := exists_prime_in_five_fourths (n := 2 * N / 5) hn
   have h2p : 2 * p ≤ N := by omega
   have := maxNoThreeInLine_ge_of_two_mul_prime_le hp h2p
   omega
