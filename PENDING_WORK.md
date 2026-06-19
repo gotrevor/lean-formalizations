@@ -62,27 +62,28 @@ feared v4.29.0→v4.29.1 drift did not materialize. New modules under
 - `integral_inv_mul_sq_log` : `∫_a^b 1/(t·(log t)²) = 1/log a − 1/log b` — bounds the **`O(1)` remainder**
   `∫ r/(t log²t)` by `C/log a` uniformly in `b`.
 
-**The remaining work is the Abel-summation ASSEMBLY** (multi-step; START HERE next lap):
-- **Entry point: `sum_mul_eq_sub_integral_mul₁`** (`NumberTheory/AbelSummation.lean:239`) — the variant
-  with `c 0 = 0 ∧ c 1 = 0`, which integrates over `Ioc 2 b` and needs `f` differentiable only on `Icc 2 b`.
-  **CRITICAL: must use `₁`, not `₀`/plain** — `f(t)=1/log t` is NOT differentiable at `t=1` (`log 1=0`), so
-  the `₀` version (integral from 1) fails `hf_diff`. With `c 0 = c 1 = 0` (0,1 not prime) the start shifts to 2.
-- **Coefficients/weight:** `c n = if n.Prime then (log n)/n else 0`; `f t = (Real.log t)⁻¹`. Then
-  `f k * c k = if k.Prime then 1/k else 0` (for prime `k≥2`, `(log k)⁻¹·(log k/k)=1/k`), so
-  `∑_{k≤m} f k·c k = ∑_{p≤m} 1/p`. And `∑_{k≤m} c k = primeSumDiv m`, `∑_{k≤⌊t⌋} c k = primeSumDiv ⌊t⌋₊`.
-  `deriv f t = −(t·(log t)²)⁻¹` (from `hasDerivAt_inv_log`, via `.deriv`); `f` differentiable on `Icc 2 b`
-  (`hasDerivAt_inv_log`); `deriv f` integrable on `Icc 2 b` (continuous there, cf. `integral_inv_mul_sq_log`'s
-  `hcont`).
-- **Identity obtained:** `∑_{p≤m} 1/p = primeSumDiv m / log m + ∫_2^m primeSumDiv ⌊t⌋₊ /(t (log t)²) dt`.
-- **Estimates to close `= log log m + O(1)`:** (a) `primeSumDiv m / log m = 1 + O(1/log m)` from
-  `abs_primeSumDiv_sub_log_le`; (b) split `primeSumDiv ⌊t⌋₊ = log t + (primeSumDiv ⌊t⌋₊ − log t)`; the main
-  integral `∫_2^m log t/(t log²t) = ∫_2^m 1/(t log t) = log log m − log log 2` (`integral_inv_log_mul`);
-  the remainder `∫_2^m (primeSumDiv ⌊t⌋₊ − log t)/(t log²t)` is `O(1)` — its integrand is `≤ C'/(t log²t)`
-  because `|primeSumDiv ⌊t⌋₊ − log t| ≤ |primeSumDiv ⌊t⌋₊ − log⌊t⌋₊| + |log⌊t⌋₊ − log t| ≤ (log4+5+2∑') +
-  (small)`, bounded by `integral_inv_mul_sq_log`. The `log⌊t⌋₊ − log t` gap (floor-vs-continuous) is the
-  one genuinely new estimate; `log(t/⌊t⌋₊) ≤ log(t/(t−1)) → 0`, integrable.
-- Likely 2-3 laps. A good Aristotle feed when `c6d615ee` idles: a bounded sub-lemma like the
-  `∫ primeSumDiv⌊t⌋ /(t log²t)` split, or the floor-gap integrability bound.
+**✅ Abel-summation CORE done this lap** (`939d3a0`, `879548a`):
+- `primeLogDivCoeff n = [n prime]·(log n)/n`, `primeRecipSum N = ∑_{p≤N} 1/p`, with bridges
+  `sum_primeLogDivCoeff_eq` (`∑c = primeSumDiv`) and `sum_inv_log_mul_primeLogDivCoeff_eq` (`∑(1/log)·c = ∑1/p`).
+- **`mertens_second_identity`** (axiom-clean):
+  `∑_{p≤N} 1/p = primeSumDiv N/log N + ∫_2^N primeSumDiv ⌊t⌋₊ /(t (log t)²) dt`. Used
+  `sum_mul_eq_sub_integral_mul₁` (the `c0=c1=0`/integral-from-2 variant — the `₀` version fails since
+  `1/log` is undifferentiable at `t=1`); side-conditions discharged via `hasDerivAt_inv_log`;
+  integrand `deriv f` rewritten by `setIntegral_congr_fun` (NB: β-reduce the integrand with `simp only []`
+  before `rw`).
+- **`primeSumDiv_div_log_tendsto_one`**: the boundary term `→ 1` (so it is `1 + o(1)`, i.e. `O(1)`).
+
+**ONE PIECE REMAINS — the integral estimate** `∫_2^N primeSumDiv ⌊t⌋₊ /(t (log t)²) dt = log log N + O(1)`:
+- Split `primeSumDiv ⌊t⌋₊ = log t + (primeSumDiv ⌊t⌋₊ − log t)` (needs each piece integrable on `Ioc 2 N`
+  to split `∫(f+g)=∫f+∫g`). **Main term:** `∫_2^N (log t)/(t (log t)²) = ∫_2^N 1/(t log t) = log log N − log log 2`
+  (`integral_inv_log_mul` — note `(log t)/(t (log t)²) = 1/(t log t)`). **Remainder:**
+  `|∫_2^N (primeSumDiv ⌊t⌋₊ − log t)/(t (log t)²)| ≤ C·∫_2^N 1/(t (log t)²) = C(1/log2 − 1/log N) ≤ C/log2`
+  (`integral_inv_mul_sq_log`), where `|primeSumDiv ⌊t⌋₊ − log t| ≤ C` uniformly for `t ≥ 2`:
+  `≤ |primeSumDiv ⌊t⌋₊ − log⌊t⌋₊| + |log⌊t⌋₊ − log t| ≤ (log4+5+2∑'_b log b/b²) + log(3/2)`
+  (`abs_primeSumDiv_sub_log_le` at `⌊t⌋₊≥2`; floor-gap `log(t/⌊t⌋₊) < log(3/2)` since `2 ≤ ⌊t⌋₊ ≤ t < ⌊t⌋₊+1`).
+- The genuinely-new bit is the **floor-gap bound** `|log⌊t⌋₊ − log t| ≤ log(3/2)` for `t≥2` and the integral
+  splitting/integrability bookkeeping. Then assemble `∑1/p − log log N` is `O(1)` (or `Tendsto (∑1/p − log log N)`).
+  ~1 lap. Good Aristotle feed when `c6d615ee` idles: the floor-gap bound, or the remainder-integral `O(1)` bound.
 
 ### (superseded) nagura wall — FINAL for elementary methods
 - **nagura_prime wall is FINAL for elementary methods (sharpened this lap).** The refined constant
