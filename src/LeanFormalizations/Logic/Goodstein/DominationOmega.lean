@@ -219,6 +219,100 @@ theorem fastGrowing_omega_pow_le_goodsteinLength_of_length {m j : ℕ} (hm : 4 �
   have hdom := iterLeadExp_dominates m 2 (m - 2)
   exact le_trans hval hdom
 
+/-! ### Discharging the `o = ω^j` crux: an `f_ω`-strength length bound at the deep seed
+
+The sole remaining obligation is `goodsteinLength ((log₂)^[2] m) ≥ m`. The exponential length bound is
+far too weak at the doubly-iterated seed `t = (log₂)^[2] m` (it gives only `≈ 2^t`, while `m ≈ 2^{2^t}`).
+But we now have `f_ω(t) ≤ goodsteinLength t + 2` — a *tower-strength* lower bound — and `f_ω` outgrows
+`2^{2^{·}}`. Bootstrapping the `o = ω` result against itself closes the `o = ω^j` tier. -/
+
+/-- `f_2(n) = 2^n · n` (mathlib's closed form, transported to the `ofNat 2` notation). -/
+theorem fastGrowing_ofNat_two (n : ℕ) : fastGrowing (ONote.ofNat 2) n = 2 ^ n * n := by
+  rw [show (ONote.ofNat 2 : ONote) = 2 from by decide, ONote.fastGrowing_two]
+
+/-- **`f_3` is doubly-exponential:** `2^{2^t · t} ≤ f_3(t)` for `t ≥ 2`. Since `f_3(t) = (f_2)^[t](t)`
+(`fastGrowing_succ`), and `f_2` is expansive, `(f_2)^[t](t) ≥ (f_2)^[2](t) = f_2(f_2(t)) =
+2^{2^t·t}·(2^t·t) ≥ 2^{2^t·t}`. The engine that makes `f_ω` outrun `2^{2^{·}}`. -/
+theorem two_pow_le_fastGrowing_ofNat_three {t : ℕ} (ht : 2 ≤ t) :
+    2 ^ (2 ^ t * t) ≤ fastGrowing (ONote.ofNat 3) t := by
+  have hf3 : fastGrowing (ONote.ofNat 3) t = (fastGrowing (ONote.ofNat 2))^[t] t := by
+    rw [show (ONote.ofNat 3 : ONote) = ONote.ofNat (2 + 1) from rfl,
+        fastGrowing_succ _ (fundamentalSequence_ofNat_succ 2)]
+  have hexp : (id : ℕ → ℕ) ≤ fastGrowing (ONote.ofNat 2) := fun n => le_fastGrowing _ n
+  have hmono : (fastGrowing (ONote.ofNat 2))^[2] t ≤ (fastGrowing (ONote.ofNat 2))^[t] t :=
+    Function.monotone_iterate_of_id_le hexp ht t
+  have h2it : (fastGrowing (ONote.ofNat 2))^[2] t
+      = fastGrowing (ONote.ofNat 2) (fastGrowing (ONote.ofNat 2) t) := by
+    rw [show (2 : ℕ) = 1 + 1 from rfl, Function.iterate_add_apply]; simp
+  rw [hf3]
+  refine le_trans ?_ hmono
+  rw [h2it, fastGrowing_ofNat_two, fastGrowing_ofNat_two]
+  have hpos : 1 ≤ 2 ^ t * t := by
+    have : 0 < 2 ^ t * t := Nat.mul_pos (pow_pos (by norm_num) t) (by omega); omega
+  calc 2 ^ (2 ^ t * t) = 2 ^ (2 ^ t * t) * 1 := (mul_one _).symm
+    _ ≤ 2 ^ (2 ^ t * t) * (2 ^ t * t) := by gcongr
+
+/-- `f_ω(t) = f_{t+1}(t)`: the fundamental sequence of `ω = oadd 1 1 0` is `i ↦ ofNat (i+1)`. -/
+theorem fastGrowing_omega_eq (t : ℕ) :
+    fastGrowing (oadd 1 1 0) t = fastGrowing (ONote.ofNat (t + 1)) t := by
+  have hfs : fundamentalSequence (oadd 1 1 0) = Sum.inr (fun i => ONote.ofNat (i + 1)) := rfl
+  rw [fastGrowing_limit (oadd 1 1 0) hfs]
+
+/-- **The doubly-iterated length bound — `o = ω^j`'s crux DISCHARGED.** For `m` with the doubly-
+iterated seed `t = (log₂)^[2] m ≥ 2^16`, `goodsteinLength t ≥ 2m`. Bootstraps the `o = ω` domination
+against itself: `goodsteinLength t ≥ f_ω(t) − 2 = f_{t+1}(t) − 2 ≥ f_3(t) − 2 ≥ 2^{2^t·t} − 2`
+(`fastGrowing_omega_le_goodsteinLength` ⊕ `fastGrowing_ofNat_mono` ⊕ `two_pow_le_fastGrowing_ofNat_three`),
+while `m < 2^{2^{t+1}}` and `2^t·t ≥ 2^{t+1}+1` (for `t ≥ 3`) give `2^{2^t·t} ≥ 2(m+1)`. The `f_ω`
+length bound carries the finite-base-case `native_decide` axioms (documented split). -/
+theorem two_mul_le_goodsteinLength_loglog {m : ℕ}
+    (ht : 2 ^ 16 ≤ (Nat.log 2)^[2] m) :
+    2 * m ≤ goodsteinLength ((Nat.log 2)^[2] m) := by
+  set t := (Nat.log 2)^[2] m with htdef
+  have hteq : t = Nat.log 2 (Nat.log 2 m) := rfl
+  have hA : Nat.log 2 m + 1 ≤ 2 ^ (t + 1) := by
+    have h := Nat.lt_pow_succ_log_self (b := 2) (by norm_num) (Nat.log 2 m)
+    rw [hteq]; omega
+  have hB : m < 2 ^ (Nat.log 2 m + 1) := Nat.lt_pow_succ_log_self (by norm_num) m
+  have hD : 2 ^ (Nat.log 2 m + 1) ≤ 2 ^ (2 ^ (t + 1)) := Nat.pow_le_pow_right (by norm_num) hA
+  have hm1 : m + 1 ≤ 2 ^ (2 ^ (t + 1)) := by omega
+  have hlen := fastGrowing_omega_le_goodsteinLength (m := t) ht
+  rw [fastGrowing_omega_eq] at hlen
+  have hidx : fastGrowing (ONote.ofNat 3) t ≤ fastGrowing (ONote.ofNat (t + 1)) t :=
+    fastGrowing_ofNat_mono (by omega) (by omega)
+  have hf3 := two_pow_le_fastGrowing_ofNat_three (t := t) (by omega)
+  have hexp_ge : 2 ^ (t + 1) + 1 ≤ 2 ^ t * t := by
+    have h2t : 2 ^ (t + 1) = 2 * 2 ^ t := by rw [pow_succ]; ring
+    have hb : 2 ^ t * 3 ≤ 2 ^ t * t := by gcongr <;> omega
+    have hp : 1 ≤ 2 ^ t := Nat.one_le_two_pow
+    omega
+  have hpow_ge : 2 * (m + 1) ≤ 2 ^ (2 ^ t * t) := by
+    have h2 : 2 * 2 ^ (2 ^ (t + 1)) = 2 ^ (2 ^ (t + 1) + 1) := by rw [pow_succ]; ring
+    have h3 : 2 ^ (2 ^ (t + 1) + 1) ≤ 2 ^ (2 ^ t * t) := Nat.pow_le_pow_right (by norm_num) hexp_ge
+    omega
+  omega
+
+/-- **THE `o = ω^j` DIAGONAL DOMINATION — UNCONDITIONAL** (every finite `j ≥ 1`, for `m` with
+`(log₂)^[2] m ≥ 2^16`): `fastGrowing (ω^j) m ≤ goodsteinLength m + 2`, with `ω^j = oadd (ofNat j) 1 0`.
+Cichoń's lower bound at the limit levels `ω, ω^2, ω^3, …` — fully machine-checked. The doubly-iterated
+length bound `two_mul_le_goodsteinLength_loglog` discharges the `of_length` reduction's hypothesis
+(`(m−2)+j < 2m ≤ goodsteinLength ((log₂)^[2] m)`). Carries the finite-base-case `native_decide` axioms
+(documented split), inherited through the `f_ω` bootstrap. -/
+theorem fastGrowing_omega_pow_le_goodsteinLength {m j : ℕ}
+    (ht : 2 ^ 16 ≤ (Nat.log 2)^[2] m) (hj1 : 1 ≤ j) (hjm : j < m) :
+    fastGrowing (oadd (ONote.ofNat j) 1 0) m ≤ goodsteinLength m + 2 := by
+  have h1' : 1 ≤ (Nat.log 2)^[2] m := le_trans (by norm_num) ht
+  have hlm0 : Nat.log 2 m ≠ 0 := by
+    intro h
+    rw [show (Nat.log 2)^[2] m = Nat.log 2 (Nat.log 2 m) from rfl, h, Nat.log_zero_right] at h1'
+    omega
+  have hlogm2 : 2 ≤ Nat.log 2 m := by
+    have h := Nat.pow_le_of_le_log hlm0 (show 1 ≤ Nat.log 2 (Nat.log 2 m) from h1'); simpa using h
+  have hm0 : m ≠ 0 := by intro h; rw [h, Nat.log_zero_right] at hlogm2; omega
+  have hm : 4 ≤ m := by have h := Nat.pow_le_of_le_log hm0 hlogm2; simpa using h
+  apply fastGrowing_omega_pow_le_goodsteinLength_of_length hm hj1 hjm
+  have h2m := two_mul_le_goodsteinLength_loglog ht
+  omega
+
 /-- Anti-vacuity: `ω = oadd 1 1 0` really has `repr = ω`, and `oadd ω 1 0` has `repr = ω^ω` — so the
 reduction targets the genuine limit level, not a finite stand-in. -/
 example : (oadd 1 1 0 : ONote).repr = ω := by simp [ONote.repr]
