@@ -297,6 +297,125 @@ theorem evalNat_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ L, evalNat b (toONote b L
       congr 2
       exact_mod_cast PNat.toPNat'_coe hc_pos
 
+/-- **`evalNat` tracks a successor step.** If `fundamentalSequence E = some E'` (i.e. `E` is the
+successor of `E'`), then `evalNat b E = evalNat b E' + 1`. Structural recursion on `E`, casing
+the `fundamentalSequence` successor branches. -/
+theorem evalNat_succ (b : ℕ) : ∀ {E E' : ONote}, fundamentalSequence E = Sum.inl (some E') →
+    evalNat b E = evalNat b E' + 1 := by
+  intro E
+  induction E with
+  | zero => intro E' h; exact absurd h (by simp [fundamentalSequence])
+  | oadd a m r iha ihr =>
+    intro E' h
+    rw [fundamentalSequence] at h
+    rcases hr : fundamentalSequence r with (_ | r') | g
+    · -- r = 0: inner match on (fundamentalSequence a, m.natPred)
+      rw [hr] at h
+      rcases ha : fundamentalSequence a with (_ | a') | p
+      · -- a = 0
+        rw [ha] at h
+        rcases hm : m.natPred with _ | k
+        · -- m = 1, E' = 0
+          rw [hm] at h
+          obtain rfl : (0:ONote) = E' := by simpa using h
+          have hrz : r = 0 := (fundamentalSequenceProp_inl_none r).1 (hr ▸ fundamentalSequence_has_prop r)
+          have haz : a = 0 := (fundamentalSequenceProp_inl_none a).1 (ha ▸ fundamentalSequence_has_prop a)
+          have hm1 : (m : ℕ) = 1 := by
+            have := PNat.natPred_add_one m; omega
+          subst hrz; subst haz
+          simp [evalNat_oadd, hm1]
+        · -- m = k+2, E' = oadd 0 (k.succPNat) 0
+          rw [hm] at h
+          obtain rfl : oadd 0 k.succPNat 0 = E' := by simpa using h
+          have hrz : r = 0 := (fundamentalSequenceProp_inl_none r).1 (hr ▸ fundamentalSequence_has_prop r)
+          have haz : a = 0 := (fundamentalSequenceProp_inl_none a).1 (ha ▸ fundamentalSequence_has_prop a)
+          have hmk : (m : ℕ) = k + 2 := by
+            have := PNat.natPred_add_one m; omega
+          subst hrz; subst haz
+          simp only [evalNat_oadd, evalNat_zero, Nat.succPNat_coe, pow_zero, mul_one, Nat.add_zero]
+          omega
+      · -- a successor → fundamentalSequence E = inr, contradicts h
+        rw [ha] at h; rcases hm : m.natPred with _ | k <;> rw [hm] at h <;> simp at h
+      · -- a limit → fundamentalSequence E = inr, contradicts h
+        rw [ha] at h; rcases hm : m.natPred with _ | k <;> rw [hm] at h <;> simp at h
+    · -- r successor: E' = oadd a m r', recurse on r
+      rw [hr] at h
+      obtain rfl : oadd a m r' = E' := by simpa using h
+      have := ihr hr
+      simp only [evalNat_oadd]; omega
+    · -- r limit → fundamentalSequence E = inr, contradicts h
+      rw [hr] at h; simp at h
+
+/-- **`evalNat` is fixed at the index `b` of a fundamental sequence.** If `E` is a limit with
+`fundamentalSequence E = inr f`, then `evalNat b (f b) = evalNat b E`. The descent's coefficient
+`b+1` (from `(b).succPNat`) is exactly what makes the base-`(b+1)` evaluation land back on
+`evalNat b E`. Structural recursion on `E`; the successor sub-branches use `evalNat_succ`. -/
+theorem evalNat_fundSeq (b : ℕ) : ∀ {E : ONote} {f : ℕ → ONote},
+    fundamentalSequence E = Sum.inr f → evalNat b (f b) = evalNat b E := by
+  intro E
+  induction E with
+  | zero => intro f h; exact absurd h (by simp [fundamentalSequence])
+  | oadd a m r iha ihr =>
+    intro f h
+    rw [fundamentalSequence] at h
+    have hbsucc : ((b.succPNat : ℕ+) : ℕ) = b + 1 := by simp [Nat.succPNat]
+    rcases hr : fundamentalSequence r with (_ | r') | g
+    · -- r = 0
+      rw [hr] at h
+      rcases ha : fundamentalSequence a with (_ | a') | p
+      · -- a = 0: fundamentalSequence E is `inl`, contradicts h
+        rw [ha] at h; rcases hm : m.natPred with _ | k <;> rw [hm] at h <;> simp at h
+      · -- a successor (pred a'): uses evalNat_succ on a
+        rw [ha] at h
+        have hsa : evalNat b a = evalNat b a' + 1 := evalNat_succ b ha
+        have hrz : r = 0 :=
+          (fundamentalSequenceProp_inl_none r).1 (hr ▸ fundamentalSequence_has_prop r)
+        subst hrz
+        rcases hm : m.natPred with _ | k
+        · -- m = 1
+          rw [hm] at h
+          obtain rfl : (fun i => oadd a' i.succPNat 0) = f := by simpa using h
+          have hm1 : (m : ℕ) = 1 := by have := PNat.natPred_add_one m; omega
+          simp only [evalNat_oadd, evalNat_zero, hbsucc, Nat.add_zero, hm1, Nat.cast_one,
+            one_mul, hsa, pow_succ]
+          ring
+        · -- m = k+2
+          rw [hm] at h
+          obtain rfl : (fun i => oadd a k.succPNat (oadd a' i.succPNat 0)) = f := by simpa using h
+          have hmk : (m : ℕ) = k + 2 := by have := PNat.natPred_add_one m; omega
+          simp only [evalNat_oadd, evalNat_zero, hbsucc, Nat.add_zero, Nat.succPNat_coe, hmk,
+            hsa, pow_succ, Nat.succ_eq_add_one]
+          push_cast
+          ring
+      · -- a limit (fund seq p): uses evalNat_fundSeq on a
+        rw [ha] at h
+        have hpa : evalNat b (p b) = evalNat b a := iha ha
+        have hrz : r = 0 :=
+          (fundamentalSequenceProp_inl_none r).1 (hr ▸ fundamentalSequence_has_prop r)
+        subst hrz
+        rcases hm : m.natPred with _ | k
+        · -- m = 1
+          rw [hm] at h
+          obtain rfl : (fun i => oadd (p i) 1 0) = f := by simpa using h
+          have hm1 : (m : ℕ) = 1 := by have := PNat.natPred_add_one m; omega
+          simp only [evalNat_oadd, evalNat_zero, Nat.add_zero, hm1, Nat.cast_one, one_mul, hpa,
+            PNat.one_coe]
+        · -- m = k+2
+          rw [hm] at h
+          obtain rfl : (fun i => oadd a k.succPNat (oadd (p i) 1 0)) = f := by simpa using h
+          have hmk : (m : ℕ) = k + 2 := by have := PNat.natPred_add_one m; omega
+          simp only [evalNat_oadd, evalNat_zero, Nat.add_zero, Nat.succPNat_coe, hmk, hpa,
+            Nat.succ_eq_add_one]
+          push_cast
+          ring
+    · -- r successor → fundamentalSequence E is `inl`, contradicts h
+      rw [hr] at h; simp at h
+    · -- r limit: recurse on r
+      rw [hr] at h
+      obtain rfl : (fun i => oadd a m (g i)) = f := by simpa using h
+      have hgr : evalNat b (g b) = evalNat b r := ihr hr
+      simp only [evalNat_oadd, hgr]
+
 /-- Predecessor of a finite successor `oadd 0 ⟨c⟩ 0` (= the ordinal `c`) at any argument:
 for `c ≥ 2`, `hstep (oadd 0 ⟨c⟩ 0) n = oadd 0 ⟨c-1⟩ 0`. -/
 theorem hstep_finite_pred (c : ℕ) (hc : 2 ≤ c) (n : ℕ) :

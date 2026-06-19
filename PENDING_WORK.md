@@ -31,21 +31,34 @@ and the headline holds modulo a single isolated lemma. Identity (native_decide-c
   induction on `p = c·b^L + r`. PROVED: `r≠0` (tail recursion via `hstep_oadd_tail` + IH +
   `toONote_oadd`/`toONote_bump`) and `r=0 ∧ L=0` (finite, `hstep_oadd_zero_zero`).
 
-**THE LONE OPEN CORE: `r=0 ∧ L≥1`** — predecessor of `c·(b+1)^(bump b L)` (borrowing). Target
-(native_decide-confirmed): `hstep (oadd (toONote b L) ⟨c,_⟩ 0) b = toONote (b+1) (c·(b+1)^(bump b L) − 1)`.
-Attack (next lap):
-1. **c≥2 → c=1 reduction.** For `c≥2`, `fundamentalSequence (oadd E ⟨c⟩ 0)` (E=toONote b L≠0)
-   gives fund seq `i ↦ oadd E ⟨c-1⟩ (…)`; `hstep` + `hstep_oadd_tail` peels the leading
-   `oadd E ⟨c-1⟩` term → reduces to the `c=1` core (predecessor of a pure power `ω^δ`).
-2. **c=1 core (predecessor of `ω^δ`, δ=repr E).** Well-founded recursion on `E` (= on `L`):
-   `fundamentalSequence (oadd E 1 0)` branches on `E` successor (→ drop the power by one, fill
-   with `b`'s) vs limit (→ descend `E`); the descent fills the `(b+1)`-ary expansion
-   `b·(b+1)^(K-1)+…+b` of `(b+1)^K − 1`, `K=bump b L`. New lemma `hstep_oadd_one_zero`.
-3. **Aristotle: SUBMITTED 2026-06-19 lap 3** — job `77c99f0e-57cd-43c7-8688-62f2ef8cb896`
-   (`hstep_pred_pow`, the narrow borrowing lemma; prompt archived at
-   `tools/aristotle/hstep_pred_pow_prompt.lean`). When IDLE: download, VERIFY in our kernel +
-   `#print axioms`, then port onto `Goodstein/Growth.lean`'s `r=0 ∧ L≥1` branch (it discharges
-   exactly that sub-goal — note the branch context already has `E = toONote b L`, `hLpos`).
+**THE LONE OPEN CORE: `hstep_oadd_one_zero` (general `L≥1`, `c=1`)** — predecessor of `ω^E`,
+`E = toONote b L`. Target: `hstep (oadd (toONote b L) 1 0) b = toONote (b+1) ((b+1)^(bump b L) − 1)`.
+
+**DONE 2026-06-19 lap 4 (4 commits) — crux narrowed `r=0,L≥1` ⟶ this single `c=1` lemma:**
+1. **Lemma A (coefficient peel) — PROVED.** `hstep_oadd_coeff` (+ `fundSeq_oadd_coeff`): for
+   `E≠0, c≥2`, `hstep (oadd E ⟨c⟩ 0) b = oadd E ⟨c-1⟩ (hstep (oadd E 1 0) b)`. The `r=0,L≥1`
+   branch of `hstep_toONote` is now FULLY PROVED modulo `hstep_oadd_one_zero` (c=1).
+2. **Lemma B finite base case — PROVED.** `hstep_oadd_one_zero_finite`: `E = finite(d+1)`,
+   `d≤b`, gives `(b+1)^(d+1)−1`. Validates the whole recursion engine end-to-end.
+3. **Recursion primitives — PROVED.** `hstep_oadd_one_of_succ`/`_of_limit` (descent on
+   `oadd E 1 0`), `fundSeq_oadd_one_of_succ`/`_of_limit`, `hstep_finite_pred`, `fundSeq_finite_succ`.
+4. **`evalNat` linchpin — PROVED.** `evalNat b o` (= `repr o` read as base-`(b+1)` numeral);
+   `evalNat_toONote : evalNat b (toONote b L) = bump b L`. The general answer is
+   `toONote (b+1) ((b+1)^(evalNat b E) − 1)`.
+
+**Remaining (next lap): the general recursion.** WF recursion on `repr E`:
+- **Limit case CLEAN** (no reconstruction): `hstep_oadd_one_of_limit` → IH on `f b`, closes via
+  `evalNat (f b) = evalNat E` (identity `evalNat_fundSeq`, TODO — at the fixed index `b`).
+- **Successor case** needs `evalNat E = evalNat E' + 1` (`evalNat_succ`, TODO) AND the
+  reconstruction `toONote (b+1) (evalNat E') = E'` for `E' = pred E`. Reconstruction is the
+  real wall: it holds for base-`(b+1)`-CNF `E'` but the descent's `f b` introduces coefficient
+  `b+1` (at index `b`). KEY OBSERVATION: that `b+1` is always immediately peeled by
+  `hstep_oadd_coeff`, and `pred` of a reachable successor keeps coefficients `< b+1` at the
+  decremented position — so a **coefficient-bound invariant** (≤ b+1, with the b+1 only where
+  peelable) makes reconstruction go through. Formalize that invariant + the two `evalNat`
+  identities, then the WF recursion closes `hstep_oadd_one_zero`.
+3. **Aristotle: job `77c99f0e`** still RUNNING on the (pre-narrowing) general borrowing goal —
+   if it returns a full proof, it subsumes everything; VERIFY + `#print axioms` before porting.
 
 ### Domination corollary (after the C3 identity closes)
 With `goodsteinLength_eq_hardy` + A4 (`fastGrowing_lt_fastGrowingε₀`) + `hardy_le_of_lt`, derive
