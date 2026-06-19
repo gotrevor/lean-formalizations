@@ -177,6 +177,50 @@ noncomputable def omegaTower : ℕ → Ordinal
   | 0 => 1
   | (k + 1) => (ω : Ordinal) ^ omegaTower k
 
+theorem omegaTower_succ_eq (k : ℕ) : omegaTower (k + 1) = (ω : Ordinal) ^ omegaTower k := rfl
+
+/-- The ω-tower is monotone in its height (`x ≤ ω^x = omegaTower (k+1)`). -/
+theorem omegaTower_mono : Monotone omegaTower := by
+  refine monotone_nat_of_le_succ (fun k => ?_)
+  rw [omegaTower_succ_eq]; exact right_le_opow (omegaTower k) one_lt_omega0
+
+/-- **Cofinality of the ω-tower in ε₀.** Every normal-form `ONote` — i.e. every ordinal `< ε₀` — has
+`repr` strictly below some tower level `ω↑↑k`. By structural induction on the notation: the leading
+term `ω^{repr e}·n` is `< ω^{omegaTower ke} = ω↑↑(ke+1)` (`mul_lt_omega0_opow` on the IH for `e`), the
+tail is `< ω↑↑ka` (IH for `a`), and both are absorbed below the next tower level, which is additively
+principal (`isPrincipal_add_omega0_opow`). This is what turns the per-level diagonal domination into
+the literal "for every `o < ε₀`" statement. -/
+theorem exists_repr_lt_omegaTower : ∀ (o : ONote), o.NF → ∃ k, o.repr < omegaTower k := by
+  intro o
+  induction o with
+  | zero =>
+    intro _
+    exact ⟨0, by show (0 : Ordinal) < omegaTower 0; rw [show omegaTower 0 = 1 from rfl]; exact one_pos⟩
+  | oadd e n a ihe iha =>
+    intro hNF
+    obtain ⟨ke, hke⟩ := ihe hNF.fst
+    obtain ⟨ka, hka⟩ := iha hNF.snd
+    set K := max (ke + 1) ka with hK
+    have hmul : (ω : Ordinal) ^ e.repr * ((n : ℕ) : Ordinal) < omegaTower (ke + 1) := by
+      rw [omegaTower_succ_eq]
+      have hc0 : (0 : Ordinal) < omegaTower ke := by
+        have h := omegaTower_mono (Nat.zero_le ke)
+        rw [show omegaTower 0 = 1 from rfl] at h; exact zero_lt_one.trans_le h
+      have hae : (ω : Ordinal) ^ e.repr < ω ^ (omegaTower ke) :=
+        (opow_lt_opow_iff_right one_lt_omega0).2 hke
+      exact mul_lt_omega0_opow hc0 hae (natCast_lt_omega0 _)
+    have hmulK : (ω : Ordinal) ^ e.repr * ((n : ℕ) : Ordinal) < omegaTower K :=
+      lt_of_lt_of_le hmul (omegaTower_mono (le_max_left _ _))
+    have hakK : a.repr < omegaTower K := lt_of_lt_of_le hka (omegaTower_mono (le_max_right _ _))
+    have hprin : IsPrincipal (· + ·) (omegaTower (K + 1)) := by
+      rw [omegaTower_succ_eq]; exact isPrincipal_add_omega0_opow _
+    have hltK1 : omegaTower K ≤ omegaTower (K + 1) := omegaTower_mono (Nat.le_succ K)
+    refine ⟨K + 1, ?_⟩
+    have hrepr : (oadd e n a).repr = (ω : Ordinal) ^ e.repr * ((n : ℕ) : Ordinal) + a.repr := by
+      simp [ONote.repr]
+    rw [hrepr]
+    exact hprin (lt_of_lt_of_le hmulK hltK1) (lt_of_lt_of_le hakK hltK1)
+
 /-- ONote realization of the ordinal tower: `towerO 0 = 1`, `towerO (k+1) = oadd (towerO k) 1 0`.
 `towerO 1 = ω`, `towerO 2 = ω^ω`, … (`repr_towerO`). -/
 def towerO : ℕ → ONote
@@ -274,9 +318,10 @@ leading exponent of the genuine descent being `≥ base i = m`; the general ordi
 (`omegaTower_succ_le_seqONote_repr`) turns that into `ω↑↑(k+1) ≤ descent`; and the diagonal reduction
 `goodstein_dominates_of_index_le` (budget `m`) closes it. Carries the finite-base-case
 `native_decide` axioms (documented split), inherited via the `f_ω` length bootstrap. -/
-theorem fastGrowing_towerO_le_goodsteinLength {m k : ℕ}
-    (ht : 2 ^ 16 ≤ (Nat.log 2)^[k] m) (hk : k + 1 ≤ (Nat.log 2)^[k] m) :
-    fastGrowing (towerO k) m ≤ goodsteinLength m + 2 := by
+theorem fastGrowing_le_goodsteinLength_of_repr_le_tower {o : ONote} (ho : o.NF) {m k : ℕ}
+    (ht : 2 ^ 16 ≤ (Nat.log 2)^[k] m) (hk : k + 1 ≤ (Nat.log 2)^[k] m)
+    (hrepr : o.repr ≤ omegaTower k) (hnorm : norm o ≤ m) :
+    fastGrowing o m ≤ goodsteinLength m + 2 := by
   have hmge : 2 ^ 16 ≤ m := le_trans ht (iterLog2_le_self k m)
   have hm : 4 ≤ m := le_trans (by norm_num) hmge
   set i := m - 2 with hi
@@ -292,16 +337,28 @@ theorem fastGrowing_towerO_le_goodsteinLength {m k : ℕ}
     calc base i = m := hbase
       _ ≤ goodsteinSeq ((Nat.log 2)^[k] m) i := hval
       _ ≤ (Nat.log (base i))^[k] (goodsteinSeq m i) := hdom
-  have ho : (towerO k).NF := towerO_NF k
-  have hidx : (oadd (towerO k) 1 0).repr ≤ (seqONote m i).repr := by
-    have hr : (oadd (towerO k) 1 0).repr = omegaTower (k + 1) := by
-      show (oadd (towerO k) 1 0).repr = (ω : Ordinal) ^ omegaTower k
-      rw [← repr_towerO]; simp [ONote.repr]
-    rw [hr]
-    exact omegaTower_succ_le_seqONote_repr hreg
-  have hnorm : norm (towerO k) ≤ i + 2 := by rw [norm_towerO]; omega
+  have hbridge : omegaTower (k + 1) ≤ (seqONote m i).repr := omegaTower_succ_le_seqONote_repr hreg
+  have hidx : (oadd o 1 0).repr ≤ (seqONote m i).repr := by
+    have hle : (oadd o 1 0).repr ≤ omegaTower (k + 1) := by
+      have hr : (oadd o 1 0).repr = (ω : Ordinal) ^ o.repr := by simp [ONote.repr]
+      rw [hr, omegaTower_succ_eq]
+      exact opow_le_opow_right omega0_pos hrepr
+    exact le_trans hle hbridge
   have hgl : i ≤ goodsteinLength m := le_trans (by omega) (le_goodsteinLength m)
-  exact goodstein_dominates_of_index_le ho hgl (by omega) hnorm hidx
+  exact goodstein_dominates_of_index_le ho hgl (by omega) (by omega) hidx
+
+/-- **Tower-level diagonal domination** (the special case `o = towerO k`, `repr = ω↑↑k`): for every
+`k`, `fastGrowing (towerO k) m ≤ goodsteinLength m + 2`. `k = 1` is `o = ω`, `k = 2` is `o = ω^ω`,
+`k = 3` is `o = ω^{ω^ω}`, …, with `sup_k ω↑↑k = ε₀`. Subsumes the per-level closures of
+`DominationOmega.lean`. Immediate corollary of `fastGrowing_le_goodsteinLength_of_repr_le_tower`
+(`repr (towerO k) = ω↑↑k`, `norm (towerO k) = 1 ≤ m`). -/
+theorem fastGrowing_towerO_le_goodsteinLength {m k : ℕ}
+    (ht : 2 ^ 16 ≤ (Nat.log 2)^[k] m) (hk : k + 1 ≤ (Nat.log 2)^[k] m) :
+    fastGrowing (towerO k) m ≤ goodsteinLength m + 2 := by
+  have hmge : 4 ≤ m := le_trans (by norm_num) (le_trans ht (iterLog2_le_self k m))
+  refine fastGrowing_le_goodsteinLength_of_repr_le_tower (towerO_NF k) ht hk ?_ ?_
+  · exact le_of_eq (repr_towerO k)
+  · rw [norm_towerO]; omega
 
 /-! ### Explicit thresholds and the ε₀ headline -/
 
@@ -333,6 +390,26 @@ Cichoń's lower bound `goodsteinLength m + 2 ≥ f_o(m)` (eventually) for a fami
 theorem goodsteinLength_eventually_dominates_fastGrowing_towerO (k : ℕ) :
     ∃ N, ∀ m, N ≤ m → fastGrowing (towerO k) m ≤ goodsteinLength m + 2 :=
   ⟨towerN k (2 ^ 16 + k), fun _ hm => goodsteinLength_dominates_fastGrowing_towerO hm⟩
+
+/-- **THE FULL ε₀ HEADLINE — Cichoń's lower bound for every `o < ε₀`.** For EVERY normal-form
+`ONote` `o` (every ordinal `< ε₀`), `goodsteinLength` eventually dominates `f_o`: there is a threshold
+`N` past which `fastGrowing o m ≤ goodsteinLength m + 2`. This is the complete diagonal lower bound —
+not merely along the tower spine `ω↑↑k`, but at *every* ordinal below `ε₀` — the destination of the
+expedition (`DIRECTION.md`), unconditional and machine-checked.
+
+Proof: `exists_repr_lt_omegaTower` places `o` below some tower level `ω↑↑k` (cofinality of the tower
+in `ε₀`); the threshold `N = max (towerN k (2^16+k)) (norm o)` supplies the deep-seed bound and the
+budget `norm o ≤ m`; then `fastGrowing_le_goodsteinLength_of_repr_le_tower` (whose descent dominates
+`ω↑↑(k+1) ≥ ω^{repr o}`) closes it. Carries the finite-base-case `native_decide` axioms (documented
+split), inherited via the `f_ω` length bootstrap. -/
+theorem goodsteinLength_eventually_dominates_fastGrowing {o : ONote} (ho : o.NF) :
+    ∃ N, ∀ m, N ≤ m → fastGrowing o m ≤ goodsteinLength m + 2 := by
+  obtain ⟨k, hk⟩ := exists_repr_lt_omegaTower o ho
+  refine ⟨max (towerN k (2 ^ 16 + k)) (norm o), fun m hm => ?_⟩
+  have hm1 : towerN k (2 ^ 16 + k) ≤ m := le_trans (le_max_left _ _) hm
+  have hm2 : norm o ≤ m := le_trans (le_max_right _ _) hm
+  have hseed := threshold_le_iterLog k (2 ^ 16 + k) m hm1
+  exact fastGrowing_le_goodsteinLength_of_repr_le_tower ho (by omega) (by omega) (le_of_lt hk) hm2
 
 /-- Anti-vacuity: the tower notation unfolds to the concrete `oadd` forms the per-level closures
 used, and carries the genuine ε₀-approaching reprs — so the general theorem really subsumes them. -/
