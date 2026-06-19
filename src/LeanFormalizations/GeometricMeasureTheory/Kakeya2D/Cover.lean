@@ -93,6 +93,71 @@ theorem exists_index_ge_of_tsum_lt {a w : ℕ → ℝ≥0∞} {c : ℝ≥0∞}
   have hle : ∑' n, a n ≤ ∑' n, w n := ENNReal.tsum_le_tsum (fun n => (h n).le)
   exact absurd (lt_of_le_of_lt (le_trans hsum hle) hw) (lt_irrefl c)
 
+/-! ### Dyadic scale pigeonhole: extracting a dominant scale from a covered total
+
+The multi-scale upgrade (Minkowski ⟹ Hausdorff) hinges on reducing an arbitrary cover to a single
+*dominant scale*. The mechanism: given a total `1 ≤ ∑ₙ fₙ` spread over the cover pieces, partition the
+pieces by a dyadic scale function `g : ℕ → ℕ` (`g n` = the dyadic scale of `ediam(Uₙ)`), regroup the
+sum scale-by-scale (`ENNReal.tsum_fiberwise`), and pigeonhole against weights `wⱼ` summing to `< 1`.
+
+The weights **must decay only polynomially** (`wⱼ ≳ 1/j²`): the dominant scale's share `Lⱼ ≥ wⱼ` then
+beats the geometric shrinkage `δ = 2⁻ʲ`, which is exactly what the localized-Córdoba assembly needs
+(`δ^{-(2-d)}` must dominate `poly(log 1/δ)`). Geometric weights `2⁻ʲ` would give `Lⱼ ≳ δ`, killing the
+gain. The telescoping family `wⱼ = 1/(2(j+1)(j+2))` (sum `= 1/2 < 1`) supplies this cleanly. -/
+
+/-- The telescoping series `∑ₙ 1/((n+1)(n+2)) = 1` (partial sums `1 - 1/(n+1)`). -/
+theorem hasSum_one_div_succ_mul_succ_succ :
+    HasSum (fun n : ℕ => (1 : ℝ) / ((n + 1) * (n + 2))) 1 := by
+  rw [hasSum_iff_tendsto_nat_of_nonneg (fun n => by positivity)]
+  have hpartial : ∀ n : ℕ, ∑ i ∈ Finset.range n, (1 : ℝ) / ((i + 1) * (i + 2)) = 1 - 1 / (n + 1) := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ k ih =>
+      rw [Finset.sum_range_succ, ih]
+      have hk1 : (k : ℝ) + 1 ≠ 0 := by positivity
+      have hk2 : (k : ℝ) + 2 ≠ 0 := by positivity
+      push_cast
+      field_simp
+      ring
+  simp_rw [hpartial]
+  have h0 := (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)).const_sub (1 : ℝ)
+  simpa using h0
+
+/-- The dyadic-scale weights `wⱼ = 1/(2(j+1)(j+2))` (as `ℝ≥0∞`), summing to `1/2`. Polynomial decay
+`≳ 1/j²` is essential — see the section header. -/
+noncomputable def scaleWeight (j : ℕ) : ℝ≥0∞ := ENNReal.ofReal (1 / (2 * (j + 1) * (j + 2)))
+
+/-- The scale weights total `< 1`, the slack the pigeonhole `exists_index_ge_of_tsum_lt` needs. -/
+theorem tsum_scaleWeight_lt_one : ∑' j : ℕ, scaleWeight j < 1 := by
+  have hhalf : HasSum (fun n : ℕ => (1 : ℝ) / (2 * ((n : ℝ) + 1) * ((n : ℝ) + 2))) (1 / 2) := by
+    have h := hasSum_one_div_succ_mul_succ_succ.mul_left (1 / 2)
+    have he : (fun n : ℕ => (1 / 2) * ((1 : ℝ) / (((n : ℝ) + 1) * ((n : ℝ) + 2))))
+        = fun n : ℕ => (1 : ℝ) / (2 * ((n : ℝ) + 1) * ((n : ℝ) + 2)) := by
+      funext n
+      have h1 : (n : ℝ) + 1 ≠ 0 := by positivity
+      have h2 : (n : ℝ) + 2 ≠ 0 := by positivity
+      field_simp
+    rw [he] at h
+    simpa using h
+  have hnonneg : ∀ n : ℕ, 0 ≤ (1 : ℝ) / (2 * ((n : ℝ) + 1) * ((n : ℝ) + 2)) := fun n => by positivity
+  have hsum : ∑' j : ℕ, scaleWeight j = ENNReal.ofReal (1 / 2) := by
+    unfold scaleWeight
+    rw [← ENNReal.ofReal_tsum_of_nonneg hnonneg hhalf.summable, hhalf.tsum_eq]
+  rw [hsum]
+  exact ENNReal.ofReal_lt_one.mpr (by norm_num)
+
+/-- **Dominant-scale extraction.** Given a total `1 ≤ ∑ₙ fₙ` over cover pieces and any dyadic scale
+function `g : ℕ → ℕ`, some scale `j` carries at least its weight: `scaleWeight j ≤ ∑_{n : g n = j} fₙ`.
+Proof: regroup the sum by scale (`ENNReal.tsum_fiberwise`), then the weighted pigeonhole against the
+`< 1` weights. This is the first of the two pigeonholes (scales, then directions) of the multi-scale
+Córdoba Hausdorff content estimate. -/
+theorem exists_dominant_scale {f : ℕ → ℝ≥0∞} (g : ℕ → ℕ) (h : 1 ≤ ∑' n, f n) :
+    ∃ j : ℕ, scaleWeight j ≤ ∑' n : (g ⁻¹' {j} : Set ℕ), f n := by
+  have hfib : ∑' j : ℕ, (∑' n : (g ⁻¹' {j} : Set ℕ), f n) = ∑' n, f n :=
+    ENNReal.tsum_fiberwise f g
+  exact exists_index_ge_of_tsum_lt (hfib ▸ h) tsum_scaleWeight_lt_one
+
 /-! ### Covering geometry: a cover of `S` thickens to a cover of `Sδ`
 
 The bridge from the K4 single-scale content `vol(Sδ) ≳ 1/log(1/δ)` to a Hausdorff content lower
@@ -174,10 +239,22 @@ unit-speed parametrisation `φ : t ↦ a + t•v` (an isometry on the line, `‖
 `1 = vol[0,1] ≤ ∑ vol(Tₙ) ≤ ∑ ediam(Uₙ)`. (Works for arbitrary — non-measurable — `Uₙ`, since
 `volume` is an outer measure: `Real.volume_le_diam` and `measure_iUnion_le` need no measurability.)
 This is the `d = 1` Hausdorff content bound from a *single* direction; the `d>1` bound needs the
-many-direction Córdoba pigeonhole on top of this. -/
-theorem one_le_tsum_ediam_of_covers {a v : Plane} (hv : ‖v‖ = 1) {U : ℕ → Set Plane}
+many-direction Córdoba pigeonhole on top of this.
+
+The refined form `exists_pullback_cover` exposes the intermediate `1 ≤ ∑ₙ volume(Tₙ)` *before*
+collapsing each `volume(Tₙ)` to `ediam(Uₙ)`, together with the pullback pieces `Tₙ ⊆ [0,1]`. Keeping
+the covered *length* `volume(Tₙ)` (not just `ediam(Uₙ)`) is what the dyadic scale pigeonhole consumes:
+the per-direction total `1` is regrouped by scale, and the dominant scale's covered length feeds the
+localized-Córdoba count. -/
+
+/-- **Covered unit segment ⟹ pullback pieces of total length `≥ 1` (refined length bound, sub-brick
+(a′)).** Returns the unit-speed pullback `Tₙ = {t∈[0,1] | a+t•v ∈ Uₙ}`: each `Tₙ ⊆ [0,1]`, has length
+`volume(Tₙ) ≤ ediam(Uₙ)`, and the lengths total `≥ 1`. The exposed `volume(Tₙ)` (the covered length,
+not yet collapsed to `ediam`) is the input to the dyadic scale pigeonhole `exists_dominant_scale`. -/
+theorem exists_pullback_cover {a v : Plane} (hv : ‖v‖ = 1) {U : ℕ → Set Plane}
     (hcov : affineSegment ℝ a (a + v) ⊆ ⋃ n, U n) :
-    1 ≤ ∑' n, Metric.ediam (U n) := by
+    ∃ T : ℕ → Set ℝ, (∀ n, T n ⊆ Icc (0 : ℝ) 1) ∧
+      (∀ n, volume (T n) ≤ Metric.ediam (U n)) ∧ 1 ≤ ∑' n, volume (T n) := by
   set φ : ℝ → Plane := fun t => a + t • v with hφ
   set T : ℕ → Set ℝ := fun n => Icc (0 : ℝ) 1 ∩ φ ⁻¹' (U n) with hT
   -- the pullback pieces cover `[0,1]`
@@ -194,7 +271,8 @@ theorem one_le_tsum_ediam_of_covers {a v : Plane} (hv : ‖v‖ = 1) {U : ℕ �
     have hd : dist (φ s) (φ t) = dist s t := by
       rw [dist_eq_norm, hsub, norm_smul, hv, mul_one, Real.norm_eq_abs, Real.dist_eq]
     rw [edist_dist, edist_dist, hd]
-  -- per piece: `vol(Tₙ) ≤ ediam(Tₙ) ≤ ediam(Uₙ)`
+  -- per piece: `Tₙ ⊆ [0,1]` and `vol(Tₙ) ≤ ediam(Tₙ) ≤ ediam(Uₙ)`
+  have h01 : ∀ n, T n ⊆ Icc (0 : ℝ) 1 := fun n => inter_subset_left
   have h3 : ∀ n, volume (T n) ≤ Metric.ediam (U n) := by
     intro n
     refine le_trans (Real.volume_le_diam (T n)) ?_
@@ -202,13 +280,31 @@ theorem one_le_tsum_ediam_of_covers {a v : Plane} (hv : ‖v‖ = 1) {U : ℕ �
     intro s hs t ht
     rw [hiso s t]
     exact Metric.edist_le_ediam_of_mem hs.2 ht.2
-  -- assemble: `1 = vol[0,1] ≤ vol(⋃Tₙ) ≤ ∑ vol(Tₙ) ≤ ∑ ediam(Uₙ)`
+  -- assemble: `1 = vol[0,1] ≤ vol(⋃Tₙ) ≤ ∑ vol(Tₙ)`
   have hvol1 : volume (Icc (0 : ℝ) 1) = 1 := by
     rw [Real.volume_Icc, sub_zero, ENNReal.ofReal_one]
+  refine ⟨T, h01, h3, ?_⟩
   calc (1 : ℝ≥0∞) = volume (Icc (0 : ℝ) 1) := hvol1.symm
     _ ≤ volume (⋃ n, T n) := measure_mono hcover
     _ ≤ ∑' n, volume (T n) := measure_iUnion_le _
-    _ ≤ ∑' n, Metric.ediam (U n) := ENNReal.tsum_le_tsum h3
+
+theorem one_le_tsum_ediam_of_covers {a v : Plane} (hv : ‖v‖ = 1) {U : ℕ → Set Plane}
+    (hcov : affineSegment ℝ a (a + v) ⊆ ⋃ n, U n) :
+    1 ≤ ∑' n, Metric.ediam (U n) := by
+  obtain ⟨T, _, h3, h1⟩ := exists_pullback_cover hv hcov
+  exact le_trans h1 (ENNReal.tsum_le_tsum h3)
+
+/-- **Per-direction dominant scale (sub-brick (a′), assembled).** For a Kakeya direction's covered
+unit segment and any dyadic scale function `g : ℕ → ℕ` on the cover pieces, there is a dominant scale
+`j` whose pieces cover a length `≥ scaleWeight j ≳ 1/(j+1)²` of the segment. Combines the refined
+length bound `exists_pullback_cover` with the scale pigeonhole `exists_dominant_scale`. The next step
+(sub-brick (b)) pigeonholes this dominant scale across the direction net to a single global `j*`. -/
+theorem exists_dominant_scale_of_covers {a v : Plane} (hv : ‖v‖ = 1) {U : ℕ → Set Plane}
+    (hcov : affineSegment ℝ a (a + v) ⊆ ⋃ n, U n) (g : ℕ → ℕ) :
+    ∃ T : ℕ → Set ℝ, (∀ n, T n ⊆ Icc (0 : ℝ) 1) ∧ (∀ n, volume (T n) ≤ Metric.ediam (U n)) ∧
+      ∃ j : ℕ, scaleWeight j ≤ ∑' n : (g ⁻¹' {j} : Set ℕ), volume (T n) := by
+  obtain ⟨T, h01, h3, h1⟩ := exists_pullback_cover hv hcov
+  exact ⟨T, h01, h3, exists_dominant_scale g h1⟩
 
 /-! ### End-to-end at `d = 1`: the pipeline composes axiom-clean
 
