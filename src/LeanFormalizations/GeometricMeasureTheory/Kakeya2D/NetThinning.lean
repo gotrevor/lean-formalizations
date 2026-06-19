@@ -137,4 +137,59 @@ theorem one_le_tsum_volume_fiber_union (g : ℕ → ℕ) {T : ℕ → Set ℝ}
   rw [heq]
   exact measure_iUnion_le _
 
+/-! ### The combinatorial core, assembled: fine net ⟶ dominant scale ⟶ shifted subnet
+
+Packaging the two pigeonholes with the shift average into the single statement the geometric wiring
+consumes. Inputs: per-direction per-scale covered-length profiles `L k j` over a *fine* net of `2ᴶ`
+directions, each fully covered (`1 ≤ ∑ⱼ L k j`), with the profiles **capped at scale `J`**
+(`L k j = 0` for `j > J` — automatic when the scale function is `min(scale, J)`). Output: a dominant
+scale `j ≤ J` and a shift `β < 2^{J-j}` whose `2⁻ʲ`-separated subnet of `2ʲ` directions
+`{β + 2^{J-j}·i : i < 2ʲ}` carries aggregate covered length `≥ 2ʲ·scaleWeight j` — exactly the
+localized-Córdoba numerator (`∑ᵢ 2δ·vol(Aᵢ) ≥ 2·scaleWeight j = 1/((j+1)(j+2))` at `δ = 2⁻ʲ`). -/
+
+/-- **Dominant-scale extraction with shift (combinatorial core of the discharge).** From fine-net
+covered-length profiles `L` (each direction covered: `1 ≤ ∑ⱼ L k j`; capped: `L k j = 0` for `j>J`),
+the two pigeonholes + the shift average produce a dominant scale `j ≤ J` and a shift `β < 2^{J-j}`
+with `2ʲ·scaleWeight j ≤ ∑ᵢ L (β + 2^{J-j}·i) j`. The geometric wiring supplies
+`L k j = vol(⋃_{g n=j} Tₙᵏ)` (`one_le_tsum_volume_fiber_union` gives `1 ≤ ∑ⱼ L k j`); the output
+subnet is `2⁻ʲ`-separated with retained covered length, ready for the base-angle Córdoba count. -/
+theorem exists_dominant_shift {J : ℕ} (L : ℕ → ℕ → ℝ≥0∞)
+    (hsupp : ∀ k j, J < j → L k j = 0)
+    (hL : ∀ k ∈ range (2 ^ J), 1 ≤ ∑' j, L k j) :
+    ∃ j, j ≤ J ∧ ∃ β ∈ range (2 ^ (J - j)),
+      ((2 ^ j : ℕ) : ℝ≥0∞) * scaleWeight j
+        ≤ ∑ i ∈ range (2 ^ j), L (β + 2 ^ (J - j) * i) j := by
+  have h2J : 0 < 2 ^ J := pow_pos (by norm_num) J
+  -- global dominant scale over the fine net `s = range (2ᴶ)`
+  obtain ⟨j, hj⟩ := exists_global_dominant_scale (s := range (2 ^ J))
+    ⟨0, Finset.mem_range.mpr h2J⟩ L hL
+  rw [Finset.card_range] at hj
+  have hswpos : scaleWeight j ≠ 0 := by
+    rw [scaleWeight]; exact (ENNReal.ofReal_pos.mpr (by positivity)).ne'
+  -- the dominant scale is `≤ J` (the profile vanishes above `J`, so a positive total forces `j ≤ J`)
+  have hjJ : j ≤ J := by
+    by_contra hlt
+    push_neg at hlt
+    have hzero : ∑ k ∈ range (2 ^ J), L k j = 0 :=
+      Finset.sum_eq_zero (fun k _ => hsupp k j hlt)
+    rw [hzero] at hj
+    rcases mul_eq_zero.mp (le_antisymm hj (zero_le _)) with h | h
+    · exact absurd h (by exact_mod_cast h2J.ne')
+    · exact hswpos h
+  -- shift pigeonhole at the dominant scale
+  obtain ⟨β, hβ, hshift⟩ :=
+    exists_shift_ge (B := 2 ^ (J - j)) (pow_pos (by norm_num) _) (2 ^ j) (fun k => L k j)
+  have hpow : 2 ^ (J - j) * 2 ^ j = 2 ^ J := by rw [← pow_add, Nat.sub_add_cancel hjJ]
+  rw [hpow] at hshift
+  refine ⟨j, hjJ, β, hβ, ?_⟩
+  have hB0 : ((2 ^ (J - j) : ℕ) : ℝ≥0∞) ≠ 0 := by exact_mod_cast (pow_pos (by norm_num) (J - j)).ne'
+  have hBtop : ((2 ^ (J - j) : ℕ) : ℝ≥0∞) ≠ ⊤ := ENNReal.natCast_ne_top _
+  have hcast : ((2 ^ J : ℕ) : ℝ≥0∞) = ((2 ^ (J - j) : ℕ) : ℝ≥0∞) * ((2 ^ j : ℕ) : ℝ≥0∞) := by
+    rw [← Nat.cast_mul, hpow]
+  refine (ENNReal.mul_le_mul_left hB0 hBtop).mp ?_
+  calc ((2 ^ (J - j) : ℕ) : ℝ≥0∞) * (((2 ^ j : ℕ) : ℝ≥0∞) * scaleWeight j)
+      = ((2 ^ J : ℕ) : ℝ≥0∞) * scaleWeight j := by rw [hcast]; ring
+    _ ≤ ∑ k ∈ range (2 ^ J), L k j := hj
+    _ ≤ ((2 ^ (J - j) : ℕ) : ℝ≥0∞) * ∑ i ∈ range (2 ^ j), L (β + 2 ^ (J - j) * i) j := hshift
+
 end LeanFormalizations.Kakeya2D
