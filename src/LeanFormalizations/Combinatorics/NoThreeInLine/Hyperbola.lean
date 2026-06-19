@@ -120,6 +120,104 @@ theorem hyperbola_noThreeCollinear {p k : ℕ} (hp : p.Prime) (hk : ¬ (p ∣ k)
     rw [Nat.mod_eq_of_lt hc, Nat.mod_eq_of_lt ha] at hca
     rw [hca]
 
+/-! ## Reduction toolkit for the lifted construction (the covering count)
+
+The HJSW construction places its `3(p−1)` points in the `2p × 2p` grid as **lifts** of the
+`p × p` modular hyperbola: each base point `(a, ā)` (with `a·ā ≡ k`) has four lifts
+`(a + εp, ā + δp)`, `ε, δ ∈ {0,1}`. The lemmas below isolate the *geometric* content of
+"no three of the chosen lifts are collinear" so that the only remaining obligation is the
+*combinatorial* choice of which lifts to keep.
+
+The key reduction (`hyperbola_lift_collinear_share_residue`): **any** three real-collinear grid
+points whose residues lie on one modular hyperbola must have two points sharing the same residue
+mod `p` — i.e. being two lifts of the *same* base point. (Proof: reduce the integer collinearity
+determinant mod `p`; the mod-`p` Vandermonde core `hyperbola_collinear_zmod` then forces two
+residues to coincide.) Combined with `coord_diff_of_residue_eq` (two same-residue grid points in
+`[0,2p)` differ by `0` or `±p` in each coordinate), this shows the only possible collinear triples
+are "two lifts of one base point + one lift of another, on a line of slope `0, ∞, +1` or `−1`" —
+exactly the slope-`±1` obstruction recorded in `PLAN.md`. The covering count is then the purely
+combinatorial task of choosing lifts so no such slope-`±1` line carries three chosen points. -/
+
+/-- **Mod-`p` Vandermonde core.** Three points of the modular hyperbola `x·y = k` over the field
+`ZMod p` (`k ≠ 0`) whose `2×2` collinearity determinant vanishes must have two coordinates fully
+coincide. This is the field-theoretic heart shared by the arc lemma and the lift reduction:
+`k·(x₁−x₂)(x₂−x₃)(x₃−x₁) = x₁x₂x₃·D` with `D` the determinant, so `D = 0` and `k, xᵢ ≠ 0` force
+two of the `xᵢ` equal; the hyperbola relation then equates the matching `yᵢ`. -/
+theorem hyperbola_collinear_zmod {p : ℕ} [Fact p.Prime] {k : ZMod p} (hk : k ≠ 0)
+    {x₁ y₁ x₂ y₂ x₃ y₃ : ZMod p}
+    (h1 : x₁ * y₁ = k) (h2 : x₂ * y₂ = k) (h3 : x₃ * y₃ = k)
+    (hdet : (x₂ - x₁) * (y₃ - y₁) - (x₃ - x₁) * (y₂ - y₁) = 0) :
+    (x₁ = x₂ ∧ y₁ = y₂) ∨ (x₁ = x₃ ∧ y₁ = y₃) ∨ (x₂ = x₃ ∧ y₂ = y₃) := by
+  have hx1 : x₁ ≠ 0 := fun h => hk (by rw [← h1, h, zero_mul])
+  have hx2 : x₂ ≠ 0 := fun h => hk (by rw [← h2, h, zero_mul])
+  have hprod : k * ((x₁ - x₂) * (x₂ - x₃) * (x₃ - x₁)) = 0 := by
+    have identity : k * ((x₁ - x₂) * (x₂ - x₃) * (x₃ - x₁))
+        = x₁ * x₂ * x₃ * ((x₂ - x₁) * (y₃ - y₁) - (x₃ - x₁) * (y₂ - y₁)) := by
+      linear_combination (-(x₂ * x₃ * (x₃ - x₂))) * h1 + (-(x₁ * x₃ * (x₁ - x₃))) * h2
+        + (-(x₁ * x₂ * (x₂ - x₁))) * h3
+    rw [identity, hdet, mul_zero]
+  have hprod' : (x₁ - x₂) * (x₂ - x₃) * (x₃ - x₁) = 0 := by
+    rcases mul_eq_zero.mp hprod with h | h
+    · exact absurd h hk
+    · exact h
+  rcases mul_eq_zero.mp hprod' with hxy | h31
+  · rcases mul_eq_zero.mp hxy with h12 | h23
+    · refine Or.inl ⟨sub_eq_zero.mp h12, mul_left_cancel₀ hx1 ?_⟩
+      rw [h1, sub_eq_zero.mp h12, h2]
+    · refine Or.inr (Or.inr ⟨sub_eq_zero.mp h23, mul_left_cancel₀ hx2 ?_⟩)
+      rw [h2, sub_eq_zero.mp h23, h3]
+  · refine Or.inr (Or.inl ⟨(sub_eq_zero.mp h31).symm, mul_left_cancel₀ hx1 ?_⟩)
+    rw [h1, ← (sub_eq_zero.mp h31), h3]
+
+/-- **Lift reduction (the covering-count lever).** If three grid points `P, Q, R` whose residues
+mod `p` all lie on the modular hyperbola `x·y ≡ k (mod p)` (`k ≢ 0`) are collinear over `ℝ`, then
+two of them share the *same residue* mod `p` — i.e. are two lifts of one base hyperbola point.
+
+This is the hyperbola twin of `hyperbola_noThreeCollinear` extended to the full `2p × 2p` lift
+problem: collinearity between points on *different* lifted arcs (distinct residues) is impossible,
+so the only collinear triples that survive are pairs of lifts of a single base point together with
+a third point — reducing no-three-in-line to a finite slope-`±1` combinatorial condition. -/
+theorem hyperbola_lift_collinear_share_residue {p k : ℕ} (hp : p.Prime) (hk : ¬ p ∣ k)
+    {P Q R : ℕ × ℕ}
+    (hP : (P.1 : ZMod p) * (P.2 : ZMod p) = (k : ZMod p))
+    (hQ : (Q.1 : ZMod p) * (Q.2 : ZMod p) = (k : ZMod p))
+    (hR : (R.1 : ZMod p) * (R.2 : ZMod p) = (k : ZMod p))
+    (hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ))) :
+    ((P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p)) ∨
+    ((P.1 : ZMod p) = (R.1 : ZMod p) ∧ (P.2 : ZMod p) = (R.2 : ZMod p)) ∨
+    ((Q.1 : ZMod p) = (R.1 : ZMod p) ∧ (Q.2 : ZMod p) = (R.2 : ZMod p)) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  have hdet := collinear_imp_det3_zero hcol
+  simp only [toReal, det3] at hdet
+  have hZ : ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) - ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) = 0 := by
+    exact_mod_cast hdet
+  have hcast : ((Q.1 : ZMod p) - P.1) * ((R.2 : ZMod p) - P.2)
+      - ((R.1 : ZMod p) - P.1) * ((Q.2 : ZMod p) - P.2) = 0 := by
+    have h := congrArg (Int.cast : ℤ → ZMod p) hZ
+    push_cast at h
+    linear_combination h
+  have hkk : (k : ZMod p) ≠ 0 := by rw [Ne, ZMod.natCast_eq_zero_iff]; exact hk
+  exact hyperbola_collinear_zmod hkk hP hQ hR hcast
+
+/-- Two grid coordinates in `[0, 2p)` that are congruent mod `p` differ by `0` or exactly `p`.
+(The lift structure: a residue `r ∈ [0, p)` has the two lifts `r` and `r + p` inside `[0, 2p)`.)
+Together with `hyperbola_lift_collinear_share_residue` this pins every collinear triple of lifts to
+two lifts of one base point — whose connecting line has slope `0, ∞, +1`, or `−1`. -/
+theorem coord_diff_of_residue_eq {p a b : ℕ} (ha : a < 2 * p) (hb : b < 2 * p)
+    (h : a % p = b % p) : a = b ∨ a = b + p ∨ b = a + p := by
+  rcases Nat.lt_or_ge a p with ha1 | ha1 <;> rcases Nat.lt_or_ge b p with hb1 | hb1
+  · rw [Nat.mod_eq_of_lt ha1, Nat.mod_eq_of_lt hb1] at h; exact Or.inl h
+  · rw [Nat.mod_eq_of_lt ha1] at h
+    have hb2 : b % p = b - p := by rw [Nat.mod_eq_sub_mod hb1, Nat.mod_eq_of_lt (by omega)]
+    rw [hb2] at h; exact Or.inr (Or.inr (by omega))
+  · rw [Nat.mod_eq_of_lt hb1] at h
+    have ha2 : a % p = a - p := by rw [Nat.mod_eq_sub_mod ha1, Nat.mod_eq_of_lt (by omega)]
+    rw [ha2] at h; exact Or.inr (Or.inl (by omega))
+  · have ha2 : a % p = a - p := by rw [Nat.mod_eq_sub_mod ha1, Nat.mod_eq_of_lt (by omega)]
+    have hb2 : b % p = b - p := by rw [Nat.mod_eq_sub_mod hb1, Nat.mod_eq_of_lt (by omega)]
+    rw [ha2, hb2] at h; exact Or.inl (by omega)
+
 /-- **HJSW lower bound (TARGET — not yet proven).** For prime `p`, the `2p × 2p` grid admits
 `3(p−1)` points with no three collinear — the hyperbola `x·y ≡ k (mod p)` construction, i.e. the
 `3(n−2)/2` count with `n = 2p` (since `3(2p−2)/2 = 3(p−1)`).
