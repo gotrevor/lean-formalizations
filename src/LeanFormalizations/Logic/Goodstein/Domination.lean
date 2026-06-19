@@ -267,6 +267,49 @@ theorem le_goodsteinLength (m : ℕ) : m ≤ goodsteinLength m := by
   have hge := goodsteinSeq_ge_sub m k
   omega
 
+/-! ### The domination headline, reduced to the single index sub-fact (ii)
+
+The full chain of the growth headline — `fastGrowing o m ≤ goodsteinLength m + 2` — is here
+assembled and machine-checked, modulo exactly one deep input: that after `m` Goodstein steps the
+descent notation `seqONote m m` still exceeds `ω^o = oadd o 1 0` (sub-fact (ii), the
+"ordinal-stays-high" / super-exponential term bound). Everything else is banked:
+
+* the Cichoń telescope `hardy_seqONote_telescope` at `j = m` (valid by the linear length bound
+  `le_goodsteinLength`, sub-fact (i)) plus `hardy_seqONote_zero`, giving
+  `goodsteinLength m + 2 = H_{seqONote m m}(m+2)`;
+* the **budget-valid** index step `hardy_le_of_lt` (the norm budget `m+2 ≥ norm (oadd o 1 0)` now
+  holds — this is why we evaluate at the high-budget step `m+2`, not at the fixed argument `2`);
+* the Hardy↔fast-growing bridge `fastGrowing_le_hardy_pow` at matching argument `m+2`;
+* argument-monotonicity `fastGrowing_monotone` to descend `m+2 ↦ m`.
+
+This isolates the remaining mathematical content to `hidx` alone. -/
+
+/-- **Domination, reduced to the index sub-fact (ii).** Given that the Goodstein descent stays
+above `ω^o` for at least `m` steps (`hidx : oadd o 1 0 < seqONote m m`) and the budget is met
+(`norm o ≤ m`), the Goodstein length dominates the fast-growing level `o` at the diagonal:
+`fastGrowing o m ≤ goodsteinLength m + 2`. The whole Cichoń assembly is machine-checked here;
+the only open input is `hidx`. -/
+theorem goodstein_dominates_of_index {o : ONote} (ho : o.NF) {m : ℕ}
+    (hnorm : norm o ≤ m) (hidx : oadd o 1 0 < seqONote m m) :
+    fastGrowing o m ≤ goodsteinLength m + 2 := by
+  have hNFidx : (oadd o 1 0).NF := NF.oadd ho 1 NFBelow.zero
+  have hNFseq : (seqONote m m).NF := seqONote_NF m m
+  have hbudget : norm (oadd o 1 0) ≤ m + 2 := by
+    rw [norm_oadd, norm_zero]; simp only [PNat.one_coe]; omega
+  -- index step at the high-budget argument `m+2`
+  have hindex : hardy (oadd o 1 0) (m + 2) ≤ hardy (seqONote m m) (m + 2) :=
+    hardy_le_of_lt hNFidx hNFseq hidx hbudget
+  -- telescope: the Hardy value is invariant; at `j = m` it equals `goodsteinLength m + 2`
+  have htel : hardy (seqONote m 0) 2 = hardy (seqONote m m) (m + 2) :=
+    hardy_seqONote_telescope m m (le_goodsteinLength m)
+  have hz : hardy (seqONote m 0) 2 = goodsteinLength m + 2 := hardy_seqONote_zero m
+  calc fastGrowing o m
+      ≤ fastGrowing o (m + 2) := fastGrowing_monotone o (by omega)
+    _ ≤ hardy (oadd o 1 0) (m + 2) := fastGrowing_le_hardy_pow o ho (m + 2)
+    _ ≤ hardy (seqONote m m) (m + 2) := hindex
+    _ = hardy (seqONote m 0) 2 := htel.symm
+    _ = goodsteinLength m + 2 := hz
+
 /-! ### Anti-vacuity anchors (off any headline axiom path). -/
 
 example : hardy (oadd 1 2 (oadd 0 3 0)) 4 = hardy (oadd 1 2 0) (hardy (oadd 0 3 0) 4) := by
