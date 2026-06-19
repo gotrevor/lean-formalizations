@@ -500,7 +500,7 @@ theorem pinwheel_diagonal_false {p k : ℕ} (hp : p.Prime) (hodd : Odd p) (hk : 
                 have hc' := congrArg (Nat.cast : ℕ → ZMod p) hline
                 push_cast [ZMod.natCast_self] at hc'
                 rw [hRx, hRy] at hc'
-                first | linear_combination hc' | linear_combination -hc'
+                linear_combination hc'
               obtain ⟨hcb, hbca⟩ :=
                 hyperbola_slope_one_reflection hk hane hrelA hrelC hmod hcaZ
               have hcb' : c = p - hyperbolaY p k a := by
@@ -548,7 +548,7 @@ theorem pinwheel_diagonal_false {p k : ℕ} (hp : p.Prime) (hodd : Odd p) (hk : 
                 have hc' := congrArg (Nat.cast : ℕ → ZMod p) hline
                 push_cast [ZMod.natCast_self] at hc'
                 rw [hRx, hRy] at hc'
-                first | linear_combination hc' | linear_combination -hc'
+                linear_combination hc'
               obtain ⟨hcb, hbca⟩ :=
                 hyperbola_slope_neg_one_reflection hk hane hrelA hrelC hmod.symm hcaZ
               have hcb' : c = hyperbolaY p k a := by
