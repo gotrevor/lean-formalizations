@@ -55,9 +55,20 @@ Execute in this order:
 2. **(lowest effort, preferred)** Treat `weakPNT` as wait-and-cite: periodically check whether mathlib has
    landed Wiener–Ikehara / `ψ∼x` (grep the pin for `WienerIkehara`, a `Chebyshev.psi` asymptotic). When it
    does, replace `axiom weakPNT` with the mathlib citation → flagship becomes axiom-clean for free.
-3. **(genuine 🟠, multi-lap, only if 1–2 both dead-end and a real bite is wanted)** Port the Wiener–Ikehara
+3. **(bounded multi-lap port, only if 1–2 both dead-end and a real bite is wanted)** Port the Wiener–Ikehara
    tower from PNTAnd (Apache-2.0, license-clean to port; do NOT submit upstream per `[[feedback_no_pnt_plus_submission]]`).
-   First produce a decl-by-decl burn-down: `Wiener.lean`'s top theorem cone vs. what v4.29.1 already supplies.
+   **Sizing (measured this lap — it is BOUNDED, not from-scratch):** ALL heavy mathlib analytic prereqs are
+   ALREADY in our v4.29.1 pin (`Fourier/RiemannLebesgueLemma`, `Normed/Group/Tannery`, `SumIntegralComparisons`,
+   `EMetricSpace/BoundedVariation`, `Analysis/Convolution`, `Chebyshev`, `LSeries/PrimesInAP`), AND the
+   arithmetic crux ζ≠0-on-`Re=1` (`riemannZeta_ne_zero_of_one_le_re`). So the port surface is just PNTAnd's
+   OWN code across a **one-patch** mathlib gap (their lean v4.29.0 → ours v4.29.1):
+   `Wiener.lean` (4118 lines, the tauberian bulk) + the `WeakPNT''/WeakPNT'` slice of `Consequences.lean`
+   (~200 of its 2545) + `Fourier.lean` (70) + `SmoothExistence.lean` (107) + part of `Defs.lean` (305) + the
+   needed Mathlib patches (`Asymptotics/Uniformly` 164, `Asymptotics/Asymptotics` 41, `Chebyshev` 303,
+   `Log/Basic` 17 ≈ 525 lines; the Sieve/* patches are NOT in the WeakPNT cone — exclude). Strip the
+   `@[blueprint ...]` attrs + `import Architect`. Total ≈ **5000 lines, mostly mechanical**, risk = v4.29.0→v4.29.1
+   API drift (likely small — one patch). A real multi-lap project but tractable; do it only if mathlib stalls
+   on landing Wiener–Ikehara natively.
 4. **(fallback grind, low value)** If a green-producing lap is wanted and 1–3 stall: `nagura_prime` →
    unconditional `6/5 → 5/4`. Modest, hard (elementary ceiling). Documented; don't fixate.
 
