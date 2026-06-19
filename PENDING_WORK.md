@@ -25,8 +25,15 @@ headline is a drop-in for their `kakeya_2d := sorry`.
    anti-triviality anchor that, with `isKakeya_closedBall`, pins `IsKakeya` from both sides and guards
    the dangerous `∀`→`∃` mis-statement. Fixed stale docstrings referencing the deleted theorem.
 
-**Result:** `lake build` green (8299 jobs); `src/` has **0 `sorry`s, 0 axiom declarations**;
+**Result:** `lake build` green; `src/` has **0 `sorry`s, 0 axiom declarations**;
 `davies_kakeya_2d` axioms **unchanged**. The Kakeya2D lane is at a complete, clean terminus.
+
+**Follow-on (same lap, commit `b7832f8`) — small-dimensional cases proved.** Added
+`Kakeya2D/SmallCases.lean`: `kakeya_0d : KakeyaSetConjectureDim 0`, `kakeya_1d : KakeyaSetConjectureDim 1`,
+and the dimension-agnostic lower bound `one_le_dimH_of_isKakeya` (a Kakeya set in `ℝⁿ`, `n≥1`, has
+`dimH ≥ 1` — its unit segment is the isometric image of `[0,1]`, `Isometry.dimH_image` +
+`Real.dimH_of_mem_nhds`). All axiom-clean. **`KakeyaSetConjectureDim` is now machine-checked for
+`n = 0, 1, 2`** (`n = 3` = Wang–Zahl 2025 remains open). Full build green (8300 jobs).
 
 **Remaining (all OPTIONAL, none gating the headline):** (a) the genuine but **moot** mathlib gap of an
 *independent* von Neumann/Jankov measurable-selection theorem to discharge the abstract `jvn` hypothesis

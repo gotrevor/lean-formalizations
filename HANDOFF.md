@@ -22,6 +22,8 @@ kernel-checked guard `Engine.kakeya_subresolution_content_is_unsound` (refuting 
 **quarantined** the out-of-lane FastGrowing WIP `sorry` to `wip/` (preserved, out of build target). Added
 the discriminating anchor `not_isKakeya_xAxis`. `#print axioms davies_kakeya_2d` UNCHANGED. Remaining
 holes in `src/`: **none**. (Prior lap had found `kakeya_subresolution_content` UNSOUND and removed it.)
+Also proved the small-dimensional cases `kakeya_0d`, `kakeya_1d` (`Kakeya2D/SmallCases.lean`, axiom-clean)
+— `KakeyaSetConjectureDim` is now machine-checked for `n = 0, 1, 2`.
 
 ## Invariants
 - Defs (`IsKakeya`, `KakeyaSetConjectureDim`) are the frozen audit surface — do not edit.
