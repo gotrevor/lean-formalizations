@@ -27,4 +27,5 @@ import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Sobolev
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Fourier
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.SmoothExistence
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Wiener
-import LeanFormalizations.NumberTheory.PrimeNumberTheorem.WeakPNT
+import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Defs
+import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Consequences
