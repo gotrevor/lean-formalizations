@@ -557,3 +557,24 @@ measure theory, so isolate the *combinatorial* skeleton and supply the measure b
 Do NOT feed redundant cross-confirms (the spine + glue + negligibility lemmas are proven locally;
 re-submitting them adds zero assurance — see the charter).
 The old Curtis Lemma-1 job (`80d9166c`) is OBSOLETE.
+
+## 🎯 OPEN AXIOM INVENTORY — 2026-06-19 (post Kakeya-agnostic rewire)
+
+Kakeya lane has exactly ONE open item on the headline path (the FastGrowing `sorry` is out of lane).
+
+**`kakeya_borel_selection`** (`Kakeya2D/Selection.lean`) — the von Neumann / Jankov–von Neumann
+measurable selection: a Borel `G ⊆ ℝ×Plane` with non-empty sections over `[0,1]` has an `AEMeasurable`
+selector. Kakeya-agnostic; all Kakeya geometry/measurability already proven. Three attack paths:
+
+1. **Transcribe von Neumann selection from mathlib's `AnalyticSet` API.** Step (a) proj-is-analytic
+   DONE (`analyticSet_proj_and_Icc_subset`). Remaining: the Souslin-scheme / "von Neumann derivative"
+   selector. Prereq not in mathlib = analytic sets are universally measurable (Choquet capacitability).
+   Highest-fidelity but heaviest; gated on a clean source (ON-LINE-REQUEST UPDATE 6 ask 1/2).
+2. **Lighter closed/σ-compact-section selection (KRN-style).** Our sections `{p : 1 ≤ φ(θ,p)}` come
+   from an Fσ target `F = ⋃ closed Uₙ`. Investigate whether they (or a reduction) are closed/σ-compact,
+   where a `closest-point`/`argmin` selection is elementarily measurable — sidestepping full von
+   Neumann. (ON-LINE-REQUEST UPDATE 6 ask 3.) Risk: sections likely NOT closed (φ not u.s.c.).
+3. **Port an existing formalization** (Lean/Isabelle/Coq measurable-selection / KRN / analytic-set
+   universal measurability), or a mathlib PR if one is open. (ON-LINE-REQUEST UPDATE 6 ask 2.)
+
+Reference-gated: check for `ON-LINE-FINDINGS-*` answering UPDATE 6 at lap start before re-deriving.
