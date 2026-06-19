@@ -10,7 +10,7 @@ the entire trust surface for the project — audit these three, ignore the engin
 For a base `b ≥ 2`, the *hereditary base-`b`* representation of `n` writes `n` in
 base `b`, then rewrites every exponent in base `b`, recursively, until every
 number appearing (other than `b` itself) is `< b`. Example in base 2:
-`266 = 2^(2^2 + 1) + 2^(2 + 1) + 2`.
+`266 = 2^(2^(2+1)) + 2^(2+1) + 2` (that is, `2^8 + 2^3 + 2 = 256 + 8 + 2`).
 
 The **bump** operation `bump b n` reads `n` in hereditary base `b` and replaces
 every occurrence of the base `b` by `b + 1` (exponents bumped recursively, digits
