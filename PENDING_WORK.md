@@ -19,6 +19,52 @@ every direction ⊆ Sδ); explicit trig net `dir θ=(cos θ,sin θ)` with `norm_
 (Cauchy–Schwarz via Hölder p=q=2), `volume_thickening_mul_ge` (`(N·2δ)² ≤ vol(Sδ)·denom`), and the
 capstone **`volume_thickening_log_ge`: `1 ≤ vol(Sδ)·12π(1+log(1/δ))`** for `δ≤1/2`. All axiom-clean.
 
+### A0″. ⭐ MILESTONE (2026-06-19, Case-A discharge lap): opaque dominant-scale axiom GONE; Case B isolated.
+
+**Committed, `lake build` green (8297 jobs), `#print axioms` verified:** `davies_kakeya_2d` now =
+`[propext, Classical.choice, Quot.sound, kakeya_subresolution_content]` (NO `sorryAx`). The former
+monolithic `kakeya_dominant_scale_count` is **deleted**. The headline `kakeya_hausdorffContentBound`
+is a real proof from the proven bricks; the lone axiom is the strictly-narrower **Case B** residual.
+
+**What got proven this lap (the whole dominant-scale orchestration — the historic blocker):**
+- `NetThinning.dyadicIdx` + `dyadicIdx_window` — the dyadic length window `2⁻⁽ʲ⁺¹⁾ < ρ ≤ 2⁻ʲ`.
+- `NetThinning.caseA_content` — base-angle, finite-fiber content brick (Córdoba count + `content_ratio_lower`
+  constant + numerator ⟹ `D⁻¹·cR ≤ ∑'ₙ ediam(Uₙ)^d`).
+- `Engine.kakeya_hausdorffContentBound` — full assembly: closed-piece reduction (`Metric.ediam_closure`)
+  → per-direction measurable pullbacks (`exists_measurable_pullback_cover`) → capped dyadic scale fn
+  `g = min(dyadicIdx, J)` → per-scale union length `L` → `exists_dominant_shift` (shifted `2ʲ`-subnet,
+  base angle `c = β·2⁻ᴶ`) → numerator `1/((j+1)(j+2)) ≤ ∑ 2·2⁻ʲ·vol A` → **Case A** (`j<J`: genuine
+  scale-`j` window, finite/infinite-fiber split — infinite ⟹ `tsum=⊤`) via `caseA_content`; **Case B**
+  (`j=J`) cites `kakeya_subresolution_content`. This is the SHIFTED (faithful) form; the former
+  unshifted axiom (possibly adversarially false) is discarded — the faithfulness finding is resolved.
+
+**THE remaining crux = `kakeya_subresolution_content` (Case B, the Hausdorff-vs-box gap).** Cover
+dominated by pieces FINER than the net resolution `2⁻ᴶ`; the scale-`J` fiber is not a single scale, so
+`cover_content_per_scale` (needs the `ediam ≥ 2⁻⁽ʲ⁺¹⁾` lower bound) does not apply.
+
+**Sharp obstruction worked out this lap (recorded in `ON-LINE-REQUEST.md` UPDATE 4):** the multi-scale
+Córdoba `L²` sum with the *fixed* `2ᴶ`-net **provably diverges to 0 for `d>1`** (the relevant range):
+the min of `∑_{j≥J} S_j² 2^{j(1-d)}` s.t. `∑_{j≥J} S_j ≥ 2ᴶ⁻¹` is `(2ᴶ⁻¹)²/∑_{j≥J}2^{j(d-1)} = 0` since
+`∑_{j≥J}2^{j(d-1)} = ∞` for `d>1`. The coarse net's count `M_j ≳ S_j²2^{j-J}/poly` is too weak at fine
+scales. So a single fixed net cannot close `d>1`; the right count at sub-scale `j` needs the **`2ʲ`-net**
+(`M_j ≳ S_j(j)²/poly(j)`), but each scale then uses a different net — no single cross-scale sum is
+obviously bounded below. Case B is exactly "no single dominant scale — mass at unboundedly fine scales".
+
+**THREE attack paths for Case B (next lap):**
+1. **Contradiction via piece-count bound.** Assume `Σ = ∑ediam^d < c`. Then `M_j ≤ Σ·2^{jd}` (bounds
+   #fine pieces per scale). Feed this into the per-scale Córdoba *upper* bound on `S_j` and sum; show
+   the total coverable length `< 2ᴶ` (required), contradiction. (This WORKS for `d<1` — I verified the
+   arithmetic — but the headline needs `d→2`, so `d<1` alone doesn't reduce the essential dependency;
+   the `d>1` version needs the right-resolution per-scale count.) Reference-gated: need the exact
+   inequality for `d>1` (UPDATE 4 ask 1).
+2. **Davies' 1971 projection/duality** — may sidestep the multi-scale Córdoba entirely and be more
+   formalization-tractable. Reference-gated (UPDATE 4 ask 2; first request point 2 — re-asked urgently).
+3. **Uncap the scale function** so Case A handles ANY genuine dominant scale `j ≤ J` (currently the
+   `min(·,J)` cap conflates all sub-`2⁻ᴶ` pieces into bucket `J`, spuriously triggering Case B even
+   when a genuine coarse dominant scale exists). Needs an `exists_dominant_shift` variant that EITHER
+   finds a genuine `j ≤ J` (Case A) OR certifies scales `> J` carry ≥ half the aggregate (true Case B,
+   `j₀ > J`). Tightens which covers hit the axiom; does NOT eliminate it (genuinely-fine covers remain).
+
 ### A0′. ⭐ BREAKTHROUGH (2026-06-19, retention lap): the net-thinning combinatorics is PROVEN + a faithfulness fix identified.
 
 **Three new `#print axioms`-clean bricks (`NetThinning.lean`), the literal "retention" gap from A0:**

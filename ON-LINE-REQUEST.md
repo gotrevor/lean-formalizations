@@ -180,3 +180,52 @@ The exact handling of Case B (covered overwhelmingly by sub-resolution pieces) w
 
 Both asks are about the SAME final gap; either unblocks the discharge. The retention combinatorics
 itself is done and needs nothing further.
+
+---
+
+## UPDATE 4 (2026-06-19, Case-A discharged lap) — the obstruction is now ISOLATED + sharpened
+
+**Progress this lap (committed, `lake build` green, `#print axioms` verified):** the former
+monolithic dominant-scale axiom `kakeya_dominant_scale_count` is **GONE**. `davies_kakeya_2d` now
+reduces to `[propext, Classical.choice, Quot.sound, kakeya_subresolution_content]` — the new axiom is
+the strictly-narrower **Case B residual**. The entire dominant-scale orchestration (fine net ⟶
+`exists_dominant_shift` shift-pigeonhole ⟶ base-angle `cover_content_per_scale`) is now a machine-checked
+proof for **Case A** (dominant dyadic scale `j < J`, the net resolution), including the finite/infinite
+scale-`j`-fiber split. Only **Case B** (`j = J`: the cover dominated by pieces FINER than `2⁻ᴶ`) is
+axiomatized.
+
+**Sharpened obstruction (worked out this lap — please confirm/correct against the literature).**
+I tried to close Case B by the multi-scale Córdoba `L²` sum with the *fixed* `2ᴶ`-net and found it
+**provably diverges to 0 for `d > 1`** (the range that matters for `dim = 2`):
+
+- Per sub-scale `j ≥ J`, the fixed `2ᴶ`-net Córdoba count gives `S_j² ≤ M_j · poly(J) · 2⁻ʲ · 2ᴶ`
+  (`S_j` = aggregate scale-`j` covered length over the `2ᴶ` net, `M_j` = #scale-`j` pieces). Hence the
+  content `Σ = ∑_j M_j 2⁻ʲᵈ ≥ (2⁻ᴶ/poly(J))·∑_{j≥J} S_j² 2^{j(1-d)}`.
+- Minimizing `∑_{j≥J} S_j² 2^{j(1-d)}` s.t. `∑_{j≥J} S_j ≥ 2ᴶ⁻¹` (Case B: most length sub-resolution)
+  gives min `= (2ᴶ⁻¹)² / ∑_{j≥J} 2^{j(d-1)}`. For `d>1` the denominator `∑_{j≥J} 2^{j(d-1)} = ∞`, so
+  the bound is **0**. The adversary spreads covered length over unboundedly-fine scales; the coarse
+  `2ᴶ`-net's count is too weak at fine scales (`M_j ≳ S_j² 2^{j-J}/poly`, the `2^{j-J}` doesn't pay).
+
+So the single-fixed-net approach **cannot** close `d>1`. The correct count at sub-scale `j` needs the
+**`2ʲ`-net (right resolution)** — `M_j ≳ S_j(j)²/poly(j)` — but then each scale uses a *different* net
+and there is no obvious way to lower-bound a single cross-scale sum. (The shift-average solves exactly
+ONE scale at its own resolution; Case B is precisely "no single scale dominates — mass at unboundedly
+fine scales".)
+
+**What I need (any one closes Case B / `kakeya_subresolution_content`):**
+1. **The exact multi-scale combination** the rigorous Córdoba/Davies/Wolff proof uses to avoid the
+   `d>1` divergence above — does it (a) use per-scale right-resolution nets with a specific
+   convexity/Hölder that I'm missing, (b) argue by contradiction from `Σ < ∞ ⟹ M_j ≤ Σ·2^{jd}`
+   (bounding the *number* of fine pieces) and derive a covering contradiction, or (c) reduce to a
+   single scale via a Borel/compact reduction + dyadic maximal cubes? I want the precise inequality
+   chain at transcription detail.
+2. **Davies' original 1971 projection/duality proof** — does it sidestep the multi-scale Córdoba sum
+   entirely (and is it more formalization-tractable)? A clean statement of its key steps. (Re-asking
+   point 2 of the very first request with more urgency: this may be the path of least resistance.)
+3. Any existing **Lean/Isabelle/Coq** formalization of a Kakeya Hausdorff lower bound to port.
+
+Faithful Lean statement of the current residual (so a port drops in) — `kakeya_subresolution_content`
+in `Kakeya2D/Engine.lean`: given `N = 2ᴶ` directions (base pts `a k`, measurable covered sets
+`A k ⊆ [0,1]`, base angle `c`), a set `s` of cover pieces all with `ediam ≤ 2⁻ᴶ`, the containment
+`(u ↦ a k + u·dir(c+k·2⁻ᴶ)) '' A k ⊆ ⋃_{n∈s} U_n`, and the numerator
+`1/((J+1)(J+2)) ≤ ∑_{k<2ᴶ} 2·2⁻ᴶ·vol(A k)`, conclude `D⁻¹·cR ≤ ∑'_n ediam(U_n)^d` (`D = vol(unit disc)`).
