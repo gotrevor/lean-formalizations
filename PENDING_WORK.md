@@ -1,5 +1,45 @@
 # PENDING_WORK — lean-formalizations
 
+## 🔨 2026-06-19 (jvn LAP) — von Neumann selection: decomposed + glue PROVEN, hole isolated
+
+Attacked the one genuinely-mathematical open target: discharging the abstract `jvn` hypothesis of
+`Selection.kakeya_aeMeasurable_selection_of_jvn` (the independent 2nd route to the planar headline).
+New WIP file `wip/GeometricMeasureTheory/VonNeumannSelection.lean` (kept OUT of `src/` so the headline
+build stays sorry-free + axiom-clean; kernel-checked via `lake env lean <path>`).
+
+**Proven this lap (no `sorry`, kernel-checked):**
+- `analyticSet_exists_nat_nat_range` — a non-empty analytic set is literally a continuous image of Baire
+  space `ℕ→ℕ` (peeling the empty disjunct of mathlib's *definition* of `AnalyticSet`).
+- `analyticSet_image_isOpen` / `analyticSet_image_cylinder` — continuous image of an open set / Baire
+  cylinder is analytic (the sets whose μ-measurability the selector's measurability reduces to).
+- `measurableSelection_aemeasurable` — **the von Neumann/Jankov measurable-selection theorem, FULLY
+  proven from the isolated core** (the analytic-representation reduction: `MeasurableSet.analyticSet` →
+  Baire image → feed core → rewrite `range F = G`; empty-domain handled by a constant selector).
+- `jvn_of_measurableSelection` — the exact `jvn` statement, by `X=ℝ, Y=Plane, μ=volume, D=Icc 0 1`.
+  ⇒ discharging the single remaining hole makes `kakeya_aeMeasurable_selection` UNCONDITIONAL.
+
+**The single isolated hole** (`exists_aemeasurable_section_of_continuous_range`, the only `sorry`):
+a.e.-measurable section of a *continuous* `F : (ℕ→ℕ) → X×Y` over `D ⊆ Prod.fst '' range F`. Decomposes
+into (B) leftmost-branch construction [mathlib-reachable: `PiNat.cylinder`/`longestPrefix`/
+`inter_cylinder_longestPrefix_nonempty`, `exists_lipschitz_retraction_of_isClosed` is the fixed-set
+analogue] and (A) **capacitability** = analytic sets are `NullMeasurableSet μ` (Choquet via the Souslin
+operation) — the deep 🟡 core and the genuine missing mathlib theory (mathlib has `AnalyticSet` + Lusin
+separation but neither universal measurability nor a measurable selector; confirmed by grep this lap).
+
+**Wall mapped (two alternative attacks on the hole, both substantial, both missing from mathlib):**
+- (A-route) Capacitability → universal measurability → leftmost-branch measurability. General; needed
+  for the *abstract* `jvn`. Choquet capacitability is a whole missing DST/capacity theory.
+- (KRN-route, PENDING Path 1) For the *specific* Kakeya graph only: if the cover `F` were closed,
+  `coveredLength(θ,·)` is usc ⇒ sections closed ⇒ Kuratowski–Ryll-Nardzewski selection (Plane is
+  σ-compact). But the given cover is an arbitrary measurable `⋃ C n`, not closed; inner-approximating
+  `F` by closed `F'` gives coverage `≥ 1-ε` and needs a limiting argument. KRN also absent from mathlib.
+
+**Next-lap resume:** crack `exists_aemeasurable_section_of_continuous_range`. Cheapest first move = the
+leftmost-branch *construction* (membership, no measurability) on `PiNat`, then the measurability via a
+stated capacitability brick. Or formalize capacitability directly (the reusable, publishable mathlib
+contribution). When porting: move the file to `src/`, supply `jvn_of_measurableSelection` to
+`kakeya_aeMeasurable_selection_of_jvn` for an unconditional independent route.
+
 ## ✅ 2026-06-19 (ENDPOINT LAP) — `src/` is now SORRY-FREE and axiom-declaration-free
 
 Per operator directive, drove the repo to its honest endpoint. The planar-Kakeya headline
