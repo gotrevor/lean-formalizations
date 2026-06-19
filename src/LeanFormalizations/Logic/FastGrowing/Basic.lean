@@ -202,6 +202,57 @@ theorem fastGrowing_fundSeq_step_of_succ {o : ONote} {f : ℕ → ONote}
     fastGrowing (f n) (n + 1) ≤ fastGrowing (f (n + 1)) (n + 1) :=
   fastGrowing_le_succ_index (hsucc n) (Nat.succ_le_succ (Nat.zero_le n))
 
+/-- **Monotonicity propagates across a successor step.** If `o` is the notation-successor
+of `a` (`fundamentalSequence o = inl (some a)`) and `f_a` is monotone, then so is `f_o`:
+`f_o n = (f_a)^[n] n`, and iterating a monotone, `≥ id` map preserves monotonicity in the
+diagonal `n ↦ (f_a)^[n] n`. (The successor companion of `fastGrowing_le_succ_index`, at the
+level of the whole `Monotone` predicate.) -/
+theorem fastGrowing_monotone_succ {o a : ONote}
+    (h : fundamentalSequence o = Sum.inl (some a)) (ha : Monotone (fastGrowing a)) :
+    Monotone (fastGrowing o) := by
+  rw [fastGrowing_succ o h]
+  have hexp : (id : ℕ → ℕ) ≤ fastGrowing a := fun m => le_fastGrowing a m
+  intro p q hpq
+  calc (fastGrowing a)^[p] p
+      ≤ (fastGrowing a)^[p] q := ha.iterate p hpq
+    _ ≤ (fastGrowing a)^[q] q := (Function.monotone_iterate_of_id_le hexp hpq) q
+
+/-- **Monotonicity for successor-chain limits — the general engine, axiom-clean.**
+If `o` is a limit whose fundamental sequence `f` is a *successor chain*
+(`fundamentalSequence (f (k+1)) = inl (some (f k))`), then `f_o` is monotone *provided
+only the bottom level `f 0` is monotone*: monotonicity of every `f k` then follows from
+`fastGrowing_monotone_succ` along the chain, and the limit step is discharged by
+`fastGrowing_fundSeq_step_of_succ`.
+
+This is the clean companion to `fastGrowing_fundSeq_step_of_succ`: it lifts the *index
+step* to the whole `Monotone` predicate, and covers every `β + ω`-type limit (`ω`, `ω·k`,
+`β+ω`) in one stroke. The genuinely hard residue (`ω^ω`, `ω^(ω+1)`, …) — where the
+fundamental sequence is not a successor chain — remains in `fastGrowing_fundSeq_step`. -/
+theorem fastGrowing_monotone_of_succ_chain_limit {o : ONote} {f : ℕ → ONote}
+    (hlim : fundamentalSequence o = Sum.inr f)
+    (hchain : ∀ k, fundamentalSequence (f (k + 1)) = Sum.inl (some (f k)))
+    (hmono0 : Monotone (fastGrowing (f 0))) :
+    Monotone (fastGrowing o) := by
+  have hmono : ∀ k, Monotone (fastGrowing (f k)) := by
+    intro k
+    induction k with
+    | zero => exact hmono0
+    | succ k ih => exact fastGrowing_monotone_succ (hchain k) ih
+  refine monotone_nat_of_le_succ (fun n => ?_)
+  rw [fastGrowing_limit o hlim]
+  calc fastGrowing (f n) n
+      ≤ fastGrowing (f n) (n + 1) := hmono n (Nat.le_succ n)
+    _ ≤ fastGrowing (f (n + 1)) (n + 1) := fastGrowing_fundSeq_step_of_succ hlim hchain n
+
+/-- **`f_ω` is monotone, re-derived cleanly from the general engine.** `ω`'s fundamental
+sequence is the successor chain `n ↦ ofNat (n+1)`, whose bottom level `f_{ofNat 1}` is
+monotone (`fastGrowing_ofNat_monotone`). Compare `fastGrowing_monotone_omega`, which proved
+the same fact by hand; this routes through `fastGrowing_monotone_of_succ_chain_limit`. -/
+theorem fastGrowing_monotone_omega' : Monotone (fastGrowing (oadd 1 1 0)) := by
+  have hfs : fundamentalSequence (oadd 1 1 0) = Sum.inr (fun i => ofNat (i + 1)) := rfl
+  exact fastGrowing_monotone_of_succ_chain_limit hfs
+    (fun k => fundamentalSequence_ofNat_succ (k + 1)) (fastGrowing_ofNat_monotone 1)
+
 /-- **Monotonicity in the argument, successor form** `f_o(n) ≤ f_o(n+1)`.
 Well-founded recursion on `o`; the limit case is reduced to the single crux
 `fastGrowing_fundSeq_step`, everything else is `le_fastGrowing` + iterate monotonicity. -/
