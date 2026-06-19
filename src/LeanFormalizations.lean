@@ -29,3 +29,4 @@ import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Cordoba
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.CordobaL2
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Frostman
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Cover
+import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.NetThinning
