@@ -138,6 +138,113 @@ theorem fastGrowing_le_of_reaches {x : ℕ} (hx : 1 ≤ x) {β α : ONote}
   | succ hb _ ih => exact le_trans ih (fastGrowing_le_succ_index hb hx)
   | limit hb _ ih => rw [fastGrowing_limit _ hb]; exact ih
 
+/-! ### Structural Bachmann reachability — the A3 crux, fully proved
+
+The remaining difficulty in index monotonicity is now a pure statement about
+`fundamentalSequence`: the descent of `o[n+1]` (budget `n+1`) passes exactly through
+`o[n]`. We prove it by structural recursion on `o`, assembling four reusable facts:
+`reaches_zero` (every notation descends to 0), `Reaches.oadd_tail` (descend a fixed
+prefix's tail), `reaches_coeff_step'`/`reaches_coeff_chain` (drop a leading coefficient),
+and `reaches_omega_pow_lift` (lift an exponent reach through `ω^·`). -/
+
+/-- Lifting a successor tail step to `oadd a m ·`. -/
+theorem fundamentalSequence_oadd_succ {a : ONote} {m : ℕ+} {b b' : ONote}
+    (h : fundamentalSequence b = Sum.inl (some b')) :
+    fundamentalSequence (oadd a m b) = Sum.inl (some (oadd a m b')) := by
+  conv_lhs => rw [fundamentalSequence]; rw [h]
+
+/-- Lifting a limit tail step to `oadd a m ·`. -/
+theorem fundamentalSequence_oadd_limit {a : ONote} {m : ℕ+} {b : ONote} {h : ℕ → ONote}
+    (hb : fundamentalSequence b = Sum.inr h) :
+    fundamentalSequence (oadd a m b) = Sum.inr (fun i => oadd a m (h i)) := by
+  conv_lhs => rw [fundamentalSequence]; rw [hb]
+
+/-- **Descend a fixed prefix's tail.** A structural reach on the tail lifts to the whole
+`oadd a m ·`: every non-`refl` step's source has a non-`inl none` fundamental sequence, so
+it lifts via `fundamentalSequence_oadd_succ`/`fundamentalSequence_oadd_limit`. -/
+theorem Reaches.oadd_tail {x : ℕ} {a : ONote} {m : ℕ+} {δ' δ : ONote}
+    (h : Reaches x δ' δ) : Reaches x (oadd a m δ') (oadd a m δ) := by
+  induction h with
+  | refl c => exact Reaches.refl _
+  | succ hb _ ih => exact Reaches.succ (fundamentalSequence_oadd_succ hb) ih
+  | limit hb _ ih => exact Reaches.limit (fundamentalSequence_oadd_limit hb) ih
+
+/-- **Every notation descends to 0.** The fixed-budget descent terminates (well-founded
+recursion on `o`, since `fundamentalSequence` always yields a strictly smaller notation),
+and it can only terminate at `0`. -/
+theorem reaches_zero (o : ONote) (x : ℕ) : Reaches x o 0 := by
+  rcases e : fundamentalSequence o with (_ | a) | g
+  · have ho : o = 0 := by have hp := fundamentalSequence_has_prop o; rw [e] at hp; exact hp
+    rw [ho]; exact Reaches.refl 0
+  · have hlt : a < o := by
+      have hp := fundamentalSequence_has_prop o; rw [e] at hp
+      rw [lt_def, hp.1]; exact Order.lt_succ _
+    exact Reaches.succ e (reaches_zero a x)
+  · have hlt : g x < o := by
+      have hp := fundamentalSequence_has_prop o; rw [e] at hp
+      exact (hp.2.1 x).2.1
+    exact Reaches.limit e (reaches_zero (g x) x)
+termination_by o
+decreasing_by all_goals exact hlt
+
+/-- **Coefficient step** (any budget): `ω^e·(j+2)` descends exactly to `ω^e·(j+1)`. The
+descent strips one coefficient, leaving a tail that runs to `0` via `reaches_zero`. Holds
+for every exponent `e` (zero ⇒ a finite successor step; successor/limit ⇒ a limit step
+plus a tail descent). -/
+theorem reaches_coeff_step' (e : ONote) (j x : ℕ) :
+    Reaches x (oadd e (j + 1).succPNat 0) (oadd e j.succPNat 0) := by
+  rcases he : fundamentalSequence e with (_ | e') | p
+  · have h0 : e = 0 := by have hp := fundamentalSequence_has_prop e; rw [he] at hp; exact hp
+    subst h0
+    refine Reaches.succ ?_ (Reaches.refl _)
+    conv_lhs => rw [fundamentalSequence]
+    rfl
+  · have hlim : fundamentalSequence (oadd e (j + 1).succPNat 0)
+        = Sum.inr (fun i => oadd e j.succPNat (oadd e' i.succPNat 0)) := by
+      conv_lhs => rw [fundamentalSequence]
+      rw [he]; rfl
+    exact Reaches.limit hlim (Reaches.oadd_tail (reaches_zero (oadd e' x.succPNat 0) x))
+  · have hlim : fundamentalSequence (oadd e (j + 1).succPNat 0)
+        = Sum.inr (fun i => oadd e j.succPNat (oadd (p i) 1 0)) := by
+      conv_lhs => rw [fundamentalSequence]
+      rw [he]; rfl
+    exact Reaches.limit hlim (Reaches.oadd_tail (reaches_zero (oadd (p x) 1 0) x))
+
+/-- **Coefficient chain:** `ω^e·(j+1)` descends to `ω^e·1`. -/
+theorem reaches_coeff_chain (e : ONote) (j x : ℕ) :
+    Reaches x (oadd e j.succPNat 0) (oadd e (0 : ℕ).succPNat 0) := by
+  induction j with
+  | zero => exact Reaches.refl _
+  | succ j ih => exact (reaches_coeff_step' e j x).trans ih
+
+/-- Fundamental sequence of `ω^{successor exponent}`. -/
+theorem fundamentalSequence_omega_pow_succ {γ' δ : ONote}
+    (he : fundamentalSequence γ' = Sum.inl (some δ)) :
+    fundamentalSequence (oadd γ' 1 0) = Sum.inr (fun i => oadd δ i.succPNat 0) := by
+  conv_lhs => rw [fundamentalSequence]
+  rw [he]; rfl
+
+/-- Fundamental sequence of `ω^{limit exponent}`. -/
+theorem fundamentalSequence_omega_pow_limit {γ' : ONote} {q : ℕ → ONote}
+    (he : fundamentalSequence γ' = Sum.inr q) :
+    fundamentalSequence (oadd γ' 1 0) = Sum.inr (fun i => oadd (q i) 1 0) := by
+  conv_lhs => rw [fundamentalSequence]
+  rw [he]; rfl
+
+/-- **Exponent lifting.** A structural reach on exponents lifts through `ω^·`. Limit
+exponent steps lift directly (`ω^λ[i] = (ω^λ)[i]`); a successor exponent step `δ+1 → δ`
+expands into a coefficient chain `ω^δ·(x+1) → ω^δ`. This is the one place the difficulty
+of limits-of-limits is actually discharged. -/
+theorem reaches_omega_pow_lift {x : ℕ} {γ' γ : ONote}
+    (h : Reaches x γ' γ) : Reaches x (oadd γ' 1 0) (oadd γ 1 0) := by
+  induction h with
+  | refl c => exact Reaches.refl _
+  | @succ β δ α hb _ ih =>
+      refine Reaches.limit (fundamentalSequence_omega_pow_succ hb) ?_
+      exact (reaches_coeff_chain δ x x).trans ih
+  | @limit β α g hb _ ih =>
+      exact Reaches.limit (fundamentalSequence_omega_pow_limit hb) ih
+
 /-- The fundamental sequence of a successor *natural-number* notation is its
 predecessor: `(k+1)[·] = k`. (Both branches reduce to `rfl`.) -/
 theorem fundamentalSequence_ofNat_succ (k : ℕ) :
@@ -222,7 +329,39 @@ are already discharged (`fastGrowing_fundSeq_step_of_succ`, `fastGrowing_omega_s
 theorem fastGrowing_bachmann_reach {o : ONote} {f : ℕ → ONote}
     (h : fundamentalSequence o = Sum.inr f) (n : ℕ) :
     Reaches (n + 1) (f (n + 1)) (f n) := by
-  sorry
+  cases o with
+  | zero => exact (Sum.inl_ne_inr h).elim
+  | oadd a m b =>
+    rcases hb : fundamentalSequence b with (_ | b') | hbf
+    · -- b = 0 : leading-term cases
+      rcases ha : fundamentalSequence a with (_ | a') | p
+      · -- a = 0 : `oadd 0 m 0` is a successor → contradicts the limit hypothesis
+        rcases hm : m.natPred with _ | k
+        · rw [fundamentalSequence, hb, ha, hm] at h; exact (Sum.inl_ne_inr h).elim
+        · rw [fundamentalSequence, hb, ha, hm] at h; exact (Sum.inl_ne_inr h).elim
+      · -- a successor (predecessor a')
+        rcases hm : m.natPred with _ | k
+        · have hf : f = fun i => oadd a' i.succPNat 0 := by
+            rw [fundamentalSequence, hb, ha, hm] at h; exact (Sum.inr.inj h).symm
+          rw [hf]; exact reaches_coeff_step' a' n (n + 1)
+        · have hf : f = fun i => oadd a k.succPNat (oadd a' i.succPNat 0) := by
+            rw [fundamentalSequence, hb, ha, hm] at h; exact (Sum.inr.inj h).symm
+          rw [hf]; exact Reaches.oadd_tail (reaches_coeff_step' a' n (n + 1))
+      · -- a limit (fundamental sequence p) : the ω^{limit} residue, via exponent lifting
+        rcases hm : m.natPred with _ | k
+        · have hf : f = fun i => oadd (p i) 1 0 := by
+            rw [fundamentalSequence, hb, ha, hm] at h; exact (Sum.inr.inj h).symm
+          rw [hf]; exact reaches_omega_pow_lift (fastGrowing_bachmann_reach ha n)
+        · have hf : f = fun i => oadd a k.succPNat (oadd (p i) 1 0) := by
+            rw [fundamentalSequence, hb, ha, hm] at h; exact (Sum.inr.inj h).symm
+          rw [hf]
+          exact Reaches.oadd_tail (reaches_omega_pow_lift (fastGrowing_bachmann_reach ha n))
+    · -- b a successor ⟹ `oadd a m b` is a successor → contradiction
+      rw [fundamentalSequence_oadd_succ hb] at h; exact (Sum.inl_ne_inr h).elim
+    · -- b a limit : descend the tail, recursing on b
+      have hf : f = fun i => oadd a m (hbf i) := by
+        rw [fundamentalSequence_oadd_limit hb] at h; exact (Sum.inr.inj h).symm
+      rw [hf]; exact Reaches.oadd_tail (fastGrowing_bachmann_reach hb n)
 
 /-- **The index-monotonicity crux (A3), limit step** — now a corollary of the structural
 Bachmann reachability via the value-transfer lemma. For a limit `o` with fundamental
