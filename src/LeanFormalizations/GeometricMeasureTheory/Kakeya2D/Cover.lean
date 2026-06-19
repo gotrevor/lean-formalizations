@@ -155,4 +155,14 @@ theorem volume_thickening_le_of_ediam_le {U : Set Plane} {ρ δ' : ℝ}
       _ = ENNReal.ofReal ((ρ + δ') ^ 2) * volume (closedBall (0 : Plane) 1) := by
           rw [hfr, add_comm δ' ρ]
 
+/-- The planar unit-disc area constant `vol(closedBall 0 1)` is positive — the Frostman constant `C`
+in the eventual content bound is built from it, so it must be `≠ 0`. -/
+theorem volume_closedBall_one_pos : 0 < volume (closedBall (0 : Plane) 1) :=
+  measure_closedBall_pos volume 0 one_pos
+
+/-- The planar unit-disc area constant is finite (a bounded set in finite dimension) — so the
+Frostman constant `C` built from it is `≠ ⊤`. -/
+theorem volume_closedBall_one_ne_top : volume (closedBall (0 : Plane) 1) ≠ ⊤ :=
+  measure_closedBall_lt_top.ne
+
 end LeanFormalizations.Kakeya2D
