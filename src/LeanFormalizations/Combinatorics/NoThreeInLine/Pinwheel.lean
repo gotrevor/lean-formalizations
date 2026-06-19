@@ -650,4 +650,13 @@ theorem three_mul_pred_le_maxNoThreeInLine {p : ℕ} (hp : p.Prime) (hodd : Odd 
   obtain ⟨s, hg, h3, hc⟩ := hjsw_pinwheel_exists hp hodd
   exact le_csSup (bddAbove_grid (2 * p)) ⟨s, hc.symm, hg, h3⟩
 
+/-- **The HJSW bound, lifted to every larger grid** (the `2p×2p` pinwheel sits inside any
+`N×N` grid with `2p ≤ N`): `3(p−1) ≤ maxNoThreeInLine N` for every odd prime `p` with `2p ≤ N`.
+The `(3/2 − ε)N` density for *all* large `N` is the corollary obtained by choosing a prime
+`p ≈ N/2` — which needs prime-in-short-interval (PNT-grade) input beyond Bertrand's postulate. -/
+theorem three_mul_pred_le_maxNoThreeInLine_of_le {p N : ℕ} (hp : p.Prime) (hodd : Odd p)
+    (hN : 2 * p ≤ N) : 3 * (p - 1) ≤ maxNoThreeInLine N := by
+  obtain ⟨s, hg, h3, hc⟩ := hjsw_pinwheel_exists hp hodd
+  exact le_csSup (bddAbove_grid N) ⟨s, hc.symm, hg.mono hN, h3⟩
+
 end LeanFormalizations.NoThreeInLine
