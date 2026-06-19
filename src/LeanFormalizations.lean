@@ -20,6 +20,7 @@ import LeanFormalizations.Logic.Goodstein.Anchors
 import LeanFormalizations.Logic.Goodstein.Length
 import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Statement
+import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.FaithfulnessCheck
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.SmallCases
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Tube
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.TubeFractional
