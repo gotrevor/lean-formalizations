@@ -40,6 +40,21 @@ and the dimension-agnostic lower bound `one_le_dimH_of_isKakeya` (a Kakeya set i
 of `Selection.kakeya_aeMeasurable_selection_of_jvn` (would give a 2nd proof route; multi-lap DST,
 mathlib has only `AnalyticSet` API); (b) `kakeya_3d` (Wang–Zahl 2025), multi-year, new infra; (c) the
 quarantined `wip/` FastGrowing lemma. None are lap-sized; all are the operator's call to greenlight.
+**Do NOT add `kakeya_3d := sorry`** — it would reintroduce a `sorry` to `src/` and break the endpoint.
+
+**Three attack paths for the one genuinely-mathematical target — discharge `jvn` (independent route):**
+1. **KRN special case.** Instead of full von Neumann for arbitrary measurable `G`, prove the
+   Kuratowski–Ryll-Nardzewski selection for a *closed-valued* measurable multifunction and check whether
+   the Kakeya graph `G_ae`'s sections can be arranged closed (they are super-level sets of a usc/lsc
+   covered-length; needs the right semicontinuity). Narrower than Π¹₁; possibly mathlib-reachable.
+2. **Build the missing analytic-set measurability incrementally.** The down payment
+   `analyticSet_proj_and_Icc_subset` (projection is analytic) is done; the next prerequisite is
+   universal measurability of analytic sets (Choquet capacitability). Formalize that one lemma as a
+   standalone brick (disclosed sub-`sorry` OK in `wip/`, NOT `src/`) — real progress toward `jvn`.
+3. **Bespoke explicit selector.** Sidestep DST entirely: `argmin ‖a‖` over the closed-valued
+   `B(θ) = {a : segment(a,θ) ⊆ F}` is a measurable selection by a direct minimisation/`measurable_argmin`
+   argument when `B` is closed-valued and lower-measurable — mirrors the elementary open-cover trick but
+   for the abstract Borel target. Cheapest to attempt first; high chance it avoids full KRN/JvN.
 
 ---
 
