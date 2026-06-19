@@ -7,7 +7,10 @@ content lives in the three docs below.
 ## Read these, in order
 1. **`STATUS.md`** — the living overview (axiom ledger re-verified, what's happened). REFRESHED this lap.
 2. **`PENDING_WORK.md`** — the C₃=−γ / Limit B section has the full B0/B1/B2 decomposition + DONE markers. START HERE.
-3. **newest dated `HANDOFF-2026-06-19-*.md`** (currently `…-1639`) — the per-lap baton (outcome + next actions).
+3. **newest dated `HANDOFF-2026-06-19-*.md`** (currently `…-2030`) — the per-lap baton (outcome + next actions).
+   ⚠️ `STATUS.md` line 3 carries a `🛑 FINISH-AND-STOP` directive (Trevor): wind down to headline-only,
+   self-stop, start no new side-quests. The `…-2030` handoff explains how this lap honored it (Dirichlet
+   divisor side-quest built+verified+reverted; complete theorem preserved in git at `d356584`).
 
 ## One-line state
 **The no-three-in-line frontier is CLOSED to HJSW's optimal `3/2 − o(N)`, UNCONDITIONAL & axiom-clean**
