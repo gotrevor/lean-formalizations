@@ -1,7 +1,8 @@
 # HANDOFF — Davies / planar Kakeya (branch `kakeya-davies`)
 
-**Thin pointer.** Durable overview = `STATUS.md`. **Newest dated baton = `HANDOFF-2026-06-19-2105.md`
-— read that to resume.** Open items / lesson = `PENDING_WORK.md` (top).
+**Thin pointer.** Durable overview = `STATUS.md`. **Newest dated baton = `HANDOFF-2026-06-19-2130.md`
+(lap-end checkpoint) — read that to resume; `HANDOFF-2026-06-19-2105.md` has the detailed anatomy.**
+Open items / lesson = `PENDING_WORK.md` (top).
 
 ## State (one line)
 `lake build` 🟢 green (8300 jobs, HEAD `02aa4e3`). **ALL headlines are axiom-clean**, including the
