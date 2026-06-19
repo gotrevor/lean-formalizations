@@ -428,6 +428,40 @@ theorem shearSel_grid {p : ℕ} (hp : p.Prime) : IsGridSet (2 * p) (shearSel p) 
   · rcases hxy.1 with h | h <;> omega
   · rcases hxy.2 with h | h <;> omega
 
+/-- `shearY` lands in `[0, p)`. -/
+theorem shearY_lt {p : ℕ} [NeZero p] (x : ℕ) : shearY p x < p := ZMod.val_lt _
+
+/-- Off the pole column, the shear factor `2x+1` is a unit mod `p`. -/
+theorem shear_two_ne {p x : ℕ} (hp : p.Prime) (hx : x < p) (hne : x ≠ (p - 1) / 2) :
+    (2 * (x : ZMod p) + 1) ≠ 0 := by
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  intro h
+  have hcast : ((2 * x + 1 : ℕ) : ZMod p) = 0 := by push_cast; linear_combination h
+  have hdvd : p ∣ (2 * x + 1) := (ZMod.natCast_eq_zero_iff _ _).mp hcast
+  obtain ⟨k, hk⟩ := hdvd
+  have hp1 : 1 ≤ p := hp.one_lt.le
+  have hk2 : k < 2 := by
+    by_contra hge
+    push_neg at hge
+    have : 2 * p ≤ p * k := by nlinarith
+    omega
+  have hk0 : 1 ≤ k := by
+    rcases Nat.eq_zero_or_pos k with h0 | h0
+    · subst h0; simp at hk
+    · exact h0
+  have : k = 1 := by omega
+  rw [this, Nat.mul_one] at hk
+  omega
+
+/-- **The base column lies on the sheared hyperbola.** For `x ≠ pole`, `(2x+1)·shearY = 1` mod `p`. -/
+theorem shear_curve {p x : ℕ} (hp : p.Prime) (hx : x < p) (hne : x ≠ (p - 1) / 2) :
+    (2 * (x : ZMod p) + 1) * ((shearY p x : ℕ) : ZMod p) = 1 := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  have hval : ((shearY p x : ℕ) : ZMod p) = (2 * (x : ZMod p) + 1)⁻¹ := by
+    rw [shearY]; simp [ZMod.natCast_val, ZMod.cast_id]
+  rw [hval, mul_inv_cancel₀ (shear_two_ne hp hx hne)]
+
 /-- The slope-`±1` counting lemma for the closed-form rule — the lone remaining obligation. With
 this explicit selection, no real-collinear triple of `shearSel p` exists: by
 `shear_hyperbola_lift_share_residue` every collinear triple has two lifts of one base column, by
