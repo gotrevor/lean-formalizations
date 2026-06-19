@@ -400,7 +400,8 @@ theorem hardy_oadd_tail (a : ONote) (m : ℕ+) (b : ONote) (n : ℕ) :
     hardy (oadd a m b) n = hardy (oadd a m 0) (hardy b n) := by
   rcases e : fundamentalSequence b with (_ | b') | f
   · have hb0 : b = 0 := by
-      have hp := fundamentalSequence_has_prop b; rw [e] at hp; simpa using hp
+      have hp := fundamentalSequence_has_prop b; rw [e] at hp
+      rwa [fundamentalSequenceProp_inl_none] at hp
     rw [hardy_zero' b e, hb0]; rfl
   · have hlt : b' < b := by
       have hp := fundamentalSequence_has_prop b; rw [e] at hp
@@ -431,7 +432,8 @@ theorem hardy_oadd_coeff_step (β : ONote) (hβ : β ≠ 0) (k x : ℕ) :
       = hardy (oadd β k.succPNat 0) (hardy (oadd β 1 0) x) := by
   rcases e : fundamentalSequence β with (_ | β') | f
   · exfalso; apply hβ
-    have hp := fundamentalSequence_has_prop β; rw [e] at hp; simpa using hp
+    have hp := fundamentalSequence_has_prop β; rw [e] at hp
+    exact (fundamentalSequenceProp_inl_none β).mp hp
   · have hfs : fundamentalSequence (oadd β (k + 1).succPNat 0)
         = Sum.inr (fun i => oadd β k.succPNat (oadd β' i.succPNat 0)) := by
       conv_lhs => rw [fundamentalSequence]

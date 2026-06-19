@@ -217,7 +217,7 @@ theorem hstep_oadd_zero_zero (b : ℕ) (hb : 2 ≤ b) (c : ℕ) (hc1 : 1 ≤ c) 
     hstep (oadd 0 ⟨c, hc1⟩ 0) b = toONote (b + 1) (c - 1) := by
   have hnp : PNat.natPred ⟨c, hc1⟩ = c - 1 := PNat.natPred_eq_pred hc1
   rcases eq_or_ne c 1 with rfl | hc2
-  · rw [hstep_succ _ (by rw [fundamentalSequence_oadd_zero_zero, hnp])]; simp
+  · rw [hstep_succ _ (by rw [fundamentalSequence_oadd_zero_zero, hnp]; rfl)]; simp
   · have hfs : fundamentalSequence (oadd 0 ⟨c, hc1⟩ 0)
         = Sum.inl (some (oadd 0 (c - 2).succPNat 0)) := by
       rw [fundamentalSequence_oadd_zero_zero, hnp, show c - 1 = (c - 2) + 1 from by omega]

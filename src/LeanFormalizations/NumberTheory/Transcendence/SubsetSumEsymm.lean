@@ -41,14 +41,30 @@ lemma subsetSum_esymm_isSymmetric (n m : ℕ) :
         (fun t => Finset.sum t (fun k => MvPolynomial.X k))
         : Multiset (MvPolynomial (Fin n) ℚ)).esymm m).IsSymmetric := by
   intro e
-  set f : MvPolynomial (Fin n) ℚ →+* MvPolynomial (Fin n) ℚ := (MvPolynomial.rename e).toRingHom
-  convert ringHom_map_multiset_esymm f _ m using 1
-  rw [ show ( Multiset.map ( ⇑f ) ( Multiset.map ( fun t => ∑ k ∈ t, MvPolynomial.X k ) Finset.univ.powerset.val ) ) = Multiset.map ( fun t => ∑ k ∈ t, MvPolynomial.X k ) Finset.univ.powerset.val from ?_ ]
-  simp +zetaDelta at *
-  convert Multiset.map_univ_val_equiv ( Equiv.finsetCongr e ) using 2
-  constructor <;> intro h <;> simp_all +decide
-  · exact Multiset.map_univ_val_equiv ( Equiv.finsetCongr e )
-  · conv_rhs => rw [ ← h ] ; simp +decide [ Finset.sum_map ]
+  set M : Multiset (MvPolynomial (Fin n) ℚ) :=
+    (Finset.univ.powerset : Finset (Finset (Fin n))).val.map
+      (fun t => Finset.sum t (fun k => MvPolynomial.X k)) with hM
+  -- `rename e` is a ring hom, so it commutes with `Multiset.esymm`.
+  have h1 : (MvPolynomial.rename e) (M.esymm m)
+      = (M.map (MvPolynomial.rename e).toRingHom).esymm m :=
+    ringHom_map_multiset_esymm (MvPolynomial.rename e).toRingHom M m
+  rw [h1]
+  -- The renamed family of subset-sums is just a permutation of the original family,
+  -- so the multiset `M` is invariant under `rename e`.
+  have hMmap : M.map (MvPolynomial.rename e).toRingHom = M := by
+    rw [hM, Multiset.map_map]
+    have hfun : (⇑(MvPolynomial.rename e).toRingHom ∘ fun t => Finset.sum t (fun k => MvPolynomial.X k))
+        = (fun t : Finset (Fin n) => Finset.sum t (fun k => (MvPolynomial.X k : MvPolynomial (Fin n) ℚ)))
+          ∘ (Equiv.finsetCongr e) := by
+      funext t
+      simp only [Function.comp_apply, AlgHom.toRingHom_eq_coe, RingHom.coe_coe, map_sum,
+        MvPolynomial.rename_X, Equiv.finsetCongr_apply, Finset.sum_map,
+        Function.Embedding.coeFn_mk]
+    rw [hfun, ← Multiset.map_map]
+    congr 1
+    rw [Finset.powerset_univ]
+    exact Multiset.map_univ_val_equiv (Equiv.finsetCongr e)
+  rw [hMmap]
 
 /-- Vieta: the elementary symmetric functions of the complex roots `theta` of a monic
 rational polynomial `G` are rational. -/
@@ -100,12 +116,22 @@ theorem subsetSum_esymm_rational (n : ℕ) (theta : Fin n → ℂ) (G : Polynomi
   set M : Multiset (MvPolynomial (Fin n) ℚ) := ((Finset.univ.powerset : Finset (Finset (Fin n))).val.map (fun t => Finset.sum t (fun k => MvPolynomial.X k)))
   set p : MvPolynomial (Fin n) ℚ := M.esymm j
   have h_eval : MvPolynomial.aeval theta p = (Multiset.map (fun t => ∑ k ∈ t, theta k) (Finset.univ.powerset : Finset (Finset (Fin n))).val).esymm j := by
-    convert ringHom_map_multiset_esymm ( MvPolynomial.aeval theta ).toRingHom M j using 1
-    simp +zetaDelta at *
+    have h1 : MvPolynomial.aeval theta p
+        = (M.map (MvPolynomial.aeval theta).toRingHom).esymm j := by
+      rw [show MvPolynomial.aeval theta p = (MvPolynomial.aeval theta).toRingHom p from rfl]
+      exact ringHom_map_multiset_esymm (MvPolynomial.aeval theta).toRingHom M j
+    rw [h1]
+    congr 1
+    rw [Multiset.map_map]
+    refine Multiset.map_congr rfl ?_
+    intro t _
+    simp only [Function.comp_apply, AlgHom.toRingHom_eq_coe, RingHom.coe_coe, map_sum,
+      MvPolynomial.aeval_X]
   obtain ⟨q, hq⟩ : ∃ q : MvPolynomial (Fin n) ℚ, MvPolynomial.aeval (fun i : Fin n => MvPolynomial.esymm (Fin n) ℚ (i + 1)) q = p := by
     have h_surjective : Function.Surjective (MvPolynomial.esymmAlgHom (Fin n) ℚ n) := by
       apply MvPolynomial.esymmAlgHom_surjective; norm_num
     obtain ⟨ q, hq ⟩ := h_surjective ⟨ p, by
+      rw [MvPolynomial.mem_symmetricSubalgebra]
       convert SubsetSumEsymm.subsetSum_esymm_isSymmetric n j using 1 ⟩
     generalize_proofs at *
     exact ⟨ q, by simpa [ MvPolynomial.esymmAlgHom_apply ] using congr_arg Subtype.val hq ⟩

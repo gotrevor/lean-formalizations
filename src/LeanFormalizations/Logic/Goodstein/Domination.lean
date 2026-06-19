@@ -528,7 +528,7 @@ theorem bump_eq_of_lt (b n : ℕ) (h : n < b) : bump b n = n := by
   rcases Nat.eq_zero_or_pos n with h0 | hpos
   · subst h0; exact bump_zero b
   · have hlog : Nat.log b n = 0 :=
-      Nat.log_eq_of_pow_le_of_lt_pow (by simpa using hpos) (by simpa using h)
+      Nat.log_eq_of_pow_le_of_lt_pow (by simp only [pow_zero]; exact hpos) (by simpa using h)
     have hbp := bump_pos b n (by omega)
     rw [hlog] at hbp
     simpa [Nat.mod_one] using hbp
