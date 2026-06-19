@@ -122,9 +122,12 @@ imported (`Mathlib.NumberTheory.Harmonic.EulerMascheroni`, `Real.eulerMascheroni
     on `(1,∞)`; the **real Euler product**.
   - ✅ **brick (i)** `log_realZeta_eq` : `Real.log(realZeta s) = ∑'_p −log(1−p^{−s})` (`realZeta s :=
     (riemannZeta s).re`, `realZeta_pos`). Take `Real.log` of the exp identity.
-  - **Next bricks** (in order): (ii) expand `−log(1−p^{−s}) = p^{−s} + ∑_{k≥2} p^{−ks}/k` (Mercator
-    series, mathlib `Real.hasSum_pow_div_log_of_abs_lt_one`? / `hasSum_geometric` integrated) and Fubini
-    over `Nat.Primes × ℕ` to split `log realZeta(s) = primeZeta s + G(s)`, `G(1)` finite. (iii) `s→1⁺`:
+  - ✅ **brick (ii-a)** `neg_log_one_sub_prime_hasSum` : `−log(1−p^{−s}) = ∑'_n (p^{−s})^{n+1}/(n+1)` (via
+    `Real.hasSum_pow_div_log_of_abs_lt_one`, since `0<p^{−s}<1`). `n=0` term `= p^{−s}` (prime-zeta), `n≥1`
+    tail `= G`.
+  - **Next bricks** (in order): (ii-b) Fubini `neg_log_one_sub_prime_hasSum` over `Nat.Primes × ℕ` (mathlib
+    `HasSum.prod_fiberwise` / `tsum_prod` / `Summable.tsum_comm` with the summable double series) and
+    combine with `log_realZeta_eq` to get `log realZeta(s) = primeZeta s + G(s)`, `G(1)` finite. (iii) `s→1⁺`:
     `tendsto_riemannZeta_sub_one_div` ⟹ `log ζ_ℝ(s)+log(s−1)→0`, so `primeZeta s+log(s−1)→−G(1)`.
     (iv) the Abel/Tauberian transfer to `∑_{p≤x}1/p` vs `mertens_second_tendsto` — the genuinely hard step.
 - Lower-hanging PNT-layer alternatives if the constant stalls: explicit Chebyshev `ψ/θ` two-sided bounds.
