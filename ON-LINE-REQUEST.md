@@ -26,10 +26,12 @@ I need the paper's exact construction + that cross-arc argument to formalize it.
 certificate (`decNoThree`, `native_decide`), I searched the natural "3 of the 4 rectangle-corners
 `{r,r+p}×{s,s+p}` per residue `r` (with `s = r⁻¹ mod p`)" family:
 - For `p = 5` valid 12-point configs EXIST (e.g. `witness5` in `Anchors.lean`, certified).
-- For `p = 7` an **exhaustive** search over all `4^6` corner-drop assignments found **NO** valid
-  18-point config. So the HJSW construction is **NOT** "3 of 4 rectangle corners per residue" — that
-  was a `p = 5` coincidence. The real construction must differ (different curve, different lift rule,
-  or non-uniform per-residue selection). I need the paper to know what it actually is.
+- For `p = 7` an **exhaustive** search over all keys `k ∈ {1..6}` AND all `4^6` corner-drop
+  assignments found **NO** valid 18-point config. So the HJSW construction is **NOT** "3 of 4
+  rectangle corners per residue" for any `k` — that was a `p = 5` coincidence. The real construction
+  must differ (different curve, different lift rule, multiple curves, or a subset with non-uniform
+  per-residue counts). I need the paper to know what it actually is.
+- The three-arcs-in-three-`p×p`-blocks family (with reflections, `k=1`) also fails for `p = 7`.
 
 A scan of any modern exposition giving the construction explicitly (Brass–Moser–Pach *Research
 Problems in Discrete Geometry* §10.1; Pór–Wood; Flammenkamp's pages) would also do.
