@@ -855,4 +855,58 @@ lemma log_primeProd_eq (N : ℕ) :
   rw [Finset.mem_filter] at hp
   exact ne_of_gt (one_sub_inv_pos_of_prime hp.2)
 
+/-- The Mertens' 3rd **correction sum** `∑_{p≤N} (log(1−1/p) + 1/p)` — absolutely convergent. -/
+noncomputable def primeCorr (N : ℕ) : ℝ :=
+  ∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, (Real.log (1 - (p : ℝ)⁻¹) + (p : ℝ)⁻¹)
+
+/-- `log ∏(1−1/p) = primeCorr N − primeRecipSum N` (splitting off the `−1/p` linear part). -/
+lemma log_primeProd_eq_corr (N : ℕ) :
+    Real.log (primeProd N) = primeCorr N - primeRecipSum N := by
+  rw [log_primeProd_eq, primeCorr, primeRecipSum, ← Finset.sum_sub_distrib]
+  exact Finset.sum_congr rfl (fun p _ => by ring)
+
+/-- `Summable (1/n²)` (the `p`-series with `p = 2`). -/
+lemma summable_one_div_sq : Summable (fun n : ℕ => 1 / (n : ℝ) ^ 2) :=
+  Real.summable_one_div_nat_pow.mpr (by norm_num)
+
+/-- The correction sum is bounded by a constant: `|primeCorr N| ≤ ∑'_b 1/b²`. -/
+lemma abs_primeCorr_le (N : ℕ) : |primeCorr N| ≤ ∑' b : ℕ, 1 / (b : ℝ) ^ 2 := by
+  calc |primeCorr N|
+      ≤ ∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, |Real.log (1 - (p : ℝ)⁻¹) + (p : ℝ)⁻¹| :=
+        Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, 1 / (p : ℝ) ^ 2 := by
+        refine Finset.sum_le_sum (fun p hp => ?_)
+        rw [Finset.mem_filter] at hp
+        have hppos : (0 : ℝ) < (p : ℝ) := by
+          have : (2 : ℝ) ≤ (p : ℝ) := by exact_mod_cast hp.2.two_le
+          linarith
+        have hinv0 : (0 : ℝ) < (p : ℝ)⁻¹ := by positivity
+        have hinvhalf : (p : ℝ)⁻¹ ≤ 1 / 2 := by
+          have hc : (p : ℝ)⁻¹ * (p : ℝ) = 1 := inv_mul_cancel₀ (ne_of_gt hppos)
+          nlinarith [hc, mul_nonneg hinv0.le (show (0 : ℝ) ≤ (p : ℝ) - 2 by
+            have : (2 : ℝ) ≤ (p : ℝ) := by exact_mod_cast hp.2.two_le
+            linarith)]
+        have hbnd := log_one_sub_add_self_abs_le hinv0 hinvhalf
+        rwa [show ((p : ℝ)⁻¹) ^ 2 = 1 / (p : ℝ) ^ 2 by rw [inv_pow]; ring] at hbnd
+    _ ≤ ∑' b : ℕ, 1 / (b : ℝ) ^ 2 := summable_one_div_sq.sum_le_tsum _ (fun b _ => by positivity)
+
+/-- The correction sum is `O(1)`. -/
+lemma primeCorr_isBigO_one : (fun N : ℕ ↦ primeCorr N) =O[atTop] (fun _ ↦ (1 : ℝ)) := by
+  rw [Asymptotics.isBigO_iff]
+  refine ⟨∑' b : ℕ, 1 / (b : ℝ) ^ 2, ?_⟩
+  filter_upwards with N
+  rw [Real.norm_eq_abs, norm_one, mul_one]
+  exact abs_primeCorr_le N
+
+/-- **Mertens' third theorem, up to the constant.** `log ∏_{p≤N}(1−1/p) + log log N =O[atTop] 1`,
+i.e. `∏_{p≤N}(1−1/p) ≍ 1/log N`.  The sharp constant — `∏(1−1/p) ~ e^{−γ}/log x`, the Meissel–Mertens /
+Euler–Mascheroni constant — is the deeper remaining part. -/
+theorem mertens_third_up_to_const :
+    (fun N : ℕ ↦ Real.log (primeProd N) + Real.log (Real.log N)) =O[atTop] (fun _ ↦ (1 : ℝ)) := by
+  have heq : (fun N : ℕ ↦ Real.log (primeProd N) + Real.log (Real.log N))
+      = (fun N ↦ primeCorr N - (primeRecipSum N - Real.log (Real.log N))) := by
+    funext N; rw [log_primeProd_eq_corr]; ring
+  rw [heq]
+  exact primeCorr_isBigO_one.sub mertens_second
+
 end LeanFormalizations.Mertens
