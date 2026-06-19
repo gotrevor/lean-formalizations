@@ -66,3 +66,19 @@ Specifically:
 
 This unblocks PENDING_WORK path 2 (generalize `floor_comb_bounds`/`logFactorial_leading_identity` to the
 chosen coefficient vector and re-run the assembly), the only route that scales toward `3/2`.
+
+---
+
+## 2026-06-19 (UPDATE 2) — PNT need RESOLVED locally; both asks above now SUPERSEDED / low-priority
+
+The full HJSW `3/2 − o(N)` constant is now formalized (`maxNoThreeInLine_ge_three_halves_sub`) by
+**citing the PNT** (`ψ(x) ∼ x`) as a disclosed axiom `weakPNT`, sourced from the **local** repo
+`~/src/PrimeNumberTheoremAnd` (`WeakPNT''`, about the same mathlib `Chebyshev.psi`). So:
+- The "sharper Chebyshev constants" ask (UPDATE 1) is **moot** — PNT leapfrogs the elementary `5/4`
+  ceiling straight to `3/2`. No online lookup needed.
+- The Nagura exact-`6/5` ask (original) is **superseded** — non-blocking, low priority.
+
+**No open online requests remain.** The only remaining work (discharging `weakPNT` by adding
+`PrimeNumberTheoremAnd` as a lake dependency vs. our mathlib/toolchain pin) is a **local build-integration
+task**, doable on-box next lap — not an online question. If that integration proves to need a specific
+compatible mathlib rev or a known cross-version porting trick, THAT would become a new online ask.

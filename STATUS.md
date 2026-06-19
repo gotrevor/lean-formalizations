@@ -1,5 +1,5 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8286 jobs) · **Updated**: 2026-06-19 · `a18f6ff` · **Branch `ntl-hjsw`** · **All headlines axiom-clean; general-`N` constant pushed UNCONDITIONALLY Bertrand 3/4 → 15/16 → 6/5 via a refined TWO-SIDED Chebyshev stack (all axiom-clean); `nagura_prime` the lone disclosed `sorry` (now NON-blocking)**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8286 jobs) · **Updated**: 2026-06-19 · **Branch `ntl-hjsw`** · **General-`N` no-three-in-line constant FRONTIER CLOSED: Bertrand 3/4 → 15/16 → 6/5 (axiom-clean) → 3/2−o(1) = HJSW optimal (via one cited PNT axiom `weakPNT`). Elementary headlines axiom-clean; `nagura_prime` lone `sorry` (non-blocking)**
 
 > **Branch note.** On `ntl-hjsw` every **headline** is proven & axiom-clean (`[propext,
 > Classical.choice, Quot.sound]`), kernel-verified this lap: HJSW `hjsw_lower : 3(p−1) ≤ max(2p)`
@@ -19,6 +19,19 @@
 **Every headline is axiom-free** — each headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]` (kernel-verified this lap), and `grep '^axiom' src/` is empty. `src/` now carries exactly **one disclosed `sorry`** — `nagura_prime` in `PrimeGap.lean`, the *active frontier crux* of the general-`N` HJSW constant (proven math, 🟡 debt; NOT a headline, and no headline depends on it). All six threads, green. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 (PNT lap — FULL HJSW `3N/2 − o(N)` general-`N` constant, frontier CLOSED):** After the
+  two-sided refined Chebyshev stack hit its elementary ceiling (`5/4`; the Chebyshev ratio `6/5` is a
+  hard wall), broke through to HJSW's **optimal `3/2 − o(1)`** via the Prime Number Theorem. **Key
+  discovery:** `~/src/PrimeNumberTheoremAnd` proves `WeakPNT'' : ψ ~[atTop] (·)` and its `ψ` **IS
+  mathlib's `Chebyshev.psi`** (proof via `psi_eq_sum_Icc`). Cited it as the single **disclosed deep
+  axiom `weakPNT`** (a proven theorem behind a wall mathlib lacks). On top, all in `PrimeGap.lean`:
+  `psi_pnt_bounds` (∀ε>0 eventually `(1−ε)x ≤ ψ ≤ (1+ε)x`); `sqrtlog_isLittleO` (`2√x logx = o(x)` via
+  `isLittleO_log_rpow_atTop`); **`exists_prime_gap_pnt`** (a prime in `(n,cn]` for *every* `c>1`,
+  eventually — shatters every elementary ratio); **`maxNoThreeInLine_ge_three_halves_sub`**
+  (`∀ε>0, eventually (3/2−ε)N ≤ maxNoThreeInLine N` — HJSW's optimal constant, matching `hjsw_lower_bound`
+  for all large `N`). These depend on `weakPNT` + the standard three; the elementary `6/5`/`15/16`
+  headlines remain fully axiom-clean. **Only remaining debt to fully close:** discharge `weakPNT` by
+  porting/depending on `PrimeNumberTheoremAnd` (toolchains `v4.29.0` vs `v4.29.1`).
 - **2026-06-19 (two-sided refined-Chebyshev lap — UNCONDITIONAL constants 15/16 AND 6/5 landed):**
   Completed the refined Chebyshev program and used it to push the general-`N` no-three-in-line constant
   **unconditionally** past Bertrand's `3/4`, in two rungs, **all axiom-clean** (`[propext,

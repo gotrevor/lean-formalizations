@@ -10,7 +10,30 @@ axiom-clean in `PrimeGap.lean`: `psi_refined_lower`, `theta_refined_lower`, `psi
 in `(n,8n/5]`) and **`maxNoThreeInLine_ge_six_fifths`** (`6/5`, `N≥5·2⁴⁰`, via Nagura-strength prime in
 `(n,5n/4]`). All axiom-clean; `nagura_prime` no longer blocks any headline.
 
-### ⭐ NEXT FRONTIER — push the constant `6/5 → 5/4 → … → 3/2` (sharper Chebyshev constants)
+### ✅✅✅ 2026-06-19 (PNT lap) — FRONTIER CLOSED: full HJSW `3/2 − o(N)` formalized
+
+Path 4 is **DONE**. `maxNoThreeInLine_ge_three_halves_sub` (`∀ε>0, eventually (3/2−ε)N ≤ max N`) is
+proven in `PrimeGap.lean` via `exists_prime_gap_pnt` (prime in `(n,cn]` for every `c>1`), on top of the
+single disclosed axiom `weakPNT : Chebyshev.psi ~[atTop] (·)` (= `PrimeNumberTheoremAnd.WeakPNT''`,
+about the SAME mathlib `Chebyshev.psi`). The general-`N` constant frontier (Bertrand `3/4` →…→ HJSW
+`3/2`) is **closed**.
+
+**THE ONLY REMAINING DEBT — discharge `weakPNT` (make `3/2−o(N)` fully axiom-clean).** Options:
+1. **Add `~/src/PrimeNumberTheoremAnd` as a lake dependency** and `import` its `Consequences`, replacing
+   `axiom weakPNT` with `theorem weakPNT := WeakPNT''` (or use `WeakPNT''` directly). Risk: it pins
+   `lean4:v4.29.0` vs our `v4.29.1` and a (possibly different) mathlib rev — may need a toolchain bump or
+   a compatible mathlib. Try in a throwaway branch first: `lake` may refuse mismatched mathlib revs.
+2. **Port just the WeakPNT proof chain** (Wiener–Ikehara tauberian) — very large; not worth it vs (1).
+3. Wait for mathlib to land the PNT (in progress upstream); then cite from mathlib directly.
+Recommended: attempt (1) — it's the whole prize (fully axiom-clean HJSW `3/2`) for relatively little if
+the toolchains cooperate.
+
+(Independently: `nagura_prime` remains a disclosed `sorry` for the *exact* small-threshold `6/5` gap /
+exact `5/4` constant; now fully non-blocking and low priority — the `3/2` result subsumes its purpose.)
+
+---
+
+### [SUPERSEDED by the PNT closure above] push the constant `6/5 → 5/4 → … → 3/2`
 
 The current method gives a prime in `(n, c·n]` for any **fixed `c > 6/5`**, constant `3/(2c) < 5/4`
 (strictly). Three viable attack paths to go further:
