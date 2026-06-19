@@ -215,6 +215,82 @@ theorem hardy_le_of_lt {x : ℕ} {α β : ONote} (hα : α.NF) (hβ : β.NF)
     (hαβ : α < β) (hnorm : norm α ≤ x) : hardy α x ≤ hardy β x :=
   hardy_le_of_reaches (reaches_of_lt β hβ α hα hαβ hnorm) (fun γ _ => hardy_monotone γ)
 
+/-! ### The Hardy step `hstep` and the step invariant `H_o(n) = H_{hstep o n}(n+1)`
+
+The Hardy hierarchy "counts the steps" of an ordinal descent in which the *argument* grows
+by one each time the ordinal drops past a successor. To make that precise we isolate one
+**budget-incrementing step** `hstep o n`: descend through limit stages of `o` (each at the
+fixed argument `n`) until passing exactly one successor, returning the resulting notation.
+The single intrinsic fact we need is then `H_o(n) = H_{hstep o n}(n+1)` (`hardy_hstep`) for
+nonzero `o` — the engine that telescopes any unit-step ordinal descent into a Hardy value.
+This is the FastGrowing-side prerequisite for C3 (`Goodstein/Growth.lean`), where the
+Goodstein descent is shown to *be* this Hardy step (`hstep_seqONote`). -/
+
+/-- The fundamental sequence of a limit notation is everywhere nonzero: every branch of
+`ONote.fundamentalSequence` for a limit returns `fun i => oadd …`, and `oadd` is positive.
+Needed so the limit recursion of `hstep`/`hardy_hstep` never collapses to `0` prematurely. -/
+theorem fundamentalSequence_inr_ne_zero {o : ONote} {f : ℕ → ONote}
+    (h : fundamentalSequence o = Sum.inr f) (i : ℕ) : f i ≠ 0 := by
+  induction o with
+  | zero => simp [fundamentalSequence] at h
+  | oadd a m b iha ihb =>
+    rw [fundamentalSequence] at h
+    split at h
+    · injection h with h'; subst h'; exact (oadd_pos _ _ _).ne'
+    · exact (Sum.inl_ne_inr h).elim
+    · split at h <;>
+        first
+          | exact (Sum.inl_ne_inr h).elim
+          | (injection h with h'; subst h'; simp only []; exact (oadd_pos _ _ _).ne')
+
+/-- One budget-incrementing **Hardy step** on a notation at argument `n`: descend through
+limit stages (each at argument `n`) until passing exactly one successor; `hstep 0 n = 0`.
+Same well-founded `<`-recursion on `ONote` as `hardy`/`fastGrowing`. -/
+def hstep : ONote → ℕ → ONote
+  | o =>
+    match fundamentalSequence o, fundamentalSequence_has_prop o with
+    | Sum.inl none, _ => fun _ => 0
+    | Sum.inl (some a), _ => fun _ => a
+    | Sum.inr f, h => fun n =>
+      have : f n < o := (h.2.1 n).2.1
+      hstep (f n) n
+  termination_by o => o
+
+/-- Unfolding lemma for `hstep`, mirroring `hardy_def`. -/
+theorem hstep_def {o : ONote} {x} (e : fundamentalSequence o = x) :
+    hstep o =
+      match
+        (motive := (x : Option ONote ⊕ (ℕ → ONote)) → FundamentalSequenceProp o x → ℕ → ONote)
+        x, e ▸ fundamentalSequence_has_prop o with
+      | Sum.inl none, _ => fun _ => 0
+      | Sum.inl (some a), _ => fun _ => a
+      | Sum.inr f, _ => fun n => hstep (f n) n := by
+  subst x; rw [hstep]
+
+/-- `hstep o = fun _ => a` when `o` is the successor of `a`. -/
+theorem hstep_succ (o) {a} (h : fundamentalSequence o = Sum.inl (some a)) :
+    hstep o = fun _ => a := by rw [hstep_def h]
+
+/-- `hstep o = fun n => hstep (o[n]) n` when `o` is a limit with fundamental sequence `f`. -/
+theorem hstep_limit (o) {f} (h : fundamentalSequence o = Sum.inr f) :
+    hstep o = fun n => hstep (f n) n := by rw [hstep_def h]
+
+/-- **Intrinsic Hardy step invariant.** For a nonzero notation, one budget-incrementing
+Hardy step preserves the Hardy value: `H_o(n) = H_{hstep o n}(n+1)`. The successor case is
+definitional (`H_{a+1}(n) = H_a(n+1)`); the limit case recurses (each fundamental-sequence
+member is nonzero by `fundamentalSequence_inr_ne_zero`, so the IH applies). -/
+theorem hardy_hstep (o : ONote) (n : ℕ) (h : o ≠ 0) :
+    hardy o n = hardy (hstep o n) (n + 1) := by
+  rcases e : fundamentalSequence o with (_ | a) | f
+  · exact absurd ((fundamentalSequenceProp_inl_none o).1 (e ▸ fundamentalSequence_has_prop o)) h
+  · rw [hardy_succ o e, hstep_succ o e]
+  · have hlt : f n < o := by
+      have hp := fundamentalSequence_has_prop o; rw [e] at hp; exact (hp.2.1 n).2.1
+    rw [hardy_limit o e, hstep_limit o e]
+    exact hardy_hstep (f n) n (fundamentalSequence_inr_ne_zero e n)
+termination_by o
+decreasing_by exact hlt
+
 /-! ### Anti-vacuity anchors (`native_decide`)
 
 Standalone witnesses, off any headline axiom path, that a *wrong* definition of
@@ -231,5 +307,10 @@ example : hardy 4 5 = 9 := by native_decide
 example : hardy (oadd 1 1 0) 2 = 5 := by native_decide
 example : hardy (oadd 1 1 0) 4 = 9 := by native_decide
 example : hardy (oadd 1 1 0) 6 = 13 := by native_decide
+-- `hstep`: successor drops one level; `ω` at budget `3` descends to `ω[3]=4` then to `3`.
+example : hstep 5 0 = 4 := by native_decide
+example : hstep (oadd 1 1 0) 3 = 3 := by native_decide
+-- the step invariant in action: `H_ω(3) = H_{hstep ω 3}(4) = H_3(4)`
+example : hardy (oadd 1 1 0) 3 = hardy (hstep (oadd 1 1 0) 3) 4 := by native_decide
 
 end LeanFormalizations.Logic.FastGrowing
