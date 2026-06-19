@@ -385,4 +385,44 @@ example : hstep (oadd 1 1 0) 3 = 3 := by native_decide
 -- the step invariant in action: `H_ω(3) = H_{hstep ω 3}(4) = H_3(4)`
 example : hardy (oadd 1 1 0) 3 = hardy (hstep (oadd 1 1 0) 3) 4 := by native_decide
 
+/-- **Hardy is dominated by fast-growing at the same index.** For `n ≥ 2`,
+`hardy o n ≤ fastGrowing o n` (no `NF` needed). By well-founded recursion on the notation, mirroring
+`le_fastGrowing`: the limit case is the IH verbatim; the successor case chains
+`H_o(n) = H_a(n+1) ≤ f_a(n+1) ≤ f_a(f_a n) = (f_a)^[2] n ≤ (f_a)^[n] n = f_o(n)` (IH at `a`, then
+`f_a` monotone via `n+1 ≤ f_a n` from `lt_fastGrowing`, then iterate-count monotone for `n ≥ 2`).
+
+The two hierarchies the expedition built are comparable: the Hardy hierarchy (the Goodstein-length
+side, via the Cichoń identity `goodsteinLength m = H_{o_m}(2) − 2`) never outruns the fast-growing
+hierarchy at the same ordinal index. A reusable bridge toward the matching *upper* bound and `B4`. -/
+theorem hardy_le_fastGrowing (o : ONote) (n : ℕ) (hn : 2 ≤ n) :
+    hardy o n ≤ fastGrowing o n := by
+  rcases e : fundamentalSequence o with (_ | a) | f
+  · rw [hardy_zero' o e, fastGrowing_zero' o e]; simp
+  · have hlt : a < o := by
+      have hp := fundamentalSequence_has_prop o; rw [e] at hp
+      rw [lt_def, hp.1]; exact Order.lt_succ _
+    rw [hardy_succ o e, fastGrowing_succ o e]
+    have ih : hardy a (n + 1) ≤ fastGrowing a (n + 1) := hardy_le_fastGrowing a (n + 1) (by omega)
+    have hexp : (id : ℕ → ℕ) ≤ fastGrowing a := fun m => le_fastGrowing a m
+    have hmono : (fastGrowing a)^[2] n ≤ (fastGrowing a)^[n] n :=
+      Function.monotone_iterate_of_id_le hexp hn n
+    have h2it : (fastGrowing a)^[2] n = fastGrowing a (fastGrowing a n) := by
+      rw [show (2 : ℕ) = 1 + 1 from rfl, Function.iterate_add_apply]; simp
+    have hfn : n + 1 ≤ fastGrowing a n := lt_fastGrowing a (by omega)
+    have hstep : fastGrowing a (n + 1) ≤ fastGrowing a (fastGrowing a n) := fastGrowing_monotone a hfn
+    calc hardy a (n + 1) ≤ fastGrowing a (n + 1) := ih
+      _ ≤ fastGrowing a (fastGrowing a n) := hstep
+      _ = (fastGrowing a)^[2] n := h2it.symm
+      _ ≤ (fastGrowing a)^[n] n := hmono
+  · have hlt : f n < o := by
+      have hp := fundamentalSequence_has_prop o; rw [e] at hp
+      exact (hp.2.1 n).2.1
+    rw [hardy_limit o e, fastGrowing_limit o e]
+    exact hardy_le_fastGrowing (f n) n hn
+termination_by o
+decreasing_by all_goals exact hlt
+
+/-- Anti-vacuity for `hardy_le_fastGrowing` at a genuine limit: `H_ω(2) = 5 ≤ f_ω(2) = 2048`. -/
+example : hardy (oadd 1 1 0) 2 ≤ fastGrowing (oadd 1 1 0) 2 := hardy_le_fastGrowing _ _ (by norm_num)
+
 end LeanFormalizations.Logic.FastGrowing
