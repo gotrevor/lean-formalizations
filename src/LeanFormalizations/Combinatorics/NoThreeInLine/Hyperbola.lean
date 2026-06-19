@@ -226,6 +226,70 @@ theorem coord_diff_of_residue_eq {p a b : ℕ} (ha : a < 2 * p) (hb : b < 2 * p)
     have hb2 : b % p = b - p := by rw [Nat.mod_eq_sub_mod hb1, Nat.mod_eq_of_lt (by omega)]
     rw [ha2, hb2] at h; exact Or.inl (by omega)
 
+/-- A coordinate difference between two same-residue nats factors through `p`: writing each as
+`residue + p·(·/p)`, the integer difference is `p` times the difference of the (nat) high parts. -/
+theorem intCoord_diff_factor {p u v : ℕ} (h : u % p = v % p) :
+    (u : ℤ) - (v : ℤ) = (p : ℤ) * (((u / p : ℕ) : ℤ) - ((v / p : ℕ) : ℤ)) := by
+  have hu : (p : ℤ) * ((u / p : ℕ) : ℤ) + ((u % p : ℕ) : ℤ) = u := by exact_mod_cast Nat.div_add_mod u p
+  have hv : (p : ℤ) * ((v / p : ℕ) : ℤ) + ((v % p : ℕ) : ℤ) = v := by exact_mod_cast Nat.div_add_mod v p
+  have hmod : ((u % p : ℕ) : ℤ) = ((v % p : ℕ) : ℤ) := by exact_mod_cast h
+  linear_combination -hu + hv + hmod
+
+/-- **The same-base-point case.** Three *distinct* grid points in `[0,2p)²` that are pairwise
+congruent mod `p` in both coordinates (i.e. three lifts of one base point) are never collinear:
+they are three distinct corners of a `p × p` axis-aligned rectangle, so the integer orientation
+determinant is `±p² ≠ 0`. Together with `*_lift_share_residue` this closes the geometry — every
+collinear triple of lifts must be two lifts of one base point plus a lift of a *different* one. -/
+theorem lift_triple_noncollinear {p : ℕ} (hp : 0 < p) {P Q R : ℕ × ℕ}
+    (hP1 : P.1 < 2 * p) (hP2 : P.2 < 2 * p) (hQ1 : Q.1 < 2 * p) (hQ2 : Q.2 < 2 * p)
+    (hR1 : R.1 < 2 * p) (hR2 : R.2 < 2 * p)
+    (e1Q : P.1 % p = Q.1 % p) (e1R : P.1 % p = R.1 % p)
+    (e2Q : P.2 % p = Q.2 % p) (e2R : P.2 % p = R.2 % p)
+    (hPQ : P ≠ Q) (hPR : P ≠ R) (hQR : Q ≠ R) :
+    ¬ Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)) := by
+  intro hcol
+  have hdet := collinear_imp_det3_zero hcol
+  simp only [toReal, det3] at hdet
+  have hZ : ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) - ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) = 0 := by
+    exact_mod_cast hdet
+  -- factor each difference through `p`
+  rw [intCoord_diff_factor e1Q.symm, intCoord_diff_factor e2R.symm,
+      intCoord_diff_factor e1R.symm, intCoord_diff_factor e2Q.symm] at hZ
+  -- hZ now reads `p² · B = 0`; since `p ≠ 0`, the high-bit determinant `B` vanishes
+  have hpZ : (p : ℤ) ≠ 0 := by exact_mod_cast hp.ne'
+  have hB : (((Q.1 / p : ℕ) : ℤ) - ((P.1 / p : ℕ) : ℤ)) * (((R.2 / p : ℕ) : ℤ) - ((P.2 / p : ℕ) : ℤ))
+      - (((R.1 / p : ℕ) : ℤ) - ((P.1 / p : ℕ) : ℤ)) * (((Q.2 / p : ℕ) : ℤ) - ((P.2 / p : ℕ) : ℤ))
+      = 0 := by
+    have h2 : (p : ℤ) * p * ((((Q.1 / p : ℕ) : ℤ) - ((P.1 / p : ℕ) : ℤ))
+          * (((R.2 / p : ℕ) : ℤ) - ((P.2 / p : ℕ) : ℤ))
+        - (((R.1 / p : ℕ) : ℤ) - ((P.1 / p : ℕ) : ℤ))
+          * (((Q.2 / p : ℕ) : ℤ) - ((P.2 / p : ℕ) : ℤ))) = 0 := by linear_combination hZ
+    rcases mul_eq_zero.mp h2 with h | h
+    · exact absurd (mul_eq_zero.mp h |>.elim id id) hpZ
+    · exact h
+  -- the high parts are `0` or `1`; distinctness of the three corners contradicts `B = 0`
+  have hb : ∀ {u : ℕ}, u < 2 * p → u / p = 0 ∨ u / p = 1 := by
+    intro u hu
+    have h2 : u / p < 2 := (Nat.div_lt_iff_lt_mul hp).mpr (by omega)
+    interval_cases (u / p) <;> tauto
+  -- recompose: same residue + same high part ⇒ equal coordinate
+  have recompose : ∀ {u v : ℕ}, u % p = v % p → u / p = v / p → u = v := by
+    intro u v hm hd
+    calc u = p * (u / p) + u % p := (Nat.div_add_mod u p).symm
+      _ = p * (v / p) + v % p := by rw [hd, hm]
+      _ = v := Nat.div_add_mod v p
+  have dPQ : ¬ (P.1 / p = Q.1 / p ∧ P.2 / p = Q.2 / p) :=
+    fun ⟨h1, h2⟩ => hPQ (Prod.ext (recompose e1Q h1) (recompose e2Q h2))
+  have dPR : ¬ (P.1 / p = R.1 / p ∧ P.2 / p = R.2 / p) :=
+    fun ⟨h1, h2⟩ => hPR (Prod.ext (recompose e1R h1) (recompose e2R h2))
+  have dQR : ¬ (Q.1 / p = R.1 / p ∧ Q.2 / p = R.2 / p) :=
+    fun ⟨h1, h2⟩ => hQR (Prod.ext (recompose (e1Q.symm.trans e1R) h1)
+      (recompose (e2Q.symm.trans e2R) h2))
+  rcases hb hP1 with a1 | a1 <;> rcases hb hP2 with a2 | a2 <;>
+    rcases hb hQ1 with b1 | b1 <;> rcases hb hQ2 with b2 | b2 <;>
+    rcases hb hR1 with c1 | c1 <;> rcases hb hR2 with c2 | c2 <;>
+    (simp only [a1, a2, b1, b2, c1, c2] at hB dPQ dPR dQR; revert hB dPQ dPR dQR; decide)
+
 /-! ### The sheared-hyperbola base (the current construction lead)
 
 Computational search (lap 2026-06-19) found that the plain hyperbola `xy ≡ 1` (`|B| = p−1`) cannot

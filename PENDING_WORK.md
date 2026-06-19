@@ -101,10 +101,18 @@ the general proof. Concrete next steps:
    hitting-set found arbitrary selections; we need a *rule*. Try: keep lifts by a rule depending on
    `χ(2x+1)` (quadratic character) and the slope-`±1` partner structure of the sheared base.
 2. **Generalize the non-collinearity proof**: the reduction toolkit (`collinear_imp_modp_det_zero`)
-   already handles cross-residue triples for ANY base. For the sheared hyperbola, prove its mod-`p`
-   non-collinearity (it is a conic ⇒ a line meets it in ≤2 points; generalize
-   `hyperbola_collinear_zmod`). Then the only obligation is the slope-`±1` triples, which the
-   selection rule kills — and `coord_diff_of_residue_eq` reduces those to arithmetic.
+   already handles cross-residue triples for ANY base; `shear_hyperbola_lift_share_residue` does the
+   sheared base. Two clean geometric pieces remain (both provable now, independent of the selection
+   rule, good warm-up lemmas):
+   (i) **`lift_triple_noncollinear`** (the same-base-point case): 3 *distinct* grid points in
+       `[0,2p)²` pairwise congruent mod `p` in both coords are never collinear (they are 3 distinct
+       corners of a `p×p` rectangle ⇒ integer det `= ±p² ≠ 0`). Proof route: cast det to ℤ, write
+       each coord as `residue + p·(coord/p)` with `coord/p ∈ {0,1}` (use `coord_diff_of_residue_eq`),
+       factor out `p²`, then `decide` the `{−1,0,1}`-determinant is nonzero given the 3 corners are
+       distinct. With this + `share_residue`, the FULL geometry reduces to a single clean capstone
+       `NoThree S ⟸ (residues on base) ∧ (no slope-±1 cross-base triple)`.
+   (ii) the slope-`±1` triples (two lifts of one base point + a third) are killed by the selection
+       rule, reduced to arithmetic via `coord_diff_of_residue_eq`.
 3. Validate any candidate rule via `native_decide (decNoThree …)` at p=5,7,11,13 before the proof.
 Fallback: if no clean rule emerges, the Aristotle job (`083292d5`, self-contained HJSW) may return
 a construction to port.
