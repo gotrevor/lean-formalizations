@@ -82,6 +82,49 @@ theorem four_pow_lt_mul_lcm {n : ℕ} (hn : 4 ≤ n) :
     _ ≤ n * (Finset.Icc 1 (2 * n)).lcm id :=
         Nat.mul_le_mul_left n (Nat.le_of_dvd hL0 hdvd)
 
+/-- The `p`-adic valuation of a `Finset.lcm` of nonzero naturals is the `sup` of the valuations.
+(Reusable; mathlib has `Nat.factorization_lcm` only for pairs.) -/
+theorem factorization_finset_lcm {p : ℕ} {s : Finset ℕ} (hs : ∀ m ∈ s, m ≠ 0) :
+    ((s.lcm id).factorization p) = s.sup (fun m => m.factorization p) := by
+  classical
+  induction s using Finset.induction with
+  | empty => simp
+  | @insert a s ha ih =>
+    have ha0 : a ≠ 0 := hs a (Finset.mem_insert_self a s)
+    have hs' : ∀ m ∈ s, m ≠ 0 := fun m hm => hs m (Finset.mem_insert_of_mem hm)
+    have hlcm0 : s.lcm id ≠ 0 := by
+      rw [Ne, Finset.lcm_eq_zero_iff]; rintro ⟨b, hb, hb0⟩; exact hs' b hb (by simpa using hb0)
+    rw [Finset.lcm_insert, Finset.sup_insert, ← ih hs']
+    have := Nat.factorization_lcm (a := a) (b := s.lcm id) ha0 hlcm0
+    simp only [id_eq]
+    rw [show GCDMonoid.lcm a (s.lcm id) = Nat.lcm a (s.lcm id) from rfl, this,
+      Finsupp.sup_apply]
+
+/-- For a prime power `pᵏ` (`k≥1`): `pᵏ ∣ lcm(1,…,N) ⟺ pᵏ ≤ N`. The crux of the
+`log(lcm(1..N)) = ψ N` bridge: the prime-power divisors of `lcm(1..N)` are exactly the prime powers
+`≤ N`. -/
+theorem primePow_dvd_lcm_Icc_iff {p k N : ℕ} (hp : p.Prime) (hk : 0 < k) :
+    p ^ k ∣ (Finset.Icc 1 N).lcm id ↔ p ^ k ≤ N := by
+  have hge1 : 1 ≤ p ^ k := Nat.one_le_pow _ _ hp.pos
+  have hL0 : (Finset.Icc 1 N).lcm id ≠ 0 := by
+    rw [Ne, Finset.lcm_eq_zero_iff]; rintro ⟨b, hb, hb0⟩
+    rw [Finset.mem_Icc] at hb; simp only [id_eq] at hb0; omega
+  constructor
+  · intro hdvd
+    rw [Nat.Prime.pow_dvd_iff_le_factorization hp hL0,
+      factorization_finset_lcm (fun m hm => by rw [Finset.mem_Icc] at hm; omega)] at hdvd
+    have hne : (Finset.Icc 1 N).Nonempty := by
+      rcases Nat.eq_zero_or_pos N with hN | hN
+      · exfalso; rw [hN] at hdvd; simp at hdvd; omega
+      · exact ⟨1, Finset.mem_Icc.mpr ⟨le_rfl, hN⟩⟩
+    obtain ⟨m, hm, hmsup⟩ := Finset.exists_mem_eq_sup _ hne (fun m => m.factorization p)
+    rw [hmsup] at hdvd
+    rw [Finset.mem_Icc] at hm
+    have hmdvd : p ^ k ∣ m := (Nat.Prime.pow_dvd_iff_le_factorization hp (by omega)).mpr hdvd
+    exact le_trans (Nat.le_of_dvd (by omega) hmdvd) hm.2
+  · intro hle
+    exact Finset.dvd_lcm (f := id) (Finset.mem_Icc.mpr ⟨hge1, hle⟩)
+
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
 
