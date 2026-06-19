@@ -107,6 +107,33 @@ argument) OR a cleaner cross-scale sum. **Exact structure requested in `ON-LINE-
 attack the net-thinning lemma directly (a `2⁻ʲ*`-separated subnet of a fine net, one direction per
 angular cell, retaining covered length) — the only genuinely-new piece left.
 
+**THREE ATTACK PATHS for the net-thinning crux (per unblock protocol, 2026-06-19):**
+1. **Per-direction dominant scale → group by value → cell-thin (the "standard" route).** Fix a fine
+   net of `2ᴶ` directions (`J` large). Each direction `θ`: `exists_dominant_scale` ⟹ dominant scale
+   `j(θ)≤J` with covered length `≥scaleWeight(j(θ))`. Pigeonhole the *value* `j(θ)` over the `2ᴶ`
+   directions (finitely many values `≤J`, weights `~1/j²`) ⟹ a value `j*` shared by `≳2ᴶ/J²`
+   directions. Partition the circle into `2^{j*}` angular cells of width `2⁻ʲ*`; the `≳2ᴶ/J²` good
+   directions occupy `≳min(2^{j*}, 2ᴶ/J²)` cells (pigeonhole). Pick one good direction per occupied
+   cell ⟹ a `2⁻ʲ*`-separated subnet of `n*≈2^{j*}` directions, each covered `≳scaleWeight(j*)≳1/j*²`
+   at scale `j*`. Feed to `cover_count_lower` (ρ=2⁻ʲ*, δ=2⁻ʲ*, N=n*). **Risk/open point:** need
+   `2ᴶ/J² ≳ 2^{j*}` so cells fill — i.e. `j*` can't be too close to `J`. Resolve by choosing `J`
+   adaptively or arguing the `j*=J` case separately (then pieces are at the finest scale = trivial).
+   This is the route I believe the literature uses; `ON-LINE-REQUEST` asks for the exact retention bound.
+2. **Aggregate per-scale + convexity, no thinning (longshot).** Use `cover_count_lower` at EVERY
+   dyadic scale `j` with the FULL net `N_j=2ʲ`; get `S_j² ≤ M_j·C·(1+j)` where `S_j=∑_{k<N_j}vol(A_j^k)`.
+   Need a lower bound forcing `∑_j M_j 2⁻ʲᵈ ≥ c`. The naive nested-net bound `∑_j S_j ≥ N_{J₀}` +
+   Cauchy–Schwarz DIVERGES (proven dead end — see handoff). BUT maybe a *weighted* convexity
+   (Hölder with exponent tied to `d`) over the per-scale `S_j² ≤ M_j poly(j)` closes it without
+   thinning. Low confidence; try only if path 1 stalls.
+3. **Bypass the net entirely — direct content bound via the K4 Minkowski bound at the dominant scale.**
+   Instead of re-running Córdoba on the net, use the EXISTING `volume_thickening_log_ge`
+   (`vol(Sδ)≳1/log(1/δ)`) at `δ=2⁻ʲ*` together with `volume_thickening_le_tsum`/`cover_count_lower`'s
+   container bound: `1/log(1/δ) ≲ vol(Sδ) ≤ ∑_{n} vol((Uₙ)δ)`, split by scale, dominant-scale term
+   `≈ M_{j*}·δ²`. Combine with a pigeonhole isolating the `j*≈log(1/δ)` term. **Risk:** same
+   mixed-scales obstruction (other-scale terms can dominate) unless a pigeonhole over `δ` choices is
+   added; essentially reduces to path 1's bookkeeping but reuses K4 wholesale. Worth scoping as it may
+   shortcut the localized-Córdoba re-derivation.
+
 **Retired (do NOT relitigate):** path 1 (weak-* limit) needs `Measure`-topology/lsc support mathlib
 lacks cleanly; path 3 needs a Frostman *construction* mathlib doesn't have (only the spreading
 direction `le_hausdorffMeasure`). `Frostman.lean` is kept as the documented mass-distribution
