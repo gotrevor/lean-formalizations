@@ -1168,6 +1168,27 @@ theorem mertens_third_tendsto_exp :
   have hlogN : 0 < Real.log N := Real.log_pos (by linarith)
   rw [Function.comp_apply, Real.exp_add, Real.exp_log (primeProd_pos N), Real.exp_log hlogN]
 
+/-- **Mertens' third theorem, asymptotic-equivalence form.**  `∏_{p≤N}(1−1/p) ~ e^{C₃}/log N` (classically
+`e^{−γ}/log N`) — the textbook statement.  Direct from `mertens_third_tendsto_exp`. -/
+theorem mertens_third_isEquivalent :
+    (fun N : ℕ => primeProd N) ~[atTop] (fun N : ℕ => Real.exp mertensThirdConst / Real.log N) := by
+  have hexp : Real.exp mertensThirdConst ≠ 0 := Real.exp_ne_zero _
+  have hg : ∀ᶠ N : ℕ in atTop, Real.exp mertensThirdConst / Real.log N ≠ 0 := by
+    filter_upwards [eventually_ge_atTop 2] with N hN
+    have hNR : (2 : ℝ) ≤ N := by exact_mod_cast hN
+    exact div_ne_zero hexp (ne_of_gt (Real.log_pos (by linarith)))
+  rw [Asymptotics.isEquivalent_iff_tendsto_one hg]
+  have hlim : Tendsto (fun N : ℕ => primeProd N * Real.log N / Real.exp mertensThirdConst) atTop
+      (nhds 1) := by
+    have h := mertens_third_tendsto_exp.div_const (Real.exp mertensThirdConst)
+    rwa [div_self hexp] at h
+  refine hlim.congr' ?_
+  filter_upwards [eventually_ge_atTop 2] with N hN
+  have hNR : (2 : ℝ) ≤ N := by exact_mod_cast hN
+  have hln : Real.log N ≠ 0 := ne_of_gt (Real.log_pos (by linarith))
+  simp only [Pi.div_apply]
+  rw [div_div_eq_mul_div]
+
 /-!
 ## Mertens' third theorem, classical form `∏(1−1/p) ~ e^{−γ}/log x` — reduction to one deep equation
 
