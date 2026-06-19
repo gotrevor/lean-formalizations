@@ -28,6 +28,7 @@ import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt
 import Mathlib.Analysis.SpecialFunctions.Stirling
 import Mathlib.Analysis.Complex.ExponentialBounds
 import Mathlib.Analysis.SpecialFunctions.Log.Monotone
+import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 import Mathlib.Analysis.Real.Pi.Bounds
 
 namespace LeanFormalizations.NoThreeInLine
@@ -1131,5 +1132,198 @@ theorem maxNoThreeInLine_ge_five_fourths {N : ℕ} (hN : 60 ≤ N) :
   have h2p : 2 * p ≤ N := by omega
   have := maxNoThreeInLine_ge_of_two_mul_prime_le hp h2p
   omega
+
+/-! ### The full HJSW `3N/2 − o(N)` general-`N` constant, via the Prime Number Theorem
+
+The elementary `T`-function method is mined out at constant `5/4` (`maxNoThreeInLine_ge_six_fifths`
+reaches `6/5`, and `c → 6/5⁺` approaches but never attains `5/4`): the Chebyshev ratio `(6/5)A/A = 6/5`
+is a hard wall. Breaking past `5/4` to HJSW's full `3N/2 − o(N)` needs PNT-strength — `ψ(x) = x + o(x)`,
+i.e. **Chebyshev's ratio `→ 1`**. mathlib does not (yet) have the PNT, but **`PrimeNumberTheoremAnd`**
+(a complete Lean 4 formalization, Wiener–Ikehara route) proves it; its `WeakPNT''` is literally a
+statement about *this* `Chebyshev.psi` (its proof rewrites via `Chebyshev.psi_eq_sum_Icc`). We cite it
+as the single disclosed deep axiom `weakPNT` below — a *proven theorem behind a wall mathlib lacks*, not
+a conjecture — and build the entire `3/2 − o(N)` frontier on top, axiom-clean modulo `weakPNT`. -/
+
+open scoped Asymptotics in
+open Asymptotics Filter in
+/-- **The Prime Number Theorem for `ψ` (cited).** `ψ(x) ∼ x` as `x → ∞`. This is a *proven theorem* —
+`PrimeNumberTheoremAnd.WeakPNT''` (`Consequences.lean`), whose `ψ` is exactly mathlib's `Chebyshev.psi`
+(its proof goes through `Chebyshev.psi_eq_sum_Icc`). Disclosed as an axiom only because the Wiener–Ikehara
+proof is not in mathlib; it is the deep input that lifts the no-three-in-line constant from the
+elementary ceiling `5/4` to HJSW's full `3/2 − o(1)`. -/
+axiom weakPNT : Chebyshev.psi ~[atTop] (fun x ↦ x)
+
+open Asymptotics Filter in
+/-- Two-sided PNT bound: for any `ε > 0`, eventually `(1−ε)x ≤ ψ(x) ≤ (1+ε)x`. -/
+theorem psi_pnt_bounds (ε : ℝ) (hε : 0 < ε) :
+    ∀ᶠ x in atTop, (1 - ε) * x ≤ Chebyshev.psi x ∧ Chebyshev.psi x ≤ (1 + ε) * x := by
+  have hlo := weakPNT.isLittleO
+  rw [isLittleO_iff] at hlo
+  filter_upwards [hlo hε, eventually_gt_atTop (0 : ℝ)] with x hx hxpos
+  rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_pos hxpos] at hx
+  simp only [Pi.sub_apply] at hx
+  rw [abs_le] at hx
+  constructor <;> nlinarith [hx.1, hx.2]
+
+open Asymptotics Filter in
+/-- `2√x·log x = o(x)`: for any `δ > 0`, eventually `2√x·log x ≤ δ·x` — controls the `ψ − θ` gap. -/
+theorem sqrtlog_isLittleO (δ : ℝ) (hδ : 0 < δ) :
+    ∀ᶠ x in atTop, 2 * Real.sqrt x * Real.log x ≤ δ * x := by
+  have ho := isLittleO_log_rpow_atTop (r := 1 / 2) (by norm_num)
+  rw [isLittleO_iff] at ho
+  filter_upwards [ho (show (0 : ℝ) < δ / 2 by positivity), eventually_ge_atTop (1 : ℝ)] with x hx hx1
+  have hxpos : (0 : ℝ) < x := by linarith
+  have hsqrt : x ^ (1 / 2 : ℝ) = Real.sqrt x := (Real.sqrt_eq_rpow x).symm
+  rw [hsqrt, Real.norm_eq_abs, Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg x),
+    abs_of_nonneg (Real.log_nonneg hx1)] at hx
+  nlinarith [hx, Real.sqrt_nonneg x, Real.log_nonneg hx1, Real.mul_self_sqrt hxpos.le]
+
+open Asymptotics Filter in
+/-- **PNT prime gap: a prime in `(n, c·n]` for *every* `c > 1`** (eventually in `n`). The two-sided PNT
+estimate `θ(x) ∼ ψ(x) ∼ x` makes the gap ratio approach `1`: choosing `ε = (c−1)/(c+1)/2` (so
+`(1+ε)/(1−ε) < c`), "no prime in `(n, ⌊cn⌋]`" forces `θ(⌊cn⌋) = θ(n)`, but `θ(⌊cn⌋) ≥ (1−ε)cn − o(n)`
+and `θ(n) ≤ ψ(n) ≤ (1+ε)n`, contradiction for large `n`. This shatters every elementary ratio
+(`8/5`, `5/4`, …, any `c > 1`). -/
+theorem exists_prime_gap_pnt (c : ℝ) (hc : 1 < c) :
+    ∀ᶠ n : ℕ in atTop, ∃ p, p.Prime ∧ n < p ∧ (p : ℝ) ≤ c * n := by
+  set ε := (c - 1) / (c + 1) / 2 with hεdef
+  have hcpos : 0 < c := by linarith
+  have hcp1 : (0 : ℝ) < c + 1 := by linarith
+  have hεpos : 0 < ε := by rw [hεdef]; apply div_pos (div_pos (by linarith) hcp1) (by norm_num)
+  have hfrac : (c - 1) / (c + 1) < 1 := by rw [div_lt_one hcp1]; linarith
+  have hε1 : ε < 1 := by rw [hεdef]; nlinarith [hfrac, hεpos]
+  set margin := (1 - ε) * c - (1 + ε) with hmdef
+  have hmval : margin = (c - 1) / 2 := by rw [hmdef, hεdef]; field_simp <;> ring
+  have hmargin : 0 < margin := by rw [hmval]; linarith [hc]
+  set δ := margin / (2 * c) with hδdef
+  have hδpos : 0 < δ := by rw [hδdef]; positivity
+  have ht_n : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop := tendsto_natCast_atTop_atTop
+  have htcn : Tendsto (fun n : ℕ => c * (n : ℝ)) atTop atTop := ht_n.const_mul_atTop hcpos
+  have ht_M : Tendsto (fun n : ℕ => ((⌊c * (n : ℝ)⌋₊ : ℕ) : ℝ)) atTop atTop := by
+    apply tendsto_atTop_mono (f := fun n : ℕ => c * (n : ℝ) - 1)
+    · intro n; linarith [Nat.lt_floor_add_one (c * (n : ℝ))]
+    · exact (htcn.atTop_add (tendsto_const_nhds (x := (-1 : ℝ)))).congr (fun n => by ring)
+  filter_upwards [ht_n.eventually (psi_pnt_bounds ε hεpos),
+    ht_M.eventually (psi_pnt_bounds ε hεpos),
+    htcn.eventually (sqrtlog_isLittleO δ hδpos),
+    ht_n.eventually (eventually_ge_atTop (2 * (1 - ε) / margin + 1)),
+    eventually_gt_atTop 0] with n hPn hPM hSq hnbig hn0
+  have hn1R : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn0
+  by_contra hcon
+  push_neg at hcon
+  set M := ⌊c * (n : ℝ)⌋₊ with hMdef
+  have hnM : n ≤ M := by
+    rw [hMdef, Nat.le_floor_iff (by positivity)]; push_cast; nlinarith [hc, hn1R]
+  have hM1 : (1 : ℕ) ≤ M := by omega
+  have hM1R : (1 : ℝ) ≤ (M : ℝ) := by exact_mod_cast hM1
+  have hθeq : Chebyshev.theta ((M : ℕ) : ℝ) = Chebyshev.theta (n : ℝ) := by
+    rw [Chebyshev.theta, Chebyshev.theta, Nat.floor_natCast, Nat.floor_natCast]
+    apply Finset.sum_congr _ (fun _ _ => rfl)
+    ext p
+    simp only [Finset.mem_filter, Finset.mem_Ioc]
+    constructor
+    · rintro ⟨⟨hp0, hpM⟩, hpp⟩
+      refine ⟨⟨hp0, ?_⟩, hpp⟩
+      by_contra hpn
+      push_neg at hpn
+      have hple : (p : ℝ) ≤ c * n := by
+        rw [hMdef] at hpM
+        calc (p : ℝ) ≤ (M : ℝ) := by exact_mod_cast hpM
+          _ ≤ c * n := Nat.floor_le (by positivity)
+      exact absurd hple (not_le.mpr (hcon p hpp hpn))
+    · rintro ⟨⟨hp0, hpn⟩, hpp⟩
+      exact ⟨⟨hp0, le_trans hpn hnM⟩, hpp⟩
+  have hMcn : (M : ℝ) ≤ c * n := Nat.floor_le (by positivity)
+  have hMcn' : c * (n : ℝ) - 1 ≤ (M : ℝ) := by linarith [Nat.lt_floor_add_one (c * (n : ℝ))]
+  have hθM : Chebyshev.theta ((M : ℕ) : ℝ) ≥ (1 - ε) * M - 2 * Real.sqrt M * Real.log M := by
+    have hgap := Chebyshev.abs_psi_sub_theta_le_sqrt_mul_log hM1R
+    rw [abs_le] at hgap
+    linarith [hPM.1, hgap.2]
+  have hθn : Chebyshev.theta (n : ℝ) ≤ (1 + ε) * n := le_trans (Chebyshev.theta_le_psi _) hPn.2
+  have hsqM : 2 * Real.sqrt (M : ℝ) * Real.log (M : ℝ) ≤ δ * (c * n) := by
+    have hmono1 : Real.sqrt (M : ℝ) ≤ Real.sqrt (c * n) := Real.sqrt_le_sqrt hMcn
+    have hmono2 : Real.log (M : ℝ) ≤ Real.log (c * n) := Real.log_le_log (by linarith [hM1R]) hMcn
+    have hMpos : (0 : ℝ) ≤ Real.sqrt M := Real.sqrt_nonneg _
+    have hlogM0 : (0 : ℝ) ≤ Real.log M := Real.log_nonneg hM1R
+    calc 2 * Real.sqrt (M : ℝ) * Real.log (M : ℝ)
+        ≤ 2 * Real.sqrt (c * n) * Real.log (c * n) := by
+          nlinarith [hmono1, hmono2, hMpos, hlogM0, Real.sqrt_nonneg (c * (n : ℝ)),
+            Real.log_nonneg (show (1 : ℝ) ≤ c * n by nlinarith [hc, hn1R])]
+      _ ≤ δ * (c * n) := hSq
+  have hδc : δ * (c * n) = (margin / 2) * n := by rw [hδdef]; field_simp <;> ring
+  have hkey : (1 - ε) * (c * n - 1) - (margin / 2) * n ≤ (1 + ε) * n := by
+    have hθM' := hθM
+    rw [hθeq] at hθM'
+    have hMlow : (1 - ε) * (c * n - 1) ≤ (1 - ε) * M :=
+      mul_le_mul_of_nonneg_left hMcn' (by linarith [hε1])
+    linarith [hθM', hθn, hsqM, hδc.symm ▸ hsqM, hMlow]
+  have hbound : (margin / 2) * (n : ℝ) ≤ (1 - ε) := by nlinarith [hkey, hmdef]
+  have hmono : (margin / 2) * (2 * (1 - ε) / margin + 1) ≤ (margin / 2) * (n : ℝ) :=
+    mul_le_mul_of_nonneg_left hnbig (by linarith [hmargin])
+  have hKv : (margin / 2) * (2 * (1 - ε) / margin + 1) = (1 - ε) + margin / 2 := by
+    field_simp <;> ring
+  linarith [hbound, hmono, hKv, hmargin]
+
+open Asymptotics Filter in
+/-- **HJSW's `3N/2 − o(N)` — the full general-`N` no-three-in-line constant** (modulo the cited PNT
+`weakPNT`). For every `ε > 0`, eventually `(3/2 − ε)·N ≤ maxNoThreeInLine N`. This **closes the
+general-`N` constant frontier**: the lower constant reaches HJSW's optimal `3/2`, matching
+`hjsw_lower_bound` (`≈ 3/2` at `N = 2p`) for *all* large `N`. Proof: the PNT prime gap
+`exists_prime_gap_pnt` at `c = 3/(3−ε)` (so `3/(2c) = 3/2 − ε/2`) and `n = ⌊N/(2c)⌋` yields a prime
+`p ∈ (n, N/2]`, so `maxNoThreeInLine N ≥ 3(p−1) ≥ 3⌊N/(2c)⌋ ≥ (3/2 − ε)N` for `N` large. Driven entirely
+by `ψ(x) ∼ x`; the elementary Chebyshev route caps at `5/4`. -/
+theorem maxNoThreeInLine_ge_three_halves_sub (ε : ℝ) (hε : 0 < ε) :
+    ∀ᶠ N : ℕ in atTop, (3 / 2 - ε) * N ≤ (maxNoThreeInLine N : ℝ) := by
+  set c := 3 / (3 - ε) with hcdef
+  by_cases hbig : 1 < c
+  · have hcpos : 0 < c := by linarith
+    have htdiv : Tendsto (fun N : ℕ => (N : ℝ) / (2 * c)) atTop atTop :=
+      (tendsto_natCast_atTop_atTop).atTop_div_const (by positivity)
+    have ht : Tendsto (fun N : ℕ => ⌊(N : ℝ) / (2 * c)⌋₊) atTop atTop :=
+      tendsto_nat_floor_atTop.comp htdiv
+    filter_upwards [ht.eventually (exists_prime_gap_pnt c hbig),
+      eventually_ge_atTop (⌈6 / ε⌉₊), eventually_gt_atTop 0] with N hgap hNbig hN0
+    set n := ⌊(N : ℝ) / (2 * c)⌋₊ with hndef
+    obtain ⟨p, hp, hlo, hhi⟩ := hgap
+    have hpcn : (p : ℝ) ≤ c * n := hhi
+    have hcn : c * (n : ℝ) ≤ (N : ℝ) / 2 := by
+      have hnle : (n : ℝ) ≤ (N : ℝ) / (2 * c) := Nat.floor_le (by positivity)
+      have heq : c * ((N : ℝ) / (2 * c)) = (N : ℝ) / 2 := by field_simp
+      nlinarith [hnle, hcpos, heq]
+    have h2pR : (2 * p : ℝ) ≤ (N : ℝ) := by push_cast; nlinarith [hpcn, hcn]
+    have h2p : 2 * p ≤ N := by exact_mod_cast h2pR
+    have hmax := maxNoThreeInLine_ge_of_two_mul_prime_le hp h2p
+    have hmaxR : (3 * (p - 1) : ℕ) ≤ (maxNoThreeInLine N : ℝ) := by exact_mod_cast hmax
+    have hnlow : (N : ℝ) / (2 * c) - 1 ≤ (n : ℝ) := by
+      linarith [Nat.lt_floor_add_one ((N : ℝ) / (2 * c))]
+    have h3n : (3 * n : ℝ) ≤ (3 * (p - 1) : ℕ) := by
+      have hpn : (n : ℝ) ≤ (p : ℝ) - 1 := by
+        have : (n : ℝ) + 1 ≤ (p : ℝ) := by exact_mod_cast (by omega : n + 1 ≤ p)
+        linarith
+      have hpge1 : (1 : ℕ) ≤ p := hp.one_le
+      push_cast [Nat.cast_sub hpge1]
+      linarith [hpn]
+    have hNε : (3 / 2 - ε) * (N : ℝ) ≤ 3 * ((N : ℝ) / (2 * c) - 1) := by
+      have hc2 : 3 / (2 * c) = (3 - ε) / 2 := by rw [hcdef]; field_simp
+      have hNbigR : (6 / ε) ≤ (N : ℝ) := le_trans (Nat.le_ceil _) (by exact_mod_cast hNbig)
+      have hexp : 3 * ((N : ℝ) / (2 * c) - 1) = (3 / (2 * c)) * N - 3 := by ring
+      rw [hexp, hc2]
+      have h6 : 6 ≤ ε * (N : ℝ) := by rw [div_le_iff₀ hε] at hNbigR; linarith [hNbigR]
+      have hεN : 3 ≤ ε / 2 * (N : ℝ) := by nlinarith [h6]
+      nlinarith [hεN]
+    calc (3 / 2 - ε) * (N : ℝ) ≤ 3 * ((N : ℝ) / (2 * c) - 1) := hNε
+      _ ≤ 3 * (n : ℝ) := by linarith [hnlow]
+      _ ≤ (3 * (p - 1) : ℕ) := h3n
+      _ ≤ (maxNoThreeInLine N : ℝ) := hmaxR
+  · push_neg at hbig
+    have hε3 : 3 ≤ ε := by
+      by_contra h; push_neg at h
+      have h3ε : 0 < 3 - ε := by linarith
+      have : 1 < c := by rw [hcdef, lt_div_iff₀ h3ε]; linarith
+      exact absurd this (not_lt.mpr hbig)
+    filter_upwards with N
+    have hmax0 : (0 : ℝ) ≤ (maxNoThreeInLine N : ℝ) := by positivity
+    nlinarith [hmax0, mul_nonneg (show (0 : ℝ) ≤ ε - 3 / 2 by linarith)
+      (Nat.cast_nonneg N : (0 : ℝ) ≤ (N : ℝ))]
 
 end LeanFormalizations.NoThreeInLine
