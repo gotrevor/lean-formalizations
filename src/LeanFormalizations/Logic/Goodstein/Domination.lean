@@ -267,6 +267,51 @@ theorem le_goodsteinLength (m : ℕ) : m ≤ goodsteinLength m := by
   have hge := goodsteinSeq_ge_sub m k
   omega
 
+/-! ### The CNF norm of a Goodstein notation is bounded by its step index
+
+A Goodstein notation `seqONote m j = toONote (j+2) (goodsteinSeq m j)` is, by construction, a
+base-`(j+2)` hereditary numeral: *every* coefficient appearing anywhere in its Cantor normal
+form (digits and recursively the exponents) is a base-`(j+2)` digit, hence `< j+2`. So its CNF
+norm is `≤ j+1`. The structural consequence: **the Hardy budget `norm ≤ argument` is always met
+at the telescope step `j+2`** — the budget obstruction is automatic on the descent itself, and
+`hardy_le_of_lt` can be applied in either comparison direction at every telescope step. -/
+
+/-- Every coefficient of `toONote b n` is a base-`b` digit, so its CNF norm is `< b`
+(for `b ≥ 2`). Strong induction mirroring `toONote`'s peeling recursion: the leading digit
+`n / b^(log b n) < b`, and the exponent `toONote b (log b n)` and tail `toONote b (n % …)`
+recurse on strictly smaller arguments. -/
+theorem norm_toONote_lt (b : ℕ) (hb : 2 ≤ b) : ∀ n, norm (toONote b n) < b := by
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    rcases eq_or_ne n 0 with rfl | hn
+    · rw [toONote_zero, norm_zero]; omega
+    · have hb1 : 1 < b := by omega
+      have hlog : Nat.log b n < n := Nat.log_lt_self b hn
+      have hbe_pos : 0 < b ^ Nat.log b n := Nat.pow_pos (by omega)
+      have hbe_le : b ^ Nat.log b n ≤ n := Nat.pow_log_le_self b hn
+      have hr_lt : n % b ^ Nat.log b n < b ^ Nat.log b n := Nat.mod_lt _ hbe_pos
+      have hr_lt_n : n % b ^ Nat.log b n < n := lt_of_lt_of_le hr_lt hbe_le
+      have hc_pos : 0 < n / b ^ Nat.log b n := Nat.div_pos hbe_le hbe_pos
+      have hc_lt : n / b ^ Nat.log b n < b := by
+        rw [Nat.div_lt_iff_lt_mul hbe_pos, ← pow_succ']
+        exact Nat.lt_pow_succ_log_self hb1 n
+      rw [toONote, dif_neg hn, norm_oadd]
+      have hcoeff : ((n / b ^ Nat.log b n).toPNat' : ℕ) = n / b ^ Nat.log b n :=
+        PNat.toPNat'_coe hc_pos
+      rw [hcoeff]
+      have h1 := ih _ hlog
+      have h2 := ih _ hr_lt_n
+      omega
+
+/-- **The Goodstein descent always meets the Hardy budget.** `norm (seqONote m j) ≤ j + 1`,
+hence `≤ j + 2 =` the telescope argument. So `hardy_le_of_lt` is applicable at every telescope
+step `j+2` (against any notation the budget reaches), with no further budget hypothesis. -/
+theorem norm_seqONote_le (m j : ℕ) : norm (seqONote m j) ≤ j + 1 := by
+  have h := norm_toONote_lt (j + 2) (by omega) (goodsteinSeq m j)
+  show norm (toONote (j + 2) (goodsteinSeq m j)) ≤ j + 1
+  omega
+
 /-! ### The domination headline, reduced to the single index sub-fact (ii)
 
 The full chain of the growth headline — `fastGrowing o m ≤ goodsteinLength m + 2` — is here
@@ -309,6 +354,43 @@ theorem goodstein_dominates_of_index {o : ONote} (ho : o.NF) {m : ℕ}
     _ ≤ hardy (seqONote m m) (m + 2) := hindex
     _ = hardy (seqONote m 0) 2 := htel.symm
     _ = goodsteinLength m + 2 := hz
+
+/-- **The domination dichotomy (fully proved, unconditional).** For every fixed level `o`
+(with budget `norm o ≤ m`), at the diagonal `m` exactly one of two structural alternatives
+holds:
+
+* **(A)** Goodstein dominates: `fastGrowing o m ≤ goodsteinLength m + 2`; or
+* **(B)** the length is Hardy-bounded: `goodsteinLength m + 2 ≤ hardy (oadd o 1 0) (m + 2)`.
+
+The proof needs no index hypothesis: because `norm (seqONote m m) ≤ m + 1` (the budget is
+automatic on the descent, `norm_seqONote_le`), `hardy_le_of_lt` applies in *whichever*
+direction the trichotomy `seqONote m m` vs `oadd o 1 0` falls. The whole headline thus reduces
+to **ruling out branch (B) for large `m`** — i.e. to the deep fact that the descent stays above
+`ω^o` for at least `m` steps (sub-fact (ii)); branch (B) says the descent has already dropped
+below `ω^o` by step `m`, which is conjecturally impossible for large `m` but is exactly the
+Cichoń lower-bound content not yet formalized. -/
+theorem goodstein_dominates_or_hardy_bound {o : ONote} (ho : o.NF) {m : ℕ}
+    (hnorm : norm o ≤ m) :
+    fastGrowing o m ≤ goodsteinLength m + 2 ∨
+      goodsteinLength m + 2 ≤ hardy (oadd o 1 0) (m + 2) := by
+  have hNFidx : (oadd o 1 0).NF := NF.oadd ho 1 NFBelow.zero
+  have hNFseq : (seqONote m m).NF := seqONote_NF m m
+  have hval : hardy (seqONote m m) (m + 2) = goodsteinLength m + 2 := by
+    rw [← hardy_seqONote_telescope m m (le_goodsteinLength m), hardy_seqONote_zero]
+  have hbseq : norm (seqONote m m) ≤ m + 2 := le_trans (norm_seqONote_le m m) (by omega)
+  rcases lt_trichotomy (seqONote m m).repr (oadd o 1 0).repr with hlt | heq | hgt
+  · -- descent already below `ω^o` at step `m` (strict): branch (B)
+    right
+    have hcmp : seqONote m m < oadd o 1 0 := lt_def.2 hlt
+    have h := hardy_le_of_lt hNFseq hNFidx hcmp hbseq
+    rwa [hval] at h
+  · -- descent exactly at `ω^o`: branch (B), via equality
+    right
+    have heqo : seqONote m m = oadd o 1 0 := (@repr_inj (seqONote m m) (oadd o 1 0) hNFseq hNFidx).1 heq
+    exact le_of_eq (by rw [← hval, heqo])
+  · -- descent still above `ω^o`: branch (A), via the reduction lemma
+    left
+    exact goodstein_dominates_of_index ho hnorm (lt_def.2 hgt)
 
 /-! ### Anti-vacuity anchors (off any headline axiom path). -/
 
