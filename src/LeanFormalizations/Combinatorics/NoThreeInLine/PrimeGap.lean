@@ -27,6 +27,7 @@ import Mathlib.NumberTheory.Chebyshev
 import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt
 import Mathlib.Analysis.SpecialFunctions.Stirling
 import Mathlib.Analysis.Complex.ExponentialBounds
+import Mathlib.Analysis.SpecialFunctions.Log.Monotone
 
 namespace LeanFormalizations.NoThreeInLine
 
@@ -424,6 +425,15 @@ theorem logFactorial_leading_identity {x : ℝ} (hx : 0 < x) :
     rw [show (30 : ℝ) = 2 * 3 * 5 by norm_num, Real.log_mul (by norm_num) (by norm_num),
       Real.log_mul (by norm_num) (by norm_num)]
   rw [h30]; ring
+
+/-- `t ↦ t·log t` is monotone on `[1,∞)`: `m·log m ≤ x·log x` for `1 ≤ m ≤ x`. The bridge from the
+*floored* terms `⌊n/k⌋·log⌊n/k⌋` (what the Stirling bounds produce) to the *continuous*
+`(n/k)·log(n/k)` (what `logFactorial_leading_identity` cancels) in the analytic-half assembly. -/
+theorem mul_log_le_mul_log {m x : ℝ} (h1 : 1 ≤ m) (hmx : m ≤ x) :
+    m * Real.log m ≤ x * Real.log x := by
+  have h := Real.log_mul_self_monotoneOn (Set.mem_setOf_eq ▸ h1)
+    (Set.mem_setOf_eq ▸ le_trans h1 hmx) hmx
+  simpa [mul_comm] using h
 
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
