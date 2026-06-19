@@ -11,3 +11,12 @@ rev = "v4.29.1"
 
 [[lean_lib]]
 name = "LeanFormalizations"
+
+# Off-headline 2nd-route working library (NOT in defaultTargets, so the headline
+# `lake build` is unchanged). Only the two Geometric-Measure-Theory wip files that
+# form the unconditional Jankov–von Neumann measurable-selection route; built
+# explicitly with `lake build DaviesWip`. FastGrowing/Bachmann wip stay excluded.
+[[lean_lib]]
+name = "DaviesWip"
+srcDir = "../wip"
+globs = ["GeometricMeasureTheory.Capacitability", "GeometricMeasureTheory.VonNeumannSelection"]
