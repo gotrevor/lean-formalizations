@@ -33,4 +33,42 @@ theorem not_collinear_corner :
   have hd := collinear_imp_det3_zero h
   norm_num [det3, toReal] at hd
 
+/-! ### A decidable criterion + a `native_decide`-verified concrete witness
+
+`NoThreeCollinear` itself is not decidable (`Collinear ℝ`), but a *sufficient* condition is: every
+triple either repeats a point or has nonzero **integer** determinant. This is decidable, and the
+bridge `det3_toReal_eq_idet3` shows the real determinant of grid points is exactly the cast of the
+integer one — so a vanishing real determinant forces a vanishing integer one, contradicting the
+check. This lets `native_decide` certify explicit configurations. -/
+
+/-- Integer `2×2` determinant of grid points — the decidable mirror of `det3 ∘ toReal`. -/
+def idet3 (P Q R : ℕ × ℕ) : ℤ :=
+  ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) - ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2)
+
+/-- The real determinant of grid points is the cast of the integer determinant. -/
+theorem det3_toReal_eq_idet3 (P Q R : ℕ × ℕ) :
+    det3 (toReal P) (toReal Q) (toReal R) = ((idet3 P Q R : ℤ) : ℝ) := by
+  simp only [det3, toReal, idet3]; push_cast; ring
+
+/-- **Decidable sufficient criterion.** If every triple of `s` repeats a point or has nonzero
+integer determinant, then `s` has no three collinear. -/
+theorem noThreeCollinear_of_idet {s : Finset (ℕ × ℕ)}
+    (h : ∀ P ∈ s, ∀ Q ∈ s, ∀ R ∈ s, P = Q ∨ P = R ∨ Q = R ∨ idet3 P Q R ≠ 0) :
+    NoThreeCollinear s := by
+  intro P hP Q hQ R hR hcol
+  rcases h P hP Q hQ R hR with h1 | h1 | h1 | hdet
+  · exact Or.inl h1
+  · exact Or.inr (Or.inl h1)
+  · exact Or.inr (Or.inr h1)
+  · exact absurd (by exact_mod_cast (det3_toReal_eq_idet3 P Q R ▸ collinear_imp_det3_zero hcol))
+      hdet
+
+/-- A concrete `5`-point no-three-collinear set (the Erdős parabola for `p = 5`), certified
+end-to-end by `native_decide` through the integer-determinant criterion. A computational
+anti-vacuity witness: `NoThreeCollinear` is satisfiable by an explicit nonempty set. -/
+theorem parabola5_noThreeCollinear :
+    NoThreeCollinear ({(0, 0), (1, 1), (2, 4), (3, 4), (4, 1)} : Finset (ℕ × ℕ)) := by
+  apply noThreeCollinear_of_idet
+  native_decide
+
 end LeanFormalizations.NoThreeInLine
