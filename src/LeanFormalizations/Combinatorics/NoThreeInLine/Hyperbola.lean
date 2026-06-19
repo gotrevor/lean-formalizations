@@ -513,19 +513,40 @@ theorem shearSel_share_residue {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R :
   shear_hyperbola_lift_share_residue hp hp2 (shearSel_mem_curve hp hp2 hP).2.2
     (shearSel_mem_curve hp hp2 hQ).2.2 (shearSel_mem_curve hp hp2 hR).2.2 hcol
 
-/-- **The pure-arithmetic crux** (no reals): every pairwise-distinct triple of `shearSel p` has
-nonzero integer orientation determinant. This is exactly the statement Aristotle job `1c2a55b7`
-(`aris-hjsw-shear`) is grinding; once returned it ports here verbatim. Verified by exact integer
-determinant for every prime `3 ≤ p ≤ 109`; `native_decide`-certified at `p = 7,11,13` in `Anchors`.
+/-- **The same-column line crux** (the genuinely hard counting, now isolated). Two distinct kept
+lifts `P,Q` of ONE base column span a slope `0/∞/±1` line; a third distinct kept point `R` is never
+on it. The slope `0`/`∞` cases follow from `shearY_injective` (distinct rows/cols); the same-column
+`R` case from `lift_triple_noncollinear`; the slope `±1` cross-column case is exactly what the
+closed-form drop rule forbids (verified for all primes `≤ 109`; `native_decide` at `p ≤ 13`). -/
+theorem shearSel_two_lifts_line {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R : ℕ × ℕ}
+    (hP : P ∈ shearSel p) (hQ : Q ∈ shearSel p) (hR : R ∈ shearSel p)
+    (hres : (P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p))
+    (hPQ : P ≠ Q) (hPR : P ≠ R) (hQR : Q ≠ R) :
+    ¬ Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)) := by
+  sorry
 
-**Proof route** (see `SELECTION-RULE-FOUND.md`): apply `shear_hyperbola_lift_share_residue` (via
-`shear_curve`) ⇒ two of `P,Q,R` are lifts of one column; `lift_triple_noncollinear` kills the
-all-same-column case; the rest is two-in-a-column + one other, a slope `0/∞/±1` line. `shearY_injective`
-kills slopes `0`/`∞`; the drop rule kills slope `±1` (`coord_diff_of_residue_eq` → modular arithmetic). -/
+/-- **The pure-arithmetic crux** (no reals): every pairwise-distinct triple of `shearSel p` has
+nonzero integer orientation determinant. Reduced (via `shearSel_share_residue`, symmetrised over the
+three sharing cases) to `shearSel_two_lifts_line`. -/
 theorem shearSel_intdet {p : ℕ} (hp : p.Prime) :
     ∀ P ∈ shearSel p, ∀ Q ∈ shearSel p, ∀ R ∈ shearSel p, P ≠ Q → P ≠ R → Q ≠ R →
       ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) - ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) ≠ 0 := by
-  sorry
+  rcases eq_or_ne p 2 with rfl | hp2
+  · decide
+  intro P hP Q hQ R hR hPQ hPR hQR hdet0
+  have hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)) := by
+    apply collinear_of_det3_zero
+    simp only [det3, toReal]; exact_mod_cast hdet0
+  rcases shearSel_share_residue hp hp2 hP hQ hR hcol with h | h | h
+  · exact shearSel_two_lifts_line hp hp2 hP hQ hR h hPQ hPR hQR hcol
+  · refine shearSel_two_lifts_line hp hp2 hP hR hQ h hPR hPQ hQR.symm ?_
+    have he : ({toReal P, toReal R, toReal Q} : Set (ℝ × ℝ)) = {toReal P, toReal Q, toReal R} := by
+      ext x; simp only [Set.mem_insert_iff, Set.mem_singleton_iff]; tauto
+    rwa [he]
+  · refine shearSel_two_lifts_line hp hp2 hQ hR hP h hQR (Ne.symm hPQ) (Ne.symm hPR) ?_
+    have he : ({toReal Q, toReal R, toReal P} : Set (ℝ × ℝ)) = {toReal P, toReal Q, toReal R} := by
+      ext x; simp only [Set.mem_insert_iff, Set.mem_singleton_iff]; tauto
+    rwa [he]
 
 /-- **No three points of the closed-form sheared selection are collinear.** Bridges the
 pure-arithmetic crux `shearSel_intdet` to `Collinear ℝ` exactly as `lift_triple_noncollinear` does
