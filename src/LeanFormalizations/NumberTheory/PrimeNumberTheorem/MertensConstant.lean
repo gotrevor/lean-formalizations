@@ -219,7 +219,6 @@ lemma tendsto_realZeta_sub_one_div :
   filter_upwards [self_mem_nhdsWithin] with s hs
   have hs1 : (1 : ℝ) < s := hs
   rw [riemannZeta_ofReal_eq hs1]
-  push_cast
   rw [Complex.sub_re, Complex.ofReal_re]
   congr 1
   rw [show ((s : ℂ) - 1) = ((s - 1 : ℝ) : ℂ) by push_cast; ring, ← Complex.ofReal_one,
@@ -387,5 +386,56 @@ theorem mertens_third_classical_of_tauberian
     Tendsto (fun N : ℕ => primeProd N * Real.log N) atTop
       (nhds (Real.exp (-Real.eulerMascheroniConstant))) :=
   mertens_third_classical (mertensThirdConst_eq_neg_gamma_of_tauberian hTauber)
+
+/-! ### Toward Limit B (the Tauberian crux) — `primeZeta` as a limit of prime partial sums
+
+**Route for Limit B** (`P(s)+log(s−1) → M − γ`), with all mathlib footholds now identified:
+take `c(k) = [k prime]/k`, `f(t) = t^{1−s}`; then `f(k)·c(k) = [k prime]·k^{−s}` and
+`∑_{k≤n} c(k) = ∑_{p≤n} 1/p`.  mathlib's Abel summation
+(`tendsto_sum_mul_atTop_nhds_one_sub_integral₀`) gives, since the boundary `f(n)·∑_{p≤n}1/p =
+n^{1−s}·(log log n + M + o(1)) → 0` for `s > 1`,
+`P(s) = (s−1) ∫_1^∞ (∑_{p≤t} 1/p)·t^{−s} dt`  (**brick B1**).
+The `s → 1⁺` limit (**brick B2**) feeds in `∑_{p≤t} 1/p = log log t + M + o(1)`
+(`mertens_second_tendsto`); the `M`-part gives `M·2^{1−s} → M`, the `o(1)`-part `→ 0`, and the
+`log log t` part, after `u = (s−1) log t`, becomes `∫_0^∞ (log u − log(s−1)) e^{−u} du = −γ − log(s−1)`,
+where `−γ = Γ'(1)` comes from `Real.hasDerivAt_Gamma_one`.  Net: `P(s) = −log(s−1) + (M − γ) + o(1)`.
+
+**Brick B0** (below): `primeZeta s = lim_N ∑_{p≤N} p^{−s}`, connecting the `tsum` (over `Nat.Primes`) to
+the Finset partial sums that the Abel machinery consumes.  Axiom-clean. -/
+
+/-- Coefficient form of the prime-zeta summand: `p^{−s}` at primes, `0` elsewhere. -/
+noncomputable def primeZetaCoeff (s : ℝ) (n : ℕ) : ℝ := if n.Prime then (n : ℝ) ^ (-s) else 0
+
+/-- Termwise bound `|primeZetaCoeff s n| ≤ n^{−s}` (equality at primes, `0 ≤ n^{−s}` elsewhere). -/
+lemma abs_primeZetaCoeff_le (s : ℝ) (n : ℕ) : |primeZetaCoeff s n| ≤ (n : ℝ) ^ (-s) := by
+  unfold primeZetaCoeff
+  split_ifs with hp
+  · rw [abs_of_nonneg (Real.rpow_nonneg (by positivity) _)]
+  · rw [abs_zero]; exact Real.rpow_nonneg (by positivity) _
+
+/-- `primeZetaCoeff s` is summable for `s > 1` (bounded by the convergent `p`-series `∑ n^{−s}`). -/
+lemma summable_primeZetaCoeff {s : ℝ} (hs : 1 < s) : Summable (primeZetaCoeff s) := by
+  apply Summable.of_norm_bounded (g := fun n : ℕ => (n : ℝ) ^ (-s))
+    (Real.summable_nat_rpow.mpr (by linarith))
+  intro n; rw [Real.norm_eq_abs]; exact abs_primeZetaCoeff_le s n
+
+/-- The ℕ-indexed prime-zeta coefficients sum (over all `n`) to the `Nat.Primes`-indexed `primeZeta`. -/
+lemma tsum_primeZetaCoeff_eq {s : ℝ} : (∑' n : ℕ, primeZetaCoeff s n) = primeZeta s := by
+  have hinj : Function.Injective (fun p : Nat.Primes => (p : ℕ)) := Nat.Primes.coe_nat_injective
+  have hsupp : Function.support (primeZetaCoeff s) ⊆ Set.range (fun p : Nat.Primes => (p : ℕ)) := by
+    intro n hn
+    rw [Function.mem_support] at hn
+    have hp : n.Prime := by
+      by_contra h; rw [primeZetaCoeff, if_neg h] at hn; exact hn rfl
+    exact ⟨⟨n, hp⟩, rfl⟩
+  rw [← hinj.tsum_eq hsupp, primeZeta]
+  exact tsum_congr (fun p => by rw [primeZetaCoeff, if_pos p.2])
+
+/-- **Brick B0**: `primeZeta s = lim_N ∑_{p≤N} p^{−s}` (partial sums of prime reciprocal `s`-powers
+converge to the prime zeta) — the form consumed by Abel summation toward Limit B. -/
+lemma primeZetaCoeff_tendsto {s : ℝ} (hs : 1 < s) :
+    Tendsto (fun N : ℕ => ∑ k ∈ Finset.range N, primeZetaCoeff s k) atTop (𝓝 (primeZeta s)) := by
+  rw [← tsum_primeZetaCoeff_eq]
+  exact (summable_primeZetaCoeff hs).hasSum.tendsto_sum_nat
 
 end LeanFormalizations.Mertens
