@@ -1,6 +1,44 @@
 # PENDING_WORK — no-three-in-line / HJSW frontier (branch `ntl-hjsw`)
 
-## ⭐⭐ 2026-06-19 (refined-Chebyshev lap) — ACTIVE FRONTIER: general-`N` constant `3/4 → >3/4`
+## ✅✅ 2026-06-19 (two-sided refined-Chebyshev lap) — DONE: unconditional `3/4 → 15/16 → 6/5`
+
+The refined-Chebyshev program below is **COMPLETE and exploited**. The full two-sided stack is built and
+axiom-clean in `PrimeGap.lean`: `psi_refined_lower`, `theta_refined_lower`, `psi_refined_upper`
+(telescoping iterate `ψ ≤ (6/5)A·n + O(log²n)` — the crux), `logFactorial_comb_upper`,
+`logFactorial_comb_ge_psi_sub`, `psi_refined_upper_step`, `sqrt_log_small`, `log_le_sqrt_small`,
+`chebyshev_const_lt`. Payoffs: **`maxNoThreeInLine_ge_fifteen_sixteenths`** (`15/16`, `N≥2⁴¹`, via prime
+in `(n,8n/5]`) and **`maxNoThreeInLine_ge_six_fifths`** (`6/5`, `N≥5·2⁴⁰`, via Nagura-strength prime in
+`(n,5n/4]`). All axiom-clean; `nagura_prime` no longer blocks any headline.
+
+### ⭐ NEXT FRONTIER — push the constant `6/5 → 5/4 → … → 3/2` (sharper Chebyshev constants)
+
+The current method gives a prime in `(n, c·n]` for any **fixed `c > 6/5`**, constant `3/(2c) < 5/4`
+(strictly). Three viable attack paths to go further:
+
+1. **Tighten `c → 6/5⁺` for a constant arbitrarily close to `5/4`** (cheap, mechanical). Copy
+   `exists_prime_in_five_fourths` / `maxNoThreeInLine_ge_six_fifths` with `c = 31/25` (`>6/5`), margin
+   `A/50`, larger threshold ⇒ constant `75/62 ≈ 1.21`. Diminishing returns; documents the limit but never
+   reaches exactly `5/4`. Low priority.
+2. **Sharpen the leading constant `A` (the real prize).** `A = (7/15)log2+(3/10)log3+(1/6)log5 ≈ 0.9213`
+   comes from the `2,3,5,30` `T`-combination; the upper `(6/5)A` from the `6`-fold telescercurrence
+   (`1/(1−1/6)`). A **finer prime combination** (more primes / larger modulus, the Diamond–Erdős /
+   Rosser–Schoenfeld direction) pushes the lower constant `A → 1` and shrinks the upper-ratio below `6/5`,
+   so `U/A → 1` and `c` can approach `1`, constant `→ 3/2`. This is the genuine multi-lap road to HJSW's
+   `3N/2 − o(N)`. Start by generalizing `floor_comb_bounds` / `logFactorial_leading_identity` to a chosen
+   coefficient vector and re-running the lower/upper assembly.
+3. **`nagura_prime` (exact `6/5`, `n≥25`) — the small-threshold version.** UNreachable from the current
+   stack (needs `c=6/5` exactly, but `(6/5)A`-upper forces `c>6/5` strictly). Genuinely needs Nagura's
+   sharper finite numerical inequality (see `ON-LINE-REQUEST.md`) OR path 2's sharper `A`. Deep debt; the
+   `5/4` payoff `maxNoThreeInLine_ge_five_fourths` is wired to it but now superseded by the unconditional
+   `6/5`. Keep as a disclosed `sorry`; do NOT delete.
+
+**Recommended next lap:** path 2 (sharper `A`) — it is the only one that scales toward `3/2` and reuses
+the entire stack just built. Pick a richer prime set, re-derive the `{0,1}` floor combination, re-run
+`logFactorial_comb_lower`/`_upper` + the telescoping iterate.
+
+---
+
+## ⭐⭐ 2026-06-19 (refined-Chebyshev lap) — [SUPERSEDED, see above] general-`N` constant `3/4 → >3/4`
 
 **Strategic finding this lap (do NOT re-derive — it reorients the whole attack).** I proved three ways
 that **the crude elementary Chebyshev bounds CANNOT beat Bertrand's `3/4`, for ANY ratio `c<2`** — not

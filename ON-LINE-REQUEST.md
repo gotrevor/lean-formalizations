@@ -39,3 +39,30 @@ constant — is already wired).
 
 (Aristotle job `1644a603` is also attempting `nagura_prime` from scratch; this request is the by-hand
 backup / cross-check.)
+
+---
+
+## 2026-06-19 (UPDATE) — Nagura request now SECONDARY; primary ask is *refined Chebyshev constants*
+
+**Status change.** The general-`N` no-three-in-line constant has been pushed **unconditionally** past
+Bertrand's `3/4` — to `15/16` and then `6/5` — WITHOUT `nagura_prime`, via a from-scratch refined
+two-sided Chebyshev stack (`psi_refined_lower`/`theta_refined_lower`/`psi_refined_upper`, all
+axiom-clean, in `PrimeGap.lean`). My leading constant is `A = (7/15)log2+(3/10)log3+(1/6)log5 ≈ 0.9213`
+(lower) and `(6/5)A ≈ 1.106` (upper), from the elementary `2,3,5,30` Chebyshev `T`-combination + a
+6-fold telescoping iterate. This yields a prime in `(n, c·n]` for any fixed `c > 6/5`.
+
+**What I now need (to go from `6/5` toward HJSW's `3/2 − o(1)`):** the **sharper elementary Chebyshev
+bounds** and the optimal `T`-function prime combination — i.e. the Rosser–Schoenfeld / Diamond–Erdős /
+Costa Pereira line that pushes the explicit constants `0.92 ≤ ψ(x)/x ≤ 1.106` toward `1` by using a
+*better linear combination* of `log(⌊x/k⌋!)` (more primes / larger modulus than `2,3,5,30`).
+Specifically:
+1. The explicit coefficient vector `(c_k)` (analogue of my `1,−1,−1,−1,+1` at `1,2,3,5,30`) that
+   maximizes the lower constant `A = ∑ c_k (log k)/k`-type sum subject to the floor combination staying
+   in `{0,1}` (the period/`decide` condition) — and the resulting best elementary constants.
+2. Costa Pereira's "elementary proof of the prime number theorem"-style sharpening, or Diamond–Erdős,
+   giving explicit `ψ(x) ≥ (1−ε)x` for any ε via finite combinations — with the combination written out.
+3. (Still useful, secondary) Nagura's exact `6/5` numerical inequality for the small-`n` (`n≥25`)
+   `nagura_prime`, now NON-blocking but the path to the exact `5/4` constant.
+
+This unblocks PENDING_WORK path 2 (generalize `floor_comb_bounds`/`logFactorial_leading_identity` to the
+chosen coefficient vector and re-run the assembly), the only route that scales toward `3/2`.
