@@ -226,6 +226,55 @@ theorem coord_diff_of_residue_eq {p a b : ℕ} (ha : a < 2 * p) (hb : b < 2 * p)
     have hb2 : b % p = b - p := by rw [Nat.mod_eq_sub_mod hb1, Nat.mod_eq_of_lt (by omega)]
     rw [ha2, hb2] at h; exact Or.inl (by omega)
 
+/-! ### The sheared-hyperbola base (the current construction lead)
+
+Computational search (lap 2026-06-19) found that the plain hyperbola `xy ≡ 1` (`|B| = p−1`) cannot
+reach `3(p−1)` (it caps at `2p−... ≤ 17` at `p=7` by an over-constraint), but the **sheared**
+hyperbola `y·(2x+1) ≡ 1 (mod p)` — a conic with `|B| = p` (the pole `x = −2⁻¹` maps to `0`) — *does*
+reach `3(p−1)` (verified at p = 7, 11, 13). The shear `x ↦ 2x+1` is an affine change of the first
+coordinate, so non-collinearity of the sheared base reduces to the plain hyperbola core; the lift
+geometry below is the analogue of `hyperbola_lift_collinear_share_residue` for this base. (The open
+part is the non-uniform lift-selection rule — see `PENDING_WORK.md` Path B.) -/
+
+/-- Mod-`p` Vandermonde core for the **sheared** hyperbola `(2x+1)·y = 1`. Reduces to
+`hyperbola_collinear_zmod` via the substitution `u = 2x+1` (which scales the determinant by `2`). -/
+theorem shear_hyperbola_collinear_zmod {p : ℕ} [Fact p.Prime] (h2ne : (2 : ZMod p) ≠ 0)
+    {x₁ y₁ x₂ y₂ x₃ y₃ : ZMod p}
+    (h1 : (2 * x₁ + 1) * y₁ = 1) (h2 : (2 * x₂ + 1) * y₂ = 1) (h3 : (2 * x₃ + 1) * y₃ = 1)
+    (hdet : (x₂ - x₁) * (y₃ - y₁) - (x₃ - x₁) * (y₂ - y₁) = 0) :
+    (x₁ = x₂ ∧ y₁ = y₂) ∨ (x₁ = x₃ ∧ y₁ = y₃) ∨ (x₂ = x₃ ∧ y₂ = y₃) := by
+  have hdet' : ((2 * x₂ + 1) - (2 * x₁ + 1)) * (y₃ - y₁)
+      - ((2 * x₃ + 1) - (2 * x₁ + 1)) * (y₂ - y₁) = 0 := by linear_combination 2 * hdet
+  have key := hyperbola_collinear_zmod (one_ne_zero) h1 h2 h3 hdet'
+  have hx : ∀ {a b : ZMod p}, 2 * a + 1 = 2 * b + 1 → a = b := fun {a b} h =>
+    mul_left_cancel₀ h2ne (by linear_combination h)
+  rcases key with ⟨hu, hy⟩ | ⟨hu, hy⟩ | ⟨hu, hy⟩
+  · exact Or.inl ⟨hx hu, hy⟩
+  · exact Or.inr (Or.inl ⟨hx hu, hy⟩)
+  · exact Or.inr (Or.inr ⟨hx hu, hy⟩)
+
+/-- **Lift reduction for the sheared hyperbola** (the actual construction base). A real-collinear
+triple of grid points whose residues lie on `(2x+1)·y ≡ 1 (mod p)` has two sharing a residue mod
+`p` — so, exactly as for the plain hyperbola, every collinear triple of lifts is two lifts of one
+base point plus a third, leaving only the slope-`±1` selection obligation. -/
+theorem shear_hyperbola_lift_share_residue {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2)
+    {P Q R : ℕ × ℕ}
+    (hP : (2 * (P.1 : ZMod p) + 1) * (P.2 : ZMod p) = 1)
+    (hQ : (2 * (Q.1 : ZMod p) + 1) * (Q.2 : ZMod p) = 1)
+    (hR : (2 * (R.1 : ZMod p) + 1) * (R.2 : ZMod p) = 1)
+    (hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ))) :
+    ((P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p)) ∨
+    ((P.1 : ZMod p) = (R.1 : ZMod p) ∧ (P.2 : ZMod p) = (R.2 : ZMod p)) ∨
+    ((Q.1 : ZMod p) = (R.1 : ZMod p) ∧ (Q.2 : ZMod p) = (R.2 : ZMod p)) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  have h2ne : (2 : ZMod p) ≠ 0 := by
+    have h : ((2 : ℕ) : ZMod p) ≠ 0 := by
+      rw [Ne, ZMod.natCast_eq_zero_iff]
+      exact fun hd => hp2 ((Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).mp hd)
+    simpa using h
+  exact shear_hyperbola_collinear_zmod h2ne hP hQ hR (collinear_imp_modp_det_zero p hcol)
+
 /-- **HJSW lower bound (TARGET — not yet proven).** For prime `p`, the `2p × 2p` grid admits
 `3(p−1)` points with no three collinear — the hyperbola `x·y ≡ k (mod p)` construction, i.e. the
 `3(n−2)/2` count with `n = 2p` (since `3(2p−2)/2 = 3(p−1)`).
