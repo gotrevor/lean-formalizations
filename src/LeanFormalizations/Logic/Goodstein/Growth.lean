@@ -264,19 +264,113 @@ theorem hstep_oadd_coeff (b : ℕ) {E : ONote} (hE : E ≠ 0) {c : ℕ} (hc : 2 
   rw [hstep_oadd_tail E k.succPNat b (g b) hgb]
   congr 1
 
+/-- Predecessor of a finite successor `oadd 0 ⟨c⟩ 0` (= the ordinal `c`) at any argument:
+for `c ≥ 2`, `hstep (oadd 0 ⟨c⟩ 0) n = oadd 0 ⟨c-1⟩ 0`. -/
+theorem hstep_finite_pred (c : ℕ) (hc : 2 ≤ c) (n : ℕ) :
+    hstep (oadd 0 ⟨c, by omega⟩ 0) n = oadd 0 ⟨c - 1, by omega⟩ 0 := by
+  obtain ⟨e, rfl⟩ : ∃ e, c = e + 2 := ⟨c - 2, by omega⟩
+  have hfs : fundamentalSequence (oadd 0 ⟨e + 2, by omega⟩ 0)
+      = Sum.inl (some (oadd 0 ⟨e + 1, by omega⟩ 0)) := by
+    rw [fundamentalSequence_oadd_zero_zero]; rfl
+  rw [hstep_succ _ hfs]
+  rfl
+
+/-- The `c = 1` fundamental sequence when `E` is a **successor** (`fundamentalSequence E = some E'`). -/
+theorem fundSeq_oadd_one_of_succ {E E' : ONote} (h : fundamentalSequence E = Sum.inl (some E')) :
+    fundamentalSequence (oadd E 1 0) = Sum.inr (fun i => oadd E' i.succPNat 0) := by
+  rw [fundamentalSequence]
+  simp only [show fundamentalSequence (0 : ONote) = Sum.inl none from rfl, h]; rfl
+
+/-- The `c = 1` fundamental sequence when `E` is a **limit** (`fundamentalSequence E = inr f`). -/
+theorem fundSeq_oadd_one_of_limit {E : ONote} {f : ℕ → ONote}
+    (h : fundamentalSequence E = Sum.inr f) :
+    fundamentalSequence (oadd E 1 0) = Sum.inr (fun i => oadd (f i) 1 0) := by
+  rw [fundamentalSequence]
+  simp only [show fundamentalSequence (0 : ONote) = Sum.inl none from rfl, h]; rfl
+
+/-- One Hardy step on `oadd E 1 0` when `E` is a **successor** with predecessor `E'`: the
+descent lands on `oadd E' ⟨b+1⟩ 0`. -/
+theorem hstep_oadd_one_of_succ {E E' : ONote} (h : fundamentalSequence E = Sum.inl (some E'))
+    (b : ℕ) : hstep (oadd E 1 0) b = hstep (oadd E' b.succPNat 0) b := by
+  rw [hstep_limit _ (fundSeq_oadd_one_of_succ h)]
+
+/-- One Hardy step on `oadd E 1 0` when `E` is a **limit** with fundamental sequence `f`: the
+descent passes to `oadd (f b) 1 0`. -/
+theorem hstep_oadd_one_of_limit {E : ONote} {f : ℕ → ONote}
+    (h : fundamentalSequence E = Sum.inr f) (b : ℕ) :
+    hstep (oadd E 1 0) b = hstep (oadd (f b) 1 0) b := by
+  rw [hstep_limit _ (fundSeq_oadd_one_of_limit h)]
+
+/-- Fundamental sequence of the finite ordinal `oadd 0 ⟨c⟩ 0` (`c ≥ 2`): the successor of
+`oadd 0 ⟨c-1⟩ 0`. -/
+theorem fundSeq_finite_succ (c : ℕ) (hc : 2 ≤ c) :
+    fundamentalSequence (oadd 0 ⟨c, by omega⟩ 0) = Sum.inl (some (oadd 0 ⟨c - 1, by omega⟩ 0)) := by
+  obtain ⟨e, rfl⟩ : ∃ e, c = e + 2 := ⟨c - 2, by omega⟩
+  rw [fundamentalSequence_oadd_zero_zero]; rfl
+
+/-- **Lemma B, finite base case (PROVED).** For `0 ≤ d ≤ b`, one Hardy step on
+`ω^(d+1) = oadd (finite (d+1)) 1 0` at argument `b` is the all-digits-`b` notation
+`(b+1)^(d+1) − 1`. Strong induction on `d`: the descent peels the coefficient `b+1` it
+produces (`hstep_oadd_coeff`), recurses (`ih`), and the leading exponent reconstructs as a
+single base-`(b+1)` digit (`toONote (b+1) d = finite d`, valid since `d ≤ b < b+1`). This is
+the base case of the general `hstep_oadd_one_zero` and validates the full borrowing recursion
+(descent → coefficient peel → IH → reconstruct) end-to-end. -/
+theorem hstep_oadd_one_zero_finite (b : ℕ) (hb : 2 ≤ b) :
+    ∀ d, d ≤ b →
+      hstep (oadd (oadd 0 d.succPNat 0) 1 0) b = toONote (b + 1) ((b + 1) ^ (d + 1) - 1) := by
+  intro d
+  induction d using Nat.strong_induction_on with
+  | _ d ih =>
+    intro hdb
+    have hbsucc : (b.succPNat : ℕ+) = ⟨b + 1, by omega⟩ := rfl
+    rcases Nat.eq_zero_or_pos d with hd | hd
+    · -- d = 0: exponent 1, descent on finite 1 → oadd 0 ⟨b+1⟩ 0 → decrement → finite b
+      subst hd
+      have hE1 : fundamentalSequence (oadd 0 (0 : ℕ).succPNat 0) = Sum.inl (some 0) := by
+        rw [fundamentalSequence_oadd_zero_zero]; rfl
+      rw [hstep_oadd_one_of_succ hE1 b, hbsucc, hstep_finite_pred (b + 1) (by omega) b,
+        show (b + 1) ^ (0 + 1) - 1 = b from by rw [pow_succ, pow_zero, one_mul]; omega]
+      exact (toONote_single (b + 1) (by omega) (show 1 ≤ b by omega) (by omega)).symm
+    · -- d = e+1 ≥ 1: fundSeq(finite (e+2)) = some (finite (e+1)); descent → coefficient peel → ih e
+      obtain ⟨e, rfl⟩ : ∃ e, d = e + 1 := ⟨d - 1, by omega⟩
+      have hE' : (oadd 0 e.succPNat 0 : ONote) ≠ 0 := (oadd_pos _ _ _).ne'
+      have hple : (1 : ℕ) ≤ (b + 1) ^ (e + 1) := Nat.one_le_pow _ _ (by omega)
+      have hfd : fundamentalSequence (oadd 0 (e + 1).succPNat 0)
+          = Sum.inl (some (oadd 0 e.succPNat 0)) := by
+        rw [fundamentalSequence_oadd_zero_zero]; rfl
+      rw [hstep_oadd_one_of_succ hfd b, hbsucc,
+        hstep_oadd_coeff b hE' (by omega) (by omega : 1 ≤ b + 1),
+        ih e (by omega) (by omega)]
+      have hpow : (b + 1) ^ (e + 1 + 1) - 1 = b * (b + 1) ^ (e + 1) + ((b + 1) ^ (e + 1) - 1) := by
+        have hsplit : (b + 1) ^ (e + 1 + 1) = (b + 1) * (b + 1) ^ (e + 1) := by rw [pow_succ']
+        have hdist : (b + 1) * (b + 1) ^ (e + 1) = b * (b + 1) ^ (e + 1) + (b + 1) ^ (e + 1) := by
+          ring
+        rw [hsplit, hdist]; omega
+      rw [hpow, toONote_oadd (b + 1) (by omega) (show 1 ≤ b by omega) (by omega)
+        (show (b + 1) ^ (e + 1) - 1 < (b + 1) ^ (e + 1) by omega)]
+      congr 1
+      exact (toONote_single (b + 1) (by omega) (show 1 ≤ e + 1 by omega) (by omega)).symm
+
 /-- **Lemma B (the `c = 1` predecessor — the lone open core of C3).** One Hardy step on
 `oadd (toONote b L) 1 0` (i.e. `ω^E` for `E = toONote b L`, `L ≥ 1`) at argument `b` is the
 base-`(b+1)` notation of `(b+1)^(bump b L) − 1` — the fully-filled (all-digits-`b`) expansion
 produced by the borrowing descent through `fundamentalSequence`.
 
 *(disclosed `sorry`.)* This is the genuine borrowing core, now isolated to coefficient `1`.
-The descent reduces it (via `hstep_oadd_coeff`) along a well-founded recursion on `repr E`:
-`E` a successor ⟹ peel to `oadd E' ⟨b⟩ (hstep (oadd E' 1 0) b)` with `E' = pred E`; `E` a
-limit ⟹ recurse on `oadd (f b) 1 0`. Closing it needs the general statement over arbitrary
-NF `E` with answer `toONote (b+1) ((b+1)^(evalNat E) − 1)` (`evalNat E` = `repr E` evaluated
-at `ω ↦ b+1`), carrying the invariant "coefficients ≤ b+1" so the leading-exponent
-reconstruction `toONote (b+1) (evalNat E') = E'` holds at each step. Verified syntactically
-by `native_decide` on small cases (see anchors). -/
+The **finite base case** (`E = finite (d+1)`, `d ≤ b`) is fully PROVED in
+`hstep_oadd_one_zero_finite`, which exercises the entire recursion engine end-to-end
+(descent `hstep_oadd_one_of_succ` → coefficient peel `hstep_oadd_coeff` → IH → reconstruct
+`toONote_oadd`). The remaining work is the general `E = toONote b L`: a well-founded recursion
+on `repr E` using the same engine, with `E` a successor ⟹ peel to
+`oadd E' ⟨b⟩ (hstep (oadd E' 1 0) b)` with `E' = pred E` (`hstep_oadd_one_of_succ`); `E` a
+limit ⟹ recurse on `oadd (f b) 1 0` (`hstep_oadd_one_of_limit`). Closing it needs the general
+statement over arbitrary NF `E` with answer `toONote (b+1) ((b+1)^(evalNat E) − 1)`
+(`evalNat E` = `repr E` evaluated at `ω ↦ b+1`; note `evalNat (toONote b L) = bump b L`),
+carrying the two descent identities `evalNat (pred E) + 1 = evalNat E` (successor) and
+`evalNat (f b) = evalNat E` (limit, at the fixed index `b`), plus the invariant that the
+reachable `E` reconstruct (`toONote (b+1) (evalNat E') = E'`) — which holds because the only
+coefficient `b+1` the descent introduces (at index `b`) is immediately peeled by
+`hstep_oadd_coeff`. Verified syntactically by `native_decide` on small cases (see anchors). -/
 theorem hstep_oadd_one_zero (b : ℕ) (hb : 2 ≤ b) (L : ℕ) (hL : 1 ≤ L) :
     hstep (oadd (toONote b L) 1 0) b = toONote (b + 1) ((b + 1) ^ bump b L - 1) := by
   sorry
