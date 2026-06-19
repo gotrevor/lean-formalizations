@@ -5,27 +5,34 @@
 **State.** All headlines proven & axiom-clean (kernel-verified). The open obligation is the
 general-`N` lower *constant*: HJSW's theorem is `3N/2 − o(N)` for *all* large `N`, but the formalized
 general-`N` bound is only `3/4` (`maxNoThreeInLine_ge_three_quarters`, Bertrand-limited). Lifting it is
-genuine 🟡 debt. `PrimeGap.lean` now holds the scaffold:
-- `maxNoThreeInLine_ge_of_two_mul_prime_le` (interface) + `maxNoThreeInLine_mono` — axiom-clean.
+genuine 🟡 debt. `PrimeGap.lean` now holds the scaffold + the Chebyshev lower-bound infrastructure (all axiom-clean
+except `nagura_prime`):
+- `maxNoThreeInLine_ge_of_two_mul_prime_le` (interface) + `maxNoThreeInLine_mono`.
 - `maxNoThreeInLine_ge_five_fourths` (`3⌊5N/12⌋ ≤ max N`, `N≥60`) — **wired**, payoff ready.
 - `nagura_prime` (prime in `(n,6n/5]`, `n≥25`) — the **disclosed-`sorry` crux**.
-- `centralBinom_dvd_lcm_Icc`, `four_pow_lt_mul_lcm` (`4ⁿ<n·lcm(1..2n)`) — axiom-clean ℕ Chebyshev
-  lower bound, the foundation for the θ lower bound Nagura needs.
+- `centralBinom_dvd_lcm_Icc`, `four_pow_lt_mul_lcm` (`4ⁿ<n·lcm(1..2n)`) — ℕ Chebyshev lower bound. ✅
+- `factorization_finset_lcm`, `primePow_dvd_lcm_Icc_iff` (`pᵏ ∣ lcm(1..N) ⟺ pᵏ ≤ N`). ✅
+- `log_lcm_Icc_eq_psi` (`log(lcm(1..N)) = ψ N`, the von Mangoldt ↔ lcm bridge). ✅ **DONE this lap.**
+- `psi_lower` (`n·log4 − log n < ψ(2n)`) + `theta_lower` (`… − 2√(2n)·log(2n) < θ(2n)`). ✅ **The
+  Chebyshev θ LOWER bound mathlib was missing — built from scratch this lap, axiom-clean.**
 
-**The crux `nagura_prime` — three attack paths:**
-1. **θ-lower-bound route (PRIMARY).** Build the Chebyshev θ lower bound mathlib lacks, then mirror
-   mathlib's `Nat.exists_prime_lt_and_le_two_mul` with ratio `6/5`. Concrete next lemma (well-scoped):
-   the bridge `Real.log ((Icc 1 N).lcm id) = Chebyshev.ψ N` — apply `ArithmeticFunction.vonMangoldt_sum`
-   at `m = lcm(1..N)` and match prime-power terms (`q = pᵏ ∣ lcm(1..N) ⟺ q ≤ N`). With `four_pow_lt_mul_lcm`
-   that gives `ψ(2n) ≥ n·log4 − log n`; then `abs_psi_sub_theta_le_sqrt_mul_log` → `θ` lower; then the
-   product bound `∏_{6n/5<p≤2n} p ≤ primorial(2n)/primorial(6n/5)` closes Nagura for large `n`, small
-   `n∈[25,N₀)` by an explicit prime list / `decide`.
-2. **Aristotle.** Job `1644a603` (`aris-nagura`) is grinding the self-contained statement with full
-   mathlib + the Bertrand-analogue hint. Harvest when IDLE: download, kernel-verify, `#print axioms`,
-   port. (If it returns the θ bridge or the whole thing, big win.)
-3. **Weaker explicit rung.** If `6/5` resists, any ratio `c<2` with a provable gap gives constant
-   `3/(2c) > 3/4`; e.g. a clean `3/2`-ratio bound → constant `1`. Same θ-lower obstruction, just looser
-   numerics — no qualitative simplification, so PRIMARY (path 1) is the real lever.
+**The crux `nagura_prime` — remaining work (the θ-lower infra is now DONE):**
+1. **The refined central-binomial argument (PRIMARY).** ⚠️ IMPORTANT: `theta_lower`'s constant is the
+   *crude* Chebyshev one (`θ(x) ≳ (log4/2)x ≈ 0.69x`); with the crude upper `θ(x) ≤ log4·x ≈ 1.386x`,
+   `θ(cn) − θ(n) > 0` needs `c > 2` — i.e. these bounds ALONE only recover Bertrand, NOT Nagura's `6/5`.
+   Nagura genuinely needs the *factorization split* of `C(2n,n)` (sharpen mathlib's
+   `centralBinom_le_of_no_bertrand_prime`): under "no prime in `(n,6n/5]`", primes `>n` dividing
+   `C(2n,n)` lie in `(6n/5,2n]`, so `C(2n,n) ≤ (2n)^√(2n)·4^(2n/3)·∏_{6n/5<p≤2n}p`; bound the product by
+   `exp(θ(2n)−θ(6n/5))` (`theta_lower`/`theta_le_log4_mul_x` now available) and contradict
+   `4ⁿ ≤ n·C(2n,n)` for large `n`. The delicate part is the constant accounting across the ranges —
+   this is the real multi-lap content. Small `n∈[25,N₀)` by explicit prime list / `decide`.
+2. **Aristotle.** Job `1644a603` (`aris-nagura`) grinding the self-contained statement. Harvest when
+   IDLE: download, kernel-verify, `#print axioms`, port.
+3. **Weaker explicit rung.** Any ratio `c<2` with a provable gap gives constant `3/(2c) > 3/4`. Same
+   factorization obstruction, just looser numerics.
+
+**Reusable spinoffs (PR-worthy to mathlib):** `factorization_finset_lcm`, `primePow_dvd_lcm_Icc_iff`,
+`log_lcm_Icc_eq_psi`, `psi_lower`, `theta_lower` are all general Chebyshev/lcm facts mathlib lacks.
 
 **Faithfulness (carry-over):** Aristotle `72891d77` (independent NL→Lean of the headline) finished
 (IDLE) but its `show`/`download` 500 server-side this lap — retry next lap; not load-bearing.

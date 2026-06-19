@@ -26,10 +26,14 @@
   `maxNoThreeInLine_ge_of_two_mul_prime_le` (+ `maxNoThreeInLine_mono`), both axiom-clean. Opened
   `PrimeGap.lean`: `nagura_prime` (prime in `(n,6n/5]`, Nagura 1952) as the disclosed-`sorry` crux with
   a documented central-binomial attack; the wired `5/4` payoff `maxNoThreeInLine_ge_five_fourths`
-  (`3⌊5N/12⌋ ≤ max N`, `N≥60`). Made real progress on the crux: proved the **ℕ Chebyshev lower bound**
-  `four_pow_lt_mul_lcm` (`4ⁿ < n·lcm(1..2n)`) via `centralBinom_dvd_lcm_Icc` (`C(2n,n) ∣ lcm(1..2n)`) —
-  axiom-clean, mathlib-missing, the foundation for the θ lower bound Nagura needs. Remaining bridge:
-  `log(lcm(1..N)) = ψ N` (via `vonMangoldt_sum`). Submitted `nagura_prime` to Aristotle (`1644a603`).
+  (`3⌊5N/12⌋ ≤ max N`, `N≥60`). **Built the Chebyshev lower-bound infrastructure mathlib lacks, from
+  scratch, all axiom-clean:** `four_pow_lt_mul_lcm` (`4ⁿ<n·lcm(1..2n)`) via `centralBinom_dvd_lcm_Icc`;
+  `factorization_finset_lcm` + `primePow_dvd_lcm_Icc_iff`; the von Mangoldt ↔ lcm bridge
+  `log_lcm_Icc_eq_psi` (`log(lcm(1..N)) = ψ N`); and the **ψ/θ LOWER bounds** `psi_lower`
+  (`n·log4 − log n < ψ(2n)`) + `theta_lower` (`θ(2n) > …`). (mathlib had only θ *upper* bounds.)
+  Remaining for `nagura_prime`: the refined central-binomial argument — the crude θ constant alone
+  only recovers Bertrand, so Nagura needs the `C(2n,n)` factorization split (see PENDING_WORK).
+  Submitted `nagura_prime` to Aristotle (`1644a603`).
 - **2026-06-19 (HJSW `3N/2` — PROVED, axiom-clean):** the crux `shearSel_cross_diag` (the lone
   remaining `sorry` — the slope-`±1` no-three condition for the closed-form sheared-hyperbola
   selection) is **discharged**, so `hjsw_lower : 3*(p−1) ≤ maxNoThreeInLine (2*p)` is fully proven
@@ -174,7 +178,8 @@ general-`N` constant frontier (`nagura_prime`, disclosed `sorry`).
 | `NoThreeInLine.hjsw_lower` / `hjsw_lower_bound` | HJSW `3N/2` lower bound, `3*(p−1) ≤ max(2p)`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **PROVEN** (crux `shearSel_cross_diag` via `shear_diag_partner`/`shear_anti_partner`) |
 | `NoThreeInLine.maxNoThreeInLine_ge_three_quarters` | general-`N` `3·⌊N/4⌋ ≤ max N` (HJSW via Bertrand), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — lifts Θ(N) lower constant `1/2 → 3/4` |
 | `NoThreeInLine.maxNoThreeInLine_ge_of_two_mul_prime_le` (+ `maxNoThreeInLine_mono`) | prime-gap interface: `p` prime, `2p≤N` ⟹ `3(p−1)≤max N`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — the plug-in point for sharper gaps |
-| `NoThreeInLine.four_pow_lt_mul_lcm` (+ `centralBinom_dvd_lcm_Icc`) | ℕ Chebyshev lower bound `4ⁿ < n·lcm(1..2n)` (brick toward Nagura), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — mathlib-missing, foundation for the θ lower bound |
+| `NoThreeInLine.four_pow_lt_mul_lcm` (+ `centralBinom_dvd_lcm_Icc`) | ℕ Chebyshev lower bound `4ⁿ < n·lcm(1..2n)`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — mathlib-missing |
+| `NoThreeInLine.{log_lcm_Icc_eq_psi, psi_lower, theta_lower}` (+ `factorization_finset_lcm`, `primePow_dvd_lcm_Icc_iff`) | Chebyshev ψ/θ **lower** bounds + von Mangoldt↔lcm bridge (`log(lcm(1..N))=ψ N`, `n·log4−log n < ψ(2n)`, θ analogue), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **the θ lower bound mathlib lacks, built this lap; PR-worthy** |
 | `NoThreeInLine.maxNoThreeInLine_ge_five_fourths` (via `nagura_prime`) | general-`N` `5/4` constant `3⌊5N/12⌋ ≤ max N`, uncond. | `[propext, **sorryAx**, Classical.choice, Quot.sound]` | 🟡 frontier — `sorryAx` via `nagura_prime` (disclosed); payoff wired, crux open |
 
 **Headline math-axiom count (🟢+🟡+🟠): 0** across all headlines (kernel-verified this lap). **Active frontier:** `nagura_prime` is a single **disclosed `sorry`** (NOT a math axiom — honest open work; the `--allow-stop` gate is correctly armed). It is **🟡-grade debt**: *proven* mathematics (Nagura 1952), formalizable, but gated on a Chebyshev θ *lower* bound mathlib lacks (it has only θ/primorial *upper* bounds). The ℕ foundation (`four_pow_lt_mul_lcm`) is landed & axiom-clean; the next prerequisite is the bridge `log(lcm(1..N))=ψ N`. No 🔴 anywhere (no unconditional headline depends on an open conjecture; `maxNoThreeInLine_ge_five_fourths` carries `sorryAx`, not a math axiom, and is explicitly the frontier rung).
