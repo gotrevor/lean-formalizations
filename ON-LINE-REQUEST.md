@@ -42,3 +42,40 @@ be arbitrarily small, so single-scale bounds only bound the *count* of pieces, n
 This unblocks the lone remaining `sorry` `Engine.kakeya_hausdorffContentBound`; not blocking — I'll
 keep building the reduction infrastructure (`Kakeya2D/Cover.lean`) and the localized-`L²` refactor
 locally meanwhile.
+
+---
+
+## 2026-06-19 (UPDATE — narrowed blocker: the net-scale circularity)
+
+**All component lemmas are now built + axiom-clean** (this lap): both dyadic pigeonholes
+(`Cover.exists_dominant_scale` over scales, `Cover.exists_global_dominant_scale` over a direction
+net), the refined per-direction covered-length bound (`Cover.exists_pullback_cover`), the localized
+Córdoba `L²` count for arbitrary covered sets (`CordobaL2.volume_thickening_sets_ge`), its numerator
+(`TubeFractional.volume_thickening_covered_ge`: `vol(cthickening δ φ(A)) ≥ 2δ·vol(A)`), and the
+**fully-assembled single-scale count** `CordobaL2.cordoba_cover_count`:
+
+> at scale δ, net base pts `a k`, covered sets `A k ⊆ [0,1]`, container `P` with `φₖ(A k) ⊆ P`
+>  ⟹ `(∑ₖ 2δ·vol(A k))² ≤ vol(cthickening δ P)·6πδ·2N(1+log N)`.
+
+**The one remaining obstruction is a precise combinatorial-structure question — the net-scale
+circularity.** The single-scale count needs the direction net to be `δ*`-separated with `N ≈ 1/δ*`,
+where `δ* = 2^{-j*}` is the *dominant scale*. But `j*` is the OUTPUT of the pigeonhole, which needs
+the net (its cardinality, the per-direction covered profiles `L k j`) as INPUT. The
+`sum_overlap_le`/`cordoba_cover_count` machinery ties tube width = direction separation = `δ`, so a
+single fixed net cannot serve all scales (a net of `N` directions is only `2^{-j}`-separated for
+`j ≤ log₂ N`). Concretely I need ONE of:
+
+1. The exact ordering/structure of the standard argument that breaks this circularity: do you
+   (a) fix a fine net at scale `2^{-J}` (`N = 2^J`), find each direction's dominant scale `j(θ) ≤ J`
+   via the scale-pigeonhole, group directions by `j(θ)` value to a dominant `j*` carrying `≳ N/poly`
+   directions, then **thin** those to a `2^{-j*}`-separated subnet (≈ `2^{j*}` directions, one per
+   angular cell) before applying the single-scale count — and crucially, why does the thinned subnet
+   retain enough covered length per direction? Or (b) some cleaner route (e.g. summing the
+   single-scale bound `M_j ≳ S_j²/poly(j)` over scales against `∑_j S_j ≥ N`)? I want the EXACT
+   weights and the precise statement that closes `∑ ediam^d ≳ δ*^{-(2-d)}/poly ≥ c`.
+2. The precise localized-`L²` / dominant-scale lemma as stated in Mattila (*Fourier Analysis and
+   Hausdorff Dimension*, Kakeya chapter), Wolff (1999 survey), or Bourgain–Demeter — at transcription
+   detail. My `cordoba_cover_count` is the single-scale brick; I need the cross-scale orchestration.
+
+I have everything EXCEPT this orchestration. A clean statement of how the pigeonholes nest with the
+net thinning would let me finish `kakeya_hausdorffContentBound` directly.

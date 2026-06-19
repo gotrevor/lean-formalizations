@@ -249,6 +249,27 @@ theorem volume_thickening_le_of_ediam_le {U : Set Plane} {ρ δ' : ℝ}
       _ = ENNReal.ofReal ((ρ + δ') ^ 2) * volume (closedBall (0 : Plane) 1) := by
           rw [hfr, add_comm δ' ρ]
 
+/-- **Finite-union thickening subadditivity.** For a *finite* index set, the δ-thickening of a union
+of cover pieces has area at most the sum of the per-piece thickened areas:
+`vol(thickening (⋃_{n∈s} Uₙ) δ) ≤ ∑_{n∈s} vol(thickening (Uₙ) δ)`. (The closed thickening distributes
+over *finite* unions — `cthickening_union` — unlike the infinite case that needed the `δ<δ'` slack.)
+Combined with `volume_thickening_le_of_ediam_le`, this bounds the container `vol(Pδ) ≤ M·C·(ρ+δ)²` for
+the union `P` of the `M` dominant-scale cover pieces in the localized Córdoba count. -/
+theorem volume_thickening_biUnion_le (s : Finset ℕ) (U : ℕ → Set Plane) (δ : ℝ) :
+    volume (thickening (⋃ n ∈ s, U n) δ) ≤ ∑ n ∈ s, volume (thickening (U n) δ) := by
+  classical
+  induction s using Finset.induction with
+  | empty => simp [thickening]
+  | insert a s ha ih =>
+    rw [Finset.sum_insert ha, Finset.set_biUnion_insert]
+    have hun : thickening (U a ∪ ⋃ n ∈ s, U n) δ
+        = thickening (U a) δ ∪ thickening (⋃ n ∈ s, U n) δ := by
+      simp only [thickening_def]; exact cthickening_union δ _ _
+    rw [hun]
+    calc volume (thickening (U a) δ ∪ thickening (⋃ n ∈ s, U n) δ)
+        ≤ volume (thickening (U a) δ) + volume (thickening (⋃ n ∈ s, U n) δ) := measure_union_le _ _
+      _ ≤ volume (thickening (U a) δ) + ∑ n ∈ s, volume (thickening (U n) δ) := by gcongr
+
 /-- The planar unit-disc area constant `vol(closedBall 0 1)` is positive — the Frostman constant `C`
 in the eventual content bound is built from it, so it must be `≠ 0`. -/
 theorem volume_closedBall_one_pos : 0 < volume (closedBall (0 : Plane) 1) :=
@@ -258,6 +279,45 @@ theorem volume_closedBall_one_pos : 0 < volume (closedBall (0 : Plane) 1) :=
 Frostman constant `C` built from it is `≠ ⊤`. -/
 theorem volume_closedBall_one_ne_top : volume (closedBall (0 : Plane) 1) ≠ ⊤ :=
   measure_closedBall_lt_top.ne
+
+/-- **Single-scale cover-piece count — sub-brick (c), fully assembled in piece-count form.** Combines
+the localized Córdoba count `cordoba_cover_count` with the container bound
+(`volume_thickening_biUnion_le` + `volume_thickening_le_of_ediam_le`). At scale `δ`, for a net of `N`
+directions with covered sets `A k ⊆ [0,1]` whose covered segments lie in the union of a *finite* set
+`s` of cover pieces each of diameter `≤ ρ`:
+
+  `(∑ₖ 2δ·vol(A k))²  ≤  |s| · (ρ+δ)² · vol(unit disc) · (6π δ · 2N(1 + log N))`.
+
+Reading off `M = |s|`: the number of dominant-scale pieces is `M ≳ (∑ₖ vol(A k))² / ((ρ+δ)²·log N)`.
+With `ρ ≈ δ` (dominant scale), `N ≈ 1/δ`, and `∑ₖ vol(A k) ≳ N/poly` (the two pigeonholes), this is
+`M ≳ δ^{-2}/poly`, hence `∑_{scale} ediam^d ≥ M·δ^d ≳ δ^{-(2-d)}/poly`. The only remaining gap to
+`kakeya_hausdorffContentBound` is the cross-scale orchestration furnishing `∑ₖ vol(A k) ≳ N/poly`
+(the net-scale thinning; see `ON-LINE-REQUEST.md`). -/
+theorem cover_count_lower {δ ρ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) (hρ : 0 ≤ ρ)
+    {N : ℕ} (hN : (N : ℝ) * δ ≤ 1)
+    (a : ℕ → Plane) (A : ℕ → Set ℝ) (hAmeas : ∀ k, MeasurableSet (A k))
+    (hA01 : ∀ k, A k ⊆ Icc (0 : ℝ) 1)
+    (s : Finset ℕ) (U : ℕ → Set Plane) (hediam : ∀ n ∈ s, Metric.ediam (U n) ≤ ENNReal.ofReal ρ)
+    (hcov : ∀ k, (fun t => a k + t • dir ((k : ℝ) * δ)) '' (A k) ⊆ ⋃ n ∈ s, U n) :
+    (∑ k ∈ Finset.range N, ENNReal.ofReal (2 * δ) * volume (A k)) ^ 2
+      ≤ (s.card : ℝ≥0∞) * ENNReal.ofReal ((ρ + δ) ^ 2) * volume (closedBall (0 : Plane) 1)
+        * ENNReal.ofReal (6 * Real.pi * δ * (2 * N * (1 + Real.log N))) := by
+  have hPbound : volume (Metric.cthickening δ (⋃ n ∈ s, U n))
+      ≤ (s.card : ℝ≥0∞) * ENNReal.ofReal ((ρ + δ) ^ 2) * volume (closedBall (0 : Plane) 1) := by
+    have h2 : ∑ n ∈ s, volume (thickening (U n) δ)
+        ≤ ∑ _n ∈ s, ENNReal.ofReal ((ρ + δ) ^ 2) * volume (closedBall (0 : Plane) 1) :=
+      Finset.sum_le_sum (fun n hn => volume_thickening_le_of_ediam_le hρ hδ.le (hediam n hn))
+    have h3 : ∑ _n ∈ s, ENNReal.ofReal ((ρ + δ) ^ 2) * volume (closedBall (0 : Plane) 1)
+        = (s.card : ℝ≥0∞) * ENNReal.ofReal ((ρ + δ) ^ 2) * volume (closedBall (0 : Plane) 1) := by
+      rw [Finset.sum_const, nsmul_eq_mul, mul_assoc]
+    rw [show Metric.cthickening δ (⋃ n ∈ s, U n) = thickening (⋃ n ∈ s, U n) δ from rfl, ← h3]
+    exact le_trans (volume_thickening_biUnion_le s U δ) h2
+  calc (∑ k ∈ Finset.range N, ENNReal.ofReal (2 * δ) * volume (A k)) ^ 2
+      ≤ volume (Metric.cthickening δ (⋃ n ∈ s, U n))
+          * ENNReal.ofReal (6 * Real.pi * δ * (2 * N * (1 + Real.log N))) :=
+        cordoba_cover_count hδ hδ1 hN a A hAmeas hA01 (⋃ n ∈ s, U n) hcov
+    _ ≤ (s.card : ℝ≥0∞) * ENNReal.ofReal ((ρ + δ) ^ 2) * volume (closedBall (0 : Plane) 1)
+          * ENNReal.ofReal (6 * Real.pi * δ * (2 * N * (1 + Real.log N))) := by gcongr
 
 /-! ### Per-direction length bound: a covered unit segment forces `∑ₙ ediam(Uₙ) ≥ 1`
 

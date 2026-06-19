@@ -71,22 +71,41 @@ segment `ℓ ⊆ ⋃Uₙ` forces `∑ₙ ediam(Uₙ) ≥ 1` (pull back along the
 end-to-end axiom-clean: `kakeya_hausdorffContentBound_one` + `hausdorffMeasure_one_ne_zero`
 (`μH[1]S≠0`, NO sorry) — proof the whole K5 stack composes. (Geometrically the trivial `dimH≥1`.)
 
-**Next-lap entry: the dyadic refinement + double pigeonhole (the `d>1` content, the real crux).**
-The length bound collapses to `ediam`; the `d>1` upgrade must keep the per-scale covered *length*
-`volume(Tₙ)` and group by dyadic scale before bounding. Concretely:
-  (a′) **Refine `one_le_tsum_ediam_of_covers` to expose `1 ≤ ∑ₙ volume(Tₙ)`** (the intermediate, with
-      `Tₙ` the pulled-back covered set), then **group by dyadic scale** `j` of `ediam(Uₙ)`:
-      `1 ≤ ∑ⱼ Lⱼ(θ)`, `Lⱼ(θ)=∑_{n:scale j} volume(Tₙ)`. Pigeonhole (`exists_index_ge_of_tsum_lt`,
-      weights `6/π²(j+1)²`) ⟹ dominant scale `j(θ)` with `Lⱼ(θ) ≳ 1/j²` ⟹ a covered length `≥1/j²`.
-  (b) **Direction pigeonhole** over the `N`-net ⟹ single dominant `j*`, `≳N/poly` directions covered.
-  (c) **Assemble (localized Córdoba):** scale-`j*` pieces = container `E` for
-      `volume_thickening_tubes_ge`, numerator via `volume_tube_ge_frac` (length `wⱼ*`),
-      `vol(E) ≤ ∑ vol((piece)δ)` via `volume_thickening_le_of_ediam_le` ⟹ `M ≳ 2^{2j*}/poly` ⟹
-      `∑_{scale j*} ediam^d ≳ 2^{j*(2-d)}/poly ≥ c`.
-The dyadic-scale reindexing of a `tsum` (a′) is the main new technical hurdle. Reference asked in
-`ON-LINE-REQUEST.md`. Then assemble steps 1–4 (the dyadic
-scale/direction bookkeeping + the two pigeonholes via `exists_index_ge_of_tsum_lt`). Reference asked
-in `ON-LINE-REQUEST.md` (cleanest write-up / existing formalization of Córdoba-for-Hausdorff).
+**DONE (2026-06-19, this lap) — sub-bricks (a′), (b), (c) ALL built + axiom-clean.** Every
+component lemma of the multi-scale estimate is now in the library; only the cross-scale orchestration
+(reference-gated) remains. New (all `#print axioms` = clean):
+  (a′) `Cover.exists_pullback_cover` — refines `one_le_tsum_ediam_of_covers` to expose
+      `1 ≤ ∑ₙ volume(Tₙ)` + the pullback pieces `Tₙ ⊆ [0,1]`. `Cover.exists_dominant_scale` —
+      regroup `∑ₙ fₙ` by dyadic scale fn `g` (`ENNReal.tsum_fiberwise`) + pigeonhole vs telescoping
+      weights `scaleWeight j = 1/(2(j+1)(j+2))` (`tsum < 1`, polynomial decay `≳1/j²` — geometric
+      would be killed by `δ=2⁻ʲ`) ⟹ dominant scale `j`, covered `≥ scaleWeight j`.
+      `Cover.exists_dominant_scale_of_covers` assembles them.
+  (b) `Cover.exists_global_dominant_scale` — finite nonempty direction set `s`, per-direction
+      profiles `L k ·` with `1 ≤ ∑ⱼ L k j` ⟹ single scale `j`, `s.card·scaleWeight j ≤ ∑_{k∈s} L k j`
+      (sum to `≥|s|` via `Summable.tsum_finsetSum`, pigeonhole vs `|s|·scaleWeight`).
+  (c) `CordobaL2.volume_thickening_sets_ge` — localized Córdoba `L²` for ARBITRARY measurable
+      per-direction sets `R k ⊆ T_k^full`, `R k ⊆ E` ⟹ `(∑ vol(R k))² ≤ vol(E)·denom` (overlaps
+      transfer via `R k ⊆` full tube; `volume_thickening_fracTubes_ge` is now a thin instance).
+      `TubeFractional.volume_thickening_covered_ge` — `vol(cthickening δ φ(A)) ≥ 2δ·vol(A)` (general
+      covered set, frame box). `TubeFractional.tube_smul_subset`/`affineSegment_smul_subset` —
+      fractional tube ⊆ full tube. **`CordobaL2.cordoba_cover_count`** — the fully-assembled
+      single-scale count: net pts `a k`, covered sets `A k ⊆ [0,1]`, container `P`, `φₖ(A k) ⊆ P` ⟹
+      `(∑ₖ 2δ·vol(A k))² ≤ vol(cthickening δ P)·6πδ·2N(1+log N)`. With `vol(Pδ) ≤ M·C·δ²` this is
+      `M ≳ (∑vol A k)²/(δ²·logN)`.
+
+**THE remaining obstruction — the net-scale circularity (reference-gated).** `cordoba_cover_count`
+needs the net `δ*`-separated with `N≈1/δ*`, `δ*=2⁻ʲ*` the dominant scale; but `j*` is the pigeonhole
+OUTPUT, needing the net as INPUT. `sum_overlap_le` ties width = separation = δ, so one fixed net
+can't serve all scales. Resolution needs the precise nesting (fix fine net → per-direction dominant
+scale → group by `j(θ)` → **thin** to a `2⁻ʲ*`-separated subnet, with the covered-length retention
+argument) OR a cleaner cross-scale sum. **Exact structure requested in `ON-LINE-REQUEST.md`
+(2026-06-19 UPDATE).** This is the lone gap between the built bricks and `kakeya_hausdorffContentBound`.
+
+**Next-lap entry:** harvest any `ON-LINE-FINDINGS-*` first; then wire the cross-scale orchestration
+(the net-thinning combinatorics) connecting `exists_global_dominant_scale` + `cordoba_cover_count` +
+`volume_thickening_le_of_ediam_le` into `Engine.kakeya_hausdorffContentBound`. If no findings yet,
+attack the net-thinning lemma directly (a `2⁻ʲ*`-separated subnet of a fine net, one direction per
+angular cell, retaining covered length) — the only genuinely-new piece left.
 
 **Retired (do NOT relitigate):** path 1 (weak-* limit) needs `Measure`-topology/lsc support mathlib
 lacks cleanly; path 3 needs a Frostman *construction* mathlib doesn't have (only the spreading
