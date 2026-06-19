@@ -27,12 +27,14 @@ SCOPE. See `README.md`.
 -/
 import LeanFormalizations.Logic.Goodstein.Defs
 import LeanFormalizations.Logic.Goodstein.Anchors
+import LeanFormalizations.Logic.Goodstein.Engine
 
 namespace LeanFormalizations.Logic.Goodstein
 
 /-- **Goodstein's theorem.** For every starting value `m`, the Goodstein sequence
-seeded at `m` eventually reaches `0`. -/
-theorem goodstein_terminates (m : ℕ) : ∃ N, goodsteinSeq m N = 0 := by
-  sorry
+seeded at `m` eventually reaches `0`. (The ordinal-descent proof lives in
+`Engine.lean`; this is the thin, faithful audit statement.) -/
+theorem goodstein_terminates (m : ℕ) : ∃ N, goodsteinSeq m N = 0 :=
+  goodstein_terminates_engine m
 
 end LeanFormalizations.Logic.Goodstein

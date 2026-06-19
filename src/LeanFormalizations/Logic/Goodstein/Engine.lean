@@ -347,4 +347,39 @@ lemma toOrdinal_bump (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
       rw [key, ih e he_lt_n, ih (n % b ^ e) hr_lt_n]
       exact (toOrdinal_pos b n hn0).symm
 
+/-- Ordinal value assigned to the `k`-th Goodstein term, read in its base `k+2`. -/
+noncomputable def seqOrd (m k : ℕ) : Ordinal.{0} := toOrdinal (k + 2) (goodsteinSeq m k)
+
+/-- **Descent.** While the term is nonzero, one Goodstein step strictly lowers the
+ordinal value: the base-bump preserves it (invariance) and the subtract-one
+strictly drops it (monotonicity). -/
+lemma seqOrd_step (m k : ℕ) (h : goodsteinSeq m k ≠ 0) : seqOrd m (k + 1) < seqOrd m k := by
+  have hb : 2 ≤ k + 2 := by omega
+  have hstep : goodsteinSeq m (k + 1) = bump (k + 2) (goodsteinSeq m k) - 1 := rfl
+  have hMpos : 0 < bump (k + 2) (goodsteinSeq m k) := by
+    rw [bump_pos (k + 2) _ h]
+    have h1 : 0 < goodsteinSeq m k / (k + 2) ^ Nat.log (k + 2) (goodsteinSeq m k) :=
+      Nat.div_pos (Nat.pow_log_le_self _ h) (Nat.pow_pos (by omega))
+    have h2 : 0 < (k + 2 + 1) ^ bump (k + 2) (Nat.log (k + 2) (goodsteinSeq m k)) :=
+      Nat.pow_pos (by omega)
+    have := Nat.mul_pos h1 h2
+    omega
+  have hmono := (toOrdinal_mono_and_bound (k + 2 + 1) (by omega) (bump (k + 2) (goodsteinSeq m k))).1
+                  (bump (k + 2) (goodsteinSeq m k) - 1) (by omega)
+  have hinv := toOrdinal_bump (k + 2) hb (goodsteinSeq m k)
+  unfold seqOrd
+  rw [hstep, show k + 1 + 2 = k + 2 + 1 from by ring]
+  exact hmono.trans_le (le_of_eq hinv)
+
+/-- Every Goodstein sequence reaches `0` (engine form). If it never did, `seqOrd`
+would be an infinite strictly-decreasing sequence of ordinals, contradicting
+well-foundedness of `<` on `Ordinal`. -/
+theorem goodstein_terminates_engine (m : ℕ) : ∃ N, goodsteinSeq m N = 0 := by
+  by_contra hcon
+  rw [not_exists] at hcon
+  have hdec : ∀ k, seqOrd m (k + 1) < seqOrd m k := fun k => seqOrd_step m k (hcon k)
+  obtain ⟨a, ⟨N, hNa⟩, hmin⟩ :=
+    Ordinal.lt_wf.has_min (Set.range (seqOrd m)) ⟨seqOrd m 0, 0, rfl⟩
+  exact hmin (seqOrd m (N + 1)) ⟨N + 1, rfl⟩ (hNa ▸ hdec N)
+
 end LeanFormalizations.Logic.Goodstein
