@@ -1,5 +1,41 @@
 # PENDING_WORK — lean-formalizations
 
+## ✅ 2026-06-19 (ENDPOINT LAP) — `src/` is now SORRY-FREE and axiom-declaration-free
+
+Per operator directive, drove the repo to its honest endpoint. The planar-Kakeya headline
+`davies_kakeya_2d : KakeyaSetConjectureDim 2` was re-verified axiom-clean end-to-end by the kernel
+(`#print axioms davies_kakeya_2d`, `two_le_dimH`, `kakeya_hausdorffContentBound_elementary`,
+`content_bound_step` all = `[propext, Classical.choice, Quot.sound]`). Faithfulness re-confirmed:
+`Defs.lean` matches `formal-conjectures`' `Wikipedia/Kakeya.lean` **verbatim** (`ℝ^n` =
+`EuclideanSpace ℝ (Fin n)`, checked in `FormalConjecturesForMathlib/Geometry/Euclidean.lean`); our
+headline is a drop-in for their `kakeya_2d := sorry`.
+
+**Actions (commits `2306a3b`, `b01493e`):**
+1. **Deleted** the redundant, fully-superseded **legacy discrete assembly** in `Engine.lean`
+   (`kakeya_hausdorffContentBound` + `hausdorffMeasure_pos_of_isKakeya_discrete` +
+   `two_le_dimH_discrete`), whose Case-B branch was an unclosable disclosed `sorry`. **Kept** the
+   kernel-checked guard `kakeya_subresolution_content_is_unsound` (so the FALSE Case-B axiom cannot
+   return) and the live Córdoba bricks (`content_ratio_lower`, `caseA_content`,
+   `cover_content_per_scale`, the `L²` ladder) still used by the elementary route.
+2. **Quarantined** the dormant out-of-lane WIP `Logic/FastGrowing/Basic.lean` (its one `sorry`,
+   `fastGrowing_fundSeq_step`, is a hard ordinal-hierarchy limit-step lemma imported by NO headline)
+   → moved to `wip/Logic/FastGrowing/Basic.lean` (out of the build target, preserved; see `wip/README.md`)
+   and dropped its import from the root aggregator.
+3. **Hardened faithfulness:** added `not_isKakeya_xAxis` (a single line is NOT Kakeya) — a discriminating
+   anti-triviality anchor that, with `isKakeya_closedBall`, pins `IsKakeya` from both sides and guards
+   the dangerous `∀`→`∃` mis-statement. Fixed stale docstrings referencing the deleted theorem.
+
+**Result:** `lake build` green (8299 jobs); `src/` has **0 `sorry`s, 0 axiom declarations**;
+`davies_kakeya_2d` axioms **unchanged**. The Kakeya2D lane is at a complete, clean terminus.
+
+**Remaining (all OPTIONAL, none gating the headline):** (a) the genuine but **moot** mathlib gap of an
+*independent* von Neumann/Jankov measurable-selection theorem to discharge the abstract `jvn` hypothesis
+of `Selection.kakeya_aeMeasurable_selection_of_jvn` (would give a 2nd proof route; multi-lap DST,
+mathlib has only `AnalyticSet` API); (b) `kakeya_3d` (Wang–Zahl 2025), multi-year, new infra; (c) the
+quarantined `wip/` FastGrowing lemma. None are lap-sized; all are the operator's call to greenlight.
+
+---
+
 ## 🛑→✅ 2026-06-19 (REVIEW LAP) — the last lane axiom was UNSOUND; found, refuted, removed
 
 The off-headline legacy axiom `Engine.kakeya_subresolution_content` (the discrete route's "Case-B
