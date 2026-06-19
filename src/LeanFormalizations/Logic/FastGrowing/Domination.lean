@@ -11,22 +11,25 @@ built on the *diagonal tower* fundamental sequence `0, 1, ω, ω^ω, ω^ω^ω, �
 
 * `fastGrowingε₀ i = fastGrowing (tower i) i`, where `tower i = (fun a => ω^a)^[i] 0`.
 
-This file pins the tower structure and **states A4**, reducing it to its hard core. With
+This file pins the tower structure and **proves A4 in full, axiom-clean**. With
 A1 (`le_fastGrowing`), A2 (`fastGrowing_monotone`) and A3 (`fastGrowing_bachmann_reach`)
-all proved axiom-clean in `Basic.lean`, the remaining content of A4 is an **index
-domination** fact: each fixed `o` is eventually outgrown because the tower indices climb
-past it (the towers are cofinal in `ε₀`).
+proved in `Basic.lean`, the remaining content of A4 was an **index domination** fact: each
+fixed `o` is eventually outgrown because the tower indices climb past it.
 
-## Attack plan (the disclosed `sorry` is the index-domination core)
-1. **Tower structure** (done here): `tower (i+1) = ω^{tower i}`, `fastGrowingε₀` unfolds to
-   `fastGrowing (tower i) i`.
-2. **Cofinality** *(open)*: for NF `o`, `∃ k, o < tower k` — the towers exhaust `ε₀`.
-   Needs `repr o < ε₀` (from `NF`) and `x < ω^x` for `x < ε₀` (strictness via `NF`).
-3. **Index domination** *(open, the core)*: `o < tower n ⟹ fastGrowing o n ≤
-   fastGrowing (tower n) n` for `n` past some threshold. The `Reaches`/Bachmann engine
-   gives index monotonicity *along fundamental sequences*; lifting it to a general
-   `α < β ⟹ eventually f_α ≤ f_β` is the genuine remaining work.
-4. **Strictness**: bump `≤` to `<` via one successor step (`lt_fastGrowing`).
+## Architecture (all proved, no `sorry`)
+1. **Tower structure**: `tower (i+1) = ω^{tower i}`, `fastGrowingε₀` unfolds to
+   `fastGrowing (tower i) i`; cofinality `tower_cofinal`.
+2. **The CNF norm** `norm` + the **key cofinality bound**
+   `lt_fundamentalSequence_of_norm_le` (THE new theorem): for a limit `β` and `α < β` with
+   `norm α ≤ x`, already `α < g_β(x)`. Proved by structural induction over all six
+   `fundamentalSequence` branches.
+3. **General reachability** `reaches_of_lt`: `α < β ∧ norm α ≤ x ⟹ Reaches x β α`, by WF
+   recursion on `β` reusing (2) at limits.
+4. **Strictness** via the notation successor `osucc`: reach `osucc o` and take one strict
+   successor index step (`fastGrowing_lt_succ_index`, needs `2 ≤ n`).
+
+Headline: `fastGrowing_lt_fastGrowingε₀` — every fixed `f_o` is eventually strictly
+dominated by `f_{ε₀}`. This is the unboundedness that *is* the Kirby–Paris growth gap.
 -/
 import Mathlib.SetTheory.Ordinal.Notation
 import LeanFormalizations.Logic.FastGrowing.Basic
@@ -188,7 +191,7 @@ theorem lt_fundamentalSequence_of_norm_le {x : ℕ} :
                 · rw [norm_oadd] at hnorm
                   exact (le_max_of_le_right (le_max_right _ _)).trans hnorm
             · have hr := lt_def.1 hbalt; rw [repr_zero] at hr
-              exact absurd hr (Ordinal.not_lt_zero _)
+              exact absurd hr not_lt_zero
       · -- a a limit (fundamental sequence `p`)
         have hb0 : b = 0 := by have hpb := fundamentalSequence_has_prop b; rwa [hb] at hpb
         rcases hm : m.natPred with _ | k
@@ -209,7 +212,7 @@ theorem lt_fundamentalSequence_of_norm_le {x : ℕ} :
               exact oadd_lt_oadd_1 hα hep
             · simp only [PNat.one_coe] at hnlt; exact absurd hnlt (by have := na.pos; omega)
             · have hr := lt_def.1 hbalt; rw [repr_zero] at hr
-              exact absurd hr (Ordinal.not_lt_zero _)
+              exact absurd hr not_lt_zero
         · -- L5 : `g = fun i => ω^a·(k+1) + ω^(a[i])`, `m = k+2`
           have hg' : g = fun i => oadd a k.succPNat (oadd (p i) 1 0) := by
             rw [fundamentalSequence, hb, ha, hm] at hg; exact (Sum.inr.inj hg).symm
@@ -242,7 +245,7 @@ theorem lt_fundamentalSequence_of_norm_le {x : ℕ} :
                   have hep : eb < p x := iha hβ.fst p ha eb hα.snd.fst (lt_def.2 heb) hnorm_eb
                   exact oadd_lt_oadd_1 hα.snd hep
             · have hr := lt_def.1 hbalt; rw [repr_zero] at hr
-              exact absurd hr (Ordinal.not_lt_zero _)
+              exact absurd hr not_lt_zero
     · -- b a successor ⟹ `oadd a m b` is a successor → contradicts the limit `hg`
       rw [fundamentalSequence_oadd_succ hb] at hg; exact (Sum.inl_ne_inr hg).elim
     · -- L1 : b a limit, `g = fun i => oadd a m (b[i])` ; descend the tail
@@ -274,7 +277,7 @@ theorem reaches_of_lt {x : ℕ} :
     have hβ0 : β = 0 := by have hp := fundamentalSequence_has_prop β; rwa [e] at hp
     rw [hβ0] at hαβ
     have hr : α.repr < 0 := by rw [← repr_zero]; exact lt_def.1 hαβ
-    exact absurd hr (Ordinal.not_lt_zero _)
+    exact absurd hr not_lt_zero
   · have hp := fundamentalSequence_has_prop β; rw [e] at hp
     have hγNF : γ.NF := hp.2 hβ
     have hγβ : γ < β := lt_def.2 (by rw [hp.1]; exact Order.lt_succ _)
@@ -312,6 +315,72 @@ theorem fastGrowing_lt_succ_index {o a : ONote}
   calc fastGrowing a n < fastGrowing a (fastGrowing a n) := hlt2
     _ = (fastGrowing a)^[2] n := h2eq.symm
     _ ≤ (fastGrowing a)^[n] n := hstep2
+
+/-! ### The notation successor `osucc` (for the strict step in index domination)
+
+To bump the `≤` from `Reaches` to a strict `<` we route the descent through the
+notation-successor of `o`: `Reaches n (tower n) (osucc o)` plus the strict successor index
+step. `osucc` is defined structurally so its `fundamentalSequence` is transparent
+(`inl (some o)`). -/
+
+/-- The **notation successor** `osucc o` (with `repr (osucc o) = repr o + 1` and
+`fundamentalSequence (osucc o) = inl (some o)` on normal forms). Defined structurally:
+increment the finite tail, recursing through the CNF spine. -/
+def osucc : ONote → ONote
+  | 0 => oadd 0 1 0
+  | oadd 0 n _ => oadd 0 (n + 1) 0
+  | oadd (oadd e' n' a') m b => oadd (oadd e' n' a') m (osucc b)
+
+theorem repr_osucc : ∀ {o : ONote}, o.NF → (osucc o).repr = o.repr + 1
+  | 0, _ => by simp [osucc]
+  | oadd 0 n a, h => by
+      have ha0 : a = 0 := by
+        have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
+        rw [repr_zero, opow_zero] at hlt
+        exact (@repr_inj a 0 h.snd NF.zero).1 (by rw [repr_zero]; exact lt_one_iff_zero.1 hlt)
+      subst ha0
+      show (oadd 0 (n + 1) 0).repr = (oadd 0 n 0).repr + 1
+      simp only [ONote.repr, opow_zero, one_mul, add_zero, PNat.add_coe,
+        PNat.one_coe, Nat.cast_add, Nat.cast_one]
+  | oadd (oadd e' n' a') m b, h => by
+      show (oadd (oadd e' n' a') m (osucc b)).repr = (oadd (oadd e' n' a') m b).repr + 1
+      simp only [ONote.repr]
+      rw [repr_osucc h.snd, ← add_assoc]
+
+theorem osucc_NF : ∀ {o : ONote}, o.NF → (osucc o).NF
+  | 0, _ => NF.oadd_zero 0 1
+  | oadd 0 n _, _ => NF.oadd_zero 0 (n + 1)
+  | oadd (oadd e' n' a') m b, h => by
+      refine NF.oadd h.fst m (NF.below_of_lt' ?_ (osucc_NF h.snd))
+      rw [repr_osucc h.snd, ← Order.succ_eq_add_one]
+      have hElim : Order.IsSuccLimit (ω ^ (oadd e' n' a').repr) := by
+        refine isSuccLimit_opow_left isSuccLimit_omega0 ?_
+        have hpos : (0 : Ordinal) < (oadd e' n' a').repr := by
+          rw [← repr_zero]; exact lt_def.1 (oadd_pos e' n' a')
+        exact hpos.ne'
+      exact hElim.succ_lt h.snd'.repr_lt
+
+theorem fundamentalSequence_osucc : ∀ {o : ONote}, o.NF →
+    fundamentalSequence (osucc o) = Sum.inl (some o)
+  | 0, _ => rfl
+  | oadd 0 n a, h => by
+      have ha0 : a = 0 := by
+        have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
+        rw [repr_zero, opow_zero] at hlt
+        exact (@repr_inj a 0 h.snd NF.zero).1 (by rw [repr_zero]; exact lt_one_iff_zero.1 hlt)
+      subst ha0
+      obtain ⟨k, rfl⟩ : ∃ k : ℕ, n = k.succPNat := ⟨n.natPred, (PNat.succPNat_natPred n).symm⟩
+      rfl
+  | oadd (oadd e' n' a') m b, h =>
+      fundamentalSequence_oadd_succ (fundamentalSequence_osucc h.snd)
+
+theorem norm_osucc_le : ∀ {o : ONote}, norm (osucc o) ≤ norm o + 1
+  | 0 => by simp [osucc, norm]
+  | oadd 0 n _ => by
+      simp only [osucc, norm_oadd, norm_zero, PNat.add_coe, PNat.one_coe]; omega
+  | oadd (oadd e' n' a') m b => by
+      have ih : norm (osucc b) ≤ norm b + 1 := norm_osucc_le
+      simp only [osucc, norm_oadd]; omega
 
 /-- The **diagonal tower** `0, 1, ω, ω^ω, …` underlying `ONote.fastGrowingε₀`:
 `tower i = (fun a => ω^a)^[i] 0`. -/
@@ -366,15 +435,37 @@ theorem tower_cofinal : ∀ (o : ONote), o.NF → ∃ k, o < tower k
 /-- `fastGrowingε₀ i = f_{tower i}(i)` — the definitional unfolding, as a named lemma. -/
 theorem fastGrowingε₀_eq (i : ℕ) : fastGrowingε₀ i = fastGrowing (tower i) i := rfl
 
-/-- **Index domination — the sharp remaining A4 core** *(disclosed `sorry`)*. Once a tower
-level has overtaken `o` (`o < tower n`), it dominates `o` pointwise at the diagonal
-argument: `f_o(n) < f_{tower n}(n)`. This is the full Bachmann reachability strength —
-`tower n` reaches every `α < tower n` with budget `n` (generalizing
-`fastGrowing_bachmann_reach`, which handles only the consecutive `o[n+1] → o[n]`) — plus
-one strict step. It is the last unproved ingredient of the independence growth gap. -/
-theorem fastGrowing_lt_of_lt_tower {o : ONote} (n : ℕ) (_hn : 1 ≤ n) (_h : o < tower n) :
+/-- **Index domination — the A4 core, proved axiom-clean.** Once a tower level has overtaken
+`o` (`o < tower n`), it strictly dominates `o` at the diagonal argument:
+`f_o(n) < f_{tower n}(n)`, for `n ≥ 2` past `norm o`. The full Bachmann reachability strength
+(`reaches_of_lt`: `tower n` reaches the successor of `o` with budget `n`, generalizing
+`fastGrowing_bachmann_reach` from consecutive indices to arbitrary `α < β`) plus one strict
+successor step (`fastGrowing_lt_succ_index`). The growth gap of Kirby–Paris independence. -/
+theorem fastGrowing_lt_of_lt_tower {o : ONote} (ho : o.NF) (n : ℕ)
+    (hn : norm o < n) (h2 : 2 ≤ n) (h : o < tower n) :
     fastGrowing o n < fastGrowing (tower n) n := by
-  sorry
+  -- `tower n` is a limit ordinal for `n ≥ 2`: `repr (tower n) = ω^(repr (tower (n-1)))`
+  -- with `tower (n-1) > 0`, so `ω^· ` is a limit.
+  have hlimit : Order.IsSuccLimit (tower n).repr := by
+    obtain ⟨j, rfl⟩ : ∃ j, n = j + 1 := ⟨n - 1, by omega⟩
+    rw [repr_tower_succ]
+    refine isSuccLimit_opow_left isSuccLimit_omega0 ?_
+    have hpos : (0 : ONote) < tower j :=
+      tower_zero ▸ tower_strictMono (show (0 : ℕ) < j by omega)
+    rw [← repr_zero]; exact (lt_def.1 hpos).ne'
+  -- Reach the *successor* of `o`, then take one strict successor step.
+  have hNF : (osucc o).NF := osucc_NF ho
+  have hlt : osucc o < tower n := by
+    rw [lt_def, repr_osucc ho, ← Order.succ_eq_add_one]
+    exact hlimit.succ_lt (lt_def.1 h)
+  have hnorm : norm (osucc o) ≤ n := le_trans norm_osucc_le (by omega)
+  have hreach : Reaches n (tower n) (osucc o) :=
+    reaches_of_lt (tower n) (tower_NF n) (osucc o) hNF hlt hnorm
+  have hle : fastGrowing (osucc o) n ≤ fastGrowing (tower n) n :=
+    fastGrowing_le_of_reaches (le_trans one_le_two h2) hreach
+  have hstrict : fastGrowing o n < fastGrowing (osucc o) n :=
+    fastGrowing_lt_succ_index (fundamentalSequence_osucc ho) h2
+  exact lt_of_lt_of_le hstrict hle
 
 /-- **A4 — domination (the headline crux).** Every fixed level of the fast-growing
 hierarchy is eventually strictly dominated by `fastGrowingε₀`. Reduced (axiom-clean modulo
@@ -384,12 +475,12 @@ fastGrowingε₀ n`. -/
 theorem fastGrowing_lt_fastGrowingε₀ (o : ONote) (ho : o.NF) :
     ∃ N, ∀ n ≥ N, fastGrowing o n < fastGrowingε₀ n := by
   obtain ⟨k, hk⟩ := tower_cofinal o ho
-  refine ⟨max k 1, fun n hn => ?_⟩
-  have hkn : k ≤ n := le_trans (le_max_left k 1) hn
-  have h1n : 1 ≤ n := le_trans (le_max_right k 1) hn
+  refine ⟨max (max k (norm o + 1)) 2, fun n hn => ?_⟩
+  simp only [ge_iff_le, max_le_iff] at hn
+  obtain ⟨⟨hkn, hnormn⟩, h2n⟩ := hn
   have hlt : o < tower n := lt_of_lt_of_le hk (tower_strictMono.monotone hkn)
   rw [fastGrowingε₀_eq]
-  exact fastGrowing_lt_of_lt_tower n h1n hlt
+  exact fastGrowing_lt_of_lt_tower ho n (by omega) h2n hlt
 
 /-! ### Anti-vacuity anchors for `fastGrowingε₀` (`native_decide`) -/
 
