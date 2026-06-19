@@ -777,4 +777,35 @@ theorem mertens_second :
   · linarith [e1.1, e2.1, le_abs_self (Real.log (Real.log 2))]
   · linarith [e1.2, e2.2, neg_le_abs (Real.log (Real.log 2))]
 
+/-!
+## Toward Mertens' third theorem `∏_{p ≤ x} (1 − 1/p) ~ e^{−γ}/log x`
+
+Entry point: `log ∏_{p≤N}(1−1/p) = ∑_{p≤N} log(1−1/p)`.  Writing `log(1−1/p) = −1/p + (log(1−1/p)+1/p)`
+splits the sum into `−primeRecipSum N` (`= −log log N − M + O(1)` by Mertens' 2nd) plus the absolutely
+convergent correction `∑_p (log(1−1/p)+1/p)` (comparison with `∑ 1/p²`).  The `e^{−γ}` constant
+identification is the deep remaining part.
+-/
+
+/-- `∏_{p ≤ N} (1 − 1/p)`, the prime product of Mertens' third theorem. -/
+noncomputable def primeProd (N : ℕ) : ℝ :=
+  ∏ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, (1 - (p : ℝ)⁻¹)
+
+/-- Each factor `1 − 1/p` is positive (for `p` prime, `p ≥ 2 ⇒ 1/p ≤ 1/2`). -/
+lemma one_sub_inv_pos_of_prime {p : ℕ} (hp : p.Prime) : 0 < 1 - (p : ℝ)⁻¹ := by
+  have hpR : (2 : ℝ) ≤ (p : ℝ) := by exact_mod_cast hp.two_le
+  have : (p : ℝ)⁻¹ ≤ 1 / 2 := by
+    have hc : (p : ℝ)⁻¹ * (p : ℝ) = 1 := inv_mul_cancel₀ (by positivity)
+    nlinarith [hc, mul_nonneg (show (0:ℝ) ≤ (p:ℝ)⁻¹ by positivity)
+      (show (0:ℝ) ≤ (p:ℝ) - 2 by linarith)]
+  linarith
+
+/-- **Product-to-sum bridge for Mertens' third theorem.**
+`log ∏_{p≤N}(1−1/p) = ∑_{p≤N} log(1−1/p)`. -/
+lemma log_primeProd_eq (N : ℕ) :
+    Real.log (primeProd N) = ∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, Real.log (1 - (p : ℝ)⁻¹) := by
+  rw [primeProd, Real.log_prod]
+  intro p hp
+  rw [Finset.mem_filter] at hp
+  exact ne_of_gt (one_sub_inv_pos_of_prime hp.2)
+
 end LeanFormalizations.Mertens
