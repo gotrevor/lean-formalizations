@@ -660,4 +660,121 @@ lemma integrableOn_primeSumDiv_floor_div (N : ℕ) :
   simp only []
   rw [sum_primeLogDivCoeff_eq]; ring
 
+open MeasureTheory intervalIntegral in
+/-- **Mertens' second theorem.** `∑_{p ≤ N} 1/p = log log N + O(1)` as `N → ∞` — **absent from mathlib**.
+Assembled from `mertens_second_identity` (Abel summation) + the `log log N` main integral
+(`integral_inv_log_mul`) + the `O(1)` remainder (`abs_primeSumDiv_floor_sub_log_le` with
+`integral_inv_mul_sq_log`). -/
+theorem mertens_second :
+    (fun N : ℕ ↦ primeRecipSum N - Real.log (Real.log N)) =O[atTop] (fun _ ↦ (1 : ℝ)) := by
+  have hC₀nn : (0 : ℝ) ≤ (Real.log 4 + 5) + 2 * ∑' b : ℕ, Real.log b / (b : ℝ) ^ 2 := by
+    have h1 : (0 : ℝ) ≤ Real.log 4 + 5 := by
+      have := Real.log_nonneg (show (1 : ℝ) ≤ 4 by norm_num); linarith
+    have h2 : (0 : ℝ) ≤ ∑' b : ℕ, Real.log b / (b : ℝ) ^ 2 := by
+      apply tsum_nonneg; intro b
+      rcases Nat.eq_zero_or_pos b with rfl | hb
+      · simp
+      · exact div_nonneg (Real.log_nonneg (Nat.one_le_cast.mpr hb)) (by positivity)
+    linarith
+  set C₀ : ℝ := (Real.log 4 + 5) + 2 * ∑' b : ℕ, Real.log b / (b : ℝ) ^ 2 with hC₀def
+  have hlog32 : (0 : ℝ) ≤ Real.log (3 / 2) := Real.log_nonneg (by norm_num)
+  set Cr : ℝ := C₀ + Real.log (3 / 2) with hCrdef
+  have hCrnn : (0 : ℝ) ≤ Cr := by rw [hCrdef]; linarith
+  rw [Asymptotics.isBigO_iff]
+  refine ⟨(1 + C₀ / Real.log 2) + Cr / Real.log 2 + |Real.log (Real.log 2)|, ?_⟩
+  filter_upwards [eventually_ge_atTop 2] with N hN
+  rw [Real.norm_eq_abs, norm_one, mul_one]
+  have hNR : (2 : ℝ) ≤ (N : ℝ) := by exact_mod_cast hN
+  have hN1 : 1 ≤ N := by omega
+  have hlog2pos : (0 : ℝ) < Real.log 2 := Real.log_pos (by norm_num)
+  have hlogN2 : Real.log 2 ≤ Real.log N := Real.log_le_log (by norm_num) hNR
+  have hlogNpos : (0 : ℝ) < Real.log N := lt_of_lt_of_le hlog2pos hlogN2
+  -- integrabilities (the step-function integrand, the continuous weight, and the bound integrand)
+  have hI1 : IntervalIntegrable (fun t ↦ primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2)) volume 2 N :=
+    (intervalIntegrable_iff_integrableOn_Icc_of_le hNR).mpr (integrableOn_primeSumDiv_floor_div N)
+  have hcont2 : ContinuousOn (fun t : ℝ ↦ (Real.log t * t)⁻¹) (Set.uIcc 2 N) := by
+    rw [Set.uIcc_of_le hNR]
+    apply ContinuousOn.inv₀
+    · exact (Real.continuousOn_log.mono
+        (fun t ht => ne_of_gt (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))).mul continuousOn_id
+    · exact fun t ht => ne_of_gt (mul_pos (Real.log_pos (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))
+        (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))
+  have hI2 : IntervalIntegrable (fun t ↦ (Real.log t * t)⁻¹) volume 2 N := hcont2.intervalIntegrable
+  have hcontInv : ContinuousOn (fun t : ℝ ↦ (t * (Real.log t) ^ 2)⁻¹) (Set.uIcc 2 N) := by
+    rw [Set.uIcc_of_le hNR]
+    apply ContinuousOn.inv₀
+    · exact continuousOn_id.mul ((Real.continuousOn_log.mono
+        (fun t ht => ne_of_gt (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))).pow 2)
+    · exact fun t ht => ne_of_gt (mul_pos (by simp only [Set.mem_Icc] at ht; linarith [ht.1])
+        (pow_pos (Real.log_pos (by simp only [Set.mem_Icc] at ht; linarith [ht.1])) 2))
+  have hIg : IntervalIntegrable (fun t ↦ Cr * (t * (Real.log t) ^ 2)⁻¹) volume 2 N :=
+    (hcontInv.const_smul Cr).intervalIntegrable
+  -- the main integral (log log) and the identity in interval form
+  have hJ : ∫ t in (2 : ℝ)..N, (Real.log t * t)⁻¹ = Real.log (Real.log N) - Real.log (Real.log 2) :=
+    integral_inv_log_mul (by norm_num) hNR
+  have hidI : primeRecipSum N
+      = primeSumDiv N / Real.log N + ∫ t in (2 : ℝ)..N, primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2) := by
+    rw [mertens_second_identity N, ← integral_of_le hNR]
+  -- pointwise bound for the remainder integrand on `Ι 2 N`
+  have h_ae : ∀ᵐ t ∂(volume.restrict (Set.uIoc (2 : ℝ) N)),
+      ‖primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2) - (Real.log t * t)⁻¹‖ ≤ Cr * (t * (Real.log t) ^ 2)⁻¹ := by
+    refine (ae_restrict_iff' measurableSet_uIoc).mpr (ae_of_all _ (fun t ht => ?_))
+    rw [Set.uIoc_of_le hNR, Set.mem_Ioc] at ht
+    have htt : (1 : ℝ) < t := by linarith [ht.1]
+    have htpos : (0 : ℝ) < t := by linarith
+    have hlogtpos : (0 : ℝ) < Real.log t := Real.log_pos htt
+    have hden : (0 : ℝ) < t * (Real.log t) ^ 2 := mul_pos htpos (pow_pos hlogtpos 2)
+    have heq : primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2) - (Real.log t * t)⁻¹
+        = (primeSumDiv ⌊t⌋₊ - Real.log t) / (t * (Real.log t) ^ 2) := by
+      field_simp
+    have hb := abs_primeSumDiv_floor_sub_log_le (le_of_lt ht.1)
+    rw [← hC₀def, ← hCrdef] at hb
+    rw [heq, Real.norm_eq_abs, abs_div, abs_of_pos hden, ← div_eq_mul_inv]
+    gcongr
+  -- assemble: primeRecipSum N − log log N = primeSumDiv N/log N + R − log log 2
+  have hkey : primeRecipSum N - Real.log (Real.log N)
+      = primeSumDiv N / Real.log N
+        + (∫ t in (2 : ℝ)..N, (primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2) - (Real.log t * t)⁻¹))
+        - Real.log (Real.log 2) := by
+    have hf1 : (∫ t in (2 : ℝ)..N, primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2))
+        = (∫ t in (2 : ℝ)..N, (primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2) - (Real.log t * t)⁻¹))
+          + ∫ t in (2 : ℝ)..N, (Real.log t * t)⁻¹ := by
+      rw [integral_sub hI1 hI2]; ring
+    rw [hidI, hf1, hJ]; ring
+  -- bound the remainder `R`
+  have hRbound : |∫ t in (2 : ℝ)..N,
+      (primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2) - (Real.log t * t)⁻¹)| ≤ Cr / Real.log 2 := by
+    have hnorm := norm_integral_le_abs_of_norm_le h_ae hIg
+    rw [Real.norm_eq_abs, intervalIntegral.integral_const_mul,
+      integral_inv_mul_sq_log (by norm_num) hNR] at hnorm
+    have hinvle : (Real.log N)⁻¹ ≤ (Real.log 2)⁻¹ := by
+      have h := _root_.one_div_le_one_div_of_le hlog2pos hlogN2
+      rwa [one_div, one_div] at h
+    have hpos : 0 ≤ Cr * ((Real.log 2)⁻¹ - (Real.log N)⁻¹) := mul_nonneg hCrnn (by linarith)
+    rw [abs_of_nonneg hpos] at hnorm
+    have htail : Cr * ((Real.log 2)⁻¹ - (Real.log N)⁻¹) ≤ Cr / Real.log 2 := by
+      have h0 : 0 ≤ Cr * (Real.log N)⁻¹ := mul_nonneg hCrnn (by positivity)
+      rw [mul_sub, div_eq_mul_inv]; linarith
+    linarith
+  -- the boundary term is bounded
+  have hps := abs_primeSumDiv_sub_log_le hN1
+  rw [← hC₀def] at hps
+  have hquot : primeSumDiv N / Real.log N ≤ 1 + C₀ / Real.log 2 := by
+    rw [div_le_iff₀ hlogNpos]
+    have hle : primeSumDiv N ≤ Real.log N + C₀ := by rw [abs_le] at hps; linarith [hps.2]
+    have haux : C₀ ≤ C₀ / Real.log 2 * Real.log N := by
+      rw [div_mul_eq_mul_div, le_div_iff₀ hlog2pos]; nlinarith [hC₀nn, hlogN2]
+    nlinarith [hle, haux]
+  have hquot0 : 0 ≤ primeSumDiv N / Real.log N := div_nonneg (primeSumDiv_nonneg N) hlogNpos.le
+  have habsquot : |primeSumDiv N / Real.log N| ≤ 1 + C₀ / Real.log 2 := by
+    rw [abs_of_nonneg hquot0]; exact hquot
+  -- conclude
+  rw [hkey]
+  have e1 := abs_le.mp habsquot
+  have e2 := abs_le.mp hRbound
+  rw [abs_le]
+  refine ⟨?_, ?_⟩
+  · linarith [e1.1, e2.1, le_abs_self (Real.log (Real.log 2))]
+  · linarith [e1.2, e2.2, neg_le_abs (Real.log (Real.log 2))]
+
 end LeanFormalizations.Mertens
