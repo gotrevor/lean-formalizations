@@ -1,26 +1,26 @@
 # HANDOFF — Davies / planar Kakeya (branch `kakeya-davies`)
 
-**Thin pointer.** Durable overview = `STATUS.md`. Attack plan = `PENDING_WORK.md` §Reflection-2026-06-19
-+ §A0‴; crux analysis = `Kakeya2D/CASE_B_ANALYSIS.md`. Frozen plan = `Kakeya2D/PLAN.md`. **Newest dated
-baton = `HANDOFF-2026-06-19-1800.md` — read that to resume. (W) is DONE; next = (S) measurable selection.**
+**Thin pointer.** Durable overview = `STATUS.md`. Sharpened ask = `ON-LINE-REQUEST.md` §UPDATE 6.
+Crux analysis = `Kakeya2D/CASE_B_ANALYSIS.md`. **Newest dated baton = `HANDOFF-2026-06-19-1115.md` —
+read that to resume.** The headline now rests on ONE **Kakeya-agnostic** axiom `kakeya_borel_selection`
+(textbook von Neumann / Jankov–von Neumann measurable selection); every Kakeya-specific fact is PROVEN
+(`Kakeya2D/Selection.lean`). Next = discharge that selection (deep DST, multi-lap).
 
 Unbounded expedition to prove `davies_kakeya_2d : KakeyaSetConjectureDim 2` (planar Kakeya, Davies
 1971). The whole job is the lower bound `two_le_dimH`. Lane: only `Kakeya2D/`.
 
 ## State (one line)
-`lake build` green (8299 jobs). The whole lower bound is machine-checked **down to ONE cited axiom**
-`Engine.kakeya_subresolution_content` (NO `sorry`). Deep-reflection lap (HEAD `7797183`): STATUS fully
-resynced + axiom-honesty recalibrated, and **the wiring (W) is now COMPLETE** —
-`kakeya_hausdorffContentBound_of_measurableSelection` (`Kakeya2D/Wiring.lean`) is PROVEN + axiom-clean
-(the measurable selection is a *hypothesis*, no new axioms). The honest measurable-selection route is
-built end-to-end; the **sole open input is the selection axiom (S)**. Next: discharge (S)
-(Jankov–von Neumann), then add the clean `kakeya_measurable_selection` axiom + rewire the headline,
-retiring `kakeya_subresolution_content`.
-`#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound, kakeya_subresolution_content]`.
-The entire dominant-scale orchestration (the historic blocker) is now PROVEN — the shifted, faithful
-Case A assembly. The lone axiom is the strictly-narrower **Case B** residual (cover dominated by pieces
-finer than the net resolution = the Hausdorff-vs-box gap). Remaining = crack Case B (reference-gated;
-the fixed-net multi-scale L² sum provably diverges for `d>1` — see the dated baton).
+`lake build` green (8300 jobs, HEAD `1f7dbfb`). The whole lower bound is machine-checked **down to ONE
+Kakeya-agnostic axiom** `kakeya_borel_selection` (NO `sorry`):
+`#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound, kakeya_borel_selection]`.
+That axiom is the **textbook von Neumann / Jankov–von Neumann measurable selection** (a Borel set in
+`ℝ × Plane` with non-empty sections over `[0,1]` has an a.e.-measurable selector) — zero Kakeya content.
+Every Kakeya-specific fact is PROVEN + axiom-clean in `Kakeya2D/Selection.lean` (joint measurability of
+the covered length ⟹ Borel graph; non-empty sections from `IsKakeya`; the reduction). The route is
+`MeasurableRoute.lean` spine (a.e./measure form) → `Wiring.lean` lemmas A/B → `Selection.lean`. The old
+Case-B residual `kakeya_subresolution_content` is now legacy/off-path (discrete route preserved in
+`Engine.lean`). Remaining = discharge `kakeya_borel_selection` (deep DST: von Neumann selection from
+mathlib's `AnalyticSet` API — multi-lap, reference-gated, see `ON-LINE-REQUEST.md` UPDATE 6).
 
 ## Invariants
 - Defs (`IsKakeya`, `KakeyaSetConjectureDim`) are the frozen audit surface — do not edit.
