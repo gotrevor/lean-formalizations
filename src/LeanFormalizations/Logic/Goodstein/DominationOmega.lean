@@ -22,6 +22,23 @@ namespace LeanFormalizations.Logic.Goodstein
 open ONote Ordinal
 open LeanFormalizations.Logic.FastGrowing
 
+/-- **The general ordinal bridge (unifies every level).** For any ordinal `β`, if the descent's
+leading CNF exponent ordinal `toOrdinal (base i) (leadExp_i)` dominates `β`, then the descent ordinal
+dominates `ω^β`: `ω^β ≤ (seqONote m i).repr`. Just `opow_le_opow_right` (monotonicity of `ω^·`) chained
+with `opow_toOrdinal_log_le` (the leading term `ω^{toOrdinal b (log_b v)}` is `≤ toOrdinal b v`). Every
+level-specific bridge below (`ω^k`, `ω^ω`, `ω^{ω^j}`, `ω^{ω^ω}`) is this lemma fed a `toOrdinal` lower
+bound on the leading exponent — and the next tier (`ε₀`) will be too. -/
+theorem opow_le_seqONote_repr_of_toOrdinal {m i : ℕ} {β : Ordinal}
+    (hβ : β ≤ toOrdinal (base i) (Nat.log (base i) (goodsteinSeq m i)))
+    (hv : goodsteinSeq m i ≠ 0) :
+    (ω : Ordinal) ^ β ≤ (seqONote m i).repr := by
+  have hb : 2 ≤ base i := Nat.le_add_left 2 i
+  rw [repr_seqONote]
+  calc (ω : Ordinal) ^ β
+      ≤ ω ^ toOrdinal (base i) (Nat.log (base i) (goodsteinSeq m i)) :=
+        opow_le_opow_right omega0_pos hβ
+    _ ≤ toOrdinal (base i) (goodsteinSeq m i) := opow_toOrdinal_log_le (base i) hb hv
+
 /-- **Ordinal bridge for `ω^ω`.** If the leading exponent of `G_i` is in the *large regime*
 (`base i ≤ log_{base i} G_i`), the descent ordinal dominates `ω^ω`: the leading CNF exponent
 `toOrdinal (base i) (leadExp)` is then `≥ toOrdinal (base i) (base i) = ω`, so the leading term is
@@ -30,8 +47,6 @@ theorem omega_omega_le_seqONote_repr {m i : ℕ}
     (hreg : base i ≤ Nat.log (base i) (goodsteinSeq m i)) (hv : goodsteinSeq m i ≠ 0) :
     (ω : Ordinal) ^ (ω : Ordinal) ≤ (seqONote m i).repr := by
   have hb : 2 ≤ base i := Nat.le_add_left 2 i
-  rw [repr_seqONote]
-  show (ω : Ordinal) ^ (ω : Ordinal) ≤ toOrdinal (base i) (goodsteinSeq m i)
   have h1 : toOrdinal (base i) 1 = 1 := by
     have h := toOrdinal_pow (base i) hb 0; simpa using h
   have hbb : toOrdinal (base i) (base i) = ω := by
@@ -41,10 +56,7 @@ theorem omega_omega_le_seqONote_repr {m i : ℕ}
     (toOrdinal_mono_and_bound (base i) hb c).1 a hac
   have homega_le : (ω : Ordinal) ≤ toOrdinal (base i) (Nat.log (base i) (goodsteinSeq m i)) := by
     rw [← hbb]; exact hSM.monotone hreg
-  calc (ω : Ordinal) ^ (ω : Ordinal)
-      ≤ ω ^ toOrdinal (base i) (Nat.log (base i) (goodsteinSeq m i)) :=
-        opow_le_opow_right omega0_pos homega_le
-    _ ≤ toOrdinal (base i) (goodsteinSeq m i) := opow_toOrdinal_log_le (base i) hb hv
+  exact opow_le_seqONote_repr_of_toOrdinal homega_le hv
 
 /-- **The `o = ω` diagonal domination, REDUCED to its crux** (`hreg`). If the Goodstein descent's
 leading exponent is still in the LARGE regime at step `m − 2` (`base (m−2) ≤ leadExp_{m−2}`), then
@@ -160,15 +172,7 @@ theorem omega_pow_pow_le_seqONote_repr {m i j : ℕ}
     (hlead : Nat.log (base i) (goodsteinSeq m i) ≠ 0) :
     (ω : Ordinal) ^ ((ω : Ordinal) ^ (j : Ordinal)) ≤ (seqONote m i).repr := by
   have hb : 2 ≤ base i := Nat.le_add_left 2 i
-  rw [repr_seqONote]
-  show (ω : Ordinal) ^ ((ω : Ordinal) ^ (j : Ordinal)) ≤ toOrdinal (base i) (goodsteinSeq m i)
-  have hA : (ω : Ordinal) ^ (j : Ordinal)
-      ≤ toOrdinal (base i) (Nat.log (base i) (goodsteinSeq m i)) :=
-    opow_le_toOrdinal (base i) hb hj hlead hjb
-  calc (ω : Ordinal) ^ ((ω : Ordinal) ^ (j : Ordinal))
-      ≤ ω ^ toOrdinal (base i) (Nat.log (base i) (goodsteinSeq m i)) :=
-        opow_le_opow_right omega0_pos hA
-    _ ≤ toOrdinal (base i) (goodsteinSeq m i) := opow_toOrdinal_log_le (base i) hb hv
+  exact opow_le_seqONote_repr_of_toOrdinal (opow_le_toOrdinal (base i) hb hj hlead hjb) hv
 
 /-- **The `o = ω^j` diagonal, REDUCED to its second-level crux.** For finite `j ≥ 1`, if the SECOND
 leading exponent of the seed-`m` descent is `≥ j` at step `m − 2`, then
@@ -344,15 +348,7 @@ theorem omega_pow_omega_le_seqONote_repr {m i : ℕ}
     (hv : goodsteinSeq m i ≠ 0) (hlead : Nat.log (base i) (goodsteinSeq m i) ≠ 0) :
     (ω : Ordinal) ^ ((ω : Ordinal) ^ (ω : Ordinal)) ≤ (seqONote m i).repr := by
   have hb : 2 ≤ base i := Nat.le_add_left 2 i
-  rw [repr_seqONote]
-  show (ω : Ordinal) ^ ((ω : Ordinal) ^ (ω : Ordinal)) ≤ toOrdinal (base i) (goodsteinSeq m i)
-  have hA : (ω : Ordinal) ^ (ω : Ordinal)
-      ≤ toOrdinal (base i) (Nat.log (base i) (goodsteinSeq m i)) :=
-    omega_omega_le_toOrdinal (base i) hb hreg2 hlead
-  calc (ω : Ordinal) ^ ((ω : Ordinal) ^ (ω : Ordinal))
-      ≤ ω ^ toOrdinal (base i) (Nat.log (base i) (goodsteinSeq m i)) :=
-        opow_le_opow_right omega0_pos hA
-    _ ≤ toOrdinal (base i) (goodsteinSeq m i) := opow_toOrdinal_log_le (base i) hb hv
+  exact opow_le_seqONote_repr_of_toOrdinal (omega_omega_le_toOrdinal (base i) hb hreg2 hlead) hv
 
 /-- **THE `o = ω^ω` DIAGONAL DOMINATION — UNCONDITIONAL** (for `m` with `(log₂)^[2] m ≥ 2^16`):
 `fastGrowing (ω^ω) m ≤ goodsteinLength m + 2`, with `ω^ω = oadd (oadd 1 1 0) 1 0`. Cichoń's lower
