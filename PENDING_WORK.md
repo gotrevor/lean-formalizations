@@ -2,25 +2,40 @@
 
 ## ♾️ ACTIVE (2026-06-19): planar Kakeya (Davies) — open `sorry` inventory + attack paths
 
-Branch `kakeya-davies`. **K1 + K2 are COMPLETE + axiom-clean** (this lap). One open `sorry` left.
+Branch `kakeya-davies`. **K1 + K2 + K3 + K4 are COMPLETE + axiom-clean.** ONE open `sorry`,
+now pinned precisely to the K5 measure construction.
 
-### ✅ DONE — `Tube.lean : volume_inter_tube_le` (two-tube overlap `≤ 12δ²/(s+δ)`, `s=|sin∠|`).
-The whole K2 ladder is machine-checked, axiom-clean, sorry-free. Path used: determinant /
-`addHaar_preimage_linearMap` (`volume_two_slab` parallelogram area `(2δ)²/|det|`) + a near-parallel
-single-tube fallback. The faithfulness fix (separation `s=|v₀w₁−v₁w₀|` not `‖v-w‖`) is in.
+### ✅ DONE — K2 (`Tube.lean`): `volume_inter_tube_le` (overlap `≤ 12δ²/(s+δ)`, `s=|sin∠|`),
+`volume_tube_le` (`≤6δ`), `volume_tube_ge` (`≥2δ`). Determinant/`addHaar_preimage_linearMap` route.
+### ✅ DONE — K3 (`Discretize.lean`, `Directions.lean`): `exists_tube_subset_thickening` (δ-tube of
+every direction ⊆ Sδ); explicit trig net `dir θ=(cos θ,sin θ)` with `norm_dir`, `dir_det`
+(`det=sin(φ−θ)`), `dir_sep` (Jordan `(2/π)|φ−θ|≤|det|`), `exists_tube_family`; the K2↔K3 interface
+`volume_inter_dirTube_le` (overlap `≤ 6πδ/(|k−j|+1)`).
+### ✅ DONE — K4 (`Cordoba.lean`, `CordobaL2.lean`): the **full Córdoba L² content bound**.
+`double_sum_le_log` (harmonic `∑1/(|k−j|+1) ≤ 2n(1+log n)`), `sum_overlap_le` (denominator
+`∑∑vol(T_j∩T_k) ≤ 6πδ·2N(1+logN)`), `sum_tube_ge` (numerator `∑vol(T_k) ≥ N·2δ`),
+`lintegral_sum_indicator`/`lintegral_sq_sum_indicator` (∫f, ∫f²), `lintegral_sq_le_measure_mul`
+(Cauchy–Schwarz via Hölder p=q=2), `volume_thickening_mul_ge` (`(N·2δ)² ≤ vol(Sδ)·denom`), and the
+capstone **`volume_thickening_log_ge`: `1 ≤ vol(Sδ)·12π(1+log(1/δ))`** for `δ≤1/2`. All axiom-clean.
 
 ### A. `Engine.lean : hausdorffMeasure_pos_of_isKakeya` — `∀ d<2, μH[d] S ≠ 0`. The deep crux.
-The remaining ladder (`Kakeya2D/PLAN.md`), now resting on the finished K2 overlap bound:
-1. **K3 — δ-discretization (next brick).** `IsKakeya S` ⟹ for each unit `v`, `tube a v δ ⊆ Sδ`
-   (`Sδ := cthickening δ S`); compactness of the unit circle gives a δ-net of `~δ⁻¹` directions.
-   Attack paths: (i) build the net as an explicit `Finset` of angles `kδ` and the tube family;
-   (ii) abstract it as `∃ finite family, pairwise sep ≈ kδ, all ⊆ Sδ`; (iii) reduce to the
-   maximal-function formulation and bound that instead.
-2. **K4 — Córdoba L².** Cauchy–Schwarz on `∑1_{tubeᵢ}`: `vol(Sδ) ≥ (∑∫)²/∑∑overlap`; numerator
-   `≳1`, denominator `≲ ∑ₖ δ·δ²/(kδ+δ) ≈ δ·log(1/δ)` **by `volume_inter_tube_le`** ⟹ `vol(Sδ) ≳ 1/log(1/δ)`.
-3. **K5 — content → Hausdorff (deepest).** Uniform `1/log` Minkowski content at every scale ⟹ a
-   Frostman measure ⟹ `μH[d] S > 0` for all `d<2`. (NB: box dim ≠ Hausdorff dim; needs the
-   mass-distribution construction, not just the content bound.) Multi-lap; advance one rung/lap.
+**K5 brick 1 DONE** (`Frostman.lean`): `hausdorffMeasure_ne_zero_of_frostmanExists` packages
+mathlib's `Measure.le_hausdorffMeasure`; Engine now reduces the crux to **`FrostmanMeasureExists S d`**
+(a measure `μ` with `μ S ≠ 0` and `μ s ≤ diam(s)^d` for small `s`). The lone `sorry` is exactly
+this measure construction. Three attack paths for K5 brick 2 (build the measure from K4):
+1. **Limit of normalised tube mass.** At scale `δₙ=2⁻ⁿ` put `μₙ := vol(Sδₙ)⁻¹·(vol ↾ Sδₙ)`
+   (mass 1 on Sδₙ). The K4 bound `vol(Sδ)≳1/log` controls normalisation; a weak-* limit `μ`
+   concentrates on `S=⋂Sδ`. The Frostman bound `μ(B(x,r))≲r^d` comes from running the K4 overlap
+   estimate *restricted to a single ball* (a ball meets `≲r/δ·δ⁻¹` tubes…). Hardest: weak-* limit
+   + lower semicontinuity in mathlib (`Measure` topology / `tendsto`).
+2. **Dyadic cover / discretized Kakeya (the honest route).** Bypass the measure: prove `μH[d]S≠0`
+   directly via `hausdorffMeasure_apply` — for an arbitrary countable cover `S⊆⋃tᵢ` with
+   `diam tᵢ≤r`, pigeonhole the directions across dyadic scales and apply the single-scale tube count
+   to the dominant scale to get `∑diam(tᵢ)^d ≳ 1`. No measure to build; all the work is the
+   pigeonhole + applying `volume_thickening_log_ge` to sub-collections. Most faithful to Córdoba.
+3. **Frostman via `exists_frostman`-style induction.** If mathlib gains/has a general
+   "content bound at all scales ⟹ Frostman measure" lemma, instantiate it. (Search: mathlib
+   currently has only the *spreading* direction `le_hausdorffMeasure`, not the construction.)
 
 ---
 

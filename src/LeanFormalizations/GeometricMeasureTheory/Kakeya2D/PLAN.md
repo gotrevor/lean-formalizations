@@ -1,5 +1,12 @@
 # Davies (planar Kakeya, `dimH = 2`) — milestone ladder
 
+> **STATUS 2026-06-19: K1–K4 COMPLETE + axiom-clean.** The Córdoba `L²` content bound
+> `vol(Sδ) ≳ 1/log(1/δ)` is proved (`CordobaL2.volume_thickening_log_ge`). K5 brick 1
+> (`Frostman.hausdorffMeasure_ne_zero_of_frostmanExists`) reduces the crux to building a Frostman
+> measure (`FrostmanMeasureExists S d`). The **only** open `sorry` is that measure construction —
+> see `PENDING_WORK.md` for the three attack paths. Files: `Tube`(K2) `Discretize`+`Directions`(K3)
+> `Cordoba`+`CordobaL2`(K4) `Frostman`(K5.1) `Engine`(crux).
+
 **Crux:** `two_le_dimH (S) (h : IsKakeya S) : 2 ≤ dimH S` in `Engine.lean`. The upper bound
 `dimH_le_two` is done (axiom-clean) and the headline `davies_kakeya_2d` is assembled, so the
 *entire* remaining content is this one inequality. It is genuinely hard — a single-paper
