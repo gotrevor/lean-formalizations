@@ -1,5 +1,57 @@
 # PENDING_WORK — lean-formalizations
 
+## 🧘 Reflection — 2026-06-19 (deep-reflection lap, strong model)
+
+A full altitude pass over the expedition. Read STATUS, all recent HANDOFFs, `CASE_B_ANALYSIS.md`,
+the Engine/MeasurableRoute/NetThinning source, git log -40, and the reference corpus. Verified the
+real kernel state: `#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound,
+kakeya_subresolution_content]`, build green (8298 jobs), 1 dormant out-of-lane `sorry` (FastGrowing).
+
+**1. Destination — CONFIRMED, with an honesty recalibration.** `davies_kakeya_2d` (planar Kakeya ⟹
+`dimH = 2`, Davies 1971) is a real, famous, single-paper theorem, defs verbatim-portable to
+`formal-conjectures`. K1–K5 + the dominant-scale assembly + Case-A are all built and axiom-clean; the
+whole lower bound is a kernel proof modulo ONE axiom. **The realistic, valuable endpoint is exactly
+"one narrow cited axiom + a fully-built remainder" — and we are essentially there.** The honest call
+is to make that one axiom as *clean and citable* as possible. Right now it is **not**:
+`kakeya_subresolution_content` is a bespoke 8-hypothesis statement whose own mathematical truth a human
+auditor cannot easily check, and the live assembly instantiates it at `J=1`, where Case A (`j=0`) is
+near-vacuous and the axiom carries essentially the *entire* lower bound for any realistic fine cover.
+The "strictly weaker residual / Case A needs no axiom" framing in prior docstrings was over-optimistic.
+
+**2. Highest-value thing — the measurable-selection route, not more discrete patching.** The discrete
+net route provably *cannot* escape Case B: for any fixed `J`, a cover by pieces all finer than `2⁻ᴶ`
+triggers the sub-resolution case. So chipping the discrete axiom further is a dead end. The honest
+narrowing integrates over the **continuum** of directions (dissolving the net-scale circularity), whose
+ONLY blocker is a **measurable base-point selection** `θ↦a(θ)` — a clean, standard, citable theorem
+(Jankov–von Neumann / KRN). The spine of that route is ALREADY proven + axiom-clean this expedition
+(`measurable_coveredLength`, `exists_continuum_dominant_scale`, `exists_shift_ge_integral`).
+
+**3. What an outside expert would say we're missing — already largely captured, one re-aim.** The
+architecture is right (keep the Córdoba ladder — 95% built, don't pivot to Davies' duality and throw it
+away). The missing move is to **re-aim the cited axiom**: stop treating `kakeya_subresolution_content`
+as the destination, and route the headline through the measurable-selection spine so the cited axiom
+becomes the citable `kakeya_measurable_selection`. That is a genuine *faithfulness* upgrade (a reader
+can confirm Jankov–von Neumann is true; they cannot easily confirm the bespoke residual).
+
+**4. Faithfulness at altitude.** `Statement.lean` / `Defs.lean` audited against the source: headline
+`davies_kakeya_2d : KakeyaSetConjectureDim 2` unfolds to "every Kakeya set in ℝ² has `dimH = 2`",
+defs mirror `formal-conjectures` verbatim. No statement drift. The one caveat is the *axiom* honesty
+above (a proof-side, not statement-side, issue), now recorded in the STATUS ledger.
+
+**KEEP:** the Córdoba L² route + the measurable-selection architecture + the lap-over-lap narrowing
+discipline (it has produced monotone progress, not circling).
+**STOP:** (a) relitigating the fixed-net L² sum for `d>1` (proven dead end); (b) treating
+`kakeya_subresolution_content` as the destination axiom or calling it a "narrow residual"; (c) further
+discrete-route patching to dodge Case B (provably impossible).
+**SINGLE HIGHEST-VALUE NEXT TARGET: (W)** build `kakeya_hausdorffContentBound_of_measurableSelection`
+(takes the measurable selection as a *hypothesis*, zero new axioms; all pieces proven), then switch the
+headline to a clean `kakeya_measurable_selection` axiom, retiring `kakeya_subresolution_content`.
+Reasoning: it converts the headline's lone axiom from a murky bespoke residual into a standard named
+theorem using pieces already in hand, and makes (S) — discharging measurable selection — the genuine,
+well-posed standing crux for subsequent laps. (S) is useless without (W) — the headline can't reach it
+otherwise — so (W) is the true shortest path, not an easy-leaf detour. **After (W): (S)** = discharge
+measurable selection (Jankov–von Neumann / KRN, or a bespoke argmin-‖a‖ over `B(θ)={a:segment⊆E}`).
+
 ## ♾️ ACTIVE (2026-06-19): planar Kakeya (Davies) — open `sorry` inventory + attack paths
 
 Branch `kakeya-davies`. **K1 + K2 + K3 + K4 are COMPLETE + axiom-clean, and K5's measure-free
