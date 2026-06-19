@@ -11,14 +11,25 @@
 ## Frontier (open work, in rough order of effort)
 
 ### A. Hall–Jackson–Sudbery–Wild `3N/2` (the "hard mile")
-The best *proven* lower constant (1975, unimproved). Points on a hyperbola `xy ≡ k (mod p)`
-with `p ≈ N/2` prime, lifted across a covering of the grid by ~3 translated arcs to reach
-`3(N−2)/2` points. Two pieces:
-- **Arc non-collinearity**: three points on `xy ≡ k (mod p)` collinear ⇒ a polynomial relation
-  that `ZMod p` (a domain) forbids unless points coincide — same "integral domain kills the
-  product" move as the parabola, with more bookkeeping (the determinant is degree-2 in each).
-- **The count / covering**: assemble `3N/2` actual grid points from the mod-`p` arc. This is the
-  genuinely fiddly combinatorics; the parabola gives `~N`, the hyperbola construction the `3/2`.
+The best *proven* lower constant (1975, unimproved). `hjsw_lower : 3*(p−1) ≤ maxNoThreeInLine (2p)`.
+Two pieces:
+- **Arc non-collinearity** — ✅ **DONE, axiom-clean** (`Hyperbola.lean::hyperbola_noThreeCollinear`).
+  Three points on `xy ≡ k (mod p)` collinear ⇒ the Vandermonde reduction
+  `k·(a−b)(b−c)(c−a) = a·b·c·D` (via `linear_combination` from `aᵢyᵢ = k`); `ZMod p` a domain
+  forces two `aᵢ` equal. This covers triples with **distinct** `x` mod `p` (one arc).
+- **The count / covering** — ⛔ **OPEN, the crux.** Assemble `3(p−1)` actual grid points and rule
+  out collinearities between points on *different* lifted arcs (where `x`-coords coincide mod `p`,
+  so the single-arc argument does not apply). This is the genuinely hard combinatorics.
+
+**Experimental status (2026-06-19).** Built a verified decidable certificate
+`Anchors.lean::decNoThree` (`decNoThree s → NoThreeCollinear s`, axiom-clean) + `native_decide`, and
+used it to *search* the natural "3 of the 4 rectangle-corners `{r,r+p}×{s,s+p}` per residue, with
+`s = r⁻¹ mod p`" family:
+- `p = 5`: valid 12-point configs exist — `witness5` (certified `hjsw_lower_five`, off-headline).
+- `p = 7`: **exhaustive** search over all `4^6` corner-drop assignments found **NONE** of size 18.
+So HJSW is **not** the rectangle-corner family (a `p=5` coincidence). Need the paper's actual
+construction → see root `ON-LINE-REQUEST.md`. Next lap: act on the findings doc when it lands; until
+then the certificate makes any candidate construction cheap to validate computationally first.
 
 Mathlib has what's needed: `ZMod p` field, `Matrix.det`, `Nat.exists_prime_lt_and_le_two_mul`.
 

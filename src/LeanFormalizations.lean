@@ -19,3 +19,4 @@ import LeanFormalizations.Logic.Goodstein.Statement
 import LeanFormalizations.Logic.Goodstein.Anchors
 import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
 import LeanFormalizations.Combinatorics.NoThreeInLine.Hyperbola
+import LeanFormalizations.Combinatorics.NoThreeInLine.Anchors
