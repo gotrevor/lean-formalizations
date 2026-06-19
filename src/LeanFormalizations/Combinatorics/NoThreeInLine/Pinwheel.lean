@@ -129,6 +129,28 @@ theorem pinwheel_grid {p k : ℕ} (drop : ℕ → Fin 4) (hp : 0 < p) :
   · rcases pinCorner_fst p k r i with h | h <;> rw [h] <;> omega
   · rcases pinCorner_snd p k r i with h | h <;> rw [h] <;> omega
 
+/-! ### A no-three subcase: three corners of one class are never collinear
+
+If a collinear pinwheel triple has all three points in the *same* class, they are three of the four
+corners of a `p × p` rectangle — a right triangle of area `p²/2 ≠ 0`, never collinear. This
+discharges the "two-congruent-points' third point is again in their class" subcase of the no-three
+argument (the cross-class subcases are the slope-`±1` crux). -/
+
+set_option linter.unreachableTactic false in
+/-- Three pairwise-distinct corners of a single class are not collinear (`det3 = ±p² ≠ 0`). -/
+theorem pinCorner_not_collinear {p k r : ℕ} (hp : 0 < p) {i j l : Fin 4}
+    (hij : i ≠ j) (hil : i ≠ l) (hjl : j ≠ l) :
+    ¬ Collinear ℝ ({toReal (pinCorner p k r i), toReal (pinCorner p k r j),
+      toReal (pinCorner p k r l)} : Set (ℝ × ℝ)) := by
+  have hp' : (0 : ℝ) < (p : ℝ) := by exact_mod_cast hp
+  intro hcol
+  have hd := collinear_imp_det3_zero hcol
+  simp only [toReal, det3, pinCorner] at hd
+  fin_cases i <;> fin_cases j <;> fin_cases l <;>
+    simp_all only [ne_eq, not_true_eq_false, Fin.reduceEq] <;>
+    · push_cast at hd
+      nlinarith [hd, hp', mul_pos hp' hp']
+
 /-! ### Reduction of the headline to the crux
 
 The mechanical `card`/`grid` facts wire any no-three pinwheel straight into the bound. What remains
