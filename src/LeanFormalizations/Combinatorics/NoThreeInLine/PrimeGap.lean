@@ -349,6 +349,87 @@ theorem logFactorial_comb_le_psi (n : ℕ) :
   calc Λ d * _ ≤ Λ d * 1 := by exact mul_le_mul_of_nonneg_left hbr hΛ
     _ = Λ d := mul_one _
 
+/-- **Chebyshev's floor combination is `≥ 1` on `[1,5]`.** For `1 ≤ m < 6`,
+`⌊m/2⌋+⌊m/3⌋+⌊m/5⌋+1 ≤ m+⌊m/30⌋` (additive form of `g(m) ≥ 1`). Checked by `decide` over `m ∈ {1,…,5}`
+(`⌊m/30⌋ = 0` there, so `g(m) = m − ⌊m/2⌋ − ⌊m/3⌋ − ⌊m/5⌋ = 1`). This is the sign-control for the
+*lower* combinatorial bound `ψ(n) − ψ(⌊n/6⌋) ≤ f(n)`: for `⌊n/6⌋ < d ≤ n` one has `⌊n/d⌋ ∈ [1,5]`,
+so the `d`-th coefficient of `f(n)` is `≥ 1`. -/
+theorem floor_comb_ge_one (m : ℕ) (h1 : 1 ≤ m) (h6 : m < 6) :
+    m / 2 + m / 3 + m / 5 + 1 ≤ m + m / 30 := by
+  interval_cases m <;> decide
+
+open scoped ArithmeticFunction in
+open Finset in
+/-- **Refined Chebyshev `ψ` *upper* step (combinatorial half).** `ψ(n) − ψ(⌊n/6⌋) ≤ f(n)`. The
+`T`-combination `f(n) = ∑_d Λ(d)·g(⌊n/d⌋)` has all coefficients `g ≥ 0` (`floor_comb_bounds`), and for
+`⌊n/6⌋ < d ≤ n` (where `⌊n/d⌋ ∈ [1,5]`) the coefficient is `≥ 1` (`floor_comb_ge_one`). Dropping the
+nonnegative terms outside `(⌊n/6⌋, n]` and bounding the rest below by `Λ(d)·1` gives
+`∑_{⌊n/6⌋ < d ≤ n} Λ(d) = ψ(n) − ψ(⌊n/6⌋) ≤ f(n)`. Combined with the analytic upper bound
+`logFactorial_comb_upper` (`f(n) ≤ A·n + O(log n)`) this is the dual *upper* recurrence whose iterate
+gives `ψ(n) ≲ (6/5)A·n`. -/
+theorem logFactorial_comb_ge_psi_sub {n : ℕ} :
+    Chebyshev.psi (n : ℝ) - Chebyshev.psi ((n / 6 : ℕ) : ℝ)
+      ≤ Real.log (Nat.factorial n) - Real.log (Nat.factorial (n / 2))
+          - Real.log (Nat.factorial (n / 3)) - Real.log (Nat.factorial (n / 5))
+          + Real.log (Nat.factorial (n / 30)) := by
+  rw [logFactorial_comb_eq]
+  set m := n / 6 with hmdef
+  have hmn : m ≤ n := by rw [hmdef]; omega
+  have hψ : Chebyshev.psi (n : ℝ) - Chebyshev.psi ((m : ℕ) : ℝ)
+      = ∑ d ∈ Finset.Ioc m n, Λ d := by
+    rw [Chebyshev.psi, Chebyshev.psi, Nat.floor_natCast, Nat.floor_natCast]
+    have hunion : Finset.Ioc 0 n = Finset.Ioc 0 m ∪ Finset.Ioc m n :=
+      (Finset.Ioc_union_Ioc_eq_Ioc (Nat.zero_le m) hmn).symm
+    rw [hunion, Finset.sum_union (Finset.Ioc_disjoint_Ioc_of_le (le_refl m))]
+    ring
+  rw [hψ]
+  have hstepA : ∑ d ∈ Finset.Ioc m n, Λ d
+      ≤ ∑ d ∈ Finset.Ioc m n, Λ d * (((n / d : ℕ) : ℝ) - ((n / (2 * d) : ℕ) : ℝ)
+          - ((n / (3 * d) : ℕ) : ℝ) - ((n / (5 * d) : ℕ) : ℝ) + ((n / (30 * d) : ℕ) : ℝ)) := by
+    refine Finset.sum_le_sum (fun d hd => ?_)
+    rw [Finset.mem_Ioc] at hd
+    have hΛ : 0 ≤ Λ d := ArithmeticFunction.vonMangoldt_nonneg
+    have hd0 : 0 < d := by omega
+    have hge1 : 1 ≤ n / d := Nat.one_le_div_iff hd0 |>.mpr hd.2
+    have hle5 : n / d < 6 := by
+      rw [Nat.div_lt_iff_lt_mul hd0]
+      have : n < 6 * (m + 1) := by rw [hmdef]; omega
+      omega
+    have hcoef : (1 : ℝ) ≤ ((n / d : ℕ) : ℝ) - ((n / (2 * d) : ℕ) : ℝ) - ((n / (3 * d) : ℕ) : ℝ)
+        - ((n / (5 * d) : ℕ) : ℝ) + ((n / (30 * d) : ℕ) : ℝ) := by
+      have hb := floor_comb_ge_one (n / d) hge1 hle5
+      have e2 : n / d / 2 = n / (2 * d) := by rw [Nat.div_div_eq_div_mul, Nat.mul_comm]
+      have e3 : n / d / 3 = n / (3 * d) := by rw [Nat.div_div_eq_div_mul, Nat.mul_comm]
+      have e5 : n / d / 5 = n / (5 * d) := by rw [Nat.div_div_eq_div_mul, Nat.mul_comm]
+      have e30 : n / d / 30 = n / (30 * d) := by rw [Nat.div_div_eq_div_mul, Nat.mul_comm]
+      rw [e2, e3, e5, e30] at hb
+      rw [← Nat.cast_le (α := ℝ)] at hb
+      push_cast at hb
+      linarith
+    calc Λ d = Λ d * 1 := (mul_one _).symm
+      _ ≤ Λ d * _ := mul_le_mul_of_nonneg_left hcoef hΛ
+  have hstepB : ∑ d ∈ Finset.Ioc m n, Λ d * (((n / d : ℕ) : ℝ) - ((n / (2 * d) : ℕ) : ℝ)
+          - ((n / (3 * d) : ℕ) : ℝ) - ((n / (5 * d) : ℕ) : ℝ) + ((n / (30 * d) : ℕ) : ℝ))
+      ≤ ∑ d ∈ Finset.Ioc 0 n, Λ d * (((n / d : ℕ) : ℝ) - ((n / (2 * d) : ℕ) : ℝ)
+          - ((n / (3 * d) : ℕ) : ℝ) - ((n / (5 * d) : ℕ) : ℝ) + ((n / (30 * d) : ℕ) : ℝ)) := by
+    refine Finset.sum_le_sum_of_subset_of_nonneg (Finset.Ioc_subset_Ioc_left (by omega)) ?_
+    intro d _ _
+    have hΛ : 0 ≤ Λ d := ArithmeticFunction.vonMangoldt_nonneg
+    have hc0 := floor_comb_bounds (n / d)
+    have e2 : n / d / 2 = n / (2 * d) := by rw [Nat.div_div_eq_div_mul, Nat.mul_comm]
+    have e3 : n / d / 3 = n / (3 * d) := by rw [Nat.div_div_eq_div_mul, Nat.mul_comm]
+    have e5 : n / d / 5 = n / (5 * d) := by rw [Nat.div_div_eq_div_mul, Nat.mul_comm]
+    have e30 : n / d / 30 = n / (30 * d) := by rw [Nat.div_div_eq_div_mul, Nat.mul_comm]
+    rw [e2, e3, e5, e30] at hc0
+    have hcoef : (0 : ℝ) ≤ ((n / d : ℕ) : ℝ) - ((n / (2 * d) : ℕ) : ℝ) - ((n / (3 * d) : ℕ) : ℝ)
+        - ((n / (5 * d) : ℕ) : ℝ) + ((n / (30 * d) : ℕ) : ℝ) := by
+      have := hc0.1
+      rw [← Nat.cast_le (α := ℝ)] at this
+      push_cast at this
+      linarith
+    exact mul_nonneg hΛ hcoef
+  linarith [hstepA, hstepB]
+
 /-- **Explicit Stirling *upper* bound on `log(m!)`** for `m ≥ 1`:
 `log(m!) ≤ m·log m − m + log(2m)/2 + 1 − log 2 / 2`. mathlib has only the matching *lower* bound
 (`Stirling.le_log_factorial_stirling`); this is the missing companion, derived from
@@ -593,6 +674,19 @@ theorem psi_refined_lower {n : ℕ} (hn : 30 ≤ n) :
         + 3 * Real.log 2 / 2 - Real.log ((n : ℝ) / 30) - 7
       ≤ Chebyshev.psi n :=
   le_trans (logFactorial_comb_lower hn) (logFactorial_comb_le_psi n)
+
+/-- **Refined Chebyshev `ψ` *upper* recurrence step.** For `n ≥ 30`,
+`ψ(n) − ψ(⌊n/6⌋) ≤ A·n + 4·log n − log 30 + 6` with `A = (7/15)log2+(3/10)log3+(1/6)log5`. Chains the
+combinatorial lower bound `logFactorial_comb_ge_psi_sub` (`ψ(n) − ψ(⌊n/6⌋) ≤ f(n)`) with the analytic
+upper bound `logFactorial_comb_upper` (`f(n) ≤ A·n + O(log n)`). Telescoping this 6-fold recurrence
+(strong induction, `ψ(⌊n/6^k⌋) = 0` once `n/6^k < 2`) yields `ψ(n) ≤ (6/5)A·n + O(log² n)` — the dual
+*upper* Chebyshev bound, which lowers the prime-gap ratio from `8/5` toward Nagura's `6/5` and the
+no-three-in-line constant from `15/16` toward `5/4`. -/
+theorem psi_refined_upper_step {n : ℕ} (hn : 30 ≤ n) :
+    Chebyshev.psi (n : ℝ) - Chebyshev.psi ((n / 6 : ℕ) : ℝ)
+      ≤ (n : ℝ) * ((7 / 15) * Real.log 2 + (3 / 10) * Real.log 3 + (1 / 6) * Real.log 5)
+        + 4 * Real.log n - Real.log 30 + 6 :=
+  le_trans logFactorial_comb_ge_psi_sub (logFactorial_comb_upper hn)
 
 /-- **Refined Chebyshev `θ` lower bound.** For `n ≥ 30`,
 `A·n − 4·√n·log n − 9 ≤ θ(n)` with `A = (7/15)log2+(3/10)log3+(1/6)log5 > 0.91`. Combines the
