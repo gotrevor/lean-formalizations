@@ -368,4 +368,39 @@ theorem exists_continuum_caseA_numerator {a : ℝ → Plane} (ha : Measurable a)
               ∧ a (α + (i : ℝ) * (1 / 2 : ℝ) ^ j) + t • dir (α + (i : ℝ) * (1 / 2 : ℝ) ^ j)
                 ∈ ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), C n} := by rw [Finset.mul_sum]
 
+/-- **Zero-diameter pieces are negligible along every segment.** A piece `P` that is a subsingleton
+(a single point or empty — equivalently `ediam P = 0`) meets the line `t ↦ a + t • w` (`w ≠ 0`) in at
+most one `t`, so the covered length it contributes is `0`. This is the fact that lets the wiring (W)
+drop the zero-`ediam` cover pieces from the scale-`0` fiber without changing the covered-length
+numerator (they would otherwise violate `caseA_content`'s lower diameter window `2⁻⁽ʲ⁺¹⁾ ≤ ediam`). -/
+theorem volume_coveredFiber_subsingleton_zero {a w : Plane} (hw : w ≠ 0) {P : Set Plane}
+    (hP : P.Subsingleton) (I : Set ℝ) :
+    volume {t : ℝ | t ∈ I ∧ a + t • w ∈ P} = 0 := by
+  refine Set.Subsingleton.measure_zero (fun t₁ h₁ t₂ h₂ => ?_) volume
+  have he : a + t₁ • w = a + t₂ • w := hP h₁.2 h₂.2
+  have hsmul : t₁ • w = t₂ • w := add_left_cancel he
+  have hz : (t₁ - t₂) • w = 0 := by rw [sub_smul, hsmul, sub_self]
+  rcases smul_eq_zero.mp hz with h | h
+  · exact sub_eq_zero.mp h
+  · exact absurd h hw
+
+/-- Countable-union form of the previous lemma: a covered segment meets a **countable family of
+zero-diameter pieces** in a null set. This is the exact statement the wiring (W) consumes to show the
+zero-`ediam` cover pieces (the `else 0` bucket of the uncapped scale function) carry no covered length,
+so they may be dropped from the scale-`0` fiber fed to `caseA_content`. -/
+theorem volume_coveredFiber_biUnion_subsingleton_zero {a w : Plane} (hw : w ≠ 0)
+    {C : ℕ → Set Plane} {s : Set ℕ} (hs : s.Countable)
+    (hC : ∀ n ∈ s, (C n).Subsingleton) (I : Set ℝ) :
+    volume {t : ℝ | t ∈ I ∧ a + t • w ∈ ⋃ n ∈ s, C n} = 0 := by
+  have hsplit : {t : ℝ | t ∈ I ∧ a + t • w ∈ ⋃ n ∈ s, C n}
+      = ⋃ n ∈ s, {t : ℝ | t ∈ I ∧ a + t • w ∈ C n} := by
+    ext t
+    simp only [Set.mem_setOf_eq, Set.mem_iUnion, exists_prop]
+    constructor
+    · rintro ⟨ht, n, hn, hmem⟩; exact ⟨n, hn, ht, hmem⟩
+    · rintro ⟨n, hn, ht, hmem⟩; exact ⟨ht, n, hn, hmem⟩
+  rw [hsplit]
+  refine measure_biUnion_null_iff hs |>.mpr (fun n hn => ?_)
+  exact volume_coveredFiber_subsingleton_zero hw (hC n hn) I
+
 end LeanFormalizations.Kakeya2D
