@@ -70,6 +70,40 @@ theorem volume_tube_ge_frac {a v : Plane} (hv : v ≠ 0) {δ : ℝ} :
         (volume_frame_box he1 a measurableSet_Icc measurableSet_Icc).symm
     _ ≤ volume (tube a v δ) := measure_mono (fracBox_subset_tube hv)
 
+/-- **Covered-set numerator (general).** For a unit-speed line `φ t = a + t•v` (`‖v‖ = 1`) and a
+measurable `A ⊆ ℝ`, the closed δ-neighbourhood of the covered set `φ(A)` has area `≥ 2δ·vol(A)`.
+Generalises `volume_tube_ge_frac` (the `A = [0,‖v‖]` case) from a sub-segment to an arbitrary
+measurable covered set: at the dominant scale the covered part of a direction is a union of pullbacks
+of cover pieces, not an interval. This is the numerator the localized Córdoba count
+(`volume_thickening_sets_ge`) consumes, with `R k =` the δ-thickening of the covered set of direction
+`k`. The frame box `{x | ⟪v,x-a⟫∈A, ⟪perp v,x-a⟫∈[-δ,δ]}` of area `vol(A)·2δ` sits inside it. -/
+theorem volume_thickening_covered_ge {a v : Plane} (hv : ‖v‖ = 1) {δ : ℝ} {A : Set ℝ}
+    (hA : MeasurableSet A) :
+    ENNReal.ofReal (2 * δ) * volume A
+      ≤ volume (Metric.cthickening δ ((fun t => a + t • v) '' A)) := by
+  have hBvol : volume {x : Plane | ⟪v, x - a⟫ ∈ A ∧ ⟪perp v, x - a⟫ ∈ Icc (-δ) δ}
+      = volume A * volume (Icc (-δ) δ) := volume_frame_box hv a hA measurableSet_Icc
+  have hBsub : {x : Plane | ⟪v, x - a⟫ ∈ A ∧ ⟪perp v, x - a⟫ ∈ Icc (-δ) δ}
+      ⊆ Metric.cthickening δ ((fun t => a + t • v) '' A) := by
+    rintro x ⟨hs, hr0, hr1⟩
+    set s := ⟪v, x - a⟫ with hsdef
+    set r := ⟪perp v, x - a⟫ with hrdef
+    refine mem_cthickening_of_dist_le x (a + s • v) δ _ ?_ ?_
+    · exact mem_image_of_mem _ hs
+    · have hd : x - (a + s • v) = r • perp v := by
+        have := frame_decomp hv a x
+        rw [show x - (a + s • v) = (x - a) - s • v by abel, this]; abel
+      rw [dist_eq_norm, hd, norm_smul, norm_perp hv, mul_one, Real.norm_eq_abs, abs_le]
+      exact ⟨hr0, hr1⟩
+  calc ENNReal.ofReal (2 * δ) * volume A
+      = volume (Icc (-δ) δ) * volume A := by
+        rw [Real.volume_Icc]
+        have h2 : (2 : ℝ) * δ = δ - -δ := by ring
+        rw [h2]
+    _ = volume A * volume (Icc (-δ) δ) := mul_comm _ _
+    _ = volume {x : Plane | ⟪v, x - a⟫ ∈ A ∧ ⟪perp v, x - a⟫ ∈ Icc (-δ) δ} := hBvol.symm
+    _ ≤ volume (Metric.cthickening δ ((fun t => a + t • v) '' A)) := measure_mono hBsub
+
 /-- **Sub-segment containment.** For `w ∈ [0,1]`, the segment `[a, a+w•v]` is a sub-segment of
 `[a, a+v]` (its points `a + t•(w•v) = a + (tw)•v` with `tw ∈ [0,1]`). -/
 theorem affineSegment_smul_subset {a v : Plane} {w : ℝ} (hw0 : 0 ≤ w) (hw1 : w ≤ 1) :
