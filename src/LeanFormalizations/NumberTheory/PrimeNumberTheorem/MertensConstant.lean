@@ -151,4 +151,11 @@ lemma neg_log_one_sub_prime_hasSum {s : ℝ} (hs : 1 < s) (p : Nat.Primes) :
   rw [abs_of_pos (Real.rpow_pos_of_pos hppos _)]
   exact prime_rpow_lt_one hs p
 
+/-- The `n = 0` term of the per-prime Mercator series is exactly `p^{−s}` — i.e. the prime-zeta
+contribution to `−log(1−p^{−s})`.  (The split point for brick (ii-b): summing the `n = 0` slice over
+primes gives `primeZeta s`, the `n ≥ 1` slices give the correction `G`.) -/
+lemma mercator_zeroth_term {s : ℝ} (p : Nat.Primes) :
+    ((p : ℝ) ^ (-s)) ^ (0 + 1) / ((0 : ℕ) + 1 : ℝ) = (p : ℝ) ^ (-s) := by
+  simp
+
 end LeanFormalizations.Mertens
