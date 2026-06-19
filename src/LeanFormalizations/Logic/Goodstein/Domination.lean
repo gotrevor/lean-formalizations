@@ -484,6 +484,25 @@ theorem leadExp_ge_of_base_le (m k : ℕ)
     log_le_log_pred_succ (base k + 1) (by omega) _
   omega
 
+/-- **The leading exponent is non-decreasing at every NON-pure-power step** — *unconditionally* (no
+`≥ base` hypothesis, unlike `leadExp_ge_of_base_le`). If `G_k` is not a pure power of `base k`, then
+`log_bump_pred_of_not_pow` preserves the leading exponent exactly (`L_{k+1} = bump (base k) L_k`) and
+`le_bump` gives `L_k ≤ bump (base k) L_k = L_{k+1}`. So the leading exponent only ever *falls* at the
+rare pure-power steps; everywhere else it stays or grows. This is the lemma that, once paired with a
+bound on the number of pure-power events, lifts the `log₂ m`-step guarantee (`leadExp_ge_sub`, which
+needs `L_k ≥ base k`) to the `m`-step guarantee the diagonal `f_o(m)` headline requires. -/
+theorem leadExp_ge_of_not_pow (m k : ℕ)
+    (hnp : base k ^ Nat.log (base k) (goodsteinSeq m k) < goodsteinSeq m k) :
+    Nat.log (base k) (goodsteinSeq m k) ≤ Nat.log (base (k + 1)) (goodsteinSeq m (k + 1)) := by
+  have hb : 2 ≤ base k := Nat.le_add_left 2 k
+  have hv0 : goodsteinSeq m k ≠ 0 := by
+    have : 0 < base k ^ Nat.log (base k) (goodsteinSeq m k) := Nat.pow_pos (by omega)
+    omega
+  have hbb1 : base (k + 1) = base k + 1 := by simp only [base]
+  have hstep : goodsteinSeq m (k + 1) = bump (base k) (goodsteinSeq m k) - 1 := rfl
+  rw [hbb1, hstep, log_bump_pred_of_not_pow (base k) hb hv0 hnp]
+  exact le_bump (base k) hb _
+
 /-- **The Goodstein term stays `≥ m` for the first `m` steps:** `m ≤ goodsteinSeq m k` whenever
 `k + 1 ≤ m`. Induction on `k` using `bump_gt`: while `k + 2 ≤ m ≤ goodsteinSeq m k` the value is
 above the base, so `goodsteinSeq m (k+1) = bump (k+2) (goodsteinSeq m k) − 1 ≥ goodsteinSeq m k`. -/

@@ -61,8 +61,12 @@ is now COMPLETE, which is the prerequisite below the `dropTime` count:
   exactly preserved: `log_{b+1}(bump b n − 1) = bump b (log_b n)` (the `−1` is absorbed by lower terms).
 - `log_bump_pred_of_pow` — at a pure power (`n = b^{log_b n}`, `log_b n ≥ 1`), it drops by EXACTLY one:
   `log_{b+1}(bump b n − 1) = bump b (log_b n) − 1` (the `−1` borrows from the top).
+- `leadExp_ge_of_not_pow` — **unconditional non-decrease off pure powers** (no `≥ base` cap, unlike
+  `leadExp_ge_of_base_le`): `L_k ≤ L_{k+1}` at every non-pure-power step. This is the lemma that, once
+  paired with a bound on the number of pure-power events, lifts the `log₂ m`-step guarantee to `m` steps.
 So the leading exponent bumps-itself/grows everywhere except at the **rare pure-power "borrow" events**.
-**Remaining = the step-COUNT** between consecutive pure-power events (each gap = a sub-Goodstein-length).
+**Remaining = the step-COUNT** between consecutive pure-power events (each gap = a sub-Goodstein-length):
+prove the number of pure-power steps among the first `m` is `< L₀ − 1`, so `L_k ≥ 2` survives all `m`.
 That count is the next brick and the cleanest Aristotle carve.
 
 *Detailed attack notes for sub-fact (ii) / the steps-between-drops recursion are in the lap-6/lap-7
