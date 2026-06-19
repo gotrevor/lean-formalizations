@@ -20,4 +20,5 @@ import LeanFormalizations.Logic.Goodstein.Anchors
 import LeanFormalizations.Logic.Goodstein.Length
 import LeanFormalizations.Logic.FastGrowing.Basic
 import LeanFormalizations.Logic.FastGrowing.Hardy
+import LeanFormalizations.Logic.FastGrowing.Domination
 import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
