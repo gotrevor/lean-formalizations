@@ -282,7 +282,7 @@ theorem two_mul_le_goodsteinLength_loglog {m : ℕ}
   have hf3 := two_pow_le_fastGrowing_ofNat_three (t := t) (by omega)
   have hexp_ge : 2 ^ (t + 1) + 1 ≤ 2 ^ t * t := by
     have h2t : 2 ^ (t + 1) = 2 * 2 ^ t := by rw [pow_succ]; ring
-    have hb : 2 ^ t * 3 ≤ 2 ^ t * t := by gcongr <;> omega
+    have hb : 2 ^ t * 3 ≤ 2 ^ t * t := by gcongr; omega
     have hp : 1 ≤ 2 ^ t := Nat.one_le_two_pow
     omega
   have hpow_ge : 2 * (m + 1) ≤ 2 ^ (2 ^ t * t) := by
@@ -312,6 +312,94 @@ theorem fastGrowing_omega_pow_le_goodsteinLength {m j : ℕ}
   apply fastGrowing_omega_pow_le_goodsteinLength_of_length hm hj1 hjm
   have h2m := two_mul_le_goodsteinLength_loglog ht
   omega
+
+/-! ### `o = ω^ω`: the second LARGE-regime level (toward `ε₀`)
+
+`o = ω^j` (finite `j`) needed the second leading exponent `≥ j` (a constant). The next genuine limit
+`o = ω^ω` needs the second leading exponent in the *large* regime — `secondLeadExp ≥ base` — exactly
+as `o = ω` needed the first. Remarkably the SAME doubly-iterated length bound `≥ 2m` already proved
+discharges it (`n_le_goodsteinSeq` with `n = m` at step `m−2`, budget `2m−2 ≤ 2m`). -/
+
+/-- **`ω^ω ≤ toOrdinal b w`** from the leading exponent in the LARGE regime (`b ≤ log_b w`). The
+`toOrdinal`-level core of `omega_omega_le_seqONote_repr`, factored to apply at the *second* level. -/
+theorem omega_omega_le_toOrdinal (b : ℕ) (hb : 2 ≤ b) {w : ℕ}
+    (hreg : b ≤ Nat.log b w) (hw : w ≠ 0) :
+    (ω : Ordinal) ^ (ω : Ordinal) ≤ toOrdinal b w := by
+  have h1 : toOrdinal b 1 = 1 := by have h := toOrdinal_pow b hb 0; simpa using h
+  have hbb : toOrdinal b b = ω := by
+    have h := toOrdinal_pow b hb 1; rw [pow_one, h1, opow_one] at h; exact h
+  have hSM : StrictMono (toOrdinal b) := fun a c hac => (toOrdinal_mono_and_bound b hb c).1 a hac
+  have homega_le : (ω : Ordinal) ≤ toOrdinal b (Nat.log b w) := by
+    rw [← hbb]; exact hSM.monotone hreg
+  calc (ω : Ordinal) ^ (ω : Ordinal)
+      ≤ ω ^ toOrdinal b (Nat.log b w) := opow_le_opow_right omega0_pos homega_le
+    _ ≤ toOrdinal b w := opow_toOrdinal_log_le b hb hw
+
+/-- **Level-3 ordinal bridge: `ω^{ω^ω} ≤ descent`** from the SECOND leading exponent in the LARGE
+regime (`base i ≤ secondLeadExp_i`). Applies `omega_omega_le_toOrdinal` to the leading exponent
+(giving `ω^ω ≤ toOrdinal (base i)(leadExp)`), then `opow_toOrdinal_log_le`. The `ω^ω`-level analog of
+`omega_omega_le_seqONote_repr`. -/
+theorem omega_pow_omega_le_seqONote_repr {m i : ℕ}
+    (hreg2 : base i ≤ Nat.log (base i) (Nat.log (base i) (goodsteinSeq m i)))
+    (hv : goodsteinSeq m i ≠ 0) (hlead : Nat.log (base i) (goodsteinSeq m i) ≠ 0) :
+    (ω : Ordinal) ^ ((ω : Ordinal) ^ (ω : Ordinal)) ≤ (seqONote m i).repr := by
+  have hb : 2 ≤ base i := Nat.le_add_left 2 i
+  rw [repr_seqONote]
+  show (ω : Ordinal) ^ ((ω : Ordinal) ^ (ω : Ordinal)) ≤ toOrdinal (base i) (goodsteinSeq m i)
+  have hA : (ω : Ordinal) ^ (ω : Ordinal)
+      ≤ toOrdinal (base i) (Nat.log (base i) (goodsteinSeq m i)) :=
+    omega_omega_le_toOrdinal (base i) hb hreg2 hlead
+  calc (ω : Ordinal) ^ ((ω : Ordinal) ^ (ω : Ordinal))
+      ≤ ω ^ toOrdinal (base i) (Nat.log (base i) (goodsteinSeq m i)) :=
+        opow_le_opow_right omega0_pos hA
+    _ ≤ toOrdinal (base i) (goodsteinSeq m i) := opow_toOrdinal_log_le (base i) hb hv
+
+/-- **THE `o = ω^ω` DIAGONAL DOMINATION — UNCONDITIONAL** (for `m` with `(log₂)^[2] m ≥ 2^16`):
+`fastGrowing (ω^ω) m ≤ goodsteinLength m + 2`, with `ω^ω = oadd (oadd 1 1 0) 1 0`. Cichoń's lower
+bound at `ω^ω` — fully machine-checked. The crux is the SECOND leading exponent in the LARGE regime
+(`secondLeadExp_{m-2} ≥ base(m-2) = m`), discharged by the tower (`iterLeadExp_dominates m 2`) +
+`n_le_goodsteinSeq` (`n = m`) + the doubly-iterated length bound `goodsteinLength ((log₂)^[2] m) ≥ 2m`
+(`two_mul_le_goodsteinLength_loglog`, budget `(m−2)+m = 2m−2 ≤ 2m`). Carries the finite-base-case
+`native_decide` axioms (documented split). -/
+theorem fastGrowing_omega_pow_omega_le_goodsteinLength {m : ℕ}
+    (ht : 2 ^ 16 ≤ (Nat.log 2)^[2] m) :
+    fastGrowing (oadd (oadd 1 1 0) 1 0) m ≤ goodsteinLength m + 2 := by
+  have h1' : 1 ≤ (Nat.log 2)^[2] m := le_trans (by norm_num) ht
+  have hlm0 : Nat.log 2 m ≠ 0 := by
+    intro h
+    rw [show (Nat.log 2)^[2] m = Nat.log 2 (Nat.log 2 m) from rfl, h, Nat.log_zero_right] at h1'
+    omega
+  have hlogm2 : 2 ≤ Nat.log 2 m := by
+    have h := Nat.pow_le_of_le_log hlm0 (show 1 ≤ Nat.log 2 (Nat.log 2 m) from h1'); simpa using h
+  have hm0 : m ≠ 0 := by intro h; rw [h, Nat.log_zero_right] at hlogm2; omega
+  have hm : 4 ≤ m := by have h := Nat.pow_le_of_le_log hm0 hlogm2; simpa using h
+  set i := m - 2 with hi
+  have hbase : base i = m := by simp only [base, hi]; omega
+  have ho : (oadd (oadd 1 1 0) 1 0 : ONote).NF := NF.oadd (by decide) 1 NFBelow.zero
+  have hv : goodsteinSeq m i ≠ 0 := by have := goodsteinSeq_ge_init m i (by omega); omega
+  -- second leading exponent ≥ base = m at step m-2
+  have hlen2 : (m - 2) + m ≤ goodsteinLength ((Nat.log 2)^[2] m) := by
+    have := two_mul_le_goodsteinLength_loglog ht; omega
+  have hval : m ≤ goodsteinSeq ((Nat.log 2)^[2] m) i :=
+    n_le_goodsteinSeq ((Nat.log 2)^[2] m) i m (by rw [hbase]) hlen2
+  have hreg2 : base i ≤ Nat.log (base i) (Nat.log (base i) (goodsteinSeq m i)) :=
+    calc base i = m := hbase
+      _ ≤ goodsteinSeq ((Nat.log 2)^[2] m) i := hval
+      _ ≤ Nat.log (base i) (Nat.log (base i) (goodsteinSeq m i)) := iterLeadExp_dominates m 2 i
+  have hlead : Nat.log (base i) (goodsteinSeq m i) ≠ 0 := by
+    intro h0
+    rw [h0, Nat.log_zero_right] at hreg2
+    omega
+  have hidx : (oadd (oadd (oadd 1 1 0) 1 0) 1 0).repr ≤ (seqONote m i).repr := by
+    have hr : (oadd (oadd (oadd 1 1 0) 1 0) 1 0 : ONote).repr
+        = ω ^ ((ω : Ordinal) ^ (ω : Ordinal)) := by simp [ONote.repr]
+    rw [hr]
+    exact omega_pow_omega_le_seqONote_repr hreg2 hv hlead
+  have hnorm : norm (oadd (oadd 1 1 0) 1 0) ≤ i + 2 := by
+    have : norm (oadd (oadd 1 1 0) 1 0 : ONote) = 1 := by decide
+    omega
+  have hgl : i ≤ goodsteinLength m := le_trans (by omega) (le_goodsteinLength m)
+  exact goodstein_dominates_of_index_le ho hgl (by omega) hnorm hidx
 
 /-- Anti-vacuity: `ω = oadd 1 1 0` really has `repr = ω`, and `oadd ω 1 0` has `repr = ω^ω` — so the
 reduction targets the genuine limit level, not a finite stand-in. -/
