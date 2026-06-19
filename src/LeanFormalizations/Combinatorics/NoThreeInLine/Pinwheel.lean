@@ -129,6 +129,38 @@ theorem pinwheel_grid {p k : ℕ} (drop : ℕ → Fin 4) (hp : 0 < p) :
   · rcases pinCorner_fst p k r i with h | h <;> rw [h] <;> omega
   · rcases pinCorner_snd p k r i with h | h <;> rw [h] <;> omega
 
+/-! ### Membership + hyperbola-relation plumbing (for the cross-class slope-±1 proof)
+
+Helpers exposing, for a pinwheel point, its residue class `r`, corner index `i`, and the defining
+hyperbola relation `x·y ≡ k`. These feed `hyperbola_line_two_congruent` (which needs each point on
+the full hyperbola) in the eventual no-three proof. -/
+
+/-- A pinwheel point is a kept corner of some nonzero residue class. -/
+theorem mem_pinwheel {p k : ℕ} {drop : ℕ → Fin 4} {x : ℕ × ℕ} (hx : x ∈ pinwheel p k drop) :
+    ∃ r, 1 ≤ r ∧ r < p ∧ ∃ i, i ≠ drop r ∧ x = pinCorner p k r i := by
+  rw [pinwheel, Finset.mem_biUnion] at hx
+  obtain ⟨r, hr, hxk⟩ := hx
+  rw [pinKeep, Finset.mem_image] at hxk
+  obtain ⟨i, hi, rfl⟩ := hxk
+  simp only [Finset.mem_Ico] at hr
+  rw [Finset.mem_erase] at hi
+  exact ⟨r, hr.1, hr.2, i, hi.1, rfl⟩
+
+/-- The first coordinate of any corner has residue `r` (`r + p ≡ r`). -/
+theorem pinCorner_xres (p k r : ℕ) (i : Fin 4) :
+    ((pinCorner p k r i).1 : ZMod p) = (r : ZMod p) := by
+  rcases pinCorner_fst p k r i with h | h <;> rw [h] <;> push_cast [ZMod.natCast_self] <;> ring
+
+/-- The second coordinate of any corner has residue `s = hyperbolaY p k r` (`s + p ≡ s`). -/
+theorem pinCorner_yres (p k r : ℕ) (i : Fin 4) :
+    ((pinCorner p k r i).2 : ZMod p) = (hyperbolaY p k r : ZMod p) := by
+  rcases pinCorner_snd p k r i with h | h <;> rw [h] <;> push_cast [ZMod.natCast_self] <;> ring
+
+/-- Every pinwheel corner satisfies the hyperbola relation `x·y ≡ k (mod p)`. -/
+theorem pinCorner_rel {p k r : ℕ} [Fact p.Prime] (hr0 : (r : ZMod p) ≠ 0) (i : Fin 4) :
+    ((pinCorner p k r i).1 : ZMod p) * ((pinCorner p k r i).2 : ZMod p) = (k : ZMod p) := by
+  rw [pinCorner_xres, pinCorner_yres]; exact hyperbola_xy_eq hr0
+
 /-! ### A no-three subcase: three corners of one class are never collinear
 
 If a collinear pinwheel triple has all three points in the *same* class, they are three of the four
@@ -151,10 +183,33 @@ theorem pinCorner_not_collinear {p k r : ℕ} (hp : 0 < p) {i j l : Fin 4}
     · push_cast at hd
       nlinarith [hd, hp', mul_pos hp' hp']
 
+/-- A nonzero residue `r ∈ [1,p)` is nonzero in `ZMod p`. -/
+private theorem res_ne_zero {p r : ℕ} (hr1 : 1 ≤ r) (hr2 : r < p) : (r : ZMod p) ≠ 0 := by
+  rw [Ne, ZMod.natCast_eq_zero_iff]
+  intro hd; have := Nat.le_of_dvd hr1 hd; omega
+
+/-- **The reduction entry point.** Any collinear triple of pinwheel points has two with equal
+`x`-residue — i.e. two lie in the SAME residue class (the general HJSW Lemma applied to the pinwheel).
+With `pinCorner_not_collinear` (same-class impossible) this pins every collinear triple to the
+cross-class slope-`±1` configuration the drop-rule must defeat. -/
+theorem pinwheel_collinear_same_xres {p k : ℕ} (hp : p.Prime) (hk : (k : ZMod p) ≠ 0)
+    {drop : ℕ → Fin 4} {P Q R : ℕ × ℕ}
+    (hP : P ∈ pinwheel p k drop) (hQ : Q ∈ pinwheel p k drop) (hR : R ∈ pinwheel p k drop)
+    (hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ))) :
+    (P.1 : ZMod p) = Q.1 ∨ (P.1 : ZMod p) = R.1 ∨ (Q.1 : ZMod p) = R.1 := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  obtain ⟨rP, hP1, hP2, iP, _, rfl⟩ := mem_pinwheel hP
+  obtain ⟨rQ, hQ1, hQ2, iQ, _, rfl⟩ := mem_pinwheel hQ
+  obtain ⟨rR, hR1, hR2, iR, _, rfl⟩ := mem_pinwheel hR
+  exact hyperbola_line_x_residue_eq hk
+    (pinCorner_rel (res_ne_zero hP1 hP2) iP) (pinCorner_rel (res_ne_zero hQ1 hQ2) iQ)
+    (pinCorner_rel (res_ne_zero hR1 hR2) iR) hcol
+
 /-! ### Reduction of the headline to the crux
 
 The mechanical `card`/`grid` facts wire any no-three pinwheel straight into the bound. What remains
-is to exhibit a drop-rule making the pinwheel no-three-collinear. -/
+is to exhibit a drop-rule making the pinwheel no-three-collinear — and by `pinwheel_collinear_same_xres`
++ `pinCorner_not_collinear` that is now exactly the cross-class slope-`±1` incidence. -/
 
 /-- **Crux (disclosed).** There is a drop-rule whose pinwheel is no-three-in-line. This is the HJSW
 slope-`±1` incidence argument (Theorem 2, pp. 339–340): the family assignment routes the two roots of
