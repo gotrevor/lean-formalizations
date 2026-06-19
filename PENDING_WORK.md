@@ -24,10 +24,29 @@ for EVERY prime `3 ≤ p ≤ 109`. See `SELECTION-RULE-FOUND.md`. Construction:
 - Aristotle job `1c2a55b7` (`aris-hjsw-shear`) running the pure-arithmetic form
   (`shearSel_decNoThree`: every distinct triple has `detZ ≠ 0`) — self-contained, no reals.
 
-## The ONLY open item
+## The ONLY open item (as of latest commit)
 
-1. **`shearSel_noThree : NoThreeCollinear (shearSel p)`** (`Hyperbola.lean`) — the lone `sorry`,
-   feeding the headline `hjsw_lower`. **Proof plan (reduction → 4 line-counts):**
+**`shearSel_cross_column`** (`Hyperbola.lean`) — the lone `sorry`. The entire tower is machine-checked
+above it:
+`hjsw_lower` ⟸ `shearSel_noThree` ⟸ `shearSel_intdet` ⟸ `shearSel_two_lifts_line` ⟸
+`shearSel_cross_column`, with `shearSel_card`, `shearSel_grid`, `shearSel_mem_curve`,
+`shearSel_share_residue`, `shear_curve`, `shearY_injective`, `lift_triple_noncollinear` all
+axiom-clean. `shearSel_cross_column` states: two distinct kept lifts `P,Q` of one column + a kept
+lift `R` of a DIFFERENT column (residues differ from `P`) are never collinear. This is the
+irreducible slope-`±1` counting core (the heart of HJSW).
+
+**Proof plan for `shearSel_cross_column`:** `P,Q` same column ⇒ lie on a slope `0/∞/±1` line.
+(i) slope `0`/`∞`: `R` on a horizontal/vertical line through `P,Q` forces `R`'s row/col residue to
+equal `a`'s ⇒ `shearY c = shearY a` ⇒ `c = a` by `shearY_injective` — contradicting different column.
+(ii) slope `±1`: the drop rule keeps the diagonal pair `{A,D}` iff `r,s` are on opposite sides of
+`pl`, the antidiagonal `{B,C}` iff same side; reduce `R` on the kept line to
+`coord_diff_of_residue_eq` + `intCoord_diff_factor` and the explicit `shearDrop` if-conditions.
+Concretely: extract columns `a` (for `P,Q`) and `c` (for `R`) from `mem_shearKept`, case on the four
+corners, and discharge by modular arithmetic on `(2x+1)y≡1`. Aristotle job `1c2a55b7` is grinding the
+superset `shearSel_intdet`; if it returns without the counting, resubmit the tighter
+`shearSel_cross_column`.
+
+### (superseded) earlier plan — reduction → 4 line-counts:
    - Each P,Q,R ∈ `shearSel p` is a kept lift of a column; for x≠pl, `shear_curve` puts its residue
      on `(2x+1)y=1`. Apply `shear_hyperbola_lift_share_residue` ⇒ two share a residue ⇒ same column
      (first coord <2p determines column mod p). If all three same column ⇒ `lift_triple_noncollinear`
