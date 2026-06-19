@@ -4,7 +4,7 @@ The no-three-in-line problem (Dudeney 1917; **Ben Green's open problem 72**): ho
 can be placed on an `N × N` grid so that no three lie on a common line — every line of every
 rational slope, not just rows/columns/diagonals?
 
-**Status (2026-06-18): both proven results formalized, axiom-clean, sorry-free.**
+**Status (2026-06-19): all results formalized, axiom-clean, sorry-free — including the HJSW `3N/2`.**
 
 | Result | Theorem | Status |
 |--------|---------|--------|
@@ -12,8 +12,15 @@ rational slope, not just rows/columns/diagonals?
 | Erdős parabola lower bound (prime `p`) | `prime_le_maxNoThreeInLine`, `erdos_exists_parabola` | ✅ proven |
 | Lower bound for all `N ≥ 2` (Bertrand) | `maxNoThreeInLine_gt_half` | ✅ proven |
 | Order `Θ(N)` | `maxNoThreeInLine_order` (`p ≤ max ≤ 2p`) | ✅ proven |
+| **HJSW `3(p−1)` / `3N/2`** (best proven density, 1975) | `hjsw_three_mul_pred_le_maxNoThreeInLine`, `hjsw_3n2_exists` | ✅ **proven (lap 14)** |
 
 `#print axioms` on every headline = `[propext, Classical.choice, Quot.sound]` (bare trust base).
+
+The HJSW result (`Pinwheel.lean`) is the half-band "pinwheel" carved from a single modular hyperbola
+`H(k,p)` over the `2p × 2p` grid — `3(p−1) = 3(N−2)/2` no-three-collinear points. (NB: the naïve
+symmetric `{0,p}²`-corner version is no-three for *no* drop rule — it was brute-force refuted; the
+half-band shift is essential.) The remaining open frontier is the all-`N` `(3/2−ε)N` density, which
+needs a prime `p ≈ N/2` (prime-in-short-interval / PNT-grade, beyond Bertrand's postulate).
 
 ## What to audit (the trusted surface)
 
