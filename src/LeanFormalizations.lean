@@ -18,6 +18,7 @@ import LeanFormalizations.Geometry.Constructible.Statement
 import LeanFormalizations.Logic.Goodstein.Statement
 import LeanFormalizations.Logic.Goodstein.Anchors
 import LeanFormalizations.Logic.Goodstein.Length
+import LeanFormalizations.Logic.Goodstein.Growth
 import LeanFormalizations.Logic.FastGrowing.Basic
 import LeanFormalizations.Logic.FastGrowing.Hardy
 import LeanFormalizations.Logic.FastGrowing.Domination
