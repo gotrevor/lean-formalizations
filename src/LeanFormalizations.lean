@@ -22,3 +22,9 @@ import LeanFormalizations.Combinatorics.NoThreeInLine.Hyperbola
 import LeanFormalizations.Combinatorics.NoThreeInLine.Anchors
 import LeanFormalizations.Combinatorics.NoThreeInLine.PrimeGap
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Asymptotics
+import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Support
+import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Sobolev
+import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Fourier
+import LeanFormalizations.NumberTheory.PrimeNumberTheorem.SmoothExistence
+import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Wiener
+import LeanFormalizations.NumberTheory.PrimeNumberTheorem.WeakPNT

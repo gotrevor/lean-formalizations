@@ -23,6 +23,7 @@ central-binomial attack plan. The repo's **headline** theorems (`hjsw_lower_boun
 `maxNoThreeInLine_bounds`, …) do not depend on this file and remain axiom-clean.
 -/
 import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
+import LeanFormalizations.NumberTheory.PrimeNumberTheorem.WeakPNT
 import Mathlib.NumberTheory.Chebyshev
 import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt
 import Mathlib.Analysis.SpecialFunctions.Stirling
@@ -1146,12 +1147,14 @@ a conjecture — and build the entire `3/2 − o(N)` frontier on top, axiom-clea
 
 open scoped Asymptotics in
 open Asymptotics Filter in
-/-- **The Prime Number Theorem for `ψ` (cited).** `ψ(x) ∼ x` as `x → ∞`. This is a *proven theorem* —
-`PrimeNumberTheoremAnd.WeakPNT''` (`Consequences.lean`), whose `ψ` is exactly mathlib's `Chebyshev.psi`
-(its proof goes through `Chebyshev.psi_eq_sum_Icc`). Disclosed as an axiom only because the Wiener–Ikehara
-proof is not in mathlib; it is the deep input that lifts the no-three-in-line constant from the
-elementary ceiling `5/4` to HJSW's full `3/2 − o(1)`. -/
-axiom weakPNT : Chebyshev.psi ~[atTop] (fun x ↦ x)
+/-- **The Prime Number Theorem for `ψ` (discharged).** `ψ(x) ∼ x` as `x → ∞`. Formerly a cited axiom;
+now a fully machine-checked theorem, supplied by the in-repo port of `PrimeNumberTheoremAnd`'s
+Wiener–Ikehara tower (`NumberTheory/PrimeNumberTheorem/WeakPNT.WeakPNT''`, built on the ported `Wiener`,
+`Fourier`, `Sobolev`, `SmoothExistence` modules against our mathlib `v4.29.1`). `WeakPNT''` is `ψ ∼ x`
+with `ψ = Chebyshev.psi` (`open scoped Chebyshev`), and `#print axioms WeakPNT''` is clean
+(`[propext, Classical.choice, Quot.sound]`). This is the deep input that lifts the no-three-in-line
+constant from the elementary ceiling `5/4` to HJSW's full `3/2 − o(1)`. -/
+theorem weakPNT : Chebyshev.psi ~[atTop] (fun x ↦ x) := WeakPNT''
 
 open Asymptotics Filter in
 /-- Two-sided PNT bound: for any `ε > 0`, eventually `(1−ε)x ≤ ψ(x) ≤ (1+ε)x`. -/
