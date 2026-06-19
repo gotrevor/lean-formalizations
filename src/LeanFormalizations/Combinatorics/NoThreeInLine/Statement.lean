@@ -104,4 +104,10 @@ theorem maxNoThreeInLine_two_mul_prime_bounds {p : ℕ} (hp : p.Prime) :
     3 * (p - 1) ≤ maxNoThreeInLine (2 * p) ∧ maxNoThreeInLine (2 * p) ≤ 4 * p :=
   ⟨hjsw_lower hp, by have := maxNoThreeInLine_le (N := 2 * p); omega⟩
 
+/-- **Best proven two-sided bounds, all `N ≥ 4`.** `3·⌊N/4⌋ ≤ maxNoThreeInLine N ≤ 2N` — HJSW via
+Bertrand from below, pigeonhole from above. -/
+theorem maxNoThreeInLine_bounds {N : ℕ} (hN : 4 ≤ N) :
+    3 * (N / 4) ≤ maxNoThreeInLine N ∧ maxNoThreeInLine N ≤ 2 * N :=
+  ⟨maxNoThreeInLine_ge_three_quarters hN, maxNoThreeInLine_le⟩
+
 end LeanFormalizations.NoThreeInLine
