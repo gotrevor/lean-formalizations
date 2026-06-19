@@ -26,6 +26,7 @@ import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
 import Mathlib.NumberTheory.Chebyshev
 import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt
 import Mathlib.Analysis.SpecialFunctions.Stirling
+import Mathlib.Analysis.Complex.ExponentialBounds
 
 namespace LeanFormalizations.NoThreeInLine
 
@@ -368,6 +369,45 @@ theorem log_factorial_le {m : ℕ} (hm : m ≠ 0) :
   rw [hs1] at hanti
   rw [hlogdiv] at hform
   linarith [hform, hanti]
+
+/-- `log 3 > 1.09`, via the `log(1−x)` Taylor remainder (`abs_log_sub_add_sum_range_le`) at `x = 1/3`
+(so `log(2/3) = log 2 − log 3`) plus `Real.log_two_gt_d9`. mathlib pins only `log 2` numerically. -/
+theorem log_three_gt : (1.09 : ℝ) < Real.log 3 := by
+  have hx : |(1 / 3 : ℝ)| < 1 := by rw [abs_of_pos] <;> norm_num
+  have h := Real.abs_log_sub_add_sum_range_le hx 4
+  have hl2 := Real.log_two_gt_d9
+  rw [show (1 : ℝ) - 1 / 3 = 2 / 3 by norm_num, Real.log_div (by norm_num) (by norm_num),
+    abs_of_pos (by norm_num : (0 : ℝ) < 1 / 3)] at h
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero] at h
+  rw [abs_le] at h
+  norm_num at h
+  linarith [h.1, h.2, hl2]
+
+/-- `log 5 > 1.6`, via the same series at `x = 1/5` (`log(4/5) = log 4 − log 5 = 2 log 2 − log 5`). -/
+theorem log_five_gt : (1.6 : ℝ) < Real.log 5 := by
+  have hx : |(1 / 5 : ℝ)| < 1 := by rw [abs_of_pos] <;> norm_num
+  have h := Real.abs_log_sub_add_sum_range_le hx 3
+  have hl2 := Real.log_two_gt_d9
+  have hlog4 : Real.log 4 = 2 * Real.log 2 := by
+    rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]; push_cast; ring
+  rw [show (1 : ℝ) - 1 / 5 = 4 / 5 by norm_num, Real.log_div (by norm_num) (by norm_num), hlog4,
+    abs_of_pos (by norm_num : (0 : ℝ) < 1 / 5)] at h
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero] at h
+  rw [abs_le] at h
+  norm_num at h
+  linarith [h.1, h.2, hl2]
+
+/-- **Chebyshev's constant `A > 0.91`.** `A := (7/15)·log2 + (3/10)·log3 + (1/6)·log5 ≈ 0.9213` is the
+leading coefficient of the `2,3,5,30` `T`-combination (`A = ½log2+⅓log3+⅕log5−1/30·log30`, simplified
+using `log30 = log2+log3+log5`). The bound `A > 0.91` (from `log_three_gt`, `log_five_gt`,
+`log_two_gt_d9`) is what makes the refined Chebyshev lower bound `ψ(n) ≳ 0.91 n` strictly beat the
+elementary `log4/2 ≈ 0.69`. -/
+theorem chebyshev_const_gt :
+    (0.91 : ℝ) < (7 / 15) * Real.log 2 + (3 / 10) * Real.log 3 + (1 / 6) * Real.log 5 := by
+  have h2 := Real.log_two_gt_d9
+  have h3 := log_three_gt
+  have h5 := log_five_gt
+  linarith [h2, h3, h5]
 
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.

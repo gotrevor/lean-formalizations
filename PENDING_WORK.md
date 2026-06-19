@@ -1,42 +1,58 @@
 # PENDING_WORK — no-three-in-line / HJSW frontier (branch `ntl-hjsw`)
 
-## ⭐ 2026-06-19 (review lap) — ACTIVE FRONTIER: general-`N` constant `3/4 → 5/4 → 3/2`
+## ⭐⭐ 2026-06-19 (refined-Chebyshev lap) — ACTIVE FRONTIER: general-`N` constant `3/4 → >3/4`
 
-**State.** All headlines proven & axiom-clean (kernel-verified). The open obligation is the
-general-`N` lower *constant*: HJSW's theorem is `3N/2 − o(N)` for *all* large `N`, but the formalized
-general-`N` bound is only `3/4` (`maxNoThreeInLine_ge_three_quarters`, Bertrand-limited). Lifting it is
-genuine 🟡 debt. `PrimeGap.lean` now holds the scaffold + the Chebyshev lower-bound infrastructure (all axiom-clean
-except `nagura_prime`):
-- `maxNoThreeInLine_ge_of_two_mul_prime_le` (interface) + `maxNoThreeInLine_mono`.
-- `maxNoThreeInLine_ge_five_fourths` (`3⌊5N/12⌋ ≤ max N`, `N≥60`) — **wired**, payoff ready.
-- `nagura_prime` (prime in `(n,6n/5]`, `n≥25`) — the **disclosed-`sorry` crux**.
-- `centralBinom_dvd_lcm_Icc`, `four_pow_lt_mul_lcm` (`4ⁿ<n·lcm(1..2n)`) — ℕ Chebyshev lower bound. ✅
-- `factorization_finset_lcm`, `primePow_dvd_lcm_Icc_iff` (`pᵏ ∣ lcm(1..N) ⟺ pᵏ ≤ N`). ✅
-- `log_lcm_Icc_eq_psi` (`log(lcm(1..N)) = ψ N`, the von Mangoldt ↔ lcm bridge). ✅ **DONE this lap.**
-- `psi_lower` (`n·log4 − log n < ψ(2n)`) + `theta_lower` (`… − 2√(2n)·log(2n) < θ(2n)`). ✅ **The
-  Chebyshev θ LOWER bound mathlib was missing — built from scratch this lap, axiom-clean.**
+**Strategic finding this lap (do NOT re-derive — it reorients the whole attack).** I proved three ways
+that **the crude elementary Chebyshev bounds CANNOT beat Bertrand's `3/4`, for ANY ratio `c<2`** — not
+just `6/5`. The central-binomial split, done correctly, gives a prime in `(n,c·n]` only when
+`L·c > (8U/3) − 2log2` (`U`,`L` = θ upper/lower constants). With the crude pair `U=log4`, `L=log4/2`
+this needs `c > 10/3 ≈ 3.33`; even with the *true* `U=L=1` (PNT) it tops out at `c≈1.28`. The crude
+method's weak link is the high-prime product `∏_{c·n<p≤2n}p` (empty only at `c=2`, which is exactly why
+Bertrand squeaks out `c=2`). **Conclusion: the ONLY route past `3/4` is a *refined* Chebyshev bound
+`ψ(x) ≳ 0.92 x` (Chebyshev's constant `A`), which mathlib lacks entirely.** That is what I started
+building this lap, and it's the right multi-lap target. (The earlier "tuned Nagura inequality" framing
+was a special case of this same wall.)
 
-**The crux `nagura_prime` — remaining work (the θ-lower infra is now DONE):**
-1. **The precise tuned numerical inequality (PRIMARY).** ⚠️⚠️ DEFINITIVE FINDING (computed this lap —
-   do NOT chase the crude path): the crude elementary Chebyshev bounds are **provably insufficient** for
-   `6/5`. With `theta_lower` (`θ(x) ≳ (log4/2)x`) + crude upper (`θ(x) ≤ log4·x`), the central-binomial
-   split gives, under "no prime in `(n,6n/5]`",
-   `C(2n,n) ≤ (2n)^√(2n)·4^(2n/3)·∏_{6n/5<p≤2n}p ≤ (2n)^√(2n)·4^(2n/3)·4^(2n−3n/5) = (2n)^√(2n)·4^(31n/15)`,
-   and `31/15 ≈ 2.07 > 1`, so it does **not** contradict `4ⁿ ≤ n·C(2n,n)`. (`θ(x) ≳ 0.69x` is the best
-   *elementary* lower constant — lcm/central-binom cap it at `log4/2`; the true `θ(x)~x` needs PNT.)
-   So Nagura's `6/5` genuinely requires the **precise tuned numerical inequality** — the analogue of
-   mathlib's `bertrand_main_inequality` (`Mathlib/NumberTheory/Bertrand.lean:126`) re-derived for ratio
-   `6/5` and valid for `n ≥ N₀`, with `n ∈ [25, N₀)` by `decide`/explicit prime list. That is a real
-   analytic computation — the genuine multi-lap content, best started fresh. The factorization split
-   (sharpen `centralBinom_factorization_small`/`centralBinom_le_of_no_bertrand_prime` to keep the
-   `(6n/5,2n]` primes) is the mechanical scaffolding around it.
-2. **Aristotle.** Job `1644a603` (`aris-nagura`) grinding the self-contained statement. Harvest when
-   IDLE: download, kernel-verify, `#print axioms`, port.
-3. **Weaker explicit rung.** Any ratio `c<2` with a provable gap gives constant `3/(2c) > 3/4`. Same
-   factorization obstruction, just looser numerics.
+**THE REFINED-CHEBYSHEV STACK — built this lap (all axiom-clean, in `PrimeGap.lean`):**
+- `sum_vonMangoldt_mul_floor_div` (`∑_{d≤n} Λ(d)⌊n/d⌋ = log(n!)`) — **Chebyshev's `T`-function
+  identity, the keystone.** ✅ mathlib lacks it.
+- `floor_comb_bounds` (`⌊n⌋−⌊n/2⌋−⌊n/3⌋−⌊n/5⌋+⌊n/30⌋ ∈ {0,1}`, period-30 via `decide`). ✅
+- `logFactorial_div_eq_sum` (`log(⌊n/k⌋!) = ∑_{d≤n}Λ(d)⌊n/(kd)⌋`, zero-extension to common range). ✅
+- `logFactorial_comb_eq` (the 5-shift `T`-combination `= ∑_{d≤n}Λ(d)·g(n/d)`, `g∈{0,1}`). ✅
+- `logFactorial_comb_le_psi` (**`T`-combination `≤ ψ(n)`** — the combinatorial half of `ψ ≳ 0.92n`). ✅
+- `log_factorial_le` (**explicit Stirling UPPER bound** `log(m!) ≤ m·log m − m + log(2m)/2 + 1 −
+  log2/2`; mathlib has only the lower `Stirling.le_log_factorial_stirling`). ✅
 
-**Reusable spinoffs (PR-worthy to mathlib):** `factorization_finset_lcm`, `primePow_dvd_lcm_Icc_iff`,
-`log_lcm_Icc_eq_psi`, `psi_lower`, `theta_lower` are all general Chebyshev/lcm facts mathlib lacks.
+**The crux — remaining work (the analytic half of `ψ ≳ 0.92n`), precise recipe:**
+1. **Stirling lower bound on the `T`-combination `f(n) := log(n!)−log(⌊n/2⌋!)−log(⌊n/3⌋!)−log(⌊n/5⌋!)
+   +log(⌊n/30⌋!)`.** Use `Stirling.le_log_factorial_stirling` (lower) on the `+` terms `n,⌊n/30⌋` and
+   `log_factorial_le` (upper, built this lap) on the `−` terms `⌊n/2⌋,⌊n/3⌋,⌊n/5⌋`. The `n·log n` and
+   `−n` leading terms **cancel** (coeffs `1−½−⅓−⅕+1/30 = 0`); residue `= A·n + O(log n)` where
+   `A = (7/15)log2 + (3/10)log3 + (1/6)log5 ≈ 0.9213`. Floor errors `⌊n/k⌋ = n/k − {·}` are `O(log n)`.
+   ⟹ `f(n) ≥ A·n − C·log n − D`. **This is the messy-but-mechanical analytic core; best as one focused
+   lap.** Sub-task: bound `A` below by an explicit rational `> 0.92` — needs `log 3`, `log 5` numeric
+   lower bounds (mathlib has only `Real.log_two_{gt,lt}_d9`; derive `log 3`, `log 5` — small project).
+2. **Conclude `ψ(n) ≥ A·n − C·log n` from steps (1)+`logFactorial_comb_le_psi`**, hence (with the dual
+   *upper* iterate `ψ(n) ≤ A·n/(1−1/6)+…`) a `θ` two-sided bound with ratio `<2`, feeding the
+   central-binomial split for a prime in `(n,c·n]`, `c<2`, then `3/(2c) > 3/4` via
+   `maxNoThreeInLine_ge_of_two_mul_prime_le`.
+3. **Aristotle.** Job `1644a603` (`aris-nagura`) was grinding the from-scratch `nagura_prime` — UNLIKELY
+   to crack it cold (it needs exactly this refined infra). NEXT LAP: consider redirecting Aristotle to
+   the now-narrowed, self-contained step (1) (`f(n) ≥ A·n − C log n`, Stirling bounds inlined as
+   axioms) — far more tractable than from-scratch Nagura.
+
+**Earlier ℕ-Chebyshev infra (still axiom-clean, but capped at `log4/2 ≈ 0.69` — insufficient alone):**
+`centralBinom_dvd_lcm_Icc`, `four_pow_lt_mul_lcm`, `factorization_finset_lcm`,
+`primePow_dvd_lcm_Icc_iff`, `log_lcm_Icc_eq_psi`, `psi_lower`, `theta_lower`. The refined stack above
+supersedes these for the constant (they remain reusable & PR-worthy).
+
+**Reusable spinoffs (PR-worthy to mathlib):** all six refined-stack lemmas above + the earlier ℕ-infra
+are general Chebyshev/lcm/factorial facts mathlib lacks.
+
+**Still-disclosed `sorry` (unchanged, honest):** `nagura_prime` (prime in `(n,6n/5]`, `n≥25`) and its
+wired payoff `maxNoThreeInLine_ge_five_fourths`. NOTE: the refined route may land a *different* explicit
+ratio `c<2` (whatever the `0.92` constant yields) rather than exactly `6/5` — that's fine and still
+beats `3/4`. Retarget `maxNoThreeInLine_ge_five_fourths` to the achieved `c` when the analytic half lands.
 
 **Faithfulness (carry-over):** Aristotle `72891d77` (independent NL→Lean of the headline) finished
 (IDLE) but its `show`/`download` 500 server-side this lap — retry next lap; not load-bearing.
