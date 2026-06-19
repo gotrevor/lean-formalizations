@@ -21,6 +21,7 @@ Reference: Mattila, *Geometry of Sets and Measures*, §4–5 (Hausdorff content,
 A. Córdoba (1977). -/
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.CordobaL2
 import Mathlib.MeasureTheory.Measure.Hausdorff
+import Mathlib.Analysis.Normed.Module.Ball.Pointwise
 
 open Set MeasureTheory Metric
 open scoped ENNReal
@@ -112,5 +113,34 @@ theorem volume_thickening_le_tsum {S : Set Plane} {U : ℕ → Set Plane}
     (hcov : S ⊆ ⋃ n, U n) {δ δ' : ℝ} (hδ0 : 0 ≤ δ) (hδ : δ < δ') :
     volume (thickening S δ) ≤ ∑' n, volume (thickening (U n) δ') :=
   le_trans (measure_mono (thickening_subset_iUnion_thickening hcov hδ0 hδ)) (measure_iUnion_le _)
+
+/-- **Diameter ⟹ thickened-volume bound.** A cover piece `U` of diameter `≤ ρ`, thickened by `δ'`,
+sits inside a disc of radius `ρ + δ'`, so its area is `≤ π·(ρ+δ')²` (with `π = vol(unit disc)`). In
+the plane `vol(closedBall 0 1) = π`. This is the per-piece estimate that, summed against
+`volume_thickening_le_tsum`, turns the K4 lower bound `vol(Sδ) ≳ 1/log` into a lower bound on the
+number/size of cover pieces — the engine of the single-scale Hausdorff content estimate. -/
+theorem volume_thickening_le_of_ediam_le {U : Set Plane} {ρ δ' : ℝ}
+    (hρ : 0 ≤ ρ) (hδ' : 0 ≤ δ') (hdiam : Metric.ediam U ≤ ENNReal.ofReal ρ) :
+    volume (thickening U δ') ≤ ENNReal.ofReal ((ρ + δ') ^ 2) * volume (closedBall (0 : Plane) 1) := by
+  rcases U.eq_empty_or_nonempty with rfl | ⟨x₀, hx₀⟩
+  · rw [thickening_def, cthickening_empty, measure_empty]; exact zero_le _
+  · have hsub : U ⊆ closedBall x₀ ρ := by
+      intro y hy
+      rw [Metric.mem_closedBall, dist_comm]
+      have he : edist x₀ y ≤ ENNReal.ofReal ρ :=
+        le_trans (Metric.edist_le_ediam_of_mem hx₀ hy) hdiam
+      rw [edist_dist] at he
+      exact (ENNReal.ofReal_le_ofReal_iff hρ).1 he
+    have hsubball : thickening U δ' ⊆ closedBall x₀ (δ' + ρ) := by
+      rw [thickening_def]
+      calc cthickening δ' U ⊆ cthickening δ' (closedBall x₀ ρ) := cthickening_subset_of_subset δ' hsub
+        _ = closedBall x₀ (δ' + ρ) := cthickening_closedBall hδ' hρ x₀
+    have hfr : Module.finrank ℝ Plane = 2 := finrank_euclideanSpace_fin
+    calc volume (thickening U δ')
+        ≤ volume (closedBall x₀ (δ' + ρ)) := measure_mono hsubball
+      _ = ENNReal.ofReal ((δ' + ρ) ^ Module.finrank ℝ Plane) * volume (closedBall (0 : Plane) 1) :=
+          Measure.addHaar_closedBall' volume x₀ (add_nonneg hδ' hρ)
+      _ = ENNReal.ofReal ((ρ + δ') ^ 2) * volume (closedBall (0 : Plane) 1) := by
+          rw [hfr, add_comm δ' ρ]
 
 end LeanFormalizations.Kakeya2D
