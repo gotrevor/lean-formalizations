@@ -7,7 +7,7 @@ content lives in the three docs below.
 ## Read these, in order
 1. **`STATUS.md`** — the living overview (axiom ledger, what's happened). REFRESHED this lap.
 2. **`PENDING_WORK.md`** — active frontier + attack paths (top section is current).
-3. **newest dated `HANDOFF-2026-06-19-*.md`** — the per-lap baton.
+3. **newest dated `HANDOFF-2026-06-19-0845.md`** — the per-lap baton (mental model + next actions).
 
 ## One-line state
 **All NTL headlines proven & axiom-clean** (kernel-verified): `hjsw_lower` (3N/2 at N=2p), `2N` upper,
