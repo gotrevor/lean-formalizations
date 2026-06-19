@@ -106,6 +106,29 @@ theorem fastGrowing_le_succ_index {o a : ONote}
   have hexp : (id : ℕ → ℕ) ≤ fastGrowing a := fun m => le_fastGrowing a m
   simpa using (Function.monotone_iterate_of_id_le hexp hn) n
 
+/-- The fundamental sequence of a successor *natural-number* notation is its
+predecessor: `(k+1)[·] = k`. (Both branches reduce to `rfl`.) -/
+theorem fundamentalSequence_ofNat_succ (k : ℕ) :
+    fundamentalSequence (ofNat (k + 1)) = Sum.inl (some (ofNat k)) := by
+  cases k with
+  | zero => rfl
+  | succ k' => rfl
+
+/-- **Finite-level index monotonicity** — the base case of the whole index
+hierarchy, fully proved. For natural-number levels `m ≤ n` and positive argument,
+`f_m(x) ≤ f_n(x)`. Telescopes `fastGrowing_le_succ_index` along
+`fundamentalSequence_ofNat_succ`.
+
+This is exactly the comparison the limit case needs whenever the fundamental
+sequence lands on finite levels (e.g. `ω[n] = n+1`), so it discharges the index
+crux for `o = ω` and is the seed for the general CNF induction. -/
+theorem fastGrowing_ofNat_mono {m n : ℕ} (hmn : m ≤ n) {x : ℕ} (hx : 1 ≤ x) :
+    fastGrowing (ofNat m) x ≤ fastGrowing (ofNat n) x := by
+  induction n, hmn using Nat.le_induction with
+  | base => exact le_rfl
+  | succ n _ ih =>
+      exact le_trans ih (fastGrowing_le_succ_index (fundamentalSequence_ofNat_succ n) hx)
+
 /-- **The index-monotonicity crux (A3), limit step.**  *(disclosed `sorry` — this is
 the genuine hard core of the growth theory, banged on across laps.)*
 
