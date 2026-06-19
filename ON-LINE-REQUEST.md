@@ -47,3 +47,27 @@ certificate (`decNoThree`, `native_decide`), I searched the natural "3 of the 4 
 
 A scan of any modern exposition giving the construction explicitly (Brass–Moser–Pach *Research
 Problems in Discrete Geometry* §10.1; Pór–Wood; Flammenkamp's pages) would also do.
+
+### 2026-06-19 update — sharpened ask (after ruling out the whole hyperbola-lift family)
+I have now *proven* (and computationally confirmed) several negatives that narrow exactly what I
+need from the paper:
+- **Uniform "3 of the 4 lifts of a single hyperbola `xy ≡ k`" reaches `3(p−1)` iff `p = 5`.** Each
+  base point `P_a=(a,a⁻¹)` sits on a slope-`+1` line shared with `P_{−a⁻¹}` and a slope-`−1` line
+  shared with `P_{a⁻¹}`; avoiding a collinear triple forces it to drop *both* a diagonal and an
+  anti-diagonal lift, but 3-of-4 drops only one — impossible unless `a` is an involution fixed
+  point (`a²=±1`). Only `p=5` has all `p−1` base points fixed. (Exhaustive `4^(p−1)` check: p=5 ✓,
+  p=7 ✗.)
+- **Even non-uniform single-hyperbola lifts cap at `≤17` at `p=7`** (collinear-triple hypergraph has
+  min hitting set `≥7`), and a fresh probe shows **no** structured single base reaches `18` at
+  `p=7`: `xy=k`, `y²−x²=c`, `x²+y²=c`, `y=x^m` (m coprime p−1), `(x+1)(y+1)=k`, `y=x²` all fail.
+  Prior lap: 2-hyperbola-lift unions also cap `<18`.
+
+So the precise things I still need from HJSW 1975 (or any explicit exposition):
+1. **The exact point set** — is it lifts of a curve at all? If so, *which curve(s)*, *which key(s)*,
+   and *which lifts* (the non-uniform selection rule) — and how does it dodge the slope-`±1`
+   over-constraint above? If it is NOT lift-based, what is the closed-form coordinate description?
+2. **The cross-point non-collinearity argument** (the part beyond a single arc's Vandermonde).
+3. Confirm the grid/coordinate convention (`n = 2p`, count `3(p−1)`) matches the paper's `3(n−2)/2`.
+
+This is now the *sole* blocker for `hjsw_lower`; the geometric reduction (real-collinear ⇒ residues
+mod-`p`-collinear ⇒ two lifts coincide) is already formalized & axiom-clean in `Hyperbola.lean`.

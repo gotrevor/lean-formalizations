@@ -1,10 +1,27 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8278 jobs) · **Updated**: 2026-06-19 · **MATH AXIOMS: 0** · **Goodstein: 🟢 PROVED, axiom-clean** (`goodstein_terminates`)
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8285 jobs) · **Updated**: lap N+1 · 2026-06-19 · `5bb249e` · **Branch `ntl-hjsw`** · **Active frontier: HJSW `3N/2` (`hjsw_lower`, 1 disclosed sorry — the covering count)**
+
+> **Branch note.** On `ntl-hjsw` the five umbrella threads below stay complete & axiom-clean
+> (unchanged). The one open item is the **no-three-in-line HJSW lower bound** `hjsw_lower`, a
+> deliberately-disclosed `sorry` (gate is armed); its proven scaffolding + the new reduction toolkit
+> are axiom-clean, and `3(p−1)` is native_decide-witnessed at p=5,7,11,13 (off-headline anchors).
 
 ## Where it stands
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 (HJSW reduction toolkit + obstruction theory):** the geometric half of the HJSW
+  covering count is now formalized & axiom-clean in `NoThreeInLine/Hyperbola.lean`:
+  `collinear_imp_modp_det_zero` (construction-agnostic: real-collinear ⇒ residues' det = 0 in
+  `ZMod p`), `hyperbola_collinear_zmod` (mod-`p` Vandermonde core over the field),
+  `hyperbola_lift_collinear_share_residue` (real-collinear triple of hyperbola-lifts ⇒ two share a
+  residue = two lifts of one base point), `coord_diff_of_residue_eq` (same-residue lifts differ by
+  `0`/`p`). This reduces no-three-in-line of any lift-union to a slope-`±1` *combinatorial*
+  condition. NEW structural result (proven + verified): **uniform 3-of-4 lifts of one hyperbola hit
+  `3(p−1)` iff `p=5`** (each base point is over-constrained by its slope-`±1` collision partners
+  except at involution fixed points); a probe confirms no single structured base (hyperbola,
+  rotated hyperbola, circle, monomial graph, parabola) reaches the count at `p=7`. ⇒ the actual
+  HJSW construction needs the paper (sharpened `ON-LINE-REQUEST.md`); the geometry is discharged.
 - **2026-06-19 (Goodstein — PROVED, axiom-clean):** `goodstein_terminates`
   (`∀ m, ∃ N, goodsteinSeq m N = 0`) is fully machine-checked,
   `#print axioms = [propext, Classical.choice, Quot.sound]`. `Defs.lean` carries
@@ -82,12 +99,14 @@ The repo is **100% axiom-free** — every headline `#print axioms` is the bare t
 - **2026-06-15 2358/2343:** Constructible/Wantzel thread COMPLETE — full equivalence `isConstructible_iff_constructiblePoint` both directions (forward = degree obstruction; converse = explicit compass arithmetic). 5 impossibilities (cube, trisection, nonagon, heptagon, + geometric-point versions), pentagon positive. All axiom-clean.
 - **2026-06-15:** Constructible Layer 1 (algebraic degree engine `IsSqrtTower.finrank_eq_pow_two`) + 3 classical impossibilities; Layer 2 geometric faithfulness bridge.
 - **2026-06-14 (operator redirect):** Curtis verification-hardening run (n=2 boundary / Sylvester hypersurface, extra Frobenius anchors, refuted-candidate witness, findings doc) — complete, self-stopped.
-- **2026-06-14:** Power-tower convergence on the full Euler interval `[e^(-e), e^(1/e)]` proved + axiom-clean; lower-bound crux `two_cycle_collapse` via slope/Banach (not the invalid tangent-subtraction sketch). Sharp-iff lower direction (`0<x<e^(-e)` diverges) omitted, no sorry.
-- **2026-06-14 1511 & earlier:** Curtis crux `substCurve_eq_zero` closed (reformulation bypassing Lemma 1); repo sorry-free + axiom-clean. Engine, Step B, Lemma 2 (Brauer–Shockley, via Aristotle, verified) built.
 
 ## Outstanding
 The transcendence / squaring-the-circle thread AND the power-tower sharp `iff` are
-**COMPLETE and axiom-free**. Remaining open work is elsewhere:
+**COMPLETE and axiom-free**. The active frontier on this branch is the HJSW lower bound:
+### Short-term (mirror `PENDING_WORK.md` top)
+- **`hjsw_lower : 3*(p−1) ≤ maxNoThreeInLine (2*p)`** — the only open `sorry`. Geometric reduction
+  done (toolkit above); blocker is the explicit HJSW construction (filed `ON-LINE-REQUEST.md`).
+  Act on `ON-LINE-FINDINGS-*.md` when it lands; else execute Path B (slope-`±1` collision-graph CSP).
 ### Long-term
 - General Hermite–Lindemann for arbitrary algebraic α (e.g. `log 2`, `cos 1`): the π assembly
   generalizes (its `no_intPoly_exp_relation` + symmetric-function descent are α-agnostic); a
@@ -95,8 +114,9 @@ The transcendence / squaring-the-circle thread AND the power-tower sharp `iff` a
 - PARKED P2/P3 (Curtis mathlib upstream; not-algebraic framing) — web/CLA-gated.
 ### To completion
 - Curtis ✅ · **Power-tower SHARP iff ✅** · Wantzel iff ✅ · **e-transcendence ✅** ·
-  **π-transcendence ✅ (axiom-clean)** · **squaring-the-circle ✅ (unconditional, axiom-clean)**.
-  Repo math-axiom count: **0**.
+  **π-transcendence ✅ (axiom-clean)** · **squaring-the-circle ✅ (unconditional, axiom-clean)** ·
+  **no-three-in-line: 2N upper + Erdős Θ(N) ✅ axiom-clean; HJSW `3N/2` ⏳ (covering count open).**
+  Umbrella math-axiom count: **0**; the only open obligation is `hjsw_lower` (disclosed `sorry`).
 
 ## Axiom ledger (the fidelity spine)
 | headline theorem | paper claim | `#print axioms` shows | status |
@@ -109,9 +129,12 @@ The transcendence / squaring-the-circle thread AND the power-tower sharp `iff` a
 | `Constructible.squaring_the_circle_impossible_uncond` | impossibility, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **axiom-clean** (uses `transcendental_pi_axiomClean`) |
 | `Transcendence.transcendental_pi_axiomClean` | `π` transcendental (Lindemann 1882), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **fully proved (axiom deleted)** |
 | `Transcendence.e_transcendental` (+ `transcendental_exp_{nat,int,rat}`) | `e`, `eⁿ`, `eᵃ`, `e^q` transcendental (Hermite 1873; rational-exponent Hermite–Lindemann), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
+| `NoThreeInLine.maxNoThreeInLine_upper` / `..._order` | 2N upper + Erdős Θ(N) lower, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
+| `NoThreeInLine.hyperbola_noThreeCollinear` + reduction toolkit (`collinear_imp_modp_det_zero`, `hyperbola_collinear_zmod`, `hyperbola_lift_collinear_share_residue`, `coord_diff_of_residue_eq`) | arc + lift geometry for HJSW, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
+| `NoThreeInLine.hjsw_lower` | HJSW `3N/2` (1975), uncond. | **`sorryAx`** (disclosed) | ⏳ OPEN — covering count; geometry reduced, construction network-gated. `3(p−1)` native_decide-witnessed at p=5,7,11,13 (off-headline `ax_*` artifacts only). |
 
-**Math-axiom count (🟢+🟡+🟠): 0.** The repo is **fully axiom-free** — `grep '^axiom' src/` is empty, every headline `#print axioms` is the bare trust base, and there is no `sorry` in `src/`. The `hermite_lindemann` axiom was discharged (full Lindemann assembly for `π`) and deleted this lap. No 🟡/🟠/🔴 anywhere.
+**Umbrella math-axiom count (🟢+🟡+🟠): 0** across the five completed threads. **HJSW frontier:** `hjsw_lower` carries a single **disclosed `sorry`** (NOT a math axiom — it is honest open work, the gate is armed). It is 🟡-grade debt: *proven* mathematics (HJSW 1975) whose covering-count construction is not yet in hand here; the geometric reduction is formalized & axiom-clean, the next prerequisite = the paper's explicit point set (`ON-LINE-REQUEST.md`). No 🔴 anywhere (no unconditional headline depends on an open conjecture).
 
 ## Pointers
-- Open items / attack paths: **`PENDING_WORK.md`** · resume baton: newest **`HANDOFF-*.md`** · online asks: `ON-LINE-REQUEST.md`
-- Frontier files: `NumberTheory/Transcendence/{HermiteLindemann,ETranscendental}.lean`
+- Open items / attack paths: **`PENDING_WORK.md`** · resume baton: newest **`HANDOFF-*.md`** · online asks: `ON-LINE-REQUEST.md` · frozen plan: `NoThreeInLine/PLAN.md`
+- Active frontier files: `Combinatorics/NoThreeInLine/{Hyperbola,Anchors}.lean`
