@@ -462,6 +462,27 @@ theorem shear_curve {p x : ℕ} (hp : p.Prime) (hx : x < p) (hne : x ≠ (p - 1)
     rw [shearY]; simp [ZMod.natCast_val, ZMod.cast_id]
   rw [hval, mul_inv_cancel₀ (shear_two_ne hp hx hne)]
 
+/-- `shearY` is injective on `[0,p)` (the base has distinct rows): `x ↦ (2x+1)⁻¹` is a composite of
+injective maps (`x ↦ 2x+1` injective on residues, inversion an involution on the field). -/
+theorem shearY_injective {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {x x' : ℕ} (hx : x < p) (hx' : x' < p)
+    (h : shearY p x = shearY p x') : x = x' := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  rw [shearY, shearY] at h
+  have hv : (2 * (x : ZMod p) + 1)⁻¹ = (2 * (x' : ZMod p) + 1)⁻¹ :=
+    ZMod.val_injective p h
+  have hu : 2 * (x : ZMod p) + 1 = 2 * (x' : ZMod p) + 1 := inv_injective hv
+  have h2 : (2 : ZMod p) ≠ 0 := by
+    have : ((2 : ℕ) : ZMod p) ≠ 0 := by
+      rw [Ne, ZMod.natCast_eq_zero_iff]
+      exact fun hd => hp2 ((Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).mp hd)
+    simpa using this
+  have hxx : (x : ZMod p) = (x' : ZMod p) :=
+    mul_left_cancel₀ h2 (by linear_combination hu)
+  calc x = ((x : ZMod p)).val := (ZMod.val_cast_of_lt hx).symm
+    _ = ((x' : ZMod p)).val := by rw [hxx]
+    _ = x' := ZMod.val_cast_of_lt hx'
+
 /-- The slope-`±1` counting lemma for the closed-form rule — the lone remaining obligation. With
 this explicit selection, no real-collinear triple of `shearSel p` exists: by
 `shear_hyperbola_lift_share_residue` every collinear triple has two lifts of one base column, by
