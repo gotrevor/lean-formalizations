@@ -35,7 +35,56 @@ NF condition `repr R < ω^(repr e)` IS the no-absorption side condition, sideste
 `succ_iterate`. Also `toOrdinal_two_cofinal` (`∀ NF β, ∃ N, repr β < toOrdinal 2 N`; via
 `toOrdinal_pow` building ω-towers). All `#print axioms`-clean; native_decide anchors present.
 
-### 🎯 NEXT CRUX: the FINAL domination headline — budget-aware (NORM OBSTRUCTION found)
+### 🎯 NEXT CRUX (refreshed 2026-06-19 lap 6): headline REDUCED to one descent-count fact
+
+**Lap-6 result — the headline is now a machine-checked reduction to a single deep fact, and the
+budget obstruction is RESOLVED.** Three axiom-clean additions in `Goodstein/Domination.lean`:
+
+1. **`goodstein_dominates_of_index`** — the full Cichoń assembly, verified:
+   `o.NF → norm o ≤ m → oadd o 1 0 < seqONote m m → fastGrowing o m ≤ goodsteinLength m + 2`.
+   Chain (all banked): telescope at `j=m` (valid by `le_goodsteinLength`) + `hardy_seqONote_zero`
+   give `goodsteinLength m + 2 = H_{seqONote m m}(m+2)`; `hardy_le_of_lt` (budget OK at `m+2`)
+   lifts `H_{oadd o 1 0}(m+2) ≤ H_{seqONote m m}(m+2)`; bridge `fastGrowing_le_hardy_pow` +
+   `fastGrowing_monotone`. **The ONLY open input is the index hypothesis `hidx`.**
+2. **`norm_toONote_lt` / `norm_seqONote_le`** — `norm (seqONote m j) ≤ j+1` (a base-`(j+2)`
+   numeral has all digits `< j+2`). ⟹ **the Hardy budget `norm ≤ argument` is AUTOMATIC at the
+   telescope step `j+2`.** The old "norm obstruction" only ever bit at the *fixed* argument 2;
+   evaluated on the descent at step `j+2` it is free, in BOTH comparison directions.
+3. **`goodstein_dominates_or_hardy_bound`** (unconditional dichotomy) — for `norm o ≤ m`, EITHER
+   `fastGrowing o m ≤ goodsteinLength m + 2` (A, dominates) OR
+   `goodsteinLength m + 2 ≤ hardy (oadd o 1 0) (m+2)` (B, length Hardy-bounded). Proof: trichotomy
+   of `seqONote m m` vs `oadd o 1 0`, budget free both ways.
+
+**⟹ THE HEADLINE ⟺ "branch (B) is eventually empty" ⟺ sub-fact (ii) below.** Nothing else is
+missing. native_decide anchors witness the inequality for `o∈{0,1}, m∈{2,3}` (computable regime).
+
+**THE ONE REMAINING DEEP FACT — sub-fact (ii), `oadd o 1 0 < seqONote m m` for large `m`:**
+the Goodstein descent stays above `ω^o` for at least `m` steps. Equivalent forms: (a) the drop
+time `j*(m) = max{j : seqONote m j > oadd o 1 0}` satisfies `j*(m) ≥ m`; (b) branch (B) fails for
+large `m`; (c) `goodsteinLength m + 2 > H_{ω^o}(m+2)` eventually.
+
+**Why it is irreducible (lap-6 analysis — do NOT re-try these dead ends):**
+- *Leading-exponent antitone is FREE and USELESS:* for ordinals `α<β ⟹ leadExp α ≤ leadExp β`
+  (else `ω^{leadExp α} > β > α ≥ ω^{leadExp α}`), so "leading exp non-increasing on the descent"
+  is just a corollary of the strict descent — it gives no step-COUNT.
+- *The dichotomy cannot be bootstrapped from the linear bound:* branch (B) gives
+  `goodsteinLength m + 2 ≤ H_{ω^o}(m+2)`; combined with `goodsteinLength m ≥ m` only yields
+  `m+2 ≤ H_{ω^o}(m+2)` (always true). To kill (B) you need `goodsteinLength m` ABOVE `H_{ω^o}(m+2)`
+  — i.e. a **super-linear lower bound on `goodsteinLength`**, which is the growth content itself.
+- *`j*(m) → ∞` is provable but too weak:* for fixed `K`, `seqONote m K > oadd o 1 0` for large `m`
+  (since `goodsteinSeq m K → ∞` as `m→∞` by bump-monotonicity, and `toOrdinal (K+2)` is cofinal),
+  so `j*(m) ≥ K` eventually. But this only gives `f_o(K+2) ≤ goodsteinLength m + 2` (constant LHS)
+  ⟹ `goodsteinLength → ∞`, NOT `f_o(m) ≤ goodsteinLength m`. The diagonal `j*(m) ≥ m` is the gap.
+
+**Concrete next-lap attack (the genuine deep content):** a super-linear lower bound on
+`goodsteinSeq m j` / on the descent ordinal. The real recursive structure: within one
+leading-CNF-level the number of steps is itself a Hardy value (astronomically `>` 1 per level),
+so the descent spends `≫ m` steps before the leading exponent falls below `repr o`. Formalizing
+"steps-per-CNF-level" is Cichoń's lower bound proper — likely needs an induction on `o` mirroring
+`f_{o+1} = f_o`-iterate, or a direct recursive count of `goodsteinLength` restricted to a
+threshold. Multi-lap; decompose, checkpoint with a `sorry` only on the count itself.
+
+**OLDER framing (lap 5) — superseded by the lap-6 reduction above but kept for the math:**
 The identity gives `goodsteinLength m = H_{toONote 2 m}(2) − 2`; the headline (DIRECTION.md C3) is
 "**`goodsteinLength` eventually dominates every `fastGrowing o`**". The diagonal `H_{toONote 2 m}(2)`
 has a large *index* but the **argument is fixed at 2**.

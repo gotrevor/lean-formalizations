@@ -24,7 +24,7 @@ import LeanFormalizations.Logic.FastGrowing.Domination
 
 namespace LeanFormalizations.Logic.FastGrowing
 
-open ONote
+open ONote Ordinal
 
 /-- The **Hardy hierarchy** `H_α : ℕ → ℕ` for ordinal notations `< ε₀`:
 `H₀ = id`, `H_{α+1}(n) = H_α(n+1)`, `H_λ(n) = H_{λ[n]}(n)` (limit `λ`, via
@@ -215,6 +215,54 @@ theorem hardy_le_of_lt {x : ℕ} {α β : ONote} (hα : α.NF) (hβ : β.NF)
     (hαβ : α < β) (hnorm : norm α ≤ x) : hardy α x ≤ hardy β x :=
   hardy_le_of_reaches (reaches_of_lt β hβ α hα hαβ hnorm) (fun γ _ => hardy_monotone γ)
 
+/-- **Closed form for finite Hardy levels:** `H_k(x) = x + k`. Induction on `k`: `H_0 = id`;
+`H_{k+1}(x) = H_k(x+1) = (x+1) + k` via the successor step `(k+1)[·] = k`. -/
+theorem hardy_ofNat (k x : ℕ) : hardy (ofNat k) x = x + k := by
+  induction k generalizing x with
+  | zero => simp
+  | succ k ih =>
+    simp only [hardy_succ _ (fundamentalSequence_ofNat_succ k)]
+    rw [ih (x + 1)]; omega
+
+/-- **Closed form for `H_ω`.** `H_ω(n) = 2n + 1` — mathlib's `ω[n] = ofNat (n+1)` makes the
+limit step land on the finite level `n+1`, so `H_ω(n) = H_{n+1}(n) = n + (n+1) = 2n+1`. (The
+`+1` over the classical `H_ω(n)=n` is exactly the `ω[n]=n+1` convention shift.) -/
+theorem hardy_omega (n : ℕ) : hardy (oadd 1 1 0) n = 2 * n + 1 := by
+  have hfs : fundamentalSequence (oadd 1 1 0) = Sum.inr (fun i => ofNat (i + 1)) := rfl
+  have h1 : hardy (oadd 1 1 0) n = hardy (ofNat (n + 1)) n := by
+    simp only [hardy_limit _ hfs]
+  rw [h1, hardy_ofNat (n + 1) n]
+  omega
+
+/-- **First super-linear Hardy lower bound:** `2n ≤ H_{ω^e}(n)` for every nonzero exponent
+`e` (and `n ≥ 1`). Every `ω^e` with `e ≠ 0` is `≥ ω`, and the budget `norm ω = 1 ≤ n` is met,
+so `H_ω(n) = 2n+1 ≤ H_{ω^e}(n)` by index monotonicity (`hardy_le_of_lt`); the `e = 1` boundary
+is `H_ω` itself. A building block: Hardy values at limit indices grow at least linearly with
+slope `≥ 2`, the first step past the identity `H₀ = id`. -/
+theorem two_mul_le_hardy_pow {e : ONote} (he : e ≠ 0) (hNFe : e.NF) {n : ℕ} (hn : 1 ≤ n) :
+    2 * n ≤ hardy (oadd e 1 0) n := by
+  have hNF1 : (1 : ONote).NF := NF.oadd NF.zero 1 NFBelow.zero
+  have hNFω : (oadd 1 1 0).NF := NF.oadd hNF1 1 NFBelow.zero
+  have hNFe1 : (oadd e 1 0).NF := NF.oadd hNFe 1 NFBelow.zero
+  have he_pos : 0 < e.repr := by
+    rcases eq_zero_or_pos e.repr with h | h
+    · exact absurd ((@repr_inj e 0 hNFe NF.zero).1 (by rw [h, repr_zero])) he
+    · exact h
+  -- `ω = ω^1 ≤ ω^(repr e)` since `1 ≤ repr e`
+  have hle : (oadd 1 1 0).repr ≤ (oadd e 1 0).repr := by
+    have hr1 : (oadd 1 1 0).repr = ω ^ (1 : Ordinal) := by simp [ONote.repr]
+    have hre : (oadd e 1 0).repr = ω ^ e.repr := by simp [ONote.repr]
+    rw [hr1, hre]
+    exact opow_le_opow_right omega0_pos (Order.one_le_iff_pos.2 he_pos)
+  rcases eq_or_lt_of_le hle with heq | hlt
+  · have heqo : oadd 1 1 0 = oadd e 1 0 := (@repr_inj (oadd 1 1 0) (oadd e 1 0) hNFω hNFe1).1 heq
+    rw [← heqo, hardy_omega]; omega
+  · have hbudget : norm (oadd 1 1 0) ≤ n := by
+      have hn1 : norm (oadd 1 1 0) = 1 := by decide
+      omega
+    have h := hardy_le_of_lt hNFω hNFe1 (lt_def.2 hlt) hbudget
+    rw [hardy_omega] at h; omega
+
 /-! ### The Hardy step `hstep` and the step invariant `H_o(n) = H_{hstep o n}(n+1)`
 
 The Hardy hierarchy "counts the steps" of an ordinal descent in which the *argument* grows
@@ -327,6 +375,10 @@ example : hardy 4 5 = 9 := by native_decide
 example : hardy (oadd 1 1 0) 2 = 5 := by native_decide
 example : hardy (oadd 1 1 0) 4 = 9 := by native_decide
 example : hardy (oadd 1 1 0) 6 = 13 := by native_decide
+-- the new closed forms / lower bound, witnessed concretely (a wrong proof would mis-evaluate):
+example : hardy (ofNat 4) 5 = 5 + 4 := by native_decide       -- hardy_ofNat
+example : hardy (oadd 1 1 0) 6 = 2 * 6 + 1 := by native_decide -- hardy_omega
+example : 2 * 2 ≤ hardy (oadd (oadd 0 2 0) 1 0) 2 := by native_decide -- two_mul_le_hardy_pow at ω²: 4 ≤ 23
 -- `hstep`: successor drops one level; `ω` at budget `3` descends to `ω[3]=4` then to `3`.
 example : hstep 5 0 = 4 := by native_decide
 example : hstep (oadd 1 1 0) 3 = 3 := by native_decide

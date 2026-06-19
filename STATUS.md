@@ -1,5 +1,5 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8288 jobs, `src/` **sorry-free**) · **Updated**: lap 2026-06-19-lap5 · `d20896b` · **MATH AXIOMS: 0**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8289 jobs, `src/` **sorry-free**) · **Updated**: lap 2026-06-19-lap6 · **MATH AXIOMS: 0**
 
 > ♾️ **ACTIVE EXPEDITION (2026-06-19): Goodstein-independence growth theory.** Read
 > `DIRECTION.md`. Unbounded run building the mathlib-only "Goodstein grows like `f_{ε₀}`"
@@ -12,14 +12,35 @@
 > `goodsteinLength m = H_{seqONote m 0}(2) − 2` — is now FULLY PROVED and axiom-clean**
 > (`Logic/Goodstein/Growth.lean`); `src/` is **sorry-free**. The borrowing crux
 > `hstep_oadd_one_zero` (the heart of Cichoń's theorem) was discharged via the `Good`/`Canon`
-> frontier invariant + `hstep_pred_pow`. **Next frontier: the domination corollary** —
-> bridge Hardy↔fastGrowing (B4-style, the convention-shifted "trap") to turn the identity into
-> "`goodsteinLength` dominates every `f_o`". The five threads below are frozen — don't touch them.
+> frontier invariant + `hstep_pred_pow`. **The domination headline is now (lap 6) a machine-checked
+> reduction to ONE deep fact** (`Logic/Goodstein/Domination.lean`): `goodstein_dominates_of_index`
+> + the unconditional dichotomy `goodstein_dominates_or_hardy_bound` reduce "`goodsteinLength`
+> dominates every `f_o`" to sub-fact (ii) — the Goodstein descent stays above `ω^o` for ≥ `m`
+> steps (the Cichoń lower-bound, the genuine remaining content). The norm-budget obstruction is
+> resolved (`norm_seqONote_le`: budget is free on the descent). The five threads below are frozen.
 
 ## Where it stands
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 lap 6 (DOMINATION HEADLINE REDUCED to one descent-count fact; norm obstruction
+  RESOLVED; 4 commits, all axiom-clean, `src/` still sorry-free):** turned lap-5's negative
+  finding into a clean reduction. (1) `goodstein_dominates_of_index` — the full Cichoń assembly
+  `o.NF → norm o ≤ m → oadd o 1 0 < seqONote m m → fastGrowing o m ≤ goodsteinLength m + 2`,
+  machine-checked end-to-end (telescope at `j=m` + bridge + `hardy_le_of_lt` + monotone); the ONLY
+  open input is the index hypothesis. (2) `norm_toONote_lt`/`norm_seqONote_le` — `norm (seqONote
+  m j) ≤ j+1`, so the **Hardy budget is AUTOMATIC at the telescope step `j+2`** (lap-5's "norm
+  obstruction" only ever bit at the *fixed* arg 2; on the descent it is free, both directions).
+  (3) `goodstein_dominates_or_hardy_bound` — the unconditional **dichotomy**: for `norm o ≤ m`,
+  EITHER `fastGrowing o m ≤ goodsteinLength m + 2` OR `goodsteinLength m + 2 ≤ hardy (oadd o 1 0)
+  (m+2)`. ⟹ **the whole headline ⟺ "the second branch is eventually empty" = sub-fact (ii), the
+  descent stays above `ω^o` for ≥ `m` steps (Cichoń lower bound).** Established (with proof) that
+  (ii) is irreducible: leading-exponent antitone is a free corollary of the descent (no count);
+  the dichotomy can't be bootstrapped from the linear bound; `j*(m)→∞` is provable but only gives
+  `goodsteinLength → ∞`. Also added Hardy growth theory: `hardy_ofNat` (`H_k(x)=x+k`),
+  `hardy_omega` (`H_ω(n)=2n+1`), `two_mul_le_hardy_pow` (`2n ≤ H_{ω^e}(n)`, e≠0) — first
+  super-linear Hardy lower bound, a building block toward the count. native_decide anchors lock
+  every new theorem. **Next:** the deep count (super-linear lower bound on `goodsteinLength`).
 - **2026-06-19 lap 5 (C3 BORROWING CRUX PROVED — Cichoń identity fully axiom-clean; 2 commits):**
   discharged the lone disclosed `sorry` `hstep_oadd_one_zero` (the genuine borrowing predecessor
   of `ω^E`, the heart of Cichoń's theorem). The whole C3 chain — `hstep_toONote`,
