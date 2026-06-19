@@ -29,3 +29,4 @@ import LeanFormalizations.NumberTheory.PrimeNumberTheorem.SmoothExistence
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Wiener
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Defs
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Consequences
+import LeanFormalizations.NumberTheory.PrimeNumberTheorem.PNT
