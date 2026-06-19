@@ -15,10 +15,12 @@ The charter headline **C3 is done**; ladder A–C complete. Both directions mach
 - **UPPER:** `goodsteinLength_le_fastGrowing_ordinal` (`goodsteinLength m + 2 ≤ f_{o_m}(2)`), via the
   Cichoń identity + the new `hardy_le_fastGrowing` (`hardy o n ≤ fastGrowing o n`). **Fully axiom-clean.**
 - C3 audit surface `Logic/Goodstein/GrowthStatement.lean` (+ anchor `fastGrowingε₀_eq_towerO`).
-- Build 🟢 (8295 jobs); commits `4856b9a`→`9b1e779`→`08afea0`→`9f8cb56`→`904f5ea`.
-- **NEXT:** **B4 `H_{ω^α}=f_α`** — the last charter ladder item (long-horizon). `hardy_le_fastGrowing`
-  is the `≤`-half; B4 wants the exact identity at `ω^α` with mathlib's `ω[n]=n+1` shift handled
-  (measure the offset on small cases first). See `PENDING_WORK.md` → "NEXT FRONTIER".
+- **B4 at finite levels DONE** (`hardy_omega_pow_ofNat`: `H_{ω^k}(n)+1=f_k(n+1)`, axiom-clean) via the
+  new Hardy additive law `hardy_oadd_tail` + coefficient lemma `hardy_oadd_coeff` (all in `Hardy.lean`).
+- Build 🟢 (8295 jobs); commits `4856b9a`→…→`904f5ea`→`5bf832f`→`6a63e12`. **Charter ladder
+  A1–A4, B1–B4(finite), C1–C3 COMPLETE.**
+- **NEXT:** only extensions remain (B4 at limit α — clean form is false there; optional sharpenings).
+  See `PENDING_WORK.md` → "NEXT FRONTIER" + the "Next" list below.
 
 ## (lap 10 — climbed to o=ω^ω; baton `HANDOFF-2026-06-19-1257.md`)
 - Closed `o=ω`, `o=ω^j`, `o=ω^ω` individually (`DominationOmega.lean`) via the self-similarity TOWER
@@ -26,17 +28,16 @@ The charter headline **C3 is done**; ladder A–C complete. Both directions mach
   three), but the per-level closures remain as anti-vacuity witnesses — don't delete them.
 
 ## Next (the lap-12 frontier — START HERE)
-1. **B4 `H_{ω^α} = f_α`** — the last charter ladder item; **lap 11 mapped the wall AND banked the root
-   brick.** Findings (measured): clean form `H_{ω^α}(n)+1 = f_α(n+1)` is TRUE at finite/successor α
-   (α=0,1,2) but **FALSE at limit α** (`H_{ω^ω}(1)+1=8 ≠ f_ω(2)=2048`, the `ω[n]=n+1` shift). So aim
-   for finite-α restricted B4 `H_{ω^k}(n)+1 = f_k(n+1)`.
-   - **DONE this lap (`5bf832f`, axiom-clean):** `hardy_oadd_tail` — the non-absorbing additive law
-     `hardy (oadd a m b) n = hardy (oadd a m 0) (hardy b n)`. The root brick.
-   - **NEXT (mechanical given the brick; see `PENDING_WORK.md` for the worked derivation):** the
-     coefficient lemma `hardy (oadd β j 0) n = (hardy (oadd β 1 0))^[j] n` (induct on `j`; step =
-     case β succ/limit → `(ω^β·(j+1))[n]` is an `oadd β j TAIL` → peel with `hardy_oadd_tail`; mind the
-     `ℕ+` `natPred`/`succPNat` arithmetic in the `fundamentalSequence` match). Then finite B4 by
-     induction on `k`. `hardy_le_fastGrowing` already gives the `≤`-half generally.
+**The charter ladder is COMPLETE (A1–A4, B1–B4-finite, C1–C3 + two-sided "grows like `f_{ε₀}`").** Only
+genuine extensions remain — none clearly high-value; pick by appetite:
+1. **B4 at LIMIT α.** Finite B4 `H_{ω^k}(n)+1=f_k(n+1)` is DONE+axiom-clean (`hardy_omega_pow_ofNat`,
+   `6a63e12`) via the new `hardy_oadd_tail` (additive law) + `hardy_oadd_coeff` (coefficient lemma).
+   The clean form is FALSE at limit α (`H_{ω^ω}(1)+1=8≠f_ω(2)=2048`). A correct limit statement
+   (inequality sandwich, or the successor-cofinal subsequence) is the open piece — subtle.
+2. **Optional sharpenings:** strict domination removing `+2` (needs general index monotonicity,
+   A3-hard); a single ε₀ capstone via `ε₀ = sup_o repr o`; a tighter `f_{ε₀}` upper bound.
+3. If nothing here appeals, the project's headline goals are met — a reflection/audit lap or
+   PR-polishing (mathlib-shaping the `FastGrowing`/`Goodstein` modules) is reasonable.
 2. **DO NOT** re-iterate the now-COMPLETE two-sided growth theorem (lower `goodsteinLength_dominates_fastGrowing`
    + upper `goodsteinLength_le_fastGrowing_ordinal`) or reopen the superseded `ppCount` sparsity route.
 3. Optional sharpenings (lower priority): strict domination removing `+2` (needs general index

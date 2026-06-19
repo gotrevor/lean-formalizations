@@ -1,5 +1,5 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8295 jobs, `src/` **sorry-free**) · **Updated**: lap 11 (review) · 2026-06-19 · `904f5ea` · **MATH AXIOMS: 0**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8295 jobs, `src/` **sorry-free**) · **Updated**: lap 11 (review) · 2026-06-19 · `6a63e12` · **MATH AXIOMS: 0**
 
 > 🎉🎉🎉 **lap 11 — "goodsteinLength GROWS LIKE f_{ε₀}" IS COMPLETE, TWO-SIDED.** Both directions
 > machine-checked (charter headline **C3 done**, ladder A–C complete):
@@ -12,7 +12,10 @@
 >   (`o_m =` base-2 ordinal of `m`), from the Cichoń identity + the new `hardy_le_fastGrowing`
 >   (Hardy ≤ fast-growing at the same index). **Fully axiom-clean** (no `native_decide`).
 > New files: `Logic/Goodstein/{TowerDomination,GrowthStatement}.lean` (audit surface).
-> **Next remaining charter item: B4 `H_{ω^α}=f_α`** (the long-horizon stretch).
+> • **B4 `H_{ω^α}=f_α` — DONE at finite levels:** `hardy_omega_pow_ofNat` (`H_{ω^k}(n)+1 = f_k(n+1)`,
+>   the `ω[n]=n+1` offset made precise), via the new Hardy additive law `hardy_oadd_tail` + coefficient
+>   lemma `hardy_oadd_coeff`. (Limit-α shown to need a different formulation — `H_{ω^ω}(1)+1≠f_ω(2)`.)
+> **The entire charter ladder A1–A4, B1–B4(finite), C1–C3 is now complete.**
 
 > ♾️ **ACTIVE EXPEDITION (2026-06-19): Goodstein-independence growth theory.** Read
 > `DIRECTION.md`. Unbounded run building the mathlib-only "Goodstein grows like `f_{ε₀}`"
@@ -50,9 +53,13 @@ The repo is **100% axiom-free** — every headline `#print axioms` is the bare t
   Cichoń identity + the new `hardy_le_fastGrowing` (`hardy o n ≤ fastGrowing o n`, n≥2) — **fully
   axiom-clean** (no `native_decide`). C3 stated thinly in audit surface `GrowthStatement.lean`, with the
   faithfulness anchor `fastGrowingε₀_eq_towerO` (our tower IS mathlib's ε₀ fundamental sequence).
-  Lower closures carry the documented finite-base-case `native_decide` (engines clean). Build 🟢
-  (8295 jobs); commits `4856b9a` (tower spine) → `9b1e779` (full ε₀) → `08afea0` (audit surface) →
-  `9f8cb56` (`hardy_le_fastGrowing`) → `904f5ea` (upper bound).
+  Lower closures carry the documented finite-base-case `native_decide` (engines clean).
+  **Also B4 at finite levels:** `hardy_omega_pow_ofNat` (`H_{ω^k}(n)+1 = f_k(n+1)`, axiom-clean) — the
+  classical `H_{ω^α}=f_α` with the `ω[n]=n+1` offset, via the new Hardy additive law `hardy_oadd_tail`
+  + coefficient lemma `hardy_oadd_coeff`; the limit-α case provably needs a different formulation
+  (`H_{ω^ω}(1)+1=8 ≠ f_ω(2)=2048`). Charter ladder A–C + B4(finite) now complete. Build 🟢 (8295 jobs);
+  commits `4856b9a` (tower spine) → `9b1e779` (full ε₀) → `08afea0` (audit surface) →
+  `9f8cb56` (`hardy_le_fastGrowing`) → `904f5ea` (upper bound) → `5bf832f`/`6a63e12` (additive law + B4).
 - **2026-06-19 lap 10 (CLIMBED to `o=ω^ω`):** diagonal domination closed at the individual limit
   levels `o=ω`, `o=ω^j` (finite `j`), `o=ω^ω` (`DominationOmega.lean`) via the self-similarity TOWER
   (`GoodsteinLike.lean`) + the doubly-iterated length bootstrap. Superseded this lap by the general
@@ -263,16 +270,17 @@ genuine Cichoń growth content, the 8-lap-then-3-lap crux — is now complete:
 `native_decide` artifacts (excluded from the math-axiom count per the doctrine; the engines are
 trust-base-clean).
 ### Short-term (mirror PENDING_WORK top — the live frontier)
-- **B4 `H_{ω^α} = f_α`** (the classical Hardy↔fast-growing identity) — the one remaining charter
-  ladder item, flagged "long-horizon trap under mathlib's `ω[n]=n+1`". The new `hardy_le_fastGrowing`
-  (Hardy ≤ fast-growing at the same index) is one direction of the inequality side; B4 wants the exact
-  identity at `ω^α` (with the `ω[n]=n+1` shift handled). Genuine multi-lap; bang on it.
-- **Optional sharpenings:** strict domination (remove the `+2`, needs a general index-monotonicity
-  step = A3-hard); a tighter upper bound in terms of `f_{ε₀}` directly (the current upper bound
-  `≤ f_{o_m}(2)` is already a faithful two-sided pin via the exact Cichoń identity).
-- **DONE (do not re-iterate):** the two-sided "grows like `f_{ε₀}`" — lower bound for every `o < ε₀`
-  (`goodsteinLength_dominates_fastGrowing`) AND upper bound (`goodsteinLength_le_fastGrowing_ordinal`);
-  `f_1` dominated; NON-ELEMENTARY. Complete and bankable; further restatements are NOT new progress.
+The charter ladder is COMPLETE (A1–A4, B1–B4-finite, C1–C3 + two-sided "grows like `f_{ε₀}`"). Only
+genuine *extensions* remain:
+- **B4 at LIMIT levels** — the clean `H_{ω^α}(n)+1=f_α(n+1)` is FALSE at limit α under `ω[n]=n+1`
+  (`H_{ω^ω}(1)+1=8≠f_ω(2)=2048`). A correct limit-α statement (inequality sandwich, or along the
+  successor-cofinal subsequence) is the open refinement. Genuinely subtle; not clearly high-value.
+- **Optional sharpenings:** strict domination (remove the `+2`, needs general index-monotonicity =
+  A3-hard); a tighter `f_{ε₀}` upper bound; a single ε₀ capstone via `ε₀ = sup_o repr o` (presentation).
+- **DONE (do not re-iterate):** two-sided "grows like `f_{ε₀}`" — lower bound every `o < ε₀`
+  (`goodsteinLength_dominates_fastGrowing`) + upper bound (`goodsteinLength_le_fastGrowing_ordinal`);
+  **B4 at finite levels** (`hardy_omega_pow_ofNat`); the Hardy additive law (`hardy_oadd_tail`) +
+  coefficient lemma (`hardy_oadd_coeff`); `hardy_le_fastGrowing`. All complete and bankable.
 ### Long-term
 - **B4** (`H_{ω^α}=f_α`) — long-horizon trap under mathlib's `ω[n]=n+1` (measured: not a constant
   shift); needs a reformulated statement. Lower value than the diagonal headline.
@@ -285,7 +293,8 @@ trust-base-clean).
   bound `f_o(m) ≤ goodsteinLength m + 2` every `o < ε₀` (`goodsteinLength_dominates_fastGrowing`) +
   upper bound `goodsteinLength m + 2 ≤ f_{o_m}(2)` (`goodsteinLength_le_fastGrowing_ordinal`). Repo
   math-axiom count: **0** (lower closures carry finite-base-case `native_decide` artifacts only).
-  **Charter ladder A–C complete; B4 `H_{ω^α}=f_α` is the remaining stretch.**
+  **B4 (finite) `H_{ω^k}(n)+1=f_k(n+1)` ✅** (`hardy_omega_pow_ofNat`). **Charter ladder A1–A4,
+  B1–B4(finite), C1–C3 COMPLETE.** Only extensions remain (B4 at limit α; optional sharpenings).
 
 ## Axiom ledger (the fidelity spine)
 | headline theorem | paper claim | `#print axioms` shows | status |
@@ -294,6 +303,7 @@ trust-base-clean).
 | `Logic.Goodstein.goodsteinLength_eq_hardy` | **Cichoń identity** `goodsteinLength m = H_{seqONote m 0}(2) − 2`, uncond. (C2+C3 crown) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — borrowing crux `hstep_oadd_one_zero` discharged (lap 5) |
 | `Logic.Goodstein.goodsteinLength_dominates_fastGrowing` | **Cichoń lower bound, complete to ε₀**: `∀ o.NF, ∃ N, ∀ m≥N, f_o(m) ≤ goodsteinLength m + 2` (every `o < ε₀`) | `[propext, Classical.choice, Quot.sound]` + finite-base-case `native_decide` artifacts | ✅ 0 math axioms — diagonal lower bound DONE up to ε₀ (lap 11); `native_decide` = finite Goodstein base-case lengths, excluded per doctrine |
 | `Logic.Goodstein.goodsteinLength_le_fastGrowing_ordinal` | **upper bound** (two-sided "grows like `f_{ε₀}`"): `goodsteinLength m + 2 ≤ f_{o_m}(2)`, `o_m =` base-2 ordinal of `m` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **fully axiom-clean** (no `native_decide`); via Cichoń identity + `hardy_le_fastGrowing` |
+| `FastGrowing.hardy_omega_pow_ofNat` | **B4 (finite)**: `H_{ω^k}(n)+1 = f_k(n+1)` (classical `H_{ω^α}=f_α` with the `ω[n]=n+1` offset) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **fully axiom-clean**; via Hardy additive law `hardy_oadd_tail` + coefficient lemma. Limit-α needs a different formulation (documented) |
 | `Logic.Goodstein.fastGrowing_one_le_goodsteinLength` | `f_1(m) ≤ goodsteinLength m + 2` (sub-fact (ii) at `o=1`), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 | `Logic.Goodstein.fastGrowing_{two_log,ofNat_log}_le_goodsteinLength` | `goodsteinLength` super-linear / **non-elementary** (`f_n(log₂ m − n + 2) ≤ goodsteinLength m + 2`) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — NON-diagonal (argument `~log m`, not `m`); diagonal still open |
 | `Logic.Goodstein.goodstein_terminates` | Goodstein's theorem (termination), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |

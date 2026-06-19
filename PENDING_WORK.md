@@ -66,15 +66,14 @@ exact behavior — record before re-attacking:**
     `hardy_oadd_tail (a m b n) : hardy (oadd a m b) n = hardy (oadd a m 0) (hardy b n)` in
     `Logic/FastGrowing/Hardy.lean`. Tail-peeling by well-founded recursion on `b`; no ONote-addition
     machinery needed (the fund-seq def at `Notation.lean:922` already acts on the tail).
-  - **NEXT concrete step — the coefficient lemma** `hardy (oadd β j 0) n = (hardy (oadd β 1 0))^[j] n`
-    (`j ≥ 1`, `β ≠ 0`). Derivation (worked out lap 11, just needs writing — mind the `ℕ+` coefficient
-    arithmetic): induct on `j`; the step is `hardy (oadd β (j+1) 0) n = hardy (oadd β j 0)
-    (hardy (oadd β 1 0) n)`, proved by casing `β` (successor: `fundamentalSequence_omega_pow_succ`;
-    limit: `_omega_pow_limit`) — in both, `(ω^β·(j+1))[n] = ω^β·j + (ω^β)[n] = oadd β j (TAIL)` where
-    `hardy TAIL n = hardy (oadd β 1 0) n`, so `hardy_oadd_tail` peels it to
-    `hardy (oadd β j 0) (hardy (oadd β 1 0) n)`. Then finite B4 `H_{ω^k}(n)+1 = f_k(n+1)` by induction
-    on `k` (the `k→k+1` step is exactly `(ω^{k+1})[n]=ω^k·(n+1)` + this coefficient lemma + the
-    measured base/offset). β=0 (`ω^0=1`, finite) handled separately via `hardy_ofNat`.
+  - **✅ DONE (lap 11, `6a63e12`, all axiom-clean):** the coefficient lemma `hardy_oadd_coeff`
+    (`H_{ω^β·j}=(H_{ω^β})^[j]`, β≠0) via `hardy_oadd_coeff_step`; the transfer `iterate_offset`; and
+    **FINITE B4 `hardy_omega_pow_ofNat`: `H_{ω^k}(n)+1 = f_k(n+1)`** for every finite k. All in
+    `Logic/FastGrowing/Hardy.lean`, with a `native_decide` anti-vacuity anchor (`H_{ω^2}(2)+1=24=f_2(3)`).
+  - **REMAINING (B4 at LIMIT α):** the clean form is FALSE at limit α (`H_{ω^ω}(1)+1=8≠f_ω(2)=2048`).
+    A correct limit statement would be an inequality sandwich or restricted to the successor-cofinal
+    subsequence. Genuinely subtle; not clearly high-value — the finite case + the two-sided growth
+    theorem already deliver the charter's "grows like `f_{ε₀}`".
   - For limit α, do NOT chase the clean identity (false). The honest general statement is likely an
     *inequality* sandwich or a statement along the successor-α cofinal subsequence only.
   - `hardy_le_fastGrowing` (lap 11, axiom-clean) already gives the `≤`-at-same-index half generally.
