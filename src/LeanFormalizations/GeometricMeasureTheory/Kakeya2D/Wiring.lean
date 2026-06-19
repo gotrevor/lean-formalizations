@@ -98,7 +98,7 @@ theorem kakeya_hausdorffContentBound_of_measurableSelection
         rcases (ENNReal.toReal_eq_zero_iff _).mp hn.2 with h | h
         · exact h
         · exact absurd h hne
-      exact EMetric.diam_eq_zero_iff.mp hz
+      exact (Metric.ediam_eq_zero_iff).mp hz
     -- The fiber partitions into genuine ⊔ zero.
     have hsplit : (g ⁻¹' {j} : Set ℕ) = s0 ∪ Z := by
       ext n

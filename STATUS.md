@@ -1,5 +1,5 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8298 jobs) · **Updated**: lap 2026-06-19 (DEEP-REFLECTION) · `53a236b` · **`davies_kakeya_2d` reduces to ONE cited math axiom (`kakeya_subresolution_content`); 1 dormant disclosed `sorry` (FastGrowing). Everything else axiom-clean.**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8299 jobs) · **Updated**: lap 2026-06-19 (DEEP-REFLECTION + (W) COMPLETE) · `7797183` · **`davies_kakeya_2d` reduces to ONE cited math axiom (`kakeya_subresolution_content`); the honest measurable-selection route is now PROVEN end-to-end (`Wiring.lean`, axiom-clean) modulo only the deep selection input. 1 dormant disclosed `sorry` (FastGrowing). Everything else axiom-clean.**
 
 > ♾️ **ACTIVE EXPEDITION — branch `kakeya-davies` (2026-06-19): planar Kakeya conjecture
 > (Davies 1971).** Read `DIRECTION.md`. Target `davies_kakeya_2d : KakeyaSetConjectureDim 2`
@@ -29,6 +29,18 @@
 **The five non-Kakeya threads are 100% axiom-free** — every one of their headlines `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`. The **Kakeya** expedition (`davies_kakeya_2d`) is the active frontier: it is a full kernel proof down to ONE cited math axiom `kakeya_subresolution_content` (🟡, the Case-B sub-resolution residual). The entire measure-theoretic **spine of the honest measurable-selection route** is now built and axiom-clean (`MeasurableRoute.lean`); the next two steps — wire it (W), then switch the headline to a clean Jankov–von Neumann selection axiom (S) — would replace the murky residual with a standard, citable theorem. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 (DEEP-REFLECTION lap, cont. — (W) the wiring COMPLETE, axiom-clean):** after the
+  synthesis below, drove the measurable-selection wiring all the way to a proof.
+  `kakeya_hausdorffContentBound_of_measurableSelection` (`Wiring.lean`, `#print axioms = [propext,
+  Classical.choice, Quot.sound]` — the selection is a HYPOTHESIS, NO new axioms): given a measurable
+  base-point selection for any measurable cover of the Kakeya set, the Hausdorff content bound (hence
+  the whole lower bound) follows with **NO Case B**. New axiom-clean bricks fed it:
+  `exists_continuum_caseA_numerator` (continuum→discrete glue) + `volume_coveredFiber_subsingleton_zero`
+  / `_biUnion_` (zero-`ediam` negligibility). The assembly: closed-piece reduction → cap-free dominant
+  scale + base angle → genuine sub-fiber `s0` with the `dyadicIdx` window → zero-`ediam` pieces
+  transported away (they carry null covered length) → `caseA_content`, with the finite/infinite split.
+  **So the honest route is built end-to-end; the ONLY open input is the selection axiom (S).** The
+  headline still routes through `Engine` (`kakeya_subresolution_content`) until (S) lands + the rewire.
 - **2026-06-19 (DEEP-REFLECTION lap — direction confirmed, axiom honesty recalibrated, STATUS resynced):**
   altitude pass over the whole expedition. Verified the real `#print axioms davies_kakeya_2d =
   [propext, Classical.choice, Quot.sound, kakeya_subresolution_content]` (STATUS had drifted to the
@@ -167,16 +179,16 @@ The five complete threads (Curtis, power-tower sharp `iff`, Wantzel, e-/π-trans
 squaring-the-circle) are **COMPLETE and axiom-free** and frozen. The active work is the Kakeya
 expedition.
 ### Short-term (mirror PENDING_WORK §A0‴ + §Reflection-2026-06-19)
-- **(W) Wire the measurable-selection spine** → `kakeya_hausdorffContentBound_of_measurableSelection`
-  (takes a measurable base-point selection as a *hypothesis*, zero new axioms): assemble
-  `measurable_coveredLength` → `exists_continuum_dominant_scale` (cap-free `j*`) → `exists_shift_ge_integral`
-  (base angle `α`) → existing `caseA_content` (uncapped `g = dyadicIdx` ⟹ genuine scale-`j*` window;
-  finite/infinite-fiber split as in `Engine`). All pieces PROVEN; ~150-line assembly, no Case B.
-- **Then switch the headline** to a clean `kakeya_measurable_selection` axiom (Jankov–von Neumann),
-  retiring `kakeya_subresolution_content` — a faithfulness upgrade (citable named theorem vs. murky residual).
-- **(S) Discharge measurable selection** (the deep crux): Jankov–von Neumann / KRN for the closed-valued
-  `B(θ)={a : segment(a,θ)⊆E}`, or a bespoke argmin-‖a‖ selection. mathlib has no measurable-selection
-  infra (`SetTheory/Descriptive` is just `Tree.lean`) — reference-gated, keep banging across laps.
+- ✅ **(W) DONE** — `kakeya_hausdorffContentBound_of_measurableSelection` (`Wiring.lean`) proven +
+  axiom-clean. The honest route is built end-to-end modulo the selection hypothesis.
+- **(S) Discharge measurable selection** (the deep crux, NOW the sole open input): for the Fσ Kakeya
+  set `E = ⋃ closure(coverₙ)`, produce a measurable `a : ℝ → Plane` with the unit segment in `⋃ E` over
+  `θ∈[0,1]` — Jankov–von Neumann / KRN for the closed-valued `B(θ)={a : segment(a,θ)⊆E}`, or a bespoke
+  argmin-‖a‖ selection. mathlib has no measurable-selection infra (`SetTheory/Descriptive` = `Tree.lean`).
+  Reference-gated (`ON-LINE-REQUEST.md` UPDATE 5 ask 1); keep banging. A free Aristotle slot exists.
+- **Then switch the headline:** add a clean `axiom kakeya_measurable_selection` (the precise `hsel`
+  shape `Wiring.lean` takes), instantiate it, route `two_le_dimH` through the wiring — retiring
+  `kakeya_subresolution_content` (a faithfulness upgrade: citable named theorem vs. murky residual).
 ### Long-term
 - General Hermite–Lindemann for arbitrary algebraic α (e.g. `log 2`, `cos 1`) — bounded extension.
 - PARKED P2/P3 (Curtis mathlib upstream; not-algebraic framing) — web/CLA-gated.

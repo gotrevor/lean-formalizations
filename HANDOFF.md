@@ -8,12 +8,14 @@ Unbounded expedition to prove `davies_kakeya_2d : KakeyaSetConjectureDim 2` (pla
 1971). The whole job is the lower bound `two_le_dimH`. Lane: only `Kakeya2D/`.
 
 ## State (one line)
-`lake build` green (8298 jobs). The whole lower bound is machine-checked **down to ONE cited axiom**
-`Engine.kakeya_subresolution_content` (NO `sorry`). Deep-reflection lap (HEAD `76db3db`): STATUS fully
-resynced + axiom-honesty recalibrated, and **ALL mathematical bricks of the wiring (W) are now PROVEN**
-(axiom-clean, `MeasurableRoute.lean`) — `exists_continuum_caseA_numerator` (the continuum→discrete
-glue) + the zero-`ediam` negligibility helpers. Remaining for (W) = mechanical assembly in a new
-`Kakeya2D/Wiring.lean` (skeleton in `HANDOFF-2026-06-19-1700.md`); then the clean selection axiom (S).
+`lake build` green (8299 jobs). The whole lower bound is machine-checked **down to ONE cited axiom**
+`Engine.kakeya_subresolution_content` (NO `sorry`). Deep-reflection lap (HEAD `7797183`): STATUS fully
+resynced + axiom-honesty recalibrated, and **the wiring (W) is now COMPLETE** —
+`kakeya_hausdorffContentBound_of_measurableSelection` (`Kakeya2D/Wiring.lean`) is PROVEN + axiom-clean
+(the measurable selection is a *hypothesis*, no new axioms). The honest measurable-selection route is
+built end-to-end; the **sole open input is the selection axiom (S)**. Next: discharge (S)
+(Jankov–von Neumann), then add the clean `kakeya_measurable_selection` axiom + rewire the headline,
+retiring `kakeya_subresolution_content`.
 `#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound, kakeya_subresolution_content]`.
 The entire dominant-scale orchestration (the historic blocker) is now PROVEN — the shifted, faithful
 Case A assembly. The lone axiom is the strictly-narrower **Case B** residual (cover dominated by pieces
