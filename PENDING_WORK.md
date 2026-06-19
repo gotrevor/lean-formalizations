@@ -83,21 +83,37 @@ term + an `O(1)` remainder (`norm_integral_le_abs_of_norm_le` with `abs_primeSum
 `primeProd`, `primeCorr`, `log_primeProd_eq`/`_corr`, `log_one_sub_add_self_abs_le` (|log(1−x)+x|≤x², local
 deriv-monotonicity proof), `abs_primeCorr_le`. The classical Mertens trilogy is now in `Mertens.lean`.
 
-### 🎯 NEXT TARGET — the SHARP Mertens constants (the deep refinements)
-1. **`primeCorr N → M_corr`** (convergence, not just bounded): `Summable (fun p : Nat.Primes => log(1−1/p)+1/p)`
-   — out to **Aristotle `0fa80268`**; verify on our pin when it returns (Aristotle defaults to v4.28.0). Or
-   prove locally (comparison with `∑ 1/p² ≤ ∑ 1/n²` over the `Nat.Primes` subtype).
-2. **Upgrade Mertens' 2nd to convergence**: `∑_{p≤x} 1/p − log log x → M` (Meissel–Mertens `M`). Needs the
-   remainder integral `R(N)=∫_2^N (primeSumDiv⌊t⌋−log t)/(t log²t)` to CONVERGE (improper). **Exact route
-   (lemmas found):** `MeasureTheory.integrableOn_Ioi_of_intervalIntegral_norm_bounded` (I=`Cr/log2`, from
-   `abs_primeSumDiv_floor_sub_log_le`+`integral_inv_mul_sq_log` bounding `∫_2^N ‖f‖`) gives `IntegrableOn f
-   (Ioi 2)`; then `MeasureTheory.intervalIntegral_tendsto_integral_Ioi 2 hfi tendsto_id` gives
-   `R(N) → ∫_{Ioi 2} f`. With `primeSumDiv_div_log_tendsto_one` (→1) and `hJ` (`∫_2^N log t/(t log²t) =
-   log log N − log log 2`), assemble `∑1/p − log log N → 1 − log log 2 + ∫_{Ioi 2} f =: M`. ~80 lines;
-   coherent fresh-lap unit. (f = the remainder integrand; reuse `mertens_second`'s `h_ae`/`hI1`/`hI2`.)
-3. **The `e^{−γ}` identification** (`M_meissel = γ`): the genuinely deep part — relate to `ζ(s)`'s Euler
-   product as `s → 1⁺` / the Euler–Mascheroni constant `γ`. Generational; multi-lap.
-- Lower-hanging PNT-layer alternatives if the constants stall: explicit Chebyshev `ψ/θ` two-sided bounds.
+### ✅ SHARP Mertens 2nd & 3rd DONE (2026-06-19, `ecebe9d`/`1fc0cb1`/+1) — convergence forms, axiom-clean
+All three landed this lap in `Mertens.lean`, `#print axioms = [propext, Classical.choice, Quot.sound]`:
+1. **`mertens_second_tendsto`** : `∑_{p≤N} 1/p − log log N → M` (Meissel–Mertens `M := meisselMertensM`).
+   Upgraded the bounded remainder integral of `mertens_second` to an *improper* integral that converges:
+   `mertensRemainder` (the remainder integrand), `integral_norm_mertensRemainder_le` (`∫_2^N ‖·‖ ≤ C/log2`),
+   `integrableOn_mertensRemainder_Ioi` (via `integrableOn_Ioi_of_intervalIntegral_norm_bounded`),
+   `mertensRemainder_integral_tendsto` (via `intervalIntegral_tendsto_integral_Ioi 2 … tendsto_natCast`).
+   `M := 1 + ∫_{Ioi 2} mertensRemainder − log log 2`.
+2. **`mertens_third_tendsto`** : `log ∏(1−1/p) + log log N → C₃` (`C₃ := mertensThirdConst := (∑'ₚ) − M`).
+   Correction series converges absolutely: `primeCorrCoeff`, `summable_primeCorrCoeff` (comparison `∑1/n²`,
+   `abs_primeCorrCoeff_le` + `log_one_sub_add_self_abs_le`), `primeCorr_eq_sum_range`, `primeCorr_tendsto`
+   (`HasSum.tendsto_sum_nat` ∘ `+1`). Assembled with `mertens_second_tendsto`.
+   (NB this SUPERSEDES the old Aristotle `0fa80268` `summable_primeCorr` request — done locally.)
+3. **`mertens_third_tendsto_exp`** : `∏_{p≤N}(1−1/p)·log N → e^{C₃}` (`primeProd_pos` + `exp(log a+log b)`).
+
+### 🎯 NEXT TARGET — the ONE deep equation `C₃ = −γ` (⇔ `M = γ + ∑'ₚ(log(1−1/p)+1/p)`)
+This is now the *sole* gap to the classical `∏(1−1/p) ~ e^{−γ}/log x`. The reduction is already in the
+repo: **`mertens_third_classical (hγ : mertensThirdConst = −Real.eulerMascheroniConstant)` ⟹
+`∏(1−1/p)·log N → e^{−γ}`**, axiom-clean, so the headline is machine-checked *modulo `hγ`*. `γ` is now
+imported (`Mathlib.NumberTheory.Harmonic.EulerMascheroni`, `Real.eulerMascheroniConstant`,
+`Real.tendsto_harmonic_sub_log`).
+- **Why deep, not elementary:** `γ = lim(∑_{k≤n}1/k − log n)` is about *all* integers; `C₃` is about
+  *primes*. No elementary bridge — needs the ζ Euler-product transfer.
+- **Route (all ingredients in mathlib v4.29.1):** `riemannZeta_eulerProduct_exp_log` (Re s>1:
+  `log ζ(s) = ∑_p ∑_{k≥1} p^{−ks}/k = P(s) + ∑_p(bounded)`, `P(s) = ∑_p p^{−s}` prime-zeta) +
+  `tendsto_riemannZeta_sub_one_div` (`ζ(s) − 1/(s−1) → γ` as `s → 1⁺`, in `Harmonic/ZetaAsymp.lean`).
+  Transfer `P(s)` as `s→1⁺` to the partial sum `∑_{p≤N}1/p` by a real Abel/Tauberian argument, match
+  against `mertens_second_tendsto` to extract `M`, and against `log ζ ~ −log(s−1)+γ` to get the `γ`.
+  **Multi-lap.** First bounded sub-step to attempt next lap: formalize the real prime-zeta `P(s)` and the
+  `s→1⁺` limit of `log ζ(s) + log(s−1)` from the two mathlib facts above (no Tauberian yet).
+- Lower-hanging PNT-layer alternatives if the constant stalls: explicit Chebyshev `ψ/θ` two-sided bounds.
 
 ### (superseded) nagura wall — FINAL for elementary methods
 - **nagura_prime wall is FINAL for elementary methods (sharpened this lap).** The refined constant
