@@ -540,6 +540,45 @@ theorem logFactorial_comb_lower {n : ℕ} (hn : 30 ≤ n) :
   norm_num at hU2 hU3 hU5 hL30 hID f2 f3 f5 hS ⊢
   linarith [hS, hU2, hU3, hU5, hL30, hID, f2, f3, f5]
 
+/-- **Upper bound on Chebyshev's `T`-combination `f(n) ≤ A·n + (O(log n) error)`.** The mirror of
+`logFactorial_comb_lower`: upper-bound `log(n!)` and `log(⌊n/30⌋!)` by Stirling's *upper* bound
+(`log_factorial_le`, `log_factorial_div_le`) and lower-bound the subtracted `log(⌊n/k⌋!)` (`k=2,3,5`)
+by Stirling's *lower* bound (`log_factorial_div_ge`). The continuous `(n/k)·log(n/k)` combination again
+collapses to `A·n` (`logFactorial_leading_identity`); the linear-in-`n` part vanishes and only the
+`⌊n/30⌋` floor slop (`≤ 1`) and the `O(log n)` corrections survive. This is the analytic half of the
+dual *upper* Chebyshev estimate `ψ(n) − ψ(⌊n/6⌋) ≤ A·n + O(log n)`, whose geometric iterate gives
+`ψ(n) ≲ (6/5)A·n` — the missing ingredient to lower the prime-gap ratio `8/5 → 6/5`. -/
+theorem logFactorial_comb_upper {n : ℕ} (hn : 30 ≤ n) :
+    Real.log (Nat.factorial n) - Real.log (Nat.factorial (n / 2))
+        - Real.log (Nat.factorial (n / 3)) - Real.log (Nat.factorial (n / 5))
+        + Real.log (Nat.factorial (n / 30))
+      ≤ (n : ℝ) * ((7 / 15) * Real.log 2 + (3 / 10) * Real.log 3 + (1 / 6) * Real.log 5)
+        + 4 * Real.log n - Real.log 30 + 6 := by
+  have hnpos : (0 : ℝ) < n := by positivity
+  have hSu := log_factorial_le (m := n) (by omega)
+  have hL2 := log_factorial_div_ge (n := n) (k := 2) (by norm_num) (by omega)
+  have hL3 := log_factorial_div_ge (n := n) (k := 3) (by norm_num) (by omega)
+  have hL5 := log_factorial_div_ge (n := n) (k := 5) (by norm_num) (by omega)
+  have hU30 := log_factorial_div_le (n := n) (k := 30) (by norm_num) (by omega)
+  have hID := logFactorial_leading_identity (x := (n : ℝ)) hnpos
+  have f30 : (n : ℝ) / 30 - 1 ≤ ((n / 30 : ℕ) : ℝ) := by
+    have hkpos : (0 : ℝ) < 30 := by norm_num
+    have h1 : n < (n / 30 + 1) * 30 := by
+      have e := Nat.div_add_mod n 30; have m := Nat.mod_lt n (show 0 < 30 by norm_num); nlinarith [e, m]
+    have h2 : (n : ℝ) ≤ (((n / 30 : ℕ) : ℝ) + 1) * 30 := by exact_mod_cast h1.le
+    have h3 : (n : ℝ) / 30 ≤ ((n / 30 : ℕ) : ℝ) + 1 := by rw [div_le_iff₀ hkpos]; linarith [h2]
+    linarith [h3]
+  have e2 : Real.log ((n : ℝ) / 2) = Real.log n - Real.log 2 := Real.log_div hnpos.ne' (by norm_num)
+  have e3 : Real.log ((n : ℝ) / 3) = Real.log n - Real.log 3 := Real.log_div hnpos.ne' (by norm_num)
+  have e5 : Real.log ((n : ℝ) / 5) = Real.log n - Real.log 5 := Real.log_div hnpos.ne' (by norm_num)
+  have e30 : Real.log ((n : ℝ) / 30) = Real.log n - Real.log 30 := Real.log_div hnpos.ne' (by norm_num)
+  have e2n : Real.log (2 * (n : ℝ)) = Real.log 2 + Real.log n := Real.log_mul (by norm_num) hnpos.ne'
+  have e30s : Real.log 30 = Real.log 2 + Real.log 3 + Real.log 5 := by
+    rw [show (30 : ℝ) = 2 * 3 * 5 by norm_num, Real.log_mul (by norm_num) (by norm_num),
+      Real.log_mul (by norm_num) (by norm_num)]
+  norm_num at hSu hL2 hL3 hL5 hU30 hID f30 e2 e3 e5 e30 e2n e30s ⊢
+  linarith [hSu, hL2, hL3, hL5, hU30, hID, f30, e2, e3, e5, e30, e2n, e30s]
+
 /-- **Refined Chebyshev `ψ` lower bound** (the capstone). For `n ≥ 30`,
 `A·n + O(log n) ≤ ψ(n)` with leading constant `A = (7/15)log2+(3/10)log3+(1/6)log5 > 0.91`
 (`chebyshev_const_gt`) — **strictly beating** the elementary `log4/2 ≈ 0.69` (`psi_lower`/`theta_lower`)
