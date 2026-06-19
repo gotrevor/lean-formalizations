@@ -498,4 +498,26 @@ lemma hasDerivAt_inv_log {t : ℝ} (ht : 1 < t) :
   rw [div_eq_mul_inv, mul_inv]
   ring
 
+open MeasureTheory in
+/-- `∫_a^b 1/(t·(log t)²) dt = 1/log a − 1/log b` for `1 < a ≤ b`.  Bounds the **convergent remainder**
+`∫ r(t)/(t log²t)` (with `|r| ≤ C`) of Mertens' second theorem by `C/log a`, uniformly in `b` — the key
+fact that the remainder is `O(1)`. -/
+lemma integral_inv_mul_sq_log {a b : ℝ} (ha : 1 < a) (hab : a ≤ b) :
+    ∫ t in a..b, (t * (Real.log t) ^ 2)⁻¹ = (Real.log a)⁻¹ - (Real.log b)⁻¹ := by
+  have hsub : Set.uIcc a b = Set.Icc a b := Set.uIcc_of_le hab
+  have hderiv : ∀ t ∈ Set.uIcc a b,
+      HasDerivAt (fun s ↦ -(Real.log s)⁻¹) ((t * (Real.log t) ^ 2)⁻¹) t := by
+    intro t ht
+    rw [hsub, Set.mem_Icc] at ht
+    simpa using (hasDerivAt_inv_log (by linarith [ht.1])).neg
+  have hcont : ContinuousOn (fun t ↦ (t * (Real.log t) ^ 2)⁻¹) (Set.uIcc a b) := by
+    rw [hsub]
+    apply ContinuousOn.inv₀
+    · exact continuousOn_id.mul ((Real.continuousOn_log.mono
+        (fun t ht => ne_of_gt (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))).pow 2)
+    · exact fun t ht => ne_of_gt (mul_pos (by simp only [Set.mem_Icc] at ht; linarith [ht.1])
+        (pow_pos (Real.log_pos (by simp only [Set.mem_Icc] at ht; linarith [ht.1])) 2))
+  rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv hcont.intervalIntegrable]
+  ring
+
 end LeanFormalizations.Mertens
