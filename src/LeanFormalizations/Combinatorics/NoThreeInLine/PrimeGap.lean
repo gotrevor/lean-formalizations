@@ -32,7 +32,13 @@ Nagura's product argument needs a *lower* bound on `∏_{p ≤ m} p` (Chebyshev 
 lacks. The ℕ-level foundation is `lcm(1,…,2n) ≥ 4ⁿ / n` (`four_pow_lt_mul_lcm`): the central binomial
 divides `lcm(1,…,2n)` (every prime power dividing `C(2n,n)` is `≤ 2n`), and `4ⁿ < n·C(2n,n)`. This is
 the ℕ analogue of `ψ(2n) ≥ n·log 4 − log n`; combined with `Chebyshev.abs_psi_sub_theta_le_sqrt_mul_log`
-it would yield the `θ` lower bound feeding Nagura. These bricks are axiom-clean. -/
+it would yield the `θ` lower bound feeding Nagura. These bricks are axiom-clean.
+
+The remaining (well-scoped) bridge to a real `ψ` lower bound is the single identity
+`Real.log ((Icc 1 N).lcm id) = Chebyshev.ψ N`: apply
+`ArithmeticFunction.vonMangoldt_sum` (`∑_{d ∣ m} Λ d = log m`) at `m = lcm(1..N)`, then match the
+nonzero (prime-power) terms — a prime power `q` divides `lcm(1..N)` iff `q ≤ N` (via the Finset-lcm
+`p`-adic valuation), so the divisor-sum and the `n ≤ N` sum carry the same `Λ` terms. -/
 
 open Finset in
 /-- **The central binomial divides `lcm(1,…,2n)`.** Every prime power `pᵏ ∥ C(2n,n)` satisfies

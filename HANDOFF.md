@@ -5,20 +5,20 @@ never touch the sibling `~/src/lean-formalizations`. This file is a **thin point
 content lives in the three docs below.
 
 ## Read these, in order
-1. **newest `HANDOFF-2026-06-19-0728.md`** — the lap that COMPLETED `hjsw_lower` (techniques, state).
-2. **`STATUS.md`** — the living overview (axiom ledger, what's happened).
-3. **`PENDING_WORK.md`** — open items (now: none open; only the open *math* Main Conjecture).
+1. **`STATUS.md`** — the living overview (axiom ledger, what's happened). REFRESHED this lap.
+2. **`PENDING_WORK.md`** — active frontier + attack paths (top section is current).
+3. **newest dated `HANDOFF-2026-06-19-*.md`** — the per-lap baton.
 
 ## One-line state
-**HJSW DONE.** `hjsw_lower : 3*(p−1) ≤ maxNoThreeInLine (2*p)` is **fully proven, axiom-clean**
-(`[propext, Classical.choice, Quot.sound]`, no `sorry`) as of HEAD `59b1fd8` — the crux
-`shearSel_cross_diag` was discharged via the partner lemmas `shear_diag_partner`/`shear_anti_partner`.
-Promoted to the audit surface (`Statement.lean`: `hjsw_lower_bound`) and extended to a `3N/4`
-general-`N` bound (`maxNoThreeInLine_ge_three_quarters`, via Bertrand). **Zero `sorry` in the whole
-repo**; all umbrella threads (Curtis, power-tower, constructibles, e/π-transcendence, Goodstein) and
-the entire NTL formalization (upper `2N`, Erdős `Θ(N)`, HJSW `3N/2`) are complete & axiom-clean.
-The only thing left in the no-three-in-line problem is the **Main Conjecture (open math)** — not a
-formalizable proof target. See the newest HANDOFF for the (optional) next-lap menu.
+**All NTL headlines proven & axiom-clean** (kernel-verified): `hjsw_lower` (3N/2 at N=2p), `2N` upper,
+Erdős `Θ(N)`, general-`N` `3N/4`. The other five threads (Curtis, power-tower, constructibles,
+e/π-transcendence, Goodstein) are complete & axiom-clean. **NEW active frontier** (HEAD `bece6a8`):
+the general-`N` *constant* (`3/4 → 5/4 → 3/2`) — genuine 🟡 debt vs. HJSW's actual `3N/2 − o(N)` for
+all `N`. `PrimeGap.lean`: prime-gap interface + wired `5/4` payoff `maxNoThreeInLine_ge_five_fourths`;
+crux `nagura_prime` (Nagura 1952, prime in `(n,6n/5]`) = the **one disclosed `sorry`** in `src/`,
+gated on a Chebyshev θ lower bound mathlib lacks (ℕ foundation `four_pow_lt_mul_lcm` landed,
+axiom-clean). Aristotle `1644a603` grinding `nagura_prime`. The Main Conjecture (`c·N`, `c≈1.87`)
+stays open *math*. Next: the bridge `log(lcm(1..N)) = ψ N` (see PENDING_WORK top).
 
 ## Build
 `lake build` (whole repo, ~seconds — mathlib prebuilt) or

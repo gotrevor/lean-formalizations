@@ -1,6 +1,38 @@
 # PENDING_WORK — no-three-in-line / HJSW frontier (branch `ntl-hjsw`)
 
-## 📋 2026-06-19 (final) — FULL INVENTORY (per how-to-get-unblocked.md)
+## ⭐ 2026-06-19 (review lap) — ACTIVE FRONTIER: general-`N` constant `3/4 → 5/4 → 3/2`
+
+**State.** All headlines proven & axiom-clean (kernel-verified). The open obligation is the
+general-`N` lower *constant*: HJSW's theorem is `3N/2 − o(N)` for *all* large `N`, but the formalized
+general-`N` bound is only `3/4` (`maxNoThreeInLine_ge_three_quarters`, Bertrand-limited). Lifting it is
+genuine 🟡 debt. `PrimeGap.lean` now holds the scaffold:
+- `maxNoThreeInLine_ge_of_two_mul_prime_le` (interface) + `maxNoThreeInLine_mono` — axiom-clean.
+- `maxNoThreeInLine_ge_five_fourths` (`3⌊5N/12⌋ ≤ max N`, `N≥60`) — **wired**, payoff ready.
+- `nagura_prime` (prime in `(n,6n/5]`, `n≥25`) — the **disclosed-`sorry` crux**.
+- `centralBinom_dvd_lcm_Icc`, `four_pow_lt_mul_lcm` (`4ⁿ<n·lcm(1..2n)`) — axiom-clean ℕ Chebyshev
+  lower bound, the foundation for the θ lower bound Nagura needs.
+
+**The crux `nagura_prime` — three attack paths:**
+1. **θ-lower-bound route (PRIMARY).** Build the Chebyshev θ lower bound mathlib lacks, then mirror
+   mathlib's `Nat.exists_prime_lt_and_le_two_mul` with ratio `6/5`. Concrete next lemma (well-scoped):
+   the bridge `Real.log ((Icc 1 N).lcm id) = Chebyshev.ψ N` — apply `ArithmeticFunction.vonMangoldt_sum`
+   at `m = lcm(1..N)` and match prime-power terms (`q = pᵏ ∣ lcm(1..N) ⟺ q ≤ N`). With `four_pow_lt_mul_lcm`
+   that gives `ψ(2n) ≥ n·log4 − log n`; then `abs_psi_sub_theta_le_sqrt_mul_log` → `θ` lower; then the
+   product bound `∏_{6n/5<p≤2n} p ≤ primorial(2n)/primorial(6n/5)` closes Nagura for large `n`, small
+   `n∈[25,N₀)` by an explicit prime list / `decide`.
+2. **Aristotle.** Job `1644a603` (`aris-nagura`) is grinding the self-contained statement with full
+   mathlib + the Bertrand-analogue hint. Harvest when IDLE: download, kernel-verify, `#print axioms`,
+   port. (If it returns the θ bridge or the whole thing, big win.)
+3. **Weaker explicit rung.** If `6/5` resists, any ratio `c<2` with a provable gap gives constant
+   `3/(2c) > 3/4`; e.g. a clean `3/2`-ratio bound → constant `1`. Same θ-lower obstruction, just looser
+   numerics — no qualitative simplification, so PRIMARY (path 1) is the real lever.
+
+**Faithfulness (carry-over):** Aristotle `72891d77` (independent NL→Lean of the headline) finished
+(IDLE) but its `show`/`download` 500 server-side this lap — retry next lap; not load-bearing.
+
+---
+
+## 📋 2026-06-19 (earlier) — FULL INVENTORY (per how-to-get-unblocked.md)
 **Open `sorry` in `src/`: 0.** **Custom `axiom` declarations in `src/`: 0.** Verified by
 `grep -rnE '^[[:space:]]*axiom '` (only a docstring word-wrap hit) and `grep -rnw sorry` (only
 comments). Every headline `#print axioms = [propext, Classical.choice, Quot.sound]`. This is a
