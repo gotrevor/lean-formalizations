@@ -34,8 +34,13 @@ S⊆⋃tₙ with ediam tₙ ≤ r, c ≤ ∑ₙ ediam(tₙ)^d`. The `d=0` endpoi
   `Sδ⊆⋃(Uₙ)δ'`, so `vol(Sδ) ≤ ∑ vol((Uₙ)δ')` — **strict slack `δ<δ'` dissolves the closed-thickening
   inf boundary issue** (`iInf_lt_iff`). The cover-side upper bound pairing with K4's lower bound.
 - `volume_thickening_le_of_ediam_le`: per piece, `vol((U)δ') ≤ ofReal((ρ+δ')²)·vol(closedBall 0 1)`
-  when `ediam U ≤ ρ` (disc containment + `addHaar_closedBall'`, `finrank=2`).
+  when `ediam U ≤ ρ` (disc containment + `addHaar_closedBall'`, `finrank=2`);
+  `volume_closedBall_one_pos`/`_ne_top` (the constant `≠0`, `≠⊤`, for use as the Frostman `C`).
 - `exists_index_ge_of_tsum_lt`: weighted pigeonhole `c≤∑aₙ`, `∑wₙ<c` ⟹ `∃ n, wₙ≤aₙ`.
+- **`CordobaL2.volume_thickening_tubes_ge`** (DONE): the K4 `L²` bound `(N·2δ)² ≤ vol(E)·denom` for an
+  EXPLICIT base-point family `b` and ANY measurable container `E ⊇` the N net-direction δ-tubes
+  (drops `IsKakeya`; `volume_thickening_mul_ge` is now its `E:=Sδ` corollary). The reusable
+  localized-Córdoba entry point.
 
 **Remaining = `kakeya_hausdorffContentBound` (the multi-scale Córdoba estimate, multi-lap).** Given a
 cover `{Uₙ}`, `ediam Uₙ ≤ r`, show `∑ ediam(Uₙ)^d ≳ 1`. The obstruction is **mixed scales** (the
@@ -47,11 +52,17 @@ be arbitrarily small). Plan (finite-net double pigeonhole — cleaner than a mea
      `6/π²(j+1)²`, via `exists_index_ge_of_tsum_lt`) ⟹ a good scale `j(k)` with `L_{j(k)}(k)≳1/j²`.
   3. Pigeonhole over the `N≈2^{j*}` net directions ⟹ a **dominant scale `j*`** carrying a definite
      fraction of directions, each `≳1/j*²`-covered at scale `2⁻ʲ*`.
-  4. **Localized Córdoba** at `δ=2⁻ʲ*` (the hard new derivation — a variant of K4 for fractional
-     coverage / a sub-family of tubes): forces `M_{j*} ≳ 2^{2j*}/poly(j*)`, hence
-     `∑_{scale j*} ediam^d ≳ M_{j*}·2⁻ʲ*ᵈ ≳ 2^{j*(2-d)}/poly ≥ c` for `r` small (`d<2`).
-Next-lap entry: formalize step 4's localized count (likely a `Cordoba.lean` variant restricted to a
-ball / a fractional-length tube family), or step 1–3's scale/direction bookkeeping. Reference asked
+  4. **Localized Córdoba** at `δ=2⁻ʲ*` (the hard new derivation): the scale-`j*` cover pieces form a
+     container `E` for the δ-tubes about the covered sub-segments. Feed `E` to
+     `volume_thickening_tubes_ge` ⟹ `(num)² ≤ vol(E)·denom`, with `vol(E) ≤ M·π(2δ)²` (per-piece
+     area), forcing `M ≳ 2^{2j*}/poly(j*)`, hence `∑_{scale j*} ediam^d ≳ M·2⁻ʲ*ᵈ ≳ 2^{j*(2-d)}/poly
+     ≥ c` for `r` small (`d<2`).
+**Next-lap entry (well-scoped): the fractional `volume_tube_ge`.** The localized numerator needs
+`vol(δ-tube about a length-`w` segment) ≥ 2δw` (sub-unit `‖v‖=w`); the current `Tube.lean`
+`volume_tube_ge` assumes `‖v‖=1`. This generalization ripples through the frame/coordBox machinery
+(`frame`, `volume_coordBox`, `subBox_subset_tube`) — a NEW standalone area lower bound in a fresh
+file is safer than mutating the delicate green Tube.lean. Then assemble steps 1–4 (the dyadic
+scale/direction bookkeeping + the two pigeonholes via `exists_index_ge_of_tsum_lt`). Reference asked
 in `ON-LINE-REQUEST.md` (cleanest write-up / existing formalization of Córdoba-for-Hausdorff).
 
 **Retired (do NOT relitigate):** path 1 (weak-* limit) needs `Measure`-topology/lsc support mathlib
