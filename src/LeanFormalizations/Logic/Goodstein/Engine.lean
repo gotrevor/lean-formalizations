@@ -281,4 +281,70 @@ theorem bump_mono_and_bound (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
               Nat.mul_le_mul_right _ (by omega)
         _ = (b + 1) ^ (bump b (Nat.log b n) + 1) := by rw [pow_succ]; ring
 
+/-- Remainder bound for `bump`: if `r < b^e` then `bump b r < (b+1)^(bump b e)`.
+The base-`(b+1)` analog of the leading bound. -/
+lemma bump_lt_pow (b : ℕ) (hb : 2 ≤ b) {r e : ℕ} (h : r < b ^ e) :
+    bump b r < (b + 1) ^ bump b e := by
+  rcases eq_or_ne r 0 with rfl | hr0
+  · simpa using Nat.pow_pos (show 0 < b + 1 by omega)
+  · have hb1 : 1 < b := by omega
+    have hlogr : Nat.log b r < e := (Nat.log_lt_iff_lt_pow hb1 hr0).2 h
+    have hmono := (bump_mono_and_bound b hb e).1 (Nat.log b r) hlogr
+    have hbound := (bump_mono_and_bound b hb r).2 hr0
+    exact hbound.trans_le (Nat.pow_le_pow_right (by omega) hmono)
+
+/-- **Bump invariance.** For `b ≥ 2`, bumping the base does not change the ordinal:
+`toOrdinal (b+1) (bump b n) = toOrdinal b n`. Both read the base as `ω`; the
+proof reads off the base-`(b+1)` digit structure of `bump b n` (leading exponent
+`bump b (log b n)`, leading digit `n / b^(log b n)`, remainder `bump b (n % …)`)
+and recurses. -/
+lemma toOrdinal_bump (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
+    toOrdinal (b + 1) (bump b n) = toOrdinal b n := by
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    rcases eq_or_ne n 0 with rfl | hn0
+    · simp
+    · have hb1 : 1 < b := by omega
+      set e := Nat.log b n with he
+      have hbe_pos : 0 < b ^ e := Nat.pow_pos (by omega)
+      have hbe_le : b ^ e ≤ n := Nat.pow_log_le_self b hn0
+      have hc_pos : 0 < n / b ^ e := Nat.div_pos hbe_le hbe_pos
+      have hc_lt : n / b ^ e < b := by
+        rw [Nat.div_lt_iff_lt_mul hbe_pos, ← pow_succ']; exact Nat.lt_pow_succ_log_self hb1 n
+      have hr_lt : n % b ^ e < b ^ e := Nat.mod_lt _ hbe_pos
+      have he_lt_n : e < n := Nat.log_lt_self b hn0
+      have hr_lt_n : n % b ^ e < n := lt_of_lt_of_le hr_lt hbe_le
+      have hBE_pos : 0 < (b + 1) ^ bump b e := Nat.pow_pos (by omega)
+      have hR_lt : bump b (n % b ^ e) < (b + 1) ^ bump b e := bump_lt_pow b hb hr_lt
+      have hbump_eq : bump b n
+          = n / b ^ e * (b + 1) ^ bump b e + bump b (n % b ^ e) := bump_pos b n hn0
+      have hbn_pos : 0 < bump b n := by
+        rw [hbump_eq]
+        have : 0 < n / b ^ e * (b + 1) ^ bump b e := Nat.mul_pos hc_pos hBE_pos
+        omega
+      have hlog : Nat.log (b + 1) (bump b n) = bump b e := by
+        rw [hbump_eq]
+        apply Nat.log_eq_of_pow_le_of_lt_pow
+        · calc (b + 1) ^ bump b e
+              = 1 * (b + 1) ^ bump b e := (one_mul _).symm
+            _ ≤ n / b ^ e * (b + 1) ^ bump b e := Nat.mul_le_mul_right _ hc_pos
+            _ ≤ n / b ^ e * (b + 1) ^ bump b e + bump b (n % b ^ e) := Nat.le_add_right _ _
+        · calc n / b ^ e * (b + 1) ^ bump b e + bump b (n % b ^ e)
+              < n / b ^ e * (b + 1) ^ bump b e + (b + 1) ^ bump b e := by omega
+            _ = (n / b ^ e + 1) * (b + 1) ^ bump b e := by ring
+            _ ≤ (b + 1) * (b + 1) ^ bump b e := Nat.mul_le_mul_right _ (by omega)
+            _ = (b + 1) ^ (bump b e + 1) := by rw [pow_succ]; ring
+      have hdiv : bump b n / (b + 1) ^ bump b e = n / b ^ e := by
+        rw [hbump_eq, mul_comm (n / b ^ e), Nat.mul_add_div hBE_pos,
+          Nat.div_eq_of_lt hR_lt, Nat.add_zero]
+      have hmod : bump b n % (b + 1) ^ bump b e = bump b (n % b ^ e) := by
+        rw [hbump_eq, mul_comm (n / b ^ e), Nat.mul_add_mod, Nat.mod_eq_of_lt hR_lt]
+      have key : toOrdinal (b + 1) (bump b n)
+          = ω ^ toOrdinal (b + 1) (bump b e) * (n / b ^ e : ℕ)
+            + toOrdinal (b + 1) (bump b (n % b ^ e)) := by
+        conv_lhs => rw [toOrdinal_pos (b + 1) (bump b n) (by omega)]
+        rw [hlog, hdiv, hmod]
+      rw [key, ih e he_lt_n, ih (n % b ^ e) hr_lt_n]
+      exact (toOrdinal_pos b n hn0).symm
+
 end LeanFormalizations.Logic.Goodstein
