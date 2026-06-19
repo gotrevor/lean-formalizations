@@ -229,6 +229,19 @@ theorem volume_tube_le {a v : Plane} (hv : ‖v‖ = 1) {δ : ℝ} (hδ : 0 ≤ 
         apply ENNReal.ofReal_le_ofReal
         nlinarith [mul_nonneg hδ (by linarith : (0:ℝ) ≤ 1 - δ)]
 
+/-- **Two-slab containment of the overlap.** A point in *both* tubes is `δ`-close to *both*
+core lines transversally: it lies in the parallelogram cut out by the two transverse slabs
+`|⟪perp v, x-a⟫| ≤ δ` and `|⟪perp w, x-b⟫| ≤ δ`. When `v ∦ w` the normals `perp v, perp w` are
+independent, so this parallelogram is bounded and its area `= (2δ)(2δ)/|sin∠(v,w)|` is the
+overlap bound. (This reduces `volume_inter_tube_le` to a determinant/area computation.) -/
+theorem inter_tube_subset_parallelogram {a b v w : Plane} (hv : ‖v‖ = 1) (hw : ‖w‖ = 1)
+    {δ : ℝ} (hδ : 0 ≤ δ) :
+    tube a v δ ∩ tube b w δ ⊆
+      {x | |⟪perp v, x - a⟫| ≤ δ ∧ |⟪perp w, x - b⟫| ≤ δ} := by
+  rintro x ⟨hxv, hxw⟩
+  exact ⟨tube_transverse hδ (norm_perp hv) (inner_perp v) hxv,
+         tube_transverse hδ (norm_perp hw) (inner_perp w) hxw⟩
+
 /-- **Two-tube overlap bound** (the geometric heart of K2). For unit directions `v, w` whose
 angle is `θ` (so `‖v - w‖ ≈ θ` for small `θ`), the intersection of the two δ-tubes has area
 `≲ δ² / (θ + δ)`.
