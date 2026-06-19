@@ -72,7 +72,108 @@ over `{a ≤ ⌊√N⌋}`, `{b ≤ ⌊√N⌋}`. -/
 theorem hyperbola_identity (N : ℕ) :
     (∑ a ∈ Finset.Icc 1 N, N / a) + (Nat.sqrt N) ^ 2
       = 2 * ∑ a ∈ Finset.Icc 1 (Nat.sqrt N), N / a := by
-  sorry
+  set K := Nat.sqrt N with hKdef
+  have hKleN : K ≤ N := Nat.sqrt_le_self N
+  have hK2leN : K * K ≤ N := by rw [hKdef]; exact Nat.sqrt_le N
+  have hlt : N < (K + 1) * (K + 1) := by
+    have h := Nat.lt_succ_sqrt N; rw [← hKdef] at h; simpa [Nat.succ_eq_add_one] using h
+  -- counting lemma: #{x ∈ [1,N] : m·x ≤ N} = ⌊N/m⌋  (m ≥ 1)
+  have hcount : ∀ m, 1 ≤ m → ((Finset.Icc 1 N).filter (fun x => m * x ≤ N)).card = N / m := by
+    intro m hm
+    have hset : (Finset.Icc 1 N).filter (fun x => m * x ≤ N) = Finset.Icc 1 (N / m) := by
+      ext x
+      simp only [Finset.mem_filter, Finset.mem_Icc]
+      constructor
+      · rintro ⟨⟨hx1, _⟩, hmx⟩
+        exact ⟨hx1, (Nat.le_div_iff_mul_le (by omega)).mpr (by rwa [mul_comm] at hmx)⟩
+      · rintro ⟨hx1, hxd⟩
+        have hmx : m * x ≤ N := by
+          rw [mul_comm]; exact (Nat.le_div_iff_mul_le (by omega)).mp hxd
+        exact ⟨⟨hx1, le_trans hxd (Nat.div_le_self N m)⟩, hmx⟩
+    rw [hset, Nat.card_Icc]; exact Nat.add_sub_cancel _ _
+  -- the restriction `(Icc 1 N).filter (· ≤ K) = Icc 1 K`
+  have hsetK : (Finset.Icc 1 N).filter (· ≤ K) = Finset.Icc 1 K := by
+    ext a; simp only [Finset.mem_filter, Finset.mem_Icc]
+    constructor
+    · rintro ⟨⟨h1, _⟩, h2⟩; exact ⟨h1, h2⟩
+    · rintro ⟨h1, h2⟩; exact ⟨⟨h1, le_trans h2 hKleN⟩, h2⟩
+  -- the lattice sets
+  set P := (Finset.Icc 1 N ×ˢ Finset.Icc 1 N).filter (fun p => p.1 * p.2 ≤ N) with hPdef
+  set A := (Finset.Icc 1 N ×ˢ Finset.Icc 1 N).filter (fun p => p.1 * p.2 ≤ N ∧ p.1 ≤ K) with hAdef
+  set B := (Finset.Icc 1 N ×ˢ Finset.Icc 1 N).filter (fun p => p.1 * p.2 ≤ N ∧ p.2 ≤ K) with hBdef
+  -- #P = ∑_{a≤N} ⌊N/a⌋
+  have hP : P.card = ∑ a ∈ Finset.Icc 1 N, N / a := by
+    rw [hPdef, Finset.card_filter, Finset.sum_product]
+    refine Finset.sum_congr rfl (fun a ha => ?_)
+    rw [Finset.mem_Icc] at ha
+    rw [← Finset.card_filter]; exact hcount a ha.1
+  -- #A = ∑_{a≤K} ⌊N/a⌋
+  have hA : A.card = ∑ a ∈ Finset.Icc 1 K, N / a := by
+    rw [hAdef, Finset.card_filter, Finset.sum_product]
+    dsimp only
+    have step : ∀ a ∈ Finset.Icc 1 N,
+        (∑ b ∈ Finset.Icc 1 N, ite (a * b ≤ N ∧ a ≤ K) 1 0) = ite (a ≤ K) (N / a) 0 := by
+      intro a ha; rw [Finset.mem_Icc] at ha
+      by_cases haK : a ≤ K
+      · simp only [haK, and_true, if_true]
+        rw [← Finset.card_filter]; exact hcount a ha.1
+      · simp [haK]
+    rw [Finset.sum_congr rfl step, ← Finset.sum_filter, hsetK]
+  -- #B = ∑_{a≤K} ⌊N/a⌋  (count by the second coordinate)
+  have hB : B.card = ∑ a ∈ Finset.Icc 1 K, N / a := by
+    rw [hBdef, Finset.card_filter, Finset.sum_product_right]
+    dsimp only
+    have step : ∀ b ∈ Finset.Icc 1 N,
+        (∑ a ∈ Finset.Icc 1 N, ite (a * b ≤ N ∧ b ≤ K) 1 0) = ite (b ≤ K) (N / b) 0 := by
+      intro b hb; rw [Finset.mem_Icc] at hb
+      by_cases hbK : b ≤ K
+      · simp only [hbK, and_true, if_true]
+        rw [← Finset.card_filter]
+        have hcomm : (Finset.Icc 1 N).filter (fun a => a * b ≤ N)
+            = (Finset.Icc 1 N).filter (fun x => b * x ≤ N) := by
+          apply Finset.filter_congr
+          intro a _
+          exact ⟨fun h => by rwa [Nat.mul_comm] at h, fun h => by rwa [Nat.mul_comm] at h⟩
+        rw [hcomm]
+        exact hcount b hb.1
+      · simp [hbK]
+    rw [Finset.sum_congr rfl step, ← Finset.sum_filter, hsetK]
+  -- #(A ∩ B) = K²
+  have hAB : (A ∩ B).card = K ^ 2 := by
+    have hAiB : A ∩ B = Finset.Icc 1 K ×ˢ Finset.Icc 1 K := by
+      rw [hAdef, hBdef]
+      ext p
+      simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_product, Finset.mem_Icc]
+      constructor
+      · rintro ⟨⟨⟨⟨ha1, _⟩, hb1, _⟩, _, haK⟩, _, _, hbK⟩
+        exact ⟨⟨ha1, haK⟩, hb1, hbK⟩
+      · rintro ⟨⟨ha1, haK⟩, hb1, hbK⟩
+        have haN : p.1 ≤ N := le_trans haK hKleN
+        have hbN : p.2 ≤ N := le_trans hbK hKleN
+        have hab : p.1 * p.2 ≤ N := le_trans (Nat.mul_le_mul haK hbK) hK2leN
+        exact ⟨⟨⟨⟨ha1, haN⟩, hb1, hbN⟩, hab, haK⟩, ⟨⟨ha1, haN⟩, hb1, hbN⟩, hab, hbK⟩
+    rw [hAiB, Finset.card_product, Nat.card_Icc]
+    have : K + 1 - 1 = K := by omega
+    rw [this]; ring
+  -- A ∪ B = P  (every lattice point has a coordinate ≤ K)
+  have hAuB : A ∪ B = P := by
+    rw [hAdef, hBdef, hPdef]
+    ext p
+    simp only [Finset.mem_union, Finset.mem_filter, Finset.mem_product, Finset.mem_Icc]
+    constructor
+    · rintro (⟨h, hab, _⟩ | ⟨h, hab, _⟩) <;> exact ⟨h, hab⟩
+    · rintro ⟨⟨⟨ha1, haN⟩, hb1, hbN⟩, hab⟩
+      by_cases h1 : p.1 ≤ K
+      · exact Or.inl ⟨⟨⟨ha1, haN⟩, hb1, hbN⟩, hab, h1⟩
+      · push_neg at h1
+        refine Or.inr ⟨⟨⟨ha1, haN⟩, hb1, hbN⟩, hab, ?_⟩
+        by_contra h2; push_neg at h2
+        have : (K + 1) * (K + 1) ≤ p.1 * p.2 := Nat.mul_le_mul (by omega) (by omega)
+        omega
+  -- combine via inclusion–exclusion
+  have hcomb := Finset.card_union_add_card_inter A B
+  rw [hAuB, hP, hAB, hA, hB] at hcomb
+  rw [two_mul]; exact hcomb
 
 /-! ### The floor-sum decomposition -/
 
