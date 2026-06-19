@@ -79,6 +79,66 @@ theorem hardy_one : hardy 1 = fun n => n + 1 := by
 theorem hardy_two : hardy 2 = fun n => n + 2 := by
   rw [@hardy_succ 2 1 rfl]; funext n; rw [hardy_one]
 
+/-! ### Growth theory of the Hardy hierarchy -/
+
+/-- **Expansiveness of the Hardy hierarchy.** `n ≤ H_o(n)` for every notation `o`.
+Well-founded recursion on `o` (no normal-form hypothesis): `H₀ = id`; the successor
+step uses `n ≤ n+1 ≤ H_a(n+1)` and the limit step is the IH at `o[n] < o`. -/
+theorem le_hardy (o : ONote) (n : ℕ) : n ≤ hardy o n := by
+  rcases e : fundamentalSequence o with (_ | a) | f
+  · rw [hardy_zero' o e]; exact le_rfl
+  · have hlt : a < o := by
+      have hp := fundamentalSequence_has_prop o
+      rw [e] at hp
+      rw [lt_def, hp.1]; exact Order.lt_succ _
+    rw [hardy_succ o e]
+    exact le_trans (Nat.le_succ n) (le_hardy a (n + 1))
+  · have hlt : f n < o := by
+      have hp := fundamentalSequence_has_prop o
+      rw [e] at hp
+      exact (hp.2.1 n).2.1
+    rw [hardy_limit o e]
+    exact le_hardy (f n) n
+termination_by o
+decreasing_by all_goals exact hlt
+
+/-- **The Hardy index-monotonicity crux (limit step).**  *(disclosed `sorry`.)*
+The Hardy analogue of `fastGrowing_fundSeq_step`: for a limit `o` with fundamental
+sequence `f`, `H_{o[n]}(n+1) ≤ H_{o[n+1]}(n+1)`. Same hard index-comparison content. -/
+theorem hardy_fundSeq_step {o : ONote} {f : ℕ → ONote}
+    (h : fundamentalSequence o = Sum.inr f) (n : ℕ) :
+    hardy (f n) (n + 1) ≤ hardy (f (n + 1)) (n + 1) := by
+  sorry
+
+/-- **Monotonicity in the argument, successor form** `H_o(n) ≤ H_o(n+1)`.
+Reduces, in the limit case, to the single crux `hardy_fundSeq_step`. -/
+theorem hardy_le_succ (o : ONote) (n : ℕ) : hardy o n ≤ hardy o (n + 1) := by
+  rcases e : fundamentalSequence o with (_ | a) | f
+  · rw [hardy_zero' o e]; exact Nat.le_succ n
+  · have hlt : a < o := by
+      have hp := fundamentalSequence_has_prop o
+      rw [e] at hp
+      rw [lt_def, hp.1]; exact Order.lt_succ _
+    rw [hardy_succ o e]
+    -- `H_a(n+1) ≤ H_a(n+2)` by IH monotonicity at `a`
+    exact (monotone_nat_of_le_succ fun k => hardy_le_succ a k) (Nat.le_succ (n + 1))
+  · have hlt : f n < o := by
+      have hp := fundamentalSequence_has_prop o
+      rw [e] at hp
+      exact (hp.2.1 n).2.1
+    rw [hardy_limit o e]
+    have hmono_fn : Monotone (hardy (f n)) :=
+      monotone_nat_of_le_succ fun k => hardy_le_succ (f n) k
+    calc hardy (f n) n
+        ≤ hardy (f n) (n + 1) := hmono_fn (Nat.le_succ n)
+      _ ≤ hardy (f (n + 1)) (n + 1) := hardy_fundSeq_step e n
+termination_by o
+decreasing_by all_goals exact hlt
+
+/-- **Monotonicity in the argument** of each Hardy level. -/
+theorem hardy_monotone (o : ONote) : Monotone (hardy o) :=
+  monotone_nat_of_le_succ (hardy_le_succ o)
+
 /-! ### Anti-vacuity anchors (`native_decide`)
 
 Standalone witnesses, off any headline axiom path, that a *wrong* definition of
