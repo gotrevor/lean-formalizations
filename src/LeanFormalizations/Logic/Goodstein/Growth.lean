@@ -199,13 +199,55 @@ Goodstein operation `bump b p − 1`:
   `hstep (toONote b p) b = toONote (b+1) (bump b p − 1)`.
 
 This is the heart of Cichoń's theorem (1983) identifying the Goodstein descent with the
-Hardy descent. Both sides peel the same Cantor-normal-form layers of `p`; the proof is a
-structural induction matching `fundamentalSequence`'s six branches against `bump`'s recursion.
-**Disclosed `sorry` — the single open crux of C3** (verified to hold *syntactically* by
-`native_decide` on small cases, see anchors below). Everything downstream is fully proved. -/
-theorem hstep_toONote (b : ℕ) (hb : 2 ≤ b) (p : ℕ) (hp : p ≠ 0) :
+Hardy descent. Strong induction on `p`, writing `p = c·b^L + r` (leading Cantor term):
+
+* **`r ≠ 0` (FULLY PROVED).** The leading term is preserved and the step happens in the tail:
+  `hstep (oadd E C R) b = oadd E C (hstep R b)` (`hstep_oadd_tail`), then the IH on `r < p`
+  and the reconstruction `toONote_oadd` + bump-invariance `toONote_bump` close it.
+* **`r = 0` (the remaining base case, disclosed `sorry`).** Here `p = c·b^L` and the step must
+  compute the *predecessor* of `c·(b+1)^(bump b L)` — the borrowing case. Verified to hold
+  *syntactically* by `native_decide` on small cases (see anchors). This is the lone open core.
+
+Everything downstream of `hstep_toONote` is fully proved; only the `r = 0` predecessor remains. -/
+theorem hstep_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ p, p ≠ 0 →
     hstep (toONote b p) b = toONote (b + 1) (bump b p - 1) := by
-  sorry
+  intro p
+  induction p using Nat.strong_induction_on with
+  | _ p ih =>
+    intro hp
+    have hbe_pos : 0 < b ^ Nat.log b p := Nat.pow_pos (by omega)
+    have hbe_le : b ^ Nat.log b p ≤ p := Nat.pow_log_le_self b hp
+    have hc1 : 1 ≤ p / b ^ Nat.log b p := Nat.div_pos hbe_le hbe_pos
+    have hcb : p / b ^ Nat.log b p < b := by
+      apply Nat.div_lt_of_lt_mul
+      have h := Nat.lt_pow_succ_log_self (show 1 < b by omega) p
+      rwa [pow_succ] at h
+    have hr_lt : p % b ^ Nat.log b p < b ^ Nat.log b p := Nat.mod_lt _ hbe_pos
+    have hp_eq : p = (p / b ^ Nat.log b p) * b ^ Nat.log b p + p % b ^ Nat.log b p := by
+      rw [mul_comm]; exact (Nat.div_add_mod p _).symm
+    set L := Nat.log b p
+    set c := p / b ^ L with hc_def
+    set r := p % b ^ L with hr_def
+    have htoP : toONote b p = oadd (toONote b L) ⟨c, hc1⟩ (toONote b r) := by
+      conv_lhs => rw [hp_eq]
+      exact toONote_oadd b hb hc1 hcb hr_lt
+    have hbump : bump b p = c * (b + 1) ^ bump b L + bump b r := bump_pos b p hp
+    rcases eq_or_ne r 0 with hr0 | hr0
+    · -- r = 0: the predecessor of `c·b^L`  (the borrowing base case)
+      sorry
+    · -- r ≠ 0: leading term preserved, the step happens in the tail
+      have hRne : toONote b r ≠ 0 := by rw [Ne, toONote_eq_zero_iff]; exact hr0
+      have hbr_pos : 0 < bump b r := by
+        rw [bump_pos b r hr0]
+        have h1 : 0 < r / b ^ Nat.log b r :=
+          Nat.div_pos (Nat.pow_log_le_self _ hr0) (Nat.pow_pos (by omega))
+        have h2 : 0 < (b + 1) ^ bump b (Nat.log b r) := Nat.pow_pos (by omega)
+        have := Nat.mul_pos h1 h2; omega
+      have hbrB : bump b r < (b + 1) ^ bump b L := bump_lt_pow b hb hr_lt
+      rw [htoP, hstep_oadd_tail (toONote b L) ⟨c, hc1⟩ b (toONote b r) hRne, ih r (by omega) hr0]
+      have hsub : bump b p - 1 = c * (b + 1) ^ bump b L + (bump b r - 1) := by rw [hbump]; omega
+      rw [hsub, toONote_oadd (b + 1) (by omega) hc1 (by omega)
+        (by omega : bump b r - 1 < (b + 1) ^ bump b L), toONote_bump b hb]
 
 /-- The Cichoń step, specialised to the Goodstein descent: one Goodstein step is one
 budget-incrementing Hardy step on the notation. `seqONote m (k+1) = hstep (seqONote m k) (k+2)`
