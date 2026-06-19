@@ -1,5 +1,59 @@
 # PENDING_WORK — lean-formalizations
 
+## 🎉 lap 9 — DIAGONAL DOMINATION CLOSED for all finite levels (the 8-lap crux)
+
+**Done + committed (`da05776`, `9b186a8`); build 🟢 (8291 jobs).** The headline open problem —
+`f_o(m) ≤ goodsteinLength m + 2` (sub-fact (ii), Cichoń's lower bound) — is **PROVED for every finite
+`o`**: `fastGrowing_ofNat_le_goodsteinLength (16 ≤ m) (n+1 ≤ log₂ m)` and the qualitative
+`goodsteinLength_dominates_fastGrowing_ofNat : ∀ n, ∃ N, ∀ m ≥ N, f_n(m) ≤ goodsteinLength m + 2`.
+
+**The winning idea (what 8 laps were missing): SELF-SIMILARITY.** The leading-exponent sequence
+`L_k = log_{base k}(G_k)` is itself a Goodstein-like descent (`L_{k+1} ≥ bump(base k) L_k − 1`,
+`leadExp_step_ge`), so it **dominates the genuine Goodstein sequence seeded at `log₂ m`**
+(`leadExp_ge_goodsteinSeq_log`, using `bump_mono` via the `toOrdinal` bridge). This converts "leadExp
+stays `≥ n` for `m` steps" into "`goodsteinLength(log₂ m) ≥ m + n`" — one scale down. A strong
+induction (`goodsteinLength_exp_lower`, step `exp_le_goodsteinLength_step`) makes the exponential
+length bound `goodsteinLength m ≥ 2^{m+1}+m` **reproduce itself** at each scale; it bottoms out at the
+finite computational base cases `goodsteinLength M ≥ 2^{M+1}+M` (`4≤M<16`) discharged by the
+tail-recursive evaluator `gpos` under `native_decide`. General `o` from the small-regime termination
+law (`goodsteinLength_le_of_small` → `n_le_goodsteinSeq`). Engine axiom-clean; unconditional closures
+carry `Lean.ofReduceBool` (finite base computation).
+
+### ❌ SUPERSEDED — do NOT pursue
+- **The `ppCount` sparsity bound `ppCount m m ≤ log₂ m − 2`** (lap-8 "next brick"). The self-similarity
+  recursion is a cleaner, COMPLETE route to the same `o=2` (and all finite `o`); the sparsity bound is
+  no longer needed. `ppCount` + `leadExp_ge_sub_ppCount` remain in `Domination.lean` as harmless
+  characterization lemmas but are off the closing path. Don't re-attack the sparsity bound.
+
+### 🎯 NEXT FRONTIER — transfinite `o`, starting `o = ω` (toward `f_{ε₀}`)
+The finite-`o` diagonal is closed. The expedition's destination (`goodsteinLength ~ f_{ε₀}`) now needs
+**limit ordinals**. The smallest open instance: `f_ω(m) ≤ goodsteinLength m + 2`.
+
+**The precise crux.** `f_ω` needs the descent ordinal `≥ ω^ω = (oadd ω 1 0).repr` at step `j ≈ m`,
+i.e. `toOrdinal(base j)(G_j) ≥ ω^ω`. Since `toOrdinal b v = ω^(toOrdinal b (log_b v))·c + …`, this
+requires `toOrdinal(base j)(leadExp_j) ≥ ω`, i.e. **`leadExp_j ≥ base j` at `j ≈ m`** — the leading
+exponent must stay in the LARGE regime (`≥ base`) for `~m` steps, not just `≥ n`. Via self-similarity
+`leadExp_k ≥ goodsteinSeq(log₂ m) k`, this needs the *lower* sequence's VALUE `≥ base k = k+2` at
+`k ≈ m` — i.e. the lower Goodstein sequence (seed `log₂ m`) is itself still in its large regime at step
+`m`. That is one more recursion of the SAME self-similarity (the lower sequence's leadExp dominates
+`goodsteinSeq(log₂ log₂ m)`, …). Attack paths:
+  (a) **Iterate self-similarity.** Generalize `leadExp_ge_goodsteinSeq_log` to a 2-level statement:
+      `leadExp_k(m) ≥ goodsteinSeq(log₂ m) k`, and the value `goodsteinSeq(log₂ m) k ≥ base k` while
+      `goodsteinSeq(log₂ m)` is in ITS large regime — bounded below by a length bound on
+      `log₂ log₂ m`. Likely needs an `ω`-level analog of `goodsteinLength_exp_lower` (a doubly-iterated
+      length bound). This is the natural continuation and reuses every brick built this lap.
+  (b) **Direct CNF-height tracking.** Define a "second-level leading exponent" (the log of the leading
+      exponent) and show it stays `≥ 2` for `~m` steps by the same self-similarity one level up. `ω^ω`
+      ⟺ the CNF has a term `ω^(ω^0·c)` with the inner exponent ≥ ω, i.e. height-2 CNF persists.
+  (c) **Bound `goodsteinLength m` below by `f_ω(m)` through the Cichoń identity** (`goodsteinLength m =
+      H_{seqONote m 0}(2) − 2`, already proved) + a Hardy/`H_{ω^ω}` lower bound — may be cleaner than
+      the leadExp route for limit levels. Cross-check against the `Logic/FastGrowing/Hardy` API.
+
+Realistic: `o=ω` is a genuine multi-lap tier (the limit-ordinal half of Cichoń). Route (a) is the
+most direct reuse of the lap-9 machinery; START there. Do NOT axiomatize — it IS the growth content.
+
+---
+
 ## 🧘 Reflection — 2026-06-19 (lap 8, deep-reflection lap)
 
 *Altitude pass over the whole expedition. Read STATUS/HANDOFF/PENDING/DIRECTION + git log; re-ran
