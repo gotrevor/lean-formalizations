@@ -217,51 +217,140 @@ theorem exists_measurable_selection_of_isOpen
     measurable_from_nat.comp (measurable_find hex hPset), fun θ => ?_⟩
   exact Nat.find_spec (hex θ)
 
-/-! ### The headline, routed through the standard Jankov–von Neumann selection -/
+/-- **Per-piece open fattening with controlled `ediam^d` overshoot.** A set of diameter `x ≤ 1/2`
+can be thickened by a positive radius `δ` so the result still has diameter `≤ 1` and its `d`-th power
+overshoots by less than any prescribed `η > 0`: `(x + 2δ)^d ≤ x^d + η`. This is the analytic content
+that lets the open-cover route pay only a vanishing price over the original closed cover. Proof: the
+map `δ ↦ (x + ofReal(2δ))^d` is continuous at `0` with value `x^d`, so it is `< x^d + η` on a
+neighbourhood; pick `δ` there, capped at `1/4` for the `≤ 1` bound. -/
+theorem exists_thickening_radius_rpow_le {x : ℝ≥0∞} (hx : x ≤ 1 / 2) {d : ℝ} (hd0 : 0 < d)
+    {η : ℝ≥0∞} (hη : 0 < η) :
+    ∃ δ : ℝ, 0 < δ ∧ x + ENNReal.ofReal (2 * δ) ≤ 1 ∧
+      (x + ENNReal.ofReal (2 * δ)) ^ d ≤ x ^ d + η := by
+  have hxtop : x ≠ ⊤ := ne_top_of_le_ne_top (by norm_num) hx
+  have hxdtop : x ^ d ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg hd0.le hxtop
+  have hlt : x ^ d < x ^ d + η := ENNReal.lt_add_right hxdtop hη.ne'
+  -- continuity of `δ ↦ (x + ofReal(2δ))^d` at `0`
+  have hca : ContinuousAt (fun δ : ℝ => (x + ENNReal.ofReal (2 * δ)) ^ d) 0 :=
+    (ENNReal.continuous_rpow_const.continuousAt).comp
+      ((continuous_const.add
+        (ENNReal.continuous_ofReal.comp (continuous_const.mul continuous_id))).continuousAt)
+  have h0 : (fun δ : ℝ => (x + ENNReal.ofReal (2 * δ)) ^ d) 0 = x ^ d := by
+    simp
+  have hev : ∀ᶠ δ : ℝ in nhds 0, (x + ENNReal.ofReal (2 * δ)) ^ d < x ^ d + η := by
+    have htends : Filter.Tendsto (fun δ : ℝ => (x + ENNReal.ofReal (2 * δ)) ^ d)
+        (nhds 0) (nhds (x ^ d)) := by simpa using hca.tendsto
+    exact htends.eventually (Iio_mem_nhds hlt)
+  obtain ⟨ε, hεpos, hball⟩ := Metric.eventually_nhds_iff.mp hev
+  refine ⟨min (ε / 4) (1 / 4), lt_min (by positivity) (by norm_num), ?_, ?_⟩
+  · -- `x + 2δ ≤ 1/2 + 1/2 = 1`
+    have hhalf : ENNReal.ofReal (2 * (min (ε / 4) (1 / 4) : ℝ)) ≤ 1 / 2 := by
+      calc ENNReal.ofReal (2 * (min (ε / 4) (1 / 4) : ℝ))
+          ≤ ENNReal.ofReal (1 / 2) :=
+            ENNReal.ofReal_le_ofReal (by have := min_le_right (ε / 4) (1 / 4 : ℝ); linarith)
+        _ = 1 / 2 := by
+            rw [ENNReal.ofReal_div_of_pos (by norm_num), ENNReal.ofReal_one, ENNReal.ofReal_ofNat]
+    calc x + ENNReal.ofReal (2 * (min (ε / 4) (1 / 4) : ℝ))
+        ≤ 1 / 2 + 1 / 2 := add_le_add hx hhalf
+      _ = 1 := ENNReal.add_halves 1
+  · have hd : dist ((min (ε / 4) (1 / 4) : ℝ)) 0 < ε := by
+      rw [Real.dist_eq, sub_zero, abs_of_nonneg (by positivity)]
+      calc (min (ε / 4) (1 / 4) : ℝ) ≤ ε / 4 := min_le_left _ _
+        _ < ε := by linarith
+    exact (hball hd).le
 
-/-- **The Kakeya measurable selection, as a Kakeya-agnostic Jankov–von Neumann statement.**
+/-- **The Hausdorff content bound for a planar Kakeya set — fully elementary, NO axioms.**
 
-The lone remaining axiom of the headline. It is the **standard measurable-selection theorem**: a Borel
-set `G ⊆ ℝ × Plane` (here `ℝ` is the direction parameter, Plane the base point) whose section over
-every `θ ∈ [0,1]` is non-empty admits a selector `a : ℝ → Plane` that is **a.e.-measurable** (w.r.t.
-Lebesgue measure) with `(θ, a θ) ∈ G` for all `θ ∈ [0,1]`. This is Jankov–von Neumann uniformization
-(the von Neumann selection theorem) — a consequence of analytic sets being universally measurable —
-which `mathlib` v4.29.1 lacks: it has `AnalyticSet` and its closure/projection API
-(`MeasureTheory/Constructions/Polish/Basic.lean`) but neither universal measurability of analytic sets
-nor the Souslin-scheme selector.
-
-This statement carries **no Kakeya content whatsoever** — every Kakeya-specific fact (non-empty Borel
-sections via `IsKakeya`, joint measurability of the covered length) is *proven* in
-`kakeya_aeMeasurable_selection_of_jvn` and the bricks above. It is strictly weaker than Π¹₁
-(coanalytic) uniformization: working with the **a.e.-coverage** graph (covered length `= 1`) keeps the
-graph Borel, where pointwise segment-containment would make it coanalytic. See the file header,
-`ON-LINE-REQUEST.md`, `STATUS.md`. -/
-axiom kakeya_borel_selection :
-    ∀ G : Set (ℝ × Plane), MeasurableSet G →
-      (∀ θ ∈ Set.Icc (0 : ℝ) 1, ∃ p : Plane, (θ, p) ∈ G) →
-      ∃ a : ℝ → Plane, AEMeasurable a ∧ ∀ θ ∈ Set.Icc (0 : ℝ) 1, (θ, a θ) ∈ G
-
-/-- **The Hausdorff content bound for a Kakeya set, via the standard JvN selection.** Composes the
-proven reduction `kakeya_aeMeasurable_selection_of_jvn` (Kakeya geometry + measurability) with the
-`AEMeasurable` wiring `kakeya_hausdorffContentBound_of_aeMeasurableSelection`, feeding both off the
-Kakeya-agnostic axiom `kakeya_borel_selection`. -/
-theorem kakeya_hausdorffContentBound_jvn
+Combines the open-cover measurable selection (`exists_measurable_selection_of_isOpen`) with the
+cover-agnostic Córdoba spine (`Wiring.content_bound_step`): every countable cover of `S` is fattened to
+an **open** cover at vanishing `ediam^d` cost (`exists_thickening_radius_rpow_le`), the elementary
+selection runs against that open cover (full coverage `= 1` on every direction), the spine bounds the
+content of the fattened cover, and the per-cover overshoot `η` is sent to `0`
+(`ENNReal.le_of_forall_pos_le_add`). This **eliminates the descriptive-set-theory crux entirely**: the
+selection is `Classical.choice`-clean, so the headline rests on no measurable-selection axiom. -/
+theorem kakeya_hausdorffContentBound_elementary
     {S : Set Plane} (h : IsKakeya S) {d : ℝ} (hd0 : 0 < d) (hd2 : d < 2) :
     HausdorffContentBound S d := by
-  refine kakeya_hausdorffContentBound_of_aeMeasurableSelection hd0 hd2 (fun C hC hcov => ?_)
-  obtain ⟨a, ha, hcov'⟩ :=
-    kakeya_aeMeasurable_selection_of_jvn kakeya_borel_selection h C hC hcov
-  exact ⟨a, ha, Filter.Eventually.of_forall (fun θ hθ => hcov' θ hθ)⟩
+  obtain ⟨cR, hcRpos, hcR⟩ := content_ratio_lower hd0 hd2
+  set D : ℝ≥0∞ := volume (Metric.closedBall (0 : Plane) 1) with hD
+  have hDpos : 0 < D := volume_closedBall_one_pos
+  have hDtop : D ≠ ⊤ := volume_closedBall_one_ne_top
+  refine ⟨1 / 2, by norm_num, D⁻¹ * ENNReal.ofReal cR, ?_, ?_⟩
+  · exact mul_ne_zero (ENNReal.inv_ne_zero.mpr hDtop) (ENNReal.ofReal_pos.mpr hcRpos).ne'
+  · intro t hcov hdiam
+    rcases eq_or_ne (∑' n, Metric.ediam (t n) ^ d) ⊤ with htop | hfintop
+    · rw [htop]; exact le_top
+    refine ENNReal.le_of_forall_pos_le_add (fun η hηpos _ => ?_)
+    -- per-piece overshoot budget `ηn` with `∑ ηn ≤ η`
+    set ηn : ℕ → ℝ≥0∞ := fun n => (η : ℝ≥0∞) * (1 / 2) ^ (n + 1) with hηndef
+    have hηnpos : ∀ n, 0 < ηn n := fun n =>
+      ENNReal.mul_pos (by exact_mod_cast hηpos.ne') (pow_ne_zero _ (by norm_num))
+    have hgeo : ∑' n : ℕ, (1 / 2 : ℝ≥0∞) ^ (n + 1) = 1 := by
+      have hsub : (1 : ℝ≥0∞) - 1 / 2 = 1 / 2 :=
+        ENNReal.sub_eq_of_eq_add (by norm_num) (ENNReal.add_halves 1).symm
+      have hinv : ((1 : ℝ≥0∞) / 2)⁻¹ = 2 := by rw [one_div, inv_inv]
+      calc ∑' n : ℕ, (1 / 2 : ℝ≥0∞) ^ (n + 1)
+          = (∑' n : ℕ, (1 / 2 : ℝ≥0∞) ^ n) * (1 / 2) := by
+            simp_rw [pow_succ]; rw [ENNReal.tsum_mul_right]
+        _ = 1 := by rw [ENNReal.tsum_geometric, hsub, hinv]; rw [ENNReal.mul_div_cancel] <;> norm_num
+    have hηnsum : ∑' n, ηn n ≤ (η : ℝ≥0∞) := by
+      rw [hηndef, ENNReal.tsum_mul_left, hgeo, mul_one]
+    -- choose fattening radii (one per cover piece)
+    have hfat : ∀ n, ∃ δ : ℝ, 0 < δ ∧ Metric.ediam (t n) + ENNReal.ofReal (2 * δ) ≤ 1 ∧
+        (Metric.ediam (t n) + ENNReal.ofReal (2 * δ)) ^ d ≤ Metric.ediam (t n) ^ d + ηn n :=
+      fun n => exists_thickening_radius_rpow_le (hdiam n) hd0 (hηnpos n)
+    choose δ hδpos hδle1 hδrpow using hfat
+    set V : ℕ → Set Plane := fun n => Metric.thickening (δ n) (t n) with hVdef
+    have hVopen : ∀ n, IsOpen (V n) := fun n => Metric.isOpen_thickening
+    have hVmeas : ∀ n, MeasurableSet (V n) := fun n => (hVopen n).measurableSet
+    have htV : ∀ n, t n ⊆ V n := fun n => Metric.self_subset_thickening (hδpos n) (t n)
+    have hVediam_le : ∀ n, Metric.ediam (V n) ≤ Metric.ediam (t n) + ENNReal.ofReal (2 * δ n) := by
+      intro n
+      have hkey := Metric.ediam_thickening_le (s := t n) ((δ n).toNNReal)
+      rw [Real.coe_toNNReal (δ n) (hδpos n).le] at hkey
+      refine hkey.trans (le_of_eq ?_)
+      congr 1
+      rw [ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 2), ENNReal.ofReal_ofNat]
+      rfl
+    have hVdiam : ∀ n, Metric.ediam (V n) ≤ 1 := fun n => (hVediam_le n).trans (hδle1 n)
+    have hScov : S ⊆ ⋃ n, V n := hcov.trans (Set.iUnion_mono htV)
+    have hFo : IsOpen (⋃ n, V n) := isOpen_iUnion hVopen
+    -- the elementary measurable selection against the OPEN fattened cover
+    obtain ⟨a, ha, hcovsel⟩ := exists_measurable_selection_of_isOpen h hFo hScov
+    have hcov_ae : ∀ᵐ θ ∂(volume : Measure ℝ), θ ∈ Set.Icc (0 : ℝ) 1 →
+        1 ≤ volume {τ : ℝ | τ ∈ Set.Icc (0 : ℝ) 1 ∧ a θ + τ • dir θ ∈ ⋃ n, V n} :=
+      Filter.Eventually.of_forall (fun θ _ => hcovsel θ)
+    have hstep := content_bound_step hd0 hcRpos hcR V hVmeas hVdiam a ha hcov_ae
+    -- ∑ ediam(V)^d ≤ ∑ ediam(t)^d + η
+    have hsum_le : ∑' n, Metric.ediam (V n) ^ d ≤ ∑' n, Metric.ediam (t n) ^ d + (η : ℝ≥0∞) := by
+      calc ∑' n, Metric.ediam (V n) ^ d
+          ≤ ∑' n, (Metric.ediam (t n) ^ d + ηn n) :=
+            ENNReal.tsum_le_tsum (fun n =>
+              (ENNReal.rpow_le_rpow (hVediam_le n) hd0.le).trans (hδrpow n))
+        _ = (∑' n, Metric.ediam (t n) ^ d) + ∑' n, ηn n := ENNReal.tsum_add
+        _ ≤ (∑' n, Metric.ediam (t n) ^ d) + (η : ℝ≥0∞) := add_le_add le_rfl hηnsum
+    exact hstep.trans hsum_le
+
+/-! ### The lone selection axiom — now DISCHARGED elementarily (see above)
+
+The former axiom `kakeya_borel_selection` (the textbook von Neumann / Jankov–von Neumann measurable
+selection for an arbitrary Borel graph) has been **removed**: the headline no longer needs it. The
+Kakeya selection is obtained *elementarily* by `exists_measurable_selection_of_isOpen` once the cover
+is fattened to an open superset (`kakeya_hausdorffContentBound_elementary`) — a compact unit segment
+inside an open set has a tube neighbourhood, so a dense base point gives full coverage, no descriptive
+set theory required. The abstract JvN *reduction* `kakeya_aeMeasurable_selection_of_jvn` and the
+projection-is-analytic down payment `analyticSet_proj_and_Icc_subset` are kept above as honest,
+hypothesis-gated structure (they introduce no axiom). -/
 
 /-- **The concrete crux (Davies 1971, measure form).** For a Kakeya set `S ⊆ ℝ²`, every
 `d`-dimensional Hausdorff measure with `d < 2` is positive. Free `ℝ≥0∞`-density wrapper around
-`kakeya_hausdorffContentBound_jvn`; the `d = 0` endpoint comes from monotonicity of `μH` in `d` against
-the `d = 1` content bound. -/
+`kakeya_hausdorffContentBound_elementary`; the `d = 0` endpoint comes from monotonicity of `μH` in `d`
+against the `d = 1` content bound. -/
 theorem hausdorffMeasure_pos_of_isKakeya
     (S : Set (EuclideanSpace ℝ (Fin 2))) (h : IsKakeya S) :
     ∀ d : ℝ≥0, (d : ℝ≥0∞) < 2 → μH[(d : ℝ)] S ≠ 0 := by
   have key : ∀ e : ℝ, 0 < e → e < 2 → μH[e] S ≠ 0 := fun e he0 he2 =>
-    hausdorffMeasure_ne_zero_of_contentBound he0 (kakeya_hausdorffContentBound_jvn h he0 he2)
+    hausdorffMeasure_ne_zero_of_contentBound he0 (kakeya_hausdorffContentBound_elementary h he0 he2)
   intro d hd
   rcases eq_or_lt_of_le (zero_le d) with hd0 | hd0
   · have hd0R : (d : ℝ) = 0 := by exact_mod_cast hd0.symm
@@ -273,8 +362,9 @@ theorem hausdorffMeasure_pos_of_isKakeya
 
 /-- **Davies 1971.** A Kakeya set in `ℝ²` has Hausdorff dimension at least `2` — the genuine content of
 the planar Kakeya conjecture (the upper bound is free). Frostman's lemma lifts each `μH[d] S ≠ 0`
-(`d < 2`) to `↑d ≤ dimH S`, and the supremum over `d < 2` reaches `2`. The headline now rests on the
-single Kakeya-agnostic axiom `kakeya_borel_selection` (Jankov–von Neumann measurable selection). -/
+(`d < 2`) to `↑d ≤ dimH S`, and the supremum over `d < 2` reaches `2`. The headline is now **fully
+machine-checked with no mathematical axioms** (`#print axioms = [propext, Classical.choice, Quot.sound]`):
+the selection crux is discharged elementarily via the open-cover route, no descriptive set theory. -/
 theorem two_le_dimH (S : Set (EuclideanSpace ℝ (Fin 2))) (h : IsKakeya S) :
     2 ≤ dimH S := by
   refine ENNReal.le_of_forall_nnreal_lt (fun r hr => ?_)
