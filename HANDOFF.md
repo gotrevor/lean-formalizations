@@ -1,18 +1,19 @@
 # HANDOFF — Davies / planar Kakeya (branch `kakeya-davies`)
 
-**Thin pointer.** Durable overview = `STATUS.md`. Attack plan = `PENDING_WORK.md` §A0′. Frozen plan =
-`Kakeya2D/PLAN.md`. **Newest dated baton = `HANDOFF-2026-06-19-0945.md` — read that to resume.**
+**Thin pointer.** Durable overview = `STATUS.md`. Attack plan = `PENDING_WORK.md` §A0″. Frozen plan =
+`Kakeya2D/PLAN.md`. **Newest dated baton = `HANDOFF-2026-06-19-1130.md` — read that to resume.**
 
 Unbounded expedition to prove `davies_kakeya_2d : KakeyaSetConjectureDim 2` (planar Kakeya, Davies
 1971). The whole job is the lower bound `two_le_dimH`. Lane: only `Kakeya2D/`.
 
 ## State (one line)
 `lake build` green (8297 jobs). The whole lower bound is machine-checked **down to ONE cited axiom**
-`Engine.kakeya_dominant_scale_count` (NO `sorry`):
-`#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound, kakeya_dominant_scale_count]`.
-The axiom's hard combinatorial core (net-thinning shift average) + the base-angle Córdoba chain + the
-geometric foundation are all PROVEN this lap (`NetThinning.lean`, R2). Remaining = wire the assembly
-(Case A) + crack Case B (Hausdorff-vs-box gap) + restate the axiom to the shifted form (faithfulness).
+`Engine.kakeya_subresolution_content` (NO `sorry`):
+`#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound, kakeya_subresolution_content]`.
+The entire dominant-scale orchestration (the historic blocker) is now PROVEN — the shifted, faithful
+Case A assembly. The lone axiom is the strictly-narrower **Case B** residual (cover dominated by pieces
+finer than the net resolution = the Hausdorff-vs-box gap). Remaining = crack Case B (reference-gated;
+the fixed-net multi-scale L² sum provably diverges for `d>1` — see the dated baton).
 
 ## Invariants
 - Defs (`IsKakeya`, `KakeyaSetConjectureDim`) are the frozen audit surface — do not edit.
