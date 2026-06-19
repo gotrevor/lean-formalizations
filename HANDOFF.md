@@ -6,23 +6,22 @@ content lives in the three docs below.
 
 ## Read these, in order
 1. **`STATUS.md`** — the living overview (axiom ledger re-verified, what's happened). REFRESHED this lap.
-2. **`PENDING_WORK.md`** — top section is **`## ⭐ weakPNT DISCHARGED`**: open items + attack paths. START HERE for the next target.
-3. **newest dated `HANDOFF-2026-06-19-*.md`** — the per-lap baton (latest lap's outcome + next actions).
+2. **`PENDING_WORK.md`** — the C₃=−γ / Limit B section has the full B0/B1/B2 decomposition + DONE markers. START HERE.
+3. **newest dated `HANDOFF-2026-06-19-*.md`** (currently `…-1601`) — the per-lap baton (outcome + next actions).
 
 ## One-line state
-**The general-`N` no-three-in-line frontier is CLOSED to HJSW's optimal `3/2 − o(N)`, and it is now
-UNCONDITIONAL & axiom-clean** — `weakPNT` (the PNT) was discharged by porting PNTAnd's Wiener–Ikehara tower
-in-repo. **Every headline in the repo is axiom-free** (`[propext, Classical.choice, Quot.sound]`); `src/`
-carries **zero math axioms**. On the unlocked PNT layer, **Mertens' first theorem** is now in `Mertens.lean`
-— vonMangoldt form, sharp **prime form** `∑_{p≤x}log p/p = log x + O(1)`, and `~ log` capstones, all
-mathlib-absent and axiom-clean. Remaining open `sorry`s (all non-blocking, off every headline):
-`nagura_prime` (superseded by the unconditional `3/2`) and `prelim_decay_2/3` (dead-code island in
-`Wiener.lean`). **The classical Mertens TRILOGY is in `Mertens.lean`, all axiom-clean & mathlib-absent:**
-1st (`∑log p/p = log x + O(1)`, prime + vonMangoldt, both `~ log`); 2nd (`∑1/p = log log x + O(1)`,
-`mertens_second`, via Abel summation); 3rd up to the constant (`∏(1−1/p) ≍ 1/log N`,
-`mertens_third_up_to_const`). **Next:** the sharp Mertens constants (`e^{−γ}` / Meissel–Mertens `M` / `γ`) —
-see PENDING_WORK "NEXT TARGET" + newest dated `HANDOFF-2026-06-19-*.md`. Aristotle `0fa80268` working the
-correction-series convergence.
+**The no-three-in-line frontier is CLOSED to HJSW's optimal `3/2 − o(N)`, UNCONDITIONAL & axiom-clean**
+(`weakPNT` discharged via in-repo Wiener–Ikehara). **Every UNCONDITIONAL headline is axiom-free**
+(`[propext, Classical.choice, Quot.sound]`); `src/` carries **zero math axioms**. The classical Mertens
+trilogy (1st, 2nd, 3rd sharp convergence forms) is complete & axiom-clean in `Mertens.lean`. **Active
+frontier = the classical `e^{−γ}` Mertens 3rd**, reduced to ONE Tauberian limit **Limit B**
+(`primeZeta s + log(s−1) → M − γ`) via `mertens_third_classical_of_tauberian`. This lap built the entire
+analytic spine of Limit B in **`MertensConstant.lean`** (10 axiom-clean lemmas): brick B1 integral rep +
+its `eˣ` form, the γ-injection `∫_0^∞ log u·e^{−u}=−γ`, the M-part, and the **log-part fully evaluated**
+`(s−1)∫_0^∞ log x·e^{−(s−1)x} = −γ−log(s−1)`. **Sole remaining piece of Limit B = the Tauberian/Abelian
+final-value step** `(s−1)∫_0^∞ r(x)e^{−(s−1)x}→0` (deep; see the `…-1601` handoff + PENDING_WORK). Other
+open `sorry`s (`nagura_prime`, `prelim_decay_2/3`) are non-blocking, off every headline. Aristotle idle
+(remaining work is measure theory, where it is weak — correct to leave idle).
 
 ## Build
 `lake build` (whole repo, ~seconds — mathlib prebuilt) or
