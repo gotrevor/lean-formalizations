@@ -720,6 +720,58 @@ theorem fastGrowing_one_le_goodsteinLength (n : ℕ) :
     omega
   · rw [hlhs]; exact omega_le_seqONote_repr (le_refl n)
 
+/-- **Non-diagonal reduction (length lower bound).** Like `goodstein_dominates_of_index_le` but
+without the budget constraint `m ≤ j + 2` — it concludes about `fastGrowing o (j + 2)` (the step's
+own budget) instead of `fastGrowing o m`. Whenever the descent at step `j` is `≥ ω^o`, the Goodstein
+length is bounded below by `f_o(j+2)`. This is what converts the early-step ordinal bounds (where
+`j ≈ log₂ m ≪ m`) into a **super-linear lower bound on `goodsteinLength`** (it cannot reach the
+diagonal `f_o(m)`, but it does beat every polynomial). -/
+theorem fastGrowing_step_le_goodsteinLength {o : ONote} (ho : o.NF) {m j : ℕ}
+    (hj : j ≤ goodsteinLength m) (hnorm : norm o ≤ j + 2)
+    (hidx : (oadd o 1 0).repr ≤ (seqONote m j).repr) :
+    fastGrowing o (j + 2) ≤ goodsteinLength m + 2 := by
+  have hNFidx : (oadd o 1 0).NF := NF.oadd ho 1 NFBelow.zero
+  have hNFseq : (seqONote m j).NF := seqONote_NF m j
+  have hbudget : norm (oadd o 1 0) ≤ j + 2 := by
+    rw [norm_oadd, norm_zero]; simp only [PNat.one_coe]; omega
+  have hindex : hardy (oadd o 1 0) (j + 2) ≤ hardy (seqONote m j) (j + 2) := by
+    rcases eq_or_lt_of_le hidx with heq | hlt
+    · have heqo : oadd o 1 0 = seqONote m j :=
+        (@repr_inj (oadd o 1 0) (seqONote m j) hNFidx hNFseq).1 heq
+      rw [heqo]
+    · exact hardy_le_of_lt hNFidx hNFseq (lt_def.2 hlt) hbudget
+  calc fastGrowing o (j + 2)
+      ≤ hardy (oadd o 1 0) (j + 2) := fastGrowing_le_hardy_pow o ho (j + 2)
+    _ ≤ hardy (seqONote m j) (j + 2) := hindex
+    _ = hardy (seqONote m 0) 2 := (hardy_seqONote_telescope m j hj).symm
+    _ = goodsteinLength m + 2 := hardy_seqONote_zero m
+
+/-- **`goodsteinLength` is SUPER-LINEAR:** `fastGrowing 2 (Nat.log 2 m) ≤ goodsteinLength m + 2`
+(for `Nat.log 2 m ≥ 3`, i.e. `m ≥ 8`). Since `fastGrowing 2 n = 2^n · n`, this reads
+`goodsteinLength m ≳ 2^{log₂ m} · log₂ m = m · log₂ m` — a genuine super-linear (beats every linear)
+lower bound, the first proof that `goodsteinLength` outgrows the polynomial regime. Assembly: at
+the early step `j = log₂ m − 2` the descent ordinal is `≥ ω² = (oadd 2 1 0).repr`
+(`omega_opow_le_seqONote_repr`, leading exponent still `≥ 2`); feed the non-diagonal reduction. The
+budget here is only `log₂ m`, not `m` — closing the gap to `f_2(m)` needs the deeper recursion. -/
+theorem fastGrowing_two_log_le_goodsteinLength {m : ℕ} (hm : 3 ≤ Nat.log 2 m) :
+    fastGrowing 2 (Nat.log 2 m) ≤ goodsteinLength m + 2 := by
+  set L := Nat.log 2 m with hL
+  have hLm : L ≤ m := Nat.log_le_self 2 m
+  have hglen : m ≤ goodsteinLength m := le_goodsteinLength m
+  have ho : (2 : ONote).NF := by decide
+  have hr2 : (oadd (2 : ONote) 1 0).repr = ω ^ (2 : Ordinal) := by
+    rw [show (2 : ONote) = oadd 0 2 0 from rfl]; simp [ONote.repr]
+  have hidx : (oadd (2 : ONote) 1 0).repr ≤ (seqONote m (L - 2)).repr := by
+    rw [hr2]
+    exact omega_opow_le_seqONote_repr (m := m) (i := L - 2) (k := 2)
+      (by omega) (by omega) (by omega)
+  have hnorm : norm (2 : ONote) ≤ (L - 2) + 2 := by
+    have : norm (2 : ONote) = 2 := by decide
+    omega
+  have h := fastGrowing_step_le_goodsteinLength ho (m := m) (j := L - 2)
+    (by omega) hnorm hidx
+  rwa [show L - 2 + 2 = L from by omega] at h
+
 /-! ### Anti-vacuity anchors (off any headline axiom path). -/
 
 example : hardy (oadd 1 2 (oadd 0 3 0)) 4 = hardy (oadd 1 2 0) (hardy (oadd 0 3 0) 4) := by
@@ -744,6 +796,11 @@ example : Nat.log 3 9 ≤ Nat.log 3 8 + 1 := by native_decide
 -- `G(4,3)=60` (`log_5 60 = 2`): `2 ≤ 2 + 1`.
 example : Nat.log (base 2) (goodsteinSeq 4 2) ≤ Nat.log (base 3) (goodsteinSeq 4 3) + 1 := by
   native_decide
+
+-- the super-linear bound's interpretation, witnessed: `f_2(n) = 2^n·n` (`fastGrowing_two`), and the
+-- step index `Nat.log 2 8 = 3` ⟹ the bound reads `f_2(3) = 24 ≤ goodsteinLength 8 + 2` (RHS huge).
+example : fastGrowing 2 3 = 2 ^ 3 * 3 := by native_decide  -- = 24
+example : Nat.log 2 8 = 3 := by native_decide
 
 example : fastGrowing 0 2 ≤ goodsteinLength 2 + 2 := by native_decide  -- 3 ≤ 5
 example : fastGrowing 1 2 ≤ goodsteinLength 2 + 2 := by native_decide  -- 4 ≤ 5
