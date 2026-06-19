@@ -57,8 +57,11 @@ Then `Reaches n (tower n) o` follows for `n ≥ max(k, norm o)` (k from `tower_c
    (unknown provenance) at lap end — submit when the slot frees.
 
 ## Other open ladder targets (DIRECTION §ladder) — untouched, lower priority than the A4 core
-- **B4**: `H_{ω^α} = f_α` (Hardy↔fast-growing). NOTE mathlib's `ω[n]=n+1` shifts this by a
-  constant (`H_ω(n)=2n+1` vs `f_1(n)=2n`) — the identity needs care about the convention.
+- **B4**: `H_{ω^α} = f_α` (Hardy↔fast-growing). NOTE mathlib's `ω[n]=n+1` breaks the clean
+  identity: measured this lap `H_{ω^0}=f_0` exactly, `H_{ω^1}=f_1+1`, but `H_{ω^2}(2)=23 ≠
+  f_2(2)+1=9` — so it is NOT a constant shift; the textbook `H_{ω^α}=f_α` assumes `ω[n]=n`.
+  B4 here needs either a reformulated statement or a different fundamental-sequence
+  convention. Genuine long-horizon target; don't expect a clean identity.
 - **C2/C3**: Goodstein length ↔ hierarchy bridge (reuse `Logic/Goodstein/Engine` ε₀-descent).
 
 ## Discipline
