@@ -1,5 +1,5 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8288 jobs, 1 disclosed `sorry`: the C3 borrowing core) · **Updated**: lap 2026-06-19-lap4 · `4459a17` · **MATH AXIOMS: 0**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8288 jobs, `src/` **sorry-free**) · **Updated**: lap 2026-06-19-lap5 · `d20896b` · **MATH AXIOMS: 0**
 
 > ♾️ **ACTIVE EXPEDITION (2026-06-19): Goodstein-independence growth theory.** Read
 > `DIRECTION.md`. Unbounded run building the mathlib-only "Goodstein grows like `f_{ε₀}`"
@@ -8,15 +8,31 @@
 > COMPLETE and axiom-clean — A1/A2/A3/A4 all proved**, incl. the headline domination crux
 > `fastGrowing_lt_fastGrowingε₀` (every fixed `f_o` is eventually `< f_{ε₀}`). Modules
 > `Logic/FastGrowing/{Basic,Hardy,Domination}.lean` are **`sorry`-free**. **C2 (the
-> `toOrdinal` ↔ `ONote.repr` bridge) is also done** (`Logic/Goodstein/Growth.lean`): the
-> Goodstein descent is now on `ONote` (`seqONote_lt`). Next frontier: **C3** (the crown jewel
-> — `goodsteinLength` tracks `f_{ε₀}` via Hardy-counts-steps) and the Hardy `B` ladder. The
-> five threads below are COMPLETE/axiom-clean and frozen — don't touch them.
+> `toOrdinal` ↔ `ONote.repr` bridge) is done**, and **C3 — the Cichoń identity
+> `goodsteinLength m = H_{seqONote m 0}(2) − 2` — is now FULLY PROVED and axiom-clean**
+> (`Logic/Goodstein/Growth.lean`); `src/` is **sorry-free**. The borrowing crux
+> `hstep_oadd_one_zero` (the heart of Cichoń's theorem) was discharged via the `Good`/`Canon`
+> frontier invariant + `hstep_pred_pow`. **Next frontier: the domination corollary** —
+> bridge Hardy↔fastGrowing (B4-style, the convention-shifted "trap") to turn the identity into
+> "`goodsteinLength` dominates every `f_o`". The five threads below are frozen — don't touch them.
 
 ## Where it stands
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 lap 5 (C3 BORROWING CRUX PROVED — Cichoń identity fully axiom-clean; 2 commits):**
+  discharged the lone disclosed `sorry` `hstep_oadd_one_zero` (the genuine borrowing predecessor
+  of `ω^E`, the heart of Cichoń's theorem). The whole C3 chain — `hstep_toONote`,
+  `goodsteinLength_eq_hardy` — is now machine-checked with `#print axioms = [propext,
+  Classical.choice, Quot.sound]`. New machinery in `Growth.lean` (all axiom-clean): the ordinal
+  constructor twins `toOrdinal_pow`/`toOrdinal_oadd`; the frontier invariant `Canon`/`Good`
+  (base-`(b+1)` canonical with ≤1 coeff `=b+1` parked at the active descent frontier);
+  `canon_repr` + `canon_round_trip` (a `Canon` NF notation round-trips through `evalNat`, via the
+  engine's `toOrdinal` strict monotonicity — no separate `evalNat` mono+bound recursion needed);
+  `Canon_pred` (a `Good` successor's predecessor is fully `Canon`); `Good_fundSeq` (`Good`
+  preserved by the limit descent); and the general `hstep_pred_pow` (predecessor of `ω^E` for
+  every NF `E` with `Good b E`, by WF recursion on `repr E`). `src/` is now **0 sorries, 0 math
+  axioms**. The parallel Aristotle job on the general goal was cancelled (subsumed).
 - **2026-06-19 lap 4 (C3 borrowing crux — massively narrowed; 6 commits, all axiom-clean):**
   the `r=0 ∧ L≥1` borrowing case of `hstep_toONote` is now FULLY PROVED modulo a single
   isolated lemma `hstep_oadd_one_zero` (the `c=1` predecessor of `ω^E`). Proved this lap, all

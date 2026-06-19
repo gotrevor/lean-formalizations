@@ -16,10 +16,42 @@ reachability), `osucc` + strict step. General index monotonicity `fastGrowing_le
 **`seqONote_lt`** (`goodsteinSeq m k ≠ 0 ⟹ seqONote m (k+1) < seqONote m k`). The Goodstein
 ε₀-descent now lives on the same `ONote` as the fast-growing growth theory.
 
-### NEXT CRUX: C3 — `goodsteinLength m = H_{seqONote m 0}(2) − 2`  (the Cichoń identity)
-**MEASURED + PROVED modulo ONE narrow sorry (2026-06-19 lap 3).** The whole C3 chain is built
-and the headline holds modulo a single isolated lemma. Identity (native_decide-confirmed):
-`hardy (seqONote m 0) 2 = goodsteinLength m + 2`. Done this lap:
+### ✅ C3 — `goodsteinLength m = H_{seqONote m 0}(2) − 2`  (the Cichoń identity) — **DONE 2026-06-19 lap 5**
+**FULLY PROVED + axiom-clean.** The lone disclosed `sorry` `hstep_oadd_one_zero` (the borrowing
+predecessor of `ω^E` — the heart of Cichoń's theorem) is discharged. `goodsteinLength_eq_hardy`,
+`hstep_toONote`, `hstep_oadd_one_zero` all have `#print axioms = [propext, Classical.choice,
+Quot.sound]`. The close-out used the `Good`/`Canon` frontier invariant (base-`(b+1)` canonical
+with ≤1 coeff `=b+1` at the active frontier): `canon_repr`/`canon_round_trip` (round-trip through
+`evalNat` via the engine's `toOrdinal` strict monotonicity), `Canon_pred` (a `Good` successor's
+predecessor is `Canon`), `Good_fundSeq` (limit descent preserves `Good`), and the general
+`hstep_pred_pow` (WF recursion on `repr E`). `src/` is now sorry-free.
+
+### 🎯 NEXT CRUX: the domination corollary — bridge Hardy ↔ fastGrowing (the "B4 trap")
+The identity gives `goodsteinLength m = H_{toONote 2 m}(2) − 2` (since `seqONote m 0 = toONote 2 m`).
+To get the headline "**`goodsteinLength` eventually dominates every `fastGrowing o`**" we must
+relate the Hardy diagonal `H_{toONote 2 m}(2)` (large *index*, fixed *arg* 2) to `fastGrowing o m`
+(fixed index, large *arg* m). This is the Hardy↔fast-growing duality (Cichoń/Wainer). Classical
+identity `H_{ω^α} = f_α` holds under the `ω[n]=n` convention; **mathlib uses `ω[n]=n+1`**, which
+shifts/compounds it: measured `H_ω(n)=2n+1` vs `f_1(n)=2n` (off by 1), and `H_{ω²}(2)=23` vs
+`f_2(2)=8` (NOT a constant shift). So the naive identity is FALSE here — this is the genuine trap.
+
+**Attack paths (next laps — pick one, advance it, leave a checkpoint `sorry`):**
+1. **Inequality, not identity.** For domination we only need `f_α(n) ≤ H_{ω^α}(n)` (a one-sided
+   bound), which is robust to the `+1` convention shift and likely far easier than the identity.
+   Prove `fastGrowing_le_hardy_omega_pow : NF α → fastGrowing α n ≤ hardy (ω^α-notation) n` by
+   transfinite induction on α (mirror the `f`/`H` recursions; the `+1` in `ω[n]` only helps the
+   `H` side). Then combine with `hardy_le_of_lt` + the fact `toONote 2 m`'s repr exceeds any fixed
+   `ω^α` for large m, and the arg/index duality, to dominate. **Most promising; start here.**
+2. **Pin the convention with exact small values.** Prove closed forms `hardy_omega : H_ω(n)=2n+1`,
+   `hardy_omega_mul`, … as `native_decide`-anchored lemmas to nail the exact shift, then state the
+   corrected bridge `H_{ω^α}(n) = f_α(n+c_α)` or similar. Slower but de-risks the identity.
+3. **Diagonal domination directly.** Skip the per-level bridge: show `H_{toONote 2 m}(2)` is
+   eventually `> f_o(m)` for each fixed NF `o`, using `le_hardy` + `hardy_le_of_lt` + the unbounded
+   growth of `toONote 2 m`'s index. Risk: the arg/index swap may make this need path 1 anyway.
+
+**OLD (pre-2026-06-19-lap5) C3 close-out notes — kept for reference, now all DONE:**
+The whole C3 chain was built and the headline held modulo a single isolated lemma. Identity
+(native_decide-confirmed): `hardy (seqONote m 0) 2 = goodsteinLength m + 2`. Done across laps 3–5:
 - **Intrinsic Hardy machinery** (`FastGrowing/Hardy.lean`, axiom-clean): `hstep` (budget-
   incrementing Hardy step on `ONote`), `hardy_hstep : o≠0 → H_o(n)=H_{hstep o n}(n+1)`,
   `fundamentalSequence_inr_ne_zero`, `hstep_oadd_tail` (peel leading `oadd` term).
