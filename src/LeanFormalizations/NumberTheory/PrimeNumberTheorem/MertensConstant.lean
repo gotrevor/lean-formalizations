@@ -778,4 +778,74 @@ lemma sub_one_mul_integral_log_exp_eq {s : ℝ} (hs : 1 < s) :
         (fun u => (Real.log u - Real.log (s - 1)) * Real.exp (-u)) 0 hsub,
       mul_zero, smul_eq_mul, ← mul_assoc, mul_inv_cancel₀ (ne_of_gt hsub), one_mul]
 
+open MeasureTheory in
+/-- **Integrability of the Gamma-derivative integrand** `log u · e^{−u}` on `(0,∞)`.  Split at `1`:
+on `(0,1]` it is dominated by `|log u|` (interval-integrable, `e^{−u} ≤ 1`); on `(1,∞)` by
+`u·e^{−u}` (the `Γ(2)` integrand, `log u ≤ u`). -/
+lemma integrableOn_log_mul_exp_neg :
+    IntegrableOn (fun u : ℝ => Real.log u * Real.exp (-u)) (Set.Ioi (0 : ℝ)) := by
+  rw [← Set.Ioc_union_Ioi_eq_Ioi (zero_le_one (α := ℝ)), integrableOn_union]
+  constructor
+  · -- on `(0,1]`: `‖log u · e^{−u}‖ ≤ ‖log u‖`.
+    have hlog : IntegrableOn (fun u : ℝ => Real.log u) (Set.Ioc (0 : ℝ) 1) := by
+      rw [← intervalIntegrable_iff_integrableOn_Ioc_of_le (zero_le_one)]
+      exact intervalIntegral.intervalIntegrable_log'
+    refine (hlog.norm).mono' ?_ ?_
+    · refine (ContinuousOn.mul ?_ ?_).aestronglyMeasurable measurableSet_Ioc
+      · exact Real.continuousOn_log.mono (fun u hu => ne_of_gt hu.1)
+      · exact (Real.continuous_exp.comp continuous_neg).continuousOn
+    · filter_upwards [ae_restrict_mem measurableSet_Ioc] with u hu
+      rw [Real.norm_eq_abs, abs_mul]
+      have hexp : |Real.exp (-u)| ≤ 1 := by
+        rw [abs_of_pos (Real.exp_pos _)]
+        exact Real.exp_le_one_iff.mpr (by linarith [hu.1])
+      calc |Real.log u| * |Real.exp (-u)| ≤ |Real.log u| * 1 :=
+            mul_le_mul_of_nonneg_left hexp (abs_nonneg _)
+        _ = ‖Real.log u‖ := by rw [mul_one, Real.norm_eq_abs]
+  · -- on `(1,∞)`: `log u · e^{−u} ≤ u · e^{−u}` = the `Γ(2)` integrand.
+    have hg : IntegrableOn (fun u : ℝ => Real.exp (-u) * u ^ ((2 : ℝ) - 1)) (Set.Ioi (1 : ℝ)) :=
+      (Real.GammaIntegral_convergent (by norm_num)).mono_set (Set.Ioi_subset_Ioi zero_le_one)
+    refine hg.mono' ?_ ?_
+    · refine (ContinuousOn.mul ?_ ?_).aestronglyMeasurable measurableSet_Ioi
+      · exact Real.continuousOn_log.mono (fun u hu => ne_of_gt (lt_trans one_pos hu))
+      · exact (Real.continuous_exp.comp continuous_neg).continuousOn
+    · filter_upwards [ae_restrict_mem measurableSet_Ioi] with u hu
+      rw [Set.mem_Ioi] at hu
+      have hu0 : (0 : ℝ) < u := lt_trans one_pos hu
+      rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (Real.log_nonneg hu.le) (Real.exp_pos _).le)]
+      have hlu : Real.log u ≤ u := le_trans (Real.log_le_sub_one_of_pos hu0) (by linarith)
+      rw [show (2 : ℝ) - 1 = 1 by norm_num, Real.rpow_one, mul_comm (Real.exp (-u)) u]
+      exact mul_le_mul_of_nonneg_right hlu (Real.exp_pos _).le
+
+open MeasureTheory in
+/-- **Evaluation of the substituted log-integral**: for `s > 1`,
+`∫_0^∞ (log u − log(s−1))·e^{−u} du = −γ − log(s−1)`, by splitting (`integral_sub`) into
+`∫_0^∞ log u·e^{−u} = −γ` (`integral_log_mul_exp_neg_Ioi_eq_neg_gamma`) and
+`log(s−1)·∫_0^∞ e^{−u} = log(s−1)·1`. -/
+lemma integral_log_sub_logSub_mul_exp {s : ℝ} (hs : 1 < s) :
+    ∫ u in Set.Ioi (0 : ℝ), (Real.log u - Real.log (s - 1)) * Real.exp (-u)
+      = -Real.eulerMascheroniConstant - Real.log (s - 1) := by
+  have h1 : IntegrableOn (fun u : ℝ => Real.log u * Real.exp (-u)) (Set.Ioi (0 : ℝ)) :=
+    integrableOn_log_mul_exp_neg
+  have h2 : IntegrableOn (fun u : ℝ => Real.log (s - 1) * Real.exp (-u)) (Set.Ioi (0 : ℝ)) :=
+    (integrableOn_exp_neg_Ioi 0).const_mul _
+  have hcongr : (fun u : ℝ => (Real.log u - Real.log (s - 1)) * Real.exp (-u))
+      = fun u => Real.log u * Real.exp (-u) - Real.log (s - 1) * Real.exp (-u) := by
+    funext u; ring
+  rw [hcongr, integral_sub h1 h2, integral_log_mul_exp_neg_Ioi_eq_neg_gamma,
+    integral_const_mul, integral_exp_neg_Ioi_zero, mul_one]
+
+open MeasureTheory in
+/-- **Log-part of brick B2, fully evaluated**: for `s > 1`,
+`(s−1)·∫_0^∞ log x · e^{−(s−1)x} dx = −γ − log(s−1)`.  Combines the change of variables
+`sub_one_mul_integral_log_exp_eq` with the evaluation `integral_log_sub_logSub_mul_exp`.
+
+This is the piece carrying `−γ`; its `−log(s−1)` cancels the `+log(s−1)` in `primeZeta s + log(s−1)`,
+and together with the `M`-part (`tendsto_sub_one_mul_integral_rpow`) and the Tauberian error (→0)
+yields Limit B = `M − γ`. -/
+lemma sub_one_mul_integral_log_exp {s : ℝ} (hs : 1 < s) :
+    (s - 1) * ∫ x in Set.Ioi (0 : ℝ), Real.log x * Real.exp (-((s - 1) * x))
+      = -Real.eulerMascheroniConstant - Real.log (s - 1) := by
+  rw [sub_one_mul_integral_log_exp_eq hs, integral_log_sub_logSub_mul_exp hs]
+
 end LeanFormalizations.Mertens
