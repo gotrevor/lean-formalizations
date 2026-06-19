@@ -1,107 +1,42 @@
 # DIRECTION — read FIRST (operator directive, 2026-06-18, Trevor via Ren)
 
-## ⛔ BOUNDED RUN. Prove **Goodstein's theorem** (termination), then STOP.
+## Target: the **no-three-in-line** frontier (Ben Green's open problem 72)
 
-New directed target. The prior power-tower thread is COMPLETE — do not touch it.
-You are formalizing exactly ONE new result and then ending the run.
+This is an **isolated clone** (`~/src/lean-formalizations-ntl`, branch `ntl-hjsw`) dedicated to
+the no-three-in-line frontier. The base results (2N upper bound + Erdős Θ(N) lower bound) are
+already DONE and axiom-clean. Your job is the frontier in
+`src/LeanFormalizations/Combinatorics/NoThreeInLine/PLAN.md`. **Read `HANDOFF.md` next — it has
+the full task + math.**
 
-### ⚠️ This is a hard, multi-lap proof. STAYING is the whole point.
-Goodstein needs an ordinal-descent argument and a faithful hereditary-base
-definition. **Expect many grind laps. That is fine — chip at it lap by lap.** Do
-NOT declare it "out of scope," do NOT decide a narrow axiom is the "realistic
-destination," and ABOVE ALL do NOT wander to a different result. The repo is
-otherwise finished; the ONLY work this run is Goodstein.
+### Primary target: HJSW `3N/2` (a hard, multi-lap proof — STAYING is the whole point)
+Hall–Jackson–Sudbery–Wild's hyperbola construction `x·y ≡ k (mod p)` giving `3(N−2)/2` points
+with no three collinear. **Expect many grind laps. That is fine — chip at it lap by lap.** Do NOT
+declare it "out of scope," do NOT decide a narrow axiom is the "realistic destination," do NOT
+wander off. The non-collinearity reuses the parabola's "ZMod p is a domain" move; the `3/2`
+covering count is the real work. State it faithfully in `Statement.lean` (the audit surface).
 
-### DO NOT TOUCH — four complete, axiom-clean threads
-`NumberTheory/Transcendence/`, `Geometry/Constructible/`,
-`NumericalSemigroups/Curtis/`, `RealAnalysis/PowerTower/` are all DONE and
-axiom-clean. Do not modify them, do not reopen them, do not re-add any axiom. Work
-ONLY in `src/LeanFormalizations/Logic/Goodstein/`.
+After HJSW lands axiom-clean: the secondary items in `PLAN.md` (decidable witness anchors; an
+optional Main-Conjecture statement). There is enough frontier to keep grinding.
 
-### ⚠️ DO NOT start any other new target
-`HANDOFF`/`PENDING_WORK` may mention other ideas (general Hermite–Lindemann,
-Constructible Layer-2 geometry, gathering the Erdős repos). They are ALL out of
-scope for this run. When Goodstein is proved, the run is OVER — see Completion.
+### Run mode: UNBOUNDED (no self-stop)
+`--allow-stop` is NOT armed for this run. Do NOT write a stop sentinel. Keep grinding the frontier
+lap by lap; the operator ends the run with `lean-treadmill stop lean-formalizations-ntl`.
 
----
+### ⛔ DO NOT TOUCH
+- The sibling repo `~/src/lean-formalizations` (it has unrelated FastGrowing / Goodstein-
+  independence WIP). Even though `~/src` is all visible, work ONLY in this clone.
+- The completed, axiom-clean threads here: `NumberTheory/Transcendence/`,
+  `Geometry/Constructible/`, `NumericalSemigroups/Curtis/`, `RealAnalysis/PowerTower/`,
+  `Logic/Goodstein/`. Do not modify or reopen them; do not re-add any axiom.
+- The DONE no-three-in-line base (`Defs/Collinearity/UpperBound/Parabola/Statement`). Build ON it.
 
-## The target
-
-Goodstein, *"On the restricted ordinal theorem,"* JSL 1944: every Goodstein
-sequence reaches 0. The scaffold is in place (`Logic/Goodstein/`):
-
-- `Defs.lean` — `goodsteinSeq m k = G k` is currently a **STUB** returning the
-  seed. **Replace it with the faithful definition** (hereditary base `k+2`, bump
-  `k+2 ↦ k+3`, subtract one; `0` absorbing). One general definition — NO
-  special-casing small inputs.
-- `Anchors.lean` — ground-truth trajectories for m = 0,1,2,3 (`sorry` now).
-  **Discharge each by `decide`/`native_decide`** once the definition is real.
-  These are the anti-vacuity lock; a fake definition cannot satisfy e.g.
-  `goodsteinSeq 3 3 = 2`.
-- `Statement.lean` — the headline (`sorry` now):
-  ```lean
-  theorem goodstein_terminates (m : ℕ) : ∃ N, goodsteinSeq m N = 0
-  ```
-  This is the faithful audit surface; keep the statement exactly this shape.
-
-### Proof plan (ordinal descent)
-1. Faithful `goodsteinSeq` via `Nat.digits` (well-founded recursion on the value;
-   exponents are strictly smaller). Discharge the anchors to confirm it.
-2. Build the hereditary-base → ordinal interpretation: read `G k` in base `k+2`,
-   replace the base by `ω`. Use `Ordinal.CNF` / `Ordinal.coeff` / `Ordinal.eval`
-   (`Mathlib.SetTheory.Ordinal.CantorNormalForm`).
-3. **Bump-invariance:** the map of `G k` at base `k+2` equals the map of
-   `bump(G k)` at base `k+3` (the base reads as `ω` either way).
-4. **Strict decrease:** subtracting one strictly lowers the ordinal, so the
-   ordinal of `G (k+1)` `<` ordinal of `G k` whenever `G k ≠ 0`.
-5. `Ordinal.wellFoundedLT` ⇒ no infinite strictly-decreasing sequence ⇒ the map
-   must hit `0` ⇒ `G k = 0`. Conclude `goodstein_terminates`.
-
-Put the definition's recursion + the ordinal machinery in engine siblings
-(e.g. `Engine.lean`); keep `Statement.lean` thin and faithful.
-
-### Scope: POSITIVE theorem only
-Prove termination (object-level math; Lean's logic is far stronger than PA, so this
-is just the ordinal argument). The **Kirby–Paris independence** ("PA cannot prove
-this") is metamathematics about PA and is OUT OF SCOPE — README documents it, do
-not attempt it.
-
----
-
-## Rules (same as every run here)
-- **No `sorry`/`admit` at the end.** A stuck step is a lemma-name/bookkeeping issue
-  — grind it, don't bail, don't switch targets. Partial green progress committed
-  each lap is exactly right.
-- **Stay in your lane:** ONLY `Logic/Goodstein/`. Keep the repo at 0 math axioms.
-- Verify every lemma name against this repo's mathlib (`v4.29.1`). `push_neg` is
-  deprecated → `push Not at h`.
-- `native_decide` is fine for the `Anchors.lean` `example`s (standalone, off the
-  headline path) but must NOT appear on `goodstein_terminates`'s axiom path.
-- Commit every green build (from a real `lake build`). **DO NOT push.**
+## Standing rules
+- **Axiom-clean or it doesn't count**: every headline `#print axioms = [propext, Classical.choice,
+  Quot.sound]`. No `sorryAx`, no custom axiom, no `native_decide` leak into a headline.
+- **Faithful statement** is the entire trust surface — write the `3/2` and grid bounds explicitly.
+- **Commit green** (the `.githooks/pre-commit` runs `lake build`; mathlib is prebuilt here, builds
+  are seconds). **DO NOT push.** Leaving a mid-proof `sorry` + a `PLAN.md` attack note across laps
+  is fine; never call a result axiom-clean while it has a `sorry`.
+- Verify lemma names against this repo's mathlib (`v4.29.1`); `push_neg` is deprecated → `push Not`.
 - Reference corpus: `~/personal/claude/knowledge/core/projects/lean-journey/reference/`.
-- Blocked needing the open web (exact mathlib name for an ordinal/CNF/well-founded
-  lemma, or a reference proof of the bump-invariance)? Append a dated item to
-  `ON-LINE-REQUEST.md` and continue on a different sub-lemma.
-
----
-
-## Completion = stop condition (`--allow-stop` is armed)
-
-`src/` was sorry-free before this run; the Goodstein scaffold added `sorry`s
-(the headline + the anchors), so the sorry-gate is genuinely CLOSED and stays
-closed until the work is truly done. Self-stop ONLY when ALL of these hold:
-
-- `goodsteinSeq` (`Defs.lean`) is the **faithful definition** (not the stub);
-- ALL `Anchors.lean` `example`s are **discharged** (`decide`/`native_decide`), no `sorry`;
-- `goodstein_terminates` (`Statement.lean`) is **PROVED** (no `sorry`);
-- `src/` is sorry-free, `lake build` green;
-- `#print axioms goodstein_terminates` = `[propext, Classical.choice, Quot.sound]`
-  (no `sorryAx`, no custom axiom, no `native_decide` on the headline path).
-
-Then refresh `STATUS.md`, `HANDOFF.md`, the Goodstein `README.md`, and the top
-`README.md` table (add the Goodstein row), commit, and:
-```
-printf 'source=lap\nreason=Goodstein theorem complete (every Goodstein sequence terminates, axiom-clean)\n' > "$LEAN_STOP_SENTINEL"
-```
-then end the turn. If ANY `sorry` lingers or the definition is still the stub, do
-NOT stop — finish it. And do NOT start a different result to "keep busy."
+- Blocked needing the open web? Append a dated item to `ON-LINE-REQUEST.md` and continue elsewhere.
