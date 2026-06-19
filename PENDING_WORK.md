@@ -76,10 +76,16 @@ general `o` analogously with `ppCount m m ≤ log₂ m − o`). The sparsity hyp
 (pure-power hits `G_i = (i+2)^e` are extremely sparse among the astronomically-large early terms) but
 proving it rigorously **IS** the deep steps-between-drops content — the genuine remaining obligation.
 **Next brick = the sparsity bound** `ppCount m m ≤ log₂ m − 2` (or its general-`o` form); cleanest
-Aristotle carve too. Two routes to it: (a) bound the count directly (number of `i ≤ m` with `G_i` a
-pure power of `base i`); (b) show `leadExp` stays in the *growing* regime (`≥ base i`) for `≥ m` steps,
-since once `leadExp ≥ base` it only grows (`bump_gt`) — drops require first descending to the small
-regime, which itself takes `≫ m` steps.
+Aristotle carve too. ⚠ NOTE the telescope gives a LOWER bound on `ppCount` (`ppCount k ≥ log₂ m −
+leadExp_k`), NOT the upper bound we need — so the sparsity bound is a genuinely separate fact. Routes:
+(a) **bound the count directly** — show pure-power hits `G_i = (i+2)^e` among `i ≤ m` are `≤ log₂ m −
+2`; since `G_i` is astronomically large and exact powers of base `i+2` are extremely sparse, this is
+plausibly true (likely `O(1)` hits for large `m`), but proving it is the deep content. (b) **bypass
+`ppCount` and lower-bound the value directly**: prove `G_k ≥ (k+2)²` for `k ≤ m` (⟺ `leadExp_k ≥ 2`)
+by a quadratic-plateau induction — the difficulty is the same (it breaks at pure powers, where `G`
+dips just below the square), but the per-step lemmas now characterize exactly those break points.
+*(Do NOT claim "leadExp stays ≥ base for m steps" — that is FALSE; `leadExp ≥ base i = i+2` fails once
+`i > log₂ m − 2`. The early large regime lasts only `~log₂ m` steps; the depth is the small regime.)*
 
 *Detailed attack notes for sub-fact (ii) / the steps-between-drops recursion are in the lap-6/lap-7
 sections below — unchanged and still the operative plan.*
