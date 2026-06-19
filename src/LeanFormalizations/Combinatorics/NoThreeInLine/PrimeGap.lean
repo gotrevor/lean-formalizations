@@ -409,6 +409,22 @@ theorem chebyshev_const_gt :
   have h5 := log_five_gt
   linarith [h2, h3, h5]
 
+/-- **Leading-term identity for Chebyshev's `T`-combination.** The continuous (un-floored) main terms
+of `T(x) − T(x/2) − T(x/3) − T(x/5) + T(x/30)` collapse to exactly `A·x`: the `x·log x` terms cancel
+(coeffs `1−½−⅓−⅕+1/30 = 0`) and `∑±(x/k)log k = A·x` with `A = (7/15)log2+(3/10)log3+(1/6)log5`
+(`chebyshev_const_gt`). This is the algebraic core of the analytic half of `ψ(n) ≳ A·n`; what remains
+is bounding the floor/Stirling corrections (each `O(log n)`) around it. -/
+theorem logFactorial_leading_identity {x : ℝ} (hx : 0 < x) :
+    x * Real.log x - (x / 2) * Real.log (x / 2) - (x / 3) * Real.log (x / 3)
+        - (x / 5) * Real.log (x / 5) + (x / 30) * Real.log (x / 30)
+      = x * ((7 / 15) * Real.log 2 + (3 / 10) * Real.log 3 + (1 / 6) * Real.log 5) := by
+  rw [Real.log_div hx.ne' (by norm_num), Real.log_div hx.ne' (by norm_num),
+    Real.log_div hx.ne' (by norm_num), Real.log_div hx.ne' (by norm_num)]
+  have h30 : Real.log 30 = Real.log 2 + Real.log 3 + Real.log 5 := by
+    rw [show (30 : ℝ) = 2 * 3 * 5 by norm_num, Real.log_mul (by norm_num) (by norm_num),
+      Real.log_mul (by norm_num) (by norm_num)]
+  rw [h30]; ring
+
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
 
