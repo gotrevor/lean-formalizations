@@ -31,9 +31,23 @@ feared v4.29.0→v4.29.1 drift did not materialize. New modules under
    `𝓕(ψ')(u) = 2πiu·𝓕ψ(u)` — but mathlib's `Real.fourier_deriv` needs EVERYWHERE-differentiable, while
    the hyp is only `AbsolutelyContinuous` (a.e. diff + FTC). Attack: build FT-of-deriv for AC functions
    (IBP via `IntervalIntegral/AbsolutelyContinuousFun`), then chain prelim_decay_2.
-3. **`nagura_prime`** (`PrimeGap.lean:1120`): prime in (n,6n/5] for n≥25. Now FULLY SUPERSEDED — the
-   unconditional `3/2−o(N)` dominates its conditional `5/4`. Needs Nagura's sharp finite inequality
-   (paper, in ON-LINE-REQUEST). Lowest value; leave disclosed.
+3. **`nagura_prime`** (`PrimeGap.lean:1120`): prime in (n,6n/5] for n≥25. Superseded for the NTL
+   headline by the unconditional `3/2−o(N)`, but still an independently-famous mathlib-absent theorem
+   and the only explicit (effective, all-N) rung past `6/5`.
+   **REFINED DIAGNOSIS (2026-06-19, DivisorProblem lap).** Nagura is **elementary** (no PNT — the prior
+   "needs effective PNT" was imprecise). The repo's refined two-sided Chebyshev stack
+   (`psi_refined_lower`/`psi_refined_upper`/`theta_refined_lower`) is built on the classical Sylvester–
+   Chebyshev `{2,3,5,30}` function `f(n)=T(n)−T(n/2)−T(n/3)−T(n/5)+T(n/30)` (floor combo `g∈{0,1}`,
+   `floor_comb_bounds`). Its leading constant is **`A=(7/15)log2+(3/10)log3+(1/6)log5 ≈ 0.9213`** (lower)
+   and **`(6/5)A ≈ 1.106`** (upper) — these are *exactly Chebyshev's 1852 bounds*, ratio **exactly `6/5`**.
+   So the method gives a prime in `(n,c·n]` for any `c > 6/5` (hence `exists_prime_in_five_fourths`, 5/4)
+   but **provably cannot attain `c = 6/5`** (leading constants tie). This is a *soft* wall: ANY strict
+   improvement to either constant breaks it — a lower bound `ψ(n) ≥ A'·n` with `A' > A`, or an upper
+   `ψ(n) ≤ B'·n` with `B' < (6/5)A`, immediately yields Nagura (large-n by the gap; `n∈[25,N₀)` by
+   `decide`). **Concrete next attack:** replace `{2,3,5,30}` with a sharper elementary combination
+   (longer period / more primes — Diamond–Erdős / Rosser-style) whose Chebyshev constant exceeds `0.9213`.
+   This re-does `floor_comb_bounds` (a `decide` over the new period), `logFactorial_comb_{lower,upper}`,
+   and the telescoping — a bounded multi-lap port. (Alt: effective PNT gives ratio→1 but is heavier.)
 
 ### ✅ 2026-06-19 (review lap) — Mertens' First Theorem COMPLETE (prime form sharp + capstones)
 - **`NumberTheory/PrimeNumberTheorem/Mertens.lean`** — Mertens' first theorem, **absent from mathlib**,
