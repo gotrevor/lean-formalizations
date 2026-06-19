@@ -680,4 +680,48 @@ theorem primeZeta_eq_abel_integral {s : ℝ} (hs : 1 < s) :
         tendsto_nhds_unique hL habel2
     _ = (s - 1) * ∫ t in Set.Ioi (1 : ℝ), t ^ (-s) * primeRecipSum ⌊t⌋₊ := by rw [key]; ring
 
+/-! ### Toward Limit B / brick B2 — the `s→1⁺` analysis where `−γ` enters
+
+The integral representation `primeZeta s = (s−1)∫_1^∞ A(t)·t^{−s} dt` (`primeZeta_eq_abel_integral`,
+`A(t)=∑_{p≤⌊t⌋}1/p`) is the launch point.  After the substitution `t = e^x` it reads
+`primeZeta s = (s−1)∫_0^∞ A(eˣ)·e^{−(s−1)x} dx`, and with `A(eˣ) = log x + M + o(1)` (Mertens 2nd)
+the three pieces are: `(s−1)∫_0^∞ M e^{−(s−1)x} = M`; the error `→ 0` (the Tauberian/Abelian step);
+and `(s−1)∫_0^∞ log x · e^{−(s−1)x} dx → −γ − log(s−1)` after `u=(s−1)x`, the last because
+`∫_0^∞ log u · e^{−u} du = Γ'(1) = −γ` (the lemma below).  Net: `primeZeta s + log(s−1) → M − γ`. -/
+
+open MeasureTheory in
+/-- **`Γ'(1) = −γ` in integral form**: `∫_0^∞ log u · e^{−u} du = −γ` (the Euler–Mascheroni constant).
+
+This is where `−γ` enters the Mertens constant.  Proof: mathlib's `Complex.hasDerivAt_GammaIntegral`
+gives `(GammaIntegral)'(1) = ∫_0^∞ u^{1−1}·(log u · e^{−u}) du = ↑(∫_0^∞ log u·e^{−u} du)`; on `Re > 0`
+the Gamma integral agrees with `Complex.Gamma`, which on the reals is `↑(Real.Gamma ·)`, so this
+complex derivative equals `↑(Real.Gamma'(1)) = ↑(−γ)` by `Real.hasDerivAt_Gamma_one`.  Uniqueness of
+derivatives + injectivity of `ofReal` finish. -/
+theorem integral_log_mul_exp_neg_Ioi_eq_neg_gamma :
+    ∫ t in Set.Ioi (0 : ℝ), Real.log t * Real.exp (-t) = -Real.eulerMascheroniConstant := by
+  -- Derivative of the complex Gamma integral at `s = 1` (a real point).
+  have hpos : (0 : ℝ) < ((1 : ℝ) : ℂ).re := by simp
+  have hGI := Complex.hasDerivAt_GammaIntegral hpos
+  have hcomp := hGI.comp_ofReal
+  -- Near `1`, `GammaIntegral ↑y = ↑(Real.Gamma y)`.
+  have heq : (fun y : ℝ => Complex.GammaIntegral ↑y)
+      =ᶠ[nhds (1 : ℝ)] fun y : ℝ => (↑(Real.Gamma y) : ℂ) := by
+    filter_upwards [Ioi_mem_nhds (show (0 : ℝ) < 1 by norm_num)] with y hy
+    rw [Set.mem_Ioi] at hy
+    rw [← Complex.Gamma_eq_integral (by rwa [Complex.ofReal_re]), Complex.Gamma_ofReal]
+  -- The real Gamma derivative at `1` is `−γ`.
+  have hR : HasDerivAt (fun y : ℝ => (↑(Real.Gamma y) : ℂ))
+      (↑(-Real.eulerMascheroniConstant)) 1 := Real.hasDerivAt_Gamma_one.ofReal_comp
+  -- Uniqueness of the derivative: the complex Gamma-integral value equals `↑(−γ)`.
+  have huniq := (hcomp.congr_of_eventuallyEq heq.symm).unique hR
+  -- Identify that value with `↑(∫_0^∞ log u·e^{−u} du)` and cancel the coercion.
+  have hcast : (↑(∫ t in Set.Ioi (0 : ℝ), Real.log t * Real.exp (-t)) : ℂ)
+      = ↑(-Real.eulerMascheroniConstant) := by
+    rw [← huniq, ← integral_complex_ofReal]
+    refine setIntegral_congr_fun measurableSet_Ioi (fun t ht => ?_)
+    rw [Set.mem_Ioi] at ht
+    rw [Complex.ofReal_one, sub_self, Complex.cpow_zero, one_mul]
+    push_cast; ring
+  exact_mod_cast hcast
+
 end LeanFormalizations.Mertens
