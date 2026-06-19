@@ -145,4 +145,30 @@ theorem hjsw_lower_eleven : 3 * (11 - 1) ≤ maxNoThreeInLine (2 * 11) := by
       ⟨witness11, witness11_card.symm, witness11_grid, witness11_noThree⟩
   exact le_trans (by norm_num) h
 
+/-! ### Concrete witness anchor: the HJSW count `3(p−1)` at `p = 13`
+
+An exact `36 = 3·(13−1)`-point configuration in the `26 × 26` grid with no three collinear (greedy,
+diversified ordering, `native_decide`-certified). Off the headline axiom path. -/
+def witness13 : Finset (ℕ × ℕ) :=
+  {(0, 0), (1, 15), (7, 4), (8, 19), (3, 14), (9, 3), (10, 18), (16, 7), (0, 8), (1, 23), (20, 5),
+    (21, 20), (2, 7), (3, 22), (23, 19), (12, 25), (14, 24), (2, 15), (6, 13), (5, 6), (13, 25),
+    (7, 5), (8, 20), (15, 24), (5, 14), (14, 17), (21, 6), (18, 0), (23, 13), (18, 8), (19, 23),
+    (17, 9), (17, 17), (19, 16), (15, 3), (4, 2)}
+
+theorem witness13_card : witness13.card = 36 := by decide
+
+theorem witness13_grid : IsGridSet 26 witness13 := by
+  intro p hp; fin_cases hp <;> exact ⟨by decide, by decide⟩
+
+theorem witness13_noThree : NoThreeCollinear witness13 :=
+  decNoThree_imp (by native_decide)
+
+/-- **HJSW count, verified instance at `p = 13`:** the `26 × 26` grid admits `36 = 3·(13−1)` points
+with no three collinear. -/
+theorem hjsw_lower_thirteen : 3 * (13 - 1) ≤ maxNoThreeInLine (2 * 13) := by
+  have h : 36 ≤ maxNoThreeInLine (2 * 13) :=
+    le_csSup (bddAbove_grid (2 * 13))
+      ⟨witness13, witness13_card.symm, witness13_grid, witness13_noThree⟩
+  exact le_trans (by norm_num) h
+
 end LeanFormalizations.NoThreeInLine
