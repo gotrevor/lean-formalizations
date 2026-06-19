@@ -1,6 +1,52 @@
 # PENDING_WORK — lean-formalizations
 
+## 🎉🎉🎉 lap 11 — CICHOŃ'S LOWER BOUND COMPLETE TO ε₀: f_o(m) ≤ goodsteinLength m + 2 for EVERY o < ε₀
+
+**Done + committed (`4856b9a` tower spine, `9b1e779` full ε₀); build 🟢 (8294 jobs).** New file
+`src/LeanFormalizations/Logic/Goodstein/TowerDomination.lean`. The diagonal lower-bound headline —
+the genuine Cichoń growth content — is now **complete for every ordinal below ε₀**:
+- **`goodsteinLength_eventually_dominates_fastGrowing`** (`o.NF → ∃ N, ∀ m≥N, f_o(m) ≤ goodsteinLength m + 2`).
+- `fastGrowing_towerO_le_goodsteinLength` (every tower level `ω↑↑k`); explicit threshold
+  `goodsteinLength_dominates_fastGrowing_towerO` (`m ≥ towerN k (2^16+k)`).
+- `fastGrowing_le_goodsteinLength_of_repr_le_tower` (any `o` with `repr o ≤ ω↑↑k`).
+
+**The two general engines (each subsumes lap-10's per-level closures):**
+1. **General length bootstrap** `two_mul_le_goodsteinLength_iter`: `goodsteinLength((log₂)^[k] m) ≥ 2m`
+   for ALL `k`. The lap-10 worry ("needs `f_{ω^ω}`-strength deep-seed bound") was **FALSE** — the
+   already-proved `o=ω` domination is strong enough at every depth. Carrier: the clean finite-level
+   tower bound `towerN_le_fastGrowing` (`f_{k+2}(t) ≥ towerN(k+1)(t+1)`, induction on `k` via
+   `f_{n+1}=(f_n)^[·]` + iterate-monotone), composed with `f_ω(t)=f_{t+1}(t) ≥ f_{k+2}(t)`. Plus the
+   tower upper bound on the seed `succ_le_towerN_log_iter` (`m+1 ≤ towerN k ((log₂)^[k] m + 1)`).
+2. **General ordinal bridge** `omegaTower_succ_le_seqONote_repr`: descent `≥ ω↑↑(k+1)` from the
+   `k`-fold leading exponent in the large regime. Pure `toOrdinal` induction `omegaTower_le_toOrdinal`.
+3. **Tower cofinality in ε₀** `exists_repr_lt_omegaTower` (axiom-clean): every NF `ONote` has
+   `repr < ω↑↑k` for some `k` (structural induction + additive principality of `ω^·`). This is what
+   lifts the tower-spine result to ALL of ε₀.
+
+Crux discharged via the self-similarity tower `iterLeadExp_dominates` read at a fixed index
+(`logSeq_iterate_apply`) feeding `n_le_goodsteinSeq` the bootstrap length bound. `#print axioms`:
+trust base + finite-base-case `native_decide` (engines fully clean); no sorry.
+
+### 🎯 NEXT FRONTIER — the matching UPPER bound (two-sided "grows like f_{ε₀}")
+The lower bound is DONE. "`goodsteinLength` grows *like* `f_{ε₀}`" wants the matching ceiling
+`goodsteinLength m ≤ (f_{ε₀}-flavoured)(m)`. Attack paths:
+  (a) **Via the Cichoń identity** (already proved, axiom-clean): `goodsteinLength m = H_{o_m}(2) − 2`
+      where `o_m = seqONote m 0` (base-2 CNF ordinal of `m`). Bound `o_m`'s repr ABOVE by a tower
+      level `ω↑↑(k_m)` with `k_m` explicit in `m` (dual of `exists_repr_lt_omegaTower` — a concrete
+      upper witness), then Hardy monotonicity in the ordinal index gives `H_{o_m}(2) ≤ H_{ω↑↑k_m}(2)`.
+      Needs: (i) Hardy monotone in the ordinal arg (analog of the `fastGrowing` monotonicity already
+      built); (ii) `o_m.repr ≤ ω↑↑(something(m))` concretely.
+  (b) **B4 `H_{ω^α} = f_α`** to convert the Hardy ceiling into a `fastGrowing` ceiling — the
+      long-flagged trap under mathlib's `ω[n]=n+1`; needs a reformulated statement. Lower priority;
+      route (a) up to the Hardy ceiling may suffice for a clean "grows like" without B4.
+  (c) A single clean ε₀ capstone packaging the lower bound as "dominates `f_{ε₀}`" via
+      `ε₀ = sup_o repr o` — mostly presentation.
+Good Aristotle candidate: Hardy monotonicity in the ordinal index (bounded, self-contained).
+
+---
+
 ## 🎉🎉 lap 10 — CLIMBED THE LIMIT LEVELS: o=ω, o=ω^j (all finite j), o=ω^ω all CLOSED
+### (SUPERSEDED by lap 11's general `TowerDomination.lean` — kept for the engine writeup)
 
 **Done + committed (`ca30077`, `69550cd`, `df89a28`, `1278df6`, `1fb59f8`); build 🟢 (8293 jobs).**
 In one lap the diagonal domination `f_o(m) ≤ goodsteinLength m + 2` went from finite-`o`-only to

@@ -5,36 +5,35 @@
 This file is a **thin pointer**. The durable overview is **`STATUS.md`**; the per-lap baton
 is the newest **`HANDOFF-<date>.md`**; open items/attack paths live in **`PENDING_WORK.md`**.
 
-## Where things stand (2026-06-19 lap 10 — 🎉🎉 CLIMBED TO o=ω^ω; see `PENDING_WORK.md` top)
-- **NEW this lap (all unconditional + machine-checked):** `f_ω(m)`, `f_{ω^j}(m)` (all finite j), and
-  `f_{ω^ω}(m)` ≤ `goodsteinLength m + 2` — Cichoń's lower bound at the limit ordinals up to ω^ω.
-  Engines: the **self-similarity TOWER** (`GoodsteinLike.lean`) + the **length BOOTSTRAP**
-  (`two_mul_le_goodsteinLength_loglog`: `goodsteinLength((log₂)^[2] m) ≥ 2m`, by bootstrapping o=ω
-  against itself through the tower-strength f_ω length bound). Commits `ca30077`→`1fb59f8`.
-- **NEXT:** generalize to the full ω-power tower up to **ε₀**. See `PENDING_WORK.md` → "NEXT FRONTIER".
+## Where things stand (2026-06-19 lap 11 — 🎉🎉🎉 CICHOŃ'S LOWER BOUND COMPLETE TO ε₀)
+- **NEW this lap (unconditional + machine-checked):** the diagonal lower bound
+  `f_o(m) ≤ goodsteinLength m + 2` now holds for **EVERY `o < ε₀`** (every NF `ONote`):
+  `goodsteinLength_eventually_dominates_fastGrowing` (`o.NF → ∃ N, ∀ m≥N, …`). New file
+  `Logic/Goodstein/TowerDomination.lean`. Two general engines subsuming lap-10's per-level closures:
+  the **general length bootstrap** `two_mul_le_goodsteinLength_iter` (powered by the clean finite tower
+  bound `towerN_le_fastGrowing`; the lap-10 "needs `f_{ω^ω}`-strength deep-seed bound" worry was FALSE)
+  + the **general ordinal bridge** `omegaTower_succ_le_seqONote_repr`, lifted to all ε₀ via tower
+  cofinality `exists_repr_lt_omegaTower` (axiom-clean). Build 🟢 (8294 jobs); commits `4856b9a`→`9b1e779`.
+- **NEXT:** the matching **UPPER bound** `goodsteinLength m ≤ (f_{ε₀}-flavoured)(m)` for the two-sided
+  "grows like `f_{ε₀}`". Lever = the Cichoń identity `goodsteinLength m = H_{o_m}(2)−2` (proved) +
+  Hardy monotonicity + an upper tower witness on `o_m`. See `PENDING_WORK.md` → "NEXT FRONTIER".
 
-## (lap 9 — FINITE DIAGONAL CLOSED; baton `HANDOFF-2026-06-19-1215.md`)
-- **DONE + axiom-clean:** A1–A4 (fast-growing growth theory); B1–B3 (Hardy); C1–C3 (Cichoń identity);
-  and **🎉 THE FINITE-LEVEL DIAGONAL DOMINATION** `f_n(m) ≤ goodsteinLength m + 2` for every finite
-  `n` (`fastGrowing_ofNat_le_goodsteinLength`, hyps `16≤m ∧ n+1≤log₂m`) — the 8-lap open crux
-  (Cichoń's lower bound, sub-fact (ii)). `src/` **sorry-free**; build 🟢 green (8292 jobs). Math
-  engine axiom-clean; unconditional closures carry `Lean.ofReduceBool` (finite base-case `native_decide`).
-- **The winning idea: SELF-SIMILARITY** (`leadExp_ge_goodsteinSeq_log` — leadExp seq dominates the
-  Goodstein seq one scale down) + strong-induction exponential length bound (`goodsteinLength_exp_lower`)
-  + small-regime termination (`n_le_goodsteinSeq`). The lap-8 `ppCount` sparsity route is
-  **SUPERSEDED — do not reopen.** Full writeup: `PENDING_WORK.md` top + `STATUS.md` lap-9 entry.
+## (lap 10 — climbed to o=ω^ω; baton `HANDOFF-2026-06-19-1257.md`)
+- Closed `o=ω`, `o=ω^j`, `o=ω^ω` individually (`DominationOmega.lean`) via the self-similarity TOWER
+  (`GoodsteinLike.lean`). **Superseded** by lap-11's general `TowerDomination.lean` (which subsumes all
+  three), but the per-level closures remain as anti-vacuity witnesses — don't delete them.
 
-## Next (the lap-9 frontier — START HERE)
-1. **`o=ω` diagonal `f_ω(m) ≤ goodsteinLength m + 2`** — the transfinite tier toward `f_{ε₀}`. Already
-   FRAMED: `DominationOmega.lean` has the `ω^ω` bridge + `fastGrowing_omega_le_goodsteinLength_of_largeRegime`
-   reducing it to ONE open hypothesis `hreg : base(m-2) ≤ leadExp_{m-2}` (leading exponent stays in the
-   LARGE regime ~m steps). **Crux = discharge `hreg`** via route (a): iterate the self-similarity so
-   the one-level-down value stays `≥ base` at `k≈m` (a doubly-iterated length bound). Three attack
-   paths in `PENDING_WORK.md` → "NEXT FRONTIER". Genuinely multi-lap.
-2. **DO NOT** reopen the `ppCount` sparsity bound (superseded) or chase non-diagonal refinements.
-3. B4 (`H_{ω^α}=f_α`) — long-horizon trap under mathlib's `ω[n]=n+1`. Lower priority.
+## Next (the lap-11 frontier — START HERE)
+1. **The UPPER bound toward two-sided "grows like `f_{ε₀}`".** Route (a) in `PENDING_WORK.md`: via the
+   Cichoń identity (already axiom-clean) — bound the base-2 CNF ordinal `o_m` ABOVE by a tower level
+   (concrete dual of `exists_repr_lt_omegaTower`), then Hardy monotonicity in the ordinal index.
+   Prerequisite to build first: **Hardy monotone in its ordinal argument** (analog of the existing
+   `fastGrowing` monotonicity) — good bounded Aristotle candidate.
+2. **DO NOT** re-iterate the lower bound (DONE up to ε₀) or reopen the superseded `ppCount` sparsity route.
+3. Optional: a single clean ε₀ capstone packaging the lower bound as "dominates `f_{ε₀}`".
 
 ## Discipline
-- Commit every green `lake build`. NEVER push. Verify `#print axioms` clean on closed theorems.
-- Work only in `Logic/FastGrowing/*` + `Logic/Goodstein/{Length,Growth}`; don't touch the five frozen threads.
+- Commit every green `lake build`. NEVER push. Verify `#print axioms` on closed theorems.
+- New Goodstein work goes in files that only *import* `DominationBaseCases.lean` (editing it re-runs
+  ~5 min of `native_decide`); `TowerDomination.lean` / `GoodsteinLike.lean` are the cheap surfaces.
 - Reference corpus (not auto-loaded): `~/personal/claude/knowledge/core/projects/lean-journey/reference/`.
