@@ -61,6 +61,14 @@ blocked on sub-fact (ii)" to "level `o = 1` CLOSED + the per-step recursion mach
    ordinal stays `≥ ω^k` for the first `log₂ m − k` steps (generalizes the `o=1` ordinal bound to
    every `k`). The `seqOrd ≥ ω^k` machinery is now fully built; the ONLY gap to sub-fact (ii) at
    `o = k` is upgrading the step-range from `log₂ m` to `m` — i.e. the steps-between-drops recursion.
+7. **CAPSTONE — `goodsteinLength` is SUPER-LINEAR:** `fastGrowing_step_le_goodsteinLength` (the
+   non-diagonal reduction: `seqOrd ≥ ω^o` at step `j` ⟹ `f_o(j+2) ≤ goodsteinLength m + 2`, no
+   diagonal budget) instantiated at `o=2`, `j=log₂ m − 2` ⟹ **`fastGrowing_two_log_le_goodsteinLength`**:
+   `f_2(log₂ m) ≤ goodsteinLength m + 2`, i.e. `goodsteinLength m ≳ m·log₂ m`. First proof it beats
+   the polynomial regime. **EASY NEXT EXTENSION:** generalize `o=2` to any finite `k` (needs
+   `repr (ofNat k) = k` + `norm (ofNat k) = k`) ⟹ `f_k(log₂ m) ≤ goodsteinLength m + 2` for every
+   fixed `k` — "`goodsteinLength` outgrows `f_k ∘ log` for all `k`". The diagonal `f_k(m)` (true
+   domination) still needs the steps-between-drops recursion (the deep crux).
 
 **THE SHARPENED CRUX (what remains for `o ≥ 2`, i.e. the headline):** the per-step facts give only
 a **`log m`-step** guarantee that `L_k ≥ 2` (rate-bound `drop ≤ 1`/step from `L_0 = log_2 m`; and
