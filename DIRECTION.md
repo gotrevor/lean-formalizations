@@ -18,9 +18,19 @@ covering count is the real work. State it faithfully in `Statement.lean` (the au
 After HJSW lands axiom-clean: the secondary items in `PLAN.md` (decidable witness anchors; an
 optional Main-Conjecture statement). There is enough frontier to keep grinding.
 
-### Run mode: UNBOUNDED (no self-stop)
-`--allow-stop` is NOT armed for this run. Do NOT write a stop sentinel. Keep grinding the frontier
-lap by lap; the operator ends the run with `lean-treadmill stop lean-formalizations-ntl`.
+### Run mode: grind until done (`--allow-stop` may be armed)
+`Hyperbola.lean` holds the HJSW headline as a `sorry` so the sorry-gate is CLOSED — do NOT stop
+while any `sorry` remains. **Completion = HJSW (`hjsw_lower`) PROVED, surfaced faithfully in
+`Statement.lean`, `src/` sorry-free, and `#print axioms` on every headline = `[propext,
+Classical.choice, Quot.sound]`.** Only then, if the run was launched with `--allow-stop`, refresh
+`STATUS.md`/`HANDOFF.md` and write the completion sentinel:
+```
+printf 'source=lap\nreason=HJSW 3N/2 lower bound proved, axiom-clean\n' > "$LEAN_STOP_SENTINEL"
+```
+Until then keep grinding lap by lap. Do NOT stop early, do NOT remove the `sorry` by weakening the
+statement, do NOT start a different result to "keep busy" (the secondary `PLAN.md` items are
+optional bonus, not required for completion). The operator can also stop manually with
+`lean-treadmill stop lean-formalizations-ntl`.
 
 ### ⛔ DO NOT TOUCH
 - The sibling repo `~/src/lean-formalizations` (it has unrelated FastGrowing / Goodstein-
