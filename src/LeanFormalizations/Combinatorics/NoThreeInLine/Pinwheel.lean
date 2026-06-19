@@ -22,9 +22,8 @@ on `b`'s own side** — `(outer, b+p)` if `b` is in the upper half (`h < b`), el
 global `+h` shift in `x` lands the figure in `[0,2p)²`; it is a single translation, so it preserves
 every collinearity.) This is HJSW Figure I read class-by-class instead of family-by-family.
 
-## What is mechanical vs. the crux
-`pinwheel_card = 3(p−1)` and `pinwheel_grid ⊆ [0,2p)²` are mechanical (proved below). The crux is
-`pinwheel_noThree`. Reductions, all but the last proved here:
+## The proof of no-three-in-line (`pinwheel_noThree`, fully machine-checked, axiom-clean)
+`pinwheel_card = 3(p−1)` and `pinwheel_grid ⊆ [0,2p)²` are mechanical. The no-three argument:
 * every kept point lies on the sheared hyperbola `(x − h)·y ≡ k` (`pinKeep_rel`); the general HJSW
   Lemma then gives, for any collinear triple, two points of one residue class
   (`pinwheel_collinear_same_xres`, via the `det3` collapse sheared by `−h`);
@@ -345,10 +344,232 @@ private theorem third_snd_eq {P Q R : ℕ × ℕ}
   have : (R.2 : ℝ) = P.2 := by linarith
   exact_mod_cast this
 
+/-- **The cross-class slope-`±1` diagonal incidence — the genuine HJSW crux.** `P, Q` are the
+slope-`±1` diagonal pair of class `a` (distinct columns *and* rows); `R` is a kept point of a
+different class `c`, collinear with them. This is impossible: the σ-reflection forces `c` to be the
+partner class (`c = b` for slope `−1`, `c = p − b` for slope `+1`, where `b = hyperbolaY p k a`), and
+then the drop rule places all three of `c`'s kept points on lines offset by exactly `±p` from the
+diagonal — so none lies on it.
+
+The four `(left/right) × (lower/upper)` families of `a` give the line invariants
+`x+y = a+b+h+p` (upper-left), `x+y = a+b+h` (lower-right), `y−x = b−a−h` (lower-left),
+`y−x = b−a−h+p` (upper-right); each is verified against the partner's three kept points by `omega`. -/
+theorem pinwheel_diagonal_false {p k : ℕ} (hp : p.Prime) (hodd : Odd p) (hk : (k : ZMod p) ≠ 0)
+    {a c : ℕ} (ha1 : 1 ≤ a) (ha2 : a < p) (hc1 : 1 ≤ c) (hc2 : c < p) (hca : c ≠ a)
+    {P Q R : ℕ × ℕ}
+    (hPa : P ∈ pinKeep p k a) (hQa : Q ∈ pinKeep p k a) (hRc : R ∈ pinKeep p k c)
+    (hx : ¬ P.1 = Q.1) (hy : ¬ P.2 = Q.2)
+    (hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ))) : False := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  have h2 := two_mul_pinH_add_one hodd
+  have hp0 : 0 < p := by omega
+  have hbp : hyperbolaY p k a < p := ZMod.val_lt _
+  have hbcp : hyperbolaY p k c < p := ZMod.val_lt _
+  have hane : (a : ZMod p) ≠ 0 := res_ne_zero ha1 ha2
+  have hcne : (c : ZMod p) ≠ 0 := res_ne_zero hc1 hc2
+  have hrelA : (a : ZMod p) * (hyperbolaY p k a : ZMod p) = k := hyperbola_xy_eq hane
+  have hrelC : (c : ZMod p) * (hyperbolaY p k c : ZMod p) = k := hyperbola_xy_eq hcne
+  have hcaZ : (a : ZMod p) ≠ (c : ZMod p) := by
+    intro he
+    apply hca
+    have := (ZMod.natCast_eq_natCast_iff' a c p).mp he
+    rw [Nat.mod_eq_of_lt ha2, Nat.mod_eq_of_lt hc2] at this
+    exact this.symm
+  have hRx : (R.1 : ZMod p) = (c : ZMod p) + (pinH p : ZMod p) := pinKeep_xres hodd hc2 hRc
+  have hRy : (R.2 : ZMod p) = (hyperbolaY p k c : ZMod p) := pinKeep_yres hRc
+  have hb1 : 1 ≤ hyperbolaY p k a := by
+    rcases Nat.eq_zero_or_pos (hyperbolaY p k a) with h | h
+    · rw [h] at hrelA; simp only [Nat.cast_zero, mul_zero] at hrelA; exact absurd hrelA.symm hk
+    · exact h
+  by_cases hbU : pinH p < hyperbolaY p k a
+  · by_cases haL : a ≤ pinH p
+    · -- upper-left: slope −1, line `x+y = a+b+h+p`, partner `c=b, bc=a`
+      have hin : pinInnerX p a = a + pinH p + p := by unfold pinInnerX; rw [if_pos haL]
+      unfold pinKeep at hPa hQa
+      simp only [Finset.mem_insert, Finset.mem_singleton, if_pos hbU, hin, pinOuterX] at hPa hQa
+      rcases hPa with rfl | rfl | rfl <;> rcases hQa with rfl | rfl | rfl <;>
+        first
+          | exact absurd rfl hx
+          | exact absurd rfl hy
+          | · -- a diagonal pair: derive the line invariant, reflect, contradict
+              have hdet := collinear_imp_det3_zero hcol
+              simp only [toReal, det3] at hdet
+              push_cast at hdet
+              have hpR : (p : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hp0.ne'
+              have hfacR : (p : ℝ) * (((a : ℝ) + hyperbolaY p k a + pinH p + p) - (R.1 + R.2)) = 0 := by
+                first | linear_combination hdet | linear_combination -hdet
+              have hline : R.1 + R.2 = a + hyperbolaY p k a + pinH p + p := by
+                have hlineR : (R.1 : ℝ) + R.2 = (a : ℝ) + hyperbolaY p k a + pinH p + p := by
+                  rcases mul_eq_zero.mp hfacR with h | h
+                  · exact absurd h hpR
+                  · linarith
+                exact_mod_cast hlineR
+              have hmod : (c : ZMod p) + (hyperbolaY p k c : ZMod p)
+                  = (a : ZMod p) + (hyperbolaY p k a : ZMod p) := by
+                have hc' := congrArg (Nat.cast : ℕ → ZMod p) hline
+                push_cast [ZMod.natCast_self] at hc'
+                rw [hRx, hRy] at hc'
+                linear_combination hc'
+              obtain ⟨hcb, hbca⟩ :=
+                hyperbola_slope_neg_one_reflection hk hane hrelA hrelC hmod.symm hcaZ
+              have hcb' : c = hyperbolaY p k a := by
+                have := (ZMod.natCast_eq_natCast_iff' c (hyperbolaY p k a) p).mp hcb
+                rwa [Nat.mod_eq_of_lt hc2, Nat.mod_eq_of_lt hbp] at this
+              have hbca' : hyperbolaY p k c = a := by
+                have := (ZMod.natCast_eq_natCast_iff' (hyperbolaY p k c) a p).mp hbca
+                rwa [Nat.mod_eq_of_lt hbcp, Nat.mod_eq_of_lt ha2] at this
+              have hcgt : pinH p < c := by rw [hcb']; exact hbU
+              have hinC : pinInnerX p c = c + pinH p - p := by
+                unfold pinInnerX; rw [if_neg (by omega : ¬ c ≤ pinH p)]
+              rw [← hcb'] at hline
+              unfold pinKeep at hRc
+              simp only [Finset.mem_insert, Finset.mem_singleton, hbca', hinC, pinOuterX,
+                if_neg (by omega : ¬ pinH p < a)] at hRc
+              rcases hRc with rfl | rfl | rfl <;> dsimp only at hline ⊢ <;> omega
+    · -- upper-right: slope +1, line `y−x = b−a−h+p`, partner `c=p−b, bc=p−a`
+      have hin : pinInnerX p a = a + pinH p - p := by unfold pinInnerX; rw [if_neg haL]
+      unfold pinKeep at hPa hQa
+      simp only [Finset.mem_insert, Finset.mem_singleton, if_pos hbU, hin, pinOuterX] at hPa hQa
+      rcases hPa with rfl | rfl | rfl <;> rcases hQa with rfl | rfl | rfl <;>
+        first
+          | exact absurd rfl hx
+          | exact absurd rfl hy
+          | · have hdet := collinear_imp_det3_zero hcol
+              have hcast : ((a + pinH p - p : ℕ) : ℝ) = (a : ℝ) + pinH p - p := by
+                rw [Nat.cast_sub (by omega : p ≤ a + pinH p)]; push_cast; ring
+              simp only [toReal, det3] at hdet
+              rw [hcast] at hdet
+              push_cast at hdet
+              have hpR : (p : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hp0.ne'
+              have hfacR : (p : ℝ) * (((R.2 : ℝ) + a + pinH p) - (R.1 + hyperbolaY p k a + p)) = 0 := by
+                first | linear_combination hdet | linear_combination -hdet
+              have hline : R.2 + a + pinH p = R.1 + hyperbolaY p k a + p := by
+                have hlineR : (R.2 : ℝ) + a + pinH p = (R.1 : ℝ) + hyperbolaY p k a + p := by
+                  rcases mul_eq_zero.mp hfacR with h | h
+                  · exact absurd h hpR
+                  · linarith
+                exact_mod_cast hlineR
+              have hmod : (hyperbolaY p k a : ZMod p) - (a : ZMod p)
+                  = (hyperbolaY p k c : ZMod p) - (c : ZMod p) := by
+                have hc' := congrArg (Nat.cast : ℕ → ZMod p) hline
+                push_cast [ZMod.natCast_self] at hc'
+                rw [hRx, hRy] at hc'
+                first | linear_combination hc' | linear_combination -hc'
+              obtain ⟨hcb, hbca⟩ :=
+                hyperbola_slope_one_reflection hk hane hrelA hrelC hmod hcaZ
+              have hcb' : c = p - hyperbolaY p k a := by
+                have he : (c : ZMod p) = ((p - hyperbolaY p k a : ℕ) : ZMod p) := by
+                  rw [Nat.cast_sub hbp.le, ZMod.natCast_self, hcb]; ring
+                have := (ZMod.natCast_eq_natCast_iff' c (p - hyperbolaY p k a) p).mp he
+                rwa [Nat.mod_eq_of_lt hc2, Nat.mod_eq_of_lt (by omega)] at this
+              have hbca' : hyperbolaY p k c = p - a := by
+                have he : (hyperbolaY p k c : ZMod p) = ((p - a : ℕ) : ZMod p) := by
+                  rw [Nat.cast_sub ha2.le, ZMod.natCast_self, hbca]; ring
+                have := (ZMod.natCast_eq_natCast_iff' (hyperbolaY p k c) (p - a) p).mp he
+                rwa [Nat.mod_eq_of_lt hbcp, Nat.mod_eq_of_lt (by omega)] at this
+              have hcle : c ≤ pinH p := by rw [hcb']; omega
+              have hinC : pinInnerX p c = c + pinH p + p := by
+                unfold pinInnerX; rw [if_pos hcle]
+              unfold pinKeep at hRc
+              simp only [Finset.mem_insert, Finset.mem_singleton, hbca', hinC, pinOuterX,
+                if_neg (by omega : ¬ pinH p < p - a)] at hRc
+              rcases hRc with rfl | rfl | rfl <;> dsimp only at hline ⊢ <;> omega
+  · by_cases haL : a ≤ pinH p
+    · -- lower-left: slope +1, line `y−x = b−a−h`, partner `c=p−b, bc=p−a`
+      have hin : pinInnerX p a = a + pinH p + p := by unfold pinInnerX; rw [if_pos haL]
+      unfold pinKeep at hPa hQa
+      simp only [Finset.mem_insert, Finset.mem_singleton, if_neg hbU, hin, pinOuterX] at hPa hQa
+      rcases hPa with rfl | rfl | rfl <;> rcases hQa with rfl | rfl | rfl <;>
+        first
+          | exact absurd rfl hx
+          | exact absurd rfl hy
+          | · have hdet := collinear_imp_det3_zero hcol
+              simp only [toReal, det3] at hdet
+              push_cast at hdet
+              have hpR : (p : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hp0.ne'
+              have hfacR : (p : ℝ) * (((R.1 : ℝ) + hyperbolaY p k a) - (R.2 + a + pinH p)) = 0 := by
+                first | linear_combination hdet | linear_combination -hdet
+              have hline : R.1 + hyperbolaY p k a = R.2 + a + pinH p := by
+                have hlineR : (R.1 : ℝ) + hyperbolaY p k a = (R.2 : ℝ) + a + pinH p := by
+                  rcases mul_eq_zero.mp hfacR with h | h
+                  · exact absurd h hpR
+                  · linarith
+                exact_mod_cast hlineR
+              have hmod : (hyperbolaY p k a : ZMod p) - (a : ZMod p)
+                  = (hyperbolaY p k c : ZMod p) - (c : ZMod p) := by
+                have hc' := congrArg (Nat.cast : ℕ → ZMod p) hline
+                push_cast [ZMod.natCast_self] at hc'
+                rw [hRx, hRy] at hc'
+                first | linear_combination hc' | linear_combination -hc'
+              obtain ⟨hcb, hbca⟩ :=
+                hyperbola_slope_one_reflection hk hane hrelA hrelC hmod hcaZ
+              have hcb' : c = p - hyperbolaY p k a := by
+                have he : (c : ZMod p) = ((p - hyperbolaY p k a : ℕ) : ZMod p) := by
+                  rw [Nat.cast_sub hbp.le, ZMod.natCast_self, hcb]; ring
+                have := (ZMod.natCast_eq_natCast_iff' c (p - hyperbolaY p k a) p).mp he
+                rwa [Nat.mod_eq_of_lt hc2, Nat.mod_eq_of_lt (by omega)] at this
+              have hbca' : hyperbolaY p k c = p - a := by
+                have he : (hyperbolaY p k c : ZMod p) = ((p - a : ℕ) : ZMod p) := by
+                  rw [Nat.cast_sub ha2.le, ZMod.natCast_self, hbca]; ring
+                have := (ZMod.natCast_eq_natCast_iff' (hyperbolaY p k c) (p - a) p).mp he
+                rwa [Nat.mod_eq_of_lt hbcp, Nat.mod_eq_of_lt (by omega)] at this
+              have hcgt : pinH p < c := by rw [hcb']; omega
+              have hinC : pinInnerX p c = c + pinH p - p := by
+                unfold pinInnerX; rw [if_neg (by omega : ¬ c ≤ pinH p)]
+              unfold pinKeep at hRc
+              simp only [Finset.mem_insert, Finset.mem_singleton, hbca', hinC, pinOuterX,
+                if_pos (by omega : pinH p < p - a)] at hRc
+              rcases hRc with rfl | rfl | rfl <;> dsimp only at hline ⊢ <;> omega
+    · -- lower-right: slope −1, line `x+y = a+b+h`, partner `c=b, bc=a`
+      have hin : pinInnerX p a = a + pinH p - p := by unfold pinInnerX; rw [if_neg haL]
+      unfold pinKeep at hPa hQa
+      simp only [Finset.mem_insert, Finset.mem_singleton, if_neg hbU, hin, pinOuterX] at hPa hQa
+      rcases hPa with rfl | rfl | rfl <;> rcases hQa with rfl | rfl | rfl <;>
+        first
+          | exact absurd rfl hx
+          | exact absurd rfl hy
+          | · have hdet := collinear_imp_det3_zero hcol
+              have hcast : ((a + pinH p - p : ℕ) : ℝ) = (a : ℝ) + pinH p - p := by
+                rw [Nat.cast_sub (by omega : p ≤ a + pinH p)]; push_cast; ring
+              simp only [toReal, det3] at hdet
+              rw [hcast] at hdet
+              push_cast at hdet
+              have hpR : (p : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hp0.ne'
+              have hfacR : (p : ℝ) * (((a : ℝ) + hyperbolaY p k a + pinH p) - (R.1 + R.2)) = 0 := by
+                first | linear_combination hdet | linear_combination -hdet
+              have hline : R.1 + R.2 = a + hyperbolaY p k a + pinH p := by
+                have hlineR : (R.1 : ℝ) + R.2 = (a : ℝ) + hyperbolaY p k a + pinH p := by
+                  rcases mul_eq_zero.mp hfacR with h | h
+                  · exact absurd h hpR
+                  · linarith
+                exact_mod_cast hlineR
+              have hmod : (c : ZMod p) + (hyperbolaY p k c : ZMod p)
+                  = (a : ZMod p) + (hyperbolaY p k a : ZMod p) := by
+                have hc' := congrArg (Nat.cast : ℕ → ZMod p) hline
+                push_cast [ZMod.natCast_self] at hc'
+                rw [hRx, hRy] at hc'
+                first | linear_combination hc' | linear_combination -hc'
+              obtain ⟨hcb, hbca⟩ :=
+                hyperbola_slope_neg_one_reflection hk hane hrelA hrelC hmod.symm hcaZ
+              have hcb' : c = hyperbolaY p k a := by
+                have := (ZMod.natCast_eq_natCast_iff' c (hyperbolaY p k a) p).mp hcb
+                rwa [Nat.mod_eq_of_lt hc2, Nat.mod_eq_of_lt hbp] at this
+              have hbca' : hyperbolaY p k c = a := by
+                have := (ZMod.natCast_eq_natCast_iff' (hyperbolaY p k c) a p).mp hbca
+                rwa [Nat.mod_eq_of_lt hbcp, Nat.mod_eq_of_lt ha2] at this
+              have hcle : c ≤ pinH p := by rw [hcb']; omega
+              have hinC : pinInnerX p c = c + pinH p + p := by
+                unfold pinInnerX; rw [if_pos hcle]
+              rw [← hcb'] at hline
+              unfold pinKeep at hRc
+              simp only [Finset.mem_insert, Finset.mem_singleton, hbca', hinC, pinOuterX,
+                if_pos (by omega : pinH p < a)] at hRc
+              rcases hRc with rfl | rfl | rfl <;> dsimp only at hline ⊢ <;> omega
+
 /-- **Same-class core.** If `P, Q` lie in the *same* residue class `a`, `R` is any other pinwheel
 point, the three are distinct and collinear — then they cannot exist. Vertical (`P.1 = Q.1`) and
 horizontal (`P.2 = Q.2`) configurations force `R` into class `a` too (then `pinKeep_not_collinear`);
-the remaining configuration is the cross-class slope-`±1` diagonal — the genuine HJSW incidence. -/
+the remaining configuration is the cross-class slope-`±1` diagonal — `pinwheel_diagonal_false`. -/
 theorem pinwheel_same_class_aux {p k : ℕ} (hp : p.Prime) (hodd : Odd p) (hk : (k : ZMod p) ≠ 0)
     {a : ℕ} (ha1 : 1 ≤ a) (ha2 : a < p) {P Q R : ℕ × ℕ}
     (hPa : P ∈ pinKeep p k a) (hQa : Q ∈ pinKeep p k a) (hR : R ∈ pinwheel p k)
@@ -373,7 +594,7 @@ theorem pinwheel_same_class_aux {p k : ℕ} (hp : p.Prime) (hodd : Odd p) (hk : 
       pinwheel_eq_snd_same_xres hp hodd hk hR hP_pw hRy
     exact hca (pinKeep_xres_eq_class hodd hc2 ha2 hRc hPa he)
   · -- the cross-class slope-`±1` diagonal incidence (the genuine HJSW crux)
-    sorry
+    exact pinwheel_diagonal_false hp hodd hk ha1 ha2 hc1 hc2 hca hPa hQa hRc hx hy hcol
 
 /-- Collinearity depends only on the underlying set, so the triple may be reordered. -/
 private theorem collinear_reorder {a b c d e f : ℝ × ℝ}
@@ -381,15 +602,17 @@ private theorem collinear_reorder {a b c d e f : ℝ × ℝ}
     (h : Collinear ℝ ({a, b, c} : Set (ℝ × ℝ))) : Collinear ℝ ({d, e, f} : Set (ℝ × ℝ)) :=
   h.subset hsub
 
-/-- **Crux (one disclosed sorry, now isolated to the slope-`±1` diagonal).** The HJSW pinwheel is
-no-three-in-line. Reduced to `pinwheel_same_class_aux` (whose only open case is the cross-class
-slope-`±1` incidence). True — brute-verified for all primes `p ≤ 17`, every `k`. -/
+/-- **The HJSW pinwheel is no-three-in-line** (fully proven, axiom-clean). Any collinear triple has
+two points in one residue class (`pinwheel_collinear_same_xres`); `pinwheel_same_class_aux` then rules
+out every configuration — vertical/horizontal force the third into the same class, the same-class
+triple is a right triangle (`pinKeep_not_collinear`), and the cross-class slope-`±1` diagonal is
+defeated by the σ-reflection + drop rule (`pinwheel_diagonal_false`). -/
 theorem pinwheel_noThree {p k : ℕ} (hp : p.Prime) (hodd : Odd p) (hk : (k : ZMod p) ≠ 0) :
     NoThreeCollinear (pinwheel p k) := by
   haveI : Fact p.Prime := ⟨hp⟩
   intro P hP Q hQ R hR hcol
   by_contra hcon
-  push_neg at hcon
+  rw [not_or, not_or] at hcon
   obtain ⟨hPQ, hPR, hQR⟩ := hcon
   obtain ⟨aP, haP1, haP2, hPaP⟩ := mem_pinwheel hP
   obtain ⟨aQ, haQ1, haQ2, hQaQ⟩ := mem_pinwheel hQ
@@ -400,19 +623,19 @@ theorem pinwheel_noThree {p k : ℕ} (hp : p.Prime) (hodd : Odd p) (hk : (k : ZM
     exact pinwheel_same_class_aux hp hodd hk haP1 haP2 hPaP hQaQ hR hPQ hPR hQR hcol
   · -- P, R share a class; reorder to (P, R, Q)
     obtain rfl : aP = aR := pinKeep_xres_eq_class hodd haP2 haR2 hPaP hRaR h
-    refine pinwheel_same_class_aux hp hodd hk haP1 haP2 hPaP hRaR hQ hPR hPQ hQR.symm
+    refine pinwheel_same_class_aux hp hodd hk haP1 haP2 hPaP hRaR hQ hPR hPQ (Ne.symm hQR)
       (collinear_reorder ?_ hcol)
     intro y hy
     simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hy ⊢; tauto
   · -- Q, R share a class; reorder to (Q, R, P)
     obtain rfl : aQ = aR := pinKeep_xres_eq_class hodd haQ2 haR2 hQaQ hRaR h
-    refine pinwheel_same_class_aux hp hodd hk haQ1 haQ2 hQaQ hRaR hP hQR hPQ.symm hPR.symm
+    refine pinwheel_same_class_aux hp hodd hk haQ1 haQ2 hQaQ hRaR hP hQR (Ne.symm hPQ) (Ne.symm hPR)
       (collinear_reorder ?_ hcol)
     intro y hy
     simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hy ⊢; tauto
 
 /-- **The HJSW `3(p−1)` lower bound (existence form).** For an odd prime `p` the `2p × 2p` grid
-carries `3(p−1)` points with no three collinear — modulo the slope-incidence crux `pinwheel_noThree`. -/
+carries `3(p−1)` points with no three collinear. -/
 theorem hjsw_pinwheel_exists {p : ℕ} (hp : p.Prime) (hodd : Odd p) :
     ∃ s : Finset (ℕ × ℕ), IsGridSet (2 * p) s ∧ NoThreeCollinear s ∧ s.card = 3 * (p - 1) := by
   haveI : Fact p.Prime := ⟨hp⟩
@@ -420,7 +643,7 @@ theorem hjsw_pinwheel_exists {p : ℕ} (hp : p.Prime) (hodd : Odd p) :
   exact ⟨pinwheel p 1, pinwheel_grid hodd hp.pos, pinwheel_noThree hp hodd hk,
     pinwheel_card hodd hp.pos⟩
 
-/-- **The HJSW `3(p−1)` lower bound** (modulo the crux): `maxNoThreeInLine (2p) ≥ 3(p−1)` for odd
+/-- **The HJSW `3(p−1)` lower bound**: `maxNoThreeInLine (2p) ≥ 3(p−1)` for odd
 primes `p`. With `p ≈ N/2` this is the `(3/2 − ε)N` constant. -/
 theorem three_mul_pred_le_maxNoThreeInLine {p : ℕ} (hp : p.Prime) (hodd : Odd p) :
     3 * (p - 1) ≤ maxNoThreeInLine (2 * p) := by
