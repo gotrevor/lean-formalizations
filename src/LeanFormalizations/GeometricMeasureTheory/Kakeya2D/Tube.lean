@@ -22,8 +22,9 @@ import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Defs
 import Mathlib.Analysis.Normed.Lp.MeasurableSpace
 import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
+import Mathlib.Analysis.Normed.Lp.Matrix
 
-open Set MeasureTheory Metric RealInnerProductSpace
+open Set MeasureTheory Metric RealInnerProductSpace Matrix
 open scoped NNReal ENNReal
 
 namespace LeanFormalizations.Kakeya2D
@@ -242,23 +243,129 @@ theorem inter_tube_subset_parallelogram {a b v w : Plane} (hv : ‖v‖ = 1) (hw
   exact ⟨tube_transverse hδ (norm_perp hv) (inner_perp v) hxv,
          tube_transverse hδ (norm_perp hw) (inner_perp w) hxw⟩
 
-/-- **Two-tube overlap bound** (the geometric heart of K2). For unit directions `v, w` the
-intersection of the two δ-tubes has area `≲ δ² / (s + δ)`, where `s := |v₀w₁ − v₁w₀| = |sin∠(v,w)|`
-is the (lines-invariant) angular separation.
+/-! ### The parallelogram area (Jacobian) lemma
 
-Using `s = |det[v,w]|` rather than the chord `‖v-w‖` is both *faithful* — it is invariant under
+`volume_two_slab` computes the area of the parallelogram cut by two linear slabs as
+`(2δ)² / |det|`, by transporting it along the (non-isometric) linear map `x ↦ (⟪n₁,x⟫, ⟪n₂,x⟫)`
+and applying `addHaar_preimage_linearMap` with Jacobian the `2×2` determinant. -/
+
+/-- Volume of a coordinate product box in the plane factorises as the product of side measures. -/
+theorem volume_prod_box {I J : Set ℝ} (hI : MeasurableSet I) (hJ : MeasurableSet J) :
+    volume {y : Plane | y 0 ∈ I ∧ y 1 ∈ J} = volume I * volume J := by
+  have hset : {y : Plane | y 0 ∈ I ∧ y 1 ∈ J}
+      = WithLp.ofLp ⁻¹' (Set.univ.pi (fun i : Fin 2 => ![I, J] i)) := by
+    ext y
+    simp only [mem_setOf_eq, mem_preimage, Set.mem_univ_pi, Fin.forall_fin_two,
+      Matrix.cons_val_zero, Matrix.cons_val_one]
+  rw [hset, (PiLp.volume_preserving_ofLp (Fin 2)).measure_preimage
+      (MeasurableSet.univ_pi (fun i => by fin_cases i <;> assumption)).nullMeasurableSet,
+    volume_pi_pi]
+  simp [Fin.prod_univ_two]
+
+/-- The first coordinate of the linear map `toLpLin !![n₁ ; n₂]` is the inner product with `n₁`. -/
+theorem matrix_coord0 (n₁ n₂ x : Plane) :
+    ((!![n₁ 0, n₁ 1; n₂ 0, n₂ 1] : Matrix (Fin 2) (Fin 2) ℝ).toLpLin 2 2 x) 0 = ⟪n₁, x⟫ := by
+  have hr : ∀ a b : ℝ, ⟪a, b⟫ = b * a := fun _ _ => rfl
+  show (!![n₁ 0, n₁ 1; n₂ 0, n₂ 1] *ᵥ WithLp.ofLp x) 0 = ⟪n₁, x⟫
+  simp only [mulVec, dotProduct, Fin.sum_univ_two, PiLp.inner_apply, hr, Matrix.cons_val_zero,
+    Matrix.cons_val_one, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
+    Matrix.cons_val_fin_one]
+  ring
+
+/-- The second coordinate of `toLpLin !![n₁ ; n₂]` is the inner product with `n₂`. -/
+theorem matrix_coord1 (n₁ n₂ x : Plane) :
+    ((!![n₁ 0, n₁ 1; n₂ 0, n₂ 1] : Matrix (Fin 2) (Fin 2) ℝ).toLpLin 2 2 x) 1 = ⟪n₂, x⟫ := by
+  have hr : ∀ a b : ℝ, ⟪a, b⟫ = b * a := fun _ _ => rfl
+  show (!![n₁ 0, n₁ 1; n₂ 0, n₂ 1] *ᵥ WithLp.ofLp x) 1 = ⟪n₂, x⟫
+  simp only [mulVec, dotProduct, Fin.sum_univ_two, PiLp.inner_apply, hr, Matrix.cons_val_zero,
+    Matrix.cons_val_one, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
+    Matrix.cons_val_fin_one]
+  ring
+
+/-- **Area of a two-slab parallelogram.** For independent normals (`det ≠ 0`), the parallelogram
+`{x | |⟪n₁,x⟫ - c₁| ≤ δ ∧ |⟪n₂,x⟫ - c₂| ≤ δ}` has area `(2δ)² / |det[n₁,n₂]|`, computed as the
+preimage of a `(2δ)×(2δ)` box under the linear map with that Jacobian. -/
+theorem volume_two_slab {n₁ n₂ : Plane} {δ : ℝ} (c₁ c₂ : ℝ)
+    (hdet : n₁ 0 * n₂ 1 - n₁ 1 * n₂ 0 ≠ 0) :
+    volume {x : Plane | |⟪n₁, x⟫ - c₁| ≤ δ ∧ |⟪n₂, x⟫ - c₂| ≤ δ}
+      = ENNReal.ofReal |(n₁ 0 * n₂ 1 - n₁ 1 * n₂ 0)⁻¹|
+          * (volume (Icc (c₁ - δ) (c₁ + δ)) * volume (Icc (c₂ - δ) (c₂ + δ))) := by
+  have hdetL : LinearMap.det ((!![n₁ 0, n₁ 1; n₂ 0, n₂ 1] : Matrix (Fin 2) (Fin 2) ℝ).toLpLin 2 2)
+      = n₁ 0 * n₂ 1 - n₁ 1 * n₂ 0 := by
+    rw [LinearMap.det_toLpLin, Matrix.det_fin_two]; simp [Matrix.of_apply]
+  have hset : {x : Plane | |⟪n₁, x⟫ - c₁| ≤ δ ∧ |⟪n₂, x⟫ - c₂| ≤ δ}
+      = (!![n₁ 0, n₁ 1; n₂ 0, n₂ 1] : Matrix (Fin 2) (Fin 2) ℝ).toLpLin 2 2 ⁻¹'
+          {y : Plane | y 0 ∈ Icc (c₁ - δ) (c₁ + δ) ∧ y 1 ∈ Icc (c₂ - δ) (c₂ + δ)} := by
+    ext x
+    simp only [mem_setOf_eq, mem_preimage, matrix_coord0, matrix_coord1, mem_Icc, abs_le]
+    constructor
+    · rintro ⟨⟨h1, h2⟩, h3, h4⟩; exact ⟨⟨by linarith, by linarith⟩, by linarith, by linarith⟩
+    · rintro ⟨⟨h1, h2⟩, h3, h4⟩; exact ⟨⟨by linarith, by linarith⟩, by linarith, by linarith⟩
+  rw [hset, Measure.addHaar_preimage_linearMap volume (by rw [hdetL]; exact hdet), hdetL,
+    volume_prod_box measurableSet_Icc measurableSet_Icc]
+
+theorem perp_det (v w : Plane) :
+    perp v 0 * perp w 1 - perp v 1 * perp w 0 = v 0 * w 1 - v 1 * w 0 := by
+  simp only [perp_zero, perp_one]; ring
+
+/-- **Two-tube overlap bound** (the geometric heart of K2). **Proven, axiom-clean.** For unit
+directions `v, w` the intersection of the two δ-tubes (`0 < δ ≤ 1`) has area `≤ 12 δ² / (s + δ)`,
+where `s := |v₀w₁ − v₁w₀| = |sin∠(v,w)|` is the (lines-invariant) angular separation.
+
+Using `s = |det[v,w]|` rather than the chord `‖v-w‖` is both *faithful* — invariant under
 `v ↦ -v`/`w ↦ -w`, matching that a tube depends only on its line, whereas `‖v-w‖` wrongly reports
 near-antipodal (≈ parallel) directions as far apart — and *natural*: `s` is exactly the Jacobian
-`|det|` of the area computation. The constant `C` is not sharp; only the `1/(s+δ)` decay matters
+`|det|` of the area computation. The constant `12` is not sharp; only the `1/(s+δ)` decay matters
 downstream (it makes Córdoba's `L²` sum converge to `δ·log(1/δ)`).
 
-Two regimes: near-parallel `s ≤ δ` is bounded by the single tube (`volume_tube_le`); transversal
-`s > δ` by the parallelogram area `(2δ)²/s` (`inter_tube_subset_parallelogram` +
-`addHaar_preimage_linearMap` with Jacobian `det[v,w] = v₀w₁−v₁w₀`). `C = 12` suffices for both. -/
+Two regimes: near-parallel `s ≤ δ` is bounded by the single tube (`volume_tube_le ≤ 6δ`);
+transversal `s > δ` by the parallelogram area `(2δ)²/s` (`inter_tube_subset_parallelogram` +
+`volume_two_slab`, Jacobian `det[perp v, perp w] = v₀w₁−v₁w₀`). -/
 theorem volume_inter_tube_le {a b v w : Plane} (hv : ‖v‖ = 1) (hw : ‖w‖ = 1)
-    {δ : ℝ} (hδ : 0 < δ) :
+    {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) :
     volume (tube a v δ ∩ tube b w δ)
       ≤ ENNReal.ofReal (12 * δ ^ 2 / (|v 0 * w 1 - v 1 * w 0| + δ)) := by
-  sorry
+  set s := |v 0 * w 1 - v 1 * w 0| with hs_def
+  have hs0 : 0 ≤ s := abs_nonneg _
+  have hden : 0 < s + δ := by linarith
+  by_cases hs : s ≤ δ
+  · -- near-parallel: bounded by a single tube
+    calc volume (tube a v δ ∩ tube b w δ)
+        ≤ volume (tube a v δ) := measure_mono inter_subset_left
+      _ ≤ ENNReal.ofReal (6 * δ) := volume_tube_le hv hδ.le hδ1
+      _ ≤ ENNReal.ofReal (12 * δ ^ 2 / (s + δ)) := by
+          apply ENNReal.ofReal_le_ofReal
+          rw [le_div_iff₀ hden]; nlinarith
+  · -- transversal: parallelogram area (2δ)²/s
+    push Not at hs
+    have hsne : v 0 * w 1 - v 1 * w 0 ≠ 0 := by
+      intro h; rw [hs_def, h, abs_zero] at hs; linarith
+    have hsub : tube a v δ ∩ tube b w δ ⊆
+        {x : Plane | |⟪perp v, x⟫ - ⟪perp v, a⟫| ≤ δ ∧ |⟪perp w, x⟫ - ⟪perp w, b⟫| ≤ δ} := by
+      intro x hx
+      have h := inter_tube_subset_parallelogram hv hw hδ.le hx
+      simp only [Set.mem_setOf_eq] at h ⊢
+      rw [← inner_sub_right, ← inner_sub_right]
+      exact h
+    calc volume (tube a v δ ∩ tube b w δ)
+        ≤ volume {x : Plane | |⟪perp v, x⟫ - ⟪perp v, a⟫| ≤ δ ∧ |⟪perp w, x⟫ - ⟪perp w, b⟫| ≤ δ} :=
+          measure_mono hsub
+      _ = ENNReal.ofReal |(perp v 0 * perp w 1 - perp v 1 * perp w 0)⁻¹|
+            * (volume (Icc (⟪perp v, a⟫ - δ) (⟪perp v, a⟫ + δ))
+              * volume (Icc (⟪perp w, b⟫ - δ) (⟪perp w, b⟫ + δ))) :=
+          volume_two_slab _ _ (by rw [perp_det]; exact hsne)
+      _ = ENNReal.ofReal (4 * δ ^ 2 / s) := by
+          rw [Real.volume_Icc, Real.volume_Icc, perp_det,
+            ← ENNReal.ofReal_mul (by linarith : (0:ℝ) ≤ _),
+            ← ENNReal.ofReal_mul (abs_nonneg _)]
+          congr 1
+          rw [abs_inv]
+          have hsne0 : s ≠ 0 := by positivity
+          field_simp
+          ring
+      _ ≤ ENNReal.ofReal (12 * δ ^ 2 / (s + δ)) := by
+          apply ENNReal.ofReal_le_ofReal
+          rw [div_le_div_iff₀ (by linarith : (0:ℝ) < s) (by linarith : (0:ℝ) < s + δ)]
+          nlinarith
 
 end LeanFormalizations.Kakeya2D
