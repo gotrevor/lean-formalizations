@@ -438,4 +438,21 @@ lemma primeZetaCoeff_tendsto {s : ℝ} (hs : 1 < s) :
   rw [← tsum_primeZetaCoeff_eq]
   exact (summable_primeZetaCoeff hs).hasSum.tendsto_sum_nat
 
+/-- **Harmonic bound on prime reciprocals** `∑_{p≤n} 1/p ≤ 1 + log n` — a subsum of the harmonic series
+`H_n ≤ 1 + log n` (`harmonic_le_one_add_log`).  This is the `O(log n)` envelope that makes the Abel
+boundary term `n^{1−s}·∑_{p≤n}1/p → 0` vanish for `s > 1` (cf. `boundary_decay`). -/
+lemma primeRecipSum_le_one_add_log (n : ℕ) : primeRecipSum n ≤ 1 + Real.log n := by
+  have h1 : primeRecipSum n ≤ ∑ k ∈ Finset.Icc 1 n, (k : ℝ)⁻¹ := by
+    rw [primeRecipSum]
+    apply Finset.sum_le_sum_of_subset_of_nonneg
+    · intro p hp
+      rw [Finset.mem_filter, Finset.mem_Ioc] at hp
+      rw [Finset.mem_Icc]; exact ⟨hp.1.1, hp.1.2⟩
+    · intro k _ _; positivity
+  have h2 : (harmonic n : ℝ) = ∑ k ∈ Finset.Icc 1 n, (k : ℝ)⁻¹ := by
+    rw [harmonic_eq_sum_Icc]; push_cast; rfl
+  calc primeRecipSum n ≤ ∑ k ∈ Finset.Icc 1 n, (k : ℝ)⁻¹ := h1
+    _ = (harmonic n : ℝ) := h2.symm
+    _ ≤ 1 + Real.log n := harmonic_le_one_add_log n
+
 end LeanFormalizations.Mertens
