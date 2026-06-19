@@ -111,6 +111,20 @@ theorem seqONote_lt (m k : ℕ) (h : goodsteinSeq m k ≠ 0) :
   rw [lt_def, repr_seqONote, repr_seqONote]
   exact seqOrd_step m k h
 
+/-- `toONote b n = 0 ↔ n = 0`: the notation vanishes exactly when its argument does (a
+nonzero argument produces an `oadd`, which is positive). -/
+theorem toONote_eq_zero_iff (b n : ℕ) : toONote b n = 0 ↔ n = 0 := by
+  refine ⟨fun h => ?_, fun h => by rw [h, toONote_zero]⟩
+  by_contra hn
+  rw [toONote, dif_neg hn] at h
+  exact absurd h (oadd_pos _ _ _).ne'
+
+/-- `seqONote m k = 0 ↔ goodsteinSeq m k = 0`: the notation hits `0` exactly at termination.
+Hence the ONote descent `seqONote m 0 > seqONote m 1 > …` has length `goodsteinLength m` —
+the connection `goodsteinLength` ↔ ε₀-descent that C3 will turn into a Hardy growth bound. -/
+theorem seqONote_eq_zero_iff (m k : ℕ) : seqONote m k = 0 ↔ goodsteinSeq m k = 0 :=
+  toONote_eq_zero_iff (k + 2) (goodsteinSeq m k)
+
 /-! ### Anti-vacuity anchors (`native_decide`)
 
 The notations are computable; small values pin them (a wrong recursion would fail). -/
