@@ -20,6 +20,7 @@ import LeanFormalizations.Logic.Goodstein.Anchors
 import LeanFormalizations.Logic.Goodstein.Length
 import LeanFormalizations.Logic.Goodstein.Growth
 import LeanFormalizations.Logic.Goodstein.Domination
+import LeanFormalizations.Logic.Goodstein.GoodsteinLike
 import LeanFormalizations.Logic.Goodstein.DominationBaseCases
 import LeanFormalizations.Logic.Goodstein.DominationCorollary
 import LeanFormalizations.Logic.Goodstein.DominationOmega
