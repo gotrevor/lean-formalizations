@@ -605,6 +605,50 @@ theorem leadExp_ge_sub (m : ℕ) : ∀ i, i + 1 ≤ m →
     have hih := ih (by omega)
     omega
 
+/-- **The pure-power step counter.** `ppCount m k` = the number of Goodstein steps among the first
+`k` at which `G_i` is a pure power of its base `base i` (`G_i = (base i)^{log_{base i} G_i}`) — the
+*rare* leading-exponent "borrow" events (see `log_bump_pred_of_pow` / `log_bump_pred_of_not_pow`). -/
+def ppCount (m : ℕ) : ℕ → ℕ
+  | 0 => 0
+  | k + 1 => ppCount m k +
+      (if base k ^ Nat.log (base k) (goodsteinSeq m k) = goodsteinSeq m k then 1 else 0)
+
+/-- **Sharpened telescope: the leading exponent only falls at pure-power steps.**
+`Nat.log 2 m ≤ leadExp_k + ppCount m k`, i.e. `leadExp_k ≥ (log₂ m) − ppCount m k`. Strictly sharper
+than `leadExp_ge_sub` (which bounds the deficit by `k`): the deficit is bounded by the number of
+*pure-power* steps, which are rare. Proof by induction on `k` via the per-step dichotomy — at a
+non-pure-power step the exponent is non-decreasing (`leadExp_ge_of_not_pow`, deficit unchanged) and at
+a pure-power step it drops by `≤ 1` (`leadExp_drop_le_one`, deficit and `ppCount` both `+1`).
+
+**This isolates the diagonal-domination crux to a single sparsity bound.** If a future lap proves
+`ppCount m m ≤ Nat.log 2 m − 2` (the genuine steps-between-drops content: pure-power events are
+`≪ log₂ m` among the first `m` steps), then `leadExp_k ≥ 2` for all `k ≤ m`, hence `seqONote m (m−2)
+≥ ω²`, closing the `o = 2` diagonal `f_2(m) ≤ goodsteinLength m + 2` via `fastGrowing_step_le_goodsteinLength`
+— and the general `o` analogously. The regime hypothesis (`value ≥ base` over `[0,k)`) is automatic
+while the exponent stays `≥ 1`, supplied here by `goodsteinSeq_ge_init`. -/
+theorem leadExp_ge_sub_ppCount (m : ℕ) : ∀ k, k + 1 ≤ m →
+    Nat.log 2 m ≤ Nat.log (base k) (goodsteinSeq m k) + ppCount m k := by
+  intro k
+  induction k with
+  | zero => intro _; show Nat.log 2 m ≤ Nat.log 2 m + ppCount m 0; simp [ppCount]
+  | succ k ih =>
+    intro hk
+    have hvk : base k ≤ goodsteinSeq m k := by
+      have := goodsteinSeq_ge_init m k (by omega); simp only [base]; omega
+    have hv0 : goodsteinSeq m k ≠ 0 := by
+      have : 2 ≤ base k := Nat.le_add_left 2 k; omega
+    have ihk := ih (by omega)
+    by_cases hpp : base k ^ Nat.log (base k) (goodsteinSeq m k) = goodsteinSeq m k
+    · have hdrop := leadExp_drop_le_one m k hvk
+      have hpc : ppCount m (k + 1) = ppCount m k + 1 := by simp [ppCount, hpp]
+      omega
+    · have hlt : base k ^ Nat.log (base k) (goodsteinSeq m k) < goodsteinSeq m k := by
+        have hle := Nat.pow_log_le_self (base k) hv0
+        omega
+      have hge := leadExp_ge_of_not_pow m k hlt
+      have hpc : ppCount m (k + 1) = ppCount m k := by simp [ppCount, hpp]
+      omega
+
 /-- **The descent ordinal reaches `ω^k` for the first `~log₂ m` steps.** Combining the telescoped
 leading-exponent bound `leadExp_ge_sub` (`leadExp_i ≥ log₂ m − i`) with the bridge
 `opow_le_seqONote_repr`: whenever `k + i ≤ log₂ m` (and `k < i + 2`), the Goodstein descent ordinal
@@ -946,6 +990,12 @@ example : Nat.log 3 (bump 2 4 - 1) ≠ bump 2 (Nat.log 2 4) := by native_decide
 -- `log_bump_pred_of_pow`: at the pure power `n=4` the drop is by EXACTLY one:
 -- `log_3 26 = 2 = bump 2 (log_2 4) − 1 = 3 − 1 = 2`.
 example : Nat.log 3 (bump 2 4 - 1) = bump 2 (Nat.log 2 4) - 1 := by native_decide
+-- `ppCount`: `G(4,0)=4=2²` is a pure power (counts), `G(3,0)=3` is not (`2¹=2≠3`).
+example : ppCount 4 1 = 1 := by native_decide
+example : ppCount 3 1 = 0 := by native_decide
+-- the sharpened telescope `leadExp_ge_sub_ppCount`, witnessed: `log_2 4 = 2 ≤ log_3 26 + ppCount 4 1
+-- = 2 + 1 = 3`. A vacuous/backwards bound would fail this.
+example : Nat.log 2 4 ≤ Nat.log (base 1) (goodsteinSeq 4 1) + ppCount 4 1 := by native_decide
 
 -- the super-linear bound's interpretation, witnessed: `f_2(n) = 2^n·n` (`fastGrowing_two`), and the
 -- step index `Nat.log 2 8 = 3` ⟹ the bound reads `f_2(3) = 24 ≤ goodsteinLength 8 + 2` (RHS huge).
