@@ -16,7 +16,7 @@ The proof delegates to `Engine.lean`:
 Reference: R. O. Davies, *Some remarks on the Kakeya problem*, Math. Proc. Cambridge
 Philos. Soc. **69** (1971), 417–421.
 -/
-import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Engine
+import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Wiring
 
 namespace LeanFormalizations.Kakeya2D
 

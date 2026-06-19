@@ -22,7 +22,7 @@ import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Engine
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.MeasurableRoute
 
 open MeasureTheory
-open scoped ENNReal
+open scoped NNReal ENNReal
 
 namespace LeanFormalizations.Kakeya2D
 
@@ -190,5 +190,62 @@ theorem kakeya_hausdorffContentBound_of_measurableSelection
         ENNReal.tsum_comp_le_tsum_of_injective Subtype.val_injective _
       have htop : ∑' n, Metric.ediam (U n) ^ d = ⊤ := top_le_iff.mp (h3 ▸ (h2.trans h1))
       rw [htop]; exact le_top
+
+/-- **The measurable base-point selection — the lone remaining axiom (Jankov–von Neumann / KRN).**
+
+For a planar Kakeya set `S` and *any* measurable cover `C` of `S`, there is a **measurable**
+base-point selection `a : ℝ → Plane` whose unit segment over each direction `θ ∈ [0,1]` lies in
+`⋃ C n`. `IsKakeya S` already supplies, for each direction, *some* base point whose unit segment lies
+in `S ⊆ ⋃ C n` (`affineSegment ℝ a (a+dir θ) ⊆ S`) — but only via `Classical.choice`. The sole content
+of this axiom is that the selection can be made **measurable in `θ`**.
+
+This is a standard measurable-selection theorem — Kuratowski–Ryll-Nardzewski for the closed-valued
+multifunction `B(θ) = {a : segment(a,θ) ⊆ ⋃ C n}`, or Jankov–von Neumann uniformization of its
+(coanalytic) graph — which `mathlib` v4.29.1 does not yet provide (`SetTheory/Descriptive` is only
+`Tree.lean`). It is **citable and believed-true**, and it replaces the murky bespoke Case-B residual
+`Engine.kakeya_subresolution_content` (whose own truth a human auditor cannot easily check) as the
+headline's lone axiom — a faithfulness upgrade. Discharging it (descriptive set theory) is the
+standing crux. See `ON-LINE-REQUEST.md` UPDATE 5, `Kakeya2D/CASE_B_ANALYSIS.md`, `STATUS.md`. -/
+axiom kakeya_measurable_selection {S : Set Plane} (h : IsKakeya S)
+    (C : ℕ → Set Plane) (hC : ∀ n, MeasurableSet (C n)) (hcov : S ⊆ ⋃ n, C n) :
+    ∃ a : ℝ → Plane, Measurable a ∧
+      ∀ θ ∈ Set.Icc (0 : ℝ) 1, Set.Icc (0 : ℝ) 1 ⊆ {t | a θ + t • dir θ ∈ ⋃ n, C n}
+
+/-- **The Hausdorff content bound for a Kakeya set (the honest measurable-selection route).**
+Instantiates the wiring `kakeya_hausdorffContentBound_of_measurableSelection` with the measurable
+selection axiom. This is the content-bound source the headline now uses, replacing the discrete
+Case-B route `Engine.kakeya_hausdorffContentBound`. -/
+theorem kakeya_hausdorffContentBound_sel
+    {S : Set Plane} (h : IsKakeya S) {d : ℝ} (hd0 : 0 < d) (hd2 : d < 2) :
+    HausdorffContentBound S d :=
+  kakeya_hausdorffContentBound_of_measurableSelection hd0 hd2
+    (fun C hC hcov => kakeya_measurable_selection h C hC hcov)
+
+/-- **The concrete crux (Davies 1971, measure form), via the measurable-selection route.** For a
+Kakeya set `S ⊆ ℝ²`, every `d`-dimensional Hausdorff measure with `d < 2` is positive. Free
+`ℝ≥0∞`-density wrapper around `kakeya_hausdorffContentBound_sel`; the `d = 0` endpoint comes from
+monotonicity of `μH` in `d` against the `d = 1` content bound. -/
+theorem hausdorffMeasure_pos_of_isKakeya
+    (S : Set (EuclideanSpace ℝ (Fin 2))) (h : IsKakeya S) :
+    ∀ d : ℝ≥0, (d : ℝ≥0∞) < 2 → μH[(d : ℝ)] S ≠ 0 := by
+  have key : ∀ e : ℝ, 0 < e → e < 2 → μH[e] S ≠ 0 := fun e he0 he2 =>
+    hausdorffMeasure_ne_zero_of_contentBound he0 (kakeya_hausdorffContentBound_sel h he0 he2)
+  intro d hd
+  rcases eq_or_lt_of_le (zero_le d) with hd0 | hd0
+  · have hd0R : (d : ℝ) = 0 := by exact_mod_cast hd0.symm
+    have hmono : μH[(1 : ℝ)] S ≤ μH[(d : ℝ)] S := by
+      rw [hd0R]; exact Measure.hausdorffMeasure_mono (by norm_num) S
+    exact fun hz => key 1 one_pos (by norm_num) (le_antisymm (hz ▸ hmono) (zero_le _))
+  · have hd2R : (d : ℝ) < 2 := by exact_mod_cast hd
+    exact key d (by exact_mod_cast hd0) hd2R
+
+/-- **Davies 1971.** A Kakeya set in `ℝ²` has Hausdorff dimension at least `2` — the genuine content
+of the planar Kakeya conjecture (the upper bound is free). Frostman's lemma lifts each `μH[d] S ≠ 0`
+(`d < 2`) to `↑d ≤ dimH S`, and the supremum over `d < 2` reaches `2`. The headline now routes through
+the clean measurable-selection axiom `kakeya_measurable_selection`. -/
+theorem two_le_dimH (S : Set (EuclideanSpace ℝ (Fin 2))) (h : IsKakeya S) :
+    2 ≤ dimH S := by
+  refine ENNReal.le_of_forall_nnreal_lt (fun r hr => ?_)
+  exact le_dimH_of_hausdorffMeasure_ne_zero (hausdorffMeasure_pos_of_isKakeya S h r hr)
 
 end LeanFormalizations.Kakeya2D

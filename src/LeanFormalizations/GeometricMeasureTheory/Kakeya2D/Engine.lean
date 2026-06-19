@@ -385,21 +385,15 @@ theorem kakeya_hausdorffContentBound
       exact kakeya_subresolution_content hd0.le hcRpos j c (fun i => bp (β + 2 ^ (J - j) * i)) A
         hAmeas hA01 U (g ⁻¹' {j} : Set ℕ) hwinB hscov hnum
 
-/-- **The concrete crux (Davies 1971, measure form).** For a Kakeya set `S ⊆ ℝ²`, every
-`d`-dimensional Hausdorff measure with `d < 2` is *positive*: `μH[d] S ≠ 0`.
+/-- **Legacy discrete-route measure form (off the headline path).** For a Kakeya set `S ⊆ ℝ²`, every
+`d`-dimensional Hausdorff measure with `d < 2` is positive — proved here via the discrete Case-A/Case-B
+route (`kakeya_hausdorffContentBound`, depending on the legacy axiom `kakeya_subresolution_content`).
 
-This is the genuine analytic content; `two_le_dimH` is a free `ℝ≥0∞`-density wrapper around it.
-The route to discharge it is the Córdoba `L²`/bush argument (`PLAN.md`, ladder K2–K5):
-δ-tube overlap bound ⟹ Minkowski-content lower bound `vol(Sδ) ≳ 1/log(1/δ)` ⟹ a Hausdorff content
-lower bound witnessing `μH[d] S > 0` for every `d < 2`.
-
-**Status (this run).** K2–K4 are **proven, axiom-clean**: the content bound `vol(Sδ) ≳ 1/log(1/δ)`
-is `volume_thickening_log_ge`. K5's measure-free reduction (`Cover.lean`,
-`hausdorffMeasure_ne_zero_of_contentBound`) turns the crux into the **Hausdorff content bound**
-`kakeya_hausdorffContentBound`, now machine-checked modulo the lone axiom
-`kakeya_subresolution_content` (the Case B / sub-resolution residual). The `d = 0` endpoint is free
-from monotonicity of `μH` in `d` against the `d = 1` content bound. -/
-theorem hausdorffMeasure_pos_of_isKakeya
+This chain is **superseded** by the measurable-selection route (`Wiring.lean`:
+`hausdorffMeasure_pos_of_isKakeya` / `two_le_dimH`, depending only on the clean axiom
+`kakeya_measurable_selection`), which is what the headline `davies_kakeya_2d` now uses. It is kept here
+as the proven Case-A discrete structure (the cap-free dominant-scale assembly), not deleted. -/
+theorem hausdorffMeasure_pos_of_isKakeya_discrete
     (S : Set (EuclideanSpace ℝ (Fin 2))) (h : IsKakeya S) :
     ∀ d : ℝ≥0, (d : ℝ≥0∞) < 2 → μH[(d : ℝ)] S ≠ 0 := by
   -- For every real exponent `0 < e < 2`, content bound ⟹ positive Hausdorff measure.
@@ -416,15 +410,12 @@ theorem hausdorffMeasure_pos_of_isKakeya
     have hd2R : (d : ℝ) < 2 := by exact_mod_cast hd
     exact key d (by exact_mod_cast hd0) hd2R
 
-/-- **Davies 1971.** A Kakeya set in `ℝ²` has Hausdorff dimension at least `2`.
-
-This is the genuine content of the planar Kakeya set conjecture (the upper bound is free).
-Reduced (K1, axiom-clean) to the measure-positivity crux `hausdorffMeasure_pos_of_isKakeya`:
-Frostman's lemma `le_dimH_of_hausdorffMeasure_ne_zero` lifts each `μH[d] S ≠ 0` (with `d < 2`)
-to `↑d ≤ dimH S`, and `ENNReal.le_of_forall_nnreal_lt` pushes the supremum over `d < 2` up to `2`. -/
-theorem two_le_dimH (S : Set (EuclideanSpace ℝ (Fin 2))) (h : IsKakeya S) :
+/-- **Davies 1971 (legacy discrete route, off the headline path).** A Kakeya set in `ℝ²` has Hausdorff
+dimension at least `2`, proved via the discrete Case-A/Case-B route. Superseded for the headline by
+`Wiring.two_le_dimH` (measurable-selection route, clean axiom); kept as proven discrete structure. -/
+theorem two_le_dimH_discrete (S : Set (EuclideanSpace ℝ (Fin 2))) (h : IsKakeya S) :
     2 ≤ dimH S := by
   refine ENNReal.le_of_forall_nnreal_lt (fun r hr => ?_)
-  exact le_dimH_of_hausdorffMeasure_ne_zero (hausdorffMeasure_pos_of_isKakeya S h r hr)
+  exact le_dimH_of_hausdorffMeasure_ne_zero (hausdorffMeasure_pos_of_isKakeya_discrete S h r hr)
 
 end LeanFormalizations.Kakeya2D
