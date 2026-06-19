@@ -1,5 +1,5 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8299 jobs) · **Updated**: lap 2026-06-19 (DEEP-REFLECTION + (W) COMPLETE) · `7797183` · **`davies_kakeya_2d` reduces to ONE cited math axiom (`kakeya_subresolution_content`); the honest measurable-selection route is now PROVEN end-to-end (`Wiring.lean`, axiom-clean) modulo only the deep selection input. 1 dormant disclosed `sorry` (FastGrowing). Everything else axiom-clean.**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8300 jobs) · **Updated**: lap 2026-06-19 (HEADLINE NOW ON A KAKEYA-AGNOSTIC AXIOM) · `60ca60b` · **`davies_kakeya_2d` now reduces to ONE *Kakeya-agnostic* axiom `kakeya_borel_selection` — the textbook von Neumann / Jankov–von Neumann measurable selection (`#print axioms = [propext, Classical.choice, Quot.sound, kakeya_borel_selection]`). Every Kakeya-specific fact is PROVEN + axiom-clean (`Selection.lean`). 1 dormant disclosed `sorry` (FastGrowing). Everything else axiom-clean.**
 
 > ♾️ **ACTIVE EXPEDITION — branch `kakeya-davies` (2026-06-19): planar Kakeya conjecture
 > (Davies 1971).** Read `DIRECTION.md`. Target `davies_kakeya_2d : KakeyaSetConjectureDim 2`
@@ -7,26 +7,29 @@
 > bound `two_le_dimH`, reduced (K1) to a Hausdorff **content** bound for all `d<2`.
 > **Progress: K1–K5 COMPLETE + axiom-clean** — the full Córdoba `L²` ladder (K2 two-tube overlap,
 > K3 δ-net, K4 `vol(Sδ) ≳ 1/log(1/δ)`) and the measure-free cover route K5 (`HausdorffContentBound ⟹
-> μH[d]S≠0`, per-piece area, pigeonholes). **The whole lower bound is machine-checked down to ONE
-> cited math axiom** (verified this lap via `#print axioms`): `davies_kakeya_2d = [propext,
-> Classical.choice, Quot.sound, kakeya_subresolution_content]` — NO `sorry`. The discrete
-> dominant-scale assembly (`Engine.kakeya_hausdorffContentBound`) is a real proof: a fine net →
-> dominant scale `j` → **Case A** (`j<J`, fully proven via `NetThinning.caseA_content`) /
-> **Case B** (`j=J`, the lone axiom). The axiom = the **sub-resolution / Hausdorff-vs-box-counting**
-> residual: a cover dominated by pieces *finer* than the net resolution.
-> **⚠️ Honesty note (reflection lap):** the assembly instantiates `J=1`, so Case A is near-vacuous
-> and the axiom — at `J=1` — carries essentially the *entire* lower bound for any realistic fine
-> cover. The discrete route provably *cannot* escape Case B (any cover by tiny pieces triggers it for
-> every fixed `J`). **The honest narrowing is the MEASURABLE-SELECTION route** (`MeasurableRoute.lean`,
-> spine PROVEN + axiom-clean this expedition): integrating over the continuum of directions dissolves
-> the net-scale circularity, replacing the murky `kakeya_subresolution_content` with the clean, citable
-> **Jankov–von Neumann measurable base-point selection**. Next target = wire that spine (W), then switch
-> the headline axiom to selection (S). Plan: `PENDING_WORK.md` §A0‴ + Reflection · `Kakeya2D/CASE_B_ANALYSIS.md`.
+> μH[d]S≠0`, per-piece area, pigeonholes). **The whole lower bound is now machine-checked down to ONE
+> *Kakeya-agnostic* axiom** (verified this lap via `#print axioms`): `davies_kakeya_2d = [propext,
+> Classical.choice, Quot.sound, kakeya_borel_selection]` — NO `sorry`. The measurable-selection route
+> is PROVEN end-to-end: the continuum spine (`MeasurableRoute.lean`, generalised this lap to consume
+> only the **a.e. covered-length ≥ 1**) → the wiring `Wiring.lean` (lemma A `Measurable`-selection +
+> lemma B `AEMeasurable`-selection via measurable representative) → the headline.
+> **The lone axiom `kakeya_borel_selection` (`Selection.lean`) is the textbook von Neumann /
+> Jankov–von Neumann measurable selection** ("a Borel set in `ℝ × Plane` with non-empty sections over
+> `[0,1]` has an a.e.-measurable selector") — it carries **zero Kakeya content**. Every Kakeya-specific
+> fact is PROVEN + axiom-clean in `Selection.lean`: `measurable_coveredLength_prod` (joint
+> measurability ⟹ the selection graph is **Borel**, not the coanalytic graph that *pointwise*
+> containment would give — so the axiom is JvN strength, NOT Π¹₁/Kondô); `isKakeya_exists_aeCover`
+> (non-empty sections from `IsKakeya`); `kakeya_aeMeasurable_selection_of_jvn` (the reduction).
+> The discrete route (`Engine.kakeya_hausdorffContentBound`, Case A proven / Case B
+> `kakeya_subresolution_content`) is **preserved but OFF the headline path** (legacy `*_discrete`).
+> **Next target = discharge `kakeya_borel_selection`** by formalizing von Neumann selection from
+> mathlib's `AnalyticSet` API (deep DST, multi-lap; needs analytic-set universal measurability + the
+> Souslin-scheme selector — neither in mathlib). Plan: `ON-LINE-REQUEST.md` UPDATE 6 · `PENDING_WORK.md`.
 > The threads below are COMPLETE/axiom-clean and frozen — do not touch them.
 > (`Logic/FastGrowing/Basic.lean` carries one dormant disclosed `sorry`, out of the Kakeya lane.)
 
 ## Where it stands
-**The five non-Kakeya threads are 100% axiom-free** — every one of their headlines `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`. The **Kakeya** expedition (`davies_kakeya_2d`) is the active frontier: it is a full kernel proof down to ONE cited math axiom `kakeya_subresolution_content` (🟡, the Case-B sub-resolution residual). The entire measure-theoretic **spine of the honest measurable-selection route** is now built and axiom-clean (`MeasurableRoute.lean`); the next two steps — wire it (W), then switch the headline to a clean Jankov–von Neumann selection axiom (S) — would replace the murky residual with a standard, citable theorem. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
+**The five non-Kakeya threads are 100% axiom-free** — every one of their headlines `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`. The **Kakeya** expedition (`davies_kakeya_2d`) is the active frontier: it is a full kernel proof down to ONE **Kakeya-agnostic** axiom `kakeya_borel_selection` (🟡, the textbook von Neumann / Jankov–von Neumann measurable selection). The entire measure-theoretic route is built and axiom-clean (`MeasurableRoute.lean` spine → `Wiring.lean` lemmas A/B → `Selection.lean` reduction); every Kakeya-specific fact is proven, so the lone remaining input is a standard, citable selection theorem with no Kakeya content. Next: discharge it by formalizing von Neumann selection from mathlib's `AnalyticSet` API (deep DST, multi-lap). **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
 - **2026-06-19 (DEEP-REFLECTION lap, cont. — (W) the wiring COMPLETE, axiom-clean):** after the

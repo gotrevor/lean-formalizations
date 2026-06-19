@@ -276,3 +276,50 @@ analog of the proven `exists_shift_ge`, provable now that `measurable_coveredLen
 measurability). So the honest route reduces to a **single deep input: measurable base-point selection
 (ask 1)**, plus that one bounded measure-theory brick and existing machinery. **Ask 1 (and ask 4 as a
 possible bypass) are the only remaining open items here.**
+
+---
+
+## 2026-06-19 (UPDATE 6 — crux is now KAKEYA-AGNOSTIC: the von Neumann / Jankov–von Neumann selection)
+
+**Major narrowing this lap (committed, `lake build` green, `#print axioms` verified).** The headline
+`davies_kakeya_2d` now reduces to a **single Kakeya-AGNOSTIC axiom** `kakeya_borel_selection`
+(`Kakeya2D/Selection.lean`): `#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound,
+kakeya_borel_selection]`. The axiom carries **zero Kakeya content** — it is the textbook measurable
+selection theorem, verbatim:
+
+```
+axiom kakeya_borel_selection :
+    ∀ G : Set (ℝ × Plane), MeasurableSet G →
+      (∀ θ ∈ Set.Icc (0:ℝ) 1, ∃ p : Plane, (θ, p) ∈ G) →
+      ∃ a : ℝ → Plane, AEMeasurable a ∧ ∀ θ ∈ Set.Icc (0:ℝ) 1, (θ, a θ) ∈ G
+```
+("a Borel set in `ℝ × Plane` whose section over every `θ ∈ [0,1]` is non-empty has an a.e.-measurable
+selector" — von Neumann selection / Jankov–von Neumann uniformization). Everything Kakeya-specific is
+now **PROVEN** (`Selection.lean`, all axiom-clean): joint measurability of the covered length
+(`measurable_coveredLength_prod`) ⟹ the selection graph is Borel; `IsKakeya` ⟹ non-empty sections
+(`isKakeya_exists_aeCover`); the reduction `kakeya_aeMeasurable_selection_of_jvn`; and the spine was
+generalised to consume only the **a.e. covered-length ≥ 1** (which is why the graph is Borel, not the
+coanalytic graph that pointwise segment-containment would give — so the axiom is JvN strength, NOT
+Π¹₁/Kondô).
+
+**What I need now (any one closes the LAST axiom of the whole theorem):**
+1. **The cleanest formalization path for von Neumann / Jankov–von Neumann measurable selection** from
+   mathlib's existing `AnalyticSet` API (`Mathlib/MeasureTheory/Constructions/Polish/Basic.lean` —
+   it HAS `AnalyticSet`, `MeasurableSet.analyticSet`, `MeasurableSet.analyticSet_image` (projection),
+   `AnalyticSet.iInter/iUnion`, `AnalyticSet.measurablySeparable`, `AnalyticSet.measurableSet_of_compl`,
+   but NOT universal measurability of analytic sets, NOR any measurable selector). Specifically: the
+   exact lemma chain to get, for a Borel `G ⊆ ℝ × Y` (`Y` Polish) with full projection, a
+   universally-measurable (hence `AEMeasurable`) uniformizing function — the Souslin-scheme / "von
+   Neumann derivative" construction at transcription detail, or which intermediate theorems
+   (capacitability/Choquet ⟹ analytic sets universally measurable; then the selector) are the
+   minimal prerequisites.
+2. **Any existing Lean/Isabelle/Coq formalization of a measurable selection theorem** (KRN, von
+   Neumann, Jankov–von Neumann, or measurable uniformization) to port — even partial. Is there an
+   open mathlib PR for measurable selection / analytic-set universal measurability?
+3. Whether a **lighter selection** suffices here: our sections `G(θ) = {p : 1 ≤ vol{t∈[0,1] :
+   p+t·dirθ ∈ F}}` come from an Fσ target `F = ⋃ closed Uₙ`. Is there extra structure (e.g. a
+   reduction to closed/σ-compact sections, where a `closest-point`/`argmin` selection is elementarily
+   measurable, à la Kuratowski–Ryll-Nardzewski) that sidesteps the full von Neumann machinery?
+
+Prior asks (UPDATE 5 ask 1, the "measurable base-point selection") are SUBSUMED: the selection is now
+isolated as the Kakeya-agnostic `kakeya_borel_selection`; only the abstract theorem remains.
