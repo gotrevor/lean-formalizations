@@ -605,4 +605,39 @@ theorem primeSumDiv_div_log_tendsto_one :
     filter_upwards [h.eventually_gt_atTop 0] with N hN using ne_of_gt hN
   exact (isEquivalent_iff_tendsto_one hv).mp primeSumDiv_isEquivalent_log
 
+/-- Floor-vs-continuous `log` gap: `log t − log ⌊t⌋₊ ≤ log(3/2)` for `t ≥ 2` (since `2 ≤ ⌊t⌋₊ ≤ t <
+⌊t⌋₊+1`).  The genuinely-new estimate controlling the Mertens-2nd remainder integrand. -/
+lemma log_sub_log_floor_le {t : ℝ} (ht : 2 ≤ t) :
+    Real.log t - Real.log ⌊t⌋₊ ≤ Real.log (3 / 2) := by
+  have htpos : (0 : ℝ) < t := by linarith
+  have hfloor_ge : (2 : ℕ) ≤ ⌊t⌋₊ := Nat.le_floor (by exact_mod_cast ht)
+  have hfloorR : (2 : ℝ) ≤ (⌊t⌋₊ : ℝ) := by exact_mod_cast hfloor_ge
+  have hfloorpos : (0 : ℝ) < (⌊t⌋₊ : ℝ) := by linarith
+  have hlt : t < (⌊t⌋₊ : ℝ) + 1 := Nat.lt_floor_add_one t
+  rw [← Real.log_div (ne_of_gt htpos) (ne_of_gt hfloorpos)]
+  apply Real.log_le_log (div_pos htpos hfloorpos)
+  rw [div_le_iff₀ hfloorpos]
+  nlinarith [hlt, hfloorR]
+
+/-- **Uniform bound on the Mertens-2nd remainder numerator.** For `t ≥ 2`,
+`|primeSumDiv ⌊t⌋₊ − log t| ≤ (log4+5) + 2∑'_b(log b)/b² + log(3/2)` — a constant, independent of `t`.
+With `integral_inv_mul_sq_log` this makes the remainder integral `O(1)`. -/
+lemma abs_primeSumDiv_floor_sub_log_le {t : ℝ} (ht : 2 ≤ t) :
+    |primeSumDiv ⌊t⌋₊ - Real.log t|
+      ≤ ((Real.log 4 + 5) + 2 * ∑' b : ℕ, Real.log b / (b : ℝ) ^ 2) + Real.log (3 / 2) := by
+  have hfloor2 : (2 : ℕ) ≤ ⌊t⌋₊ := Nat.le_floor (by exact_mod_cast ht)
+  have hfloor1 : (1 : ℕ) ≤ ⌊t⌋₊ := by omega
+  have hfloorRpos : (0 : ℝ) < (⌊t⌋₊ : ℝ) := by
+    have : (1 : ℝ) ≤ (⌊t⌋₊ : ℝ) := by exact_mod_cast hfloor1
+    linarith
+  have h1 := abs_primeSumDiv_sub_log_le hfloor1
+  have h2 := log_sub_log_floor_le ht
+  have h3 : Real.log (⌊t⌋₊ : ℝ) ≤ Real.log t := Real.log_le_log hfloorRpos (Nat.floor_le (by linarith))
+  calc |primeSumDiv ⌊t⌋₊ - Real.log t|
+      ≤ |primeSumDiv ⌊t⌋₊ - Real.log ⌊t⌋₊| + |Real.log ⌊t⌋₊ - Real.log t| := abs_sub_le _ _ _
+    _ ≤ ((Real.log 4 + 5) + 2 * ∑' b : ℕ, Real.log b / (b : ℝ) ^ 2) + Real.log (3 / 2) := by
+        have hb2 : |Real.log (⌊t⌋₊ : ℝ) - Real.log t| ≤ Real.log (3 / 2) := by
+          rw [abs_of_nonpos (by linarith [h3])]; linarith [h2]
+        linarith [h1, hb2]
+
 end LeanFormalizations.Mertens
