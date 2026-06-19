@@ -228,15 +228,134 @@ theorem phi_branchN {X : Type*} [TopologicalSpace X] [T1Space X] (φ : (ℕ → 
     mem_of_forall_prefix_mem hclosed (fun n => branch_prefix φ hx n)
   simpa using hmem
 
-/-- **The remaining hole of brick B: measurability of the explicit leftmost branch.** Each
-`x ↦ branchN φ x n` is measurable for `generateFrom {AnalyticSet}` (level sets = countable boolean
-combinations of the analytic `φ '' cylL w`), so the branch map is. Construction is fully proven
-(`phi_branchN`); this measurability induction is all that is left of brick B. -/
+/-- For a fixed prefix `w` of length `n`, the greedy-prefix fibre `{Wlist φ x n = w}` is cut out by the
+first `n` branch coordinates — this is what makes the fibre `generateFrom {AnalyticSet}`-measurable by
+induction. Proven via `List.ext_getElem?` (`getElem?`, proof-free) + `Wlist_getElem?`. -/
+theorem Wlist_eq_iff {X : Type*} (φ : (ℕ → ℕ) → X) (x : X) (n : ℕ) (w : List ℕ)
+    (hwlen : w.length = n) :
+    Wlist φ x n = w ↔ ∀ i : Fin n, branchN φ x (i : ℕ) = w[(i : ℕ)]'(by rw [hwlen]; exact i.2) := by
+  constructor
+  · intro hW i
+    have h := Wlist_getElem? φ x n i i.2
+    rw [hW, List.getElem?_eq_getElem (by rw [hwlen]; exact i.2)] at h
+    exact (Option.some_inj.mp h).symm
+  · intro h
+    apply List.ext_getElem?
+    intro i
+    by_cases hi : i < n
+    · rw [Wlist_getElem? φ x n i hi,
+        List.getElem?_eq_getElem (show i < w.length by rw [hwlen]; exact hi)]
+      exact congrArg some (h ⟨i, hi⟩)
+    · rw [List.getElem?_eq_none (by rw [Wlist_length]; omega),
+        List.getElem?_eq_none (by rw [hwlen]; omega)]
+
+/-- A single-coordinate constraint set is open in Baire space (`ℕ` is discrete). -/
+theorem isOpen_coord (i c : ℕ) : IsOpen {τ : ℕ → ℕ | τ i = c} := by
+  have h : {τ : ℕ → ℕ | τ i = c} = (fun p : ℕ → ℕ => p i) ⁻¹' {c} := rfl
+  rw [h]; exact (isOpen_discrete _).preimage (continuous_apply i)
+
+/-- The finite-prefix cylinder `cylL w` is open (finite intersection of single-coordinate sets). -/
+theorem isOpen_cylL (w : List ℕ) : IsOpen (cylL w) := by
+  have hrw : cylL w = ⋂ (i : Fin w.length), {τ : ℕ → ℕ | τ (i : ℕ) = w.get ⟨i, i.2⟩} := by
+    ext τ; simp only [cylL, Set.mem_setOf_eq, Set.mem_iInter]
+    exact ⟨fun h i => h i i.2, fun h i hi => h ⟨i, hi⟩⟩
+  rw [hrw]; exact isOpen_iInter_of_finite (fun i => isOpen_coord _ _)
+
+/-- The image `φ '' cylL w` is an analytic set, hence a generator of `generateFrom {AnalyticSet}`. -/
+theorem measurableSet_image_cylL {X : Type*} [TopologicalSpace X] [MeasurableSpace X]
+    {φ : (ℕ → ℕ) → X} (hφ : Continuous φ) (w : List ℕ) :
+    @MeasurableSet X (MeasurableSpace.generateFrom {s | AnalyticSet s}) (φ '' cylL w) :=
+  MeasurableSpace.measurableSet_generateFrom ((isOpen_cylL w).analyticSet_image hφ)
+
+/-- If each `B j` is `m`-measurable, then `x ↦ sInf {j | x ∈ B j}` is `m`-measurable (its level sets are
+countable boolean combinations of the `B j`). The level-set engine behind the branch's measurability. -/
+theorem measurable_sInf_indices {X : Type*} (m : MeasurableSpace X) {B : ℕ → Set X}
+    (hB : ∀ j, @MeasurableSet X m (B j)) :
+    @Measurable X ℕ m _ (fun x => sInf {j | x ∈ B j}) := by
+  apply measurable_to_countable'
+  intro k
+  show @MeasurableSet X m _
+  rcases Nat.eq_zero_or_pos k with hk | hk
+  · subst hk
+    have hset : (fun x => sInf {j | x ∈ B j}) ⁻¹' {0} = B 0 ∪ ⋂ j, (B j)ᶜ := by
+      ext x
+      simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_union, Set.mem_iInter,
+        Set.mem_compl_iff]
+      rw [Nat.sInf_eq_zero]
+      constructor
+      · rintro (h | h)
+        · exact Or.inl h
+        · refine Or.inr fun j hj => ?_
+          exact absurd (show j ∈ {j | x ∈ B j} from hj) (by rw [h]; simp)
+      · rintro (h | h)
+        · exact Or.inl h
+        · refine Or.inr ?_
+          ext j
+          simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
+          exact h j
+    rw [hset]; exact (hB 0).union (MeasurableSet.iInter fun j => (hB j).compl)
+  · have hset : (fun x => sInf {j | x ∈ B j}) ⁻¹' {k} = B k ∩ ⋂ (j : ℕ) (_ : j < k), (B j)ᶜ := by
+      ext x
+      simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_inter_iff, Set.mem_iInter,
+        Set.mem_compl_iff]
+      constructor
+      · intro h
+        have hne : {j | x ∈ B j}.Nonempty := by
+          by_contra hcon
+          rw [Set.not_nonempty_iff_eq_empty] at hcon
+          rw [hcon, Nat.sInf_empty] at h; omega
+        have hmem : k ∈ {j | x ∈ B j} := h ▸ Nat.sInf_mem hne
+        refine ⟨hmem, fun j hj hjB => ?_⟩
+        have := Nat.sInf_le (show j ∈ {j | x ∈ B j} from hjB); rw [h] at this; omega
+      · rintro ⟨hk', hlt⟩
+        have hne : {j | x ∈ B j}.Nonempty := ⟨k, hk'⟩
+        refine le_antisymm (Nat.sInf_le hk') ?_
+        by_contra hc; rw [not_le] at hc; exact hlt _ hc (Nat.sInf_mem hne)
+    rw [hset]
+    exact (hB k).inter (MeasurableSet.iInter fun j => MeasurableSet.iInter fun _ => (hB j).compl)
+
+/-- **Brick B's measurability, PROVEN.** `x ↦ branchN φ x n` is `generateFrom {AnalyticSet}`-measurable:
+strong induction on `n`, the fibre `{Wlist φ x n = w}` being measurable by `Wlist_eq_iff` + the IH, and
+`branchN φ x n` on that fibre being `sInf {k | x ∈ φ '' cylL (w ++ [k])}` (measurable via
+`measurable_sInf_indices` + `measurableSet_image_cylL`). With `phi_branchN` this fully discharges
+brick B; the whole `jvn` route now rests on capacitability (`analyticSet_nullMeasurableSet`) alone. -/
 theorem measurable_branchN {X : Type*} [TopologicalSpace X] [MeasurableSpace X]
     {φ : (ℕ → ℕ) → X} (hφ : Continuous φ) :
     @Measurable X (ℕ → ℕ) (MeasurableSpace.generateFrom {s | AnalyticSet s}) _
       (fun x => fun n => branchN φ x n) := by
-  sorry
+  set 𝒜 : MeasurableSpace X := MeasurableSpace.generateFrom {s | AnalyticSet s} with h𝒜
+  rw [measurable_pi_iff]
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n IH =>
+    have hfiber : ∀ w : List ℕ, @MeasurableSet X 𝒜 {x | Wlist φ x n = w} := by
+      intro w
+      by_cases hwlen : w.length = n
+      · have heq : {x | Wlist φ x n = w} =
+            ⋂ (i : Fin n), {x | branchN φ x (i : ℕ) = w[(i : ℕ)]'(by rw [hwlen]; exact i.2)} := by
+          ext x; simp only [Set.mem_setOf_eq, Set.mem_iInter]; exact Wlist_eq_iff φ x n w hwlen
+        rw [heq]
+        exact MeasurableSet.iInter fun i => IH (i : ℕ) i.2 (measurableSet_singleton _)
+      · have he : {x | Wlist φ x n = w} = ∅ := by
+          ext x; simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
+          intro hW; exact hwlen (by rw [← hW, Wlist_length])
+        rw [he]; exact MeasurableSet.empty
+    apply measurable_to_countable'
+    intro c
+    show @MeasurableSet X 𝒜 _
+    have hunion : (fun x => branchN φ x n) ⁻¹' {c} =
+        ⋃ (w : List ℕ), ({x | Wlist φ x n = w} ∩
+          {x | sInf {k | x ∈ φ '' cylL (w ++ [k])} = c}) := by
+      ext x
+      simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_iUnion, Set.mem_inter_iff,
+        Set.mem_setOf_eq]
+      constructor
+      · intro h; exact ⟨Wlist φ x n, rfl, by rw [← h, branchN]⟩
+      · rintro ⟨w, hW, hg⟩; rw [branchN, hW]; exact hg
+    rw [hunion]
+    exact MeasurableSet.iUnion fun w => (hfiber w).inter
+      (measurable_sInf_indices 𝒜 (fun k => measurableSet_image_cylL hφ (w ++ [k]))
+        (measurableSet_singleton c))
 
 /-- **Brick B — the measurable leftmost-branch uniformizer (capacitability-free), now a PROVEN assembly**
 of the explicit construction (`phi_branchN`) and the lone measurability hole (`measurable_branchN`). For

@@ -18,26 +18,34 @@ build stays sorry-free + axiom-clean; kernel-checked via `lake env lean <path>`)
 - `jvn_of_measurableSelection` — the exact `jvn` statement, by `X=ℝ, Y=Plane, μ=volume, D=Icc 0 1`.
   ⇒ discharging the single remaining hole makes `kakeya_aeMeasurable_selection` UNCONDITIONAL.
 
-**The remaining holes — now exactly TWO orthogonal, independently-attackable named bricks**, with the
-core `exists_aemeasurable_section_of_continuous_range` a PROVEN assembly of them via the capacitability
-bridge `aemeasurable_of_generateFrom_analytic` (also proven this lap, no `sorry`):
-- **Brick A — `analyticSet_nullMeasurableSet` (capacitability):** in a Polish space every analytic set
-  is `NullMeasurableSet μ` (Choquet via the Souslin operation). The deep 🟡 core, genuine missing
-  mathlib theory (mathlib has `AnalyticSet` + Lusin separation but neither universal measurability nor a
-  measurable selector — confirmed by grep this lap). The bridge reduces ALL measurability to this.
-- **Brick B — `exists_generateFrom_analytic_section` (measurable leftmost-branch, CAPACITABILITY-FREE):**
-  now a PROVEN assembly; its CONSTRUCTION half is fully kernel-checked and only ONE measurability hole
-  remains. Built `cylL`/`Wlist`/`branchN` (greedy lexicographically-least prefix via `sInf` over
-  extendable children), with proven: `Wlist_length`, `Wlist_getElem?`, `mem_cylL_extend`,
-  `mem_image_cylL_Wlist` (extendability invariant), `branch_prefix`, and the payoff
-  **`phi_branchN : φ (branchN φ x ·) = x` for `x ∈ range φ`** (closed-fibre + `mem_of_forall_prefix_mem`).
-  `exists_generateFrom_analytic_section` is then proven from `phi_branchN` + the lone remaining brick:
-  - **`measurable_branchN`** (the ONLY hole in brick B): `x ↦ branchN φ x n` is
-    `generateFrom{AnalyticSet}`-measurable. Plan: strong induction on `n`, simultaneously with
-    `{x | Wlist φ x n = w} ∈ 𝒜` for each fixed `w` (countably many, length `n`); on each such piece
-    `branchN φ x n = sInf{k | x ∈ φ''cylL(w++[k])}`, whose level sets are boolean combinations of the
-    analytic generators `φ''cylL(w++[k])` (`analyticSet_image_isOpen`, `cylL w` is open). Measurable into
-    `ℕ` via `measurable_to_countable'`. Concrete, no DST gap — the better next-lap target of the two.
+**BRICK B IS FULLY PROVEN. The ENTIRE `jvn` / von Neumann selection route now rests on ONE `sorry`:
+capacitability.** The wip file has exactly one `sorry` (`analyticSet_nullMeasurableSet`, line ~120);
+everything else — foundations, bridge, the leftmost-branch construction AND its measurability, the
+two-brick assembly, `measurableSelection_aemeasurable`, `jvn_of_measurableSelection` — is kernel-checked.
+
+- **Brick A — `analyticSet_nullMeasurableSet` (capacitability) — THE ONLY REMAINING HOLE:** in a Polish
+  space every analytic set is `NullMeasurableSet μ` (Choquet via the Souslin operation). The deep 🟡
+  core, genuine missing mathlib theory (mathlib has `AnalyticSet` + Lusin separation but neither
+  universal measurability nor a measurable selector). The bridge `aemeasurable_of_generateFrom_analytic`
+  (proven) reduces ALL of the selector's measurability to this. **This is the sole next-lap target.**
+- **Brick B — `exists_generateFrom_analytic_section` (measurable leftmost-branch): ✅ PROVEN.** Built
+  `cylL`/`Wlist`/`branchN` (greedy lexicographically-least prefix via `sInf` over extendable children).
+  Construction: `Wlist_length`, `Wlist_getElem?`, `Wlist_eq_iff`, `mem_cylL_extend`,
+  `mem_image_cylL_Wlist` (extendability invariant), `branch_prefix`, `phi_branchN`
+  (`φ (branchN φ x ·) = x`). Measurability: `isOpen_cylL`, `measurableSet_image_cylL`,
+  `measurable_sInf_indices` (sInf of indicator family is measurable), and `measurable_branchN` (strong
+  induction; fibre `{Wlist φ x n = w}` cut by the first `n` branch coords via `Wlist_eq_iff` + IH; on it
+  `branchN = sInf{k | x ∈ φ''cylL(w++[k])}`, measurable; level set = countable `⋃` over length-`n`
+  prefixes). All kernel-checked, NO capacitability used (lands in `generateFrom{AnalyticSet}`).
+
+**Capacitability (brick A) build plan — the next lap's whole job:** analytic `s = ⋃_σ ⋂_n C(σ|n)`
+(Souslin scheme of closed sets). For finite `μ`, outer measure `μ*` is a capacity; Choquet ⇒ `s` is
+capacitable ⇒ `NullMeasurableSet`. mathlib gaps: Souslin-scheme representation of `AnalyticSet`, the
+capacity/Choquet machinery. Decompose: (i) `AnalyticSet → ∃ closed scheme C, s = Souslin C`; (ii) `μ*`
+is a capacity (monotone, continuous along increasing unions / decreasing compacts); (iii) Choquet
+capacitability of the Souslin operation; (iv) capacitable ⇒ `NullMeasurableSet` via inner/outer regular
+approximation. Each is a standalone lemma. See `ON-LINE-REQUEST.md` (port an existing formalization if
+one exists). Alternatively for the σ-compact codomain (`Y=ℝ²`) explore a selection route needing less.
 
 **Wall mapped (two alternative attacks on the hole, both substantial, both missing from mathlib):**
 - (A-route) Capacitability → universal measurability → leftmost-branch measurability. General; needed
