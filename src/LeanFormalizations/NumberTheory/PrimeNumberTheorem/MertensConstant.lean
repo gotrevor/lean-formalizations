@@ -138,4 +138,17 @@ lemma log_realZeta_eq {s : ℝ} (hs : 1 < s) :
     Real.log (realZeta s) = ∑' p : Nat.Primes, -Real.log (1 - (p : ℝ) ^ (-s)) := by
   rw [realZeta_eq_exp hs, Real.log_exp]
 
+/-- **Per-prime Mercator expansion** (brick (ii-a)): `−log(1−p^{−s}) = ∑'_{n} (p^{−s})^{n+1}/(n+1)`
+(mathlib `hasSum_pow_div_log_of_abs_lt_one`, applicable since `0 < p^{−s} < 1`).  The `n = 0` term is
+`p^{−s}` (the prime-zeta contribution); the `n ≥ 1` tail is the correction `G`.  Next lap: Fubini this
+over `Nat.Primes × ℕ` and combine with `log_realZeta_eq` to split `log ζ(s) = primeZeta s + G(s)`. -/
+lemma neg_log_one_sub_prime_hasSum {s : ℝ} (hs : 1 < s) (p : Nat.Primes) :
+    HasSum (fun n : ℕ => ((p : ℝ) ^ (-s)) ^ (n + 1) / (n + 1)) (-Real.log (1 - (p : ℝ) ^ (-s))) := by
+  apply Real.hasSum_pow_div_log_of_abs_lt_one
+  have hppos : (0 : ℝ) < (p : ℝ) := by
+    have : (2 : ℝ) ≤ (p : ℝ) := by exact_mod_cast p.2.two_le
+    linarith
+  rw [abs_of_pos (Real.rpow_pos_of_pos hppos _)]
+  exact prime_rpow_lt_one hs p
+
 end LeanFormalizations.Mertens
