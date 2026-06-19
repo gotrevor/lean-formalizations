@@ -640,4 +640,24 @@ lemma abs_primeSumDiv_floor_sub_log_le {t : ℝ} (ht : 2 ≤ t) :
           rw [abs_of_nonpos (by linarith [h3])]; linarith [h2]
         linarith [h1, hb2]
 
+open MeasureTheory in
+/-- The Mertens-2nd integrand `primeSumDiv ⌊t⌋₊ /(t (log t)²)` is integrable on `[2,N]`.  (The
+step-function `∑_{k≤⌊t⌋} c k` times the continuous weight, via mathlib's `integrableOn_mul_sum_Icc`.) -/
+lemma integrableOn_primeSumDiv_floor_div (N : ℕ) :
+    IntegrableOn (fun t ↦ primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2)) (Set.Icc (2 : ℝ) N) := by
+  have hcont : ContinuousOn (fun t : ℝ => (t * (Real.log t) ^ 2)⁻¹) (Set.Icc (2 : ℝ) N) := by
+    apply ContinuousOn.inv₀
+    · exact continuousOn_id.mul ((Real.continuousOn_log.mono
+        (fun t ht => ne_of_gt (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))).pow 2)
+    · exact fun t ht => ne_of_gt (mul_pos (by simp only [Set.mem_Icc] at ht; linarith [ht.1])
+        (pow_pos (Real.log_pos (by simp only [Set.mem_Icc] at ht; linarith [ht.1])) 2))
+  have hg : IntegrableOn (fun t : ℝ => (t * (Real.log t) ^ 2)⁻¹) (Set.Icc (2 : ℝ) N) :=
+    hcont.integrableOn_compact isCompact_Icc
+  have h := integrableOn_mul_sum_Icc (m := 0) primeLogDivCoeff (a := (2 : ℝ)) (b := (N : ℝ))
+    (by norm_num) hg
+  refine h.congr_fun ?_ measurableSet_Icc
+  intro t _
+  simp only []
+  rw [sum_primeLogDivCoeff_eq]; ring
+
 end LeanFormalizations.Mertens
