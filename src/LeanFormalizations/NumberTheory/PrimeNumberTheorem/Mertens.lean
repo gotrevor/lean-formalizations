@@ -1076,4 +1076,77 @@ theorem mertens_third_up_to_const :
   rw [heq]
   exact primeCorr_isBigO_one.sub mertens_second
 
+/-!
+## Mertens' third theorem, sharp form: convergence of `∏(1−1/p)·log N`
+
+`mertens_third_up_to_const` gives only `∏(1−1/p) ≍ 1/log N`.  The sharp statement is convergence:
+`log ∏_{p≤N}(1−1/p) + log log N → C₃` for a definite constant `C₃` (classically `−γ`).  This follows
+from the convergence of the correction series `∑_p (log(1−1/p)+1/p)` together with the sharp Mertens 2nd
+(`mertens_second_tendsto`).  The identification `C₃ = −γ` is the deep remaining part. -/
+
+/-- The `n`-indexed correction coefficient: `log(1−1/n)+1/n` at primes, `0` elsewhere.  Its sum is the
+limit of `primeCorr`. -/
+noncomputable def primeCorrCoeff (n : ℕ) : ℝ :=
+  if n.Prime then Real.log (1 - (n : ℝ)⁻¹) + (n : ℝ)⁻¹ else 0
+
+/-- Termwise bound `|primeCorrCoeff n| ≤ 1/n²` (comparison for absolute convergence). -/
+lemma abs_primeCorrCoeff_le (n : ℕ) : |primeCorrCoeff n| ≤ 1 / (n : ℝ) ^ 2 := by
+  unfold primeCorrCoeff
+  split_ifs with hp
+  · have hn2 : (2 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hp.two_le
+    have hppos : (0 : ℝ) < (n : ℝ) := by linarith
+    have hinv0 : (0 : ℝ) < (n : ℝ)⁻¹ := by positivity
+    have hinvhalf : (n : ℝ)⁻¹ ≤ 1 / 2 := by
+      have hc : (n : ℝ)⁻¹ * (n : ℝ) = 1 := inv_mul_cancel₀ (ne_of_gt hppos)
+      nlinarith [hc, mul_nonneg hinv0.le (show (0 : ℝ) ≤ (n : ℝ) - 2 by linarith)]
+    have hbnd := log_one_sub_add_self_abs_le hinv0 hinvhalf
+    rwa [show ((n : ℝ)⁻¹) ^ 2 = 1 / (n : ℝ) ^ 2 by rw [inv_pow]; ring] at hbnd
+  · rw [abs_zero]; positivity
+
+/-- **Absolute convergence of the Mertens-3rd correction series** `∑_n (log(1−1/n)+1/n)·[n prime]`,
+by comparison with `∑ 1/n²`. -/
+lemma summable_primeCorrCoeff : Summable primeCorrCoeff := by
+  apply Summable.of_norm_bounded (g := fun n : ℕ => 1 / (n : ℝ) ^ 2) summable_one_div_sq
+  intro n
+  rw [Real.norm_eq_abs]
+  exact abs_primeCorrCoeff_le n
+
+/-- The finite correction sum `primeCorr N` is the partial sum `∑_{n<N+1} primeCorrCoeff n`. -/
+lemma primeCorr_eq_sum_range (N : ℕ) :
+    primeCorr N = ∑ n ∈ Finset.range (N + 1), primeCorrCoeff n := by
+  have hset : (Finset.range (N + 1)).filter Nat.Prime = (Finset.Ioc 0 N).filter Nat.Prime := by
+    ext p
+    simp only [Finset.mem_filter, Finset.mem_range, Finset.mem_Ioc]
+    constructor
+    · rintro ⟨hlt, hp⟩; exact ⟨⟨hp.pos, by omega⟩, hp⟩
+    · rintro ⟨⟨_, hN⟩, hp⟩; exact ⟨by omega, hp⟩
+  rw [primeCorr, ← hset, Finset.sum_filter]
+  rfl
+
+/-- **Convergence of the correction sum**: `primeCorr N → ∑'_n primeCorrCoeff n`. -/
+lemma primeCorr_tendsto :
+    Tendsto (fun N : ℕ => primeCorr N) atTop (nhds (∑' n : ℕ, primeCorrCoeff n)) := by
+  have h := summable_primeCorrCoeff.hasSum.tendsto_sum_nat
+  have h2 := h.comp (tendsto_add_atTop_nat 1)
+  refine Filter.Tendsto.congr (fun N => ?_) h2
+  rw [Function.comp_apply]
+  exact (primeCorr_eq_sum_range N).symm
+
+/-- The Mertens' third constant `C₃ = (∑'_p (log(1−1/p)+1/p)) − M`, the limit of
+`log ∏_{p≤N}(1−1/p) + log log N`.  Classically `C₃ = −γ` (the deep, still-open identification). -/
+noncomputable def mertensThirdConst : ℝ := (∑' n : ℕ, primeCorrCoeff n) - meisselMertensM
+
+/-- **Mertens' third theorem, sharp form.**  `log ∏_{p≤N}(1−1/p) + log log N → C₃` — strictly stronger
+than the `O(1)` of `mertens_third_up_to_const`, i.e. `∏(1−1/p)·log N → e^{C₃}`.  Assembled from the
+convergent correction series (`primeCorr_tendsto`) and the sharp Mertens 2nd (`mertens_second_tendsto`).
+The classical identification `C₃ = −γ` is the deep remaining part. -/
+theorem mertens_third_tendsto :
+    Tendsto (fun N : ℕ => Real.log (primeProd N) + Real.log (Real.log N)) atTop
+      (nhds mertensThirdConst) := by
+  have heq : ∀ N : ℕ, Real.log (primeProd N) + Real.log (Real.log N)
+      = primeCorr N - (primeRecipSum N - Real.log (Real.log N)) := by
+    intro N; rw [log_primeProd_eq_corr]; ring
+  have h := primeCorr_tendsto.sub mertens_second_tendsto
+  exact Filter.Tendsto.congr (fun N => (heq N).symm) h
+
 end LeanFormalizations.Mertens
