@@ -64,6 +64,11 @@ is now COMPLETE, which is the prerequisite below the `dropTime` count:
 - `leadExp_ge_of_not_pow` — **unconditional non-decrease off pure powers** (no `≥ base` cap, unlike
   `leadExp_ge_of_base_le`): `L_k ≤ L_{k+1}` at every non-pure-power step. This is the lemma that, once
   paired with a bound on the number of pure-power events, lifts the `log₂ m`-step guarantee to `m` steps.
+- `bump_eq_of_lt` (`bump b n = n` for `n < b`) + `leadExp_small_nonincreasing` — **the leadExp
+  trajectory is now FULLY characterized**: it GROWS while `L_k ≥ base k` (large regime, `bump_gt`),
+  then is **NON-INCREASING once `L_k < base k`** (small regime — off pure powers `bump` fixes the
+  single-digit exponent, at pure powers it drops by 1). The `o = 2` difficulty lives entirely in the
+  small regime; `leadExp_small_nonincreasing` is the tool for a value/quadratic-plateau induction there.
 So the leading exponent bumps-itself/grows everywhere except at the **rare pure-power "borrow" events**.
 - `ppCount m k` (new `def`) + `leadExp_ge_sub_ppCount` (the **sharpened telescope**):
   `log₂ m ≤ leadExp_k + ppCount m k` — the leading-exponent deficit is bounded by the *number of
