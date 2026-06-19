@@ -1,5 +1,26 @@
 # PENDING_WORK — lean-formalizations
 
+## ✅✅ RESOLVED 2026-06-19 — the selection crux is DISCHARGED; `davies_kakeya_2d` is AXIOM-CLEAN
+
+`#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound]`. The deep DST axiom
+`kakeya_borel_selection` (von Neumann / Jankov–von Neumann) is **eliminated** — NOT by porting the
+Choquet/capacitability layer the findings doc (`archive/findings/ON-LINE-FINDINGS-2026-06-19-measurable-selection.md`)
+recommended, but by the ELEMENTARY open-cover route that doc's §5 flagged at 55% confidence:
+- route the content bound through an **open** cover (fatten each piece, `exists_thickening_radius_rpow_le`);
+- for an open target a compact unit segment has a **tube** inside it
+  (`IsCompact.exists_thickening_subset_open`) ⟹ a dense base point gives full coverage `= 1`;
+- the first-hit dense-sequence selector is measurable (`measurable_find` + `measurable_coveredLength`).
+`exists_measurable_selection_of_isOpen` → `content_bound_step` → `kakeya_hausdorffContentBound_elementary`
+→ `two_le_dimH`. All in `Selection.lean`/`Wiring.lean`, all axiom-clean. The §5 lower-semicontinuity
+idea is *strengthened* here: the tube gives an actual selector with coverage exactly 1, no lsc-sup needed.
+
+**The entire "discharge measurable selection (S)" / "von Neumann from AnalyticSet" program below is now
+MOOT and historical.** Do NOT port brownian-motion `Choquet/*` or re-attack von Neumann selection.
+Only remaining (optional, low priority): retire the OFF-headline legacy axiom
+`Engine.kakeya_subresolution_content` (discrete route, superseded) to make all of `Kakeya2D/` axiom-free.
+
+---
+
 ## 🧘 Reflection — 2026-06-19 (deep-reflection lap, strong model)
 
 A full altitude pass over the expedition. Read STATUS, all recent HANDOFFs, `CASE_B_ANALYSIS.md`,

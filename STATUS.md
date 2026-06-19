@@ -1,30 +1,33 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8300 jobs) · **Updated**: lap 2026-06-19 (HEADLINE NOW ON A KAKEYA-AGNOSTIC AXIOM) · `60ca60b` · **`davies_kakeya_2d` now reduces to ONE *Kakeya-agnostic* axiom `kakeya_borel_selection` — the textbook von Neumann / Jankov–von Neumann measurable selection (`#print axioms = [propext, Classical.choice, Quot.sound, kakeya_borel_selection]`). Every Kakeya-specific fact is PROVEN + axiom-clean (`Selection.lean`). 1 dormant disclosed `sorry` (FastGrowing). Everything else axiom-clean.**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8300 jobs) · **Updated**: lap 2026-06-19 (🎉 HEADLINE NOW AXIOM-CLEAN — SELECTION CRUX DISCHARGED) · `2bad9f3` · **`davies_kakeya_2d` (planar Kakeya, Davies 1971) is now a COMPLETE machine-checked proof with NO mathematical axioms: `#print axioms = [propext, Classical.choice, Quot.sound]`.** The former lone axiom `kakeya_borel_selection` (von Neumann / Jankov–von Neumann measurable selection — prior laps believed it needed deep descriptive set theory) is **eliminated**: the Kakeya selection is obtained *elementarily* by fattening the cover to an OPEN superset (a compact unit segment inside an open set has a tube neighbourhood ⟹ a dense base point gives full coverage = 1), `exists_measurable_selection_of_isOpen` + `kakeya_hausdorffContentBound_elementary` (`Selection.lean`). 1 dormant disclosed `sorry` (FastGrowing, out of lane). The legacy discrete route still carries one off-headline axiom `kakeya_subresolution_content` (Engine, NOT on `davies_kakeya_2d`).
 
-> ♾️ **ACTIVE EXPEDITION — branch `kakeya-davies` (2026-06-19): planar Kakeya conjecture
-> (Davies 1971).** Read `DIRECTION.md`. Target `davies_kakeya_2d : KakeyaSetConjectureDim 2`
-> (`GeometricMeasureTheory/Kakeya2D/`). Upper bound `dimH_le_two` done; the whole job is the lower
-> bound `two_le_dimH`, reduced (K1) to a Hausdorff **content** bound for all `d<2`.
-> **Progress: K1–K5 COMPLETE + axiom-clean** — the full Córdoba `L²` ladder (K2 two-tube overlap,
-> K3 δ-net, K4 `vol(Sδ) ≳ 1/log(1/δ)`) and the measure-free cover route K5 (`HausdorffContentBound ⟹
-> μH[d]S≠0`, per-piece area, pigeonholes). **The whole lower bound is now machine-checked down to ONE
-> *Kakeya-agnostic* axiom** (verified this lap via `#print axioms`): `davies_kakeya_2d = [propext,
-> Classical.choice, Quot.sound, kakeya_borel_selection]` — NO `sorry`. The measurable-selection route
-> is PROVEN end-to-end: the continuum spine (`MeasurableRoute.lean`, generalised this lap to consume
-> only the **a.e. covered-length ≥ 1**) → the wiring `Wiring.lean` (lemma A `Measurable`-selection +
-> lemma B `AEMeasurable`-selection via measurable representative) → the headline.
-> **The lone axiom `kakeya_borel_selection` (`Selection.lean`) is the textbook von Neumann /
-> Jankov–von Neumann measurable selection** ("a Borel set in `ℝ × Plane` with non-empty sections over
-> `[0,1]` has an a.e.-measurable selector") — it carries **zero Kakeya content**. Every Kakeya-specific
-> fact is PROVEN + axiom-clean in `Selection.lean`: `measurable_coveredLength_prod` (joint
-> measurability ⟹ the selection graph is **Borel**, not the coanalytic graph that *pointwise*
-> containment would give — so the axiom is JvN strength, NOT Π¹₁/Kondô); `isKakeya_exists_aeCover`
-> (non-empty sections from `IsKakeya`); `kakeya_aeMeasurable_selection_of_jvn` (the reduction).
-> The discrete route (`Engine.kakeya_hausdorffContentBound`, Case A proven / Case B
-> `kakeya_subresolution_content`) is **preserved but OFF the headline path** (legacy `*_discrete`).
-> **Next target = discharge `kakeya_borel_selection`** by formalizing von Neumann selection from
-> mathlib's `AnalyticSet` API (deep DST, multi-lap; needs analytic-set universal measurability + the
-> Souslin-scheme selector — neither in mathlib). Plan: `ON-LINE-REQUEST.md` UPDATE 6 · `PENDING_WORK.md`.
+> ♾️ **EXPEDITION COMPLETE (headline) — branch `kakeya-davies` (2026-06-19): planar Kakeya
+> conjecture (Davies 1971).** Target `davies_kakeya_2d : KakeyaSetConjectureDim 2`
+> (`GeometricMeasureTheory/Kakeya2D/`) is **PROVEN and axiom-clean**:
+> `#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound]` (verified this lap). Upper
+> bound `dimH_le_two` done; the lower bound `two_le_dimH` is complete via K1 (reduction to a Hausdorff
+> **content** bound for all `d<2`) + the full Córdoba `L²` ladder (K2–K4) + the measure-free cover
+> route K5 + the **measurable selection, now discharged elementarily**.
+> **The selection crux — formerly the lone axiom `kakeya_borel_selection` (von Neumann /
+> Jankov–von Neumann), believed multi-lap deep DST — was eliminated this lap by an ELEMENTARY argument
+> that bypasses descriptive set theory entirely.** Key insight: route the content bound through an
+> **open** cover (fatten each cover piece to an open superset at vanishing `ediam^d` cost,
+> `exists_thickening_radius_rpow_le`); then for an open target a compact unit segment has a **tube
+> neighbourhood** inside it (`IsCompact.exists_thickening_subset_open`), so *any* base point near the
+> Kakeya base point — in particular one from a fixed dense sequence — gives full coverage `= 1`. The
+> first-hit dense-sequence selector is measurable (`measurable_find` + `measurable_coveredLength`).
+> Chain: `exists_measurable_selection_of_isOpen` (axiom-clean selection for open covers) →
+> `content_bound_step` (the cover-agnostic Córdoba spine, factored out of `Wiring.lean`) →
+> `kakeya_hausdorffContentBound_elementary` (ε-fattening + send overshoot → 0) → `two_le_dimH`.
+> **The abstract JvN reduction `kakeya_aeMeasurable_selection_of_jvn` + the projection-is-analytic
+> down payment `analyticSet_proj_and_Icc_subset` are KEPT** as honest hypothesis-gated structure
+> (no axiom). The legacy DISCRETE route (`Engine.kakeya_hausdorffContentBound`, Case A proven / Case B
+> `kakeya_subresolution_content` axiom, + `*_discrete` headlines) is **preserved but fully superseded
+> and OFF the headline path** — `davies_kakeya_2d` does not depend on it. Its reusable bricks
+> (`NetThinning.caseA_content`, the Córdoba `L²` ladder) ARE reused by the elementary route.
+> **Remaining (optional, lower priority): retire the off-headline `kakeya_subresolution_content`** to
+> make the whole `Kakeya2D/` directory axiom-free (the discrete *assembly* is now obsolete; only its
+> axiom-dependent shell `Engine.kakeya_hausdorffContentBound` + the `_discrete` headlines would go).
 > The threads below are COMPLETE/axiom-clean and frozen — do not touch them.
 > (`Logic/FastGrowing/Basic.lean` carries one dormant disclosed `sorry`, out of the Kakeya lane.)
 
