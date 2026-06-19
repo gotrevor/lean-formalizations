@@ -228,6 +228,59 @@ theorem hstep_oadd_zero_zero (b : ℕ) (hb : 2 ≤ b) (c : ℕ) (hc1 : 1 ≤ c) 
     change (c - 2) + 1 = c - 1
     omega
 
+/-- Helper for the coefficient peel: for `E ≠ 0`, the fundamental sequence of `oadd E 1 0`
+is some `inr g`, and that of `oadd E ⟨k+2⟩ 0` wraps it as `fun i => oadd E ⟨k+1⟩ (g i)`.
+Read off the two non-`inl none` branches of `fundamentalSequence (oadd E · 0)` (tail `0`,
+`natPred` `0` resp. `k+1`). -/
+theorem fundSeq_oadd_coeff (E : ONote) (hE : E ≠ 0) (k : ℕ) :
+    ∃ g, fundamentalSequence (oadd E 1 0) = Sum.inr g ∧
+      fundamentalSequence (oadd E ⟨k + 2, by omega⟩ 0)
+        = Sum.inr (fun i => oadd E k.succPNat (g i)) := by
+  rcases e : fundamentalSequence E with (_ | E') | f
+  · exact absurd ((fundamentalSequenceProp_inl_none E).1 (e ▸ fundamentalSequence_has_prop E)) hE
+  · refine ⟨fun i => oadd E' i.succPNat 0, ?_, ?_⟩ <;>
+      · rw [fundamentalSequence]
+        simp only [show fundamentalSequence (0 : ONote) = Sum.inl none from rfl, e]
+        rfl
+  · refine ⟨fun i => oadd (f i) 1 0, ?_, ?_⟩ <;>
+      · rw [fundamentalSequence]
+        simp only [show fundamentalSequence (0 : ONote) = Sum.inl none from rfl, e]
+        rfl
+
+/-- **Lemma A (coefficient peel).** For `E ≠ 0` and `c ≥ 2`, one Hardy step on `oadd E c 0`
+peels the coefficient to `c-1` and leaves a Hardy step on `oadd E 1 0`:
+`hstep (oadd E ⟨c⟩ 0) b = oadd E ⟨c-1⟩ (hstep (oadd E 1 0) b)`. The descent through the
+limit `oadd E ⟨c⟩ 0` lands on `oadd E ⟨c-1⟩ (g b)`, whose nonzero tail `g b` peels off
+(`hstep_oadd_tail`) leaving exactly `hstep (oadd E 1 0) b = hstep (g b) b`. -/
+theorem hstep_oadd_coeff (b : ℕ) {E : ONote} (hE : E ≠ 0) {c : ℕ} (hc : 2 ≤ c)
+    (hc1 : 1 ≤ c) :
+    hstep (oadd E ⟨c, hc1⟩ 0) b = oadd E ⟨c - 1, by omega⟩ (hstep (oadd E 1 0) b) := by
+  obtain ⟨k, rfl⟩ : ∃ k, c = k + 2 := ⟨c - 2, by omega⟩
+  obtain ⟨g, h1, hc2⟩ := fundSeq_oadd_coeff E hE k
+  have hgb : g b ≠ 0 := fundamentalSequence_inr_ne_zero h1 b
+  have hcoe : (⟨k + 2, hc1⟩ : ℕ+) = ⟨k + 2, by omega⟩ := rfl
+  rw [hcoe, hstep_limit _ hc2, hstep_limit _ h1]
+  dsimp only
+  rw [hstep_oadd_tail E k.succPNat b (g b) hgb]
+  congr 1
+
+/-- **Lemma B (the `c = 1` predecessor — the lone open core of C3).** One Hardy step on
+`oadd (toONote b L) 1 0` (i.e. `ω^E` for `E = toONote b L`, `L ≥ 1`) at argument `b` is the
+base-`(b+1)` notation of `(b+1)^(bump b L) − 1` — the fully-filled (all-digits-`b`) expansion
+produced by the borrowing descent through `fundamentalSequence`.
+
+*(disclosed `sorry`.)* This is the genuine borrowing core, now isolated to coefficient `1`.
+The descent reduces it (via `hstep_oadd_coeff`) along a well-founded recursion on `repr E`:
+`E` a successor ⟹ peel to `oadd E' ⟨b⟩ (hstep (oadd E' 1 0) b)` with `E' = pred E`; `E` a
+limit ⟹ recurse on `oadd (f b) 1 0`. Closing it needs the general statement over arbitrary
+NF `E` with answer `toONote (b+1) ((b+1)^(evalNat E) − 1)` (`evalNat E` = `repr E` evaluated
+at `ω ↦ b+1`), carrying the invariant "coefficients ≤ b+1" so the leading-exponent
+reconstruction `toONote (b+1) (evalNat E') = E'` holds at each step. Verified syntactically
+by `native_decide` on small cases (see anchors). -/
+theorem hstep_oadd_one_zero (b : ℕ) (hb : 2 ≤ b) (L : ℕ) (hL : 1 ≤ L) :
+    hstep (oadd (toONote b L) 1 0) b = toONote (b + 1) ((b + 1) ^ bump b L - 1) := by
+  sorry
+
 /-- **The Cichoń step (THE C3 CRUX).** One budget-incrementing Hardy step on the base-`b`
 notation of `p ≠ 0`, at argument `b`, equals the notation (in base `b+1`) of the
 Goodstein operation `bump b p − 1`:
@@ -279,9 +332,31 @@ theorem hstep_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ p, p ≠ 0 →
         rw [htoP, hr0, hEz, toONote_zero, hstep_oadd_zero_zero b hb c hc1 hcb]
         congr 1
         rw [hbump, hr0, hbumpL, bump_zero]; simp
-      · -- L ≥ 1: the genuine borrowing case — predecessor of `c·(b+1)^(bump b L)`
-        -- (a nested descent through `fundamentalSequence`). The lone open core of C3.
-        sorry
+      · -- L ≥ 1: borrowing case. Peel the coefficient (`hstep_oadd_coeff`) down to the
+        -- `c = 1` predecessor `hstep_oadd_one_zero`, then reconstruct via `toONote_oadd`.
+        have hE : toONote b L ≠ 0 := by rw [Ne, toONote_eq_zero_iff]; omega
+        have htoP0 : toONote b p = oadd (toONote b L) ⟨c, hc1⟩ 0 := by
+          rw [htoP, hr0, toONote_zero]
+        have hbump0 : bump b p - 1 = c * (b + 1) ^ bump b L - 1 := by
+          rw [hbump, hr0, bump_zero, Nat.add_zero]
+        rcases eq_or_ne c 1 with hc1' | hc2'
+        · -- c = 1: directly Lemma B
+          have hcpn : (⟨c, hc1⟩ : ℕ+) = 1 := PNat.coe_injective hc1'
+          rw [htoP0, hcpn, hbump0, hc1', one_mul]
+          exact hstep_oadd_one_zero b hb L hLpos
+        · -- c ≥ 2: peel to `oadd E ⟨c-1⟩ (hstep (oadd E 1 0) b)`, recombine
+          have hMpos : 1 ≤ (b + 1) ^ bump b L := Nat.one_le_pow _ _ (by omega)
+          have key : c * (b + 1) ^ bump b L - 1
+              = (c - 1) * (b + 1) ^ bump b L + ((b + 1) ^ bump b L - 1) := by
+            have h := Nat.sub_one_mul c ((b + 1) ^ bump b L)
+            have hcX : (b + 1) ^ bump b L ≤ c * (b + 1) ^ bump b L :=
+              Nat.le_mul_of_pos_left _ (by omega)
+            omega
+          rw [htoP0, hstep_oadd_coeff b hE (by omega) hc1, hstep_oadd_one_zero b hb L hLpos,
+            hbump0, key]
+          rw [toONote_oadd (b + 1) (by omega) (show 1 ≤ c - 1 by omega) (by omega)
+              (show (b + 1) ^ bump b L - 1 < (b + 1) ^ bump b L by omega),
+            toONote_bump b hb]
     · -- r ≠ 0: leading term preserved, the step happens in the tail
       have hRne : toONote b r ≠ 0 := by rw [Ne, toONote_eq_zero_iff]; exact hr0
       have hbr_pos : 0 < bump b r := by
