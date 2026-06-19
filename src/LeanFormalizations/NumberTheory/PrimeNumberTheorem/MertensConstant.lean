@@ -888,4 +888,18 @@ lemma primeZeta_eq_abel_integral_exp {s : ℝ} (hs : 1 < s) :
     ← mul_assoc, ← Real.exp_add, show x + x * -s = -((s - 1) * x) by ring]
   ring
 
+open MeasureTheory in
+/-- **M-part of brick B2 in the `eˣ` form**: `(s−1)·∫_0^∞ e^{−(s−1)x} dx = 1` for `s > 1`
+(`∫_0^∞ e^{−(s−1)x} = 1/(s−1)`, `integral_exp_mul_Ioi`).  Hence the `M`-term
+`(s−1)∫_0^∞ M·e^{−(s−1)x} = M` exactly. -/
+lemma sub_one_mul_integral_exp_neg {s : ℝ} (hs : 1 < s) :
+    (s - 1) * ∫ x in Set.Ioi (0 : ℝ), Real.exp (-((s - 1) * x)) = 1 := by
+  have hlt : -(s - 1) < 0 := by linarith
+  have hcongr : (∫ x in Set.Ioi (0 : ℝ), Real.exp (-((s - 1) * x)))
+      = ∫ x in Set.Ioi (0 : ℝ), Real.exp (-(s - 1) * x) :=
+    setIntegral_congr_fun measurableSet_Ioi (fun x _ => by rw [neg_mul])
+  rw [hcongr, integral_exp_mul_Ioi hlt, mul_zero, Real.exp_zero]
+  have hne : s - 1 ≠ 0 := ne_of_gt (by linarith)
+  field_simp
+
 end LeanFormalizations.Mertens
