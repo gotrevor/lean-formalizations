@@ -28,6 +28,7 @@ import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt
 import Mathlib.Analysis.SpecialFunctions.Stirling
 import Mathlib.Analysis.Complex.ExponentialBounds
 import Mathlib.Analysis.SpecialFunctions.Log.Monotone
+import Mathlib.Analysis.Real.Pi.Bounds
 
 namespace LeanFormalizations.NoThreeInLine
 
@@ -470,6 +471,39 @@ theorem mul_log_sub_le {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) :
     rw [Real.log_div hb.ne' ha.ne']; ring
   have hexp : (b - a) * (Real.log b + 1) = (b - a) * Real.log b + (b - a) := by ring
   rw [hsplit, hexp]; linarith [hlog]
+
+/-- **Per-term lower bound for the added log-factorial** (continuous form). For `1 ≤ k ≤ n`,
+`(n/k)·log(n/k) − n/k − log(n/k) − 1 ≤ log(⌊n/k⌋!)`: Stirling's lower bound at `m=⌊n/k⌋` (drop the
+nonnegative `log m/2 + log(2π)/2`), then lower the floored `⌊n/k⌋·log⌊n/k⌋` to the continuous
+`(n/k)·log(n/k)` via the secant bound `mul_log_sub_le` (slop `≤ log(n/k)+1`). Used on the `+⌊n/30⌋`
+term of `f(n)`. -/
+theorem log_factorial_div_ge {n k : ℕ} (hk : 1 ≤ k) (hkn : k ≤ n) :
+    ((n : ℝ) / k) * Real.log ((n : ℝ) / k) - (n : ℝ) / k - Real.log ((n : ℝ) / k) - 1
+      ≤ Real.log (Nat.factorial (n / k)) := by
+  have hkpos : (0 : ℝ) < k := by positivity
+  have hm1 : 1 ≤ n / k := (Nat.one_le_div_iff (by omega)).mpr hkn
+  have hca : (1 : ℝ) ≤ ((n / k : ℕ) : ℝ) := by exact_mod_cast hm1
+  have hle : ((n / k : ℕ) : ℝ) ≤ (n : ℝ) / k := Nat.cast_div_le
+  have h1le : (1 : ℝ) ≤ (n : ℝ) / k := (one_le_div hkpos).mpr (by exact_mod_cast hkn)
+  have hlogpos : 0 ≤ Real.log ((n : ℝ) / k) := Real.log_nonneg h1le
+  have hlb := Stirling.le_log_factorial_stirling (n := n / k) (by omega)
+  have hloghalf : 0 ≤ Real.log ((n / k : ℕ) : ℝ) / 2 := by positivity
+  have hlog2pi : 0 ≤ Real.log (2 * Real.pi) / 2 := by
+    have : (1 : ℝ) ≤ 2 * Real.pi := by nlinarith [Real.pi_gt_three]
+    have := Real.log_nonneg this; linarith
+  have hsec := mul_log_sub_le (a := ((n / k : ℕ) : ℝ)) (b := (n : ℝ) / k) (by linarith) hle
+  have hfrac : (n : ℝ) / k - ((n / k : ℕ) : ℝ) ≤ 1 := by
+    have h1 : n < (n / k + 1) * k := by
+      have e := Nat.div_add_mod n k
+      have m := Nat.mod_lt n (show 0 < k by omega)
+      nlinarith [e, m]
+    have h2 : (n : ℝ) ≤ (((n / k : ℕ) : ℝ) + 1) * k := by exact_mod_cast h1.le
+    have h3 : (n : ℝ) / k ≤ ((n / k : ℕ) : ℝ) + 1 := by rw [div_le_iff₀ hkpos]; linarith [h2]
+    linarith [h3]
+  have hprod : ((n : ℝ) / k - ((n / k : ℕ) : ℝ)) * (Real.log ((n : ℝ) / k) + 1)
+      ≤ 1 * (Real.log ((n : ℝ) / k) + 1) :=
+    mul_le_mul_of_nonneg_right hfrac (by linarith)
+  linarith [hlb, hsec, hprod, hle, hloghalf, hlog2pi]
 
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
