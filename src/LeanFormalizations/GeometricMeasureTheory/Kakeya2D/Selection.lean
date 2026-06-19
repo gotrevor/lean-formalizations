@@ -148,6 +148,75 @@ theorem analyticSet_proj_and_Icc_subset
   obtain ⟨p, hp⟩ := hsec θ hθ
   exact ⟨(θ, p), hp, rfl⟩
 
+/-! ### The elementary discharge: measurable selection against an OPEN cover (no DST) -/
+
+open scoped Classical in
+/-- **Elementary measurable base-point selection against an OPEN cover (von Neumann–free).**
+
+For a Kakeya set `S` contained in an **open** set `F ⊆ Plane`, there is a genuinely **measurable**
+base-point selection `a : ℝ → Plane` whose unit segment over *every* direction `θ` covers the full
+length `1` inside `F`:  `1 ≤ vol{t∈[0,1] : a θ + t·dir θ ∈ F}`.
+
+This **discharges the selection crux elementarily for open targets** — no descriptive set theory, no
+Jankov–von Neumann, no analytic-set universal measurability. The decisive use of openness: for each
+direction `θ`, `IsKakeya` supplies a base point `p` whose entire unit segment (a **compact** set) lies
+in `F`, so a whole tube around it lies in `F` (`IsCompact.exists_thickening_subset_open`); hence *any*
+base point within that tube — in particular one taken from a fixed countable dense sequence
+`q = denseSeq` — has its full segment in `F`, giving covered length `= 1`. The selector
+`a θ := q (Nat.find …)` picks the first dense point that works; it is measurable because each section
+`{θ : 1 ≤ vol{t : q n + t·dir θ ∈ F}}` is measurable (`measurable_coveredLength`) and `measurable_find`
+assembles the first-hit index over the (total) `∀ θ, ∃ n` witness. The downstream Hausdorff content
+bound only ever consumes this measure form, so this fully replaces the abstract selection axiom once the
+cover is fattened to an open superset (`Wiring`). -/
+theorem exists_measurable_selection_of_isOpen
+    {S : Set Plane} (h : IsKakeya S) {F : Set Plane} (hFo : IsOpen F) (hSF : S ⊆ F) :
+    ∃ a : ℝ → Plane, Measurable a ∧
+      ∀ θ : ℝ, 1 ≤ volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1 ∧ a θ + t • dir θ ∈ F} := by
+  classical
+  have hFm : MeasurableSet F := hFo.measurableSet
+  set q : ℕ → Plane := TopologicalSpace.denseSeq Plane with hqdef
+  set P : ℝ → ℕ → Prop := fun θ n =>
+    1 ≤ volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1 ∧ q n + t • dir θ ∈ F} with hPdef
+  -- (1) every direction has a "good" dense base point: compact segment ⊆ open F ⟹ a tube ⊆ F.
+  have hex : ∀ θ : ℝ, ∃ n, P θ n := by
+    intro θ
+    obtain ⟨p, hp⟩ := h (dir θ) (norm_dir θ)
+    set seg : Set Plane := (fun t : ℝ => p + t • dir θ) '' Set.Icc (0 : ℝ) 1 with hsegdef
+    have hcont : Continuous (fun t : ℝ => p + t • dir θ) :=
+      continuous_const.add (continuous_id.smul continuous_const)
+    have hsegc : IsCompact seg := isCompact_Icc.image hcont
+    have hsegF : seg ⊆ F := by
+      rintro x ⟨t, ht, rfl⟩
+      refine hSF (hp ?_)
+      rw [affineSegment]
+      refine ⟨t, ht, ?_⟩
+      rw [AffineMap.lineMap_apply_module', show (p + dir θ) - p = dir θ from by abel]
+      abel
+    obtain ⟨δ, hδ, hthick⟩ := hsegc.exists_thickening_subset_open hFo hsegF
+    obtain ⟨n, hn⟩ := Metric.denseRange_iff.mp (TopologicalSpace.denseRange_denseSeq Plane) p δ hδ
+    refine ⟨n, ?_⟩
+    have hfull : {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1 ∧ q n + t • dir θ ∈ F} = Set.Icc (0 : ℝ) 1 := by
+      ext t
+      constructor
+      · rintro ⟨ht, _⟩; exact ht
+      · intro ht
+        refine ⟨ht, hthick ?_⟩
+        rw [Metric.mem_thickening_iff]
+        refine ⟨p + t • dir θ, ⟨t, ht, rfl⟩, ?_⟩
+        calc dist (q n + t • dir θ) (p + t • dir θ)
+            = dist (q n) p := by rw [dist_eq_norm, dist_eq_norm]; congr 1; abel
+          _ = dist p (q n) := dist_comm _ _
+          _ < δ := hn
+    show 1 ≤ volume {t : ℝ | t ∈ Set.Icc (0 : ℝ) 1 ∧ q n + t • dir θ ∈ F}
+    rw [hfull, Real.volume_Icc, sub_zero, ENNReal.ofReal_one]
+  -- (2) the first-hit selector is measurable.
+  have hPset : ∀ n, MeasurableSet {θ : ℝ | P θ n} := fun n =>
+    measurableSet_le measurable_const
+      (measurable_coveredLength measurable_const measurable_dir hFm)
+  refine ⟨fun θ => q (Nat.find (hex θ)),
+    measurable_from_nat.comp (measurable_find hex hPset), fun θ => ?_⟩
+  exact Nat.find_spec (hex θ)
+
 /-! ### The headline, routed through the standard Jankov–von Neumann selection -/
 
 /-- **The Kakeya measurable selection, as a Kakeya-agnostic Jankov–von Neumann statement.**
