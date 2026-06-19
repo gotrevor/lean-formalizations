@@ -65,9 +65,21 @@ is now COMPLETE, which is the prerequisite below the `dropTime` count:
   `leadExp_ge_of_base_le`): `L_k ≤ L_{k+1}` at every non-pure-power step. This is the lemma that, once
   paired with a bound on the number of pure-power events, lifts the `log₂ m`-step guarantee to `m` steps.
 So the leading exponent bumps-itself/grows everywhere except at the **rare pure-power "borrow" events**.
-**Remaining = the step-COUNT** between consecutive pure-power events (each gap = a sub-Goodstein-length):
-prove the number of pure-power steps among the first `m` is `< L₀ − 1`, so `L_k ≥ 2` survives all `m`.
-That count is the next brick and the cleanest Aristotle carve.
+- `ppCount m k` (new `def`) + `leadExp_ge_sub_ppCount` (the **sharpened telescope**):
+  `log₂ m ≤ leadExp_k + ppCount m k` — the leading-exponent deficit is bounded by the *number of
+  pure-power steps*, not the step index (sharper than `leadExp_ge_sub`).
+
+**⟹ THE DIAGONAL CRUX IS NOW REDUCED TO ONE SPARSITY BOUND.** Since `ppCount` is monotone, the
+implication is clean and CORRECT: **`ppCount m m ≤ log₂ m − 2` ⟹ `leadExp_k ≥ 2` for all `k ≤ m`**
+⟹ `seqONote m (m−2) ≥ ω²` ⟹ `f_2(m) ≤ goodsteinLength m + 2` (via `fastGrowing_step_le_goodsteinLength`;
+general `o` analogously with `ppCount m m ≤ log₂ m − o`). The sparsity hypothesis is *plausibly true*
+(pure-power hits `G_i = (i+2)^e` are extremely sparse among the astronomically-large early terms) but
+proving it rigorously **IS** the deep steps-between-drops content — the genuine remaining obligation.
+**Next brick = the sparsity bound** `ppCount m m ≤ log₂ m − 2` (or its general-`o` form); cleanest
+Aristotle carve too. Two routes to it: (a) bound the count directly (number of `i ≤ m` with `G_i` a
+pure power of `base i`); (b) show `leadExp` stays in the *growing* regime (`≥ base i`) for `≥ m` steps,
+since once `leadExp ≥ base` it only grows (`bump_gt`) — drops require first descending to the small
+regime, which itself takes `≫ m` steps.
 
 *Detailed attack notes for sub-fact (ii) / the steps-between-drops recursion are in the lap-6/lap-7
 sections below — unchanged and still the operative plan.*
