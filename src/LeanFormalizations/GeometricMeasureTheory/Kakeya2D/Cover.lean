@@ -22,7 +22,7 @@ A. Córdoba (1977). -/
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.CordobaL2
 import Mathlib.MeasureTheory.Measure.Hausdorff
 
-open Set MeasureTheory
+open Set MeasureTheory Metric
 open scoped ENNReal
 
 namespace LeanFormalizations.Kakeya2D
@@ -79,5 +79,38 @@ theorem hausdorffMeasure_ne_zero_of_contentBound {S : Set Plane} {d : ℝ} (hd :
     (h : HausdorffContentBound S d) : μH[d] S ≠ 0 := by
   obtain ⟨r, hr, c, hc, hbound⟩ := h
   exact hausdorffMeasure_ne_zero_of_diam_content hd hr hc hbound
+
+/-! ### Covering geometry: a cover of `S` thickens to a cover of `Sδ`
+
+The bridge from the K4 single-scale content `vol(Sδ) ≳ 1/log(1/δ)` to a Hausdorff content lower
+bound. A countable cover `S ⊆ ⋃ Uₙ` thickens to a cover `Sδ ⊆ ⋃ (Uₙ)δ'` of the δ-neighbourhood,
+*provided one opens up the radius* `δ < δ'`. The strict gap is essential for the **closed**
+thickening: `infEdist x S ≤ ofReal δ` forces the infimum `⨅ₙ infEdist x Uₙ ≤ ofReal δ` to be `<`
+than `ofReal δ'`, which (unlike `≤`) is attained by *some* single `n` (`iInf_lt_iff`). With equal
+radii an infinite cover can keep the inf an unattained limit — exactly the boundary subtlety flagged
+in the K5 plan, dissolved by the slack. -/
+
+/-- **Cover thickening (closed, with slack).** If `S ⊆ ⋃ₙ Uₙ` and `0 ≤ δ < δ'`, then the closed
+δ-neighbourhood of `S` is covered by the closed δ'-neighbourhoods of the `Uₙ`. -/
+theorem thickening_subset_iUnion_thickening {S : Set Plane} {U : ℕ → Set Plane}
+    (hcov : S ⊆ ⋃ n, U n) {δ δ' : ℝ} (hδ0 : 0 ≤ δ) (hδ : δ < δ') :
+    thickening S δ ⊆ ⋃ n, thickening (U n) δ' := by
+  intro x hx
+  rw [thickening_def, mem_cthickening_iff] at hx
+  have h1 : (⨅ n, infEDist x (U n)) ≤ ENNReal.ofReal δ := by
+    rw [← infEDist_iUnion]; exact le_trans (infEDist_anti hcov) hx
+  have hlt : (⨅ n, infEDist x (U n)) < ENNReal.ofReal δ' :=
+    lt_of_le_of_lt h1 ((ENNReal.ofReal_lt_ofReal_iff (lt_of_le_of_lt hδ0 hδ)).mpr hδ)
+  obtain ⟨n, hn⟩ := iInf_lt_iff.mp hlt
+  exact mem_iUnion.mpr ⟨n, by rw [thickening_def, mem_cthickening_iff]; exact hn.le⟩
+
+/-- **Subadditive covering-volume bound.** If `S ⊆ ⋃ₙ Uₙ` and `0 ≤ δ < δ'`, then
+`vol(Sδ) ≤ ∑ₙ vol((Uₙ)δ')`. This is the upper bound on the δ-neighbourhood volume of `S` in terms of
+the cover, which — paired with the K4 lower bound `volume_thickening_log_ge` — drives the
+single-scale Hausdorff content estimate. -/
+theorem volume_thickening_le_tsum {S : Set Plane} {U : ℕ → Set Plane}
+    (hcov : S ⊆ ⋃ n, U n) {δ δ' : ℝ} (hδ0 : 0 ≤ δ) (hδ : δ < δ') :
+    volume (thickening S δ) ≤ ∑' n, volume (thickening (U n) δ') :=
+  le_trans (measure_mono (thickening_subset_iUnion_thickening hcov hδ0 hδ)) (measure_iUnion_le _)
 
 end LeanFormalizations.Kakeya2D
