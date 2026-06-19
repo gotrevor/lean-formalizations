@@ -239,45 +239,12 @@ lemma one_add_sq_pos (u : ℝ) : 0 < 1 + u ^ 2 := zero_lt_one.trans_le (by simpa
 theorem prelim_decay (ψ : ℝ → ℂ) (u : ℝ) : ‖𝓕 (ψ : ℝ → ℂ) u‖ ≤ ∫ t, ‖ψ t‖ :=
   VectorFourier.norm_fourierIntegral_le_integral_norm ..
 
-theorem prelim_decay_2 (ψ : ℝ → ℂ) (hψ : Integrable ψ) (hvar : BoundedVariationOn ψ Set.univ)
-    (u : ℝ) (hu : u ≠ 0) :
-    ‖𝓕 (ψ : ℝ → ℂ) u‖ ≤ (eVariationOn ψ Set.univ).toReal / (2 * π * ‖u‖) := by sorry
-
-noncomputable def AbsolutelyContinuous (f : ℝ → ℂ) : Prop := (∀ᵐ x, DifferentiableAt ℝ f x) ∧
-  ∀ a b : ℝ, f b - f a = ∫ t in a..b, deriv f t
-
-theorem prelim_decay_3 (ψ : ℝ → ℂ) (hψ : Integrable ψ)
-    (habscont : AbsolutelyContinuous ψ)
-    (hvar : BoundedVariationOn (deriv ψ) Set.univ) (u : ℝ) (hu : u ≠ 0) :
-    ‖𝓕 (ψ : ℝ → ℂ) u‖ ≤ (eVariationOn (deriv ψ) Set.univ).toReal / (2 * π * ‖u‖) ^ 2 := by sorry
-
-theorem decay_alt (ψ : ℝ → ℂ) (hψ : Integrable ψ) (habscont : AbsolutelyContinuous ψ)
-    (hvar : BoundedVariationOn (deriv ψ) Set.univ) (u : ℝ) :
-    ‖𝓕 (ψ : ℝ → ℂ) u‖ ≤
-      ((∫ t, ‖ψ t‖) + (eVariationOn (deriv ψ) Set.univ).toReal / (2 * π) ^ 2) /
-        (1 + ‖u‖ ^ 2) := by
-  rw [le_div_iff₀' <| one_add_sq_pos ‖u‖]
-  by_cases hu : u = 0
-  · subst hu
-    simp only [norm_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, add_zero,
-      one_mul]
-    calc ‖𝓕 ψ 0‖ ≤ ∫ t, ‖ψ t‖ := prelim_decay ψ 0
-      _ ≤ (∫ t, ‖ψ t‖) + (eVariationOn (deriv ψ) Set.univ).toReal / (2 * π) ^ 2 := by
-          have : 0 ≤ (eVariationOn (deriv ψ) Set.univ).toReal / (2 * π) ^ 2 := by positivity
-          linarith
-  · have bound1 : ‖𝓕 ψ u‖ ≤ ∫ t, ‖ψ t‖ := prelim_decay ψ u
-    have bound2 : ‖𝓕 ψ u‖ ≤ (eVariationOn (deriv ψ) Set.univ).toReal / (2 * π * ‖u‖) ^ 2 :=
-      prelim_decay_3 ψ hψ habscont hvar u hu
-    have : (2 * π * ‖u‖) ^ 2 = (2 * π) ^ 2 * ‖u‖ ^ 2 := by ring
-    calc (1 + ‖u‖ ^ 2) * ‖𝓕 ψ u‖
-        = ‖𝓕 ψ u‖ * 1 + ‖𝓕 ψ u‖ * ‖u‖ ^ 2 := by ring
-      _ ≤ (∫ t, ‖ψ t‖) * 1 +
-            (eVariationOn (deriv ψ) Set.univ).toReal / (2 * π * ‖u‖) ^ 2 * ‖u‖ ^ 2 := by
-          gcongr
-      _ = (∫ t, ‖ψ t‖) + (eVariationOn (deriv ψ) Set.univ).toReal / (2 * π) ^ 2 := by
-          rw [mul_one, this, div_mul_eq_div_div]
-          congr 1
-          rw [div_mul_eq_mul_div, div_eq_iff (pow_ne_zero 2 <| norm_ne_zero_iff.mpr hu)]
+-- QUARANTINED (2026-06-19, FINISH-AND-STOP): the BV-Fourier decay island
+-- `prelim_decay_2` / `AbsolutelyContinuous` / `prelim_decay_3` / `decay_alt` lived here.
+-- It was dead code (referenced nowhere; gates no headline) and carried two `sorry`s that are
+-- *still open upstream* in PNTAnd (needs a Lebesgue–Stieltjes IBP for BV that mathlib lacks).
+-- Preserved verbatim in `wip/WienerDecayIsland.lean`
+-- and in git history. The proven `prelim_decay` above is retained.
 
 lemma decay_bounds_key (f : W21) (u : ℝ) : ‖𝓕 (f : ℝ → ℂ) u‖ ≤ ‖f‖ * (1 + u ^ 2)⁻¹ := by
   have l1 : 0 < 1 + u ^ 2 := one_add_sq_pos _

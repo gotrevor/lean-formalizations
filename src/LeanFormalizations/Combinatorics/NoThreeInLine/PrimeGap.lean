@@ -9,18 +9,19 @@ guarantee a prime**:
 
 * **Bertrand** (`Nat.exists_prime_lt_and_le_two_mul`, in mathlib): a prime in `(N/4, N/2]` ⟹ constant
   `3/4` (`maxNoThreeInLine_ge_three_quarters`).
-* **Nagura 1952** (`nagura_prime` below): a prime in `(n, 6n/5]` for `n ≥ 25` ⟹ constant `5/4`
-  (`maxNoThreeInLine_ge_five_fourths`).
-* **PNT-strength gaps** (prime in `((1−ε)N/2, N/2]`): the full `3/2 − o(1)`, matching `hjsw_lower_bound`
-  at the natural sizes `N = 2p` for *all* large `N`.
+* **Refined two-sided Chebyshev** (this file, axiom-clean): a prime in `(n, 8n/5]`/`(n, 5n/4]` ⟹ the
+  **unconditional** constants `15/16` (`maxNoThreeInLine_ge_fifteen_sixteenths`) and `6/5`
+  (`maxNoThreeInLine_ge_six_fifths`).
+* **PNT-strength gaps** (prime in `((1−ε)N/2, N/2]`, via the discharged `weakPNT`): the full
+  `3/2 − o(N)` (`maxNoThreeInLine_ge_three_halves_sub`), matching `hjsw_lower_bound` at the natural
+  sizes `N = 2p` for *all* large `N`. **This closes the general-`N` constant frontier.**
 
-`nagura_prime` is the **active frontier crux** of this thread: it is *proven mathematics* (Nagura
-1952), so it is honest 🟡 debt, not an open conjecture — but mathlib lacks the prerequisite (a
-Chebyshev **lower** bound `c·x ≤ θ x`; it has only the upper bound `theta_le_log4_mul_x` and the
-primorial bound `primorial_le_four_pow`). It is left as a disclosed `sorry` and is the cross-lap
-target; the payoff `maxNoThreeInLine_ge_five_fourths` is wired and ready. See `PENDING_WORK.md` for the
-central-binomial attack plan. The repo's **headline** theorems (`hjsw_lower_bound`,
-`maxNoThreeInLine_bounds`, …) do not depend on this file and remain axiom-clean.
+The whole general-`N` ladder up to HJSW's optimal `3/2 − o(N)` is **complete and axiom-clean**
+(`#print axioms` = `[propext, Classical.choice, Quot.sound]`). The intermediate Nagura `5/4` rung
+(`nagura_prime` + `maxNoThreeInLine_ge_five_fourths`) was **quarantined** on 2026-06-19 (FINISH-AND-STOP):
+it carried a lap-crossing `sorry`, gated no headline, and is superseded by the unconditional `6/5` and
+`3/2 − o(N)` above. Preserved verbatim in
+`wip/NaguraFiveFourths.lean` and git history.
 -/
 import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Consequences
@@ -1097,42 +1098,16 @@ theorem maxNoThreeInLine_ge_six_fifths {N : ℕ} (hN : 5 * 2 ^ 40 ≤ N) :
   have := maxNoThreeInLine_ge_of_two_mul_prime_le hp h2p
   omega
 
-/-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
-(i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
-
-**Status: disclosed `sorry` — the active frontier crux of the HJSW general-`N` thread.** This is a
-*theorem* (proven by Nagura in 1952), not a conjecture; it is 🟡 debt, formalizable but gated on
-infrastructure mathlib does not yet provide.
-
-**Attack plan** (mirrors mathlib's `Nat.exists_prime_lt_and_le_two_mul`, sharpened). The Chebyshev
-lower-bound infrastructure above (`psi_lower`/`theta_lower`) is the elementary part; what remains is
-the *precise* numerical inequality.
-* `4^n ≤ n · C(2n,n)` (`Nat.four_pow_lt_mul_centralBinom`); split `C(2n,n)`'s factorization keeping the
-  `(6n/5, 2n]` primes (sharpen `centralBinom_factorization_small`/`centralBinom_le_of_no_bertrand_prime`).
-* ⚠️ DEFINITIVE (computed): the *crude* elementary constants are **insufficient** for ratio `6/5` —
-  with `theta_lower` (`θ(x) ≳ (log4/2)x`) the bound is `C(2n,n) ≤ (2n)^√(2n)·4^(31n/15)`, and
-  `31/15 ≈ 2.07 > 1`, so it does NOT contradict `4ⁿ ≤ n·C(2n,n)`. (`log4/2 ≈ 0.69` is the best
-  *elementary* `θ` constant; the true `θ(x)~x` needs PNT.) Nagura needs the precise *tuned* inequality
-  — the analogue of `bertrand_main_inequality` re-derived for `6/5`, valid `n ≥ N₀`, with
-  `n ∈ [25, N₀)` by `decide`. That analytic computation is the genuine remaining content.
-* Submitted to Aristotle (`1644a603`). -/
-theorem nagura_prime {n : ℕ} (hn : 25 ≤ n) : ∃ p, p.Prime ∧ n < p ∧ 5 * p ≤ 6 * n := by
-  sorry
-
-/-- **HJSW general-`N` lower bound at constant `5/4`** (conditional on `nagura_prime`). For `N ≥ 60`,
-applying Nagura at `n = ⌊5N/12⌋` yields a prime `p ∈ (⌊5N/12⌋, N/2]`, whose sheared construction gives
-`3(p−1) ≥ 3⌊5N/12⌋ ≈ 5N/4` points. This is the `5/4` rung between Bertrand's `3/4`
-(`maxNoThreeInLine_ge_three_quarters`) and the conjectural `3/2 − o(1)`.
-
-The conclusion is stated in the exact floor form `3·⌊5N/12⌋` (asymptotically `5N/4`), paralleling the
-`3·⌊N/4⌋ = 3·⌊3N/12⌋` form of the Bertrand bound: the improvement `3/12 → 5/12` of the inner
-coefficient is the constant `3/4 → 5/4`. -/
-theorem maxNoThreeInLine_ge_five_fourths {N : ℕ} (hN : 60 ≤ N) :
-    3 * (5 * N / 12) ≤ maxNoThreeInLine N := by
-  obtain ⟨p, hp, hlo, hhi⟩ := nagura_prime (n := 5 * N / 12) (by omega)
-  have h2p : 2 * p ≤ N := by omega
-  have := maxNoThreeInLine_ge_of_two_mul_prime_le hp h2p
-  omega
+-- QUARANTINED (2026-06-19, FINISH-AND-STOP): `nagura_prime` (Nagura 1952, a prime in `(n, 6n/5]`
+-- for `n ≥ 25`) and its sole consumer `maxNoThreeInLine_ge_five_fourths` (the `5/4` rung) lived here.
+-- `nagura_prime` carried the lap-crossing `sorry`. It is *proven mathematics* but its formalization
+-- needs Nagura's explicit finite inequality — unreachable from this file's elementary Chebyshev stack
+-- (the constant `A` matches `(6/5)A` with zero slack) and unreachable from the in-repo PNT
+-- (`exists_prime_gap_pnt` fires only *eventually*, at a threshold ≫ 25). Its `5/4` rung is SUPERSEDED
+-- by the unconditional axiom-clean `6/5` (`maxNoThreeInLine_ge_six_fifths`) and the PNT-driven
+-- `3/2 − o(N)` (`maxNoThreeInLine_ge_three_halves_sub`). Both declarations were referenced nowhere
+-- else. Preserved verbatim in `wip/NaguraFiveFourths.lean`
+-- and in git history; restore + finish (Nagura's tuned inequality) if FINISH-AND-STOP is lifted.
 
 /-! ### The full HJSW `3N/2 − o(N)` general-`N` constant, via the Prime Number Theorem
 

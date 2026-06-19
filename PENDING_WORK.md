@@ -1,5 +1,65 @@
 # PENDING_WORK — no-three-in-line / HJSW frontier (branch `ntl-hjsw`)
 
+## Reflection — 2026-06-19 (deep-reflection lap, strong model)
+
+**Direction call: the project is COMPLETE. Execute the FINISH-AND-STOP wind-down and self-stop.**
+This lap stepped to whole-project altitude (read STATUS, the newest handoffs, the git log, the
+reference corpus, the unharvested findings) and re-verified ground truth rather than trusting docs.
+
+### What I verified (not assumed)
+- **All 17 headlines axiom-clean from real `#print axioms`** — every one is `[propext,
+  Classical.choice, Quot.sound]` (HJSW ladder `hjsw_lower_bound` / `..._three_quarters` /
+  `..._fifteen_sixteenths` / `..._six_fifths` / `..._three_halves_sub` / `..._upper`; `weakPNT`;
+  the full Mertens trilogy incl. `mertens_third_classical_eGamma` and `mertensThirdConst_eq_neg_gamma`;
+  e/π-transcendence; squaring-the-circle; Wantzel iff; power-tower iff; Curtis; Goodstein). Build green
+  (8297 jobs). No `sorryAx`, no math axiom, no 🔴 anywhere.
+- **Faithfulness re-audited** at the source: the flagship reads `∀ε>0, ∀ᶠN, (3/2−ε)N ≤ maxNoThreeInLine N`
+  (HJSW's optimal `3/2 − o(N)`); the Mertens 3rd reads `∏(1−1/p)·logN → e^{−γ}`. Both say what the
+  papers claim.
+- **STATUS.md had internal staleness** (the "Where it stands"/"Pointers" still called Limit B an
+  "active frontier" although it's PROVEN). Fixed this lap.
+
+### The real finding: the treadmill was circling
+The prior lap built→reverted a Dirichlet-divisor side-quest, then **left the three off-headline
+`sorry`s in `src/`** (out of a misread "never delete structure" rule) and wrote a self-stop the
+governor **DECLINED** — because the self-stop gate (`has_open_sorry`, scans `src/**.lean`) still saw
+those `sorry`s. So the treadmill relaunched into this lap. The block was never mathematical; it was a
+false rule-conflict. Trevor's explicit, recent FINISH-AND-STOP directive ("clear or **quarantine**
+those off-headline sorries so `src/` is sorry-free") IS the standing authorization to relocate them;
+git + `wip/` preserve everything, so "never delete structure" is satisfied.
+
+### What I DID this lap
+Adopted the cross-repo **`wip/` convention** (a peer session flagged ntl never had it): created `wip/`
+(outside `src/` → not built, not gate-scanned) and relocated, preserving verbatim —
+- `wip/NaguraFiveFourths.lean` — `nagura_prime` (parked crux) + its superseded `5/4` rung;
+- `wip/WienerDecayIsland.lean` — the dead `prelim_decay_2/3` + `decay_alt` island;
+- `wip/DivisorProblem.lean` — the COMPLETE, axiom-clean Dirichlet divisor proof, restored from `d356584`
+  (moved to `wip/` rather than left reverted-to-git-only, per the convention).
+Result: **`src/` is sorry-free** (governor detector confirms), every headline still axiom-clean, build
+green. → self-stop.
+
+### KEEP doing
+- Re-verify the ledger from REAL `#print axioms` every review lap (it caught the STATUS staleness).
+- Quarantine to `wip/` (not delete, not leave-in-`src/`) for protected/parked/reverted work.
+
+### STOP doing
+- Manufacturing side-quests under FINISH-AND-STOP (the divisor problem was correctly reverted).
+- Deferring an operator-authorized cleanup "pending Trevor" when the directive already answers it —
+  that deferral cost a full relaunch cycle.
+- Calling Limit B / the Mertens thread an "active frontier" — it is COMPLETE.
+
+### Highest-value next target — only if FINISH-AND-STOP is lifted
+There is **no** on-headline target left. If the directive is lifted, in priority order:
+1. Finish `wip/NaguraFiveFourths.lean`'s `nagura_prime` (Nagura's tuned finite inequality, the analogue
+   of `bertrand_main_inequality` for ratio `6/5`, valid `n ≥ N₀` + `n ∈ [25, N₀)` by `decide`) → the
+   axiom-clean general-`N` `5/4` rung. Note it is *superseded* by the unconditional `3/2 − o(N)`, so its
+   marginal value is low — a polish item, not a frontier.
+2. Restore `wip/DivisorProblem.lean` into `src/` (already complete & axiom-clean).
+3. A fresh mathlib-absent classical target.
+Otherwise: the deliverables (HJSW ladder + Mertens trilogy + six other threads) are done. **Self-stop.**
+
+---
+
 ## ⭐ weakPNT DISCHARGED — 2026-06-19 (grind lap, strong model)
 
 **The single deep axiom `weakPNT` (the Prime Number Theorem, `ψ∼x`) is now a fully machine-checked
