@@ -150,4 +150,16 @@ theorem sum_overlap_le {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) {N : ℕ} (hN
         rw [hfac]
         exact mul_le_mul_of_nonneg_left (double_sum_le_log N) hc
 
+/-- **K4 numerator.** `∫ f = ∑ₖ vol(Tₖ) ≥ N · 2δ` — each tube of the family has area `≥ 2δ`
+(`volume_tube_ge`). With `N ≈ δ⁻¹` the numerator is `≳ 2`, the `∫ f ≳ 1` mass of the Córdoba
+Cauchy–Schwarz estimate. -/
+theorem sum_tube_ge {δ : ℝ} (b : ℕ → Plane) (N : ℕ) :
+    (N : ℝ≥0∞) * ENNReal.ofReal (2 * δ)
+      ≤ ∑ k ∈ range N, volume (tube (b k) (dir ((k : ℝ) * δ)) δ) := by
+  calc (N : ℝ≥0∞) * ENNReal.ofReal (2 * δ)
+      = ∑ _k ∈ range N, ENNReal.ofReal (2 * δ) := by
+        rw [sum_const, card_range, nsmul_eq_mul]
+    _ ≤ ∑ k ∈ range N, volume (tube (b k) (dir ((k : ℝ) * δ)) δ) :=
+        sum_le_sum (fun k _ => volume_tube_ge (norm_dir _))
+
 end LeanFormalizations.Kakeya2D
