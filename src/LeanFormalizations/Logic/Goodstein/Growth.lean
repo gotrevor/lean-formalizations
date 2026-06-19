@@ -15,6 +15,7 @@ With the bridge, the engine's ε₀-descent (`Engine.seqOrd_step`) is expressed 
 -/
 import Mathlib.SetTheory.Ordinal.Notation
 import LeanFormalizations.Logic.Goodstein.Engine
+import LeanFormalizations.Logic.Goodstein.Length
 
 namespace LeanFormalizations.Logic.Goodstein
 
@@ -124,6 +125,17 @@ Hence the ONote descent `seqONote m 0 > seqONote m 1 > …` has length `goodstei
 the connection `goodsteinLength` ↔ ε₀-descent that C3 will turn into a Hardy growth bound. -/
 theorem seqONote_eq_zero_iff (m k : ℕ) : seqONote m k = 0 ↔ goodsteinSeq m k = 0 :=
   toONote_eq_zero_iff (k + 2) (goodsteinSeq m k)
+
+/-- The ONote descent reaches `0` exactly at index `goodsteinLength m`. -/
+theorem seqONote_goodsteinLength (m : ℕ) : seqONote m (goodsteinLength m) = 0 :=
+  (seqONote_eq_zero_iff m (goodsteinLength m)).2 (goodsteinSeq_goodsteinLength m)
+
+/-- Before `goodsteinLength m` the descent is strictly positive. So `goodsteinLength m` is
+*precisely* the length of the strict `ONote` descent `seqONote m 0 > … > 0` — the quantity
+C3 must identify with a Hardy value of `seqONote m 0`. -/
+theorem seqONote_ne_zero_of_lt (m : ℕ) {k : ℕ} (h : k < goodsteinLength m) :
+    seqONote m k ≠ 0 :=
+  fun hz => goodsteinSeq_ne_zero_of_lt h ((seqONote_eq_zero_iff m k).1 hz)
 
 /-! ### Anti-vacuity anchors (`native_decide`)
 
