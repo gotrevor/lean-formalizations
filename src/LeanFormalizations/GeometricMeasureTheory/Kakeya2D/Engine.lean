@@ -6,14 +6,17 @@ The headline `dimH S = 2` splits into the two inequalities:
 * `dimH_le_two` — the **trivial** half: any subset of `ℝ²` has Hausdorff dimension `≤ 2`,
   by monotonicity into `univ`, whose dimension is `finrank ℝ (ℝ²) = 2`. **Proven.**
 * `two_le_dimH` — **Davies 1971**, the genuine content: a planar Kakeya set has Hausdorff
-  dimension `≥ 2`. Now fully machine-checked *modulo the single crisp axiom*
-  `kakeya_dominant_scale_count` (the cross-scale orchestration / net-thinning). Strategy: Córdoba's
-  dual / "bush" `L²` argument — see `PLAN.md`.
+  dimension `≥ 2`. Now machine-checked *modulo the single crisp axiom*
+  `kakeya_subresolution_content` (the **Case B / sub-resolution** residual — see its docstring): the
+  full dominant-scale assembly (fine net ⟶ shift pigeonhole ⟶ base-angle Córdoba) is proven; the lone
+  leftover is the Hausdorff-vs-box gap for covers dominated by pieces finer than the net resolution.
+  Strategy: Córdoba's dual / "bush" `L²` argument — see `PLAN.md`.
 
 Only `two_le_dimH` uses `IsKakeya`; the upper bound holds for every set in the plane.
 -/
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Defs
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Cover
+import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.NetThinning
 import Mathlib.Analysis.Normed.Lp.MeasurableSpace
 
 open Set MeasureTheory
@@ -183,33 +186,38 @@ theorem content_ratio_lower {d : ℝ} (hd0 : 0 < d) (hd2 : d < 2) :
         mul_le_mul_of_nonneg_right hmain (by positivity)
     _ = q * ((1 / 4 : ℝ) ^ j * (4 * q) ^ j) := by ring
 
-/-- **The narrowed deep crux (cross-scale orchestration / dominant-scale extraction).** This is the
-one genuinely reference-gated combinatorial obligation of the planar Kakeya lower bound, isolated as a
-crisp `axiom`. Given a planar Kakeya set `S`, a cover `{tₙ}` (`ediam ≤ 1`), and `0 < d < 2`, it asserts
-the existence of a **dominant dyadic scale** `j` together with:
+/-- **Case B residual: the sub-resolution Hausdorff-content bound — the genuine remaining obstacle.**
 
-* base points `a k` and covered sets `A k ⊆ [0,1]` (one per net direction `θ_k = k·2⁻ʲ`);
-* a finite set `s` of cover pieces, each of diameter `∈ (2⁻⁽ʲ⁺¹⁾, 2⁻ʲ]` (genuinely *at* scale `j`);
-* the geometric containment `φ_k(A k) ⊆ ⋃_{n∈s} tₙ` (the covered segments lie in the scale-`j` pieces);
-* the **covered-length numerator bound** `∑ₖ 2δ·vol(A k) ≥ 1/((j+1)(j+2))` (`δ = 2⁻ʲ`) — a
-  `1/poly(j)` fraction of the `N = 2ʲ` net directions is covered at the dominant scale.
+The dominant-scale assembly (`kakeya_hausdorffContentBound`, below) runs a fine net at resolution
+`2⁻ᴶ`, pigeonholes to a dominant scale `j ≤ J`, and — when `j < J` (**Case A**) — discharges the
+content bound entirely from the proven bricks (`exists_dominant_shift` ⟹ a shifted `2⁻ʲ`-net of `2ʲ`
+directions covered `≳ 1/poly(j)` at scale `j`, fed to the base-angle `cover_content_per_scale`). The
+*only* leftover is **Case B** `j = J`: the cover is dominated by pieces **finer** than the net
+resolution, so the scale-`J` fiber is not a single scale — `cover_content_per_scale` does not apply
+(pieces can be arbitrarily small, so their *count* no longer bounds `∑ ediam^d`).
 
-This bundles the two dyadic pigeonholes (`Cover.exists_dominant_scale`, `exists_global_dominant_scale`)
-with the net-thinning + covered-length-retention step that breaks the net-scale circularity — the lone
-piece still open (see `ON-LINE-REQUEST.md`). **Everything downstream of it is now machine-checked**:
-`cover_content_per_scale` (Córdoba count ⟹ content), `content_ratio_lower` (the exponential-beats-poly
-constant), and the assembly below. Discharging this axiom into a proof is the remaining work. -/
-axiom kakeya_dominant_scale_count
-    {S : Set Plane} (h : IsKakeya S) {d : ℝ} (hd0 : 0 < d) (hd2 : d < 2)
-    (t : ℕ → Set Plane) (hcov : S ⊆ ⋃ n, t n) (hr : ∀ n, Metric.ediam (t n) ≤ 1) :
-    ∃ j : ℕ, ∃ (a : ℕ → Plane) (A : ℕ → Set ℝ),
-      (∀ k, MeasurableSet (A k)) ∧ (∀ k, A k ⊆ Set.Icc (0 : ℝ) 1) ∧
-      ∃ s : Finset ℕ,
-        (∀ n ∈ s, Metric.ediam (t n) ≤ ENNReal.ofReal ((1 / 2 : ℝ) ^ j)) ∧
-        (∀ n ∈ s, ENNReal.ofReal ((1 / 2 : ℝ) ^ (j + 1)) ≤ Metric.ediam (t n)) ∧
-        (∀ k, (fun u => a k + u • dir ((k : ℝ) * (1 / 2 : ℝ) ^ j)) '' (A k) ⊆ ⋃ n ∈ s, t n) ∧
-        ENNReal.ofReal (1 / (((j : ℝ) + 1) * ((j : ℝ) + 2)))
-          ≤ ∑ k ∈ Finset.range (2 ^ j), ENNReal.ofReal (2 * (1 / 2 : ℝ) ^ j) * volume (A k)
+This is exactly the **Hausdorff-vs-box-counting gap**. The Córdoba `L²` bound pins the box dimension
+at every fixed scale (proven: `volume_thickening_log_ge`); promoting it to a Hausdorff content bound
+for an arbitrarily-fine cover requires summing the per-scale counts across the sub-resolution scales
+with the right convexity — the part not yet formalized. It is isolated here as the content conclusion
+**conditioned on the Case-B witness**: a `2ᴶ`-direction net (base points `a k`, measurable covered
+sets `A k ⊆ [0,1]`, base angle `c`) whose covered segments lie in a family `s` of pieces *all* of
+diameter `≤ 2⁻ᴶ` (`hediam_hi`), carrying `≥ 1/poly(J)` of the aggregate covered length (`hnum`). Note
+this axiom is **strictly weaker** than the former monolithic dominant-scale axiom: it only fires once
+the bricks have *proven* we reach scale `J` with the numerator in hand; Case A needs no axiom at all.
+See `ON-LINE-REQUEST.md` UPDATE 3 (ask 3b: rigorous handling of the non-measurable sub-resolution
+family). Reference: Wolff, *Lectures on Harmonic Analysis*; Mattila, *Fourier Analysis and Hausdorff
+Dimension*, §22–23. -/
+axiom kakeya_subresolution_content {d : ℝ} (hd : 0 ≤ d)
+    {cR : ℝ} (hcRpos : 0 < cR) (J : ℕ) (c : ℝ)
+    (a : ℕ → Plane) (A : ℕ → Set ℝ) (hAmeas : ∀ k, MeasurableSet (A k))
+    (hA01 : ∀ k, A k ⊆ Set.Icc (0 : ℝ) 1) (U : ℕ → Set Plane) (s : Set ℕ)
+    (hediam_hi : ∀ n ∈ s, Metric.ediam (U n) ≤ ENNReal.ofReal ((1 / 2 : ℝ) ^ J))
+    (hscov : ∀ k, (fun u => a k + u • dir (c + (k : ℝ) * (1 / 2 : ℝ) ^ J)) '' (A k) ⊆ ⋃ n ∈ s, U n)
+    (hnum : ENNReal.ofReal (1 / (((J : ℝ) + 1) * ((J : ℝ) + 2)))
+        ≤ ∑ k ∈ Finset.range (2 ^ J), ENNReal.ofReal (2 * (1 / 2 : ℝ) ^ J) * volume (A k)) :
+    (volume (Metric.closedBall (0 : Plane) 1))⁻¹ * ENNReal.ofReal cR
+      ≤ ∑' n, Metric.ediam (U n) ^ d
 
 theorem kakeya_hausdorffContentBound
     {S : Set (EuclideanSpace ℝ (Fin 2))} (h : IsKakeya S) {d : ℝ} (hd0 : 0 < d) (hd2 : d < 2) :
@@ -221,83 +229,161 @@ theorem kakeya_hausdorffContentBound
   refine ⟨1, zero_lt_one, D⁻¹ * ENNReal.ofReal cR, ?_, ?_⟩
   · exact mul_ne_zero (ENNReal.inv_ne_zero.mpr hDtop) (ENNReal.ofReal_pos.mpr hcRpos).ne'
   · intro t hcov hdiam
-    obtain ⟨j, a, A, hAmeas, hA01, s, hediam_hi, hediam_lo, hscov, hnum⟩ :=
-      kakeya_dominant_scale_count h hd0 hd2 t hcov hdiam
-    -- the single-scale content brick at the dominant scale `δ = ρ = (1/2)^j`, `N = 2^j`
-    have hps := cover_content_per_scale (δ := (1 / 2 : ℝ) ^ j) (ρ := (1 / 2 : ℝ) ^ j) (N := 2 ^ j)
-      (η := ENNReal.ofReal ((1 / 2 : ℝ) ^ (j + 1)))
-      (by positivity) (pow_le_one₀ (by norm_num) (by norm_num)) (by positivity)
-      (by rw [Nat.cast_pow, ← mul_pow]; norm_num) a A hAmeas hA01 (0 : ℝ) s t hediam_hi
-      (by simpa only [zero_add] using hscov) hd0.le hediam_lo
-    rw [← hD] at hps
-    set C0 : ℝ≥0∞ := ENNReal.ofReal (((1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j) ^ 2) * D
-        * ENNReal.ofReal (6 * Real.pi * (1 / 2 : ℝ) ^ j
-          * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ)))) with hC0def
-    -- real simplifications connecting the Córdoba coefficient to `content_ratio_lower`'s form
-    have hsq : ((1 / 2 : ℝ) ^ j) ^ 2 = (1 / 4 : ℝ) ^ j := by
-      rw [show (1 / 4 : ℝ) = (1 / 2 : ℝ) ^ 2 from by norm_num, ← pow_mul, ← pow_mul, mul_comm]
-    have hW1 : ((1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j) ^ 2 = 4 * (1 / 4 : ℝ) ^ j := by
-      rw [show (1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j = 2 * (1 / 2 : ℝ) ^ j from by ring, mul_pow, hsq]
-      norm_num
-    have hcast : ((2 ^ j : ℕ) : ℝ) = (2 : ℝ) ^ j := by rw [Nat.cast_pow, Nat.cast_ofNat]
-    have hW2 : 6 * Real.pi * (1 / 2 : ℝ) ^ j
-        * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ)))
-        = 12 * Real.pi * (1 + (j : ℝ) * Real.log 2) := by
-      rw [hcast, Real.log_pow,
-        show 6 * Real.pi * (1 / 2 : ℝ) ^ j * (2 * (2 : ℝ) ^ j * (1 + (j : ℝ) * Real.log 2))
-          = 12 * Real.pi * ((1 / 2 : ℝ) ^ j * (2 : ℝ) ^ j) * (1 + (j : ℝ) * Real.log 2) from by ring,
-        show (1 / 2 : ℝ) ^ j * (2 : ℝ) ^ j = 1 from by rw [← mul_pow]; norm_num]
-      ring
-    have hKEYreal : cR * (((1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j) ^ 2)
-          * (6 * Real.pi * (1 / 2 : ℝ) ^ j
-            * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ))))
-        ≤ (1 / (((j : ℝ) + 1) * ((j : ℝ) + 2))) ^ 2 * ((1 / 2 : ℝ) ^ (j + 1)) ^ d := by
-      rw [hW1, hW2]; exact hcR j
-    -- `C0 ≠ 0`, `C0 ≠ ⊤` for the cancellation
-    have hW2pos : 0 < 6 * Real.pi * (1 / 2 : ℝ) ^ j
-        * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ))) := by
-      rw [hW2]
-      have hp : (0 : ℝ) < 1 + (j : ℝ) * Real.log 2 := by
-        have h := mul_nonneg (Nat.cast_nonneg j) (Real.log_pos (by norm_num : (1 : ℝ) < 2)).le
-        linarith
-      exact mul_pos (by positivity) hp
-    have hC0pos : C0 ≠ 0 := by
-      rw [hC0def]
-      exact mul_ne_zero (mul_ne_zero (ENNReal.ofReal_pos.mpr (by positivity)).ne' hDpos.ne')
-        (ENNReal.ofReal_pos.mpr hW2pos).ne'
-    have hC0top : C0 ≠ ⊤ := by
-      rw [hC0def]
-      exact ENNReal.mul_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hDtop) ENNReal.ofReal_ne_top
-    -- `(D⁻¹·ofReal cR)·C0 = ofReal(cR·W1·W2)` (the `D⁻¹·D` cancels)
-    have hLHS : (D⁻¹ * ENNReal.ofReal cR) * C0
-        = ENNReal.ofReal (cR * ((1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j) ^ 2
-          * (6 * Real.pi * (1 / 2 : ℝ) ^ j
-            * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ))))) := by
-      rw [hC0def,
-        show (D⁻¹ * ENNReal.ofReal cR) * (ENNReal.ofReal (((1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j) ^ 2) * D
-            * ENNReal.ofReal (6 * Real.pi * (1 / 2 : ℝ) ^ j
-              * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ)))))
-          = (D⁻¹ * D) * (ENNReal.ofReal cR
-              * ENNReal.ofReal (((1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j) ^ 2)
-              * ENNReal.ofReal (6 * Real.pi * (1 / 2 : ℝ) ^ j
-                * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ))))) from by ring,
-        ENNReal.inv_mul_cancel hDpos.ne' hDtop, one_mul,
-        ← ENNReal.ofReal_mul hcRpos.le, ← ENNReal.ofReal_mul (by positivity)]
-    rw [← ENNReal.mul_le_mul_iff_left hC0pos hC0top]
-    calc (D⁻¹ * ENNReal.ofReal cR) * C0
-        = ENNReal.ofReal (cR * ((1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j) ^ 2
-            * (6 * Real.pi * (1 / 2 : ℝ) ^ j
-              * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ))))) := hLHS
-      _ ≤ ENNReal.ofReal ((1 / (((j : ℝ) + 1) * ((j : ℝ) + 2))) ^ 2 * ((1 / 2 : ℝ) ^ (j + 1)) ^ d) :=
-          ENNReal.ofReal_le_ofReal hKEYreal
-      _ = (ENNReal.ofReal (1 / (((j : ℝ) + 1) * ((j : ℝ) + 2)))) ^ 2
-          * (ENNReal.ofReal ((1 / 2 : ℝ) ^ (j + 1))) ^ d := by
-          rw [ENNReal.ofReal_mul (by positivity), ENNReal.ofReal_pow (by positivity),
-            ← ENNReal.ofReal_rpow_of_pos (by positivity : (0 : ℝ) < (1 / 2 : ℝ) ^ (j + 1))]
-      _ ≤ (∑ k ∈ Finset.range (2 ^ j), ENNReal.ofReal (2 * (1 / 2 : ℝ) ^ j) * volume (A k)) ^ 2
-            * (ENNReal.ofReal ((1 / 2 : ℝ) ^ (j + 1))) ^ d := by gcongr
-      _ ≤ (∑ n ∈ s, Metric.ediam (t n) ^ d) * C0 := hps
-      _ ≤ (∑' n, Metric.ediam (t n) ^ d) * C0 := mul_le_mul_right' (ENNReal.sum_le_tsum s) C0
+    -- Reduce to closed cover pieces (same `ediam`, still covering `S`): measurable pullbacks.
+    set U : ℕ → Set Plane := fun n => closure (t n) with hUdef
+    have hUcl : ∀ n, IsClosed (U n) := fun n => isClosed_closure
+    have hediam_eq : ∀ n, Metric.ediam (U n) = Metric.ediam (t n) :=
+      fun n => Metric.ediam_closure (t n)
+    have hUcov : S ⊆ ⋃ n, U n := hcov.trans (Set.iUnion_mono fun n => subset_closure)
+    have hUdiam : ∀ n, Metric.ediam (U n) ≤ 1 := fun n => (hediam_eq n).le.trans (hdiam n)
+    rw [show (∑' n, Metric.ediam (t n) ^ d) = ∑' n, Metric.ediam (U n) ^ d from by
+      simp_rw [hediam_eq]]
+    -- Fine net at resolution `2⁻ᴶ` (here `J = 1`); per-direction measurable pullbacks.
+    set J : ℕ := 1 with hJdef
+    have hpull : ∀ m : ℕ, ∃ (bm : Plane) (Tm : ℕ → Set ℝ),
+        (∀ n, MeasurableSet (Tm n)) ∧ (∀ n, Tm n ⊆ Set.Icc (0 : ℝ) 1) ∧
+        (∀ n, (fun u => bm + u • dir ((m : ℝ) * (1 / 2 : ℝ) ^ J)) '' (Tm n) ⊆ U n) ∧
+        1 ≤ volume (⋃ n, Tm n) := by
+      intro m
+      obtain ⟨bm, hbm⟩ := h (dir ((m : ℝ) * (1 / 2 : ℝ) ^ J)) (norm_dir _)
+      obtain ⟨Tm, hT1, hT2, hT3, hT4⟩ :=
+        exists_measurable_pullback_cover (norm_dir ((m : ℝ) * (1 / 2 : ℝ) ^ J)) hUcl
+          (hbm.trans hUcov)
+      exact ⟨bm, Tm, hT1, hT2, hT3, hT4⟩
+    choose bp T hTmeas hT01 hTcov hTvol using hpull
+    -- Capped dyadic scale function (zero-diameter pieces sent to the floor `J`).
+    set g : ℕ → ℕ := fun n =>
+      if 0 < (Metric.ediam (U n)).toReal then min (dyadicIdx (Metric.ediam (U n)).toReal) J else J
+      with hgdef
+    have hgle : ∀ n, g n ≤ J := by
+      intro n; simp only [hgdef]; split
+      · exact min_le_right _ _
+      · exact le_refl J
+    -- Per-direction, per-scale union covered length.
+    set L : ℕ → ℕ → ℝ≥0∞ := fun m i => volume (⋃ n ∈ (g ⁻¹' {i} : Set ℕ), T m n) with hLdef
+    have hLsupp : ∀ m i, J < i → L m i = 0 := by
+      intro m i hi
+      have hempty : (g ⁻¹' {i} : Set ℕ) = ∅ := by
+        ext n
+        simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_empty_iff_false, iff_false]
+        intro he; exact absurd (he ▸ hgle n) (not_le.mpr hi)
+      simp only [hLdef, hempty, Set.mem_empty_iff_false, Set.iUnion_of_empty, Set.iUnion_empty,
+        measure_empty]
+    have hLcov : ∀ m ∈ Finset.range (2 ^ J), 1 ≤ ∑' i, L m i := fun m _ =>
+      one_le_tsum_volume_fiber_union g (hTvol m)
+    obtain ⟨j, hjJ, β, hβ, hshift⟩ := exists_dominant_shift L hLsupp hLcov
+    -- The shifted subnet: directions `dir(c + i·2⁻ʲ)`, `c = β·2⁻ᴶ`, fine index `m = β + 2^{J-j}·i`.
+    set c : ℝ := (β : ℝ) * (1 / 2 : ℝ) ^ J with hcdef
+    set A : ℕ → Set ℝ := fun i => ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), T (β + 2 ^ (J - j) * i) n with hAdef
+    have hAmeas : ∀ i, MeasurableSet (A i) := fun i =>
+      MeasurableSet.biUnion (Set.to_countable _) (fun n _ => hTmeas _ n)
+    have hA01 : ∀ i, A i ⊆ Set.Icc (0 : ℝ) 1 := fun i =>
+      Set.iUnion₂_subset (fun n _ => hT01 _ n)
+    -- the resolution identity `2^{J-j}·2⁻ᴶ = 2⁻ʲ`
+    have hpowJ : (1 / 2 : ℝ) ^ J = (1 / 2 : ℝ) ^ (J - j) * (1 / 2 : ℝ) ^ j := by
+      rw [← pow_add, Nat.sub_add_cancel hjJ]
+    have hstep : (2 : ℝ) ^ (J - j) * (1 / 2 : ℝ) ^ J = (1 / 2 : ℝ) ^ j := by
+      rw [hpowJ, ← mul_assoc, ← mul_pow]; norm_num
+    -- direction agreement `dir(c + i·2⁻ʲ) = dir(m·2⁻ᴶ)`
+    have hangle : ∀ i : ℕ, c + (i : ℝ) * (1 / 2 : ℝ) ^ j
+        = ((β + 2 ^ (J - j) * i : ℕ) : ℝ) * (1 / 2 : ℝ) ^ J := by
+      intro i; rw [hcdef, ← hstep]; push_cast; ring
+    -- the covering containment for the subnet
+    have hscov : ∀ i, (fun u => bp (β + 2 ^ (J - j) * i)
+        + u • dir (c + (i : ℝ) * (1 / 2 : ℝ) ^ j)) '' (A i)
+        ⊆ ⋃ n ∈ (g ⁻¹' {j} : Set ℕ), U n := by
+      intro i
+      rw [hangle i, hAdef, Set.image_iUnion₂]
+      exact Set.iUnion₂_subset (fun n hn =>
+        (hTcov (β + 2 ^ (J - j) * i) n).trans (Set.subset_biUnion_of_mem hn))
+    -- the covered-length numerator at the dominant scale
+    have hAvol : ∀ i, volume (A i) = L (β + 2 ^ (J - j) * i) j := fun i => rfl
+    have hnum : ENNReal.ofReal (1 / (((j : ℝ) + 1) * ((j : ℝ) + 2)))
+        ≤ ∑ i ∈ Finset.range (2 ^ j), ENNReal.ofReal (2 * (1 / 2 : ℝ) ^ j) * volume (A i) := by
+      calc ENNReal.ofReal (1 / (((j : ℝ) + 1) * ((j : ℝ) + 2)))
+          = ENNReal.ofReal (2 * (1 / 2 : ℝ) ^ j) * (((2 ^ j : ℕ) : ℝ≥0∞) * scaleWeight j) := by
+            rw [scaleWeight,
+              show ((2 ^ j : ℕ) : ℝ≥0∞) = ENNReal.ofReal ((2 : ℝ) ^ j) from by
+                rw [← ENNReal.ofReal_natCast, Nat.cast_pow, Nat.cast_ofNat],
+              ← ENNReal.ofReal_mul (by positivity), ← ENNReal.ofReal_mul (by positivity)]
+            congr 1
+            rw [show (2 * (1 / 2 : ℝ) ^ j)
+                  * ((2 : ℝ) ^ j * (1 / (2 * ((j : ℝ) + 1) * ((j : ℝ) + 2))))
+                = ((1 / 2 : ℝ) ^ j * (2 : ℝ) ^ j) * (1 / (((j : ℝ) + 1) * ((j : ℝ) + 2))) from by
+                  field_simp,
+              show (1 / 2 : ℝ) ^ j * (2 : ℝ) ^ j = 1 from by rw [← mul_pow]; norm_num, one_mul]
+        _ ≤ ENNReal.ofReal (2 * (1 / 2 : ℝ) ^ j) * ∑ i ∈ Finset.range (2 ^ j), volume (A i) := by
+            refine mul_le_mul_left' ?_ _
+            simp_rw [hAvol]; exact hshift
+        _ = ∑ i ∈ Finset.range (2 ^ j), ENNReal.ofReal (2 * (1 / 2 : ℝ) ^ j) * volume (A i) := by
+            rw [Finset.mul_sum]
+    -- Case split: dominant scale strictly below the resolution (A) vs. saturating it (B).
+    rcases lt_or_eq_of_le hjJ with hjlt | hjeq
+    · -- Case A: pieces genuinely at scale `j < J`; finite/infinite fiber split.
+      have hwin : ∀ n, g n = j → Metric.ediam (U n) ≤ ENNReal.ofReal ((1 / 2 : ℝ) ^ j)
+          ∧ ENNReal.ofReal ((1 / 2 : ℝ) ^ (j + 1)) ≤ Metric.ediam (U n) := by
+        intro n hn
+        have hpos : 0 < (Metric.ediam (U n)).toReal := by
+          by_contra hp
+          simp only [hgdef] at hn; rw [if_neg hp] at hn; omega
+        have hdi : dyadicIdx (Metric.ediam (U n)).toReal = j := by
+          simp only [hgdef] at hn; rw [if_pos hpos] at hn; omega
+        have hle1 : (Metric.ediam (U n)).toReal ≤ 1 := by
+          have := ENNReal.toReal_mono (by norm_num : (1 : ℝ≥0∞) ≠ ⊤) (hUdiam n); simpa using this
+        have hwindow := dyadicIdx_window hpos hle1
+        rw [hdi] at hwindow
+        have heq : Metric.ediam (U n) = ENNReal.ofReal (Metric.ediam (U n)).toReal :=
+          (ENNReal.ofReal_toReal (ne_top_of_le_ne_top (by norm_num) (hUdiam n))).symm
+        exact ⟨by rw [heq]; exact ENNReal.ofReal_le_ofReal hwindow.2,
+          by rw [heq]; exact ENNReal.ofReal_le_ofReal hwindow.1.le⟩
+      by_cases hfin : (g ⁻¹' {j} : Set ℕ).Finite
+      · -- finite fiber: the base-angle Córdoba content brick
+        have hbiUeq : (⋃ n ∈ (g ⁻¹' {j} : Set ℕ), U n) = ⋃ n ∈ hfin.toFinset, U n := by
+          ext x; simp only [Set.mem_iUnion, Set.Finite.mem_toFinset]
+        refine caseA_content hd0.le hcRpos hcR j c (fun i => bp (β + 2 ^ (J - j) * i)) A hAmeas
+          hA01 U hfin.toFinset (fun n hn => (hwin n (hfin.mem_toFinset.mp hn)).1)
+          (fun n hn => (hwin n (hfin.mem_toFinset.mp hn)).2) (fun i => ?_) hnum
+        rw [← hbiUeq]; exact hscov i
+      · -- infinite fiber: `∑' ediam^d = ⊤`
+        have hinf : (g ⁻¹' {j} : Set ℕ).Infinite := hfin
+        haveI : Infinite ↥(g ⁻¹' {j} : Set ℕ) := Set.infinite_coe_iff.mpr hinf
+        have hεpos : 0 < ENNReal.ofReal ((1 / 2 : ℝ) ^ (j + 1)) ^ d :=
+          ENNReal.rpow_pos (ENNReal.ofReal_pos.mpr (by positivity)) ENNReal.ofReal_ne_top
+        have h3 : ∑' _n : ↥(g ⁻¹' {j} : Set ℕ), ENNReal.ofReal ((1 / 2 : ℝ) ^ (j + 1)) ^ d = ⊤ :=
+          ENNReal.tsum_const_eq_top_of_ne_zero hεpos.ne'
+        have h2 : ∑' n : ↥(g ⁻¹' {j} : Set ℕ), ENNReal.ofReal ((1 / 2 : ℝ) ^ (j + 1)) ^ d
+            ≤ ∑' n : ↥(g ⁻¹' {j} : Set ℕ), Metric.ediam (U ↑n) ^ d :=
+          ENNReal.tsum_le_tsum (fun n => ENNReal.rpow_le_rpow (hwin ↑n n.2).2 hd0.le)
+        have h1 : ∑' n : ↥(g ⁻¹' {j} : Set ℕ), Metric.ediam (U ↑n) ^ d
+            ≤ ∑' n, Metric.ediam (U n) ^ d :=
+          ENNReal.tsum_comp_le_tsum_of_injective Subtype.val_injective _
+        have htop : ∑' n, Metric.ediam (U n) ^ d = ⊤ :=
+          top_le_iff.mp (h3 ▸ (h2.trans h1))
+        rw [htop]; exact le_top
+    · -- Case B: dominant scale saturates the resolution (`j = J`) — the sub-resolution residual.
+      clear hjeq
+      have hwinB : ∀ n ∈ (g ⁻¹' {j} : Set ℕ), Metric.ediam (U n) ≤ ENNReal.ofReal ((1 / 2 : ℝ) ^ j) := by
+        intro n hn
+        have hn' : g n = j := hn
+        by_cases hp : 0 < (Metric.ediam (U n)).toReal
+        · have hdiJ : j ≤ dyadicIdx (Metric.ediam (U n)).toReal := by
+            simp only [hgdef] at hn'; rw [if_pos hp] at hn'; omega
+          have hle1 : (Metric.ediam (U n)).toReal ≤ 1 := by
+            have := ENNReal.toReal_mono (by norm_num : (1 : ℝ≥0∞) ≠ ⊤) (hUdiam n); simpa using this
+          have hw := (dyadicIdx_window hp hle1).2
+          have hmono : (1 / 2 : ℝ) ^ dyadicIdx (Metric.ediam (U n)).toReal ≤ (1 / 2 : ℝ) ^ j :=
+            pow_le_pow_of_le_one (by norm_num) (by norm_num) hdiJ
+          have heq : Metric.ediam (U n) = ENNReal.ofReal (Metric.ediam (U n)).toReal :=
+            (ENNReal.ofReal_toReal (ne_top_of_le_ne_top (by norm_num) (hUdiam n))).symm
+          rw [heq]; exact ENNReal.ofReal_le_ofReal (hw.trans hmono)
+        · have htr0 : (Metric.ediam (U n)).toReal = 0 := le_antisymm (not_lt.mp hp) ENNReal.toReal_nonneg
+          have hz : Metric.ediam (U n) = 0 := by
+            rcases (ENNReal.toReal_eq_zero_iff _).mp htr0 with hh | hh
+            · exact hh
+            · exact absurd hh (ne_top_of_le_ne_top (by norm_num) (hUdiam n))
+          rw [hz]; exact zero_le _
+      exact kakeya_subresolution_content hd0.le hcRpos j c (fun i => bp (β + 2 ^ (J - j) * i)) A
+        hAmeas hA01 U (g ⁻¹' {j} : Set ℕ) hwinB hscov hnum
 
 /-- **The concrete crux (Davies 1971, measure form).** For a Kakeya set `S ⊆ ℝ²`, every
 `d`-dimensional Hausdorff measure with `d < 2` is *positive*: `μH[d] S ≠ 0`.
@@ -311,8 +397,8 @@ lower bound witnessing `μH[d] S > 0` for every `d < 2`.
 is `volume_thickening_log_ge`. K5's measure-free reduction (`Cover.lean`,
 `hausdorffMeasure_ne_zero_of_contentBound`) turns the crux into the **Hausdorff content bound**
 `kakeya_hausdorffContentBound`, now machine-checked modulo the lone axiom
-`kakeya_dominant_scale_count`. The `d = 0` endpoint is free from monotonicity of `μH` in `d`
-against the `d = 1` content bound. -/
+`kakeya_subresolution_content` (the Case B / sub-resolution residual). The `d = 0` endpoint is free
+from monotonicity of `μH` in `d` against the `d = 1` content bound. -/
 theorem hausdorffMeasure_pos_of_isKakeya
     (S : Set (EuclideanSpace ℝ (Fin 2))) (h : IsKakeya S) :
     ∀ d : ℝ≥0, (d : ℝ≥0∞) < 2 → μH[(d : ℝ)] S ≠ 0 := by
