@@ -46,7 +46,7 @@ theorem hausdorffMeasure_ne_zero_of_content_bound {S : Set Plane} {d : ℝ}
         ⨅ (t : ℕ → Set Plane) (_ : S ⊆ ⋃ n, t n) (_ : ∀ n, Metric.ediam (t n) ≤ r),
           ∑' n, ⨆ _ : (t n).Nonempty, Metric.ediam (t n) ^ d) r hr)
     exact le_iInf fun t => le_iInf fun hcov => le_iInf fun hdiam => hbound t hcov hdiam
-  exact fun hzero => hc (le_antisymm (hzero ▸ hge) (zero_le c))
+  exact fun hzero => hc (le_antisymm (hzero ▸ hge) zero_le)
 
 /-- **Hausdorff content lower bound ⟹ positive Hausdorff measure (diameter form, `d > 0`).** The
 convenient downstream form: the cover hypothesis is stated with the *bare* sum `∑ₙ ediam(tₙ)^d`
@@ -63,7 +63,7 @@ theorem hausdorffMeasure_ne_zero_of_diam_content {S : Set Plane} {d : ℝ} (hd :
   · exact le_iSup (fun _ : (t n).Nonempty => Metric.ediam (t n) ^ d) hne
   · rw [not_nonempty_iff_eq_empty] at hne
     rw [hne, Metric.ediam_empty, ENNReal.zero_rpow_of_pos hd]
-    exact zero_le _
+    exact zero_le
 
 /-- **The remaining deep obligation (K5 core), as a `Prop`.** A *Hausdorff content lower bound* of
 exponent `d` for `S`: a scale `r > 0` and a positive constant `c` such that every countable cover of
@@ -229,7 +229,7 @@ theorem volume_thickening_le_of_ediam_le {U : Set Plane} {ρ δ' : ℝ}
     (hρ : 0 ≤ ρ) (hδ' : 0 ≤ δ') (hdiam : Metric.ediam U ≤ ENNReal.ofReal ρ) :
     volume (thickening U δ') ≤ ENNReal.ofReal ((ρ + δ') ^ 2) * volume (closedBall (0 : Plane) 1) := by
   rcases U.eq_empty_or_nonempty with rfl | ⟨x₀, hx₀⟩
-  · rw [thickening_def, cthickening_empty, measure_empty]; exact zero_le _
+  · rw [thickening_def, cthickening_empty, measure_empty]; exact zero_le
   · have hsub : U ⊆ closedBall x₀ ρ := by
       intro y hy
       rw [Metric.mem_closedBall, dist_comm]

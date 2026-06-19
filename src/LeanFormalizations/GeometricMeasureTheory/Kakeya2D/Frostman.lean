@@ -36,7 +36,7 @@ theorem hausdorffMeasure_ne_zero_of_frostman {S : Set Plane} {d : ℝ}
     μH[d] S ≠ 0 := by
   have hle : μ ≤ μH[d] := MeasureTheory.Measure.le_hausdorffMeasure d μ ε hε hfrost
   intro hzero
-  exact hpos (le_antisymm (le_trans (Measure.le_iff'.1 hle S) (le_of_eq hzero)) (zero_le _))
+  exact hpos (le_antisymm (le_trans (Measure.le_iff'.1 hle S) (le_of_eq hzero)) zero_le)
 
 /-- **Mass distribution principle, with a Frostman constant.** The realistic form: a measure with
 `μ s ≤ C · diam(s)^d` (any finite `C > 0`) charging `S` still forces `μH[d] S ≠ 0` — rescale by
@@ -57,7 +57,7 @@ theorem hausdorffMeasure_ne_zero_of_frostman_const {S : Set Plane} {d : ℝ}
   intro hzero
   have hSle : (C⁻¹ • μ) S ≤ μH[d] S := Measure.le_iff'.1 hle S
   rw [hzero, Measure.smul_apply, smul_eq_mul] at hSle
-  rcases mul_eq_zero.1 (le_antisymm hSle (zero_le _)) with hc | hm
+  rcases mul_eq_zero.1 (le_antisymm hSle zero_le) with hc | hm
   · exact (ENNReal.inv_ne_zero.2 hC) hc
   · exact hpos hm
 

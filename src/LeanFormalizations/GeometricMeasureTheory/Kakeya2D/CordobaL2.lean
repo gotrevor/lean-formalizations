@@ -189,7 +189,7 @@ theorem volume_thickening_fracTubes_ge {E : Set Plane} (hE : MeasurableSet E) {�
       ≤ volume (tube (b k) (w k • dir (c + (k : ℝ) * δ)) δ) := by
     intro k
     rcases eq_or_lt_of_le (hw0 k) with hk0 | hk0
-    · rw [← hk0, mul_zero, ENNReal.ofReal_zero]; exact zero_le _
+    · rw [← hk0, mul_zero, ENNReal.ofReal_zero]; exact zero_le
     · have hdir : dir (c + (k : ℝ) * δ) ≠ 0 := norm_ne_zero_iff.mp (by rw [norm_dir]; norm_num)
       have hv : w k • dir (c + (k : ℝ) * δ) ≠ 0 := smul_ne_zero (ne_of_gt hk0) hdir
       have hnorm : ‖w k • dir (c + (k : ℝ) * δ)‖ = w k := by

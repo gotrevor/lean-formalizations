@@ -216,7 +216,7 @@ theorem exists_dominant_shift {J : ℕ} (L : ℕ → ℕ → ℝ≥0∞)
     have hzero : ∑ k ∈ range (2 ^ J), L k j = 0 :=
       Finset.sum_eq_zero (fun k _ => hsupp k j hlt)
     rw [hzero] at hj
-    rcases mul_eq_zero.mp (le_antisymm hj (zero_le _)) with h | h
+    rcases mul_eq_zero.mp (le_antisymm hj zero_le) with h | h
     · exact absurd h (by exact_mod_cast h2J.ne')
     · exact hswpos h
   -- shift pigeonhole at the dominant scale
@@ -229,7 +229,7 @@ theorem exists_dominant_shift {J : ℕ} (L : ℕ → ℕ → ℝ≥0∞)
   have hBtop : ((2 ^ (J - j) : ℕ) : ℝ≥0∞) ≠ ⊤ := ENNReal.natCast_ne_top _
   have hcast : ((2 ^ J : ℕ) : ℝ≥0∞) = ((2 ^ (J - j) : ℕ) : ℝ≥0∞) * ((2 ^ j : ℕ) : ℝ≥0∞) := by
     rw [← Nat.cast_mul, hpow]
-  refine (ENNReal.mul_le_mul_left hB0 hBtop).mp ?_
+  refine (ENNReal.mul_le_mul_iff_right hB0 hBtop).mp ?_
   calc ((2 ^ (J - j) : ℕ) : ℝ≥0∞) * (((2 ^ j : ℕ) : ℝ≥0∞) * scaleWeight j)
       = ((2 ^ J : ℕ) : ℝ≥0∞) * scaleWeight j := by rw [hcast]; ring
     _ ≤ ∑ k ∈ range (2 ^ J), L k j := hj

@@ -49,11 +49,13 @@ theorem roots_esymm_int (f : Polynomial Int) (hf : f.Monic) (j : ℕ) :
   · have h_coeff : fC.coeff (f.natDegree - j) = fC.leadingCoeff *
         (-1) ^ (f.natDegree - (f.natDegree - j)) *
           fC.roots.esymm (f.natDegree - (f.natDegree - j)) := by
-      convert Polynomial.coeff_eq_esymm_roots_of_card _ _
-      · rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] ; aesop
-      · rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] ; aesop
-      · exact IsAlgClosed.card_roots_eq_natDegree
-      · rw [Polynomial.natDegree_map_of_leadingCoeff_ne_zero] <;> aesop
+      have hdeg : fC.natDegree = f.natDegree := hf.natDegree_map (algebraMap ℤ ℂ)
+      convert Polynomial.coeff_eq_esymm_roots_of_card _ _ <;>
+        first
+          | rfl
+          | exact hdeg.symm
+          | exact IsAlgClosed.card_roots_eq_natDegree
+          | (rw [hdeg]; exact Nat.sub_le _ _)
     simp_all +decide [Polynomial.coeff_map, Polynomial.leadingCoeff_map_of_leadingCoeff_ne_zero]
     simp_all +decide [Nat.sub_sub_self hj, Polynomial.aroots_def]
     exact ⟨f.coeff (f.natDegree - j) * (-1) ^ j, by push_cast [h_coeff] ; ring_nf; aesop⟩

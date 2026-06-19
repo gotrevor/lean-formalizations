@@ -352,11 +352,11 @@ theorem hausdorffMeasure_pos_of_isKakeya
   have key : ∀ e : ℝ, 0 < e → e < 2 → μH[e] S ≠ 0 := fun e he0 he2 =>
     hausdorffMeasure_ne_zero_of_contentBound he0 (kakeya_hausdorffContentBound_elementary h he0 he2)
   intro d hd
-  rcases eq_or_lt_of_le (zero_le d) with hd0 | hd0
+  rcases eq_or_lt_of_le (zero_le : (0:ℝ≥0) ≤ d) with hd0 | hd0
   · have hd0R : (d : ℝ) = 0 := by exact_mod_cast hd0.symm
     have hmono : μH[(1 : ℝ)] S ≤ μH[(d : ℝ)] S := by
       rw [hd0R]; exact Measure.hausdorffMeasure_mono (by norm_num) S
-    exact fun hz => key 1 one_pos (by norm_num) (le_antisymm (hz ▸ hmono) (zero_le _))
+    exact fun hz => key 1 one_pos (by norm_num) (le_antisymm (hz ▸ hmono) zero_le)
   · have hd2R : (d : ℝ) < 2 := by exact_mod_cast hd
     exact key d (by exact_mod_cast hd0) hd2R
 
