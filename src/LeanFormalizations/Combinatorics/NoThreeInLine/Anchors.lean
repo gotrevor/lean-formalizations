@@ -15,6 +15,7 @@ intended geometric meaning. They are tiny `norm_num` computations on explicit po
 witnesses in the spirit of the other modules' `Anchors.lean`.
 -/
 import LeanFormalizations.Combinatorics.NoThreeInLine.Collinearity
+import LeanFormalizations.Combinatorics.NoThreeInLine.Hyperbola
 
 namespace LeanFormalizations.NoThreeInLine
 
@@ -68,6 +69,15 @@ end-to-end by `native_decide` through the integer-determinant criterion. A compu
 anti-vacuity witness: `NoThreeCollinear` is satisfiable by an explicit nonempty set. -/
 theorem parabola5_noThreeCollinear :
     NoThreeCollinear ({(0, 0), (1, 1), (2, 4), (3, 4), (4, 1)} : Finset (ℕ × ℕ)) := by
+  apply noThreeCollinear_of_idet
+  native_decide
+
+/-- Concrete witness that the **doubled hyperbola arc** (now wired into the `2(p−1)` lower bound,
+`two_mul_pred_le_maxNoThreeInLine`) computes to a genuine non-vacuous no-three-collinear set:
+`hyperbolaWide 3 1` is `4` points, certified via the integer-determinant criterion. Guards the
+definition itself — `hyperbolaWide_noThreeCollinear` could be vacuous if the set were empty or
+misdefined; this rules that out computationally. -/
+theorem hyperbolaWide3_noThreeCollinear : NoThreeCollinear (hyperbolaWide 3 1) := by
   apply noThreeCollinear_of_idet
   native_decide
 
