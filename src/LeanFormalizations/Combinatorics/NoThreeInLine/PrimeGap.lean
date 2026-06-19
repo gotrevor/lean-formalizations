@@ -23,6 +23,8 @@ central-binomial attack plan. The repo's **headline** theorems (`hjsw_lower_boun
 `maxNoThreeInLine_bounds`, …) do not depend on this file and remain axiom-clean.
 -/
 import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt
 
 namespace LeanFormalizations.NoThreeInLine
 
@@ -124,6 +126,64 @@ theorem primePow_dvd_lcm_Icc_iff {p k N : ℕ} (hp : p.Prime) (hk : 0 < k) :
     exact le_trans (Nat.le_of_dvd (by omega) hmdvd) hm.2
   · intro hle
     exact Finset.dvd_lcm (f := id) (Finset.mem_Icc.mpr ⟨hge1, hle⟩)
+
+open scoped ArithmeticFunction in
+/-- **The von Mangoldt ↔ lcm bridge.** `log(lcm(1,…,N)) = ψ N` (Chebyshev's `ψ`). Both sides sum
+`log p` over prime powers `pᵏ ≤ N`: the LHS via `vonMangoldt_sum` over the divisors of `lcm(1..N)`,
+whose prime-power divisors are exactly the prime powers `≤ N` (`primePow_dvd_lcm_Icc_iff`). This is the
+final link turning the ℕ bound `four_pow_lt_mul_lcm` into a real Chebyshev `ψ` lower bound. -/
+theorem log_lcm_Icc_eq_psi (N : ℕ) :
+    Real.log (((Finset.Icc 1 N).lcm id : ℕ) : ℝ) = Chebyshev.psi N := by
+  classical
+  have hL0 : (Finset.Icc 1 N).lcm id ≠ 0 := by
+    rw [Ne, Finset.lcm_eq_zero_iff]; rintro ⟨b, hb, hb0⟩
+    rw [Finset.mem_Icc] at hb; simp only [id_eq] at hb0; omega
+  rw [← ArithmeticFunction.vonMangoldt_sum, Chebyshev.psi, Nat.floor_natCast]
+  have key : ((Finset.Icc 1 N).lcm id).divisors.filter (fun d => IsPrimePow d)
+      = (Finset.Ioc 0 N).filter (fun d => IsPrimePow d) := by
+    ext q
+    simp only [Finset.mem_filter, Nat.mem_divisors, Finset.mem_Ioc]
+    constructor
+    · rintro ⟨⟨hqL, _⟩, hpp⟩
+      obtain ⟨p, k, hp, hk, rfl⟩ := hpp
+      exact ⟨⟨pow_pos (Nat.prime_iff.mpr hp).pos k,
+        (primePow_dvd_lcm_Icc_iff (Nat.prime_iff.mpr hp) hk).mp hqL⟩, ⟨p, k, hp, hk, rfl⟩⟩
+    · rintro ⟨⟨_, hqN⟩, hpp⟩
+      obtain ⟨p, k, hp, hk, rfl⟩ := hpp
+      exact ⟨⟨(primePow_dvd_lcm_Icc_iff (Nat.prime_iff.mpr hp) hk).mpr hqN, hL0⟩,
+        ⟨p, k, hp, hk, rfl⟩⟩
+  have hLsum : ∑ d ∈ ((Finset.Icc 1 N).lcm id).divisors, Λ d
+      = ∑ d ∈ ((Finset.Icc 1 N).lcm id).divisors.filter (fun d => IsPrimePow d), Λ d := by
+    refine (Finset.sum_subset (Finset.filter_subset _ _) ?_).symm
+    intro x hx hxnf
+    rw [Finset.mem_filter, not_and] at hxnf
+    rw [ArithmeticFunction.vonMangoldt_apply, if_neg (hxnf hx)]
+  have hNsum : ∑ n ∈ Finset.Ioc 0 N, Λ n
+      = ∑ n ∈ (Finset.Ioc 0 N).filter (fun d => IsPrimePow d), Λ n := by
+    refine (Finset.sum_subset (Finset.filter_subset _ _) ?_).symm
+    intro x hx hxnf
+    rw [Finset.mem_filter, not_and] at hxnf
+    rw [ArithmeticFunction.vonMangoldt_apply, if_neg (hxnf hx)]
+  rw [hLsum, hNsum, key]
+
+/-- **Chebyshev `ψ` lower bound.** `n·log 4 − log n < ψ(2n)` for `n ≥ 4` — a genuine lower bound on
+the Chebyshev function (mathlib has only upper bounds), via `four_pow_lt_mul_lcm` and the
+`log_lcm_Icc_eq_psi` bridge. The ingredient Nagura needs that mathlib is missing. -/
+theorem psi_lower {n : ℕ} (hn : 4 ≤ n) :
+    (n : ℝ) * Real.log 4 - Real.log n < Chebyshev.psi (2 * n) := by
+  have h := four_pow_lt_mul_lcm (n := n) hn
+  have hn0 : (0 : ℝ) < n := by positivity
+  have hlcm0 : (0 : ℝ) < ((Finset.Icc 1 (2 * n)).lcm id : ℕ) := by
+    have hne : (Finset.Icc 1 (2 * n)).lcm id ≠ 0 := by
+      rw [Ne, Finset.lcm_eq_zero_iff]; rintro ⟨b, hb, hb0⟩
+      rw [Finset.mem_Icc] at hb; simp only [id_eq] at hb0; omega
+    exact_mod_cast Nat.pos_of_ne_zero hne
+  have hcast : (4 : ℝ) ^ n < (n : ℝ) * ((Finset.Icc 1 (2 * n)).lcm id : ℕ) := by exact_mod_cast h
+  have hlog : Real.log ((4 : ℝ) ^ n) < Real.log ((n : ℝ) * ((Finset.Icc 1 (2 * n)).lcm id : ℕ)) :=
+    Real.log_lt_log (by positivity) hcast
+  rw [Real.log_pow, Real.log_mul hn0.ne' hlcm0.ne', log_lcm_Icc_eq_psi (2 * n)] at hlog
+  push_cast at hlog ⊢
+  linarith [hlog]
 
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
