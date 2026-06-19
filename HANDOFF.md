@@ -5,19 +5,20 @@ never touch the sibling `~/src/lean-formalizations`. This file is a **thin point
 content lives in the three docs below.
 
 ## Read these, in order
-1. **`STATUS.md`** — the living overview (where it stands, axiom ledger, what's happened).
-2. **newest `HANDOFF-2026-06-19-*.md`** — the latest per-lap baton (exact next steps, gotchas).
-3. **`PENDING_WORK.md`** — open items + the three attack paths for `hjsw_lower` (the crux).
-4. Background: `DIRECTION.md` (operator directive), `Combinatorics/NoThreeInLine/PLAN.md` (frozen plan),
-   `ON-LINE-REQUEST.md` (the network-gated blocker), `README.md`.
+1. **newest `HANDOFF-2026-06-19-0728.md`** — the lap that COMPLETED `hjsw_lower` (techniques, state).
+2. **`STATUS.md`** — the living overview (axiom ledger, what's happened).
+3. **`PENDING_WORK.md`** — open items (now: none open; only the open *math* Main Conjecture).
 
 ## One-line state
-Five umbrella threads (Curtis, power-tower, constructibles, e/π-transcendence, Goodstein) complete &
-axiom-clean. The **only** open obligation is `hjsw_lower : 3*(p−1) ≤ maxNoThreeInLine (2*p)` (HJSW
-`3N/2`, `Hyperbola.lean`) — a disclosed `sorry`. The geometric reduction (real-collinear ⇒ residues
-mod-`p`-collinear ⇒ two lifts coincide) is formalized & axiom-clean; the remaining blocker is the
-paper's explicit covering construction (filed in `ON-LINE-REQUEST.md`). `3(p−1)` is
-native_decide-witnessed at p=5,7,11,13 (off-headline anchors).
+**HJSW DONE.** `hjsw_lower : 3*(p−1) ≤ maxNoThreeInLine (2*p)` is **fully proven, axiom-clean**
+(`[propext, Classical.choice, Quot.sound]`, no `sorry`) as of HEAD `59b1fd8` — the crux
+`shearSel_cross_diag` was discharged via the partner lemmas `shear_diag_partner`/`shear_anti_partner`.
+Promoted to the audit surface (`Statement.lean`: `hjsw_lower_bound`) and extended to a `3N/4`
+general-`N` bound (`maxNoThreeInLine_ge_three_quarters`, via Bertrand). **Zero `sorry` in the whole
+repo**; all umbrella threads (Curtis, power-tower, constructibles, e/π-transcendence, Goodstein) and
+the entire NTL formalization (upper `2N`, Erdős `Θ(N)`, HJSW `3N/2`) are complete & axiom-clean.
+The only thing left in the no-three-in-line problem is the **Main Conjecture (open math)** — not a
+formalizable proof target. See the newest HANDOFF for the (optional) next-lap menu.
 
 ## Build
 `lake build` (whole repo, ~seconds — mathlib prebuilt) or

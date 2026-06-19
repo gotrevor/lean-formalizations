@@ -1,10 +1,14 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8285 jobs) · **Updated**: lap N+1 · 2026-06-19 · `5bb249e` · **Branch `ntl-hjsw`** · **Active frontier: HJSW `3N/2` (`hjsw_lower`, 1 disclosed sorry — the covering count)**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8285 jobs) · **Updated**: 2026-06-19 · `59b1fd8` · **Branch `ntl-hjsw`** · **HJSW `3N/2` lower bound COMPLETE & axiom-clean — repo now `sorry`-free**
 
-> **Branch note.** On `ntl-hjsw` the five umbrella threads below stay complete & axiom-clean
-> (unchanged). The one open item is the **no-three-in-line HJSW lower bound** `hjsw_lower`, a
-> deliberately-disclosed `sorry` (gate is armed); its proven scaffolding + the new reduction toolkit
-> are axiom-clean, and `3(p−1)` is native_decide-witnessed at p=5,7,11,13 (off-headline anchors).
+> **Branch note.** On `ntl-hjsw` the **HJSW lower bound `hjsw_lower : 3*(p−1) ≤ maxNoThreeInLine (2*p)`
+> is now FULLY PROVEN and axiom-clean** (`[propext, Classical.choice, Quot.sound]`, no `sorry`): the
+> crux `shearSel_cross_diag` was discharged via the partner lemmas
+> `shear_diag_partner`/`shear_anti_partner`. Promoted to `Statement.lean` (`hjsw_lower_bound`) and
+> extended to a general-`N` `3N/4` bound (`maxNoThreeInLine_ge_three_quarters`, via Bertrand). All six
+> threads (Curtis, power-tower, constructibles, e/π-transcendence, Goodstein, **no-three-in-line**)
+> are now complete & axiom-clean; `src/` is `sorry`-free. The only thing left in NTL is the open
+> **Main Conjecture** (open math, not formalizable).
 
 ## Where it stands
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
@@ -107,12 +111,13 @@ The repo is **100% axiom-free** — every headline `#print axioms` is the bare t
 - **2026-06-14 (operator redirect):** Curtis verification-hardening run (n=2 boundary / Sylvester hypersurface, extra Frobenius anchors, refuted-candidate witness, findings doc) — complete, self-stopped.
 
 ## Outstanding
-The transcendence / squaring-the-circle thread AND the power-tower sharp `iff` are
-**COMPLETE and axiom-free**. The active frontier on this branch is the HJSW lower bound:
-### Short-term (mirror `PENDING_WORK.md` top)
-- **`hjsw_lower : 3*(p−1) ≤ maxNoThreeInLine (2*p)`** — the only open `sorry`. Geometric reduction
-  done (toolkit above); blocker is the explicit HJSW construction (filed `ON-LINE-REQUEST.md`).
-  Act on `ON-LINE-FINDINGS-*.md` when it lands; else execute Path B (slope-`±1` collision-graph CSP).
+All threads are **COMPLETE and axiom-free** — `src/` is `sorry`-free. The HJSW lower bound was the
+last open obligation and is now done (`hjsw_lower`, axiom-clean; see newest HANDOFF).
+### Short-term
+- **None open.** `hjsw_lower : 3*(p−1) ≤ maxNoThreeInLine (2*p)` ✅ PROVEN (crux
+  `shearSel_cross_diag` discharged via `shear_diag_partner`/`shear_anti_partner`); audit surface +
+  general-`N` `3N/4` bound added. The no-three-in-line **Main Conjecture** remains open *mathematics*
+  (no formalizable proof). Optional next-lap menu in `HANDOFF-2026-06-19-0728.md`.
 ### Long-term
 - General Hermite–Lindemann for arbitrary algebraic α (e.g. `log 2`, `cos 1`): the π assembly
   generalizes (its `no_intPoly_exp_relation` + symmetric-function descent are α-agnostic); a
@@ -121,8 +126,8 @@ The transcendence / squaring-the-circle thread AND the power-tower sharp `iff` a
 ### To completion
 - Curtis ✅ · **Power-tower SHARP iff ✅** · Wantzel iff ✅ · **e-transcendence ✅** ·
   **π-transcendence ✅ (axiom-clean)** · **squaring-the-circle ✅ (unconditional, axiom-clean)** ·
-  **no-three-in-line: 2N upper + Erdős Θ(N) ✅ axiom-clean; HJSW `3N/2` ⏳ (covering count open).**
-  Umbrella math-axiom count: **0**; the only open obligation is `hjsw_lower` (disclosed `sorry`).
+  **no-three-in-line: 2N upper + Erdős Θ(N) + HJSW `3N/2` (general-`N` `3N/4`) ✅ all axiom-clean.**
+  Umbrella math-axiom count: **0**; no open obligations (`src/` is `sorry`-free).
 
 ## Axiom ledger (the fidelity spine)
 | headline theorem | paper claim | `#print axioms` shows | status |
@@ -137,7 +142,8 @@ The transcendence / squaring-the-circle thread AND the power-tower sharp `iff` a
 | `Transcendence.e_transcendental` (+ `transcendental_exp_{nat,int,rat}`) | `e`, `eⁿ`, `eᵃ`, `e^q` transcendental (Hermite 1873; rational-exponent Hermite–Lindemann), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 | `NoThreeInLine.maxNoThreeInLine_upper` / `..._order` | 2N upper + Erdős Θ(N) lower, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 | `NoThreeInLine.hyperbola_noThreeCollinear` + reduction toolkit (`collinear_imp_modp_det_zero`, `hyperbola_collinear_zmod`, `*_lift_share_residue`, `shear_hyperbola_*`, `coord_diff_of_residue_eq`, `lift_triple_noncollinear`) | full lift geometry for HJSW (both cross-base & same-base), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **HJSW geometry COMPLETE** |
-| `NoThreeInLine.hjsw_lower` | HJSW `3N/2` (1975), uncond. | **`sorryAx`** (disclosed) | ⏳ OPEN — covering count; geometry reduced, construction network-gated. `3(p−1)` native_decide-witnessed at p=5,7,11,13 (off-headline `ax_*` artifacts only). |
+| `NoThreeInLine.hjsw_lower` / `hjsw_lower_bound` | HJSW `3N/2` lower bound, `3*(p−1) ≤ max(2p)`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **PROVEN** (crux `shearSel_cross_diag` via `shear_diag_partner`/`shear_anti_partner`) |
+| `NoThreeInLine.maxNoThreeInLine_ge_three_quarters` | general-`N` `3·⌊N/4⌋ ≤ max N` (HJSW via Bertrand), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — lifts Θ(N) lower constant `1/2 → 3/4` |
 
 **Umbrella math-axiom count (🟢+🟡+🟠): 0** across the five completed threads. **HJSW frontier:** `hjsw_lower` carries a single **disclosed `sorry`** (NOT a math axiom — it is honest open work, the gate is armed). It is 🟡-grade debt: *proven* mathematics (HJSW 1975) whose covering-count construction is not yet in hand here; the geometric reduction is formalized & axiom-clean, the next prerequisite = the paper's explicit point set (`ON-LINE-REQUEST.md`). No 🔴 anywhere (no unconditional headline depends on an open conjecture).
 

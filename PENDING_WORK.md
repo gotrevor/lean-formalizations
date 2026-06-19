@@ -1,5 +1,18 @@
 # PENDING_WORK — no-three-in-line / HJSW frontier (branch `ntl-hjsw`)
 
+## ✅✅ 2026-06-19 (later) — NOTHING OPEN. HJSW COMPLETE.
+`shearSel_cross_diag` (the lone `sorry`) is **PROVEN** ⇒ `hjsw_lower` is fully proven, axiom-clean
+(`[propext, Classical.choice, Quot.sound]`). Discharged via `shear_diag_partner`/`shear_anti_partner`
+(curve-factoring → partner relation → drop tie-break). Promoted to `Statement.lean`
+(`hjsw_lower_bound`, `maxNoThreeInLine_ge_three_quarters` = general-`N` `3N/4` via Bertrand).
+**Zero `sorry` in the repo.** The only remaining item in the no-three-in-line problem is the
+**Main Conjecture (open math)** — not a formalizable proof. The (now historical) attack-path
+inventory below is preserved for context. See `HANDOFF-2026-06-19-0728.md` for techniques + the
+optional next-lap menu (faithfulness cross-check / sharper general-`N` via prime gaps / cosmetic
+polish). Do NOT re-open the items below — they are solved.
+
+---
+
 Inventory of open items + attack paths (per `how-to-get-unblocked.md`). Refreshed 2026-06-19 (lap N+1).
 (This isolated clone's focus is solely the HJSW frontier; the main-branch threads — Curtis,
 power-tower, constructibles, transcendence, Goodstein — are complete & axiom-clean, recorded in

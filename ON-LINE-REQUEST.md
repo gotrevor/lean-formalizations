@@ -1,5 +1,14 @@
 # Online requests — no-three-in-line / HJSW frontier
 
+## ✅✅ 2026-06-19 (later) — FULLY DONE, NO ACTION NEEDED
+`hjsw_lower : 3*(p−1) ≤ maxNoThreeInLine (2*p)` is now **completely proven and axiom-clean**
+(`#print axioms = [propext, Classical.choice, Quot.sound]`, no `sorry`, no custom axiom). The
+construction (closed-form sheared hyperbola `shearSel p`) and the full no-three-collinear proof
+(`shearSel_cross_diag` via `shear_diag_partner`/`shear_anti_partner`) are in `Hyperbola.lean`;
+the result is promoted to the audit surface (`Statement.lean`) and extended to a `3N/4` general-`N`
+bound via Bertrand. **The request below is closed** — a scan of HJSW 1975 is no longer needed even
+as a cross-check. (Host: this file may be removed.)
+
 ## ✅ 2026-06-19 — RESOLVED IN-HOUSE (construction found; request now LOW priority)
 The construction crux below was **solved locally** without the paper: a closed-form selection rule
 for the sheared hyperbola was discovered and verified (exact integer determinant) for every prime
