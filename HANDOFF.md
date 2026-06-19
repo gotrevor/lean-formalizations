@@ -1,22 +1,27 @@
 # HANDOFF — Davies / planar Kakeya (branch `kakeya-davies`)
 
-**Thin pointer.** Durable overview = `STATUS.md`. **Newest dated baton = `HANDOFF-2026-06-19-2130.md`
-(lap-end checkpoint) — read that to resume; `HANDOFF-2026-06-19-2105.md` has the detailed anatomy.**
-Open items / lesson = `PENDING_WORK.md` (top).
+**Thin pointer.** Durable overview = `STATUS.md`. **Newest dated baton = `HANDOFF-2026-06-19-1313.md`
+(NEWEST by mtime despite the lower clock stamp — box clock reads 13:13) — read that to resume;
+`HANDOFF-2026-06-19-2105.md` has the detailed Córdoba/route anatomy.** Open items = `PENDING_WORK.md` (top).
 
 ## State (one line)
-`lake build` 🟢 green (8300 jobs, HEAD `02aa4e3`). **ALL headlines are axiom-clean**, including the
-planar-Kakeya headline `davies_kakeya_2d : KakeyaSetConjectureDim 2` (Davies 1971):
-`#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound]`. It proves the lower bound
-via the *elementary open-cover selection* route (`Selection.kakeya_hausdorffContentBound_elementary`) —
-no descriptive set theory, no measurable-selection axiom. Defs match `formal-conjectures` verbatim.
+`lake build` 🟢 green (8299 jobs, HEAD `45fcf03`). **`src/` is now SORRY-FREE and axiom-declaration-free.**
+The planar-Kakeya headline `davies_kakeya_2d : KakeyaSetConjectureDim 2` (Davies 1971) is complete,
+axiom-clean (`#print axioms = [propext, Classical.choice, Quot.sound]`), and faithful (defs match
+`formal-conjectures` verbatim; `IsKakeya` pinned both sides by `isKakeya_closedBall` + `not_isKakeya_xAxis`).
+Lower bound via the *elementary open-cover selection* route (`Selection.kakeya_hausdorffContentBound_elementary`)
+— elementary *selection* + the full Córdoba L² content bound, no DST. The redundant legacy discrete
+assembly (Case-B `sorry`) was DELETED; the out-of-lane FastGrowing WIP `sorry` was moved to `wip/`. Lane
+is at a complete terminus — see the baton for the (operator-greenlight) onward directions.
 
-## This lap's headline event
-The off-headline legacy axiom `kakeya_subresolution_content` (the discrete route's "Case-B residual",
-cited by every prior lap as "true but deep") was found **UNSOUND** and **removed**; kernel-checked
-refutation kept as `Engine.kakeya_subresolution_content_is_unsound`. So `Kakeya2D/` is now
-axiom-declaration-free. Remaining holes = 1 disclosed, redundant, off-headline `sorry` (legacy discrete
-Case-B branch, unclosable by the discrete approach) + 1 dormant out-of-lane `sorry` (FastGrowing).
+## This lap's headline event (2026-06-19, endpoint lap)
+Per operator directive, brought `src/` to a sorry-free, axiom-declaration-free honest endpoint:
+**deleted** the redundant, fully-superseded legacy discrete assembly (`Engine.kakeya_hausdorffContentBound`
++ `_discrete` wrappers), whose Case-B branch was an unclosable disclosed `sorry`; **kept** the
+kernel-checked guard `Engine.kakeya_subresolution_content_is_unsound` (refuting the FALSE Case-B axiom);
+**quarantined** the out-of-lane FastGrowing WIP `sorry` to `wip/` (preserved, out of build target). Added
+the discriminating anchor `not_isKakeya_xAxis`. `#print axioms davies_kakeya_2d` UNCHANGED. Remaining
+holes in `src/`: **none**. (Prior lap had found `kakeya_subresolution_content` UNSOUND and removed it.)
 
 ## Invariants
 - Defs (`IsKakeya`, `KakeyaSetConjectureDim`) are the frozen audit surface — do not edit.
