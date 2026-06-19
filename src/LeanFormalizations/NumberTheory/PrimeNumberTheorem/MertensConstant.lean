@@ -1168,4 +1168,137 @@ lemma tendsto_floorExpRemainder :
   filter_upwards with x
   ring
 
+/-! ### Limit B, assembled — `primeZeta s + log(s−1) → M − γ`. -/
+
+open MeasureTheory in
+/-- **Limit B** (the Tauberian limit), now fully proven: `primeZeta s + log(s−1) → M − γ` as `s→1⁺`.
+
+Assembly of the `eˣ`-form spine: `primeZeta s = (s−1)∫_0^∞ primeRecipSum⌊eˣ⌋·e^{−(s−1)x}`
+(`primeZeta_eq_abel_integral_exp`); split the integrand `primeRecipSum⌊eˣ⌋ = log x + M + r(x)` into the
+three integrable pieces, giving `primeZeta s = (−γ−log(s−1)) + M + (s−1)∫_0^∞ r·e^{−(s−1)x}`.  The error
+`(s−1)∫_0^∞ r·e^{−(s−1)x} → 0` is the Abelian final-value crux `tendsto_sub_one_mul_integral_abelian`
+applied to `r → 0` (`tendsto_floorExpRemainder`).  Net: `primeZeta s + log(s−1) → M − γ`. -/
+theorem tendsto_primeZeta_add_logSub_limitB :
+    Tendsto (fun s : ℝ => primeZeta s + Real.log (s - 1)) (𝓝[>] 1)
+      (𝓝 (meisselMertensM - Real.eulerMascheroniConstant)) := by
+  -- Hypotheses for the Abelian final-value crux, with `f = r`.
+  have hintf : ∀ δ : ℝ, 0 < δ → IntegrableOn
+      (fun x => (primeRecipSum ⌊Real.exp x⌋₊ - Real.log x - meisselMertensM)
+        * Real.exp (-(δ * x))) (Set.Ioi 0) := by
+    intro δ hδ
+    have hIps := integrableOn_primeRecipSum_exp hδ
+    have hIlog := integrableOn_log_mul_exp_neg_mul hδ
+    have hIM : IntegrableOn (fun x => meisselMertensM * Real.exp (-(δ * x))) (Set.Ioi 0) := by
+      have h := integrableOn_exp_mul_Ioi (a := -δ) (by linarith) 0
+      have h' : IntegrableOn (fun x => Real.exp (-(δ * x))) (Set.Ioi 0) := by
+        simpa only [neg_mul] using h
+      exact h'.const_mul _
+    exact ((hIps.sub hIlog).sub hIM).congr_fun
+      (fun x _ => by simp only [Pi.sub_apply]; ring) measurableSet_Ioi
+  have hlocf : ∀ X : ℝ, IntegrableOn
+      (fun x => |primeRecipSum ⌊Real.exp x⌋₊ - Real.log x - meisselMertensM|) (Set.Ioc 0 X) := by
+    intro X
+    have hps : IntegrableOn (fun x => primeRecipSum ⌊Real.exp x⌋₊) (Set.Ioc (0:ℝ) X) := by
+      refine (integrableOn_const (C := 1 + X) (hs := measure_Ioc_lt_top.ne)).mono' ?_ ?_
+      · exact ((Measurable.of_discrete (f := primeRecipSum)).comp
+          Real.measurable_exp.nat_floor).aestronglyMeasurable
+      · filter_upwards [ae_restrict_mem measurableSet_Ioc] with x hx
+        rw [Real.norm_eq_abs, abs_of_nonneg (primeRecipSum_nonneg _)]
+        have hx0 : 0 < x := hx.1
+        have hfloorpos : (0:ℝ) < (⌊Real.exp x⌋₊ : ℝ) := by
+          have h1 : 1 ≤ ⌊Real.exp x⌋₊ := Nat.le_floor (by simpa using Real.one_le_exp hx0.le)
+          exact_mod_cast Nat.lt_of_lt_of_le Nat.zero_lt_one h1
+        have hlog_le : Real.log ⌊Real.exp x⌋₊ ≤ x :=
+          (Real.log_le_log hfloorpos (Nat.floor_le (Real.exp_pos x).le)).trans_eq (Real.log_exp x)
+        have := primeRecipSum_le_one_add_log ⌊Real.exp x⌋₊
+        linarith [hx.2]
+    have hlogI : IntegrableOn (fun x => Real.log x) (Set.Ioc (0:ℝ) X) := by
+      rcases le_total (0:ℝ) X with hX | hX
+      · exact (intervalIntegrable_iff_integrableOn_Ioc_of_le hX).mp
+          intervalIntegral.intervalIntegrable_log'
+      · rw [Set.Ioc_eq_empty (not_lt.mpr hX)]; exact integrableOn_empty
+    have hMI : IntegrableOn (fun _ : ℝ => meisselMertensM) (Set.Ioc (0:ℝ) X) :=
+      integrableOn_const (hs := measure_Ioc_lt_top.ne)
+    exact ((hps.sub hlogI).sub hMI).abs
+  -- The error term `(s−1)∫_0^∞ r·e^{−(s−1)x} → 0`.
+  have hshift : Tendsto (fun s : ℝ => s - 1) (𝓝[>] 1) (𝓝[>] 0) := by
+    rw [tendsto_nhdsWithin_iff]
+    refine ⟨?_, ?_⟩
+    · have hc : Continuous (fun s : ℝ => s - 1) := by fun_prop
+      simpa using (hc.tendsto 1).mono_left nhdsWithin_le_nhds
+    · filter_upwards [self_mem_nhdsWithin] with s hs
+      simp only [Set.mem_Ioi, sub_pos]; exact hs
+  have herr := (tendsto_sub_one_mul_integral_abelian tendsto_floorExpRemainder hintf hlocf).comp hshift
+  have hmain := (tendsto_const_nhds
+    (x := meisselMertensM - Real.eulerMascheroniConstant)).add herr
+  rw [add_zero] at hmain
+  refine hmain.congr' ?_
+  filter_upwards [self_mem_nhdsWithin] with s hs
+  have hs1 : (1:ℝ) < s := hs
+  have hδ : (0:ℝ) < s - 1 := by linarith
+  simp only [Function.comp_apply]
+  -- the three integrable pieces (for the integral split)
+  have hIps := integrableOn_primeRecipSum_exp hδ
+  have hIlog := integrableOn_log_mul_exp_neg_mul hδ
+  have hIM : IntegrableOn (fun x => meisselMertensM * Real.exp (-((s-1) * x))) (Set.Ioi 0) := by
+    have h := integrableOn_exp_mul_Ioi (a := -(s-1)) (by linarith) 0
+    have h' : IntegrableOn (fun x => Real.exp (-((s-1) * x))) (Set.Ioi 0) := by
+      simpa only [neg_mul] using h
+    exact h'.const_mul _
+  have hIr : IntegrableOn (fun x =>
+      (primeRecipSum ⌊Real.exp x⌋₊ - Real.log x - meisselMertensM)
+        * Real.exp (-((s-1) * x))) (Set.Ioi 0) :=
+    ((hIps.sub hIlog).sub hIM).congr_fun
+      (fun x _ => by simp only [Pi.sub_apply]; ring) measurableSet_Ioi
+  have hsplit : (∫ x in Set.Ioi (0:ℝ), primeRecipSum ⌊Real.exp x⌋₊ * Real.exp (-((s-1) * x)))
+      = (∫ x in Set.Ioi (0:ℝ), Real.log x * Real.exp (-((s-1) * x)))
+        + (∫ x in Set.Ioi (0:ℝ), meisselMertensM * Real.exp (-((s-1) * x)))
+        + (∫ x in Set.Ioi (0:ℝ), (primeRecipSum ⌊Real.exp x⌋₊ - Real.log x - meisselMertensM)
+            * Real.exp (-((s-1) * x))) := by
+    have h1 : (∫ x in Set.Ioi (0:ℝ), primeRecipSum ⌊Real.exp x⌋₊ * Real.exp (-((s-1) * x)))
+        = ∫ x in Set.Ioi (0:ℝ), (Real.log x * Real.exp (-((s-1) * x))
+            + meisselMertensM * Real.exp (-((s-1) * x)))
+          + (primeRecipSum ⌊Real.exp x⌋₊ - Real.log x - meisselMertensM)
+              * Real.exp (-((s-1) * x)) :=
+      setIntegral_congr_fun measurableSet_Ioi (fun x _ => by ring)
+    have h2 : (∫ x in Set.Ioi (0:ℝ), (Real.log x * Real.exp (-((s-1) * x))
+            + meisselMertensM * Real.exp (-((s-1) * x)))
+          + (primeRecipSum ⌊Real.exp x⌋₊ - Real.log x - meisselMertensM)
+              * Real.exp (-((s-1) * x)))
+        = (∫ x in Set.Ioi (0:ℝ), Real.log x * Real.exp (-((s-1) * x))
+            + meisselMertensM * Real.exp (-((s-1) * x)))
+          + ∫ x in Set.Ioi (0:ℝ), (primeRecipSum ⌊Real.exp x⌋₊ - Real.log x - meisselMertensM)
+              * Real.exp (-((s-1) * x)) :=
+      integral_add (hIlog.add hIM) hIr
+    have h3 : (∫ x in Set.Ioi (0:ℝ), Real.log x * Real.exp (-((s-1) * x))
+            + meisselMertensM * Real.exp (-((s-1) * x)))
+        = (∫ x in Set.Ioi (0:ℝ), Real.log x * Real.exp (-((s-1) * x)))
+          + ∫ x in Set.Ioi (0:ℝ), meisselMertensM * Real.exp (-((s-1) * x)) :=
+      integral_add hIlog hIM
+    rw [h1, h2, h3]
+  have vlog : (s - 1) * (∫ x in Set.Ioi (0:ℝ), Real.log x * Real.exp (-((s-1) * x)))
+      = -Real.eulerMascheroniConstant - Real.log (s - 1) := sub_one_mul_integral_log_exp hs1
+  have vM : (s - 1) * (∫ x in Set.Ioi (0:ℝ), meisselMertensM * Real.exp (-((s-1) * x)))
+      = meisselMertensM := by
+    rw [integral_const_mul, ← mul_assoc, mul_comm (s - 1) meisselMertensM, mul_assoc,
+      sub_one_mul_integral_exp_neg hs1, mul_one]
+  rw [primeZeta_eq_abel_integral_exp hs1, hsplit, mul_add, mul_add, vlog, vM]
+  ring
+
+/-! ### The classical `e^{−γ}` Mertens constant, UNCONDITIONAL. -/
+
+/-- **`mertensThirdConst = −γ`**, unconditionally — `Limit B` is now a theorem
+(`tendsto_primeZeta_add_logSub_limitB`), so the Tauberian hypothesis of
+`mertensThirdConst_eq_neg_gamma_of_tauberian` is discharged. -/
+theorem mertensThirdConst_eq_neg_gamma :
+    mertensThirdConst = -Real.eulerMascheroniConstant :=
+  mertensThirdConst_eq_neg_gamma_of_tauberian tendsto_primeZeta_add_logSub_limitB
+
+/-- **Classical Mertens 3rd theorem, `e^{−γ}` form — UNCONDITIONAL.**
+`∏_{p≤N}(1−1/p)·log N → e^{−γ}` as `N → ∞`, with `γ = Real.eulerMascheroniConstant`. -/
+theorem mertens_third_classical_eGamma :
+    Tendsto (fun N : ℕ => primeProd N * Real.log N) atTop
+      (nhds (Real.exp (-Real.eulerMascheroniConstant))) :=
+  mertens_third_classical_of_tauberian tendsto_primeZeta_add_logSub_limitB
+
 end LeanFormalizations.Mertens
