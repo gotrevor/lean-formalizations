@@ -185,6 +185,20 @@ theorem psi_lower {n : ℕ} (hn : 4 ≤ n) :
   push_cast at hlog ⊢
   linarith [hlog]
 
+/-- **Chebyshev `θ` lower bound.** `n·log 4 − log n − 2√(2n)·log(2n) < θ(2n)` for `n ≥ 4` — combine
+`psi_lower` with mathlib's `abs_psi_sub_theta_le_sqrt_mul_log` (`|ψ−θ| ≤ 2√x·log x`). The main term is
+`n·log 4 ≈ 1.386 n` with a lower-order `√` correction, so `θ(2n) ≳ (log 4)·n`: the genuine `θ` lower
+bound that Nagura's product argument needs and that mathlib was missing. -/
+theorem theta_lower {n : ℕ} (hn : 4 ≤ n) :
+    (n : ℝ) * Real.log 4 - Real.log n - 2 * Real.sqrt (2 * n) * Real.log (2 * n)
+      < Chebyshev.theta (2 * n) := by
+  have hpsi := psi_lower hn
+  have h1 : (1 : ℝ) ≤ ((2 * n : ℕ) : ℝ) := by exact_mod_cast (by omega : 1 ≤ 2 * n)
+  have habs := Chebyshev.abs_psi_sub_theta_le_sqrt_mul_log h1
+  rw [abs_le] at habs
+  push_cast at hpsi habs ⊢
+  linarith [habs.2]
+
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
 
