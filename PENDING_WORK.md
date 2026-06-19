@@ -1,29 +1,47 @@
 # PENDING_WORK — lean-formalizations
 
-## 🧭 lap 12 — NO-THREE-IN-LINE: HJSW crux A.1 DONE; headline `3N/2` covering paper-blocked
+## 🧭 lap 13 — NO-THREE-IN-LINE: HJSW `3(p−1)` covering UNBLOCKED + scaffolded; crux narrowed to slope-±1 incidence
 
-**Done + committed this lap (build 🟢 8297 jobs, all axiom-clean except the one documented
-`native_decide` witness):**
-- `Hyperbola.lean` — `hyperbola_noThreeCollinear` (single arc `xy≡k`, no 3 collinear) +
-  `hyperbolaWide_noThreeCollinear` (doubled arc `x∈[1,2p)\{p}`, `2(p−1)` pts) + the reusable crux
-  `hyperbola_xy_eq` and the residue/horizontal-line-collapse machinery.
-- `Collinearity.lean` — `collinear_iff_det3_zero` (added the missing converse `det3=0 ⇒ collinear`).
-- `Anchors.lean` — `collinear_diagonal`, `not_collinear_corner`, decidable `idet3` criterion
-  `noThreeCollinear_of_idet`, `parabola5_noThreeCollinear` (`native_decide` witness).
+**Findings harvested** (`archive/findings/ON-LINE-FINDINGS-2026-06-19-hjsw-3n2-construction.md`): the
+real HJSW construction is a **12-of-16-block "pinwheel"** carved from a single hyperbola `H(k,p)` over
+`2p×2p`, NOT stacked arcs. Grid side `N=2p`, `|N_set|=3(p−1)`. Crux is a slope-only argument.
 
-### OPEN ITEM 1 — HJSW `3N/2` covering / count (the branch HEADLINE). STATUS: ⛔ paper-blocked.
-The arc non-collinearity (A.1) is DONE; the `3/2` is entirely in the covering combinatorics, which I
-cannot reconstruct from memory (a single/doubled arc gives only `~N` in a square grid; naive
-stacking of two strips gives `2`, too good — the cross-arc collinearity caps it at `3/2`).
-`ON-LINE-REQUEST.md` filed for the exact 1975 construction (point set, grid side, cross-arc lemma).
-Three paths:
-1. **Wait on the online request** (a networked lap answers it → assemble the count on the arcs
-   already proven). Most direct; gated on the host.
-2. **Reconstruct the construction myself** — derive `k₁,k₂` and `x`-ranges for ~3 strips and prove
-   cross-arc non-collinearity directly (the wall: which translates avoid inter-arc collinearity).
-   Attempted this lap; the cross-arc lemma is the genuine unknown. Possible but research-grade.
-3. **Bank a weaker honest bound** — formalize `maxNoThreeInLine` lower bounds from the arcs in
-   non-square (rectangular) form `2(p−1)` in `2p×p`, as a stepping stone (does NOT reach `3/2`).
+**Done + committed this lap (build 🟢 8299 jobs, all axiom-clean — ONE disclosed crux `sorry`):**
+- `HyperbolaLine.lean` (NEW) — **`hyperbola_line_two_congruent`** (the general HJSW Lemma: any
+  collinear triple of the full hyperbola `xy≡k` has two CONGRUENT points; determinant collapse ported
+  to arbitrary lattice points) + residue/x-residue forms. Plus **both reflection lemmas (HJSW Thm 2
+  Step 2)**: `hyperbola_slope_one_reflection` (slope +1 ⇒ the two classes are anti-diagonal reflections
+  `r'=−s, s'=−r`, `r·r'=−k`) and `hyperbola_slope_neg_one_reflection` (slope −1 ⇒ main-diagonal
+  reflection `r'=s, s'=r`, `r·r'=k`). Pure ZMod p Vieta.
+- `Pinwheel.lean` (NEW) — the construction, drop-rule-parametrized (`drop : ℕ → Fin 4` = which of the
+  4 corners of each residue class to discard). **`pinwheel_card = 3(p−1)`** and **`pinwheel_grid ⊆
+  [0,2p)²`** proved for ANY drop (mechanical, axiom-clean). **`pinCorner_not_collinear`** (3 distinct
+  corners of one class are never collinear, `det3=±p²`) discharges the same-class no-three subcase.
+  Headline `three_mul_pred_le_maxNoThreeInLine : 3(p−1) ≤ maxNoThreeInLine(2p)` STATED, reduced to the
+  one crux below.
+
+### OPEN ITEM 1 — `pinwheel_exists_noThree` (the branch HEADLINE crux). STATUS: narrowed, unblocked.
+The lone disclosed `sorry`: ∃ a drop-rule making the pinwheel no-three-collinear. **KEY STRUCTURE
+(documented in `Pinwheel.lean`):** slopes 0/∞ are AUTOMATICALLY safe (each row/column residue belongs
+to a unique class ⇒ ≤2 points), and the general Lemma reduces any collinear triple to "two congruent
+(same class) + a third". The same-class subcase is killed by `pinCorner_not_collinear`. **So the crux
+is ONLY the cross-class slope-±1 incidence:** choose `drop` so that each class's surviving ±1 diagonal
+extends through no kept corner of the OTHER class on that line (the two classes are σ-reflections, by
+the Step-2 lemmas already proved). Three attack paths:
+1. **Define the HJSW family drop-rule + finish the slope-±1 incidence.** Drop-rule = family of residue
+   `(x-half, y-half)` per findings §1.4–1.5 (in [0,2p)² frame: translate the centered HJSW pinwheel).
+   Then the no-three proof: apply `hyperbola_line_two_congruent`, case on which corner-pair the two
+   congruent points form (slope 0/∞/±1), discharge 0/∞ (unique-class — needs a small "same-y ⇒ same
+   x-residue" lemma, ≈ `hyperbolaY_inj_residue` already in `Hyperbola.lean`) and same-class
+   (`pinCorner_not_collinear`), then the ±1 case via the reflection lemmas + the family assignment
+   forcing complementary slope-families (so only ONE of the two σ-paired classes keeps the on-line
+   diagonal). The genuine remaining content; finite once the drop-rule is pinned.
+2. **First prove the two reduction lemmas as standalone `Pinwheel` theorems** (slope-0/∞ ⇒ ≤2 pinwheel
+   points on the line; the same-class one is done) to convert the monolithic `sorry` into a single
+   narrow "±1 cross-class incidence" `sorry` — cheaper checkpoint, sets up path 1.
+3. **Per-prime → all-N corollary** (independent, bankable): once item 1 lands, `(3/2−ε)N ≤
+   maxNoThreeInLine N` for all large N via mathlib's PNT (pick prime `p≈N/2`); or state headline only
+   at `N=2p`.
 
 ### OPEN ITEM 2 — Goodstein general limit-α B4 `H_{ω^α}(n)+1 = f_{α[n]}(n+1)`. STATUS: open, marginal.
 Pattern proven at `ω^ω` (`hardy_omega_pow_omega`); finite-k done (`hardy_omega_pow_ofNat`). The

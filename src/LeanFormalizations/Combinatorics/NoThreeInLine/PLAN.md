@@ -23,10 +23,17 @@ with `p ≈ N/2` prime, lifted across a covering of the grid by ~3 translated ar
   shares residue ⇒ pigeonhole" mechanism the covering exploits. NOTE: these arcs alone give only
   `~N` points in a square grid (same order as the Erdős parabola) — they are the *crux*, not the
   bound. The `3/2` is entirely in the covering below.
-- **The count / covering — ⛔ NEEDS THE PAPER (online request filed 2026-06-19).** Assemble `3N/2`
-  actual grid points: which hyperbola(s)/`x`-ranges, the grid side `N` vs `p`, and the cross-arc
-  non-collinearity lemma that caps the gain at `3/2` (naive stacking would give `2`). This is the
-  genuinely fiddly combinatorics I cannot reconstruct from memory. See `ON-LINE-REQUEST.md`.
+- **The count / covering — 🔨 UNBLOCKED + SCAFFOLDED (2026-06-19 lap 13).** The real construction
+  (findings harvested → `archive/findings/`) is a **12-of-16-block "pinwheel"** carved from a SINGLE
+  hyperbola `H(k,p)` over `2p×2p` (NOT stacked arcs): keep 3 of the 4 corners of each residue class.
+  `Pinwheel.lean` defines it (drop-rule-parametrized) and proves `pinwheel_card = 3(p−1)` +
+  `pinwheel_grid` axiom-clean for any drop. `HyperbolaLine.lean` has the load-bearing general Lemma
+  (`hyperbola_line_two_congruent`: collinear hyperbola triple ⇒ two CONGRUENT) and both σ-reflection
+  lemmas (HJSW Thm 2 Step 2). `pinCorner_not_collinear` kills the same-class subcase. **Remaining crux
+  = `pinwheel_exists_noThree`** (one disclosed `sorry`): a drop-rule killing the cross-class slope-`±1`
+  incidence (slopes 0/∞ are automatically safe — unique class per row/column). Headline
+  `three_mul_pred_le_maxNoThreeInLine : 3(p−1) ≤ maxNoThreeInLine(2p)` is stated, reduced to that crux.
+  See `PENDING_WORK.md` ITEM 1 for the 3 attack paths.
 
 Mathlib has what's needed: `ZMod p` field, `Matrix.det`, `Nat.exists_prime_lt_and_le_two_mul`.
 
