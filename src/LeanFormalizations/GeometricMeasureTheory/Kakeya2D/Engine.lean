@@ -12,8 +12,10 @@ The headline `dimH S = 2` splits into the two inequalities:
 Only `two_le_dimH` uses `IsKakeya`; the upper bound holds for every set in the plane.
 -/
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Defs
+import Mathlib.Analysis.Normed.Lp.MeasurableSpace
 
 open Set MeasureTheory
+open scoped NNReal ENNReal
 
 namespace LeanFormalizations.Kakeya2D
 
@@ -25,12 +27,27 @@ theorem dimH_le_two (S : Set (EuclideanSpace ℝ (Fin 2))) : dimH S ≤ 2 := by
   calc dimH S ≤ dimH (univ : Set (EuclideanSpace ℝ (Fin 2))) := dimH_mono (subset_univ S)
     _ = 2 := huniv
 
+/-- **The concrete crux (Davies 1971, measure form).** For a Kakeya set `S ⊆ ℝ²`, every
+`d`-dimensional Hausdorff measure with `d < 2` is *positive*: `μH[d] S ≠ 0`.
+
+This is the genuine analytic content; `two_le_dimH` is a free `ℝ≥0∞`-density wrapper around it.
+The route to discharge it is the Córdoba `L²`/bush argument (`PLAN.md`, ladder K2–K5):
+δ-tube overlap bound ⟹ Minkowski-content lower bound `vol(Sδ) ≳ 1/log(1/δ)` ⟹ a Frostman
+measure witnessing `μH[d] S > 0` for every `d < 2`. **Open crux of this run (`sorry`).** -/
+theorem hausdorffMeasure_pos_of_isKakeya
+    (S : Set (EuclideanSpace ℝ (Fin 2))) (h : IsKakeya S) :
+    ∀ d : ℝ≥0, (d : ℝ≥0∞) < 2 → μH[(d : ℝ)] S ≠ 0 := by
+  sorry
+
 /-- **Davies 1971.** A Kakeya set in `ℝ²` has Hausdorff dimension at least `2`.
 
 This is the genuine content of the planar Kakeya set conjecture (the upper bound is free).
-Open crux of this run; see `PLAN.md` for the Córdoba bush/`L²` strategy. -/
+Reduced (K1, axiom-clean) to the measure-positivity crux `hausdorffMeasure_pos_of_isKakeya`:
+Frostman's lemma `le_dimH_of_hausdorffMeasure_ne_zero` lifts each `μH[d] S ≠ 0` (with `d < 2`)
+to `↑d ≤ dimH S`, and `ENNReal.le_of_forall_nnreal_lt` pushes the supremum over `d < 2` up to `2`. -/
 theorem two_le_dimH (S : Set (EuclideanSpace ℝ (Fin 2))) (h : IsKakeya S) :
     2 ≤ dimH S := by
-  sorry
+  refine ENNReal.le_of_forall_nnreal_lt (fun r hr => ?_)
+  exact le_dimH_of_hausdorffMeasure_ne_zero (hausdorffMeasure_pos_of_isKakeya S h r hr)
 
 end LeanFormalizations.Kakeya2D
