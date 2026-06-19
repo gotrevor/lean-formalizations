@@ -267,6 +267,80 @@ theorem le_goodsteinLength (m : ℕ) : m ≤ goodsteinLength m := by
   have hge := goodsteinSeq_ge_sub m k
   omega
 
+/-! ### Growth: the Goodstein term stays `≥ m` for the first `m` steps
+
+The linear bound `goodsteinSeq m k ≥ m − k` above only certifies *non-vanishing*; it says nothing
+about growth. The genuine engine of Goodstein growth is that, **while the value is at least the
+current base, one bump step does not decrease it** (`bump b n ≥ n + 1` for `n ≥ b` — the leading
+power `b^L` strictly grows to `(b+1)^{bump b L} > b^L`, dominating the `−1`). Since the start value
+`m` exceeds the base `k+2` for all `k ≤ m−2`, the sequence is non-decreasing across that whole
+range, hence stays `≥ m`. Consequently the descent ordinal `seqOrd m j` stays `≥ ω` for the first
+`~m` steps — the first "ordinal-stays-high" lower bound, and exactly sub-fact (ii) at level `o = 1`. -/
+
+/-- **Strict growth above the base.** For `2 ≤ b` and `b ≤ n`, one bump step strictly increases
+the value: `n + 1 ≤ bump b n`. The leading power `b^L` (with `L = log b n ≥ 1`) is sent to
+`(b+1)^{bump b L} ≥ (b+1)^L > b^L`, so the leading term alone already exceeds `n`. -/
+theorem bump_gt (b : ℕ) (hb : 2 ≤ b) {n : ℕ} (hn : b ≤ n) : n + 1 ≤ bump b n := by
+  have hb1 : 1 < b := by omega
+  have hn0 : n ≠ 0 := by omega
+  set L := Nat.log b n with hL
+  have hL1 : 1 ≤ L := Nat.log_pos hb1 hn
+  have hbe_pos : 0 < b ^ L := Nat.pow_pos (by omega)
+  have hbe_le : b ^ L ≤ n := Nat.pow_log_le_self b hn0
+  have hq1 : 1 ≤ n / b ^ L := Nat.div_pos hbe_le hbe_pos
+  have hpow_lt : b ^ L < (b + 1) ^ L := Nat.pow_lt_pow_left (by omega) (by omega)
+  have hpow_le : (b + 1) ^ L ≤ (b + 1) ^ bump b L :=
+    Nat.pow_le_pow_right (by omega) (le_bump b hb L)
+  have hP : b ^ L + 1 ≤ (b + 1) ^ bump b L := by omega
+  have hr_le : n % b ^ L ≤ bump b (n % b ^ L) := le_bump b hb _
+  have hbump : bump b n = n / b ^ L * (b + 1) ^ bump b L + bump b (n % b ^ L) := bump_pos b n hn0
+  have hn_eq : n / b ^ L * b ^ L + n % b ^ L = n := Nat.div_add_mod' n (b ^ L)
+  set q := n / b ^ L with hq
+  set BL := b ^ L with hBL
+  set P := (b + 1) ^ bump b L with hPdef
+  have hmul : q * (BL + 1) ≤ q * P := mul_le_mul_left' hP q
+  have hexp : q * (BL + 1) = q * BL + q := by ring
+  rw [hbump]
+  omega
+
+/-- **The Goodstein term stays `≥ m` for the first `m` steps:** `m ≤ goodsteinSeq m k` whenever
+`k + 1 ≤ m`. Induction on `k` using `bump_gt`: while `k + 2 ≤ m ≤ goodsteinSeq m k` the value is
+above the base, so `goodsteinSeq m (k+1) = bump (k+2) (goodsteinSeq m k) − 1 ≥ goodsteinSeq m k`. -/
+theorem goodsteinSeq_ge_init (m : ℕ) : ∀ k, k + 1 ≤ m → m ≤ goodsteinSeq m k := by
+  intro k
+  induction k with
+  | zero => intro _; exact le_of_eq rfl
+  | succ k ih =>
+    intro hk
+    have hv : m ≤ goodsteinSeq m k := ih (by omega)
+    have hble : k + 2 ≤ goodsteinSeq m k := by omega
+    have hgt : goodsteinSeq m k + 1 ≤ bump (k + 2) (goodsteinSeq m k) :=
+      bump_gt (k + 2) (by omega) hble
+    have hbase : base k = k + 2 := rfl
+    show m ≤ bump (base k) (goodsteinSeq m k) - 1
+    rw [hbase]; omega
+
+/-- **The descent ordinal stays `≥ ω` for the first `m` steps.** For `m = n + 2` and any step
+`j ≤ n`, the term value is `≥ m ≥ base j = j + 2`, so its ordinal `seqOrd m j` is `≥ ω`. This is
+sub-fact (ii) at level `o = 1`: the Goodstein notation `seqONote m j` dominates `ω = ω^(repr 1)`. -/
+theorem omega_le_seqONote_repr {n j : ℕ} (hj : j ≤ n) :
+    (ω : Ordinal) ≤ (seqONote (n + 2) j).repr := by
+  have hmono_le : ∀ p q : ℕ, p ≤ q → toOrdinal (j + 2) p ≤ toOrdinal (j + 2) q := by
+    intro p q hpq
+    rcases eq_or_lt_of_le hpq with h | h
+    · rw [h]
+    · exact le_of_lt ((toOrdinal_mono_and_bound (j + 2) (by omega) q).1 p h)
+  have h1 : toOrdinal (j + 2) 1 = 1 := by
+    have h := toOrdinal_pow (j + 2) (by omega) 0; simpa using h
+  have hbeq : toOrdinal (j + 2) (j + 2) = ω := by
+    have h := toOrdinal_pow (j + 2) (by omega) 1
+    rw [pow_one, h1, opow_one] at h; exact h
+  have hval : j + 2 ≤ goodsteinSeq (n + 2) j := by
+    have h := goodsteinSeq_ge_init (n + 2) j (by omega); omega
+  rw [repr_seqONote]
+  show (ω : Ordinal) ≤ toOrdinal (j + 2) (goodsteinSeq (n + 2) j)
+  rw [← hbeq]; exact hmono_le (j + 2) _ hval
+
 /-! ### The CNF norm of a Goodstein notation is bounded by its step index
 
 A Goodstein notation `seqONote m j = toONote (j+2) (goodsteinSeq m j)` is, by construction, a
@@ -392,6 +466,55 @@ theorem goodstein_dominates_or_hardy_bound {o : ONote} (ho : o.NF) {m : ℕ}
     left
     exact goodstein_dominates_of_index ho hnorm (lt_def.2 hgt)
 
+/-- **Domination, generalized reduction (any telescope step, `≤` index).** If at some step `j`
+the budget reaches the diagonal (`m ≤ j + 2`, `norm o ≤ j + 2`) and the descent notation is at
+least `ω^o` (`(oadd o 1 0).repr ≤ (seqONote m j).repr`, allowing equality), then `goodsteinLength`
+dominates `fastGrowing o` at `m`. Generalizes `goodstein_dominates_of_index`: the telescope step is
+free (any `j ≤ goodsteinLength m`), and the index hypothesis is non-strict — the equality case
+`oadd o 1 0 = seqONote m j` collapses the Hardy comparison to a literal `rfl`, while the strict
+case uses `hardy_le_of_lt` (budget met). This is what lets the `o = 1` level close from the
+non-strict ordinal bound `omega_le_seqONote_repr`. -/
+theorem goodstein_dominates_of_index_le {o : ONote} (ho : o.NF) {m j : ℕ}
+    (hj : j ≤ goodsteinLength m) (hmj : m ≤ j + 2) (hnorm : norm o ≤ j + 2)
+    (hidx : (oadd o 1 0).repr ≤ (seqONote m j).repr) :
+    fastGrowing o m ≤ goodsteinLength m + 2 := by
+  have hNFidx : (oadd o 1 0).NF := NF.oadd ho 1 NFBelow.zero
+  have hNFseq : (seqONote m j).NF := seqONote_NF m j
+  have hbudget : norm (oadd o 1 0) ≤ j + 2 := by
+    rw [norm_oadd, norm_zero]; simp only [PNat.one_coe]; omega
+  have hindex : hardy (oadd o 1 0) (j + 2) ≤ hardy (seqONote m j) (j + 2) := by
+    rcases eq_or_lt_of_le hidx with heq | hlt
+    · have heqo : oadd o 1 0 = seqONote m j :=
+        (@repr_inj (oadd o 1 0) (seqONote m j) hNFidx hNFseq).1 heq
+      rw [heqo]
+    · exact hardy_le_of_lt hNFidx hNFseq (lt_def.2 hlt) hbudget
+  have htel : hardy (seqONote m 0) 2 = hardy (seqONote m j) (j + 2) :=
+    hardy_seqONote_telescope m j hj
+  have hz : hardy (seqONote m 0) 2 = goodsteinLength m + 2 := hardy_seqONote_zero m
+  calc fastGrowing o m
+      ≤ fastGrowing o (j + 2) := fastGrowing_monotone o hmj
+    _ ≤ hardy (oadd o 1 0) (j + 2) := fastGrowing_le_hardy_pow o ho (j + 2)
+    _ ≤ hardy (seqONote m j) (j + 2) := hindex
+    _ = hardy (seqONote m 0) 2 := htel.symm
+    _ = goodsteinLength m + 2 := hz
+
+/-- **Goodstein length dominates `f_1`, unconditionally (every `m ≥ 2`).** This is the first
+member of the fast-growing hierarchy proven dominated by `goodsteinLength` through the full
+Cichoń pipeline — *not* by `native_decide`. The deep input, sub-fact (ii) at `o = 1`, is supplied
+by `omega_le_seqONote_repr`: at step `j = m − 2` the descent ordinal is still `≥ ω`, so the
+generalized reduction `goodstein_dominates_of_index_le` (budget `j + 2 = m`) applies. Concretely
+`f_1(m) = 2m ≤ goodsteinLength m + 2`. -/
+theorem fastGrowing_one_le_goodsteinLength (n : ℕ) :
+    fastGrowing 1 (n + 2) ≤ goodsteinLength (n + 2) + 2 := by
+  have ho : (1 : ONote).NF := NF.oadd NF.zero 1 NFBelow.zero
+  have hlhs : (oadd (1 : ONote) 1 0).repr = ω := by simp [ONote.repr]
+  refine goodstein_dominates_of_index_le (o := 1) (m := n + 2) (j := n) ho ?_ ?_ ?_ ?_
+  · have := le_goodsteinLength (n + 2); omega
+  · omega
+  · have hn1 : norm (1 : ONote) = 1 := by decide
+    omega
+  · rw [hlhs]; exact omega_le_seqONote_repr (le_refl n)
+
 /-! ### Anti-vacuity anchors (off any headline axiom path). -/
 
 example : hardy (oadd 1 2 (oadd 0 3 0)) 4 = hardy (oadd 1 2 0) (hardy (oadd 0 3 0) 4) := by
@@ -403,6 +526,12 @@ example : fastGrowing 2 3 ≤ hardy (oadd 2 1 0) 3 := by native_decide
 -- computable regime (small `o`, where it already kicks in at small `m`). A *backwards* or
 -- vacuous headline would fail these. (For `o ≥ 2` the inequality is asymptotic — it first holds
 -- at `m = 4`, where `goodsteinLength` is already astronomically large and beyond `native_decide`.)
+-- The growth engine, witnessed: one bump strictly grows a value above its base
+-- (`bump_gt`: `4 + 1 ≤ bump 2 4 = 27`), and the term stays `≥ m` (`goodsteinSeq_ge_init`:
+-- `G(4,2) = 41 ≥ 4`). A vacuous/backwards recursion would fail these.
+example : 4 + 1 ≤ bump 2 4 := by native_decide
+example : 4 ≤ goodsteinSeq 4 2 := by native_decide
+
 example : fastGrowing 0 2 ≤ goodsteinLength 2 + 2 := by native_decide  -- 3 ≤ 5
 example : fastGrowing 1 2 ≤ goodsteinLength 2 + 2 := by native_decide  -- 4 ≤ 5
 example : fastGrowing 0 3 ≤ goodsteinLength 3 + 2 := by native_decide  -- 4 ≤ 7
