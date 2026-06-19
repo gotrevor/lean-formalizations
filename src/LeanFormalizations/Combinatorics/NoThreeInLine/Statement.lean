@@ -25,6 +25,7 @@ Main Conjecture (open). See `README.md` / `PLAN.md`.
 -/
 import LeanFormalizations.Combinatorics.NoThreeInLine.UpperBound
 import LeanFormalizations.Combinatorics.NoThreeInLine.Parabola
+import LeanFormalizations.Combinatorics.NoThreeInLine.Hyperbola
 import Mathlib.NumberTheory.Bertrand
 
 namespace LeanFormalizations.NoThreeInLine
@@ -61,6 +62,32 @@ theorem maxNoThreeInLine_gt_half {N : ℕ} (hN : 2 ≤ N) : N / 2 < maxNoThreeIn
   refine hlo.trans_le (le_csSup (bddAbove_grid N) ?_)
   exact ⟨parabola p, (parabola_card p).symm,
     (parabola_grid hp.pos).mono hpN, parabola_noThreeCollinear hp⟩
+
+/-! ### HJSW hyperbola construction (verified, `Θ(N)` — toward `3N/2`)
+
+The doubled hyperbola arc `xy ≡ 1 (mod p)` over `x ∈ [1,2p) \ {p}` realizes `2(p−1)` no-three-collinear
+points in the `2p × 2p` grid. This is the algebraic core of the Hall–Jackson–Sudbery–Wild `3N/2`
+construction (`Hyperbola.lean`), wired here into an actual `maxNoThreeInLine` bound. NOTE: as a square
+bound this is `Θ(N)` (ratio `~1`, same order as Erdős) — the `3/2` improvement is in the *covering* of
+the grid by several translated arcs, not the single arc; see `PLAN.md` / `ON-LINE-REQUEST.md`. -/
+
+/-- **Existence form of the doubled hyperbola arc.** For prime `p`, the `2p × 2p` grid contains
+`2(p−1)` points with no three collinear. -/
+theorem hjsw_doubled_arc_exists {p : ℕ} (hp : p.Prime) :
+    ∃ s : Finset (ℕ × ℕ), IsGridSet (2 * p) s ∧ NoThreeCollinear s ∧ s.card = 2 * (p - 1) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  have hk : ((1 : ℕ) : ZMod p) ≠ 0 := by rw [Nat.cast_one]; exact one_ne_zero
+  exact ⟨hyperbolaWide p 1, hyperbolaWide_grid hp.pos,
+    hyperbolaWide_noThreeCollinear hp hk, hyperbolaWide_card⟩
+
+/-- The doubled hyperbola arc gives `maxNoThreeInLine (2p) ≥ 2(p−1)`. -/
+theorem two_mul_pred_le_maxNoThreeInLine {p : ℕ} (hp : p.Prime) :
+    2 * (p - 1) ≤ maxNoThreeInLine (2 * p) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  have hk : ((1 : ℕ) : ZMod p) ≠ 0 := by rw [Nat.cast_one]; exact one_ne_zero
+  exact le_csSup (bddAbove_grid (2 * p))
+    ⟨hyperbolaWide p 1, hyperbolaWide_card.symm, hyperbolaWide_grid hp.pos,
+      hyperbolaWide_noThreeCollinear hp hk⟩
 
 /-! ### Order Θ(N) -/
 
