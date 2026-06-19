@@ -6,11 +6,21 @@ The headline `dimH S = 2` splits into the two inequalities:
 * `dimH_le_two` — the **trivial** half: any subset of `ℝ²` has Hausdorff dimension `≤ 2`,
   by monotonicity into `univ`, whose dimension is `finrank ℝ (ℝ²) = 2`. **Proven.**
 * `two_le_dimH` — **Davies 1971**, the genuine content: a planar Kakeya set has Hausdorff
-  dimension `≥ 2`. Now machine-checked *modulo the single crisp axiom*
-  `kakeya_subresolution_content` (the **Case B / sub-resolution** residual — see its docstring): the
-  full dominant-scale assembly (fine net ⟶ shift pigeonhole ⟶ base-angle Córdoba) is proven; the lone
-  leftover is the Hausdorff-vs-box gap for covers dominated by pieces finer than the net resolution.
-  Strategy: Córdoba's dual / "bush" `L²` argument — see `PLAN.md`.
+  dimension `≥ 2`. The SOUND, axiom-clean proof of this is the *elementary / measurable-selection*
+  route in `Selection.lean` (`kakeya_hausdorffContentBound_elementary` ⟶ `two_le_dimH`), which the
+  headline `davies_kakeya_2d` uses. This file (Engine) holds the LEGACY *discrete* Córdoba route
+  (fine net ⟶ shift pigeonhole ⟶ base-angle Córdoba). Its **Case A** (dominant scale strictly below
+  the net resolution) is fully proven and axiom-clean; its **Case B** (cover dominated by pieces
+  *finer* than the net) is a genuine open gap that the discrete route CANNOT close.
+
+  ⚠️ **Soundness note (2026-06-19).** Earlier laps papered over Case B with an `axiom
+  kakeya_subresolution_content`. That axiom is **FALSE** — it omitted the exponential-beats-polynomial
+  link between its constant `cR` and `d` (the `hcR` hypothesis that `caseA_content` carries), so its
+  conclusion `D⁻¹·cR ≤ ∑' ediam^d` had to hold for *arbitrary* `cR > 0` against a *fixed finite*
+  `∑' ediam^d`. The false axiom has been REMOVED; see the kernel-checked refutation
+  `kakeya_subresolution_content_is_unsound` below. The Case-B branch of the legacy assembly is now a
+  disclosed `sorry` (an honest open gap), not a false axiom. The discrete route is superseded for the
+  headline and kept only as proven Case-A structure.
 
 Only `two_le_dimH` uses `IsKakeya`; the upper bound holds for every set in the plane.
 -/
@@ -186,47 +196,105 @@ theorem content_ratio_lower {d : ℝ} (hd0 : 0 < d) (hd2 : d < 2) :
         mul_le_mul_of_nonneg_right hmain (by positivity)
     _ = q * ((1 / 4 : ℝ) ^ j * (4 * q) ^ j) := by ring
 
-/-- **Case B residual: the sub-resolution Hausdorff-content bound — the genuine remaining obstacle.**
+/-- **The discrete-route Case-B "sub-resolution content" statement is UNSOUND (FALSE).**
 
-The dominant-scale assembly (`kakeya_hausdorffContentBound`, below) runs a fine net at resolution
-`2⁻ᴶ`, pigeonholes to a dominant scale `j ≤ J`, and — when `j < J` (**Case A**) — discharges the
-content bound entirely from the proven bricks (`exists_dominant_shift` ⟹ a shifted `2⁻ʲ`-net of `2ʲ`
-directions covered `≳ 1/poly(j)` at scale `j`, fed to the base-angle `cover_content_per_scale`). The
-*only* leftover is **Case B** `j = J`: the cover is dominated by pieces **finer** than the net
-resolution, so the scale-`J` fiber is not a single scale — `cover_content_per_scale` does not apply
-(pieces can be arbitrarily small, so their *count* no longer bounds `∑ ediam^d`).
+Earlier laps cited the universally-quantified statement below as `axiom kakeya_subresolution_content`,
+believing it a "true but deep" Hausdorff-vs-box-counting residual. It is in fact **false**, for two
+independent reasons:
 
-This is exactly the **Hausdorff-vs-box-counting gap**. The Córdoba `L²` bound pins the box dimension
-at every fixed scale (proven: `volume_thickening_log_ge`); promoting it to a Hausdorff content bound
-for an arbitrarily-fine cover requires summing the per-scale counts across the sub-resolution scales
-with the right convexity — the part not yet formalized. It is isolated here as the content conclusion
-**conditioned on the Case-B witness**: a `2ᴶ`-direction net (base points `a k`, measurable covered
-sets `A k ⊆ [0,1]`, base angle `c`) whose covered segments lie in a family `s` of pieces *all* of
-diameter `≤ 2⁻ᴶ` (`hediam_hi`), carrying `≥ 1/poly(J)` of the aggregate covered length (`hnum`). Note
-this axiom is **strictly weaker** than the former monolithic dominant-scale axiom: it only fires once
-the bricks have *proven* we reach scale `J` with the numerator in hand; Case A needs no axiom at all.
-See `ON-LINE-REQUEST.md` UPDATE 3 (ask 3b: rigorous handling of the non-measurable sub-resolution
-family). Reference: Wolff, *Lectures on Harmonic Analysis*; Mattila, *Fourier Analysis and Hausdorff
-Dimension*, §22–23.
+1. **It dropped the `hcR` hypothesis.** The sound single-scale brick `caseA_content` links its
+   constant `cR` to the exponent `d` via the exponential-beats-polynomial inequality `hcR`. The
+   abstract statement here omits it (only `0 < cR`), so its conclusion `D⁻¹·cR ≤ ∑' ediam^d` had to
+   hold for *every* `cR > 0` against a *fixed* configuration with *finite* `∑' ediam^d` — impossible.
+   The refutation below exploits exactly this: it fixes a one-piece cover of a single unit segment
+   (so `∑' ediam^d` is finite, ≤ 1) and picks `cR = vol(disc).toReal + 1`, forcing
+   `D⁻¹·cR > 1 ≥ ∑' ediam^d`.
 
-⚠️ **SUPERSEDED & OFF-HEADLINE (2026-06-19).** The headline `davies_kakeya_2d` does **not** depend on
-this axiom: it now goes through the *elementary* open-cover route
-(`Selection.kakeya_hausdorffContentBound_elementary`), which sidesteps the Case-B sub-resolution gap
-entirely (an open cover gives a tube around each unit segment ⟹ a dense base point achieves full
-coverage, no measurable selection / no cross-scale convexity). This axiom and the discrete assembly
-below (`kakeya_hausdorffContentBound`, `*_discrete`) are retained as legacy structure documenting the
-Córdoba Case-A/Case-B approach; they are the ONLY axiom left in `Kakeya2D/` and feed nothing live.
+2. **Even with `hcR` restored it is false for `d > 1`.** The hypotheses fix only `2ᴶ` *directions*
+   but leave the base points `a k` arbitrary, so the `2ᴶ` segments may be placed pairwise far apart;
+   covering them by *unshared* pieces of size `2⁻ⁱ` (`i ≥ J`) uses `≈ 2^{J+i}` pieces with
+   `∑ ediam^d ≈ 2^{J+i(1-d)} → 0`. The Córdoba overlap that makes the real theorem work needs the
+   segments forced into a common bounded set (a Kakeya set) — structure the abstract statement drops.
+
+This is why the discrete route genuinely cannot close Case B, and why the SOUND headline proof routes
+through the *measurable-selection / elementary open-cover* argument (`Selection.lean`) instead. The
+former false axiom has been removed; this kernel-checked refutation is kept as a permanent guard so the
+unsound statement is never reintroduced. Headline is unaffected:
 `#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound]`. -/
-axiom kakeya_subresolution_content {d : ℝ} (hd : 0 ≤ d)
-    {cR : ℝ} (hcRpos : 0 < cR) (J : ℕ) (c : ℝ)
-    (a : ℕ → Plane) (A : ℕ → Set ℝ) (hAmeas : ∀ k, MeasurableSet (A k))
-    (hA01 : ∀ k, A k ⊆ Set.Icc (0 : ℝ) 1) (U : ℕ → Set Plane) (s : Set ℕ)
-    (hediam_hi : ∀ n ∈ s, Metric.ediam (U n) ≤ ENNReal.ofReal ((1 / 2 : ℝ) ^ J))
-    (hscov : ∀ k, (fun u => a k + u • dir (c + (k : ℝ) * (1 / 2 : ℝ) ^ J)) '' (A k) ⊆ ⋃ n ∈ s, U n)
-    (hnum : ENNReal.ofReal (1 / (((J : ℝ) + 1) * ((J : ℝ) + 2)))
-        ≤ ∑ k ∈ Finset.range (2 ^ J), ENNReal.ofReal (2 * (1 / 2 : ℝ) ^ J) * volume (A k)) :
-    (volume (Metric.closedBall (0 : Plane) 1))⁻¹ * ENNReal.ofReal cR
-      ≤ ∑' n, Metric.ediam (U n) ^ d
+theorem kakeya_subresolution_content_is_unsound :
+    ¬ (∀ (d : ℝ), 0 ≤ d → ∀ (cR : ℝ), 0 < cR → ∀ (J : ℕ) (c : ℝ)
+        (a : ℕ → Plane) (A : ℕ → Set ℝ), (∀ k, MeasurableSet (A k)) →
+        (∀ k, A k ⊆ Set.Icc (0 : ℝ) 1) → ∀ (U : ℕ → Set Plane) (s : Set ℕ),
+        (∀ n ∈ s, Metric.ediam (U n) ≤ ENNReal.ofReal ((1 / 2 : ℝ) ^ J)) →
+        (∀ k, (fun u => a k + u • dir (c + (k : ℝ) * (1 / 2 : ℝ) ^ J)) '' (A k) ⊆ ⋃ n ∈ s, U n) →
+        (ENNReal.ofReal (1 / (((J : ℝ) + 1) * ((J : ℝ) + 2)))
+          ≤ ∑ k ∈ Finset.range (2 ^ J), ENNReal.ofReal (2 * (1 / 2 : ℝ) ^ J) * volume (A k)) →
+        (volume (Metric.closedBall (0 : Plane) 1))⁻¹ * ENNReal.ofReal cR
+          ≤ ∑' n, Metric.ediam (U n) ^ d) := by
+  intro H
+  set D : ℝ≥0∞ := volume (Metric.closedBall (0 : Plane) 1) with hD
+  have hDpos : 0 < D := volume_closedBall_one_pos
+  have hDtop : D ≠ ⊤ := volume_closedBall_one_ne_top
+  set SEG : Set Plane := (fun u => (0 : Plane) + u • dir 0) '' (Set.Icc (0 : ℝ) 1) with hSEG
+  classical
+  set U : ℕ → Set Plane := fun n => if n = 0 then SEG else ∅ with hUdef
+  set A : ℕ → Set ℝ := fun k => if k = 0 then Set.Icc (0 : ℝ) 1 else ∅ with hAdef
+  have hU0 : U 0 = SEG := by rw [hUdef]; simp
+  have hUk : ∀ n, n ≠ 0 → U n = ∅ := fun n hn => by rw [hUdef]; simp [hn]
+  have hA0 : A 0 = Set.Icc (0 : ℝ) 1 := by rw [hAdef]; simp
+  have hAk : ∀ k, k ≠ 0 → A k = ∅ := fun k hk => by rw [hAdef]; simp [hk]
+  set cR : ℝ := D.toReal + 1 with hcRdef
+  have hcRpos : 0 < cR := by have := ENNReal.toReal_nonneg (a := D); rw [hcRdef]; linarith
+  have hediam_seg : Metric.ediam SEG ≤ 1 := by
+    apply Metric.ediam_le
+    rintro x ⟨s, hs, rfl⟩ y ⟨t, ht, rfl⟩
+    rw [Set.mem_Icc] at hs ht
+    show edist ((0 : Plane) + s • dir 0) ((0 : Plane) + t • dir 0) ≤ 1
+    rw [edist_dist]
+    refine (ENNReal.ofReal_le_ofReal ?_).trans_eq ENNReal.ofReal_one
+    rw [zero_add, zero_add, dist_eq_norm, ← sub_smul, norm_smul, norm_dir, mul_one,
+      Real.norm_eq_abs, abs_le]
+    constructor <;> linarith [hs.1, hs.2, ht.1, ht.2]
+  have hmeas : ∀ k, MeasurableSet (A k) := fun k => by
+    by_cases hk : k = 0
+    · rw [hk, hA0]; exact measurableSet_Icc
+    · rw [hAk k hk]; exact MeasurableSet.empty
+  have h01 : ∀ k, A k ⊆ Set.Icc (0 : ℝ) 1 := fun k => by
+    by_cases hk : k = 0
+    · rw [hk, hA0]
+    · rw [hAk k hk]; exact Set.empty_subset _
+  have hax := H 1 (le_of_lt one_pos) cR hcRpos 0 0 (fun _ => (0 : Plane)) A hmeas h01 U {0}
+    (fun n hn => by
+      simp only [Set.mem_singleton_iff] at hn; subst hn
+      rw [hU0]; simpa using hediam_seg)
+    (fun k => by
+      by_cases hk : k = 0
+      · subst hk
+        rw [hA0]
+        intro y hy
+        rw [Set.mem_iUnion₂]
+        refine ⟨0, rfl, ?_⟩
+        rw [hU0, hSEG]
+        obtain ⟨u, hu, rfl⟩ := hy
+        exact ⟨u, hu, by norm_num⟩
+      · rw [hAk k hk]; simp)
+    (by
+      simp only [pow_zero, Finset.range_one, Finset.sum_singleton, hA0]
+      rw [Real.volume_Icc]
+      norm_num)
+  have htsum : (∑' n, Metric.ediam (U n) ^ (1 : ℝ)) ≤ 1 := by
+    rw [tsum_eq_single 0]
+    · rw [hU0, ENNReal.rpow_one]; exact hediam_seg
+    · intro n hn
+      rw [hUk n hn]; simp [Metric.ediam]
+  have hfin : D⁻¹ * ENNReal.ofReal cR ≤ 1 := hax.trans htsum
+  have hle : ENNReal.ofReal cR ≤ D := by
+    have h2 := mul_le_mul_left' hfin D
+    rwa [← mul_assoc, ENNReal.mul_inv_cancel hDpos.ne' hDtop, one_mul, mul_one] at h2
+  have hgt : D < ENNReal.ofReal cR := by
+    conv_lhs => rw [← ENNReal.ofReal_toReal hDtop]
+    exact (ENNReal.ofReal_lt_ofReal_iff_of_nonneg ENNReal.toReal_nonneg).mpr (by rw [hcRdef]; linarith)
+  exact absurd hgt (not_lt.mpr hle)
 
 theorem kakeya_hausdorffContentBound
     {S : Set (EuclideanSpace ℝ (Fin 2))} (h : IsKakeya S) {d : ℝ} (hd0 : 0 < d) (hd2 : d < 2) :
@@ -369,39 +437,27 @@ theorem kakeya_hausdorffContentBound
         have htop : ∑' n, Metric.ediam (U n) ^ d = ⊤ :=
           top_le_iff.mp (h3 ▸ (h2.trans h1))
         rw [htop]; exact le_top
-    · -- Case B: dominant scale saturates the resolution (`j = J`) — the sub-resolution residual.
-      clear hjeq
-      have hwinB : ∀ n ∈ (g ⁻¹' {j} : Set ℕ), Metric.ediam (U n) ≤ ENNReal.ofReal ((1 / 2 : ℝ) ^ j) := by
-        intro n hn
-        have hn' : g n = j := hn
-        by_cases hp : 0 < (Metric.ediam (U n)).toReal
-        · have hdiJ : j ≤ dyadicIdx (Metric.ediam (U n)).toReal := by
-            simp only [hgdef] at hn'; rw [if_pos hp] at hn'; omega
-          have hle1 : (Metric.ediam (U n)).toReal ≤ 1 := by
-            have := ENNReal.toReal_mono (by norm_num : (1 : ℝ≥0∞) ≠ ⊤) (hUdiam n); simpa using this
-          have hw := (dyadicIdx_window hp hle1).2
-          have hmono : (1 / 2 : ℝ) ^ dyadicIdx (Metric.ediam (U n)).toReal ≤ (1 / 2 : ℝ) ^ j :=
-            pow_le_pow_of_le_one (by norm_num) (by norm_num) hdiJ
-          have heq : Metric.ediam (U n) = ENNReal.ofReal (Metric.ediam (U n)).toReal :=
-            (ENNReal.ofReal_toReal (ne_top_of_le_ne_top (by norm_num) (hUdiam n))).symm
-          rw [heq]; exact ENNReal.ofReal_le_ofReal (hw.trans hmono)
-        · have htr0 : (Metric.ediam (U n)).toReal = 0 := le_antisymm (not_lt.mp hp) ENNReal.toReal_nonneg
-          have hz : Metric.ediam (U n) = 0 := by
-            rcases (ENNReal.toReal_eq_zero_iff _).mp htr0 with hh | hh
-            · exact hh
-            · exact absurd hh (ne_top_of_le_ne_top (by norm_num) (hUdiam n))
-          rw [hz]; exact zero_le _
-      exact kakeya_subresolution_content hd0.le hcRpos j c (fun i => bp (β + 2 ^ (J - j) * i)) A
-        hAmeas hA01 U (g ⁻¹' {j} : Set ℕ) hwinB hscov hnum
+    · -- Case B: dominant scale saturates the net resolution (`j = J`) — the genuine sub-resolution
+      -- gap. The cover is dominated by pieces *finer* than `2⁻ᴶ`, so the scale-`J` count no longer
+      -- bounds `∑ ediam^d`. The discrete route CANNOT close this honestly: the abstract sub-resolution
+      -- statement that earlier laps cited as `axiom kakeya_subresolution_content` is provably FALSE
+      -- (see `kakeya_subresolution_content_is_unsound` above — arbitrary base points let the `2ᴶ`
+      -- segments be covered by unshared fine pieces with `∑ ediam^d → 0`). The SOUND proof of this
+      -- content bound is the elementary open-cover / measurable-selection route in `Selection.lean`
+      -- (`kakeya_hausdorffContentBound_elementary`), which the headline `davies_kakeya_2d` uses.
+      -- This legacy discrete assembly is kept for its proven Case-A structure; Case B is an honest,
+      -- disclosed open gap (NOT a false axiom).
+      sorry
 
 /-- **Legacy discrete-route measure form (off the headline path).** For a Kakeya set `S ⊆ ℝ²`, every
-`d`-dimensional Hausdorff measure with `d < 2` is positive — proved here via the discrete Case-A/Case-B
-route (`kakeya_hausdorffContentBound`, depending on the legacy axiom `kakeya_subresolution_content`).
+`d`-dimensional Hausdorff measure with `d < 2` is positive — via the discrete route
+(`kakeya_hausdorffContentBound`). ⚠️ That route's Case-B branch is an honest, disclosed `sorry` (the
+genuine sub-resolution gap — see `kakeya_subresolution_content_is_unsound`), so this legacy lemma
+carries a `sorryAx` and is **NOT** a complete proof.
 
-This chain is **superseded** by the measurable-selection route (`Wiring.lean`:
-`hausdorffMeasure_pos_of_isKakeya` / `two_le_dimH`, depending only on the clean axiom
-`kakeya_measurable_selection`), which is what the headline `davies_kakeya_2d` now uses. It is kept here
-as the proven Case-A discrete structure (the cap-free dominant-scale assembly), not deleted. -/
+It is fully **superseded** by the SOUND, axiom-clean measurable-selection / elementary route
+(`Selection.lean`: `hausdorffMeasure_pos_of_isKakeya` / `two_le_dimH`), which is what the headline
+`davies_kakeya_2d` uses. Kept here only as the proven Case-A discrete structure. -/
 theorem hausdorffMeasure_pos_of_isKakeya_discrete
     (S : Set (EuclideanSpace ℝ (Fin 2))) (h : IsKakeya S) :
     ∀ d : ℝ≥0, (d : ℝ≥0∞) < 2 → μH[(d : ℝ)] S ≠ 0 := by
@@ -420,8 +476,10 @@ theorem hausdorffMeasure_pos_of_isKakeya_discrete
     exact key d (by exact_mod_cast hd0) hd2R
 
 /-- **Davies 1971 (legacy discrete route, off the headline path).** A Kakeya set in `ℝ²` has Hausdorff
-dimension at least `2`, proved via the discrete Case-A/Case-B route. Superseded for the headline by
-`Wiring.two_le_dimH` (measurable-selection route, clean axiom); kept as proven discrete structure. -/
+dimension at least `2`. ⚠️ Via the discrete route, whose Case-B branch is a disclosed `sorry`, so this
+legacy lemma carries a `sorryAx` and is **NOT** a complete proof. The SOUND, axiom-clean proof is
+`Selection.two_le_dimH` (measurable-selection / elementary route), used by `davies_kakeya_2d`. Kept
+only as proven Case-A discrete structure. -/
 theorem two_le_dimH_discrete (S : Set (EuclideanSpace ℝ (Fin 2))) (h : IsKakeya S) :
     2 ≤ dimH S := by
   refine ENNReal.le_of_forall_nnreal_lt (fun r hr => ?_)
