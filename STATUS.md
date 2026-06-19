@@ -22,6 +22,12 @@ The repo is **100% axiom-free** — every headline `#print axioms` is the bare t
   except at involution fixed points); a probe confirms no single structured base (hyperbola,
   rotated hyperbola, circle, monomial graph, parabola) reaches the count at `p=7`. ⇒ the actual
   HJSW construction needs the paper (sharpened `ON-LINE-REQUEST.md`); the geometry is discharged.
+  **Breakthrough (same lap):** overturned the prior "need ≥2 curves" belief — a fresh scan found a
+  *uniformly-defined* single base of size `|B|=p` that works: the **sheared hyperbola**
+  `y·(2x+1) ≡ 1 (mod p)` (pole→0), whose `4p` lifts contain a `3(p−1)`-point no-3-collinear set,
+  **verified at p=7,11,13** (the plain hyperbola `|B|=p−1` caps at 17 by over-constraint; the shear
+  relieves it). Remaining: a closed-form lift-selection rule (non-uniform) + the general proof
+  (Path B in `PENDING_WORK.md`). Self-contained HJSW also submitted to Aristotle (`083292d5`).
 - **2026-06-19 (Goodstein — PROVED, axiom-clean):** `goodstein_terminates`
   (`∀ m, ∃ N, goodsteinSeq m N = 0`) is fully machine-checked,
   `#print axioms = [propext, Classical.choice, Quot.sound]`. `Defs.lean` carries

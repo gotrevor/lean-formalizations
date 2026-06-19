@@ -49,10 +49,30 @@ rotated hyperbola `y²−x²=c`, circle `x²+y²=c`, monomial graphs `y=x^m` (m 
 translated hyperbola `(x+1)(y+1)=k`, parabola `y=x²` — all `< 18`. (`p=5` hits are small-case
 coincidences, explained by the iff above.)
 
-**Bottom line:** HJSW is **not** any single algebraic base's 4-lift union, nor (from prior lap) a
-2-curve hyperbola-lift union. The construction must be genuinely cleverer (non-uniform lifts across
-a specific multi-curve / non-conic base, navigating the over-constraint above — likely exploiting
-the fixed points and a global cycle structure on the slope-`±1` collision graph). **Need the paper.**
+**Bottom line (corrected later this lap):** the prior conclusion "need ≥2 curves" was an artifact
+of only ever testing the **|B| = p−1** plain hyperbola + uniform 3-of-4. A single base of size
+**|B| = p** DOES work — see the breakthrough below.
+
+## ⭐ BREAKTHROUGH this lap — the SHEARED HYPERBOLA construction (|B| = p, validated p=7,11,13)
+A fresh exhaustive scan over "one-point-per-column, distinct-rows" bases (graphs of permutations
+`f : Z_p → Z_p`) found **984 of 5040** such bases at `p=7` whose 4-lift union contains an 18-point
+no-3-collinear set. Among the *uniformly-defined* (all-`p`) families, **Möbius / conic bases work**.
+The cleanest:
+
+> **`base = { (x, (2x+1)⁻¹ mod p) : x ∈ Z_p }`** — the sheared hyperbola `y·(2x+1) ≡ 1 (mod p)`,
+> with the pole `x = −2⁻¹` mapped to `0`. `|B| = p`. Its `4p` lifts into `[0,2p)²` contain a
+> `3(p−1)`-point no-3-collinear subset. **Verified REACH at p = 7, 11, 13** (and others:
+> `(a,b,c,d) ∈ {(0,1,2,1),(0,1,4,2),(1,1,2,4),(2,3,1,3),(2,1,4,0)}` all reach p=7,11,13).
+
+Why the shear matters: the plain hyperbola `xy≡1` (|B|=p−1) caps at 17 because every base point is
+over-constrained by its slope-`±1` partners (the iff-p=5 result). The shear `x ↦ 2x+1`
+**redistributes** the slope-`±1` collisions (the lift structure is NOT shear-invariant — lifts are
+tied to the `2p×2p` grid), and the extra pole point (`|B|` goes p−1 → p) relieves the deficit.
+NB: plain hyperbola + origin (`xy=1 ∪ {(0,0)}`) does NOT work — the shear is essential.
+
+Still open: the lift **selection rule is non-uniform** (a found p=7 selection keeps 3,2,3,1,3,4,3
+lifts across the 7 base points; uniform 3-of-4 = 21 pts does NOT exist even for the sheared base).
+So a *closed-form* selection rule is not yet pinned down — that is the next target.
 
 ## Three attack paths for `hjsw_lower`
 
@@ -63,16 +83,22 @@ When `ON-LINE-FINDINGS-*.md` lands: build the candidate set, validate via `nativ
 at p=5,7,11,13, port to a clean `def`, prove using the reduction toolkit (the new content is then
 just the slope-`±1` combinatorics, the geometry being discharged). Highest-confidence path.
 
-### Path B — original construction, guided by the structure above
-The over-constraint analysis says: model the slope-`±1` collision graph (vertices = base points;
-S+ edge `a—(−a⁻¹)`, S− edge `a—a⁻¹`; 2-regular ⇒ disjoint alternating cycles + involution
-fixed-point self-loops) and find a lift-assignment (some points keep all 4 lifts, some keep 2)
-totalling `3(p−1)` with `#KEEP4 = (p−1)/2`, respecting "each S+ edge has an all-anti endpoint, each
-S− edge has an all-diag endpoint." Feasibility hinges on the fixed points relieving the cycle.
-Next experiment: solve this CSP computationally for p = 7, 11, 13 (it is small: 2-regular graph,
-3 types per vertex); if a consistent assignment exists, decode the rule and prove it via the
-reduction toolkit. If the CSP is **infeasible** for one hyperbola, a 2nd curve must supply fillers —
-then the base is a 2-hyperbola union and the reduction needs the union's mod-`p` non-collinearity.
+### Path B — ⭐ PRIMARY now: pin down the sheared-hyperbola selection rule, then prove
+The base is found (sheared hyperbola, above). The remaining work is the **lift-selection rule** +
+the general proof. Concrete next steps:
+1. **Find a closed-form selection** for `base = {(x,(2x+1)⁻¹)}`: search for a selection of `3(p−1)`
+   lifts that is *symmetric* (e.g. invariant under an involution of the base, or given by a simple
+   per-`x` rule on the residue/quadratic-character of `2x+1`) and validate at p=7,11,13,17. The
+   hitting-set found arbitrary selections; we need a *rule*. Try: keep lifts by a rule depending on
+   `χ(2x+1)` (quadratic character) and the slope-`±1` partner structure of the sheared base.
+2. **Generalize the non-collinearity proof**: the reduction toolkit (`collinear_imp_modp_det_zero`)
+   already handles cross-residue triples for ANY base. For the sheared hyperbola, prove its mod-`p`
+   non-collinearity (it is a conic ⇒ a line meets it in ≤2 points; generalize
+   `hyperbola_collinear_zmod`). Then the only obligation is the slope-`±1` triples, which the
+   selection rule kills — and `coord_diff_of_residue_eq` reduces those to arithmetic.
+3. Validate any candidate rule via `native_decide (decNoThree …)` at p=5,7,11,13 before the proof.
+Fallback: if no clean rule emerges, the Aristotle job (`083292d5`, self-contained HJSW) may return
+a construction to port.
 
 ### Path C — special-case ladder (partial, native-certified) while A/B mature
 Verified witness ladder p=5,7,11,13 (`hjsw_lower_{five,seven,eleven,thirteen}`, native_decide, OFF
@@ -80,5 +106,8 @@ headline). Extend to p=17,19 only if a lap needs filler; do NOT generalize to th
 
 ## Done this lap
 Reduction toolkit (4 axiom-clean lemmas); over-constraint theorem (3-of-4 iff p=5, proven +
-verified); computational wall map (all single structured bases fail at p=7). **Next lap:** act on
-findings (A) the moment they land; else execute Path B's CSP solve for the lift-assignment.
+verified); computational wall map; **the sheared-hyperbola breakthrough** (a uniformly-defined
+|B|=p base reaching 3(p−1) at p=7,11,13, overturning the prior "need ≥2 curves" belief); submitted
+the self-contained HJSW to Aristotle (`083292d5`). **Next lap:** Path B step 1 — find a closed-form
+selection rule for the sheared hyperbola (validate p=7,11,13,17), then prove via the toolkit. Also
+check `aristotle list` for `083292d5` and any `ON-LINE-FINDINGS-*.md`.
