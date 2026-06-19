@@ -26,11 +26,13 @@ The charter headline **C3 is done**; ladder A–C complete. Both directions mach
   three), but the per-level closures remain as anti-vacuity witnesses — don't delete them.
 
 ## Next (the lap-12 frontier — START HERE)
-1. **B4 `H_{ω^α} = f_α`** — the last charter ladder item. `hardy_le_fastGrowing` gives the
-   `≤`-at-same-index half. For B4: MEASURE the offset first — repo's `hardy_omega` (`H_ω(n)=2n+1`) vs
-   `fastGrowing_one` (`2n`) shows the `ω[n]=n+1` convention adds `+1` at `ω`; generalize that offset up
-   the tower (`H_{ω^α}` vs `f_α`) with `native_decide` on small cases before fixing the statement.
-   Good bounded Aristotle candidate once the offset is pinned. See `PENDING_WORK.md` → "NEXT FRONTIER".
+1. **B4 `H_{ω^α} = f_α`** — the last charter ladder item; **lap 11 mapped the wall (see `PENDING_WORK.md`
+   → NEXT FRONTIER for the measured data).** Findings: the clean form is `H_{ω^α}(n)+1 = f_α(n+1)`,
+   TRUE for finite/successor α (measured α=0,1,2) but **FALSE at limit α** (measured: `H_{ω^ω}(1)+1=8`
+   ≠ `f_ω(2)=2048`) due to the `ω[n]=n+1` index shift picking `q n` vs `q(n+1)`. Correct attack: build
+   the **Hardy additive law `H_{α+β}(n)=H_α(H_β(n))`** (⇒ coefficient lemma `H_{ω^β·j}=(H_{ω^β})^[j]`)
+   FIRST — it's the key brick for the (true) finite-α restricted B4 and is a clean reusable target /
+   good Aristotle candidate. `hardy_le_fastGrowing` already gives the `≤`-half generally.
 2. **DO NOT** re-iterate the now-COMPLETE two-sided growth theorem (lower `goodsteinLength_dominates_fastGrowing`
    + upper `goodsteinLength_le_fastGrowing_ordinal`) or reopen the superseded `ppCount` sparsity route.
 3. Optional sharpenings (lower priority): strict domination removing `+2` (needs general index

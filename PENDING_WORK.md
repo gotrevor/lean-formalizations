@@ -37,20 +37,32 @@ trust base + finite-base-case `native_decide` (engines fully clean); no sorry.
 - C3 audit surface `GrowthStatement.lean` + faithfulness anchor `fastGrowingε₀_eq_towerO` (our
   `towerO` IS mathlib's ε₀ fundamental sequence: `fastGrowingε₀ (k+1) = fastGrowing (towerO k) (k+1)`).
 
-### 🎯 NEXT FRONTIER — B4 (`H_{ω^α} = f_α`), the last charter ladder item
+### 🎯 NEXT FRONTIER — B4 (`H_{ω^α} = f_α`), the last charter ladder item — WALL MAPPED (lap 11)
 The two-sided growth theorem is DONE; the charter ladder A–C is complete. The remaining explicit
 charter target is **B4: the classical identity `H_{ω^α} = f_α`** (flagged "long-horizon trap under
-mathlib's `ω[n]=n+1`"). Attack notes:
-  - `hardy_le_fastGrowing` is the `≤`-at-same-index half already in hand; B4 is the exact identity at
-    the special index `ω^α`. Under mathlib's `ω[n]=n+1` convention the clean equality likely needs a
-    shift (`H_{ω^α}(n) = f_α(n)` may hold as stated, or with an `n↦n+?` offset — MEASURE it on small
-    cases first with `native_decide` before committing to a statement).
-  - Start concretely: `H_{ω}(n) = ?` vs `f_1(n)=2n`. Repo already has `hardy_omega` (`H_ω(n)=2n+1`)
-    and `fastGrowing_one (2n)` — so `H_ω(n) = f_1(n) + 1` here, i.e. the `ω[n]=n+1` shift gives a `+1`.
-    Generalize that offset up the tower (`H_{ω^α}` vs `f_α`) — that offset pattern IS the reformulation
-    the charter asks for. Then `H_{ω^2}` vs `f_2`, etc.
-  - Good Aristotle candidate: a bounded `H_{ω^α}` ↔ `f_α` instance once the offset is pinned by
-    `native_decide` measurement.
+mathlib's `ω[n]=n+1`"). **Lap 11 reconnaissance (measured with `native_decide`/`#eval`) pinned the
+exact behavior — record before re-attacking:**
+
+- **The offset is `+1`, and the clean form is `H_{ω^α}(n) + 1 = f_α(n+1)`.** MEASURED and CONFIRMED at
+  α = 0, 1, 2 (finite):
+  - α=0: `H_{ω^0}(n)=H_1(n)=n+1`, `f_0(n+1)=n+2` → `H+1 = f_0(n+1)` ✓.
+  - α=1: `H_ω(n)=2n+1`, `f_1(n+1)=2n+2` → `2n+1+1 = 2n+2` ✓.
+  - α=2: `H_{ω^2}(n) = 2^{n+1}(n+1)−1 = f_2(n+1)−1` ✓ (e.g. n=2: H=23, f_2(3)=24).
+- **BUT THE CLEAN FORM IS FALSE AT LIMIT α.** MEASURED at α=ω (i.e. `ω^ω`): `H_{ω^ω}(1)+1 = 8` while
+  `f_ω(2) = 2048` — NOT equal. Root cause (from the induction): for limit α with fund. seq. `q`,
+  `H_{ω^α}(n) = H_{ω^{q n}}(n)` (index `n`) but `f_α(n+1) = f_{q(n+1)}(n+1)` (index `n+1`) — the
+  `ω[n]=n+1` shift makes the two pick DIFFERENT tower levels (`q n` vs `q(n+1)`). So the naive offset
+  identity does NOT generalize past successor exponents. This IS the charter's "trap."
+- **Consequences / correct next attack:**
+  - A *restricted* B4 `H_{ω^k}(n)+1 = f_k(n+1)` for FINITE k (α = ofNat k) is TRUE (measured) and is a
+    legitimate bankable target — but even its successor step `k→k+1` needs the **coefficient lemma**
+    `H_{ω^β·j} = (H_{ω^β})^[j]` (since `(ω^{k+1})[n] = ω^k·(n+1)`). That coefficient lemma — really the
+    **Hardy additive law `H_{α+β}(n) = H_α(H_β(n))`** specialized to `ω^β·j = ω^β+…+ω^β` — is the
+    genuine key brick. Build the additive law FIRST (clean, true, reusable; needs ordinal-addition +
+    fund-seq-of-sum on ONote). Good bounded Aristotle candidate.
+  - For limit α, do NOT chase the clean identity (false). The honest general statement is likely an
+    *inequality* sandwich or a statement along the successor-α cofinal subsequence only.
+  - `hardy_le_fastGrowing` (lap 11, axiom-clean) already gives the `≤`-at-same-index half generally.
 **Optional sharpenings** (lower priority): strict domination removing the `+2` (needs general index
 monotonicity = A3-hard); a single ε₀ capstone via `ε₀ = sup_o repr o` (presentation).
 
