@@ -20,6 +20,8 @@ KakeyaSetConjectureDim 2` (planar Kakeya, Davies 1971). The whole job is the low
   - `volume_inter_tube_le` — **overlap `≤ 12δ²/(s+δ)`**, `s = |v₀w₁−v₁w₀| = |sin∠|` (lines-invariant;
     NOT `‖v-w‖`, which is false near-antipodal). `volume_two_slab` (parallelogram area `(2δ)²/|det|`
     via `addHaar_preimage_linearMap` + `det_toLpLin`/`det_fin_two`) + two-regime split.
+  - `volume_tube_ge` — single δ-tube area `≥ 2δ` (K4 numerator prereq), via `frame_decomp` +
+    `subBox_subset_tube` + `volume_frame_box` (general frame-box area). Area is now pinned `≍ δ`.
 
 ## Next brick — K3, the δ-discretization (feeds toward `hausdorffMeasure_pos_of_isKakeya`).
 From `IsKakeya S`: for each unit direction `v`, `∃ a, affineSegment ℝ a (a+v) ⊆ S`, hence
