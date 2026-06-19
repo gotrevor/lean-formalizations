@@ -84,16 +84,32 @@ beating the `2N`-pigeonhole gap below the trivial `2N` ceiling. -/
 theorem hjsw_lower_bound {p : ℕ} (hp : p.Prime) : 3 * (p - 1) ≤ maxNoThreeInLine (2 * p) :=
   hjsw_lower hp
 
+/-- **Monotonicity of the grid maximum.** A no-three-collinear set inside `[0,M)²` also sits
+inside the larger box `[0,N)²`, so `maxNoThreeInLine` is monotone. (General structural fact;
+used to embed any sub-grid construction.) -/
+theorem maxNoThreeInLine_mono : Monotone maxNoThreeInLine := by
+  intro M N hMN
+  refine csSup_le_csSup (bddAbove_grid N) ⟨0, ∅, by simp [IsGridSet, NoThreeCollinear]⟩ ?_
+  rintro n ⟨s, rfl, hg, h3⟩
+  exact ⟨s, rfl, hg.mono hMN, h3⟩
+
+/-- **The prime-gap interface for HJSW.** Any prime `p` with `2p ≤ N` embeds its `2p × 2p` sheared
+construction `shearSel p` into the `N × N` grid, so `3(p−1) ≤ maxNoThreeInLine N`. This isolates the
+*combinatorial* HJSW content (the `shearSel` construction) from the *number-theoretic* input (which
+prime is available below `N/2`): plug in Bertrand for the `3/4` constant below, a Nagura-type gap for
+`5/4`, or a prime-number-theorem gap for the full `3/2 − o(1)`. -/
+theorem maxNoThreeInLine_ge_of_two_mul_prime_le {N p : ℕ} (hp : p.Prime) (h2p : 2 * p ≤ N) :
+    3 * (p - 1) ≤ maxNoThreeInLine N :=
+  le_csSup (bddAbove_grid N)
+    ⟨shearSel p, (shearSel_card hp).symm, (shearSel_grid hp).mono h2p, shearSel_noThree hp⟩
+
 /-- **HJSW for all `N ≥ 4`** (via Bertrand's postulate). A prime `p ∈ (N/4, N/2]` gives the sheared
 construction `shearSel p` of `3(p−1) ≥ 3·⌊N/4⌋` points inside `[0, 2p)² ⊆ [0, N)²`. This pins the
 `Θ(N)` lower constant at `3/4`, improving on Erdős's `1/2` (`maxNoThreeInLine_gt_half`). -/
 theorem maxNoThreeInLine_ge_three_quarters {N : ℕ} (hN : 4 ≤ N) :
     3 * (N / 4) ≤ maxNoThreeInLine N := by
   obtain ⟨p, hp, hlo, hhi⟩ := Nat.exists_prime_lt_and_le_two_mul (N / 4) (by omega)
-  have h2pN : 2 * p ≤ N := by omega
-  have hcard : 3 * (p - 1) ≤ maxNoThreeInLine N :=
-    le_csSup (bddAbove_grid N)
-      ⟨shearSel p, (shearSel_card hp).symm, (shearSel_grid hp).mono h2pN, shearSel_noThree hp⟩
+  have := maxNoThreeInLine_ge_of_two_mul_prime_le hp (show 2 * p ≤ N by omega)
   omega
 
 /-- **State of the art at even grid sizes.** For prime `p`, the `2p × 2p` grid maximum is sandwiched
