@@ -165,4 +165,76 @@ Frostman constant `C` built from it is `≠ ⊤`. -/
 theorem volume_closedBall_one_ne_top : volume (closedBall (0 : Plane) 1) ≠ ⊤ :=
   measure_closedBall_lt_top.ne
 
+/-! ### Per-direction length bound: a covered unit segment forces `∑ₙ ediam(Uₙ) ≥ 1`
+
+The foundation of the dyadic pigeonhole. Pull the cover `ℓ ⊆ ⋃Uₙ` of a *unit* segment back along the
+unit-speed parametrisation `φ : t ↦ a + t•v` (an isometry on the line, `‖v‖=1`): the pieces
+`Tₙ = {t∈[0,1] | φ t ∈ Uₙ}` cover `[0,1]`, and each has 1-D length `≤ ediam(Tₙ) ≤ ediam(Uₙ)` (since
+`φ` is an isometry and `Tₙ`'s image lies in `Uₙ`). Countable subadditivity then gives
+`1 = vol[0,1] ≤ ∑ vol(Tₙ) ≤ ∑ ediam(Uₙ)`. (Works for arbitrary — non-measurable — `Uₙ`, since
+`volume` is an outer measure: `Real.volume_le_diam` and `measure_iUnion_le` need no measurability.)
+This is the `d = 1` Hausdorff content bound from a *single* direction; the `d>1` bound needs the
+many-direction Córdoba pigeonhole on top of this. -/
+theorem one_le_tsum_ediam_of_covers {a v : Plane} (hv : ‖v‖ = 1) {U : ℕ → Set Plane}
+    (hcov : affineSegment ℝ a (a + v) ⊆ ⋃ n, U n) :
+    1 ≤ ∑' n, Metric.ediam (U n) := by
+  set φ : ℝ → Plane := fun t => a + t • v with hφ
+  set T : ℕ → Set ℝ := fun n => Icc (0 : ℝ) 1 ∩ φ ⁻¹' (U n) with hT
+  -- the pullback pieces cover `[0,1]`
+  have hcover : Icc (0 : ℝ) 1 ⊆ ⋃ n, T n := by
+    intro t ht
+    have hmem : φ t ∈ affineSegment ℝ a (a + v) := by
+      rw [affineSegment_eq]; exact ⟨t, ht, rfl⟩
+    obtain ⟨n, hn⟩ := mem_iUnion.mp (hcov hmem)
+    exact mem_iUnion.mpr ⟨n, ht, hn⟩
+  -- `φ` is a unit-speed isometry on the line
+  have hiso : ∀ s t : ℝ, edist s t = edist (φ s) (φ t) := by
+    intro s t
+    have hsub : φ s - φ t = (s - t) • v := by simp only [hφ, sub_smul]; abel
+    have hd : dist (φ s) (φ t) = dist s t := by
+      rw [dist_eq_norm, hsub, norm_smul, hv, mul_one, Real.norm_eq_abs, Real.dist_eq]
+    rw [edist_dist, edist_dist, hd]
+  -- per piece: `vol(Tₙ) ≤ ediam(Tₙ) ≤ ediam(Uₙ)`
+  have h3 : ∀ n, volume (T n) ≤ Metric.ediam (U n) := by
+    intro n
+    refine le_trans (Real.volume_le_diam (T n)) ?_
+    rw [Metric.ediam_le_iff]
+    intro s hs t ht
+    rw [hiso s t]
+    exact Metric.edist_le_ediam_of_mem hs.2 ht.2
+  -- assemble: `1 = vol[0,1] ≤ vol(⋃Tₙ) ≤ ∑ vol(Tₙ) ≤ ∑ ediam(Uₙ)`
+  have hvol1 : volume (Icc (0 : ℝ) 1) = 1 := by
+    rw [Real.volume_Icc, sub_zero, ENNReal.ofReal_one]
+  calc (1 : ℝ≥0∞) = volume (Icc (0 : ℝ) 1) := hvol1.symm
+    _ ≤ volume (⋃ n, T n) := measure_mono hcover
+    _ ≤ ∑' n, volume (T n) := measure_iUnion_le _
+    _ ≤ ∑' n, Metric.ediam (U n) := ENNReal.tsum_le_tsum h3
+
+/-! ### End-to-end at `d = 1`: the pipeline composes axiom-clean
+
+`one_le_tsum_ediam_of_covers` already gives the `d = 1` content bound from a single Kakeya direction,
+with no Córdoba pigeonhole needed (it is the geometrically trivial `dimH ≥ 1`). Wiring it through the
+reduction proves `μH[1] S ≠ 0` with **zero** `sorry` — an anti-vacuity anchor that the whole
+reduction/geometry stack actually composes to a genuine positive-Hausdorff-measure statement. The
+`d > 1` upgrade (the real content) is what the multi-scale pigeonhole supplies on top. -/
+
+/-- A planar Kakeya set has a `d = 1` Hausdorff content lower bound — directly from the covered unit
+segment it contains, with constant `c = 1`. Axiom-clean (no `sorry`). -/
+theorem kakeya_hausdorffContentBound_one {S : Set Plane} (h : IsKakeya S) :
+    HausdorffContentBound S 1 := by
+  refine ⟨1, one_pos, 1, one_ne_zero, fun t hcov _ => ?_⟩
+  have hv : ‖(EuclideanSpace.single (0 : Fin 2) (1 : ℝ))‖ = 1 := by
+    rw [PiLp.norm_single, norm_one]
+  obtain ⟨a, ha⟩ := h _ hv
+  have hb := one_le_tsum_ediam_of_covers hv (ha.trans hcov)
+  simpa only [ENNReal.rpow_one] using hb
+
+/-- **A planar Kakeya set has positive 1-dimensional Hausdorff measure.** End-to-end, axiom-clean
+(`#print axioms`-clean, no `sorry`): the covered-segment length bound `one_le_tsum_ediam_of_covers`
+fed through the cover-content reduction `hausdorffMeasure_ne_zero_of_contentBound`. Mathematically the
+weak `dimH ≥ 1` (a segment already has dimension 1), but it exercises the full K5 reduction stack and
+certifies it composes. -/
+theorem hausdorffMeasure_one_ne_zero {S : Set Plane} (h : IsKakeya S) : μH[(1 : ℝ)] S ≠ 0 :=
+  hausdorffMeasure_ne_zero_of_contentBound one_pos (kakeya_hausdorffContentBound_one h)
+
 end LeanFormalizations.Kakeya2D
