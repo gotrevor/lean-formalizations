@@ -158,4 +158,45 @@ lemma mercator_zeroth_term {s : ℝ} (p : Nat.Primes) :
     ((p : ℝ) ^ (-s)) ^ (0 + 1) / ((0 : ℕ) + 1 : ℝ) = (p : ℝ) ^ (-s) := by
   simp
 
+/-- **The Mertens correction series** `G(s) = ∑'_p (−log(1−p^{−s}) − p^{−s})` — the per-prime sum of the
+`n ≥ 1` Mercator tail `∑_{k≥2} p^{−ks}/k`.  Summable for `s > 1` (difference of two summable series), and
+nonnegative.  At `s = 1` it is `∑'_p (−log(1−1/p) − 1/p) = −∑'_p (log(1−1/p) + 1/p)`, the quantity that
+must equal `γ − M` for the classical `e^{−γ}`. -/
+noncomputable def mertensCorr (s : ℝ) : ℝ :=
+  ∑' p : Nat.Primes, (-Real.log (1 - (p : ℝ) ^ (-s)) - (p : ℝ) ^ (-s))
+
+/-- The correction summand is summable for `s > 1`: difference of `summable_real_eulerLog` and the
+prime-zeta term. -/
+lemma summable_mertensCorr_term {s : ℝ} (hs : 1 < s) :
+    Summable (fun p : Nat.Primes => -Real.log (1 - (p : ℝ) ^ (-s)) - (p : ℝ) ^ (-s)) :=
+  (summable_real_eulerLog hs).sub (summable_primeZeta_term hs)
+
+/-- **Brick (ii-b) — the log-ζ split**: for `s > 1`,
+`log ζ(s) = P(s) + G(s)` with `P(s) = primeZeta s = ∑'_p p^{−s}` and `G(s) = mertensCorr s`.
+This is the `n = 0` (prime-zeta) vs `n ≥ 1` (correction) split of the per-prime Mercator series, summed
+over primes — obtained cleanly by `tsum_add` rather than a full double-series Fubini. -/
+lemma log_realZeta_split {s : ℝ} (hs : 1 < s) :
+    Real.log (realZeta s) = primeZeta s + mertensCorr s := by
+  rw [log_realZeta_eq hs, primeZeta, mertensCorr,
+    ← (summable_primeZeta_term hs).tsum_add (summable_mertensCorr_term hs)]
+  exact tsum_congr (fun p => by ring)
+
+/-- Each correction term `−log(1−p^{−s}) − p^{−s}` is nonnegative (it is the tail `∑_{k≥2} p^{−ks}/k ≥ 0`,
+equivalently `−log(1−x) ≥ x` for `x ∈ [0,1)`). -/
+lemma mertensCorr_term_nonneg {s : ℝ} (hs : 1 < s) (p : Nat.Primes) :
+    0 ≤ -Real.log (1 - (p : ℝ) ^ (-s)) - (p : ℝ) ^ (-s) := by
+  have hx1 : (p : ℝ) ^ (-s) < 1 := prime_rpow_lt_one hs p
+  have hppos : (0 : ℝ) < (p : ℝ) := by
+    have : (2 : ℝ) ≤ (p : ℝ) := by exact_mod_cast p.2.two_le
+    linarith
+  have hx0 : (0 : ℝ) ≤ (p : ℝ) ^ (-s) := (Real.rpow_pos_of_pos hppos _).le
+  -- `log(1 - x) ≤ -x`  ⇔  `-log(1-x) - x ≥ 0`, from `log y ≤ y - 1` at `y = 1 - x`.
+  have hy : Real.log (1 - (p : ℝ) ^ (-s)) ≤ (1 - (p : ℝ) ^ (-s)) - 1 :=
+    Real.log_le_sub_one_of_pos (by linarith)
+  linarith
+
+/-- The correction series is nonnegative. -/
+lemma mertensCorr_nonneg {s : ℝ} (hs : 1 < s) : 0 ≤ mertensCorr s :=
+  tsum_nonneg (fun p => mertensCorr_term_nonneg hs p)
+
 end LeanFormalizations.Mertens
