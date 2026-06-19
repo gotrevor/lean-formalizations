@@ -55,20 +55,34 @@ feared v4.29.0→v4.29.1 drift did not materialize. New modules under
     nonneg proof must `rcases` out `b=0`.
 
 ### 🎯 NEXT TARGET — Mertens' second theorem `∑_{p≤x} 1/p = log log x + O(1)` (mathlib-absent)
-- **Tool:** mathlib `sum_mul_eq_sub_integral_mul` (and `..._mul'`, `..._mul₀`) in
-  `NumberTheory/AbelSummation.lean` — continuous Abel summation
-  `∑_{0<n≤b} c(n)f(n) = (∑_{n≤b}c n)·f(b) − ∫_0^b (∑_{n≤t}c n)·f'(t) dt`.
-- **Setup:** `c(n) = if n.Prime then (log n)/n else 0` (so `c(n)·f(n) = if prime then 1/n else 0`, sum
-  = `∑_{p≤N} 1/p`); partial sums `A(t) = ∑_{n≤t} c(n) = primeSumDiv ⌊t⌋ = log t + O(1)` (THIS lap's
-  result); weight `f(t) = 1/log t`, `f'(t) = −1/(t log²t)`.
-- **Then:** `∑_{p≤x}1/p = A(x)/log x + ∫_2^x A(t)/(t log²t) dt`. With `A=log t + r`, `|r|≤C`:
-  `= 1 + o(1) + ∫_2^x 1/(t log t) dt + ∫_2^x r(t)/(t log²t) dt = log log x + O(1)`.
-  Sub-pieces: (i) `∫1/(t log t)=log log t` via FTC + `deriv (Real.log∘Real.log) t = 1/(t log t)`;
-  (ii) the `r`-integral converges (`|·| ≤ C∫1/(t log²t) < ∞`); (iii) `r(x)/log x → 0`; (iv) the
-  differentiability/integrability side-conditions of `sum_mul_eq_sub_integral_mul` for `f=1/log` on `[2,x]`.
-- Multi-lap. START by stating `mertens_second` + the Abel scaffold (disclosed `sorry` on the analytic core).
-  A bounded self-contained sub-lemma (e.g. (i) the `log log` primitive) is a good Aristotle feed when
-  `c6d615ee` idles.
+**Analytic groundwork is now ALL DONE (this lap, in `Mertens.lean`, axiom-clean):**
+- `hasDerivAt_log_log` : `d/dt log(log t) = 1/(t·log t)` (t>1).
+- `integral_inv_log_mul` : `∫_a^b 1/(t·log t) = log log b − log log a` (1<a≤b) — the **`log log x` main term**.
+- `hasDerivAt_inv_log` : `d/dt (1/log t) = −1/(t·(log t)²)` (t>1) — the **weight derivative** `deriv f`.
+- `integral_inv_mul_sq_log` : `∫_a^b 1/(t·(log t)²) = 1/log a − 1/log b` — bounds the **`O(1)` remainder**
+  `∫ r/(t log²t)` by `C/log a` uniformly in `b`.
+
+**The remaining work is the Abel-summation ASSEMBLY** (multi-step; START HERE next lap):
+- **Entry point: `sum_mul_eq_sub_integral_mul₁`** (`NumberTheory/AbelSummation.lean:239`) — the variant
+  with `c 0 = 0 ∧ c 1 = 0`, which integrates over `Ioc 2 b` and needs `f` differentiable only on `Icc 2 b`.
+  **CRITICAL: must use `₁`, not `₀`/plain** — `f(t)=1/log t` is NOT differentiable at `t=1` (`log 1=0`), so
+  the `₀` version (integral from 1) fails `hf_diff`. With `c 0 = c 1 = 0` (0,1 not prime) the start shifts to 2.
+- **Coefficients/weight:** `c n = if n.Prime then (log n)/n else 0`; `f t = (Real.log t)⁻¹`. Then
+  `f k * c k = if k.Prime then 1/k else 0` (for prime `k≥2`, `(log k)⁻¹·(log k/k)=1/k`), so
+  `∑_{k≤m} f k·c k = ∑_{p≤m} 1/p`. And `∑_{k≤m} c k = primeSumDiv m`, `∑_{k≤⌊t⌋} c k = primeSumDiv ⌊t⌋₊`.
+  `deriv f t = −(t·(log t)²)⁻¹` (from `hasDerivAt_inv_log`, via `.deriv`); `f` differentiable on `Icc 2 b`
+  (`hasDerivAt_inv_log`); `deriv f` integrable on `Icc 2 b` (continuous there, cf. `integral_inv_mul_sq_log`'s
+  `hcont`).
+- **Identity obtained:** `∑_{p≤m} 1/p = primeSumDiv m / log m + ∫_2^m primeSumDiv ⌊t⌋₊ /(t (log t)²) dt`.
+- **Estimates to close `= log log m + O(1)`:** (a) `primeSumDiv m / log m = 1 + O(1/log m)` from
+  `abs_primeSumDiv_sub_log_le`; (b) split `primeSumDiv ⌊t⌋₊ = log t + (primeSumDiv ⌊t⌋₊ − log t)`; the main
+  integral `∫_2^m log t/(t log²t) = ∫_2^m 1/(t log t) = log log m − log log 2` (`integral_inv_log_mul`);
+  the remainder `∫_2^m (primeSumDiv ⌊t⌋₊ − log t)/(t log²t)` is `O(1)` — its integrand is `≤ C'/(t log²t)`
+  because `|primeSumDiv ⌊t⌋₊ − log t| ≤ |primeSumDiv ⌊t⌋₊ − log⌊t⌋₊| + |log⌊t⌋₊ − log t| ≤ (log4+5+2∑') +
+  (small)`, bounded by `integral_inv_mul_sq_log`. The `log⌊t⌋₊ − log t` gap (floor-vs-continuous) is the
+  one genuinely new estimate; `log(t/⌊t⌋₊) ≤ log(t/(t−1)) → 0`, integrable.
+- Likely 2-3 laps. A good Aristotle feed when `c6d615ee` idles: a bounded sub-lemma like the
+  `∫ primeSumDiv⌊t⌋ /(t log²t)` split, or the floor-gap integrability bound.
 
 ### (superseded) nagura wall — FINAL for elementary methods
 - **nagura_prime wall is FINAL for elementary methods (sharpened this lap).** The refined constant

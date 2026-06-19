@@ -520,4 +520,37 @@ lemma integral_inv_mul_sq_log {a b : ℝ} (ha : 1 < a) (hab : a ≤ b) :
   rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv hcont.intervalIntegrable]
   ring
 
+/-- Abel-summation coefficient for Mertens' second theorem: `c(n) = [n prime]·(log n)/n`. -/
+noncomputable def primeLogDivCoeff (n : ℕ) : ℝ := if n.Prime then Real.log n / n else 0
+
+@[simp] lemma primeLogDivCoeff_zero : primeLogDivCoeff 0 = 0 := by simp [primeLogDivCoeff]
+
+@[simp] lemma primeLogDivCoeff_one : primeLogDivCoeff 1 = 0 := by simp [primeLogDivCoeff]
+
+/-- The **prime reciprocal sum** `∑_{p ≤ N} 1/p` — the subject of Mertens' second theorem. -/
+noncomputable def primeRecipSum (N : ℕ) : ℝ := ∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, (p : ℝ)⁻¹
+
+/-- Bridge: the coefficient partial sum is exactly `primeSumDiv`. `∑_{k≤N} c(k) = ∑_{p≤N}(log p)/p`. -/
+lemma sum_primeLogDivCoeff_eq (N : ℕ) :
+    ∑ k ∈ Finset.Icc 0 N, primeLogDivCoeff k = primeSumDiv N := by
+  have hset : (Finset.Icc 0 N).filter Nat.Prime = (Finset.Ioc 0 N).filter Nat.Prime := by
+    ext k; simp only [Finset.mem_filter, Finset.mem_Icc, Finset.mem_Ioc]
+    exact ⟨fun ⟨⟨_, h⟩, hp⟩ => ⟨⟨hp.pos, h⟩, hp⟩, fun ⟨⟨_, h⟩, hp⟩ => ⟨⟨Nat.zero_le _, h⟩, hp⟩⟩
+  simp only [primeLogDivCoeff]
+  rw [← Finset.sum_filter, hset, primeSumDiv]
+
+/-- Bridge: weighting the coefficient by `1/log k` yields the prime reciprocal sum.
+`∑_{k≤N} (1/log k)·c(k) = ∑_{p≤N} 1/p`. -/
+lemma sum_inv_log_mul_primeLogDivCoeff_eq (N : ℕ) :
+    ∑ k ∈ Finset.Icc 0 N, (Real.log k)⁻¹ * primeLogDivCoeff k = primeRecipSum N := by
+  have hset : (Finset.Icc 0 N).filter Nat.Prime = (Finset.Ioc 0 N).filter Nat.Prime := by
+    ext k; simp only [Finset.mem_filter, Finset.mem_Icc, Finset.mem_Ioc]
+    exact ⟨fun ⟨⟨_, h⟩, hp⟩ => ⟨⟨hp.pos, h⟩, hp⟩, fun ⟨⟨_, h⟩, hp⟩ => ⟨⟨Nat.zero_le _, h⟩, hp⟩⟩
+  simp only [primeLogDivCoeff, mul_ite, mul_zero]
+  rw [← Finset.sum_filter, hset, primeRecipSum]
+  refine Finset.sum_congr rfl (fun p hp => ?_)
+  rw [Finset.mem_filter] at hp
+  have hlog : Real.log p ≠ 0 := ne_of_gt (Real.log_pos (by exact_mod_cast hp.2.one_lt))
+  rw [div_eq_mul_inv, ← mul_assoc, inv_mul_cancel₀ hlog, one_mul]
+
 end LeanFormalizations.Mertens
