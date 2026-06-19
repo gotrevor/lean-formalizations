@@ -251,6 +251,34 @@ theorem sum_vonMangoldt_mul_floor_div (n : ℕ) :
   rw [← Finset.sum_filter, Finset.sum_const, Nat.Ioc_filter_dvd_card_eq_div, nsmul_eq_mul,
     mul_comm]
 
+/-- **Chebyshev's floor combination is `0` or `1`.** For every `n`,
+`⌊n⌋ − ⌊n/2⌋ − ⌊n/3⌋ − ⌊n/5⌋ + ⌊n/30⌋ ∈ {0,1}` (stated additively to dodge ℕ truncated subtraction).
+Writing `n = 30q + r`, the `q`-coefficient `30 − 15 − 10 − 6 + 1 = 0` cancels, so the combination
+depends only on `r = n mod 30` and is checked by `decide` over the 30 residues. This is the
+sign-control that turns `T(n) = log(n!)` (`sum_vonMangoldt_mul_floor_div`) into the refined Chebyshev
+`ψ` bound: `f(n) := T(n) − T(⌊n/2⌋) − T(⌊n/3⌋) − T(⌊n/5⌋) + T(⌊n/30⌋) = ∑_d Λ(d)·g(n/d)` with
+`g ∈ {0,1}`, giving `ψ(n) − ψ(n/6) ≤ f(n) ≤ ψ(n)` and hence the lower constant `≈ 0.92`. -/
+theorem floor_comb_bounds (n : ℕ) :
+    n / 2 + n / 3 + n / 5 ≤ n + n / 30 ∧ n + n / 30 ≤ n / 2 + n / 3 + n / 5 + 1 := by
+  obtain ⟨q, r, hr, rfl⟩ : ∃ q r, r < 30 ∧ n = 30 * q + r :=
+    ⟨n / 30, n % 30, Nat.mod_lt _ (by norm_num), (Nat.div_add_mod n 30).symm⟩
+  have e2 : (30 * q + r) / 2 = 15 * q + r / 2 := by
+    rw [show 30 * q + r = r % 2 + (15 * q + r / 2) * 2 by omega]; rw [Nat.add_mul_div_right _ _ (by norm_num)]
+    omega
+  have e3 : (30 * q + r) / 3 = 10 * q + r / 3 := by
+    rw [show 30 * q + r = r % 3 + (10 * q + r / 3) * 3 by omega]; rw [Nat.add_mul_div_right _ _ (by norm_num)]
+    omega
+  have e5 : (30 * q + r) / 5 = 6 * q + r / 5 := by
+    rw [show 30 * q + r = r % 5 + (6 * q + r / 5) * 5 by omega]; rw [Nat.add_mul_div_right _ _ (by norm_num)]
+    omega
+  have e30 : (30 * q + r) / 30 = q + r / 30 := by
+    rw [show 30 * q + r = r % 30 + (q + r / 30) * 30 by omega]; rw [Nat.add_mul_div_right _ _ (by norm_num)]
+    omega
+  rw [e2, e3, e5, e30]
+  have hres : r / 2 + r / 3 + r / 5 ≤ r + r / 30 ∧ r + r / 30 ≤ r / 2 + r / 3 + r / 5 + 1 := by
+    interval_cases r <;> decide
+  omega
+
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
 
