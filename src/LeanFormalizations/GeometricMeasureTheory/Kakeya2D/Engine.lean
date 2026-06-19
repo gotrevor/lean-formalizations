@@ -207,7 +207,16 @@ this axiom is **strictly weaker** than the former monolithic dominant-scale axio
 the bricks have *proven* we reach scale `J` with the numerator in hand; Case A needs no axiom at all.
 See `ON-LINE-REQUEST.md` UPDATE 3 (ask 3b: rigorous handling of the non-measurable sub-resolution
 family). Reference: Wolff, *Lectures on Harmonic Analysis*; Mattila, *Fourier Analysis and Hausdorff
-Dimension*, §22–23. -/
+Dimension*, §22–23.
+
+⚠️ **SUPERSEDED & OFF-HEADLINE (2026-06-19).** The headline `davies_kakeya_2d` does **not** depend on
+this axiom: it now goes through the *elementary* open-cover route
+(`Selection.kakeya_hausdorffContentBound_elementary`), which sidesteps the Case-B sub-resolution gap
+entirely (an open cover gives a tube around each unit segment ⟹ a dense base point achieves full
+coverage, no measurable selection / no cross-scale convexity). This axiom and the discrete assembly
+below (`kakeya_hausdorffContentBound`, `*_discrete`) are retained as legacy structure documenting the
+Córdoba Case-A/Case-B approach; they are the ONLY axiom left in `Kakeya2D/` and feed nothing live.
+`#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound]`. -/
 axiom kakeya_subresolution_content {d : ℝ} (hd : 0 ≤ d)
     {cR : ℝ} (hcRpos : 0 < cR) (J : ℕ) (c : ℝ)
     (a : ℕ → Plane) (A : ℕ → Set ℝ) (hAmeas : ∀ k, MeasurableSet (A k))
