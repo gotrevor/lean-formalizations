@@ -13,6 +13,7 @@ so `log(N!) ≤ N·S(N) ≤ log(N!) + ψ(N)`.  Stirling pins `log(N!) = N·log N
 Chebyshev pins `ψ(N) = O(N)`, hence `S(N) = log N + O(1)`.
 -/
 import LeanFormalizations.Combinatorics.NoThreeInLine.PrimeGap
+import Mathlib.NumberTheory.Harmonic.EulerMascheroni
 
 namespace LeanFormalizations.Mertens
 
@@ -1166,5 +1167,29 @@ theorem mertens_third_tendsto_exp :
   have hNR : (2 : ℝ) ≤ N := by exact_mod_cast hN
   have hlogN : 0 < Real.log N := Real.log_pos (by linarith)
   rw [Function.comp_apply, Real.exp_add, Real.exp_log (primeProd_pos N), Real.exp_log hlogN]
+
+/-!
+## Mertens' third theorem, classical form `∏(1−1/p) ~ e^{−γ}/log x` — reduction to one deep equation
+
+The repo now has the *sharp* Mertens 3rd up to a definite constant: `mertens_third_tendsto_exp` proves
+`∏_{p≤N}(1−1/p)·log N → e^{C₃}` with `C₃ = mertensThirdConst := (∑'_p (log(1−1/p)+1/p)) − M`
+(`M` = Meissel–Mertens).  The *only* remaining gap to the classical statement is the single deep
+identity `C₃ = −γ` (equivalently `M = γ + ∑'_p (log(1−1/p)+1/p)`), where `γ` is Euler–Mascheroni.
+
+That identity is **not** elementary: `γ = lim (∑_{k≤n} 1/k − log n)` is a statement about *all*
+integers, while `C₃` is a statement about *primes*; bridging them is the classical analytic argument
+via the ζ Euler product `ζ(s) = ∏_p (1−p^{-s})^{-1}` (Re s > 1).  Route (all ingredients are in mathlib):
+`riemannZeta_eulerProduct_exp_log` (log ζ(s) = ∑_p ∑_{k≥1} p^{-ks}/k = ∑_p p^{-s} + bounded) +
+`tendsto_riemannZeta_sub_one_div` (`ζ(s) − 1/(s−1) → γ` as `s → 1⁺`), transferred to the prime sum by
+a real Tauberian/Abel argument and matched against `mertens_second_tendsto`.  Multi-lap; see
+`PENDING_WORK.md`.  The lemma below isolates *exactly* that one equation as an explicit hypothesis, so
+the classical `e^{−γ}` headline is machine-checked modulo it — and the rest of this file stays
+axiom-clean. -/
+theorem mertens_third_classical
+    (hγ : mertensThirdConst = -Real.eulerMascheroniConstant) :
+    Tendsto (fun N : ℕ => primeProd N * Real.log N) atTop
+      (nhds (Real.exp (-Real.eulerMascheroniConstant))) := by
+  rw [← hγ]
+  exact mertens_third_tendsto_exp
 
 end LeanFormalizations.Mertens
