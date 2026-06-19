@@ -502,6 +502,17 @@ theorem shearSel_mem_curve {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P : ℕ × 
   · rcases hxy.2 with h | h <;> omega
   · rw [hc1, hc2]; exact shear_curve hp hap hane
 
+/-- A real-collinear triple of `shearSel p` has two points sharing a residue mod `p` (two lifts of
+one base column). Direct application of `shear_hyperbola_lift_share_residue` via `shearSel_mem_curve`. -/
+theorem shearSel_share_residue {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R : ℕ × ℕ}
+    (hP : P ∈ shearSel p) (hQ : Q ∈ shearSel p) (hR : R ∈ shearSel p)
+    (hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ))) :
+    ((P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p)) ∨
+    ((P.1 : ZMod p) = (R.1 : ZMod p) ∧ (P.2 : ZMod p) = (R.2 : ZMod p)) ∨
+    ((Q.1 : ZMod p) = (R.1 : ZMod p) ∧ (Q.2 : ZMod p) = (R.2 : ZMod p)) :=
+  shear_hyperbola_lift_share_residue hp hp2 (shearSel_mem_curve hp hp2 hP).2.2
+    (shearSel_mem_curve hp hp2 hQ).2.2 (shearSel_mem_curve hp hp2 hR).2.2 hcol
+
 /-- **The pure-arithmetic crux** (no reals): every pairwise-distinct triple of `shearSel p` has
 nonzero integer orientation determinant. This is exactly the statement Aristotle job `1c2a55b7`
 (`aris-hjsw-shear`) is grinding; once returned it ports here verbatim. Verified by exact integer
