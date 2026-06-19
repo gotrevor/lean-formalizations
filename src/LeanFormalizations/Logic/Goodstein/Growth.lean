@@ -159,6 +159,39 @@ This is the formal "Goodstein grows like the Hardy/fast-growing hierarchy" — t
 content behind Kirby–Paris independence (the abstract domination `f_o < f_{ε₀}` is A4
 in `FastGrowing/Domination.lean`; this file pins the Goodstein length itself to a Hardy value). -/
 
+/-- **Notation invariance under `bump`.** The ordinal *notation* of `n` is unchanged by a
+hereditary base bump: `toONote (b+1) (bump b n) = toONote b n`. Both are normal-form notations
+with the same `repr` (the bump invariance `toOrdinal_bump` at the ordinal level), so they are
+equal by `repr_inj`. This is the notation-level companion of `Engine.toOrdinal_bump`. -/
+theorem toONote_bump (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
+    toONote (b + 1) (bump b n) = toONote b n := by
+  haveI := toONote_NF (b + 1) (by omega) (bump b n)
+  haveI := toONote_NF b hb n
+  rw [← repr_inj, repr_toONote (b + 1) (by omega), repr_toONote b hb, toOrdinal_bump b hb]
+
+/-- **Constructor form of `toONote`.** When `1 ≤ c < b` and `s < b^e`, the base-`b` notation
+of `c·b^e + s` is `oadd (toONote b e) c (toONote b s)` — `c·b^e + s` already presents the
+leading Cantor term, so `log`, `div`, `mod` read off `e`, `c`, `s`. -/
+theorem toONote_oadd (b : ℕ) (hb : 2 ≤ b) {c e s : ℕ} (hc : 1 ≤ c) (hcb : c < b)
+    (hs : s < b ^ e) : toONote b (c * b ^ e + s) = oadd (toONote b e) ⟨c, hc⟩ (toONote b s) := by
+  have hbe_pos : 0 < b ^ e := Nat.pow_pos (by omega)
+  have hn0 : c * b ^ e + s ≠ 0 := by positivity
+  have hlow : c * b ^ e + s < b ^ (e + 1) := by
+    calc c * b ^ e + s < c * b ^ e + b ^ e := by omega
+      _ = (c + 1) * b ^ e := by ring
+      _ ≤ b * b ^ e := Nat.mul_le_mul_right _ (by omega)
+      _ = b ^ (e + 1) := by rw [pow_succ]; ring
+  have hge : b ^ e ≤ c * b ^ e + s :=
+    (Nat.le_mul_of_pos_left (b ^ e) hc).trans (Nat.le_add_right _ _)
+  have hlog : Nat.log b (c * b ^ e + s) = e := Nat.log_eq_of_pow_le_of_lt_pow hge hlow
+  have hdiv : (c * b ^ e + s) / b ^ e = c := by
+    rw [Nat.add_comm, Nat.add_mul_div_right _ _ hbe_pos, Nat.div_eq_of_lt hs, Nat.zero_add]
+  have hmod : (c * b ^ e + s) % b ^ e = s := by
+    rw [Nat.add_comm, Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt hs]
+  rw [toONote, dif_neg hn0, hlog, hdiv, hmod]
+  congr 1
+  exact PNat.coe_injective (by simpa using PNat.toPNat'_coe hc)
+
 /-- **The Cichoń step (THE C3 CRUX).** One budget-incrementing Hardy step on the base-`b`
 notation of `p ≠ 0`, at argument `b`, equals the notation (in base `b+1`) of the
 Goodstein operation `bump b p − 1`:

@@ -291,6 +291,26 @@ theorem hardy_hstep (o : ONote) (n : ℕ) (h : o ≠ 0) :
 termination_by o
 decreasing_by exact hlt
 
+/-- **Peeling the leading term of a Hardy step.** When the tail `R` is nonzero, a Hardy step
+on `oadd E C R` happens entirely inside the tail: `hstep (oadd E C R) b = oadd E C (hstep R b)`.
+Well-founded induction on `R` (its `ONote <`, via `InvImage repr`): if `R` is a successor the
+step peels directly; if `R` is a limit the step descends to `R[b] ≠ 0 < R` and the IH applies.
+The actual decrement only occurs once `R = 0`. -/
+theorem hstep_oadd_tail (E : ONote) (C : ℕ+) (b : ℕ) :
+    ∀ R, R ≠ 0 → hstep (oadd E C R) b = oadd E C (hstep R b) := by
+  intro R
+  induction R using (InvImage.wf repr Ordinal.lt_wf).induction with
+  | _ R ih =>
+    intro hR
+    rcases e : fundamentalSequence R with (_ | R') | g
+    · exact absurd ((fundamentalSequenceProp_inl_none R).1 (e ▸ fundamentalSequence_has_prop R)) hR
+    · rw [hstep_succ _ (fundamentalSequence_oadd_succ e), hstep_succ _ e]
+    · rw [hstep_limit _ (fundamentalSequence_oadd_limit e), hstep_limit _ e]
+      have hgb : g b ≠ 0 := fundamentalSequence_inr_ne_zero e b
+      have hglt : g b < R := by
+        have hp := fundamentalSequence_has_prop R; rw [e] at hp; exact (hp.2.1 b).2.1
+      exact ih (g b) (lt_def.1 hglt) hgb
+
 /-! ### Anti-vacuity anchors (`native_decide`)
 
 Standalone witnesses, off any headline axiom path, that a *wrong* definition of
