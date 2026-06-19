@@ -81,6 +81,18 @@ theorem hausdorffMeasure_ne_zero_of_contentBound {S : Set Plane} {d : ℝ} (hd :
   obtain ⟨r, hr, c, hc, hbound⟩ := h
   exact hausdorffMeasure_ne_zero_of_diam_content hd hr hc hbound
 
+/-- **Weighted pigeonhole (`ℝ≥0∞`).** If the total `∑ₙ aₙ` reaches `c` while the weights total
+`∑ₙ wₙ < c`, then some index carries at least its weight: `wₙ ≤ aₙ`. This is the engine of the two
+pigeonholes (first over dyadic scales, then over net directions) in the remaining multi-scale
+Hausdorff content estimate: with weights `wⱼ = 6/(π²(j+1)²)` summing to `< 1 ≤ ∑ⱼ Lⱼ`, it extracts a
+dominant scale carrying a definite fraction of the covering. -/
+theorem exists_index_ge_of_tsum_lt {a w : ℕ → ℝ≥0∞} {c : ℝ≥0∞}
+    (hsum : c ≤ ∑' n, a n) (hw : ∑' n, w n < c) : ∃ n, w n ≤ a n := by
+  by_contra h
+  simp only [not_exists, not_le] at h
+  have hle : ∑' n, a n ≤ ∑' n, w n := ENNReal.tsum_le_tsum (fun n => (h n).le)
+  exact absurd (lt_of_le_of_lt (le_trans hsum hle) hw) (lt_irrefl c)
+
 /-! ### Covering geometry: a cover of `S` thickens to a cover of `Sδ`
 
 The bridge from the K4 single-scale content `vol(Sδ) ≳ 1/log(1/δ)` to a Hausdorff content lower
