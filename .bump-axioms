@@ -1,0 +1,30 @@
+# Headline theorems gating the mathlib forward-port faithfulness check.
+# `lean-bump` records `#print axioms <each>` before the port and refuses to
+# commit unless every footprint is byte-identical after. Clean = [propext,
+# Classical.choice, Quot.sound]. One flagship per subject + the key NT results.
+
+# Numerical semigroups — Curtis 1990 (no polynomial Frobenius formula)
+LeanFormalizations.NumericalSemigroups.Curtis.no_polynomial_relation
+
+# Real analysis — power tower convergence (sharp iff)
+LeanFormalizations.RealAnalysis.PowerTower.tower_converges_iff_full
+
+# Geometry — constructible numbers / Wantzel
+LeanFormalizations.Constructible.isConstructible_iff_constructiblePoint
+LeanFormalizations.Constructible.cbrt2_not_constructible
+LeanFormalizations.Constructible.squaring_the_circle_impossible_uncond
+
+# Transcendence — Lindemann (π) and Hermite (e)
+LeanFormalizations.Transcendence.transcendental_pi_axiomClean
+LeanFormalizations.Transcendence.e_transcendental
+
+# Logic — Goodstein's theorem
+LeanFormalizations.Logic.Goodstein.goodstein_terminates
+
+# Combinatorics — no-three-in-line / HJSW ladder + the PNT it rests on
+LeanFormalizations.NoThreeInLine.hjsw_lower_bound
+LeanFormalizations.NoThreeInLine.maxNoThreeInLine_ge_three_halves_sub
+LeanFormalizations.NoThreeInLine.weakPNT
+
+# Number theory — classical Mertens 3rd (e^{-γ}, unconditional)
+LeanFormalizations.Mertens.mertens_third_classical_eGamma
