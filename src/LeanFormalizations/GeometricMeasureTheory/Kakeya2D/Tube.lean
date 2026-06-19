@@ -7,13 +7,13 @@ objects of every proof of the planar Kakeya bound: a Kakeya set, δ-discretized,
 two tubes of differing directions can intersect. That overlap bound is the geometric heart of
 Córdoba's `L²`/bush argument (`PLAN.md`, ladder K2).
 
-This file:
+This file (all **proven, axiom-clean**):
 * defines `tube a v δ` = `cthickening δ (affineSegment ℝ a (a+v))` and the elementary structural
   facts (closed/measurable, contains its core segment, monotone in `δ`);
-* states the two quantitative estimates the ladder needs:
-  - `volume_tube_le` : a single δ-tube has area `≲ δ` (thin tube, `≈ 1 × 2δ`);
-  - `volume_inter_tube_le` : **the overlap bound** `vol(Tᵥ ∩ T_w) ≲ δ² / (θ + δ)` for unit
-    directions `v,w` at angle `θ`.
+* proves the two quantitative estimates the ladder needs:
+  - `volume_tube_le` : a single δ-tube has area `≤ 6δ` (thin tube, `≈ 1 × 2δ`);
+  - `volume_inter_tube_le` : **the overlap bound** `vol(Tᵥ ∩ T_w) ≤ 12δ² / (s + δ)` for unit
+    directions `v,w`, where `s = |v₀w₁−v₁w₀| = |sin∠(v,w)|` is the lines-invariant separation.
 
 Reference: A. Córdoba, *The Kakeya maximal function and the spherical summation multipliers*,
 Amer. J. Math. **99** (1977); R. O. Davies (1971).

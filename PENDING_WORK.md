@@ -2,25 +2,25 @@
 
 ## ♾️ ACTIVE (2026-06-19): planar Kakeya (Davies) — open `sorry` inventory + attack paths
 
-Branch `kakeya-davies`. Two open `sorry`s in the Kakeya thread (everything else axiom-clean):
+Branch `kakeya-davies`. **K1 + K2 are COMPLETE + axiom-clean** (this lap). One open `sorry` left.
 
-### A. `Tube.lean : volume_inter_tube_le` — two-tube overlap `≲ δ²/(‖v-w‖+δ)`. **Next brick.**
-Reduced (this lap) via `inter_tube_subset_parallelogram` to a parallelogram-area computation.
-Three viable paths:
-1. **(chosen) Determinant / `addHaar_preimage_linearMap`.** Near-parallel `‖v-w‖≤δ` is free
-   (`volume_tube_le` ⟹ `≤6δ`, and RHS `≥δ/2`). Transversal: parallelogram `= L⁻¹'box'`,
-   `L = (!![perp v 0,perp v 1; perp w 0,perp w 1]).toLpLin 2 2`, `det L = v0·w1−v1·w0`
-   (`LinearMap.det_toLpLin`, `Matrix.det_fin_two`); `volume = ofReal|det⁻¹|·(2δ)²`. Then
-   `|det| ≳ ‖v-w‖` for unit `v,w` (CARE antipodal). All lemmas confirmed present — see `HANDOFF.md`.
-2. **Fubini in the v-frame.** Re-use `frame`/`volume_coordBox` coords `(s,r)`; the `w`-slab
-   constrains `s` to length `≤ 2δ/|det|`; integrate `∫_{|r|≤δ} min(1+2δ, 2δ/|det|) dr`. More
-   elementary measure theory but needs an explicit Fubini/`lintegral` over the frame iso.
-3. **Crude `min` bound only.** Prove `≤ min(6δ, (2δ)²/|det|)` and hand K4 the un-simplified form;
-   defer the `δ²/(‖v-w‖+δ)` repackaging. Lets K4 start before the det↔‖v-w‖ inequality lands.
+### ✅ DONE — `Tube.lean : volume_inter_tube_le` (two-tube overlap `≤ 12δ²/(s+δ)`, `s=|sin∠|`).
+The whole K2 ladder is machine-checked, axiom-clean, sorry-free. Path used: determinant /
+`addHaar_preimage_linearMap` (`volume_two_slab` parallelogram area `(2δ)²/|det|`) + a near-parallel
+single-tube fallback. The faithfulness fix (separation `s=|v₀w₁−v₁w₀|` not `‖v-w‖`) is in.
 
-### B. `Engine.lean : hausdorffMeasure_pos_of_isKakeya` — `∀ d<2, μH[d] S ≠ 0`. The deep crux.
-Needs the full K3 (δ-discretization) → K4 (Córdoba L²) → K5 (content→Frostman→Hausdorff) ladder
-(`Kakeya2D/PLAN.md`). Gated on A. Multi-lap; do not expect to close soon — advance one rung/lap.
+### A. `Engine.lean : hausdorffMeasure_pos_of_isKakeya` — `∀ d<2, μH[d] S ≠ 0`. The deep crux.
+The remaining ladder (`Kakeya2D/PLAN.md`), now resting on the finished K2 overlap bound:
+1. **K3 — δ-discretization (next brick).** `IsKakeya S` ⟹ for each unit `v`, `tube a v δ ⊆ Sδ`
+   (`Sδ := cthickening δ S`); compactness of the unit circle gives a δ-net of `~δ⁻¹` directions.
+   Attack paths: (i) build the net as an explicit `Finset` of angles `kδ` and the tube family;
+   (ii) abstract it as `∃ finite family, pairwise sep ≈ kδ, all ⊆ Sδ`; (iii) reduce to the
+   maximal-function formulation and bound that instead.
+2. **K4 — Córdoba L².** Cauchy–Schwarz on `∑1_{tubeᵢ}`: `vol(Sδ) ≥ (∑∫)²/∑∑overlap`; numerator
+   `≳1`, denominator `≲ ∑ₖ δ·δ²/(kδ+δ) ≈ δ·log(1/δ)` **by `volume_inter_tube_le`** ⟹ `vol(Sδ) ≳ 1/log(1/δ)`.
+3. **K5 — content → Hausdorff (deepest).** Uniform `1/log` Minkowski content at every scale ⟹ a
+   Frostman measure ⟹ `μH[d] S > 0` for all `d<2`. (NB: box dim ≠ Hausdorff dim; needs the
+   mass-distribution construction, not just the content bound.) Multi-lap; advance one rung/lap.
 
 ---
 
