@@ -80,21 +80,32 @@ Given a **measurable** selection `a : ℝ → Plane`, the keystone
 `{(t,θ) : a θ + t•dir θ ∈ F} ∩ ([0,1]×univ)`. This is the prerequisite the continuum route needs and
 the discrete route was invented to dodge.
 
-**Honest route (multi-lap), replacing the ad-hoc Case-B axiom by named true theorems:**
-1. `kakeya_measurable_selection` (Jankov–von Neumann; **true**, mathlib gap): an Fσ Kakeya set admits
-   a measurable `θ ↦ a(θ)` with `segment(a(θ),θ) ⊆ E`.
-2. `measurable_covered_length` (**proven this lap**) ⟹ `ℓⱼ` measurable; `one_le_tsum_volume_fiber_union`
-   ⟹ `∑ⱼ ℓⱼ(θ) ≥ 1`; `lintegral` monotone ⟹ `∑ⱼ ∫ℓⱼ ≥ 1`; `exists_dominant_scale` (proven) ⟹ a
-   dominant `j*` with `∫ℓ_{j*} ≥ w_{j*}`.
-3. `cordoba_continuum_count` (the L² Kakeya-maximal count at a single scale over the continuum;
-   standard Córdoba, but a genuinely new analytic build — the integral analog of `cordoba_cover_count`):
-   `(∫ℓ_{j*})² ≲ vol(F_{j*}-thickening)·log ≲ M_{j*}·2⁻²ʲ*·poly`, forcing `M_{j*} ≳ w_{j*}²·2^{2j*}/poly`,
-   hence `∑_{scale j*} ediam^d ≥ M_{j*}2⁻⁽ʲ*⁺¹⁾ᵈ ≳ 2^{j*(2-d)}/poly ≥ c` for `d<2`.
+**Honest route — REFINED (only ONE deep input remains; no new continuum Córdoba needed):**
+1. `kakeya_measurable_selection` (Jankov–von Neumann; **true**, mathlib gap — the *sole* deep input):
+   an Fσ Kakeya set admits a measurable `θ ↦ a(θ)` with `segment(a(θ),θ) ⊆ E`.
+2. `measurable_coveredLength` (**proven this lap**) ⟹ `ℓⱼ` measurable; `one_le_tsum_volume_fiber_union`
+   ⟹ `∑ⱼ ℓⱼ(θ) ≥ 1`; Tonelli (`lintegral_tsum`) + `exists_index_ge_of_tsum_lt` ⟹ a dominant `j*`
+   with `scaleWeight j* ≤ ∫_{[0,1]} ℓ_{j*}(θ) dθ`. This is `exists_continuum_dominant_scale`
+   (**proven this lap**) — **cap-free, so no Case B**: `j*` is the *genuine* dyadic scale (the fiber
+   `{g n = j*}` has the real diameter window `(2⁻⁽ʲ*⁺¹⁾, 2⁻ʲ*]`, no `min(·,J)` conflation).
+3. **Continuous shift-average** (the next brick — bounded measure theory, **no deep machinery**, was
+   blocked *only* by measurability, which (2) now supplies): partition `[0,1)` into the `2^{j*}` cells
+   `[i·2⁻ʲ*, (i+1)·2⁻ʲ*)` and substitute `θ = α + i·2⁻ʲ*`; then
+   `∫_{[0,1]} ℓ_{j*} = ∫_{[0,2⁻ʲ*)} (∑_{i<2^{j*}} ℓ_{j*}(α + i·2⁻ʲ*)) dα`, so **some base angle `α`**
+   has `∑_{i<2^{j*}} ℓ_{j*}(α + i·2⁻ʲ*) ≥ 2^{j*}·∫ℓ_{j*} ≥ 2^{j*}·scaleWeight j*` — exactly the
+   discrete numerator. (Continuous analog of the proven `exists_shift_ge`; the integral never exceeds
+   `1` here, so the `∫=⊤` corner is vacuous.)
+4. **Existing discrete `caseA_content`** (already proven, `NetThinning.lean`): the shifted `2^{j*}`-net
+   at base angle `α`, resolution `2⁻ʲ*`, with the numerator from (3) and the genuine scale-`j*` window
+   from (2), gives `D⁻¹·cR ≤ ∑'ₙ ediam(Uₙ)^d`. **No new count is built** — the count happens at the
+   dominant scale's own resolution, which is precisely what (2)'s cap-free `j*` guarantees. The
+   finite/infinite-fiber split (already in `Engine`) handles `s` finite.
 
-This converts the single ad-hoc residual into **two named, individually-true, citable theorems**
-(measurable selection + continuum Córdoba) with all connective tissue proven — a strictly more honest
-state, and the form a literature port drops into. Neither new piece is one-lap; both are tracked in
-`ON-LINE-REQUEST.md`.
+**Key consequence:** the earlier "two deep inputs (selection + continuum Córdoba)" framing was
+pessimistic. The continuum Córdoba `L²` is **not** needed — the discrete `caseA_content` suffices once
+the dominant scale is found at the right (uncapped) resolution. So the route reduces to **one deep
+axiom (measurable selection)** + **one bounded provable brick (the continuous shift-average, step 3)**
++ already-proven machinery. That is a materially better state than the current ad-hoc Case-B residual.
 
 ## Do NOT relitigate
 - The fixed-net L² sum for `d>1` (proven divergent — (C1) above is the same fact).

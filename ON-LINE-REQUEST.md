@@ -265,3 +265,14 @@ selection; mathlib v4.29.1 has **no** measurable-selection theorem (`SetTheory/D
 4. **Davies' 1971 projection/duality proof** — re-asked once more: does it sidestep BOTH measurable
    selection AND the continuum Córdoba (e.g. via the line↔point duality on `y=ax+b`)? If it avoids
    measurable selection it may be the formalization path of least resistance.
+
+**CORRECTION (same lap, after refining the architecture — `CASE_B_ANALYSIS.md`):** ask 3 (the
+continuum Córdoba count) is **NOT actually needed** and is withdrawn. Once the dominant scale `j*` is
+found via the continuum integral pigeonhole (proven: `exists_continuum_dominant_scale`, *cap-free* so
+`j*` is the genuine scale), the count is done at `j*`'s own resolution `2⁻ʲ*` by the **already-proven
+discrete `caseA_content`** — fed by a bounded **continuous shift-average** lemma (partition `[0,1)`
+into `2^{j*}` cells, substitute, extract a base angle `α` with the discrete numerator; continuous
+analog of the proven `exists_shift_ge`, provable now that `measurable_coveredLength` gives
+measurability). So the honest route reduces to a **single deep input: measurable base-point selection
+(ask 1)**, plus that one bounded measure-theory brick and existing machinery. **Ask 1 (and ask 4 as a
+possible bypass) are the only remaining open items here.**
