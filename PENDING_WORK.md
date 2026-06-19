@@ -19,6 +19,48 @@ every direction ⊆ Sδ); explicit trig net `dir θ=(cos θ,sin θ)` with `norm_
 (Cauchy–Schwarz via Hölder p=q=2), `volume_thickening_mul_ge` (`(N·2δ)² ≤ vol(Sδ)·denom`), and the
 capstone **`volume_thickening_log_ge`: `1 ≤ vol(Sδ)·12π(1+log(1/δ))`** for `δ≤1/2`. All axiom-clean.
 
+### A0‴. ⭐ MILESTONE (2026-06-19, measurable-route lap): Case B pinned to MEASURABLE SELECTION; two route bricks built.
+
+**Committed (`0455775`, `94db0d8`), full library green (8298 jobs), both new lemmas `#print
+axioms`-clean.** This lap re-derived the Case-B obstruction independently from three angles
+(`Kakeya2D/CASE_B_ANALYSIS.md`) and pinned it precisely: the proof closes the instant one integrates
+over the **continuum** of directions (`∫₀¹ ∑ⱼ ℓⱼ(θ) dθ ≥ 1` → dominant scale `j*` → single-scale
+Córdoba at `2⁻ʲ*`); the continuum is "the scale-matched net at every resolution at once", so the
+net-scale circularity that forces the discrete cap / Case B never arises. **The lone blocker is the
+measurability of `θ ↦ ℓⱼ(θ)`, i.e. a measurable base-point selection** (`IsKakeya` gives only
+`Classical.choice`; Jankov–von Neumann / KRN — a genuine mathlib v4.29.1 gap, no measurable-selection
+theorem present). The discrete `2ᴶ`-net machinery (cap + Case A/B) was built *only* to avoid this
+integral; Case B is the residue of that avoidance.
+
+**Two provable bricks of the honest (measurable-selection) route built this lap (`MeasurableRoute.lean`,
+both take the selection as a HYPOTHESIS — no new axioms):**
+- `continuous_dir` / `measurable_dir`.
+- `measurable_coveredLength` — **keystone**: for measurable base-point `a` and direction `w` and
+  measurable target `F`, `θ ↦ vol{t∈[0,1] : a θ + t•w θ ∈ F}` is measurable (Fubini,
+  `measurable_measure_prodMk_right`). The prerequisite the continuum route needs and the discrete
+  route dodged.
+- `exists_continuum_dominant_scale` — **cap-free, no Case B**: given a measurable selection covering
+  the arc `θ∈[0,1]`, a dominant scale `j` with `scaleWeight j ≤ ∫_{[0,1]} vol{t∈[0,1]:
+  a θ+t·dir θ ∈ ⋃_{g n=j} C n} dθ`. Assembled from the keystone + `one_le_tsum_volume_fiber_union`
+  (per-direction `∑ⱼ ℓⱼ ≥ 1`) + Tonelli (`lintegral_tsum`) + the `scaleWeight` pigeonhole.
+
+**TWO genuinely-deep inputs remain to deploy the route on a real Kakeya set (both reference-gated,
+`ON-LINE-REQUEST.md` UPDATE 5):**
+1. **Measurable selection** `∃ measurable a, ∀θ, segment(a θ,θ) ⊆ E` for the Fσ Kakeya set `E =
+   ⋃ closure(tₙ)`. mathlib gap (descriptive set theory). True theorem (KRN/JvN). Likely multi-lap
+   infra unless a bespoke explicit selection (argmin-‖a‖ over the closed-valued `B(θ)`) works.
+2. **Single-scale continuum Córdoba count** `(∫ℓ)² ≲ vol(thickening)·log(1/δ)` (Kakeya maximal `L²`
+   over the continuum of directions) — the integral analog of the proven discrete `cordoba_cover_count`.
+   A genuinely-new analytic build (continuum overlap integral `∫∫ vol(T_θ∩T_φ)dθdφ`).
+
+**NEXT-LAP ENTRY:** harvest any `ON-LINE-FINDINGS-*` for UPDATE 5 first. Then, if no findings: either
+(a) build the single-scale continuum Córdoba count (input 2 — the larger but self-contained analytic
+brick; everything feeding it is in-repo), or (b) the content-assembly bridge `(continuum Córdoba count)
++ exists_continuum_dominant_scale ⟹ ∑ ediam^d ≥ c` (reusing `content_ratio_lower`'s
+exponential-beats-poly arithmetic), giving a fully hypothesis-gated `kakeya_hausdorffContentBound`
+modulo exactly inputs 1 & 2. The discrete Case-A/B path (`Engine.kakeya_subresolution_content`) stays
+as the live critical path until the measurable route is complete — do NOT delete it.
+
 ### A0″. ⭐ MILESTONE (2026-06-19, Case-A discharge lap): opaque dominant-scale axiom GONE; Case B isolated.
 
 **Committed, `lake build` green (8297 jobs), `#print axioms` verified:** `davies_kakeya_2d` now =
