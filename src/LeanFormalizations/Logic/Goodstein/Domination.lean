@@ -331,6 +331,64 @@ theorem log_bump (b : ℕ) (hb : 2 ≤ b) {n : ℕ} (hn : n ≠ 0) :
       _ ≤ (b + 1) * (b + 1) ^ bump b e := Nat.mul_le_mul_right _ (by omega)
       _ = (b + 1) ^ (bump b e + 1) := by rw [pow_succ]; ring
 
+/-- **The leading exponent does NOT drop at a non-pure-power step.** If `n` is *not* a pure power of
+`b` — i.e. `b ^ log_b n < n`, equivalently `n` has a leading coefficient `≥ 2` or a nonzero lower
+remainder — then the Goodstein `−1` is absorbed by the lower terms and the leading exponent is
+exactly preserved across the step:
+`Nat.log (b+1) (bump b n − 1) = bump b (Nat.log b n)` (the same value `log_bump` gives for `bump b n`
+itself). The reason: `bump b n = c·(b+1)^{bump b e} + R` with `c ≥ 1`, `R < (b+1)^{bump b e}`, and the
+not-a-pure-power hypothesis forces `bump b n > (b+1)^{bump b e}`, so subtracting `1` cannot cross the
+power boundary. (When `n = b^{log_b n}` is a pure power the log *does* drop by one — the rare "borrow"
+event.) **This is the structural reason leading-exponent drops are RARE** — they occur only at the
+pure-power boundaries — and is the first brick of the steps-between-drops recursion that would upgrade
+the domination budget `log₂ m → m` (closing the diagonal `f_o(m) ≤ goodsteinLength m`). -/
+theorem log_bump_pred_of_not_pow (b : ℕ) (hb : 2 ≤ b) {n : ℕ} (hn : n ≠ 0)
+    (hnp : b ^ Nat.log b n < n) :
+    Nat.log (b + 1) (bump b n - 1) = bump b (Nat.log b n) := by
+  have hb1 : 1 < b := by omega
+  set e := Nat.log b n with he
+  have hbe_pos : 0 < b ^ e := Nat.pow_pos (by omega)
+  have hbe_le : b ^ e ≤ n := Nat.pow_log_le_self b hn
+  have hc_pos : 0 < n / b ^ e := Nat.div_pos hbe_le hbe_pos
+  have hr_lt : n % b ^ e < b ^ e := Nat.mod_lt _ hbe_pos
+  have hR_lt : bump b (n % b ^ e) < (b + 1) ^ bump b e := bump_lt_pow b hb hr_lt
+  have hbump_eq : bump b n = n / b ^ e * (b + 1) ^ bump b e + bump b (n % b ^ e) := bump_pos b n hn
+  have hP_pos : 0 < (b + 1) ^ bump b e := Nat.pow_pos (by omega)
+  -- the not-a-pure-power hypothesis: leading coeff `≥ 2`, or nonzero remainder
+  have hcase : 2 ≤ n / b ^ e ∨ 0 < n % b ^ e := by
+    rcases Nat.eq_zero_or_pos (n % b ^ e) with hr0 | hrpos
+    · left
+      have key : b ^ e * (n / b ^ e) + n % b ^ e = n := Nat.div_add_mod n (b ^ e)
+      rcases Nat.lt_or_ge (n / b ^ e) 2 with hlt | hge
+      · have hc1 : n / b ^ e = 1 := by omega
+        rw [hc1, hr0, mul_one, add_zero] at key
+        omega
+      · exact hge
+    · right; exact hrpos
+  -- hence `bump b n > (b+1)^{bump b e}`, so the `−1` does not cross the power boundary
+  have hgt : (b + 1) ^ bump b e < bump b n := by
+    rcases hcase with hc2 | hrpos
+    · have h2P : 2 * (b + 1) ^ bump b e ≤ n / b ^ e * (b + 1) ^ bump b e := by gcongr
+      rw [hbump_eq]; omega
+    · have hR1 : 1 ≤ bump b (n % b ^ e) := le_trans hrpos (le_bump b hb _)
+      have hPle : (b + 1) ^ bump b e ≤ n / b ^ e * (b + 1) ^ bump b e := by
+        conv_lhs => rw [← one_mul ((b + 1) ^ bump b e)]
+        gcongr; omega
+      rw [hbump_eq]; omega
+  apply Nat.log_eq_of_pow_le_of_lt_pow
+  · omega
+  · have hub : bump b n < (b + 1) ^ (bump b e + 1) := by
+      calc bump b n = n / b ^ e * (b + 1) ^ bump b e + bump b (n % b ^ e) := hbump_eq
+        _ < n / b ^ e * (b + 1) ^ bump b e + (b + 1) ^ bump b e := by omega
+        _ = (n / b ^ e + 1) * (b + 1) ^ bump b e := by ring
+        _ ≤ (b + 1) * (b + 1) ^ bump b e := by
+            apply Nat.mul_le_mul_right
+            have hc_lt : n / b ^ e < b := by
+              rw [Nat.div_lt_iff_lt_mul hbe_pos, ← pow_succ']; exact Nat.lt_pow_succ_log_self hb1 n
+            omega
+        _ = (b + 1) ^ (bump b e + 1) := by rw [pow_succ]; ring
+    omega
+
 /-- **Decrementing lowers a logarithm by at most one:** `Nat.log b x ≤ Nat.log b (x − 1) + 1`
 (for `1 < b`). If `L = log b x ≥ 1` then `b^L ≤ x`, so `b^(L−1) < b^L ≤ x`, hence `b^(L−1) ≤ x−1`
 and `L − 1 ≤ log b (x − 1)`. The general fact that a single decrement crosses at most one power. -/
@@ -829,6 +887,12 @@ example : Nat.log 3 9 ≤ Nat.log 3 8 + 1 := by native_decide
 -- `G(4,3)=60` (`log_5 60 = 2`): `2 ≤ 2 + 1`.
 example : Nat.log (base 2) (goodsteinSeq 4 2) ≤ Nat.log (base 3) (goodsteinSeq 4 3) + 1 := by
   native_decide
+-- `log_bump_pred_of_not_pow`: NO drop at a non-pure-power step. `n=5` (`2²=4 < 5`, not a pure
+-- power): `bump 2 5 = 28`, `28−1 = 27`, `log_3 27 = 3 = bump 2 (log_2 5) = bump 2 2 = 3`. No drop.
+example : Nat.log 3 (bump 2 5 - 1) = bump 2 (Nat.log 2 5) := by native_decide
+-- the hypothesis is LOAD-BEARING: at a pure power `n=4=2²` the leading exponent DOES drop.
+-- `bump 2 4 = 27`, `27−1 = 26`, `log_3 26 = 2 ≠ 3 = bump 2 (log_2 4)` — a genuine "borrow".
+example : Nat.log 3 (bump 2 4 - 1) ≠ bump 2 (Nat.log 2 4) := by native_decide
 
 -- the super-linear bound's interpretation, witnessed: `f_2(n) = 2^n·n` (`fastGrowing_two`), and the
 -- step index `Nat.log 2 8 = 3` ⟹ the bound reads `f_2(3) = 24 ≤ goodsteinLength 8 + 2` (RHS huge).
