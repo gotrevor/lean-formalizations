@@ -38,6 +38,12 @@ problem; everything else is machine-checked proof delegating to them.
 * `UpperBound.lean` — `≤ 2` points per row (three would be collinear), summed over `N` rows.
 * `Parabola.lean` — Erdős's `(i, i² mod p)`: collinearity forces the integer determinant to
   vanish, which mod `p` factors as `(b−a)(c−a)(c−b) ≡ 0`; `ZMod p` a field ⇒ two points coincide.
+* `Hyperbola.lean` — the HJSW hyperbola arc `xy ≡ k (mod p)` (`(x, (k·x⁻¹) mod p)`): collinearity
+  ⇒ the mod-`p` determinant, collapsed via the relation `x·y = k` to `−k·(a−b)(a−c)(b−c) ≡ 0`, has
+  no three collinear (`hyperbola_noThreeCollinear`). The doubled arc `x ∈ [1,2p)\{p}`
+  (`hyperbolaWide_noThreeCollinear`, `2(p−1)` points) proves the residue/horizontal-line collapse
+  the HJSW `3N/2` covering relies on. (These arcs alone give `~N` points — the crux, not the
+  bound; the `3/2` covering needs the 1975 paper, see `PLAN.md` / `ON-LINE-REQUEST.md`.)
 
 ## Provenance & novelty
 

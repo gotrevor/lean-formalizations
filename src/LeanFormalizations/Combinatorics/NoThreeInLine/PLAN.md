@@ -14,11 +14,19 @@
 The best *proven* lower constant (1975, unimproved). Points on a hyperbola `xy ≡ k (mod p)`
 with `p ≈ N/2` prime, lifted across a covering of the grid by ~3 translated arcs to reach
 `3(N−2)/2` points. Two pieces:
-- **Arc non-collinearity**: three points on `xy ≡ k (mod p)` collinear ⇒ a polynomial relation
-  that `ZMod p` (a domain) forbids unless points coincide — same "integral domain kills the
-  product" move as the parabola, with more bookkeeping (the determinant is degree-2 in each).
-- **The count / covering**: assemble `3N/2` actual grid points from the mod-`p` arc. This is the
-  genuinely fiddly combinatorics; the parabola gives `~N`, the hyperbola construction the `3/2`.
+- **Arc non-collinearity — ✅ DONE (`Hyperbola.lean`, axiom-clean, 2026-06-19).** Three points on
+  `xy ≡ k (mod p)` collinear ⇒ the mod-`p` determinant vanishes; collapsing it with the defining
+  relation `x·y = k` on each point (`hyperbola_xy_eq`) gives `−k·(a−b)(a−c)(b−c) ≡ 0`, which the
+  field `ZMod p` (`k ≢ 0`) forbids unless two coincide (`hyperbola_noThreeCollinear`). Also done:
+  the **doubled (wide) arc** `x ∈ [1,2p)\{p}` keeps no-three-collinear (`hyperbolaWide_*`,
+  `2(p−1)` points) — the precise "two abscissae per residue ⇒ horizontal-line collapse ⇒ third
+  shares residue ⇒ pigeonhole" mechanism the covering exploits. NOTE: these arcs alone give only
+  `~N` points in a square grid (same order as the Erdős parabola) — they are the *crux*, not the
+  bound. The `3/2` is entirely in the covering below.
+- **The count / covering — ⛔ NEEDS THE PAPER (online request filed 2026-06-19).** Assemble `3N/2`
+  actual grid points: which hyperbola(s)/`x`-ranges, the grid side `N` vs `p`, and the cross-arc
+  non-collinearity lemma that caps the gain at `3/2` (naive stacking would give `2`). This is the
+  genuinely fiddly combinatorics I cannot reconstruct from memory. See `ON-LINE-REQUEST.md`.
 
 Mathlib has what's needed: `ZMod p` field, `Matrix.det`, `Nat.exists_prime_lt_and_le_two_mul`.
 
