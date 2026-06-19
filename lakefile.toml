@@ -12,11 +12,13 @@ rev = "v4.29.1"
 [[lean_lib]]
 name = "LeanFormalizations"
 
-# Off-headline 2nd-route working library (NOT in defaultTargets, so the headline
-# `lake build` is unchanged). Only the two Geometric-Measure-Theory wip files that
-# form the unconditional Jankov–von Neumann measurable-selection route; built
-# explicitly with `lake build DaviesWip`. FastGrowing/Bachmann wip stay excluded.
+# Off-headline working library (NOT in defaultTargets, so the headline `lake build`
+# is unchanged). Built explicitly with `lake build DaviesWip`. Holds the jvn 2nd-route
+# GMT files (sorry-free) and the FastGrowing growth theory: Bachmann is sorry-free;
+# Basic still carries the single open A3 sorry (fastGrowing_fundSeq_step) — so DaviesWip
+# builds with one disclosed sorry warning. The other wip/ scratch stays excluded.
 [[lean_lib]]
 name = "DaviesWip"
 srcDir = "../wip"
-globs = ["GeometricMeasureTheory.Capacitability", "GeometricMeasureTheory.VonNeumannSelection"]
+globs = ["GeometricMeasureTheory.Capacitability", "GeometricMeasureTheory.VonNeumannSelection",
+         "Logic.FastGrowing.Bachmann", "Logic.FastGrowing.Basic"]

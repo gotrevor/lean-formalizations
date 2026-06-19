@@ -25,6 +25,9 @@ proof needs it; the `fundamentalSequence` correctness lemmas
 -/
 import Mathlib.SetTheory.Ordinal.Notation
 import Mathlib.Order.Iterate
+-- The Bachmann inequality (`fundSeq_bachmann`, sorry-free, no `NF` needed) — the prerequisite the
+-- limit case of the A3 crux `fastGrowing_fundSeq_step` will consume next lap.
+import Logic.FastGrowing.Bachmann
 
 namespace LeanFormalizations.Logic.FastGrowing
 
