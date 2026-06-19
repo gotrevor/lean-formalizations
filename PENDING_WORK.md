@@ -1,135 +1,45 @@
-# PENDING_WORK — lean-formalizations
+# PENDING_WORK — no-three-in-line / HJSW frontier (branch `ntl-hjsw`)
 
-## 🔭 OPEN-ITEM INVENTORY (refreshed 2026-06-17, operator directive)
+Inventory of open items + attack paths (per `how-to-get-unblocked.md`). Refreshed 2026-06-19.
+(This isolated clone's focus is solely the HJSW frontier; the main-branch threads — Curtis,
+power-tower, constructibles, transcendence, Goodstein — are complete & axiom-clean, recorded in
+`STATUS.md` and git history. Do not reopen them here.)
 
-`src/` is **100% axiom-free** (0 custom axioms, 0 `sorry`/`admit`; `lake build` green, 8274
-jobs). Three threads are COMPLETE + axiom-clean — **do not reopen**: Curtis 1990
-(no-Frobenius-formula), π/e-transcendence + squaring-the-circle (the `hermite_lindemann` axiom
-was discharged + deleted 2026-06-16), and constructible numbers / Wantzel (full iff + 5 classical
-impossibilities). Completion records below.
+## Open items (full `#print axioms` + `grep sorry` sweep of `src/.../NoThreeInLine/`)
 
-### ✅ COMPLETE (2026-06-18) — power-tower SHARP `iff` (the `0 < x < e^(-e)` divergence)
-**DONE, axiom-clean.** The operator-directed target of the 2026-06-17 `DIRECTION.md` is
-finished. `EngineLower.tower_diverges_lower` (`0<x<e^(-e) ⟹ ¬∃L`) + the headline
-`Statement.tower_converges_iff_full` (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`) are
-both proved; `#print axioms` = `[propext, Classical.choice, Quot.sound]`. The proof followed
-the planned route exactly: `fixedpoint_exists` (IVT fixed point `y`), `log_fixedpoint_lt_neg_one`
-(the repelling seed `x<e^(-e) ⟹ log y < -1` — by contradiction, `log y ≥ -1 ⟹ y ≥ 1/e ⟹
--ye ≤ -1`, no `v·e^v` monotonicity lemma needed), `strict_two_cycle_exists` (IVT on `g-id`
-both sides of `y`, where `g'>1` on a neighbourhood from continuity of `g'` + `g'(y)=(log y)²>1`),
-and the even/odd-trapping bound (`a(2n) ≥ γ₀ > β₀ ≥ a(2n+1)`) ⟹ distinct limits ⟹ no limit.
-The subsequence construction is now the shared `tower_subseq_limits` (used by both directions).
-The Lóczi §3 reference was NOT needed (no `ON-LINE-REQUEST` filed).
+1. **`hjsw_lower : 3*(p−1) ≤ maxNoThreeInLine (2*p)`** (`Hyperbola.lean`) — the ONLY open `sorry`.
+   The covering count of the HJSW `3N/2` lower bound. Everything else is proven & axiom-clean:
+   2N upper bound, Erdős Θ(N), hyperbola-arc non-collinearity, the decidable `det3=0 ⟺ Collinear`
+   certificate (`decNoThree_iff`), and native-decide witnesses at p=5 and p=7.
 
-### ✅ COMPLETE (2026-06-16) — π/e-transcendence, axiom-clean, `hermite_lindemann` DELETED
-`Transcendence.transcendental_pi` proved from first principles, axiom-clean;
-`squaring_the_circle_impossible_uncond` rewired to it; the cited axiom deleted → repo
-math-axiom count = **0**. Assembly: `ETranscendental.lean` (`e_transcendental`, the Hermite
-assembly of `exp_polynomial_approx`) → `PiLindemann.lean` (combinatorial reduction + non-monic
-analytic engine) → `MonicRootSums.lean` (fact (a) `sum_aeval_roots_int`, Aristotle `9a19f72e`)
-→ `SubsetSumEsymm.lean` (fact (b) `subsetSum_esymm_rational`, fundamental theorem of symmetric
-polynomials, Aristotle `b7252abe`) → `PiTranscendental.lean`. Both Aristotle proofs independently
-kernel-verified. (For the *alternative* path not taken — adopting mathlib PR #28013 on a future
-bump — see `archive/findings/ON-LINE-FINDINGS-2026-06-15-pi-transcendence.md`.)
+Single-crux target ⇒ "broaden" mostly means *broaden the attack on this crux*.
 
+## Three attack paths for `hjsw_lower`
 
-## ✅ COMPLETE (2026-06-14, operator-bounded run): Curtis verification hardening
+### Path A — get the real construction from the HJSW 1975 paper (filed; network-blocked)
+`ON-LINE-REQUEST.md` asks for the explicit (multi-)curve set + cross-curve non-collinearity proof.
+When `ON-LINE-FINDINGS-*.md` lands: build the candidate set, validate via `native_decide (decNoThree …)`
+at p=5,7,11, port to a clean `def`, prove (reuse `hyperbola_noThreeCollinear` for intra-curve triples;
+the new content is cross-curve). Highest-confidence path — the construction is *known*, just not here.
 
-All four items in `DIRECTION.md` are built, green, sorry-free, axiom-clean
-(commits `ea89147`, `0498df8`). Every optional stretch part was also done:
+### Path B — find a generalizable construction computationally, then prove it
+The `decNoThree` certificate is an EXACT iff, so candidates are cheap to refute/confirm.
+- **Established:** a single modular hyperbola `xy≡k` cannot reach `3(p−1)` at p=7 (max ≤17) for any k
+  ⇒ **need ≥2 curves**. Naive multi-block arc unions also fail.
+- **Obstruction characterized:** single-curve collinearities are all **slope ±1 alignments** —
+  `(r,s)` & `(r+p,s+p)` share `y=x+(s−r)`, and residues with equal `s−r` pile onto it (for p=7,k=1:
+  lines `y=x`, `y=x+2`, `y=−x+13` each carry 4 lifts). Doubling in BOTH coords creates them.
+- Next experiments: (i) search the union of 2 curves' lifts (all key pairs) for an 18-set + decode;
+  (ii) design a per-residue lift rule that provably dodges slope-±1 alignments (no `s−r` repeats with a
+  collinear third), let a 2nd curve fill the deficit; (iii) validate any rule across p=5,7,11,13 before
+  the general Lean proof.
 
-1. ✅ `Boundary.n2_polynomial_relation_exists` — Sylvester hypersurface; n=2/n=3 line.
-2. ✅ three new Lemma-2 anchors (⟨3,7,11⟩, ⟨3,13,14⟩, ⟨5,11,23⟩, one also direct) +
-   ✅ stretch `frobeniusNumber_6_9_20` (McNugget 43, outside Curtis's family).
-3. ✅ `symmetric_guess_not_a_formula` (worked) + ✅ stretch `no_single_polynomial_formula`.
-4. ✅ `Curtis/FINDINGS.md` + fixed stale docstrings in `Engine.lean` / `Curtis/README.md`.
+### Path C — special-case ladder (partial, native-certified) while A/B mature
+Extend the verified witness ladder (p=5 ✓ `hjsw_lower_five`, p=7 ✓ `hjsw_lower_seven`) to p=11, p=13
+via greedy + `native_decide`. Anti-vacuity locks confirming achievability; do NOT generalize to the
+headline proof, but keep the lap productive when A is blocked and B hasn't cracked.
 
-Run self-stopped on completion per `DIRECTION.md` (sentinel written). The PARKED targets
-below remain Trevor's call for a future, separately-scoped run.
-
----
-
-## ✅ COMPLETE (2026-06-14, power-tower LOWER half run)
-
-Mandatory `tower_converges_of_mem` (convergence on the FULL Euler interval
-`[e^(-e), e^(1/e)]`) is PROVED and **fully axiom-clean** (`[propext,
-Classical.choice, Quot.sound]`). The lower-bound crux `two_cycle_collapse` (no
-nontrivial 2-cycle of `t↦x^t` for `x ≥ e^(-e)`) is **machine-checked, no axiom** —
-via the slope bound `g'(t) ≤ |log x|/e ≤ 1` (`EngineLower.lean`): contraction +
-Banach for `x > e^(-e)`, antitone-on-interval for the boundary `x = e^(-e)`.
-(The DIRECTION's "subtract the tangent-line inequalities" sketch is mathematically
-invalid; the derivative/slope bound is the correct mechanism.)
-
-### Sharp `iff` lower direction (`0 < x < e^(-e)` diverges) — NOW THE ACTIVE TARGET
-`tower_converges_iff_full` was omitted as a stretch on the 6-14 run (the convergence half
-`tower_converges_of_mem` + `tower_diverges` shipped; the lower divergence requires a *genuine
-attracting 2-cycle*, multi-lap real analysis). **As of 2026-06-17 it is the directed goal —
-see `DIRECTION.md` and "THE ONE ACTIVE ITEM" at the top.** NO `sorry` was ever left here.
-
----
-
-## ✅ COMPLETE (2026-06-15): P1 Layer 1 — constructible-numbers algebraic core + all three classical impossibilities
-
-`Geometry/Constructible/` — **PROVED, axiom-clean** (`[propext, Classical.choice,
-Quot.sound]` on every headline). Exactly the Layer-1 plan below, and then some:
-- `IsSqrtTower` / `IsConstructible` on `IntermediateField ℚ ℝ`; engine
-  `IsSqrtTower.finrank_eq_pow_two` (degree `2ⁿ`) via tower law + quadratic step.
-- **Doubling the cube**: `cbrt2_not_constructible` (`minpoly ℚ ∛2 = X³−2`,
-  Kummer-irreducible; `[ℚ(∛2):ℚ]=3`).
-- **Trisecting 60°**: `cos20_not_constructible` (triple-angle ⟹ `2cos20°` root of the
-  monic `X³−3X−1`, irreducible by integral-root theorem; degree 3).
-- **Squaring the circle**: `squaring_the_circle_impossible (hπ : Transcendental ℚ π)`
-  via `IsConstructible.isAlgebraic`. Conditional on `π`-transcendence (mathlib gap).
-- Constructibles form a **subfield closed under √** (`IsSqrtTower.sup_exists` +
-  `IsConstructible.{add,sub,mul,neg,inv,sqrt}`, `isConstructible_ratCast`).
-
-### ✅ DONE (2026-06-16): P1 Layer 2 + the full converse — Wantzel as an iff
-The geometric faithfulness layer is COMPLETE and axiom-clean, and then some:
-- `ConstructiblePoint : ℝ×ℝ → Prop` (inductive: `{(0,0),(1,0)}` closed under
-  line∩line / line∩circle / circle∩circle). `ConstructiblePoint.isConstructible_coords`
-  proves geometry ⟹ algebra via `line_meet_line` / `line_meet_circle` /
-  `circle_meet_circle` (`ConstructiblePoint.lean`).
-- **Converse** (`Converse.lean`): `AxisConstructible` closed under `+,−,·,⁻¹,/,√` by
-  explicit compass constructions; tower induction `isSqrtTower_le_axisField` gives
-  algebra ⟹ geometry. Headline `isConstructible_iff_constructiblePoint`.
-- Geometric impossibility headlines (`cbrt2_point_not_constructible`,
-  `heptagon_point_not_constructible`); positive `isConstructible_cos_pi_div_five`
-  (pentagon); heptagon added (`Heptagon.lean`, 5th classical instance).
-
-### ✅ DONE (2026-06-16): squaring-the-circle is now UNCONDITIONAL
-`squaring_the_circle_impossible_uncond` no longer takes a hypothesis — it is wired to the
-axiom-clean `Transcendence.transcendental_pi` (full Lindemann assembly; see the π completion
-record at the top). The "multi-year wall" was discharged from first principles. No axiom remains.
-
-### ✅ DONE (2026-06-16): regular heptagon / 7-gon
-`Heptagon.lean` — `twoCosHept_not_constructible`, axiom-clean. Minpoly `X³+X²−2X−1`
-derived from `cos(4θ)=cos(3θ)` at `θ=2π/7` (factor out the `c=1` root).
-
-## 🅿️ PARKED — future runs, Trevor's call (NOT this run; do not start)
-
-Preserved for a future, separately-scoped run. These are genuine extensions but are
-**explicitly out of scope now** — do NOT treat them as "open frontier" when deciding to stop.
-
-### P2. Upstream Curtis to `Mathlib.NumberTheory.FrobeniusNumber`
-mathlib has the n=2 Chicken-McNugget theorem and notes it stops at n=2; Curtis's n=3
-impossibility is the natural sequel. Needs a mathlib style pass (drop the bespoke
-`IsAdmissible`/audit framing for an idiomatic statement) and an AI-contribution-policy check
-(reference corpus: `2026-06-07-mathlib-ai-contribution-policy.md`). Web/CLA-gated.
-
-### P3. Sharpen the "not algebraic" framing
-State explicitly: `(s₁,s₂,s₃,g)` lies on no proper hypersurface of ℂ⁴ (graph Zariski-dense).
-A short repackaging of `no_polynomial_relation`. (Item 4 of the active run *documents* this;
-P3 would be a full theorem-level statement — defer.)
-
----
-
-## Lemma2.lean lint warnings — LEAVE THEM
-The unused-variable warnings on `lemma2`'s hypotheses (`h1,h2,h3,hk_hi,hr_hi`) are the
-*mathematical* hypotheses of Curtis's Lemma 2, kept for the audit surface even though this
-proof path doesn't consume all of them. Do not strip them. The two unused-simp-arg warnings
-are inside Aristotle-verified tactic blocks — not worth the regression risk to touch.
-
-## Aristotle
-Nothing genuinely open → Aristotle correctly idle. The old Lemma-1 job (`80d9166c`) is
-OBSOLETE (the proof needs no Lemma 1). Do not feed redundant cross-confirms. The verification
-items 1–4 are all elementary and do NOT need Aristotle.
+## Done this lap
+Path B obstruction analysis (slope-±1 characterization, above + in `ON-LINE-REQUEST.md`); Path C
+(p=7 witness added & verified). **Next lap:** act on findings (A) the moment they land; else push
+B(i)/B(ii) — design + test a 2-curve rule that dodges the slope-±1 obstruction.

@@ -39,6 +39,11 @@ certificate (`decNoThree`, `native_decide`), I searched the natural "3 of the 4 
   hyperbola; it must combine ≥ 2 distinct curves** (or use a genuinely different construction). So the
   precise question I need answered: *which* curves/keys, and *which* lifts, does HJSW combine, and how
   is the cross-curve non-collinearity proven?
+- **Obstruction characterized:** the single-curve collinear triples are all **slope ±1 alignments** —
+  `(r,s)` and its diagonal lift `(r+p,s+p)` lie on the line `y = x+(s−r)`, and distinct residues with
+  equal `s−r` pile onto the same line (≥3 points). So whatever HJSW does, it must avoid letting three
+  chosen points share a slope-±1 line. If the paper's trick is exactly "pick lifts to break the
+  slope-±1 alignments", confirming that (and the rule) is what I need.
 
 A scan of any modern exposition giving the construction explicitly (Brass–Moser–Pach *Research
 Problems in Discrete Geometry* §10.1; Pór–Wood; Flammenkamp's pages) would also do.
