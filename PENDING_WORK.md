@@ -96,7 +96,9 @@ All three landed this lap in `Mertens.lean`, `#print axioms = [propext, Classica
    `abs_primeCorrCoeff_le` + `log_one_sub_add_self_abs_le`), `primeCorr_eq_sum_range`, `primeCorr_tendsto`
    (`HasSum.tendsto_sum_nat` ∘ `+1`). Assembled with `mertens_second_tendsto`.
    (NB this SUPERSEDES the old Aristotle `0fa80268` `summable_primeCorr` request — done locally.)
-3. **`mertens_third_tendsto_exp`** : `∏_{p≤N}(1−1/p)·log N → e^{C₃}` (`primeProd_pos` + `exp(log a+log b)`).
+3. **`mertens_third_tendsto_exp`** : `∏_{p≤N}(1−1/p)·log N → e^{C₃}` (`primeProd_pos` + `exp(log a+log b)`);
+   **`mertens_third_isEquivalent`** : `∏(1−1/p) ~[atTop] e^{C₃}/log N` (textbook form, via
+   `isEquivalent_iff_tendsto_one`; gotcha: that iff gives pointwise `(f/g) N` — `simp [Pi.div_apply]` first).
 
 ### 🎯 NEXT TARGET — the ONE deep equation `C₃ = −γ` (⇔ `M = γ + ∑'ₚ(log(1−1/p)+1/p)`)
 This is now the *sole* gap to the classical `∏(1−1/p) ~ e^{−γ}/log x`. The reduction is already in the
