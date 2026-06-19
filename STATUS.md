@@ -22,6 +22,13 @@
 **Every headline is axiom-free** — each headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]` (kernel-verified this lap: the flagship `..._three_halves_sub`, all six complete threads, the NTL audit surface, the unconditional `6/5`/`15/16` rungs, and the new Mertens theorems), and `grep '^axiom' src/` shows **none**. `src/` carries **zero math axioms**. Open `sorry`s: `nagura_prime` (PrimeGap.lean, superseded by the unconditional `3/2`, non-blocking) and `prelim_decay_2/3` (a self-contained dead-code island in `Wiener.lean` — clean `#print axioms WeakPNT''` confirms they gate nothing; Aristotle `c6d615ee` attempting `prelim_decay_2`). All threads green. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 (review lap cont. — MERTENS' THIRD up to the constant, `f9b15ab`):** `mertens_third_up_to_const`
+  : `(log ∏_{p≤N}(1−1/p) + log log N) =O[atTop] 1`, i.e. `∏(1−1/p) ≍ 1/log N` — axiom-clean, mathlib-absent.
+  Via `log_primeProd_eq` (log of product = sum of logs) + `log_primeProd_eq_corr` (split off `−1/p`) + the
+  bounded correction sum `primeCorr` (`|primeCorr N| ≤ ∑'1/b²`, from the locally-proved correction bound
+  `log_one_sub_add_self_abs_le : |log(1−x)+x| ≤ x²` via derivative monotonicity) + Mertens' 2nd. **The
+  classical Mertens trilogy is now in `Mertens.lean`** (1st & 2nd full; 3rd up to the sharp `e^{−γ}`
+  constant). Aristotle `0fa80268` working the correction-series convergence (toward the constant).
 - **2026-06-19 (review lap cont. — MERTENS' SECOND THEOREM COMPLETE, `9a3303d`):** Finished
   `mertens_second : (∑_{p≤N} 1/p − log log N) =O[atTop] 1` — **axiom-clean, mathlib-absent**. Assembly:
   core Abel identity `mertens_second_identity` (`∑1/p = primeSumDiv N/log N + ∫_2^N primeSumDiv⌊t⌋/(t log²t)`,
@@ -254,6 +261,7 @@ headline's critical path).
 | `Mertens.{vonMangoldtSumDiv_sub_primeSumDiv_le, abs_primeSumDiv_sub_log_le, mertens_first_prime}` | Mertens' 1st (**prime form**) `∑_{p≤N}(log p)/p = log N + O(1)`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **mathlib-absent**; proper-prime-power tail bounded by `2∑'(log b)/b²` (this lap) |
 | `Mertens.{primeSumDiv_isEquivalent_log, vonMangoldtSumDiv_isEquivalent_log}` | prime/vonMangoldt sums `~ log N` (multiplicative Mertens 1st), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 | `Mertens.{mertens_second_identity, mertens_second}` | **Mertens' 2nd** `∑_{p≤N} 1/p = log log N + O(1)`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **mathlib-absent**; via Abel summation (`sum_mul_eq_sub_integral_mul₁`) + `log log` primitive + `O(1)` remainder (this lap) |
+| `Mertens.mertens_third_up_to_const` | **Mertens' 3rd (up to constant)** `∏_{p≤N}(1−1/p) ≍ 1/log N`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **mathlib-absent**; sharp `e^{−γ}` constant is the deeper open refinement (this lap) |
 
 **Math-axiom counts (🟢+🟡+🟠), kernel-verified this lap:** **0 across every headline in the repo** —
 all NTL constants (incl. the formerly-`weakPNT`-bearing `..._three_halves_sub`), all six complete threads,

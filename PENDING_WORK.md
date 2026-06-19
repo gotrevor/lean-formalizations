@@ -79,16 +79,20 @@ term + an `O(1)` remainder (`norm_integral_le_abs_of_norm_le` with `abs_primeSum
 `integral_inv_mul_sq_log`); step-function integrability from `integrableOn_primeSumDiv_floor_div` (mathlib
 `integrableOn_mul_sum_Icc`). Both Mertens' 1st and 2nd theorems now complete in `Mertens.lean`.
 
-### 🎯 NEXT TARGET — Mertens' third theorem `∏_{p≤x}(1−1/p) ~ e^{−γ}/log x` (mathlib-absent)
-- Harder: involves the Euler–Mascheroni constant `γ`. `log ∏(1−1/p) = ∑ log(1−1/p)`. Expand
-  `log(1−1/p) = −1/p − ∑_{k≥2} 1/(k p^k)`; sum over `p≤x`: `−∑1/p − (bounded tail) = −log log x − M + o(1)`
-  (M = Meissel–Mertens). The `e^{−γ}` identification needs `M = γ − ∑_p [log(1−1/p)+1/p]`... the constant
-  identification with `γ` is the deep part (requires relating to `ζ` / the Euler product near `s=1`).
-  A tractable **first milestone**: `∑_{p≤x} log(1−1/p) = −log log x − M + O(1/log x)` (or `=O 1` form) — i.e.
-  Mertens' 3rd *up to the constant*, reusing the prime-reciprocal machinery (`primeRecipSum`, the geometric
-  tail bound `summable_log_div_sq`/`sum_geom_Icc_two_le`). The `e^{−γ}` constant is a separate (deeper) lap.
-- Alternative lower-hanging PNT-layer targets if Mertens 3rd stalls: explicit Chebyshev `ψ/θ` two-sided
-  bounds, or `∑_{p≤x} (log p)/p − log x → −M` style refinements.
+### ✅ Mertens' 3rd UP TO CONSTANT done (`f9b15ab`): `mertens_third_up_to_const : ∏(1−1/p) ≍ 1/log N`
+`primeProd`, `primeCorr`, `log_primeProd_eq`/`_corr`, `log_one_sub_add_self_abs_le` (|log(1−x)+x|≤x², local
+deriv-monotonicity proof), `abs_primeCorr_le`. The classical Mertens trilogy is now in `Mertens.lean`.
+
+### 🎯 NEXT TARGET — the SHARP Mertens constants (the deep refinements)
+1. **`primeCorr N → M_corr`** (convergence, not just bounded): `Summable (fun p : Nat.Primes => log(1−1/p)+1/p)`
+   — out to **Aristotle `0fa80268`**; verify on our pin when it returns (Aristotle defaults to v4.28.0). Or
+   prove locally (comparison with `∑ 1/p² ≤ ∑ 1/n²` over the `Nat.Primes` subtype).
+2. **Upgrade Mertens' 2nd to convergence**: `∑_{p≤x} 1/p − log log x → M` (Meissel–Mertens `M`). Needs the
+   remainder integral `∫_2^∞ (primeSumDiv⌊t⌋−log t)/(t log²t)` to CONVERGE (improper), not just be bounded —
+   i.e. tail `∫_X^∞ → 0`. Real-analysis upgrade of the existing `=O 1` argument.
+3. **The `e^{−γ}` identification** (`M_meissel = γ`): the genuinely deep part — relate to `ζ(s)`'s Euler
+   product as `s → 1⁺` / the Euler–Mascheroni constant `γ`. Generational; multi-lap.
+- Lower-hanging PNT-layer alternatives if the constants stall: explicit Chebyshev `ψ/θ` two-sided bounds.
 
 ### (superseded) nagura wall — FINAL for elementary methods
 - **nagura_prime wall is FINAL for elementary methods (sharpened this lap).** The refined constant

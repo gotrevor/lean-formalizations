@@ -17,10 +17,12 @@ carries **zero math axioms**. On the unlocked PNT layer, **Mertens' first theore
 — vonMangoldt form, sharp **prime form** `∑_{p≤x}log p/p = log x + O(1)`, and `~ log` capstones, all
 mathlib-absent and axiom-clean. Remaining open `sorry`s (all non-blocking, off every headline):
 `nagura_prime` (superseded by the unconditional `3/2`) and `prelim_decay_2/3` (dead-code island in
-`Wiener.lean`). **Mertens' FIRST and SECOND theorems are both COMPLETE & axiom-clean** (`Mertens.lean`):
-1st (`∑log p/p = log x + O(1)`, prime + vonMangoldt forms, both `~ log`); 2nd
-(`∑1/p = log log x + O(1)`, `mertens_second`, via Abel summation). **Next:** Mertens' third theorem
-`∏(1−1/p) ~ e^{−γ}/log x` — see PENDING_WORK "NEXT TARGET". Aristotle `c6d615ee` RUNNING on `prelim_decay_2`.
+`Wiener.lean`). **The classical Mertens TRILOGY is in `Mertens.lean`, all axiom-clean & mathlib-absent:**
+1st (`∑log p/p = log x + O(1)`, prime + vonMangoldt, both `~ log`); 2nd (`∑1/p = log log x + O(1)`,
+`mertens_second`, via Abel summation); 3rd up to the constant (`∏(1−1/p) ≍ 1/log N`,
+`mertens_third_up_to_const`). **Next:** the sharp Mertens constants (`e^{−γ}` / Meissel–Mertens `M` / `γ`) —
+see PENDING_WORK "NEXT TARGET" + newest dated `HANDOFF-2026-06-19-*.md`. Aristotle `0fa80268` working the
+correction-series convergence.
 
 ## Build
 `lake build` (whole repo, ~seconds — mathlib prebuilt) or
