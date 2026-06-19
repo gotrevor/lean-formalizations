@@ -587,6 +587,143 @@ theorem theta_refined_lower {n : ℕ} (hn : 30 ≤ n) :
   rw [h2n, hn30] at hp
   linarith [hp, habs.2, hsq, hlog2pi, hlog30]
 
+/-- **`√z·log z` is small relative to `z`.** For `z ≥ 2⁴⁰`, `√z·log z ≤ (40·log2/2²⁰)·z`. Proof:
+`log z/√z` is antitone on `[e², ∞)` (`Real.log_div_sqrt_antitoneOn`), so on `z ≥ 2⁴⁰` it is at most
+its value `(40·log2)/2²⁰` at `2⁴⁰` (where `√(2⁴⁰) = 2²⁰` and `log(2⁴⁰) = 40·log2`); multiply through by
+`z = √z·√z`. The coefficient `40·log2/2²⁰ ≈ 2.6·10⁻⁵` is *driven below* any fixed positive margin by
+the threshold `2⁴⁰`, which is exactly what lets the `√·log` error in the two-sided `θ` estimate be
+dominated by the linear gap `((8/5)A − log4)·n` — the engine of the sub-`2` prime gap. -/
+theorem sqrt_log_small (z : ℝ) (hz : (2 : ℝ) ^ 40 ≤ z) :
+    Real.sqrt z * Real.log z ≤ (40 * Real.log 2 / 2 ^ 20) * z := by
+  have hzpos : (0 : ℝ) < z := lt_of_lt_of_le (by positivity) hz
+  have he2le8 : Real.exp 2 ≤ 8 := by
+    have h := Real.exp_one_lt_d9
+    have hp := Real.exp_pos 1
+    have he : Real.exp 2 = Real.exp 1 * Real.exp 1 := by
+      rw [show (2 : ℝ) = 1 + 1 by norm_num, Real.exp_add]
+    nlinarith [he, h, hp]
+  have he2 : Real.exp 2 ≤ (2 : ℝ) ^ 40 := le_trans he2le8 (by norm_num)
+  have hanti := Real.log_div_sqrt_antitoneOn (he2) (le_trans he2 hz) hz
+  have hsqrt40 : Real.sqrt ((2 : ℝ) ^ 40) = 2 ^ 20 := by
+    rw [show ((2 : ℝ) ^ 40) = ((2 : ℝ) ^ 20) ^ 2 by ring, Real.sqrt_sq (by positivity)]
+  have hlog40 : Real.log ((2 : ℝ) ^ 40) = 40 * Real.log 2 := by
+    rw [Real.log_pow]; push_cast; ring
+  simp only at hanti
+  rw [hsqrt40, hlog40] at hanti
+  have hsz : 0 < Real.sqrt z := Real.sqrt_pos.mpr hzpos
+  rw [div_le_iff₀ hsz] at hanti
+  have hmss : Real.sqrt z * Real.sqrt z = z := Real.mul_self_sqrt hzpos.le
+  have hstep : Real.sqrt z * Real.log z
+      ≤ Real.sqrt z * ((40 * Real.log 2 / 2 ^ 20) * Real.sqrt z) :=
+    mul_le_mul_of_nonneg_left hanti hsz.le
+  have heq : Real.sqrt z * ((40 * Real.log 2 / 2 ^ 20) * Real.sqrt z)
+      = (40 * Real.log 2 / 2 ^ 20) * (Real.sqrt z * Real.sqrt z) := by ring
+  rw [hmss] at heq
+  linarith [hstep, heq]
+
+/-- **Prime in `(n, 8n/5]`** for `n ≥ 5·2³⁷` — a sub-`2` prime gap, *unconditional and axiom-clean*.
+This is the first prime-gap ratio below Bertrand's `2` reached in this development, and it is the lever
+that pushes the no-three-in-line general-`N` constant strictly above Bertrand's `3/4`
+(`maxNoThreeInLine_ge_fifteen_sixteenths`).
+
+**Proof (two-sided Chebyshev `θ`).** By contradiction: if no prime lies in `(n, M]` with `M = ⌊8n/5⌋`,
+then `θ(M) = θ(n)` (the prime-filtered sums over `(0,M]` and `(0,n]` coincide). But the **refined**
+lower bound gives `θ(M) ≥ A·M − 4√M·log M − 9 ≥ (8/5)A·n − O(√n log n)` with `A > 0.91`, so
+`(8/5)A > 1.456`, while mathlib's elementary upper bound gives `θ(n) ≤ (log4)·n < 1.3863·n`. The gap
+`((8/5)A − log4)·n ≈ 0.07·n` beats the `√·log` error (`sqrt_log_small`, with `M ≥ 2⁴⁰`) once
+`n ≥ 5·2³⁷`, contradicting `θ(M) = θ(n)`. The threshold is large but explicit — no asymptotic
+hand-waving — and only the leading *constant* (not the gap ratio) is sacrificed versus Nagura's `6/5`.
+
+The genuinely Chebyshev-strength input (`theta_refined_lower`, hence `psi_refined_lower`) is what
+mathlib lacked; the elementary `theta_lower` (`≈ 0.69·x`) provably cannot reach any ratio `< 2`. -/
+theorem exists_prime_in_eight_fifths {n : ℕ} (hn : 5 * 2 ^ 37 ≤ n) :
+    ∃ p, p.Prime ∧ n < p ∧ 5 * p ≤ 8 * n := by
+  by_contra hcon
+  push_neg at hcon
+  have hprime : ∀ p, p.Prime → n < p → 8 * n < 5 * p := by
+    intro p hp hnp; have := hcon p hp hnp; omega
+  set M := 8 * n / 5 with hMdef
+  have hnM : n ≤ M := by rw [hMdef]; omega
+  have h5M : 5 * M ≤ 8 * n := by rw [hMdef]; omega
+  have h8n : 8 * n < 5 * (M + 1) := by rw [hMdef]; omega
+  -- no prime in `(n, M]` ⟹ `θ(M) = θ(n)`
+  have hθeq : Chebyshev.theta ((M : ℕ) : ℝ) = Chebyshev.theta (n : ℝ) := by
+    rw [Chebyshev.theta, Chebyshev.theta, Nat.floor_natCast, Nat.floor_natCast]
+    apply Finset.sum_congr _ (fun _ _ => rfl)
+    ext p
+    simp only [Finset.mem_filter, Finset.mem_Ioc]
+    constructor
+    · rintro ⟨⟨hp0, hpM⟩, hpp⟩
+      refine ⟨⟨hp0, ?_⟩, hpp⟩
+      by_contra hpn
+      push_neg at hpn
+      have hgt := hprime p hpp hpn
+      have : 5 * p ≤ 8 * n := le_trans (by omega) h5M
+      omega
+    · rintro ⟨⟨hp0, hpn⟩, hpp⟩
+      exact ⟨⟨hp0, le_trans hpn hnM⟩, hpp⟩
+  have hM30 : 30 ≤ M := by omega
+  have hMnn : (0 : ℝ) ≤ (M : ℝ) := by positivity
+  have hnR : (5 * 2 ^ 37 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+  -- `M ≥ 2⁴⁰`, `8n/5 − 1 ≤ M ≤ 8n/5`
+  have hM2_40 : (2 : ℝ) ^ 40 ≤ (M : ℝ) := by
+    have hN : (2 : ℕ) ^ 40 ≤ M := by
+      rw [hMdef, Nat.le_div_iff_mul_le (by norm_num)]; omega
+    calc (2 : ℝ) ^ 40 = ((2 ^ 40 : ℕ) : ℝ) := by push_cast; ring
+      _ ≤ (M : ℝ) := by exact_mod_cast hN
+  have hMub : (M : ℝ) ≤ 8 * (n : ℝ) / 5 := by
+    rw [le_div_iff₀ (by norm_num)]
+    have : (5 * M : ℝ) ≤ 8 * n := by exact_mod_cast h5M
+    linarith
+  have hMlo : 8 * (n : ℝ) / 5 - 1 ≤ (M : ℝ) := by
+    rw [div_sub_one (by norm_num), div_le_iff₀ (by norm_num)]
+    have : (8 * n : ℝ) < 5 * (M + 1) := by exact_mod_cast h8n
+    linarith
+  -- the two `θ` bounds
+  have hθlow := theta_refined_lower hM30
+  have hθup := Chebyshev.theta_le_log4_mul_x (x := (n : ℝ)) (by positivity)
+  -- numeric `log`/`A` facts
+  have hlog2 := Real.log_two_lt_d9
+  have hlog2nn : (0 : ℝ) ≤ Real.log 2 := Real.log_nonneg (by norm_num)
+  have hA := chebyshev_const_gt
+  have hlog4 : Real.log 4 = 2 * Real.log 2 := by
+    rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]; push_cast; ring
+  -- dominate the `√·log` error
+  have hsl := sqrt_log_small (M : ℝ) hM2_40
+  have hcnn : (0 : ℝ) ≤ 40 * Real.log 2 / 2 ^ 20 := by positivity
+  have hprod : (40 * Real.log 2 / 2 ^ 20) * (M : ℝ)
+      ≤ (40 * Real.log 2 / 2 ^ 20) * (8 * (n : ℝ) / 5) :=
+    mul_le_mul_of_nonneg_left hMub hcnn
+  have hn0 : (0 : ℝ) ≤ (n : ℝ) := by positivity
+  have h3 : 4 * Real.sqrt (M : ℝ) * Real.log (M : ℝ) ≤ 0.0002 * (n : ℝ) := by
+    nlinarith [hsl, hprod, hlog2, hlog2nn, hn0]
+  -- `M·A ≥ 0.91·M` (drops the transcendental `A` from the linear program)
+  have hAM : 0.91 * (M : ℝ)
+      ≤ (M : ℝ) * ((7 / 15) * Real.log 2 + (3 / 10) * Real.log 3 + (1 / 6) * Real.log 5) := by
+    nlinarith [hA, hMnn]
+  have hnbig : (200 : ℝ) ≤ (n : ℝ) := le_trans (by norm_num) hnR
+  have hlog4num : Real.log 4 ≤ 1.3862944 := by rw [hlog4]; linarith [hlog2]
+  have hub : Real.log 4 * (n : ℝ) ≤ 1.3862944 * (n : ℝ) := mul_le_mul_of_nonneg_right hlog4num hn0
+  rw [hθeq] at hθlow
+  linarith [hθlow, hθup, h3, hAM, hMlo, hub, hnbig]
+
+/-- **HJSW general-`N` lower bound at constant `15/16`** (unconditional, axiom-clean). For `N ≥ 2⁴¹`,
+the sub-`2` prime gap `exists_prime_in_eight_fifths` at `n = ⌊5N/16⌋` yields a prime
+`p ∈ (⌊5N/16⌋, N/2]`, whose sheared construction gives `3(p−1) ≥ 3⌊5N/16⌋ ≈ 15N/16` points. This is
+the **first unconditional improvement on Bertrand's `3/4`** (`maxNoThreeInLine_ge_three_quarters`,
+`3·⌊N/4⌋ = 3·⌊4N/16⌋`) for the general-`N` no-three-in-line constant: `4/16 → 5/16`, i.e. `3/4 → 15/16`,
+driven purely by the refined Chebyshev bound `θ(x) ≳ 0.92x` that this file builds. The threshold `2⁴¹`
+is large but explicit (no `o(1)`); pushing the constant toward Nagura's `5/4` only needs the dual
+upper iterate `θ(x) ≲ (6/5)A·x`, lowering the gap ratio from `8/5` toward `6/5`. -/
+theorem maxNoThreeInLine_ge_fifteen_sixteenths {N : ℕ} (hN : 2 ^ 41 ≤ N) :
+    3 * (5 * N / 16) ≤ maxNoThreeInLine N := by
+  have hn : 5 * 2 ^ 37 ≤ 5 * N / 16 := by
+    rw [Nat.le_div_iff_mul_le (by norm_num)]; omega
+  obtain ⟨p, hp, hlo, hhi⟩ := exists_prime_in_eight_fifths (n := 5 * N / 16) hn
+  have h2p : 2 * p ≤ N := by omega
+  have := maxNoThreeInLine_ge_of_two_mul_prime_le hp h2p
+  omega
+
 /-- **Nagura's theorem (1952).** For every `n ≥ 25` there is a prime `p` in the interval `(n, 6n/5]`
 (i.e. `n < p` and `5p ≤ 6n`). This sharpens Bertrand's postulate (`p ≤ 2n`) to ratio `6/5`.
 
