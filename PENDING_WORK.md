@@ -65,10 +65,16 @@ blocked on sub-fact (ii)" to "level `o = 1` CLOSED + the per-step recursion mach
    non-diagonal reduction: `seqOrd ≥ ω^o` at step `j` ⟹ `f_o(j+2) ≤ goodsteinLength m + 2`, no
    diagonal budget) instantiated at `o=2`, `j=log₂ m − 2` ⟹ **`fastGrowing_two_log_le_goodsteinLength`**:
    `f_2(log₂ m) ≤ goodsteinLength m + 2`, i.e. `goodsteinLength m ≳ m·log₂ m`. First proof it beats
-   the polynomial regime. **EASY NEXT EXTENSION:** generalize `o=2` to any finite `k` (needs
-   `repr (ofNat k) = k` + `norm (ofNat k) = k`) ⟹ `f_k(log₂ m) ≤ goodsteinLength m + 2` for every
-   fixed `k` — "`goodsteinLength` outgrows `f_k ∘ log` for all `k`". The diagonal `f_k(m)` (true
-   domination) still needs the steps-between-drops recursion (the deep crux).
+   the polynomial regime. **STRONG NEXT EXTENSION (worked out, ~clean):** generalize `o=2` to level
+   `o = ↑n`. At step `i = L − n` (`L = log₂ m`), `leadExp_i ≥ n` (`leadExp_ge_sub`), so
+   `omega_opow_le_seqONote_repr` gives `seqOrd ≥ ω^n`; the non-diagonal reduction yields
+   **`fastGrowing (↑n) (L − n + 2) ≤ goodsteinLength m + 2`** for `2n ≤ L`. Note the *budget* is
+   `L − n + 2`, not `L` (can't have both budget `L` and `leadExp ≥ n` — they trade off). This is
+   already NON-ELEMENTARY: at `n = L/2` it gives `goodsteinLength m ≥ f_{L/2}(L/2 + 2)` with
+   `L = log₂ m` — a tower of height `~log m`. The only Lean friction is `norm (↑n) ≤ n` and
+   `repr (↑n) = n` for the ℕ→ONote coercion (use `ONote.repr_ofNat`; the `↑`/`ofNat`/`NatCast`
+   naming needs care — `(↑n).NF` is `inferInstance`). The diagonal `f_n(m)` (true domination, the
+   headline) still needs the steps-between-drops recursion (the deep crux).
 
 **THE SHARPENED CRUX (what remains for `o ≥ 2`, i.e. the headline):** the per-step facts give only
 a **`log m`-step** guarantee that `L_k ≥ 2` (rate-bound `drop ≤ 1`/step from `L_0 = log_2 m`; and
