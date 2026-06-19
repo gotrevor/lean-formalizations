@@ -45,7 +45,10 @@
   `∑'ediam^d`; independently false for `d>1` (arbitrary base points ⟹ unshared fine pieces,
   `∑ediam^d→0`). Removed the false axiom; replaced its only use (Engine Case-B branch) with a disclosed
   `sorry`; updated docstrings (the `_discrete` chain now carries `sorryAx`, NOT a proof). Headline
-  unaffected. `Kakeya2D/` is now axiom-declaration-free. Commit `9596dad`. **Lesson:** a cited axiom is
+  unaffected. `Kakeya2D/` is now axiom-declaration-free. Commits `9596dad`/`d75c1ba`/`02aa4e3`. Also
+  added an **anti-vacuity anchor** `davies_kakeya_2d_disc_anchor : dimH (closedBall 0 1) = 2`
+  (axiom-clean) — the headline applied to a concrete Kakeya set (the unit disc) gives the correct value,
+  certifying non-vacuity + correct `IsKakeya`/`dimH` (`2d3cc77`). **Lesson:** a cited axiom is
   honest debt; a self-authored "surely-true residual" axiom is unchecked conjecture — refute it (try to
   derive `False`) before trusting it. The prior ledger's own "honesty caveat" had smelled this.
 - **2026-06-19 (DEEP-REFLECTION lap, cont. — (W) the wiring COMPLETE, axiom-clean):** after the
