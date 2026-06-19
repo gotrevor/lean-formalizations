@@ -1,0 +1,28 @@
+Prove the following Lean 4 (mathlib) theorem. Replace the `sorry` with a complete proof.
+State it exactly as given (you may add helper lemmas above it). Use `import Mathlib`.
+
+This is the boundary term of an Abel-summation argument for the prime zeta function: with
+f(t) = t^(1-s) (s>1) and a(n) the partial sum of prime reciprocals up to n (which is ≤ 1 + log n
+by the harmonic bound and ≥ 0), the boundary contribution f(n)·a(n) tends to 0 because the
+polynomial decay n^(1-s) = n^(-(s-1)) (with s-1>0) beats the logarithmic growth of a(n).
+
+import Mathlib
+open Filter Topology
+
+theorem boundary_decay (s : ℝ) (hs : 1 < s) (a : ℕ → ℝ)
+    (ha0 : ∀ n, 0 ≤ a n) (haC : ∀ n, a n ≤ 1 + Real.log n) :
+    Tendsto (fun n : ℕ => (n : ℝ) ^ (1 - s) * a n) atTop (nhds 0) := by
+  sorry
+
+Math proof strategy:
+- Squeeze: 0 ≤ n^(1-s) * a n ≤ n^(1-s) * (1 + Real.log n)  (since n^(1-s) ≥ 0 and 0 ≤ a n ≤ 1+log n).
+- It suffices that the upper bound n^(1-s)*(1 + log n) → 0. Split into n^(1-s) → 0 and
+  n^(1-s) * log n → 0.
+- n^(1-s) = n^(-(s-1)) with s-1 > 0, so → 0 (Real.tendsto_rpow_neg_atTop or rpow of natCast → 0).
+- n^(-(s-1)) * log n → 0: the standard "polynomial beats log" decay. Relevant mathlib facts include
+  Real.tendsto_log_div_rpow_nhds_zero / Real.isLittleO_log_rpow_atTop or
+  Real.tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero, or work via the substitution and
+  Real.tendsto_exp_neg_atTop. Use whichever is cleanest. The key inequality log n ≤ (1/ε) n^ε also works.
+- Use Filter.Tendsto.squeeze / squeeze_zero or tendsto_of_tendsto_of_tendsto_of_le_of_le.
+
+Return the full proof, axiom-clean (only propext / Classical.choice / Quot.sound).

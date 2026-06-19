@@ -125,11 +125,34 @@ imported (`Mathlib.NumberTheory.Harmonic.EulerMascheroni`, `Real.eulerMascheroni
   - ✅ **brick (ii-a)** `neg_log_one_sub_prime_hasSum` : `−log(1−p^{−s}) = ∑'_n (p^{−s})^{n+1}/(n+1)` (via
     `Real.hasSum_pow_div_log_of_abs_lt_one`, since `0<p^{−s}<1`). `n=0` term `= p^{−s}` (prime-zeta), `n≥1`
     tail `= G`.
-  - **Next bricks** (in order): (ii-b) Fubini `neg_log_one_sub_prime_hasSum` over `Nat.Primes × ℕ` (mathlib
-    `HasSum.prod_fiberwise` / `tsum_prod` / `Summable.tsum_comm` with the summable double series) and
-    combine with `log_realZeta_eq` to get `log realZeta(s) = primeZeta s + G(s)`, `G(1)` finite. (iii) `s→1⁺`:
-    `tendsto_riemannZeta_sub_one_div` ⟹ `log ζ_ℝ(s)+log(s−1)→0`, so `primeZeta s+log(s−1)→−G(1)`.
-    (iv) the Abel/Tauberian transfer to `∑_{p≤x}1/p` vs `mertens_second_tendsto` — the genuinely hard step.
+  - ✅ **brick (ii-b)** `log_realZeta_split` : `log ζ(s) = primeZeta s + mertensCorr s`
+    (`mertensCorr s := ∑'_p (−log(1−p^{−s})−p^{−s})` = `G(s)`, the `n≥1` Mercator tail; `summable_mertensCorr_term`,
+    `mertensCorr_nonneg`). Clean `tsum_add` split, no Fubini needed.
+  - ✅ **Limit A** `tendsto_primeZeta_add_logSub` : `primeZeta s + log(s−1) → −mertensCorr 1` as `s→1⁺`.
+    Built from: `tendsto_realZeta_sub_one_div` (real specialisation of mathlib's
+    `ZetaAsymptotics.tendsto_riemannZeta_sub_one_div_nhds_right`), `tendsto_sub_one_mul_realZeta` ((s−1)ζ→1),
+    A1 `tendsto_logRealZeta_add_logSub` (log ζ(s)+log(s−1)→0), A2 `continuousOn_mertensCorr` (G continuous on
+    [1,∞) via `continuousOn_tsum` dominated by `p^{−2}`).
+  - ✅ **bridge** `tsum_primeCorrCoeff_eq` : `∑'_n primeCorrCoeff n = −mertensCorr 1` (via `Injective.tsum_eq`,
+    `rpow_neg_one`).
+  - ✅ **🎯 CRUX ISOLATED** `mertensThirdConst_eq_neg_gamma_of_tauberian` (+ `mertens_third_classical_of_tauberian`):
+    `mertensThirdConst = −γ` (hence the full `∏(1−1/p)·logN→e^{−γ}` headline) follows from **ONE** clean limit,
+    **Limit B**: `primeZeta s + log(s−1) → M − γ` as `s→1⁺` (`M = meisselMertensM`). Everything else machine-checked.
+    [Why one hypothesis suffices: Limit A and Limit B are two evaluations of the SAME limit; uniqueness forces
+    `−mertensCorr 1 = M − γ`, and `mertensThirdConst = −mertensCorr 1 − M = −γ`.]
+  - ✅ **brick B0** `primeZetaCoeff_tendsto` : `primeZeta s = lim_N ∑_{p≤N} p^{−s}` (`primeZetaCoeff`,
+    `summable_primeZetaCoeff`, `tsum_primeZetaCoeff_eq`) — the Finset-partial-sum form Abel summation consumes.
+  - **REMAINING = Limit B only** (`primeZeta s + log(s−1) → M − γ`). All mathlib footholds identified:
+    - **B1** (Abel rep): `tendsto_sum_mul_atTop_nhds_one_sub_integral₀` (`Mathlib/NumberTheory/AbelSummation.lean`)
+      with `c(k)=[k prime]/k`, `f(t)=t^{1−s}`. Boundary `l = lim f(n)·∑_{p≤n}1/p = 0` (delegated to Aristotle
+      job `f0c52c60` `boundary_decay`: `n^{1−s}·a(n)→0` for `0≤a(n)≤1+log n`). Yields
+      `primeZeta s = (s−1)∫_1^∞ (∑_{p≤t}1/p)·t^{−s} dt`. Needs: `t^{1−s}` differentiable on Ici 1, deriv
+      locally integrable, bigO domination, integrability — all checkable.
+    - **B2** (s→1⁺ limit of the integral): feed `∑_{p≤t}1/p = log log t + M + o(1)` (`mertens_second_tendsto`).
+      `M`-part → `M·2^{1−s}→M`; `log log t`-part, after `u=(s−1)log t`, → `∫_0^∞(log u−log(s−1))e^{−u}du =
+      −γ − log(s−1)`, where `−γ = Γ'(1)` from `Real.hasDerivAt_Gamma_one` (`Harmonic/GammaDeriv.lean`). Net:
+      `primeZeta s = −log(s−1) + (M−γ) + o(1)`. **The genuinely hard analytic brick** (dominated convergence +
+      substitution); multi-lap. Next-lap entry point.
 - Lower-hanging PNT-layer alternatives if the constant stalls: explicit Chebyshev `ψ/θ` two-sided bounds.
 
 ### (superseded) nagura wall — FINAL for elementary methods
