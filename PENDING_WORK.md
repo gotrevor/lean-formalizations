@@ -19,6 +19,32 @@ every direction ⊆ Sδ); explicit trig net `dir θ=(cos θ,sin θ)` with `norm_
 (Cauchy–Schwarz via Hölder p=q=2), `volume_thickening_mul_ge` (`(N·2δ)² ≤ vol(Sδ)·denom`), and the
 capstone **`volume_thickening_log_ge`: `1 ≤ vol(Sδ)·12π(1+log(1/δ))`** for `δ≤1/2`. All axiom-clean.
 
+### A0. ⭐ MILESTONE (2026-06-19, late lap): crux narrowed to ONE crisp axiom + machine-checked reduction.
+`davies_kakeya_2d` now `#print axioms`-reduces to `[propext, Classical.choice, Quot.sound,
+**kakeya_dominant_scale_count**]` — NO `sorryAx`. The monolithic `kakeya_hausdorffContentBound` sorry is
+GONE; it is now a full kernel-checked proof from the single axiom `kakeya_dominant_scale_count`
+(`Engine.lean`), via the new bricks (all axiom-clean this lap):
+- `Cover.cover_content_per_scale` — Córdoba piece-count ⟹ Hausdorff content contribution
+  `(∑ₖ 2δ vol A k)²·η^d ≤ (∑_{n∈s} ediam^d)·C₀` (division-free).
+- `Engine.exists_const_mul_pow_le` / `exists_pos_le_pow_div` — exponential beats any fixed poly
+  (root-free Bernoulli + √b induction): the uniform content constant `c ≤ b^j/(1+j)^m`.
+- `Engine.content_ratio_lower` — the assembled real-analysis constant:
+  `cR·(4·(1/4)^j)·(12π(1+j log2)) ≤ (1/((j+1)(j+2)))²·((1/2)^(j+1))^d` for all `j`.
+
+**THE remaining obligation = discharge `kakeya_dominant_scale_count`** (the dominant-scale extraction /
+net-thinning — see its docstring + `ON-LINE-REQUEST.md` UPDATE 2 for the verbatim statement). Three
+attack paths for next lap:
+  1. **Decompose-and-narrow:** prove the *geometric wiring* of the axiom in Lean from existing bricks
+     (`exists_pullback_cover` per net direction → dyadic scale fn `g` on cover pieces →
+     `exists_global_dominant_scale` to a global `j*`), isolating the genuinely-open *thinning* as a
+     SMALLER axiom (covered-length retention when passing to the `2⁻ʲ*`-net). This shrinks the axiom
+     even if the thinning stays open. **Likely the best next step.**
+  2. **Reference-driven:** harvest any `ON-LINE-FINDINGS-*` answering UPDATE 2, then transcribe the
+     dominant-scale lemma (Wolff/Mattila/Bourgain–Demeter) directly.
+  3. **LP route:** attempt to prove the multi-net LP lower bound (objective `∑ⱼ Sⱼ²2^{-jd}/(1+j)`
+     over full `2⁻ʲ`-nets) is bounded below — or find the extra cover structure it needs. (Naive
+     versions diverge; see UPDATE 2.) Lower priority — high risk it needs path-2 insight first.
+
 ### A. `Engine.lean : kakeya_hausdorffContentBound` — the deep crux (NEW framing 2026-06-19).
 **Strategy switched to the measure-free cover route (path 2).** The weak-* limit (path 1) and the
 mathlib-Frostman-construction (path 3) are both retired as primary — see "retired" note below.
