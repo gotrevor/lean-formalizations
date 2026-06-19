@@ -104,15 +104,16 @@ the general proof. Concrete next steps:
    already handles cross-residue triples for ANY base; `shear_hyperbola_lift_share_residue` does the
    sheared base. Two clean geometric pieces remain (both provable now, independent of the selection
    rule, good warm-up lemmas):
-   (i) **`lift_triple_noncollinear`** (the same-base-point case): 3 *distinct* grid points in
-       `[0,2p)²` pairwise congruent mod `p` in both coords are never collinear (they are 3 distinct
-       corners of a `p×p` rectangle ⇒ integer det `= ±p² ≠ 0`). Proof route: cast det to ℤ, write
-       each coord as `residue + p·(coord/p)` with `coord/p ∈ {0,1}` (use `coord_diff_of_residue_eq`),
-       factor out `p²`, then `decide` the `{−1,0,1}`-determinant is nonzero given the 3 corners are
-       distinct. With this + `share_residue`, the FULL geometry reduces to a single clean capstone
-       `NoThree S ⟸ (residues on base) ∧ (no slope-±1 cross-base triple)`.
-   (ii) the slope-`±1` triples (two lifts of one base point + a third) are killed by the selection
-       rule, reduced to arithmetic via `coord_diff_of_residue_eq`.
+   (i) **`lift_triple_noncollinear`** (the same-base-point case) — ✅ **DONE this lap, axiom-clean**
+       (`Hyperbola.lean`): 3 distinct grid points in `[0,2p)²` pairwise congruent mod `p` are never
+       collinear (3 distinct corners of a `p×p` rectangle ⇒ integer det `= ±p² ≠ 0`; via
+       `intCoord_diff_factor` + `decide` on the `{0,1}`-determinant). **So the GEOMETRY is COMPLETE**:
+       cross-base triples → impossible (`*_lift_share_residue`); same-base triples → impossible
+       (`lift_triple_noncollinear`). The only open obligation is now purely combinatorial.
+   (ii) Remaining: a **capstone** `NoThree S ⟸ (residues on base) ∧ (no slope-±1 cross-base triple)`
+       (assembly of the two proven cases — straightforward but has 3-fold pair symmetry), and the
+       **selection rule** that discharges the slope-`±1` condition (reduce it to arithmetic via
+       `coord_diff_of_residue_eq`). The selection rule is the sole research crux left.
 3. Validate any candidate rule via `native_decide (decNoThree …)` at p=5,7,11,13 before the proof.
 Fallback: if no clean rule emerges, the Aristotle job (`083292d5`, self-contained HJSW) may return
 a construction to port.
