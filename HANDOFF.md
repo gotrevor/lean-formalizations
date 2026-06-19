@@ -1,8 +1,9 @@
 # HANDOFF — Davies / planar Kakeya (branch `kakeya-davies`)
 
-**Thin pointer.** Durable overview = `STATUS.md`. **Newest dated baton = `HANDOFF-2026-06-19-1313.md`
-(NEWEST by mtime despite the lower clock stamp — box clock reads 13:13) — read that to resume;
-`HANDOFF-2026-06-19-2105.md` has the detailed Córdoba/route anatomy.** Open items = `PENDING_WORK.md` (top).
+**Thin pointer.** Durable overview = `STATUS.md`. **Newest baton = `HANDOFF-2026-06-19-1820-STOP.md`
+(COMPLETION-VERIFY → self-stop: the run is COMPLETE — all 10 headlines re-verified axiom-clean,
+frontier saturated, self-stop sentinel armed).** Open items (off-headline, abandoned per banner) =
+`PENDING_WORK.md`.
 
 ## State (one line)
 `lake build` 🟢 green (8299 jobs, HEAD `45fcf03`). **`src/` is now SORRY-FREE and axiom-declaration-free.**
