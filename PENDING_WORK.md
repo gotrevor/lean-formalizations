@@ -35,6 +35,16 @@ feared v4.29.0→v4.29.1 drift did not materialize. New modules under
    unconditional `3/2−o(N)` dominates its conditional `5/4`. Needs Nagura's sharp finite inequality
    (paper, in ON-LINE-REQUEST). Lowest value; leave disclosed.
 
+### Next-lap quick win (do FIRST — cheap, possibly eliminates the whole port)
+**Re-grep an UPDATED mathlib pin for a native PNT before anything else.** Verified this lap: our pin
+`v4.29.1` has only the ζ≠0-on-Re=1 input + the conditional π↔θ reduction/bounds in `Chebyshev.lean`
+(`π⌊x⌋₊ = θ(x)/log x + ∫…`, plus `=O/=o` difference bounds) — NOT the asymptotic `θ∼x`/`ψ∼x`, and NO
+`WienerIkehara`. That gap is exactly what our port fills; mathlib was "on-trajectory" to land it. So run
+`grep -rln "WienerIkehara\|chebyshev_asymptotic\|prime_number_theorem\|psi.*IsEquivalent" .lake/packages/mathlib/Mathlib`
+on a bumped pin. **If it landed**, swap `PrimeGap.weakPNT` to cite mathlib and DELETE the ~5000 ported
+lines (`Wiener`/`Consequences`/etc.) — flagship stays axiom-clean for free, repo gets much lighter, and
+the two `prelim_decay` sorries vanish with the deleted file. Cheapest possible resolution.
+
 ### Cleanup option (judgement call for a future lap)
 The `{prelim_decay_2, prelim_decay_3, decay_alt, AbsolutelyContinuous}` cluster is a fully self-contained
 DEAD-CODE island in `Wiener.lean`. Either prove (paths above) or excise it to make the port 100%
