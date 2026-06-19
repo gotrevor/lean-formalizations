@@ -55,11 +55,11 @@ theorem oadd_le_oadd_exp_mul {a a' : ONote} {m m' : ℕ+} {b b' : ONote}
 
 theorem zero_le' (x : ONote) : (0 : ONote) ≤ x := by rw [le_def]; simp
 
-/-- **The Bachmann inequality.** For a limit notation `o` (`NF`) with fundamental sequence `f`, if the
+/-- **The Bachmann inequality.** For a limit notation `o` with fundamental sequence `f` (no `NF` needed), if the
 successor term `f (n+1)` is itself a limit with fundamental sequence `g`, then `f n ≤ g (n+1)`.
 
 FULLY PROVEN; the zero-tail (`b = 0`) case is the four-limit-sub-case (B–E) bash discharged below. -/
-theorem fundSeq_bachmann (o : ONote) (hNF : NF o) {f g : ℕ → ONote} {n : ℕ}
+theorem fundSeq_bachmann (o : ONote) {f g : ℕ → ONote} {n : ℕ}
     (ho : fundamentalSequence o = Sum.inr f)
     (hg : fundamentalSequence (f (n + 1)) = Sum.inr g) : f n ≤ g (n + 1) := by
   rcases o with _ | ⟨e, m, b⟩
@@ -110,7 +110,7 @@ theorem fundSeq_bachmann (o : ONote) (hNF : NF o) {f g : ℕ → ONote} {n : ℕ
           exact oadd_le_oadd_exp_mul hle (by simp) (by simp)
         · -- fe(n+1) limit gb: Bachmann recursion fe n ≤ gb(n+1)
           rw [Sum.inr.injEq] at hg; subst hg
-          have hbm : fe n ≤ gb (n + 1) := fundSeq_bachmann e hNF.fst he hfe2
+          have hbm : fe n ≤ gb (n + 1) := fundSeq_bachmann e he hfe2
           rw [le_def] at hbm
           exact oadd_le_oadd_exp_mul hbm (le_refl _) (le_refl _)
       · -- E: e limit (fe), m = m'+1
@@ -129,7 +129,7 @@ theorem fundSeq_bachmann (o : ONote) (hNF : NF o) {f g : ℕ → ONote} {n : ℕ
             exact Order.le_of_lt_succ this
           exact oadd_le_oadd_tail (oadd_le_oadd_exp_mul hle (by simp) (by simp))
         · rw [Sum.inr.injEq] at hg; subst hg
-          have hbm : fe n ≤ gb (n + 1) := fundSeq_bachmann e hNF.fst he hfe2
+          have hbm : fe n ≤ gb (n + 1) := fundSeq_bachmann e he hfe2
           rw [le_def] at hbm
           exact oadd_le_oadd_tail (oadd_le_oadd_exp_mul hbm (le_refl _) (le_refl _))
     · have : fundamentalSequence (oadd e m b) = Sum.inl (some (oadd e m b')) := by
@@ -155,6 +155,6 @@ theorem fundSeq_bachmann (o : ONote) (hNF : NF o) {f g : ℕ → ONote} {n : ℕ
           rw [fundamentalSequence, hfb]
         rw [hgof, Sum.inr.injEq] at hg
         subst hg; simp only
-        exact oadd_le_oadd_tail (fundSeq_bachmann b hNF.snd hb hfb)
+        exact oadd_le_oadd_tail (fundSeq_bachmann b hb hfb)
 
 end LeanFormalizations.Logic.FastGrowing.Bachmann

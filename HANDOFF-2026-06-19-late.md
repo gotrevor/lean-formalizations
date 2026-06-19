@@ -38,6 +38,11 @@ for `X ≤ Y`. **This is NOT closeable from `X ≤ Y` alone** (plain fixed-arg i
 at each descent. That coupled-monotonicity lemma is the genuine research-grade core — multi-lap; do not
 expect a one-lap close. With `fundSeq_bachmann` now available, the next concrete step is to state and
 prove `fastGrowing_coupled_mono` by well-founded recursion on structural depth.
+**Update (same lap):** `fundSeq_bachmann` needs **no `NF` hypothesis** — simplified to drop it, so it is
+directly usable by the NF-free `Basic.lean` growth theory (former NF-threading obstacle gone). NB: the
+coupled-mono residual is NOT a clean `X ≤ Y → fastGrowing X (n+1) ≤ fastGrowing Y (n+1)` lemma (that is
+FALSE); do not introduce it as a sorry — keep the honest monolithic `fastGrowing_fundSeq_step` sorry
+until the true coupled invariant is formalized.
 
 ## 🎬 Next session
 1. Re-read `STATUS.md` banner (Trevor's) and this handoff. Headline is complete + axiom-clean.
