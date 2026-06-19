@@ -401,6 +401,17 @@ theorem fastGrowing_omega_pow_omega_le_goodsteinLength {m : ℕ}
   have hgl : i ≤ goodsteinLength m := le_trans (by omega) (le_goodsteinLength m)
   exact goodstein_dominates_of_index_le ho hgl (by omega) hnorm hidx
 
+/-- **Explicit-threshold form of the `o = ω^ω` domination.** For every `m ≥ 2^{2^{2^16}}`,
+`fastGrowing (ω^ω) m ≤ goodsteinLength m + 2`. The threshold is the concrete `N` witnessing the
+asymptotic statement "`goodsteinLength` eventually dominates `f_{ω^ω}`": `m ≥ 2^{2^{2^16}}` forces
+`(log₂)^[2] m ≥ 2^16` by two applications of `Nat.le_log_of_pow_le`. -/
+theorem goodsteinLength_dominates_fastGrowing_omega_pow_omega
+    {m : ℕ} (hm : 2 ^ (2 ^ (2 ^ 16)) ≤ m) :
+    fastGrowing (oadd (oadd 1 1 0) 1 0) m ≤ goodsteinLength m + 2 := by
+  apply fastGrowing_omega_pow_omega_le_goodsteinLength
+  have h1 : 2 ^ (2 ^ 16) ≤ Nat.log 2 m := Nat.le_log_of_pow_le Nat.one_lt_two hm
+  exact Nat.le_log_of_pow_le Nat.one_lt_two h1
+
 /-- Anti-vacuity: `ω = oadd 1 1 0` really has `repr = ω`, and `oadd ω 1 0` has `repr = ω^ω` — so the
 reduction targets the genuine limit level, not a finite stand-in. -/
 example : (oadd 1 1 0 : ONote).repr = ω := by simp [ONote.repr]
