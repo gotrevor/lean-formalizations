@@ -912,4 +912,117 @@ lemma tendsto_primeRecipSum_floor_exp :
       (nhds meisselMertensM) :=
   mertens_second_tendsto.comp (tendsto_nat_floor_atTop.comp Real.tendsto_exp_atTop)
 
+open MeasureTheory in
+/-- **Abelian final-value theorem** — the deep analytic crux of brick B2 (the Tauberian error step).
+
+If `f → 0` at `atTop`, `f·e^{−δx}` is integrable on `(0,∞)` for every `δ>0`, and `|f|` is locally
+integrable on every `(0,X]`, then
+`δ·∫_0^∞ f(x)·e^{−δx} dx → 0` as `δ → 0⁺`.
+
+Proof is the classical `ε`–`X` argument (no dominated convergence — mathlib is weak there): given
+`ε`, pick `X` with `|f| ≤ ε/2` past `X`, and let `K = ∫_(0,X]|f|`.  Split `∫_0^∞ = ∫_(0,X] + ∫_(X,∞)`.
+The **tail** is `≤ ∫_(X,∞)(ε/2)e^{−δx} = (ε/2)·e^{−δX}/δ ≤ (ε/2)/δ`, so `δ·|tail| ≤ ε/2`; the **head**
+is `≤ ∫_(0,X]|f| = K` (since `e^{−δx}≤1` on `[0,∞)`), so `δ·|head| ≤ δK < ε/2` once `δ < ε/(2(K+1))`.
+Hence `|δ·∫_0^∞| < ε`. -/
+theorem tendsto_sub_one_mul_integral_abelian {f : ℝ → ℝ}
+    (hf0 : Tendsto f atTop (𝓝 0))
+    (hint : ∀ δ : ℝ, 0 < δ → IntegrableOn (fun x => f x * Real.exp (-(δ * x))) (Set.Ioi 0))
+    (hloc : ∀ X : ℝ, IntegrableOn (fun x => |f x|) (Set.Ioc 0 X)) :
+    Tendsto (fun δ : ℝ => δ * ∫ x in Set.Ioi (0:ℝ), f x * Real.exp (-(δ * x)))
+      (𝓝[>] 0) (𝓝 0) := by
+  rw [Metric.tendsto_nhdsWithin_nhds]
+  intro ε hε
+  -- Choose `X` past which `|f| ≤ ε/2`.
+  obtain ⟨X₀, hX₀⟩ := Metric.tendsto_atTop.mp hf0 (ε / 2) (by positivity)
+  set X : ℝ := max X₀ 1 with hXdef
+  have hX0le : (0 : ℝ) ≤ X := le_trans zero_le_one (le_max_right _ _)
+  have hXtail : ∀ y, X ≤ y → |f y| ≤ ε / 2 := by
+    intro y hy
+    have h := hX₀ y (le_trans (le_max_left _ _) hy)
+    rw [dist_zero_right, Real.norm_eq_abs] at h
+    exact h.le
+  -- The head mass `K = ∫_(0,X] |f|`.
+  set K : ℝ := ∫ y in Set.Ioc (0:ℝ) X, |f y| with hKdef
+  have hKnonneg : 0 ≤ K := setIntegral_nonneg measurableSet_Ioc (fun y _ => abs_nonneg _)
+  refine ⟨ε / (2 * (K + 1)), by positivity, ?_⟩
+  intro δ hδmem hδdist
+  rw [Set.mem_Ioi] at hδmem
+  have hδ : 0 < δ := hδmem
+  rw [dist_zero_right, Real.norm_eq_abs] at hδdist
+  have hδlt : δ < ε / (2 * (K + 1)) := by rwa [abs_of_pos hδ] at hδdist
+  -- Integrability on the two pieces, from `hint`.
+  have hIoc : IntegrableOn (fun y => f y * Real.exp (-(δ * y))) (Set.Ioc 0 X) :=
+    (hint δ hδ).mono_set Set.Ioc_subset_Ioi_self
+  have hIoiX : IntegrableOn (fun y => f y * Real.exp (-(δ * y))) (Set.Ioi X) :=
+    (hint δ hδ).mono_set (Set.Ioi_subset_Ioi hX0le)
+  -- Split `∫_(0,∞) = ∫_(0,X] + ∫_(X,∞)`.
+  have hsplit : (∫ y in Set.Ioi (0:ℝ), f y * Real.exp (-(δ * y)))
+      = (∫ y in Set.Ioc (0:ℝ) X, f y * Real.exp (-(δ * y)))
+        + ∫ y in Set.Ioi X, f y * Real.exp (-(δ * y)) := by
+    rw [← Set.Ioc_union_Ioi_eq_Ioi hX0le,
+      setIntegral_union Set.Ioc_disjoint_Ioi_same measurableSet_Ioi hIoc hIoiX]
+  -- Head bound: `|∫_(0,X]| ≤ K`.
+  have hhead : |∫ y in Set.Ioc (0:ℝ) X, f y * Real.exp (-(δ * y))| ≤ K := by
+    have h1 : |∫ y in Set.Ioc (0:ℝ) X, f y * Real.exp (-(δ * y))|
+        ≤ ∫ y in Set.Ioc (0:ℝ) X, ‖f y * Real.exp (-(δ * y))‖ := by
+      rw [← Real.norm_eq_abs]; exact norm_integral_le_integral_norm _
+    refine h1.trans ?_
+    rw [hKdef]
+    refine setIntegral_mono_on hIoc.norm (hloc X) measurableSet_Ioc (fun y hy => ?_)
+    rw [Real.norm_eq_abs, abs_mul, abs_of_pos (Real.exp_pos _)]
+    have hle1 : Real.exp (-(δ * y)) ≤ 1 :=
+      Real.exp_le_one_iff.mpr (by nlinarith [hy.1, hδ])
+    calc |f y| * Real.exp (-(δ * y)) ≤ |f y| * 1 :=
+          mul_le_mul_of_nonneg_left hle1 (abs_nonneg _)
+      _ = |f y| := mul_one _
+  -- Tail bound: `|∫_(X,∞)| ≤ (ε/2)/δ`.
+  have hexpint : IntegrableOn (fun y => Real.exp (-(δ * y))) (Set.Ioi X) := by
+    have h := integrableOn_exp_mul_Ioi (a := -δ) (by linarith) X
+    simpa only [neg_mul] using h
+  have htail : |∫ y in Set.Ioi X, f y * Real.exp (-(δ * y))| ≤ (ε / 2) / δ := by
+    have h1 : |∫ y in Set.Ioi X, f y * Real.exp (-(δ * y))|
+        ≤ ∫ y in Set.Ioi X, ‖f y * Real.exp (-(δ * y))‖ := by
+      rw [← Real.norm_eq_abs]; exact norm_integral_le_integral_norm _
+    refine h1.trans ?_
+    have h2 : (∫ y in Set.Ioi X, ‖f y * Real.exp (-(δ * y))‖)
+        ≤ ∫ y in Set.Ioi X, (ε / 2) * Real.exp (-(δ * y)) := by
+      refine setIntegral_mono_on hIoiX.norm (hexpint.const_mul (ε / 2)) measurableSet_Ioi
+        (fun y hy => ?_)
+      rw [Real.norm_eq_abs, abs_mul, abs_of_pos (Real.exp_pos _)]
+      exact mul_le_mul_of_nonneg_right (hXtail y (le_of_lt hy)) (Real.exp_pos _).le
+    refine h2.trans ?_
+    rw [integral_const_mul]
+    -- `∫_(X,∞) e^{−δy} = e^{−δX}/δ ≤ 1/δ`.
+    have hval : (∫ y in Set.Ioi X, Real.exp (-(δ * y))) = Real.exp (-(δ * X)) / δ := by
+      have h := integral_exp_mul_Ioi (a := -δ) (by linarith) X
+      simp only [neg_mul] at h
+      rw [h, neg_div_neg_eq]
+    rw [hval]
+    have hexple : Real.exp (-(δ * X)) ≤ 1 :=
+      Real.exp_le_one_iff.mpr (by nlinarith [hX0le, hδ])
+    calc ε / 2 * (Real.exp (-(δ * X)) / δ)
+        ≤ ε / 2 * (1 / δ) := by
+          refine mul_le_mul_of_nonneg_left ?_ (by linarith)
+          rw [div_le_div_iff_of_pos_right hδ]; exact hexple
+      _ = ε / 2 / δ := mul_one_div _ _
+  -- Combine.
+  rw [dist_zero_right, Real.norm_eq_abs, hsplit]
+  have hcombine : |δ * ((∫ y in Set.Ioc (0:ℝ) X, f y * Real.exp (-(δ * y)))
+      + ∫ y in Set.Ioi X, f y * Real.exp (-(δ * y)))| ≤ δ * K + ε / 2 := by
+    calc |δ * ((∫ y in Set.Ioc (0:ℝ) X, f y * Real.exp (-(δ * y)))
+            + ∫ y in Set.Ioi X, f y * Real.exp (-(δ * y)))|
+        = δ * |(∫ y in Set.Ioc (0:ℝ) X, f y * Real.exp (-(δ * y)))
+            + ∫ y in Set.Ioi X, f y * Real.exp (-(δ * y))| := by
+          rw [abs_mul, abs_of_pos hδ]
+      _ ≤ δ * (|∫ y in Set.Ioc (0:ℝ) X, f y * Real.exp (-(δ * y))|
+            + |∫ y in Set.Ioi X, f y * Real.exp (-(δ * y))|) :=
+          mul_le_mul_of_nonneg_left (abs_add_le _ _) hδ.le
+      _ ≤ δ * (K + (ε / 2) / δ) := mul_le_mul_of_nonneg_left (add_le_add hhead htail) hδ.le
+      _ = δ * K + ε / 2 := by field_simp
+  refine lt_of_le_of_lt hcombine ?_
+  -- `δK + ε/2 < ε`, since `δK < ε/2`.
+  have hpos : 0 < 2 * (K + 1) := by positivity
+  have hclear : δ * (2 * (K + 1)) < ε := by rw [← lt_div_iff₀ hpos]; exact hδlt
+  nlinarith [hclear, hKnonneg, hδ]
+
 end LeanFormalizations.Mertens
