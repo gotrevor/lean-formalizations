@@ -298,7 +298,7 @@ theorem bump_gt (b : ℕ) (hb : 2 ≤ b) {n : ℕ} (hn : b ≤ n) : n + 1 ≤ bu
   set q := n / b ^ L with hq
   set BL := b ^ L with hBL
   set P := (b + 1) ^ bump b L with hPdef
-  have hmul : q * (BL + 1) ≤ q * P := mul_le_mul_left' hP q
+  have hmul : q * (BL + 1) ≤ q * P := by gcongr
   have hexp : q * (BL + 1) = q * BL + q := by ring
   rw [hbump]
   omega
@@ -340,6 +340,39 @@ theorem omega_le_seqONote_repr {n j : ℕ} (hj : j ≤ n) :
   rw [repr_seqONote]
   show (ω : Ordinal) ≤ toOrdinal (j + 2) (goodsteinSeq (n + 2) j)
   rw [← hbeq]; exact hmono_le (j + 2) _ hval
+
+/-- The Goodstein value drops by **at most one** per step (`bump b v ≥ v`, so
+`goodsteinSeq m (j+1) = bump _ v − 1 ≥ v − 1`). Telescoped: `goodsteinSeq m j ≤
+goodsteinSeq m (j + i) + i` — the value `i` steps later is at least `(value now) − i`. -/
+theorem goodsteinSeq_sub_le (m j : ℕ) : ∀ i, goodsteinSeq m j ≤ goodsteinSeq m (j + i) + i := by
+  intro i
+  induction i with
+  | zero => simp
+  | succ i ih =>
+    have hstep : goodsteinSeq m (j + i) ≤ goodsteinSeq m (j + i + 1) + 1 := by
+      have h := le_bump (base (j + i)) (Nat.le_add_left 2 (j + i)) (goodsteinSeq m (j + i))
+      show goodsteinSeq m (j + i) ≤ bump (base (j + i)) (goodsteinSeq m (j + i)) - 1 + 1
+      omega
+    have hassoc : j + (i + 1) = j + i + 1 := by ring
+    rw [hassoc]; omega
+
+/-- **Goodstein length is at least `2m − 1`** (improving the linear `≥ m`). The value stays `≥ m`
+through step `m − 1` (`goodsteinSeq_ge_init`), and thereafter decreases by at most one per step
+(`goodsteinSeq_sub_le`), so it stays positive through step `2m − 2`; its first zero is at `≥ 2m−1`.
+A super-linear-constant lower bound; it also re-derives `f_1`-domination elementarily
+(`2m ≤ (2m−1) + 2`). -/
+theorem two_mul_sub_one_le_goodsteinLength (n : ℕ) :
+    2 * n + 3 ≤ goodsteinLength (n + 2) := by
+  rw [goodsteinLength, Nat.le_find_iff]
+  intro k hk
+  by_cases hkle : k ≤ n + 1
+  · have h := goodsteinSeq_ge_init (n + 2) k (by omega)
+    omega
+  · have hinit : n + 2 ≤ goodsteinSeq (n + 2) (n + 1) :=
+      goodsteinSeq_ge_init (n + 2) (n + 1) (by omega)
+    have hsub := goodsteinSeq_sub_le (n + 2) (n + 1) (k - (n + 1))
+    rw [Nat.add_sub_cancel' (by omega : n + 1 ≤ k)] at hsub
+    omega
 
 /-! ### The CNF norm of a Goodstein notation is bounded by its step index
 
