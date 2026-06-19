@@ -513,6 +513,39 @@ theorem shearSel_share_residue {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R :
   shear_hyperbola_lift_share_residue hp hp2 (shearSel_mem_curve hp hp2 hP).2.2
     (shearSel_mem_curve hp hp2 hQ).2.2 (shearSel_mem_curve hp hp2 hR).2.2 hcol
 
+/-- On the sheared hyperbola the `y`-residue is a function of the `x`-residue: two points of
+`shearSel p` with equal first residue have equal second residue (kills the slope-`∞` case). -/
+theorem shearSel_yres_of_xres {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P R : ℕ × ℕ}
+    (hP : P ∈ shearSel p) (hR : R ∈ shearSel p)
+    (h : (R.1 : ZMod p) = (P.1 : ZMod p)) : (R.2 : ZMod p) = (P.2 : ZMod p) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  have cP := (shearSel_mem_curve hp hp2 hP).2.2
+  have cR := (shearSel_mem_curve hp hp2 hR).2.2
+  have hne : (2 * (P.1 : ZMod p) + 1) ≠ 0 := by
+    intro h0; rw [h0, zero_mul] at cP; exact one_ne_zero cP.symm
+  have cR' : (2 * (P.1 : ZMod p) + 1) * (R.2 : ZMod p) = 1 := by rw [← h]; exact cR
+  exact mul_left_cancel₀ hne (cR'.trans cP.symm)
+
+/-- Dually, the `x`-residue is a function of the `y`-residue (kills the slope-`0` case): on the
+curve `y ≠ 0`, so equal `y`-residues force equal `x`-residues. -/
+theorem shearSel_xres_of_yres {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P R : ℕ × ℕ}
+    (hP : P ∈ shearSel p) (hR : R ∈ shearSel p)
+    (h : (R.2 : ZMod p) = (P.2 : ZMod p)) : (R.1 : ZMod p) = (P.1 : ZMod p) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  have cP := (shearSel_mem_curve hp hp2 hP).2.2
+  have cR := (shearSel_mem_curve hp hp2 hR).2.2
+  have hyne : (P.2 : ZMod p) ≠ 0 := by
+    intro h0; rw [h0, mul_zero] at cP; exact one_ne_zero cP.symm
+  have key : (2 * (R.1 : ZMod p) + 1) * (P.2 : ZMod p)
+      = (2 * (P.1 : ZMod p) + 1) * (P.2 : ZMod p) := by rw [cP, ← h, cR]
+  have hu : (2 * (R.1 : ZMod p) + 1) = (2 * (P.1 : ZMod p) + 1) := mul_right_cancel₀ hyne key
+  have h2 : (2 : ZMod p) ≠ 0 := by
+    have : ((2 : ℕ) : ZMod p) ≠ 0 := by
+      rw [Ne, ZMod.natCast_eq_zero_iff]
+      exact fun hd => hp2 ((Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).mp hd)
+    simpa using this
+  exact mul_left_cancel₀ h2 (by linear_combination hu)
+
 /-- **The cross-column slope crux** (the irreducible counting core). Two distinct kept lifts `P,Q`
 of one column, and a kept point `R` of a *different* column (its residues differ from `P`'s), are
 never collinear. `P,Q` lie on a slope `0/∞/±1` line; `shearY_injective` kills `0`/`∞`; the
