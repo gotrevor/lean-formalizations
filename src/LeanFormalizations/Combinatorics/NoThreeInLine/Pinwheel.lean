@@ -229,6 +229,13 @@ theorem pinwheel_eq_snd_eq_xres {p k : ℕ} (hp : p.Prime) (hk : (k : ZMod p) �
   rw [pinCorner_xres, pinCorner_xres]
   exact mul_right_cancel₀ hsP (by rw [relP, hy, relQ])
 
+/-- **Slope-∞ safety** (the trivial column analogue of `pinwheel_eq_snd_eq_xres`): two points sharing
+an `x`-coordinate have the same `x`-residue. So a vertical line, like a horizontal one, never carries
+a cross-class pair. -/
+theorem pinwheel_eq_fst_eq_xres {p : ℕ} {P Q : ℕ × ℕ}
+    (hfst : P.1 = Q.1) : (P.1 : ZMod p) = (Q.1 : ZMod p) :=
+  congrArg (fun n : ℕ => (n : ZMod p)) hfst
+
 /-! ### Reduction of the headline to the crux
 
 The mechanical `card`/`grid` facts wire any no-three pinwheel straight into the bound. What remains
