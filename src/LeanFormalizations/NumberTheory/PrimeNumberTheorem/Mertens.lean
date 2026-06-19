@@ -449,4 +449,42 @@ theorem vonMangoldtSumDiv_isEquivalent_log :
     vonMangoldtSumDiv ~[atTop] (fun N : ℕ ↦ Real.log N) :=
   mertens_first.trans_isLittleO one_isLittleO_log
 
+/-!
+## Toward Mertens' second theorem `∑_{p ≤ x} 1/p = log log x + O(1)`
+
+The recipe (next lap): apply mathlib's continuous Abel summation `sum_mul_eq_sub_integral_mul` with
+coefficients `c(n) = [n prime]·(log n)/n` (so `c(n)·(1/log n) = [n prime]/n`, summing to `∑_{p≤x} 1/p`)
+and weight `f(t) = 1/log t`.  The partial sums `∑_{n≤t} c(n) = primeSumDiv ⌊t⌋ = log t + O(1)` (proved
+above), so the integral term splits into the `log log x` main term `∫ 1/(t log t)` plus a convergent
+`O(1)` remainder.  The `log log` primitive is the irreducible analytic input — proved here.
+-/
+
+/-- `d/dt log(log t) = 1/(t·log t)` for `t > 1`.  The antiderivative behind the `log log x` main term
+of Mertens' second theorem. -/
+lemma hasDerivAt_log_log {t : ℝ} (ht : 1 < t) :
+    HasDerivAt (fun s ↦ Real.log (Real.log s)) (Real.log t * t)⁻¹ t := by
+  have ht0 : t ≠ 0 := ne_of_gt (by linarith)
+  have hlog : Real.log t ≠ 0 := ne_of_gt (Real.log_pos ht)
+  have h : HasDerivAt (fun s ↦ Real.log (Real.log s)) ((Real.log t)⁻¹ * t⁻¹) t :=
+    (Real.hasDerivAt_log hlog).comp t (Real.hasDerivAt_log ht0)
+  rwa [← mul_inv] at h
+
+open MeasureTheory in
+/-- **`∫_a^b 1/(t·log t) dt = log(log b) − log(log a)`** for `1 < a ≤ b`.  The primitive underlying the
+`log log x` main term of Mertens' second theorem `∑_{p ≤ x} 1/p = log log x + O(1)`. -/
+lemma integral_inv_log_mul {a b : ℝ} (ha : 1 < a) (hab : a ≤ b) :
+    ∫ t in a..b, (Real.log t * t)⁻¹ = Real.log (Real.log b) - Real.log (Real.log a) := by
+  have hsub : Set.uIcc a b = Set.Icc a b := Set.uIcc_of_le hab
+  have hderiv : ∀ t ∈ Set.uIcc a b,
+      HasDerivAt (fun s ↦ Real.log (Real.log s)) (Real.log t * t)⁻¹ t := by
+    intro t ht
+    rw [hsub, Set.mem_Icc] at ht
+    exact hasDerivAt_log_log (by linarith [ht.1])
+  have hcont : ContinuousOn (fun t ↦ (Real.log t * t)⁻¹) (Set.uIcc a b) := by
+    rw [hsub]
+    apply ContinuousOn.inv₀
+    · exact (Real.continuousOn_log.mono (fun t ht => ne_of_gt (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))).mul continuousOn_id
+    · exact fun t ht => ne_of_gt (mul_pos (Real.log_pos (by simp only [Set.mem_Icc] at ht; linarith [ht.1])) (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))
+  exact intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv hcont.intervalIntegrable
+
 end LeanFormalizations.Mertens
