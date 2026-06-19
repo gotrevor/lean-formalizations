@@ -1,12 +1,16 @@
 # STATUS — lean-formalizations 📊
 **Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8285 jobs) · **Updated**: 2026-06-19 · **MATH AXIOMS: 0**
 
-> ♾️ **ACTIVE EXPEDITION (2026-06-19): Goodstein-independence growth theory.** Read
-> `DIRECTION.md`. Unbounded run building the mathlib-only "Goodstein grows like `f_{ε₀}`"
-> content of Kirby–Paris: growth theory of `ONote.fastGrowing`, the Hardy hierarchy, and
-> `goodsteinLength` → `fastGrowingε₀`. New WIP modules: `Logic/FastGrowing/Basic.lean`
-> (3 `sorry`'d targets) + `Logic/Goodstein/Length.lean` (done, anchored). The five threads
-> below are COMPLETE/axiom-clean and frozen — reuse `Logic/Goodstein/Engine`, don't touch them.
+> ♾️ **ACTIVE EXPEDITION — branch `kakeya-davies` (2026-06-19): planar Kakeya conjecture
+> (Davies 1971).** Read `DIRECTION.md`. Target `davies_kakeya_2d : KakeyaSetConjectureDim 2`
+> (`GeometricMeasureTheory/Kakeya2D/`). Upper bound `dimH_le_two` done; the job is the lower
+> bound `two_le_dimH`. **Progress: K1 (reduction to `μH[d] S≠0`) + the WHOLE K2 ladder
+> (`Tube.lean`: tube infra, thinness, single-tube area `≤6δ`, and the two-tube OVERLAP bound
+> `≤12δ²/(s+δ)` — the geometric heart) + K3 brick 1 (`Discretize.lean`: a δ-tube of every
+> direction lies in `Sδ`) — all PROVEN + axiom-clean.** One open `sorry`:
+> `Engine.hausdorffMeasure_pos_of_isKakeya`, fed by the remaining K3-net → K4 (Córdoba L²) → K5
+> (content→Frostman→Hausdorff) ladder. See `HANDOFF.md`/`PENDING_WORK.md`. The threads below are
+> COMPLETE/axiom-clean and frozen — do not touch them.
 
 ## Where it stands
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
