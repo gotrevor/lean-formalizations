@@ -422,6 +422,89 @@ decreasing_by all_goals exact hlt
 /-- Anti-vacuity for `hardy_oadd_tail`: `H_{ω·2 + 1}(2) = H_{ω·2}(H_1(2)) = H_{ω·2}(3)`. -/
 example : hardy (oadd 1 2 1) 2 = hardy (oadd 1 2 0) (hardy 1 2) := hardy_oadd_tail 1 2 1 2
 
+/-- **Coefficient step.** Bumping the coefficient of `ω^β` by one composes with `H_{ω^β}`:
+`H_{ω^β·(j+1)}(x) = H_{ω^β·j}(H_{ω^β}(x))` (for `β ≠ 0`). Case `β` succ/limit, compute the
+fundamental sequence of `oadd β (j+1) 0` (its `[x]` is `ω^β·j + (ω^β)[x]`, an `oadd β j _`), then
+peel the tail with `hardy_oadd_tail`. -/
+theorem hardy_oadd_coeff_step (β : ONote) (hβ : β ≠ 0) (k x : ℕ) :
+    hardy (oadd β (k + 1).succPNat 0) x
+      = hardy (oadd β k.succPNat 0) (hardy (oadd β 1 0) x) := by
+  rcases e : fundamentalSequence β with (_ | β') | f
+  · exfalso; apply hβ
+    have hp := fundamentalSequence_has_prop β; rw [e] at hp; simpa using hp
+  · have hfs : fundamentalSequence (oadd β (k + 1).succPNat 0)
+        = Sum.inr (fun i => oadd β k.succPNat (oadd β' i.succPNat 0)) := by
+      conv_lhs => rw [fundamentalSequence]
+      rw [e]; rfl
+    rw [hardy_limit _ hfs]
+    show hardy (oadd β k.succPNat (oadd β' x.succPNat 0)) x
+        = hardy (oadd β k.succPNat 0) (hardy (oadd β 1 0) x)
+    rw [hardy_oadd_tail β k.succPNat (oadd β' x.succPNat 0) x,
+        hardy_limit (oadd β 1 0) (fundamentalSequence_omega_pow_succ e)]
+  · have hfs : fundamentalSequence (oadd β (k + 1).succPNat 0)
+        = Sum.inr (fun i => oadd β k.succPNat (oadd (f i) 1 0)) := by
+      conv_lhs => rw [fundamentalSequence]
+      rw [e]; rfl
+    rw [hardy_limit _ hfs]
+    show hardy (oadd β k.succPNat (oadd (f x) 1 0)) x
+        = hardy (oadd β k.succPNat 0) (hardy (oadd β 1 0) x)
+    rw [hardy_oadd_tail β k.succPNat (oadd (f x) 1 0) x,
+        hardy_limit (oadd β 1 0) (fundamentalSequence_omega_pow_limit e)]
+
+/-- **The coefficient lemma `H_{ω^β·j} = (H_{ω^β})^[j]`** (`β ≠ 0`, `j = k+1`):
+`hardy (oadd β (k+1) 0) x = (hardy (oadd β 1 0))^[k+1] x`. By induction on `k` via the step. -/
+theorem hardy_oadd_coeff (β : ONote) (hβ : β ≠ 0) (k x : ℕ) :
+    hardy (oadd β k.succPNat 0) x = (hardy (oadd β 1 0))^[k + 1] x := by
+  induction k generalizing x with
+  | zero => rfl
+  | succ k ih =>
+    rw [hardy_oadd_coeff_step β hβ k x, ih (hardy (oadd β 1 0) x), ← Function.iterate_succ_apply]
+
+/-- Iterate-offset transfer: if `g y + 1 = F (y+1)` for all `y`, then `g^[m] y + 1 = F^[m] (y+1)`. -/
+theorem iterate_offset {g F : ℕ → ℕ} (h : ∀ y, g y + 1 = F (y + 1)) (m y : ℕ) :
+    g^[m] y + 1 = F^[m] (y + 1) := by
+  induction m generalizing y with
+  | zero => rfl
+  | succ m ih =>
+    rw [Function.iterate_succ_apply, Function.iterate_succ_apply, ih (g y), h y]
+
+private theorem ofNat_succ_ne_zero (k : ℕ) : (ofNat (k + 1) : ONote) ≠ 0 := by
+  rw [ofNat_succ]; intro h; exact ONote.noConfusion h
+
+private theorem hardy_omega_pow_ofNat_succ (k x : ℕ) :
+    hardy (oadd (ofNat (k + 1)) 1 0) x + 1 = fastGrowing (ofNat (k + 1)) (x + 1) := by
+  induction k generalizing x with
+  | zero =>
+    show hardy (oadd 1 1 0) x + 1 = fastGrowing 1 (x + 1)
+    rw [hardy_omega, fastGrowing_one]
+    show 2 * x + 1 + 1 = 2 * (x + 1)
+    omega
+  | succ k ih =>
+    rw [fastGrowing_succ _ (fundamentalSequence_ofNat_succ (k + 1)),
+        hardy_limit _ (fundamentalSequence_omega_pow_succ (fundamentalSequence_ofNat_succ (k + 1)))]
+    show hardy (oadd (ofNat (k + 1)) x.succPNat 0) x + 1
+        = (fastGrowing (ofNat (k + 1)))^[x + 1] (x + 1)
+    rw [hardy_oadd_coeff (ofNat (k + 1)) (ofNat_succ_ne_zero k) x x]
+    exact iterate_offset ih (x + 1) x
+
+/-- **B4 at finite levels: `H_{ω^k}(n) + 1 = f_k(n+1)`** for every `k : ℕ`. The classical Hardy↔
+fast-growing identity `H_{ω^α} = f_α`, made precise under mathlib's `ω[n]=n+1` fundamental-sequence
+convention — which shifts it by the `+1`/argument-bump seen here. (NB: the clean identity is special to
+*finite/successor* exponents; at limit `α` the convention makes `H_{ω^α}` and `f_α` pick different
+levels — e.g. `H_{ω^ω}(1)+1 = 8 ≠ f_ω(2) = 2048`.) Proof: induction on `k` from the `ω` base
+(`hardy_omega`), the coefficient lemma turning `(ω^{k+1})[x] = ω^k·(x+1)` into `(H_{ω^k})^[x+1]`, and
+`iterate_offset` carrying the `+1` through the iteration against `f_{k+1} = (f_k)^[·]`. -/
+theorem hardy_omega_pow_ofNat (k x : ℕ) :
+    hardy (oadd (ofNat k) 1 0) x + 1 = fastGrowing (ofNat k) (x + 1) := by
+  cases k with
+  | zero =>
+    show hardy (oadd 0 1 0) x + 1 = fastGrowing 0 (x + 1)
+    rw [show (oadd 0 1 0 : ONote) = 1 from rfl, hardy_one, fastGrowing_zero]
+  | succ k => exact hardy_omega_pow_ofNat_succ k x
+
+-- anti-vacuity: B4 at `ω^2` — `H_{ω^2}(2) + 1 = 23 + 1 = 24 = f_2(3)`
+example : hardy (oadd (ofNat 2) 1 0) 2 + 1 = fastGrowing (ofNat 2) 3 := by native_decide
+
 /-- **Hardy is dominated by fast-growing at the same index.** For `n ≥ 2`,
 `hardy o n ≤ fastGrowing o n` (no `NF` needed). By well-founded recursion on the notation, mirroring
 `le_fastGrowing`: the limit case is the IH verbatim; the successor case chains
