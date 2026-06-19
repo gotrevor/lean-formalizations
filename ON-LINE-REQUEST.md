@@ -229,3 +229,39 @@ in `Kakeya2D/Engine.lean`: given `N = 2ᴶ` directions (base pts `a k`, measurab
 `A k ⊆ [0,1]`, base angle `c`), a set `s` of cover pieces all with `ediam ≤ 2⁻ᴶ`, the containment
 `(u ↦ a k + u·dir(c+k·2⁻ᴶ)) '' A k ⊆ ⋃_{n∈s} U_n`, and the numerator
 `1/((J+1)(J+2)) ≤ ∑_{k<2ᴶ} 2·2⁻ᴶ·vol(A k)`, conclude `D⁻¹·cR ≤ ∑'_n ediam(U_n)^d` (`D = vol(unit disc)`).
+
+---
+
+## 2026-06-19 (UPDATE 5 — crux pinned to MEASURABLE SELECTION; this is the sharp ask now)
+
+I re-derived Case B independently from three angles (see `Kakeya2D/CASE_B_ANALYSIS.md`) and the
+obstruction is now crisp: **the whole proof closes the instant one may integrate over the continuum of
+directions** — `∫₀¹ ∑ⱼ ℓⱼ(θ) dθ ≥ 1` (each segment fully covered), pigeonhole to a dominant scale
+`j*`, then a single-scale Córdoba count at resolution `2⁻ʲ*`. The continuum is "the scale-matched net
+at every resolution simultaneously", so it dissolves the net-scale circularity that forces the discrete
+cap / Case B. The discrete `2ᴶ`-net machinery was built only to *avoid* this integral, and Case B is the
+residue of that avoidance. The single thing blocking the integral is **measurability of
+`θ ↦ ℓⱼ(θ) = vol{t∈[0,1] : a(θ)+t·v(θ) ∈ Fⱼ}`**, i.e. a **measurable base-point selection**
+`θ ↦ a(θ)` for the (Fσ, after taking closures) Kakeya set. `IsKakeya` only gives a `Classical.choice`
+selection; mathlib v4.29.1 has **no** measurable-selection theorem (`SetTheory/Descriptive` is just
+`Tree.lean`).
+
+**What I need (any one):**
+1. **The cleanest formalization-level statement + proof of measurable base-point selection** for a
+   closed/Fσ planar Kakeya set: `∃ measurable a : S¹→ℝ², ∀θ, segment(a θ, θ) ⊆ E`. Which selection
+   theorem is lightest to formalize here — Kuratowski–Ryll-Nardzewski for the closed-valued
+   multifunction `B(θ)={a : segment⊆E}`, Jankov–von Neumann for the analytic uniformization, or a
+   bespoke explicit selection exploiting the segment geometry (e.g. argmin-‖a‖ over the closed set
+   `B(θ)`)? Any of these would let me state ONE honest, true, citable axiom and PROVE the rest.
+2. **The standard reduction of arbitrary (possibly non-measurable) Kakeya sets to Borel/compact ones**
+   for the *Hausdorff-dimension lower bound*, as used in Wolff/Mattila/Córdoba — does the rigorous
+   proof actually pass through a measurable selection, or does it reduce `S` to a Borel hull / compact
+   Besicovitch set first (and if so, why does the lower bound transfer)? Exact statement.
+3. **The single-scale continuum Córdoba `L²` count** (Kakeya maximal-function bound) at transcription
+   detail: `(∫₀¹ ℓ(θ) dθ)² ≲ vol(thickening)·log(1/δ)` for length-`ℓ(θ)` covered sub-segments —
+   the integral analog of my proven discrete `cordoba_cover_count`. This is the one genuinely new
+   analytic brick the continuum route needs (everything else — pigeonhole, the measurability keystone
+   `measurable_covered_length`, `one_le_tsum_volume_fiber_union` — is already proven in-repo).
+4. **Davies' 1971 projection/duality proof** — re-asked once more: does it sidestep BOTH measurable
+   selection AND the continuum Córdoba (e.g. via the line↔point duality on `y=ax+b`)? If it avoids
+   measurable selection it may be the formalization path of least resistance.
