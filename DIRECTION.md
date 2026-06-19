@@ -1,127 +1,107 @@
-# DIRECTION — read FIRST (operator directive, 2026-06-17, Trevor via Ren)
+# DIRECTION — read FIRST (operator directive, 2026-06-18, Trevor via Ren)
 
-## ⛔ BOUNDED RUN. Prove the power-tower SHARP IFF (the `0 < x < e^(-e)` divergence), then STOP.
+## ⛔ BOUNDED RUN. Prove **Goodstein's theorem** (termination), then STOP.
 
-The repo is in great shape and you are NOT starting anything new. As of 2026-06-16:
-- `src/` is **100% axiom-free** (0 custom axioms, 0 `sorry`/`admit`; `lake build` green, 8274 jobs).
-- **Three threads are COMPLETE + axiom-clean — DO NOT TOUCH THEM:**
-  - **Curtis 1990** (no-Frobenius-formula) — done.
-  - **π/e-transcendence + squaring-the-circle** — the `hermite_lindemann` axiom was *discharged
-    and deleted*; π is proved from first principles (full Lindemann assembly, two Aristotle
-    facts kernel-verified). **Do not reopen. Do not re-add the axiom. Do not touch
-    `NumberTheory/Transcendence/` or `Geometry/Constructible/`.**
-  - **Constructible numbers / Wantzel** — full iff + 5 classical impossibilities. Done.
+New directed target. The prior power-tower thread is COMPLETE — do not touch it.
+You are formalizing exactly ONE new result and then ending the run.
 
-⚠️ The PRIOR restart (2026-06-15/16) drifted: it built the constructible + π threads instead of
-this. That work turned out well, but it was **not** the directed goal. THIS is the goal, and it
-is the one real mathematical frontier left in the repo.
+### ⚠️ This is a hard, multi-lap proof. STAYING is the whole point.
+Goodstein needs an ordinal-descent argument and a faithful hereditary-base
+definition. **Expect many grind laps. That is fine — chip at it lap by lap.** Do
+NOT declare it "out of scope," do NOT decide a narrow axiom is the "realistic
+destination," and ABOVE ALL do NOT wander to a different result. The repo is
+otherwise finished; the ONLY work this run is Goodstein.
 
-This run's job: finish Euler's power-tower theorem to the **sharp iff** by proving the
-**lower-bound divergence** — for `0 < x < e^(-e)` the tower does NOT converge. This is the
-genuinely hard half (it asserts a nontrivial attracting 2-cycle *exists* — the converse of the
-already-proven `two_cycle_collapse`, which showed none exists for `x ≥ e^(-e)`). **Expect
-several grind laps. That is fine — chip at it lap by lap; do NOT declare it "out of scope" or
-wander to a different target.** When the two targets below are proved + axiom-clean, self-stop.
+### DO NOT TOUCH — four complete, axiom-clean threads
+`NumberTheory/Transcendence/`, `Geometry/Constructible/`,
+`NumericalSemigroups/Curtis/`, `RealAnalysis/PowerTower/` are all DONE and
+axiom-clean. Do not modify them, do not reopen them, do not re-add any axiom. Work
+ONLY in `src/LeanFormalizations/Logic/Goodstein/`.
 
----
-
-## Targets (engine work in `EngineLower.lean`; `Statement.lean` stays the faithful audit surface)
-
-### MANDATORY — the lower divergence + the sharp iff
-```lean
-/-- Below the lower Euler bound the tower does not converge (a genuine 2-cycle). -/
-theorem tower_diverges_lower {x : ℝ} (hx0 : 0 < x) (hlt : x < eNegE) :
-    ¬ ∃ L : ℝ, Tendsto (tower x) atTop (𝓝 L)
-
-/-- Euler's theorem, SHARP: the infinite power tower converges iff x ∈ [e^(-e), e^(1/e)]. -/
-theorem tower_converges_iff_full {x : ℝ} (hx : 0 < x) :
-    (∃ L : ℝ, Tendsto (tower x) atTop (𝓝 L)) ↔ x ∈ Set.Icc eNegE eInvE
-```
-Expose `tower_converges_iff_full` in `Statement.lean` as the new headline, with a faithful
-docstring. It stitches three already-proven facts + the one new one:
-- `x ∈ [e^(-e), e^(1/e)]` ⟹ converges: `tower_converges_of_mem` (HAVE).
-- `x > e^(1/e)` ⟹ diverges: `tower_diverges` (HAVE).
-- `0 < x < e^(-e)` ⟹ diverges: `tower_diverges_lower` (the NEW piece).
+### ⚠️ DO NOT start any other new target
+`HANDOFF`/`PENDING_WORK` may mention other ideas (general Hermite–Lindemann,
+Constructible Layer-2 geometry, gathering the Erdős repos). They are ALL out of
+scope for this run. When Goodstein is proved, the run is OVER — see Completion.
 
 ---
 
-## Proof plan for `tower_diverges_lower` (reuse the existing lower-half machinery)
+## The target
 
-Everything you need is in `EngineLower.lean`; you are running its argument **in reverse**. Let
-`f t = x^t` (antitone, `f_antitone`), `g = f∘f` (increasing, `g_mono`), `y` the unique fixed
-point of `f` in `(0,1)`, and `a n = tower x n` with `a (n+2) = g (a n)` (`tower_add_two`).
+Goodstein, *"On the restricted ordinal theorem,"* JSL 1944: every Goodstein
+sequence reaches 0. The scaffold is in place (`Logic/Goodstein/`):
 
-### A. The fixed point `y` is REPELLING for `x < e^(-e)`
-The convergence side proved `g'(t) ≤ |log x|/e ≤ 1` for `x ≥ e^(-e)` (`deriv_bound`,
-`hasDeriv_g`). For `x < e^(-e)` you have `|log x| > e`, and *at the fixed point* `y` the slope is
-`g'(y) = (log x · y)² ... ` — compute it from `hasDeriv_g`/`hyfix` and show **`g'(y) > 1`**.
-(`g'(y) = (f'(y))²` and `f'(y) = y·log x = log y`; so `g'(y) = (log y)²`, and `x < e^(-e)`
-forces `log y < -1`, i.e. `(log y)² > 1`.) This is the analytic seed: `y` repels.
+- `Defs.lean` — `goodsteinSeq m k = G k` is currently a **STUB** returning the
+  seed. **Replace it with the faithful definition** (hereditary base `k+2`, bump
+  `k+2 ↦ k+3`, subtract one; `0` absorbing). One general definition — NO
+  special-casing small inputs.
+- `Anchors.lean` — ground-truth trajectories for m = 0,1,2,3 (`sorry` now).
+  **Discharge each by `decide`/`native_decide`** once the definition is real.
+  These are the anti-vacuity lock; a fake definition cannot satisfy e.g.
+  `goodsteinSeq 3 3 = 2`.
+- `Statement.lean` — the headline (`sorry` now):
+  ```lean
+  theorem goodstein_terminates (m : ℕ) : ∃ N, goodsteinSeq m N = 0
+  ```
+  This is the faithful audit surface; keep the statement exactly this shape.
 
-### B. A strict 2-cycle `β < y < γ` exists (IVT on `g - id`)
-`φ t = g t - t` is continuous on `(0,1)`. `φ y = 0`, and `φ'(y) = g'(y) - 1 > 0` (Part A), so
-`φ < 0` just left of `y` and `φ > 0` just right of `y`. With the boundary behavior of `g` on
-`(0,1)` (`g` maps into `(0,1)`; near the ends `φ` has the opposite sign), IVT
-(`intermediate_value_Ioo`) gives fixed points `β ∈ (0,y)` and `γ ∈ (y,1)` of `g`, with
-`β < y < γ`. These are the 2-cycle endpoints (`f β = γ`, `f γ = β` by the same limit identities
-used in `tower_converges_lower`).
+### Proof plan (ordinal descent)
+1. Faithful `goodsteinSeq` via `Nat.digits` (well-founded recursion on the value;
+   exponents are strictly smaller). Discharge the anchors to confirm it.
+2. Build the hereditary-base → ordinal interpretation: read `G k` in base `k+2`,
+   replace the base by `ω`. Use `Ordinal.CNF` / `Ordinal.coeff` / `Ordinal.eval`
+   (`Mathlib.SetTheory.Ordinal.CantorNormalForm`).
+3. **Bump-invariance:** the map of `G k` at base `k+2` equals the map of
+   `bump(G k)` at base `k+3` (the base reads as `ω` either way).
+4. **Strict decrease:** subtracting one strictly lowers the ordinal, so the
+   ordinal of `G (k+1)` `<` ordinal of `G k` whenever `G k ≠ 0`.
+5. `Ordinal.wellFoundedLT` ⇒ no infinite strictly-decreasing sequence ⇒ the map
+   must hit `0` ⇒ `G k = 0`. Conclude `goodstein_terminates`.
 
-### C. The tower from `a₀ = 1` lands on the 2-cycle, not on `y` ⟹ no limit
-The even/odd subsequences `E n = a(2n)`, `O n = a(2n+1)` are monotone + bounded (as already
-constructed for `tower_converges_lower`) and converge to limits `γ' , β'` with `f β' = γ'`,
-`f γ' = β'`, `β' ≤ y ≤ γ'`. Show these limits are **strict** (`β' < γ'`) for `x < e^(-e)` —
-i.e. NEGATE `two_cycle_collapse`. The clean route: `E 0 = 1 > y` and `E` is antitone bounded
-below by `γ` (the Part-B fixed point), so `γ' ≥ γ > y`; symmetrically `β' ≤ β < y`. Hence
-`β' < γ'`. Then if the full tower converged to some `L`, both subsequences → `L`, forcing
-`β' = γ' = L` — contradiction. (Use `tendsto_of_even_odd` contrapositive.)
+Put the definition's recursion + the ordinal machinery in engine siblings
+(e.g. `Engine.lean`); keep `Statement.lean` thin and faithful.
 
-### D. Conclude
-`tower_diverges_lower` from C; then `tower_converges_iff_full` by stitching (above). Keep the
-new lemmas in `EngineLower.lean`; the headline + faithful docstring go in `Statement.lean`.
-
-If the strict-bracket bookkeeping in C is fiddly, the *instability* framing (Lóczi
-arXiv:1908.05559 §3) is the rigorous reference — see Rules.
+### Scope: POSITIVE theorem only
+Prove termination (object-level math; Lean's logic is far stronger than PA, so this
+is just the ordinal argument). The **Kirby–Paris independence** ("PA cannot prove
+this") is metamathematics about PA and is OUT OF SCOPE — README documents it, do
+not attempt it.
 
 ---
 
 ## Rules (same as every run here)
-- **No `sorry`/`admit` at the end.** A stuck step is a lemma-name/bookkeeping issue — grind it,
-  don't bail and don't switch targets. This is a multi-lap proof; partial green progress
-  committed each lap is exactly right.
-- **Stay in your lane.** Touch ONLY `RealAnalysis/PowerTower/`. Do NOT modify
-  `NumberTheory/Transcendence/`, `Geometry/Constructible/`, or `NumericalSemigroups/Curtis/` —
-  all complete + axiom-clean. Do NOT re-add any axiom anywhere. Keep the repo at 0 math axioms.
-- Verify every lemma name against this repo's mathlib (`v4.29.1`). `push_neg` is deprecated →
-  `push Not at h`. Reuse the existing engine helpers (`hasDeriv_g`, `deriv_bound`,
-  `two_cycle_collapse`, `tendsto_of_even_odd`, `f_antitone`, `g_mono`, `tower_add_two`,
-  `endpoint_fixed_point_lower`, `eNegE`, `eInvE`) wherever they apply.
+- **No `sorry`/`admit` at the end.** A stuck step is a lemma-name/bookkeeping issue
+  — grind it, don't bail, don't switch targets. Partial green progress committed
+  each lap is exactly right.
+- **Stay in your lane:** ONLY `Logic/Goodstein/`. Keep the repo at 0 math axioms.
+- Verify every lemma name against this repo's mathlib (`v4.29.1`). `push_neg` is
+  deprecated → `push Not at h`.
+- `native_decide` is fine for the `Anchors.lean` `example`s (standalone, off the
+  headline path) but must NOT appear on `goodstein_terminates`'s axiom path.
 - Commit every green build (from a real `lake build`). **DO NOT push.**
 - Reference corpus: `~/personal/claude/knowledge/core/projects/lean-journey/reference/`.
-- Blocked needing the open web (e.g. the exact mathlib name for a fixed-point/IVT lemma, or
-  Lóczi arXiv:1908.05559 §3 for the rigorous instability/2-cycle-existence argument)? Append a
-  dated item to `ON-LINE-REQUEST.md` and continue on a different sub-lemma.
+- Blocked needing the open web (exact mathlib name for an ordinal/CNF/well-founded
+  lemma, or a reference proof of the bump-invariance)? Append a dated item to
+  `ON-LINE-REQUEST.md` and continue on a different sub-lemma.
 
 ---
 
 ## Completion = stop condition (`--allow-stop` is armed)
 
-⚠️ **READ THIS — the repo is ALREADY sorry-free and axiom-free. That is NOT your stop
-condition.** The `--allow-stop` sorry-gate is open from lap 1, but a lap that self-stops with
-`tower_converges_iff_full` still unproven has **FAILED this directive**. Do NOT write the stop
-sentinel, and do NOT declare completion, until the two MANDATORY theorems below are real proved
-theorems in the source. "Everything builds green" is the starting state, not the goal.
+`src/` was sorry-free before this run; the Goodstein scaffold added `sorry`s
+(the headline + the anchors), so the sorry-gate is genuinely CLOSED and stays
+closed until the work is truly done. Self-stop ONLY when ALL of these hold:
 
-On ANY lap, once ALL hold, certify completion and self-stop (don't churn):
-- `tower_diverges_lower` (MANDATORY) is PROVED;
-- `tower_converges_iff_full` (MANDATORY headline) is PROVED and exposed in `Statement.lean`;
+- `goodsteinSeq` (`Defs.lean`) is the **faithful definition** (not the stub);
+- ALL `Anchors.lean` `example`s are **discharged** (`decide`/`native_decide`), no `sorry`;
+- `goodstein_terminates` (`Statement.lean`) is **PROVED** (no `sorry`);
 - `src/` is sorry-free, `lake build` green;
-- `#print axioms tower_converges_iff_full` = `[propext, Classical.choice, Quot.sound]`
-  (no `sorryAx`, no custom axioms, no `native_decide` in the headline path).
+- `#print axioms goodstein_terminates` = `[propext, Classical.choice, Quot.sound]`
+  (no `sorryAx`, no custom axiom, no `native_decide` on the headline path).
 
-Then refresh `STATUS.md` + `HANDOFF.md` + the PowerTower `README.md` + the top `README.md`
-table row (power tower → sharp iff complete), commit, and:
+Then refresh `STATUS.md`, `HANDOFF.md`, the Goodstein `README.md`, and the top
+`README.md` table (add the Goodstein row), commit, and:
 ```
-printf 'source=lap\nreason=power-tower sharp iff complete (converges iff x ∈ [e^-e, e^1/e], axiom-clean)\n' > "$LEAN_STOP_SENTINEL"
+printf 'source=lap\nreason=Goodstein theorem complete (every Goodstein sequence terminates, axiom-clean)\n' > "$LEAN_STOP_SENTINEL"
 ```
-then end the turn. If a `sorry` lingers or either MANDATORY theorem is unproved, do NOT stop —
-finish it.
+then end the turn. If ANY `sorry` lingers or the definition is still the stub, do
+NOT stop — finish it. And do NOT start a different result to "keep busy."

@@ -15,3 +15,5 @@ import LeanFormalizations.NumberTheory.Transcendence.MonicRootSums
 import LeanFormalizations.NumberTheory.Transcendence.SubsetSumEsymm
 import LeanFormalizations.NumberTheory.Transcendence.PiTranscendental
 import LeanFormalizations.Geometry.Constructible.Statement
+import LeanFormalizations.Logic.Goodstein.Statement
+import LeanFormalizations.Logic.Goodstein.Anchors

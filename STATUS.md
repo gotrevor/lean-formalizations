@@ -1,10 +1,18 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8274 jobs) · **Updated**: 2026-06-18 · **MATH AXIOMS: 0**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8277 jobs) · **Updated**: 2026-06-18 · **MATH AXIOMS: 0** · **Goodstein: 🟡 IN PROGRESS** (scaffold, `sorry`'d — see `DIRECTION.md`)
 
 ## Where it stands
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-18 (Goodstein run STARTED — directed target):** new bounded run to
+  formalize **Goodstein's theorem** (`∀ m, ∃ N, goodsteinSeq m N = 0`). Scaffold in
+  `Logic/Goodstein/`: faithful-def `Defs.lean` (currently a STUB), `Anchors.lean`
+  (hand-computed m=0..3 trajectories, `sorry`'d anti-vacuity lock), `Statement.lean`
+  headline (`sorry`). The four prior threads stay complete + axiom-clean; the
+  `sorry`s here are the ONLY ones in `src/`, so `--allow-stop` is closed until the
+  def is faithful, the anchors are discharged, and the headline is proved. Plan
+  (ordinal descent via `Ordinal.CNF`/`wellFoundedLT`) in `DIRECTION.md`.
 - **2026-06-18 (power-tower SHARP iff — COMPLETE, axiom-clean):** proved the
   divergence direction below the lower endpoint, finishing Euler's theorem to the
   sharp `iff`. New in `EngineLower.lean`: `fixedpoint_exists` (IVT fixed point `y`
