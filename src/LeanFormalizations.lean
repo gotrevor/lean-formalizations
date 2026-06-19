@@ -23,3 +23,4 @@ import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Statement
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Tube
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Discretize
+import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Directions
