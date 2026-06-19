@@ -142,17 +142,27 @@ imported (`Mathlib.NumberTheory.Harmonic.EulerMascheroni`, `Real.eulerMascheroni
     `−mertensCorr 1 = M − γ`, and `mertensThirdConst = −mertensCorr 1 − M = −γ`.]
   - ✅ **brick B0** `primeZetaCoeff_tendsto` : `primeZeta s = lim_N ∑_{p≤N} p^{−s}` (`primeZetaCoeff`,
     `summable_primeZetaCoeff`, `tsum_primeZetaCoeff_eq`) — the Finset-partial-sum form Abel summation consumes.
-  - **REMAINING = Limit B only** (`primeZeta s + log(s−1) → M − γ`). All mathlib footholds identified:
+  - **REMAINING = Limit B only** (`primeZeta s + log(s−1) → M − γ`). All mathlib footholds identified.
     - **B1** (Abel rep): `tendsto_sum_mul_atTop_nhds_one_sub_integral₀` (`Mathlib/NumberTheory/AbelSummation.lean`)
-      with `c(k)=[k prime]/k`, `f(t)=t^{1−s}`. Boundary `l = lim f(n)·∑_{p≤n}1/p = 0` (delegated to Aristotle
-      job `f0c52c60` `boundary_decay`: `n^{1−s}·a(n)→0` for `0≤a(n)≤1+log n`). Yields
-      `primeZeta s = (s−1)∫_1^∞ (∑_{p≤t}1/p)·t^{−s} dt`. Needs: `t^{1−s}` differentiable on Ici 1, deriv
-      locally integrable, bigO domination, integrability — all checkable.
-    - **B2** (s→1⁺ limit of the integral): feed `∑_{p≤t}1/p = log log t + M + o(1)` (`mertens_second_tendsto`).
-      `M`-part → `M·2^{1−s}→M`; `log log t`-part, after `u=(s−1)log t`, → `∫_0^∞(log u−log(s−1))e^{−u}du =
-      −γ − log(s−1)`, where `−γ = Γ'(1)` from `Real.hasDerivAt_Gamma_one` (`Harmonic/GammaDeriv.lean`). Net:
-      `primeZeta s = −log(s−1) + (M−γ) + o(1)`. **The genuinely hard analytic brick** (dominated convergence +
-      substitution); multi-lap. Next-lap entry point.
+      with `c(k)=primeRecipCoeff k=[k prime]/k`, `f(t)=t^{1−s}`. **5 of 6 hypotheses PROVEN this lap, all
+      axiom-clean:**
+      - `hc` = `primeRecipCoeff_zero`; `hf_diff` = `differentiableAt_rpow_one_sub` (∀ t>0);
+        `hf_int` = `locallyIntegrableOn_deriv_rpow_one_sub`; `h_lim` (l=0) = `abel_boundary_tendsto`
+        (uses ported+kernel-verified Aristotle `boundary_decay` + `primeRecipSum_le_one_add_log`);
+        `hg_dom` = `abel_hg_dom` (`O(t^{−s}(1+log t))`).
+      - ⏳ `hg_int` = `IntegrableAtFilter (fun t => t^{−s}(1+log t)) atTop` — **delegated to Aristotle job
+        `2919e0d2`** (`integrable_rpow_neg_mul_log`; prompt in `tools/mk/`). HARVEST FIRST next lap.
+      - **Assembly recipe (next lap, once hg_int in hand):** apply the Abel theorem → get
+        `Tendsto (fun n => ∑ k ∈ Icc 0 n, f k * c k) atTop (𝓝 (0 − ∫_1^∞ deriv f t · ∑_{k≤⌊t⌋} c k))`.
+        `f k * c k = primeZetaCoeff s k` (`rpow_one_sub_mul_primeRecipCoeff`); the LHS partial sums → `primeZeta s`
+        (`primeZetaCoeff_tendsto`, B0 — note B0 uses `Finset.range`; Icc 0 n = range (n+1), reconcile via
+        `tendsto_add_atTop_nat 1` or restate B0 over Icc). Uniqueness of limits ⟹
+        `primeZeta s = (s−1)∫_1^∞ (∑_{p≤t}1/p)·t^{−s} dt` (**brick B1**).
+    - **B2** (s→1⁺ limit of the integral) — **THE remaining hard wall**: feed `∑_{p≤t}1/p = log log t + M + o(1)`
+      (`mertens_second_tendsto`). `M`-part → `M·2^{1−s}→M`; `log log t`-part, after `u=(s−1)log t`, →
+      `∫_0^∞(log u−log(s−1))e^{−u}du = −γ − log(s−1)`, where `−γ = Γ'(1)` from `Real.hasDerivAt_Gamma_one`
+      (`Harmonic/GammaDeriv.lean`). Net: `primeZeta s = −log(s−1) + (M−γ) + o(1)`. Dominated convergence +
+      substitution; multi-lap. Entry point after B1 lands.
 - Lower-hanging PNT-layer alternatives if the constant stalls: explicit Chebyshev `ψ/θ` two-sided bounds.
 
 ### (superseded) nagura wall — FINAL for elementary methods
