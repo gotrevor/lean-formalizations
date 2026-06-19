@@ -303,6 +303,34 @@ theorem bump_gt (b : ℕ) (hb : 2 ≤ b) {n : ℕ} (hn : b ≤ n) : n + 1 ≤ bu
   rw [hbump]
   omega
 
+/-- **The leading exponent bumps itself.** `Nat.log (b+1) (bump b n) = bump b (Nat.log b n)`:
+reading `bump b n` in the new base `b+1`, its leading exponent is the bump of `n`'s leading
+exponent. The recursive skeleton behind Goodstein growth — the *exponent* evolves like a
+lower-level Goodstein term, which is why the descent ordinal's leading CNF exponent stays high for
+astronomically many steps. (Extracted from the `hlog` step of `toOrdinal_bump`.) -/
+theorem log_bump (b : ℕ) (hb : 2 ≤ b) {n : ℕ} (hn : n ≠ 0) :
+    Nat.log (b + 1) (bump b n) = bump b (Nat.log b n) := by
+  have hb1 : 1 < b := by omega
+  set e := Nat.log b n with he
+  have hbe_pos : 0 < b ^ e := Nat.pow_pos (by omega)
+  have hbe_le : b ^ e ≤ n := Nat.pow_log_le_self b hn
+  have hc_pos : 0 < n / b ^ e := Nat.div_pos hbe_le hbe_pos
+  have hc_lt : n / b ^ e < b := by
+    rw [Nat.div_lt_iff_lt_mul hbe_pos, ← pow_succ']; exact Nat.lt_pow_succ_log_self hb1 n
+  have hr_lt : n % b ^ e < b ^ e := Nat.mod_lt _ hbe_pos
+  have hR_lt : bump b (n % b ^ e) < (b + 1) ^ bump b e := bump_lt_pow b hb hr_lt
+  have hbump_eq : bump b n = n / b ^ e * (b + 1) ^ bump b e + bump b (n % b ^ e) := bump_pos b n hn
+  rw [hbump_eq]
+  apply Nat.log_eq_of_pow_le_of_lt_pow
+  · calc (b + 1) ^ bump b e = 1 * (b + 1) ^ bump b e := (one_mul _).symm
+      _ ≤ n / b ^ e * (b + 1) ^ bump b e := Nat.mul_le_mul_right _ hc_pos
+      _ ≤ n / b ^ e * (b + 1) ^ bump b e + bump b (n % b ^ e) := Nat.le_add_right _ _
+  · calc n / b ^ e * (b + 1) ^ bump b e + bump b (n % b ^ e)
+        < n / b ^ e * (b + 1) ^ bump b e + (b + 1) ^ bump b e := Nat.add_lt_add_left hR_lt _
+      _ = (n / b ^ e + 1) * (b + 1) ^ bump b e := by ring
+      _ ≤ (b + 1) * (b + 1) ^ bump b e := Nat.mul_le_mul_right _ (by omega)
+      _ = (b + 1) ^ (bump b e + 1) := by rw [pow_succ]; ring
+
 /-- **The Goodstein term stays `≥ m` for the first `m` steps:** `m ≤ goodsteinSeq m k` whenever
 `k + 1 ≤ m`. Induction on `k` using `bump_gt`: while `k + 2 ≤ m ≤ goodsteinSeq m k` the value is
 above the base, so `goodsteinSeq m (k+1) = bump (k+2) (goodsteinSeq m k) − 1 ≥ goodsteinSeq m k`. -/
@@ -564,6 +592,8 @@ example : fastGrowing 2 3 ≤ hardy (oadd 2 1 0) 3 := by native_decide
 -- `G(4,2) = 41 ≥ 4`). A vacuous/backwards recursion would fail these.
 example : 4 + 1 ≤ bump 2 4 := by native_decide
 example : 4 ≤ goodsteinSeq 4 2 := by native_decide
+-- `log_bump`: the leading exponent bumps itself. `bump 2 5 = 28`, `log_3 28 = 3 = bump 2 (log_2 5)`.
+example : Nat.log 3 (bump 2 5) = bump 2 (Nat.log 2 5) := by native_decide
 
 example : fastGrowing 0 2 ≤ goodsteinLength 2 + 2 := by native_decide  -- 3 ≤ 5
 example : fastGrowing 1 2 ≤ goodsteinLength 2 + 2 := by native_decide  -- 4 ≤ 5
