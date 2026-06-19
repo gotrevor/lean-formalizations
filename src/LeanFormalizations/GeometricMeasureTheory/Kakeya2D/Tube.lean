@@ -21,6 +21,7 @@ Amer. J. Math. **99** (1977); R. O. Davies (1971).
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Defs
 import Mathlib.Analysis.Normed.Lp.MeasurableSpace
 import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
+import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
 
 open Set MeasureTheory Metric RealInnerProductSpace
 open scoped NNReal ENNReal
@@ -128,16 +129,105 @@ theorem tube_subset_coordBox {a v u : Plane} {δ : ℝ} (hδ : 0 ≤ δ) (hv : �
   rw [abs_le] at h
   exact ⟨h.1, h.2⟩
 
-/-- **Single-tube volume bound.** A δ-tube about a *unit* segment has area `≲ δ`.
+/-! ### The orthonormal frame and the area of a coordinate box
 
-Geometrically the tube sits inside the `(1+2δ) × 2δ` rectangle aligned with `v`, so its area is
-at most `(1+2δ)·2δ ≤ 6δ` for `0 ≤ δ ≤ 1`. (`6` is a convenient explicit constant, not sharp.)
+To turn the rectangle-containment `tube_subset_coordBox` into a volume bound we transport the
+coordinate box to a genuine product box via the measure-preserving orthonormal-frame isometry
+`x ↦ (⟪v, x-a⟫, ⟪u, x-a⟫)`. -/
 
-TODO(K2): prove via containment in an isometric image of `Icc (-δ) (1+δ) ×ˢ Icc (-δ) δ` and
-isometry-invariance of `volume`. -/
+/-- The orthonormal pair `![v, u]` for a unit vector `v` and a unit vector `u ⊥ v`. -/
+theorem orthonormal_pair {v u : Plane} (hv : ‖v‖ = 1) (hu : ‖u‖ = 1) (huv : ⟪u, v⟫ = 0) :
+    Orthonormal ℝ ![v, u] := by
+  rw [orthonormal_iff_ite]
+  intro i j
+  fin_cases i <;> fin_cases j <;> simp [hv, hu, huv, real_inner_comm u v]
+
+/-- The orthonormal frame `(v, u)` of the plane (`u ⊥ v`, both unit) as an `OrthonormalBasis`. -/
+noncomputable def frame {v u : Plane} (hv : ‖v‖ = 1) (hu : ‖u‖ = 1) (huv : ⟪u, v⟫ = 0) :
+    OrthonormalBasis (Fin 2) ℝ Plane :=
+  (basisOfLinearIndependentOfCardEqFinrank
+      (orthonormal_pair hv hu huv).linearIndependent (by simp)).toOrthonormalBasis
+    (by rw [coe_basisOfLinearIndependentOfCardEqFinrank]; exact orthonormal_pair hv hu huv)
+
+theorem frame_zero {v u : Plane} (hv : ‖v‖ = 1) (hu : ‖u‖ = 1) (huv : ⟪u, v⟫ = 0) :
+    frame hv hu huv 0 = v := by
+  rw [frame, Module.Basis.coe_toOrthonormalBasis, coe_basisOfLinearIndependentOfCardEqFinrank]; rfl
+
+theorem frame_one {v u : Plane} (hv : ‖v‖ = 1) (hu : ‖u‖ = 1) (huv : ⟪u, v⟫ = 0) :
+    frame hv hu huv 1 = u := by
+  rw [frame, Module.Basis.coe_toOrthonormalBasis, coe_basisOfLinearIndependentOfCardEqFinrank]; rfl
+
+theorem frame_coord_zero {v u : Plane} (hv : ‖v‖ = 1) (hu : ‖u‖ = 1) (huv : ⟪u, v⟫ = 0)
+    (a x : Plane) : (WithLp.ofLp ((frame hv hu huv).repr (x - a))) 0 = ⟪v, x - a⟫ := by
+  show (frame hv hu huv).repr (x - a) 0 = ⟪v, x - a⟫
+  rw [OrthonormalBasis.repr_apply_apply, frame_zero]
+
+theorem frame_coord_one {v u : Plane} (hv : ‖v‖ = 1) (hu : ‖u‖ = 1) (huv : ⟪u, v⟫ = 0)
+    (a x : Plane) : (WithLp.ofLp ((frame hv hu huv).repr (x - a))) 1 = ⟪u, x - a⟫ := by
+  show (frame hv hu huv).repr (x - a) 1 = ⟪u, x - a⟫
+  rw [OrthonormalBasis.repr_apply_apply, frame_one]
+
+/-- **Exact area of the coordinate box.** Transport along the measure-preserving map
+`x ↦ ofLp ((frame).repr (x-a))` (orthonormal isometry ∘ translation) to a product box in
+`Fin 2 → ℝ`, where the volume is the product of the two interval lengths. -/
+theorem volume_coordBox {v u : Plane} (hv : ‖v‖ = 1) (hu : ‖u‖ = 1) (huv : ⟪u, v⟫ = 0)
+    (a : Plane) (δ : ℝ) :
+    volume (coordBox a v u δ)
+      = ENNReal.ofReal (1 + δ - (-δ)) * ENNReal.ofReal (δ - (-δ)) := by
+  have hmp : MeasurePreserving
+      (fun x : Plane => WithLp.ofLp ((frame hv hu huv).repr (x - a))) volume volume :=
+    (PiLp.volume_preserving_ofLp (Fin 2)).comp
+      ((frame hv hu huv).measurePreserving_repr.comp (measurePreserving_sub_right volume a))
+  have hset : coordBox a v u δ
+      = (fun x : Plane => WithLp.ofLp ((frame hv hu huv).repr (x - a))) ⁻¹'
+          (Set.univ.pi (fun i : Fin 2 => ![Icc (-δ) (1 + δ), Icc (-δ) δ] i)) := by
+    ext x
+    simp only [coordBox, mem_setOf_eq, mem_preimage, Set.mem_univ_pi, Fin.forall_fin_two,
+      Matrix.cons_val_zero, Matrix.cons_val_one,
+      frame_coord_zero hv hu huv a x, frame_coord_one hv hu huv a x]
+  rw [hset, hmp.measure_preimage]
+  · rw [volume_pi_pi]; simp [Fin.prod_univ_two, Real.volume_Icc]
+  · exact (MeasurableSet.univ_pi fun i => by fin_cases i <;> exact measurableSet_Icc).nullMeasurableSet
+
+/-- 90° rotation of a planar vector, `(x₀, x₁) ↦ (-x₁, x₀)`; supplies a unit normal `perp v ⊥ v`. -/
+def perp (v : Plane) : Plane := !₂[-(v 1), v 0]
+
+@[simp] theorem perp_zero (v : Plane) : perp v 0 = -(v 1) := rfl
+@[simp] theorem perp_one (v : Plane) : perp v 1 = v 0 := rfl
+
+theorem sq_add_sq_of_norm_one {v : Plane} (hv : ‖v‖ = 1) : (v 0) ^ 2 + (v 1) ^ 2 = 1 := by
+  have h := hv
+  rw [EuclideanSpace.norm_eq, Fin.sum_univ_two] at h
+  have h2 : (v 0) ^ 2 + (v 1) ^ 2 = 1 ^ 2 := by
+    rw [← h, Real.sq_sqrt (by positivity)]; simp [Real.norm_eq_abs, sq_abs]
+  simpa using h2
+
+theorem norm_perp {v : Plane} (hv : ‖v‖ = 1) : ‖perp v‖ = 1 := by
+  rw [EuclideanSpace.norm_eq, Fin.sum_univ_two, perp_zero, perp_one,
+    show ‖-(v 1)‖ ^ 2 = (v 1) ^ 2 by simp [Real.norm_eq_abs, sq_abs],
+    show ‖v 0‖ ^ 2 = (v 0) ^ 2 by simp [Real.norm_eq_abs, sq_abs], add_comm,
+    sq_add_sq_of_norm_one hv]
+  exact Real.sqrt_one
+
+theorem inner_perp (v : Plane) : ⟪perp v, v⟫ = 0 := by
+  have hr : ∀ a b : ℝ, ⟪a, b⟫ = b * a := fun _ _ => rfl
+  simp only [PiLp.inner_apply, Fin.sum_univ_two, perp_zero, perp_one, hr]; ring
+
+/-- **Single-tube volume bound.** A δ-tube about a *unit* segment has area `≲ δ`. **Proven**
+(axiom-clean): the tube sits inside its `(1+2δ)×(2δ)` coordinate box (`tube_subset_coordBox`),
+whose exact area `volume_coordBox` is `(1+2δ)·2δ ≤ 6δ` for `0 ≤ δ ≤ 1`. (`6` is convenient,
+not sharp.) The normal direction is supplied by `perp v`. -/
 theorem volume_tube_le {a v : Plane} (hv : ‖v‖ = 1) {δ : ℝ} (hδ : 0 ≤ δ) (hδ1 : δ ≤ 1) :
     volume (tube a v δ) ≤ ENNReal.ofReal (6 * δ) := by
-  sorry
+  calc volume (tube a v δ)
+      ≤ volume (coordBox a v (perp v) δ) :=
+        measure_mono (tube_subset_coordBox hδ hv (norm_perp hv) (inner_perp v))
+    _ = ENNReal.ofReal (1 + δ - (-δ)) * ENNReal.ofReal (δ - (-δ)) :=
+        volume_coordBox hv (norm_perp hv) (inner_perp v) a δ
+    _ ≤ ENNReal.ofReal (6 * δ) := by
+        rw [← ENNReal.ofReal_mul (by linarith)]
+        apply ENNReal.ofReal_le_ofReal
+        nlinarith [mul_nonneg hδ (by linarith : (0:ℝ) ≤ 1 - δ)]
 
 /-- **Two-tube overlap bound** (the geometric heart of K2). For unit directions `v, w` whose
 angle is `θ` (so `‖v - w‖ ≈ θ` for small `θ`), the intersection of the two δ-tubes has area
