@@ -138,6 +138,21 @@ theorem fastGrowing_le_of_reaches {x : ℕ} (hx : 1 ≤ x) {β α : ONote}
   | succ hb _ ih => exact le_trans ih (fastGrowing_le_succ_index hb hx)
   | limit hb _ ih => rw [fastGrowing_limit _ hb]; exact ih
 
+/-- A structural reach only goes *down* the ordinal order: `Reaches x β α → α ≤ β`. -/
+theorem reaches_le {x : ℕ} {β α : ONote} (h : Reaches x β α) : α ≤ β := by
+  induction h with
+  | refl a => exact le_rfl
+  | @succ β γ α hb _ ih =>
+      have hlt : γ < β := by
+        have hp := fundamentalSequence_has_prop β; rw [hb] at hp
+        rw [lt_def, hp.1]; exact Order.lt_succ _
+      exact le_trans ih (le_of_lt hlt)
+  | @limit β α g hb _ ih =>
+      have hlt : g x < β := by
+        have hp := fundamentalSequence_has_prop β; rw [hb] at hp
+        exact (hp.2.1 x).2.1
+      exact le_trans ih (le_of_lt hlt)
+
 /-! ### Structural Bachmann reachability — the A3 crux, fully proved
 
 The remaining difficulty in index monotonicity is now a pure statement about

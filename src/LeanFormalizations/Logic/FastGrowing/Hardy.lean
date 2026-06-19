@@ -103,42 +103,74 @@ theorem le_hardy (o : ONote) (n : ℕ) : n ≤ hardy o n := by
 termination_by o
 decreasing_by all_goals exact hlt
 
-/-- **The Hardy index-monotonicity crux (limit step).**  *(disclosed `sorry`.)*
-The Hardy analogue of `fastGrowing_fundSeq_step`: for a limit `o` with fundamental
-sequence `f`, `H_{o[n]}(n+1) ≤ H_{o[n+1]}(n+1)`. Same hard index-comparison content. -/
-theorem hardy_fundSeq_step {o : ONote} {f : ℕ → ONote}
-    (h : fundamentalSequence o = Sum.inr f) (n : ℕ) :
-    hardy (f n) (n + 1) ≤ hardy (f (n + 1)) (n + 1) := by
-  sorry
+/-- **Value transfer for the Hardy hierarchy.** If `β` structurally reaches `α` at budget
+`x` and *every* notation `β` reaches has a monotone Hardy level, then `H_α(x) ≤ H_β(x)`.
+Unlike the fast-growing transfer, the successor step `H_β(x) = H_γ(x+1)` shifts the
+argument, so it must absorb the `+1` using monotonicity of the intermediate `H_γ` — hence
+the monotonicity hypothesis (supplied, in `hardy_monotone`, by the well-founded IH). -/
+theorem hardy_le_of_reaches {x : ℕ} {β α : ONote} (h : Reaches x β α) :
+    (∀ γ, Reaches x β γ → Monotone (hardy γ)) → hardy α x ≤ hardy β x := by
+  induction h with
+  | refl a => intro _; exact le_rfl
+  | @succ β γ α hb _ ih =>
+      intro hmono
+      have hmγ : Monotone (hardy γ) := hmono γ (Reaches.succ hb (Reaches.refl γ))
+      have ihγ : hardy α x ≤ hardy γ x := ih (fun δ hδ => hmono δ (Reaches.succ hb hδ))
+      have heq : hardy β x = hardy γ (x + 1) := by rw [hardy_succ _ hb]
+      rw [heq]; exact le_trans ihγ (hmγ (Nat.le_succ x))
+  | @limit β α g hb _ ih =>
+      intro hmono
+      have ihg : hardy α x ≤ hardy (g x) x := ih (fun δ hδ => hmono δ (Reaches.limit hb hδ))
+      have heq : hardy β x = hardy (g x) x := by rw [hardy_limit _ hb]
+      rw [heq]; exact ihg
 
-/-- **Monotonicity in the argument, successor form** `H_o(n) ≤ H_o(n+1)`.
-Reduces, in the limit case, to the single crux `hardy_fundSeq_step`. -/
-theorem hardy_le_succ (o : ONote) (n : ℕ) : hardy o n ≤ hardy o (n + 1) := by
+/-- **Monotonicity in the argument** of each Hardy level — fully proved, axiom-clean, for
+EVERY notation `o`. Well-founded recursion on `o`: the successor case composes the IH at
+`a < o`; the limit case combines monotonicity of `H_{o[n]}` (IH) with the index step
+`H_{o[n]}(n+1) ≤ H_{o[n+1]}(n+1)`, which is `hardy_le_of_reaches` applied to the structural
+Bachmann reach `fastGrowing_bachmann_reach` (every intermediate is `< o`, so the IH supplies
+its monotonicity). The same `Reaches` engine that closes the fast-growing crux. -/
+theorem hardy_monotone (o : ONote) : Monotone (hardy o) := by
+  refine monotone_nat_of_le_succ (fun n => ?_)
   rcases e : fundamentalSequence o with (_ | a) | f
   · rw [hardy_zero' o e]; exact Nat.le_succ n
   · have hlt : a < o := by
-      have hp := fundamentalSequence_has_prop o
-      rw [e] at hp
+      have hp := fundamentalSequence_has_prop o; rw [e] at hp
       rw [lt_def, hp.1]; exact Order.lt_succ _
     rw [hardy_succ o e]
-    -- `H_a(n+1) ≤ H_a(n+2)` by IH monotonicity at `a`
-    exact (monotone_nat_of_le_succ fun k => hardy_le_succ a k) (Nat.le_succ (n + 1))
+    exact hardy_monotone a (Nat.le_succ (n + 1))
   · have hlt : f n < o := by
-      have hp := fundamentalSequence_has_prop o
-      rw [e] at hp
+      have hp := fundamentalSequence_has_prop o; rw [e] at hp
       exact (hp.2.1 n).2.1
+    have hltn1 : f (n + 1) < o := by
+      have hp := fundamentalSequence_has_prop o; rw [e] at hp
+      exact (hp.2.1 (n + 1)).2.1
     rw [hardy_limit o e]
-    have hmono_fn : Monotone (hardy (f n)) :=
-      monotone_nat_of_le_succ fun k => hardy_le_succ (f n) k
-    calc hardy (f n) n
-        ≤ hardy (f n) (n + 1) := hmono_fn (Nat.le_succ n)
-      _ ≤ hardy (f (n + 1)) (n + 1) := hardy_fundSeq_step e n
+    have mono_fn : Monotone (hardy (f n)) := hardy_monotone (f n)
+    have step : hardy (f n) (n + 1) ≤ hardy (f (n + 1)) (n + 1) := by
+      apply hardy_le_of_reaches (fastGrowing_bachmann_reach e n)
+      intro γ hγ
+      have hγo : γ < o := lt_of_le_of_lt (reaches_le hγ) hltn1
+      exact hardy_monotone γ
+    exact le_trans (mono_fn (Nat.le_succ n)) step
 termination_by o
-decreasing_by all_goals exact hlt
+decreasing_by
+  · exact hlt
+  · exact hlt
+  · exact hγo
 
-/-- **Monotonicity in the argument** of each Hardy level. -/
-theorem hardy_monotone (o : ONote) : Monotone (hardy o) :=
-  monotone_nat_of_le_succ (hardy_le_succ o)
+/-- **Monotonicity in the argument, successor form** `H_o(n) ≤ H_o(n+1)`. -/
+theorem hardy_le_succ (o : ONote) (n : ℕ) : hardy o n ≤ hardy o (n + 1) :=
+  hardy_monotone o (Nat.le_succ n)
+
+/-- **The Hardy index-monotonicity crux (limit step), now fully proved.** The Hardy
+analogue of `fastGrowing_fundSeq_step`: for a limit `o` with fundamental sequence `f`,
+`H_{o[n]}(n+1) ≤ H_{o[n+1]}(n+1)`. A corollary of `hardy_le_of_reaches` on the Bachmann
+reach, with monotonicity supplied by `hardy_monotone`. -/
+theorem hardy_fundSeq_step {o : ONote} {f : ℕ → ONote}
+    (h : fundamentalSequence o = Sum.inr f) (n : ℕ) :
+    hardy (f n) (n + 1) ≤ hardy (f (n + 1)) (n + 1) :=
+  hardy_le_of_reaches (fastGrowing_bachmann_reach h n) (fun γ _ => hardy_monotone γ)
 
 /-- **Finite-level argument monotonicity for Hardy**, proved cleanly (no crux).
 `Monotone (H_k)` for `k : ℕ`: `H_0 = id`; `H_{k+1} = H_k ∘ (·+1)` is monotone as a
