@@ -1,5 +1,5 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8300 jobs) · **Updated**: lap 2026-06-19 (🎉 HEADLINE NOW AXIOM-CLEAN — SELECTION CRUX DISCHARGED) · `2bad9f3` · **`davies_kakeya_2d` (planar Kakeya, Davies 1971) is now a COMPLETE machine-checked proof with NO mathematical axioms: `#print axioms = [propext, Classical.choice, Quot.sound]`.** The former lone axiom `kakeya_borel_selection` (von Neumann / Jankov–von Neumann measurable selection — prior laps believed it needed deep descriptive set theory) is **eliminated**: the Kakeya selection is obtained *elementarily* by fattening the cover to an OPEN superset (a compact unit segment inside an open set has a tube neighbourhood ⟹ a dense base point gives full coverage = 1), `exists_measurable_selection_of_isOpen` + `kakeya_hausdorffContentBound_elementary` (`Selection.lean`). 1 dormant disclosed `sorry` (FastGrowing, out of lane). The legacy discrete route still carries one off-headline axiom `kakeya_subresolution_content` (Engine, NOT on `davies_kakeya_2d`). **Faithfulness re-verified against the live target `~/src/formal-conjectures/FormalConjectures/Wikipedia/Kakeya.lean`: `IsKakeya`/`KakeyaSetConjectureDim` match verbatim, and `davies_kakeya_2d` is a drop-in axiom-clean proof of that repo's `kakeya_2d := sorry` (line 70).**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8300 jobs) · **Updated**: lap 2026-06-19 (⚠️→✅ FALSE AXIOM FOUND & REMOVED; Kakeya2D now axiom-DECLARATION-free) · `9596dad` · **`davies_kakeya_2d` (planar Kakeya, Davies 1971) is a COMPLETE machine-checked proof with NO mathematical axioms: `#print axioms = [propext, Classical.choice, Quot.sound]` (re-verified this lap).** The headline routes through the *elementary open-cover* selection (`exists_measurable_selection_of_isOpen` + `kakeya_hausdorffContentBound_elementary`, `Selection.lean`). **This lap's finding:** the off-headline legacy axiom `kakeya_subresolution_content` (the discrete-route "Case-B residual"), cited by every prior lap as "true but deep", is **PROVABLY FALSE** — kernel-checked refutation `kakeya_subresolution_content_is_unsound` (it dropped the `hcR` link cR↔d, so its conclusion had to hold for arbitrary `cR>0` vs a fixed finite `∑'ediam^d`; and even with `hcR` it fails for `d>1` via spatially-separated segments). The false axiom is **removed**; its sole use (Case-B branch of the legacy `kakeya_hausdorffContentBound`) is now a disclosed `sorry`. So `Kakeya2D/` is now axiom-declaration-free; remaining holes = 1 disclosed off-headline `sorry` (legacy Case-B, redundant) + 1 dormant out-of-lane `sorry` (FastGrowing). **Faithfulness re-verified against `~/src/formal-conjectures/FormalConjectures/Wikipedia/Kakeya.lean`: `IsKakeya`/`KakeyaSetConjectureDim` match verbatim; `davies_kakeya_2d` is a drop-in axiom-clean proof of that repo's `kakeya_2d := sorry` (line 70).**
 
 > ♾️ **EXPEDITION COMPLETE (headline) — branch `kakeya-davies` (2026-06-19): planar Kakeya
 > conjecture (Davies 1971).** Target `davies_kakeya_2d : KakeyaSetConjectureDim 2`
@@ -21,20 +21,33 @@
 > `kakeya_hausdorffContentBound_elementary` (ε-fattening + send overshoot → 0) → `two_le_dimH`.
 > **The abstract JvN reduction `kakeya_aeMeasurable_selection_of_jvn` + the projection-is-analytic
 > down payment `analyticSet_proj_and_Icc_subset` are KEPT** as honest hypothesis-gated structure
-> (no axiom). The legacy DISCRETE route (`Engine.kakeya_hausdorffContentBound`, Case A proven / Case B
-> `kakeya_subresolution_content` axiom, + `*_discrete` headlines) is **preserved but fully superseded
-> and OFF the headline path** — `davies_kakeya_2d` does not depend on it. Its reusable bricks
-> (`NetThinning.caseA_content`, the Córdoba `L²` ladder) ARE reused by the elementary route.
-> **Remaining (optional, lower priority): retire the off-headline `kakeya_subresolution_content`** to
-> make the whole `Kakeya2D/` directory axiom-free (the discrete *assembly* is now obsolete; only its
-> axiom-dependent shell `Engine.kakeya_hausdorffContentBound` + the `_discrete` headlines would go).
-> The threads below are COMPLETE/axiom-clean and frozen — do not touch them.
+> (no axiom). The legacy DISCRETE route (`Engine.kakeya_hausdorffContentBound`, Case A proven / Case B)
+> is **preserved but fully superseded and OFF the headline path** — `davies_kakeya_2d` does not depend
+> on it. Its reusable bricks (`NetThinning.caseA_content`, the Córdoba `L²` ladder) ARE reused by the
+> elementary route.
+> **UPDATE 2026-06-19 (review lap):** the discrete route's Case-B axiom `kakeya_subresolution_content`
+> was found **UNSOUND** (kernel-checked refutation `kakeya_subresolution_content_is_unsound`) and
+> **REMOVED**; its sole use is now a disclosed `sorry`. So `Kakeya2D/` is axiom-DECLARATION-free and
+> ALL headlines are axiom-clean. The threads below are COMPLETE/axiom-clean and frozen — do not touch them.
 > (`Logic/FastGrowing/Basic.lean` carries one dormant disclosed `sorry`, out of the Kakeya lane.)
 
 ## Where it stands
-**The five non-Kakeya threads are 100% axiom-free** — every one of their headlines `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`. The **Kakeya** expedition (`davies_kakeya_2d`) is the active frontier: it is a full kernel proof down to ONE **Kakeya-agnostic** axiom `kakeya_borel_selection` (🟡, the textbook von Neumann / Jankov–von Neumann measurable selection). The entire measure-theoretic route is built and axiom-clean (`MeasurableRoute.lean` spine → `Wiring.lean` lemmas A/B → `Selection.lean` reduction); every Kakeya-specific fact is proven, so the lone remaining input is a standard, citable selection theorem with no Kakeya content. Next: discharge it by formalizing von Neumann selection from mathlib's `AnalyticSet` API (deep DST, multi-lap). **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
+**All six headlines are now 100% axiom-free** — every one's `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, including the **Kakeya** headline `davies_kakeya_2d`. The Kakeya lower bound `two_le_dimH` is a full kernel proof via the *elementary open-cover selection* route (`Selection.lean`): fatten the cover to an open superset at vanishing `ediam^d` cost, then a compact unit segment in an open set has a tube neighbourhood, so a fixed dense base point achieves full coverage — no descriptive set theory, no measurable-selection axiom. This lap the LAST lane axiom (the off-headline legacy `kakeya_subresolution_content`) was found **unsound** and removed (kernel-checked refutation kept as a guard), so `Kakeya2D/` is axiom-declaration-free; the only remaining Kakeya hole is a disclosed, redundant, off-headline `sorry` in the legacy discrete route's Case-B branch. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 (FRESH-MIND REVIEW lap — FALSE AXIOM caught & removed):** verified the headline
+  `davies_kakeya_2d` is genuinely axiom-clean & faithful (re-ran `#print axioms`; defs match
+  `formal-conjectures` verbatim). Then attacked the last lane axiom `kakeya_subresolution_content`
+  per "attempt, don't classify" — and found it is **UNSOUND**: derived `False` from it (kernel-checked),
+  now preserved as the sound theorem `kakeya_subresolution_content_is_unsound`. Root cause: a
+  self-authored axiom that **dropped the `hcR` hypothesis** (cR↔d link) when abstracted out of
+  `caseA_content`, so its conclusion had to hold for arbitrary `cR>0` against a fixed finite
+  `∑'ediam^d`; independently false for `d>1` (arbitrary base points ⟹ unshared fine pieces,
+  `∑ediam^d→0`). Removed the false axiom; replaced its only use (Engine Case-B branch) with a disclosed
+  `sorry`; updated docstrings (the `_discrete` chain now carries `sorryAx`, NOT a proof). Headline
+  unaffected. `Kakeya2D/` is now axiom-declaration-free. Commit `9596dad`. **Lesson:** a cited axiom is
+  honest debt; a self-authored "surely-true residual" axiom is unchecked conjecture — refute it (try to
+  derive `False`) before trusting it. The prior ledger's own "honesty caveat" had smelled this.
 - **2026-06-19 (DEEP-REFLECTION lap, cont. — (W) the wiring COMPLETE, axiom-clean):** after the
   synthesis below, drove the measurable-selection wiring all the way to a proof.
   `kakeya_hausdorffContentBound_of_measurableSelection` (`Wiring.lean`, `#print axioms = [propext,
@@ -181,20 +194,23 @@
   closed (repo sorry-free + axiom-clean). See git history for detail.
 
 ## Outstanding
-The five complete threads (Curtis, power-tower sharp `iff`, Wantzel, e-/π-transcendence,
-squaring-the-circle) are **COMPLETE and axiom-free** and frozen. The active work is the Kakeya
-expedition.
-### Short-term (mirror PENDING_WORK §A0‴ + §Reflection-2026-06-19)
-- ✅ **(W) DONE** — `kakeya_hausdorffContentBound_of_measurableSelection` (`Wiring.lean`) proven +
-  axiom-clean. The honest route is built end-to-end modulo the selection hypothesis.
-- **(S) Discharge measurable selection** (the deep crux, NOW the sole open input): for the Fσ Kakeya
-  set `E = ⋃ closure(coverₙ)`, produce a measurable `a : ℝ → Plane` with the unit segment in `⋃ E` over
-  `θ∈[0,1]` — Jankov–von Neumann / KRN for the closed-valued `B(θ)={a : segment(a,θ)⊆E}`, or a bespoke
-  argmin-‖a‖ selection. mathlib has no measurable-selection infra (`SetTheory/Descriptive` = `Tree.lean`).
-  Reference-gated (`ON-LINE-REQUEST.md` UPDATE 5 ask 1); keep banging. A free Aristotle slot exists.
-- **Then switch the headline:** add a clean `axiom kakeya_measurable_selection` (the precise `hsel`
-  shape `Wiring.lean` takes), instantiate it, route `two_le_dimH` through the wiring — retiring
-  `kakeya_subresolution_content` (a faithfulness upgrade: citable named theorem vs. murky residual).
+All six headlines (Curtis, power-tower sharp `iff`, Wantzel, e-/π-transcendence, squaring-the-circle,
+AND Kakeya `davies_kakeya_2d`) are **COMPLETE and axiom-clean**. The headline target of this expedition
+is achieved. Remaining work is cleanup of off-headline legacy structure + out-of-lane threads.
+### Short-term
+- ✅ **Headline DONE & axiom-clean** — `davies_kakeya_2d` via the elementary open-cover selection route.
+- ✅ **Last lane axiom REMOVED** — `kakeya_subresolution_content` found unsound & deleted; kernel-checked
+  refutation `kakeya_subresolution_content_is_unsound` kept as a permanent guard.
+- **(optional) Legacy Case-B `sorry`** in `Engine.kakeya_hausdorffContentBound`: the discrete route's
+  genuine sub-resolution gap. It is **redundant** (the elementary headline route already proves the same
+  `HausdorffContentBound` soundly) and cannot be closed by the discrete approach (the abstract Case-B
+  statement is FALSE). Options: leave as honest disclosed gap (current); or have the `_discrete` chain
+  delegate to the sound elementary route (needs moving those lemmas above `Selection` in the import DAG);
+  or remove the redundant `_discrete` chain (a Trevor call — "never delete structure"). Low value: it is
+  off every headline.
+- **(hygiene) Stale docstring refs** to `kakeya_subresolution_content` / `kakeya_measurable_selection` /
+  `kakeya_borel_selection` in `Wiring.lean`, `MeasurableRoute.lean`, `Cover.lean`, `CASE_B_ANALYSIS.md`
+  now describe removed/superseded objects; harmless (docstrings) but worth a cleanup pass.
 ### Long-term
 - General Hermite–Lindemann for arbitrary algebraic α (e.g. `log 2`, `cos 1`) — bounded extension.
 - PARKED P2/P3 (Curtis mathlib upstream; not-algebraic framing) — web/CLA-gated.
@@ -202,10 +218,10 @@ expedition.
   index monotonicity of the fast-growing hierarchy), a separate thread, out of the Kakeya lane.
 ### To completion
 - Curtis ✅ · Power-tower SHARP iff ✅ · Wantzel iff ✅ · e-transcendence ✅ · π-transcendence ✅ ·
-  squaring-the-circle ✅. **Kakeya (Davies):** K1–K5 ✅ + crux reduced to ONE axiom ✅ + Case-A
-  discharge ✅ + measurable-route spine PROVEN ✅; open = (W) wire the spine + switch headline to a
-  clean selection axiom, then (S) discharge measurable selection. Repo math-axiom count: **1**
-  (`kakeya_subresolution_content`, to be replaced by the citable `kakeya_measurable_selection`).
+  squaring-the-circle ✅ · **Kakeya (Davies) ✅** (`davies_kakeya_2d`, axiom-clean via the elementary
+  open-cover selection route). Repo math-axiom count: **0**; no axiom under any headline. Remaining =
+  off-headline cleanup (legacy discrete Case-B `sorry`, redundant) + 1 dormant out-of-lane `sorry`
+  (FastGrowing).
 
 ## Axiom ledger (the fidelity spine)
 | headline theorem | paper claim | `#print axioms` shows | status |
@@ -218,17 +234,16 @@ expedition.
 | `Constructible.squaring_the_circle_impossible_uncond` | impossibility, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **axiom-clean** (uses `transcendental_pi_axiomClean`) |
 | `Transcendence.transcendental_pi_axiomClean` | `π` transcendental (Lindemann 1882), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **fully proved (axiom deleted)** |
 | `Transcendence.e_transcendental` (+ `transcendental_exp_{nat,int,rat}`) | `e`, `eⁿ`, `eᵃ`, `e^q` transcendental (Hermite 1873; rational-exponent Hermite–Lindemann), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
-| `Kakeya2D.davies_kakeya_2d` | planar Kakeya = `dimH S = 2` (Davies 1971), uncond. | `[propext, Classical.choice, Quot.sound, kakeya_subresolution_content]` (verified this lap) | 🟡 **1 cited math axiom** = `kakeya_subresolution_content` (Case-B / sub-resolution Hausdorff-content residual). K1–K5 + the dominant-scale assembly + Case-A discharge all axiom-clean; the lower bound is a full kernel proof FROM this one axiom (no `sorryAx`). **⚠️ Honesty caveat:** the assembly uses `J=1`, so Case A is near-vacuous and this axiom — at `J=1` — carries essentially the *whole* lower bound for realistic fine covers; "strictly weaker residual" was over-optimistic, and the bespoke statement's own truth is hard for a human to verify directly. The discrete route provably can't escape Case B. **Frontier = the measurable-selection route** (spine PROVEN in `MeasurableRoute.lean`): (W) wire it, then replace this axiom with the clean citable **`kakeya_measurable_selection`** (Jankov–von Neumann) — a faithfulness upgrade. The theorem is unconditional and TRUE (Davies proved it); this is a cited proven fact, not a conditional hypothesis. |
+| `Kakeya2D.davies_kakeya_2d` | planar Kakeya = `dimH S = 2` (Davies 1971), uncond. | `[propext, Classical.choice, Quot.sound]` (re-verified this lap) | ✅ **0 math axioms** — complete kernel proof, no `sorryAx`. Routes through the elementary open-cover selection (`kakeya_hausdorffContentBound_elementary`, `Selection.lean`). The legacy discrete route's "Case-B residual" axiom `kakeya_subresolution_content` was found **FALSE** this lap (kernel-checked refutation `kakeya_subresolution_content_is_unsound`) and **removed**; it only ever fed redundant off-headline `_discrete` lemmas, never this headline. |
 
-**Math-axiom count: 1** — the Kakeya Case-B axiom `kakeya_subresolution_content` (🟡: a proven
-classical fact — the planar-Kakeya lower-bound content — project-scale debt being chipped lap over lap).
-Classification note: the *eventual* replacement axiom `kakeya_measurable_selection` (Jankov–von Neumann)
-is also 🟡 not 🟠 — descriptive-set-theory measurable selection is a substantial-but-not-generational
-mathlib gap, and a bespoke argmin selection may sidestep full KRN; "needs deep machinery" stays a
-hypothesis to test, not a verdict. Every *complete* headline (Curtis, power-tower, Wantzel, e/π,
-squaring-the-circle) is the bare trust base `[propext, Classical.choice, Quot.sound]`. **One dormant
-disclosed `sorry`** remains, out of the Kakeya lane: `FastGrowing.fastGrowing_fundSeq_step`. No 🟠/🔴
-axioms anywhere — the one 🟡 sits under an unconditional, true theorem.
+**Math-axiom count: 0** — every headline (Curtis, power-tower, Wantzel, e/π, squaring-the-circle, AND
+now Kakeya `davies_kakeya_2d`) is the bare trust base `[propext, Classical.choice, Quot.sound]`. The
+former lone Kakeya axiom `kakeya_subresolution_content` was discovered **unsound** this lap and removed
+(see What's-happened). **Two disclosed `sorry`s** remain, both OFF every headline:
+(1) `Engine.kakeya_hausdorffContentBound` Case-B branch — the legacy discrete route's genuine
+sub-resolution gap; redundant (the elementary headline route proves the same result soundly), kept only
+as proven Case-A structure; (2) `FastGrowing.fastGrowing_fundSeq_step` — dormant, out of the Kakeya
+lane. No 🟠/🔴 axioms anywhere; no axiom under any headline.
 
 ## Pointers
 - Open items / attack paths: **`PENDING_WORK.md`** (§A0‴ = measurable-route milestone + §Reflection-2026-06-19) ·

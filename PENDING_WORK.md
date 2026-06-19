@@ -1,5 +1,38 @@
 # PENDING_WORK — lean-formalizations
 
+## 🛑→✅ 2026-06-19 (REVIEW LAP) — the last lane axiom was UNSOUND; found, refuted, removed
+
+The off-headline legacy axiom `Engine.kakeya_subresolution_content` (the discrete route's "Case-B
+residual"), which the section below and every prior lap called "true but deep, retire it to go
+axiom-free", is **PROVABLY FALSE**. Kernel-checked refutation now lives at
+`Engine.kakeya_subresolution_content_is_unsound` (derives `False` from the exact former axiom statement;
+`#print axioms` = bare trust base, no `sorryAx`). Two independent failures:
+1. It dropped the `hcR` hypothesis (the exponential-vs-poly link `cR ↔ d` that `caseA_content` carries),
+   so its conclusion `D⁻¹·cR ≤ ∑'ediam^d` had to hold for *arbitrary* `cR>0` against a *fixed finite*
+   `∑'ediam^d` — refuted by a one-piece cover of one unit segment with `cR = vol(disc)+1`.
+2. Even with `hcR` restored it is false for `d>1`: arbitrary base points let the `2^J` segments be
+   covered by *unshared* sub-resolution pieces with `∑ediam^d → 0`. The Córdoba overlap needs the
+   segments forced into a common Kakeya set — structure the abstraction discarded.
+
+**Actions taken:** removed the false axiom; replaced its only use (Case-B branch of the legacy
+`kakeya_hausdorffContentBound`) with a disclosed `sorry`; updated docstrings (the `_discrete` chain now
+carries `sorryAx`, NOT a proof). **Headline UNAFFECTED** — `davies_kakeya_2d` was already axiom-clean via
+the elementary route and never touched this axiom. `Kakeya2D/` is now axiom-declaration-free. Commit
+`9596dad`.
+
+**Lesson (for future laps):** a *cited* axiom (faithful restatement of a known theorem) is honest debt;
+a *self-authored* "surely-true residual" axiom is unchecked conjecture in proof's clothing — they look
+identical in `#print axioms`. Before trusting a self-authored axiom, spend equal effort trying to
+**refute** it (instantiate it, hunt a counterexample, try to derive `False`). The danger when lifting a
+"hard leftover" into a standalone lemma is silently weakening hypotheses / strengthening the conclusion.
+
+**Remaining (all OPTIONAL, off every headline):** the legacy discrete Case-B `sorry` is redundant (the
+elementary headline route proves the same `HausdorffContentBound` soundly) and cannot be closed by the
+discrete approach. Leave as honest gap, or delegate the `_discrete` chain to the sound route (DAG move),
+or remove the redundant chain (Trevor call). Plus a docstring-hygiene pass for stale axiom references.
+
+---
+
 ## ✅✅ RESOLVED 2026-06-19 — the selection crux is DISCHARGED; `davies_kakeya_2d` is AXIOM-CLEAN
 
 `#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound]`. The deep DST axiom
