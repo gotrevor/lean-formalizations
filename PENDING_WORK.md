@@ -27,21 +27,32 @@ Crux discharged via the self-similarity tower `iterLeadExp_dominates` read at a 
 (`logSeq_iterate_apply`) feeding `n_le_goodsteinSeq` the bootstrap length bound. `#print axioms`:
 trust base + finite-base-case `native_decide` (engines fully clean); no sorry.
 
-### 🎯 NEXT FRONTIER — the matching UPPER bound (two-sided "grows like f_{ε₀}")
-The lower bound is DONE. "`goodsteinLength` grows *like* `f_{ε₀}`" wants the matching ceiling
-`goodsteinLength m ≤ (f_{ε₀}-flavoured)(m)`. Attack paths:
-  (a) **Via the Cichoń identity** (already proved, axiom-clean): `goodsteinLength m = H_{o_m}(2) − 2`
-      where `o_m = seqONote m 0` (base-2 CNF ordinal of `m`). Bound `o_m`'s repr ABOVE by a tower
-      level `ω↑↑(k_m)` with `k_m` explicit in `m` (dual of `exists_repr_lt_omegaTower` — a concrete
-      upper witness), then Hardy monotonicity in the ordinal index gives `H_{o_m}(2) ≤ H_{ω↑↑k_m}(2)`.
-      Needs: (i) Hardy monotone in the ordinal arg (analog of the `fastGrowing` monotonicity already
-      built); (ii) `o_m.repr ≤ ω↑↑(something(m))` concretely.
-  (b) **B4 `H_{ω^α} = f_α`** to convert the Hardy ceiling into a `fastGrowing` ceiling — the
-      long-flagged trap under mathlib's `ω[n]=n+1`; needs a reformulated statement. Lower priority;
-      route (a) up to the Hardy ceiling may suffice for a clean "grows like" without B4.
-  (c) A single clean ε₀ capstone packaging the lower bound as "dominates `f_{ε₀}`" via
-      `ε₀ = sup_o repr o` — mostly presentation.
-Good Aristotle candidate: Hardy monotonicity in the ordinal index (bounded, self-contained).
+**UPPER bound also landed this lap (two-sided "grows like f_{ε₀}" COMPLETE):**
+- `hardy_le_fastGrowing` (`Logic/FastGrowing/Hardy.lean`, axiom-clean): `hardy o n ≤ fastGrowing o n`
+  for `n≥2` — Hardy never outruns fast-growing at the same ordinal index (well-founded recursion on
+  the notation; successor case `H_a(n+1) ≤ f_a(n+1) ≤ f_a(f_a n) = (f_a)^[2]n ≤ (f_a)^[n]n`).
+- `goodsteinLength_le_fastGrowing_ordinal` (`GrowthStatement.lean`, **fully axiom-clean**, no
+  native_decide): `goodsteinLength m + 2 ≤ f_{o_m}(2)` (`o_m = seqONote m 0`). Immediate from the
+  Cichoń identity `hardy_seqONote_zero` + `hardy_le_fastGrowing`.
+- C3 audit surface `GrowthStatement.lean` + faithfulness anchor `fastGrowingε₀_eq_towerO` (our
+  `towerO` IS mathlib's ε₀ fundamental sequence: `fastGrowingε₀ (k+1) = fastGrowing (towerO k) (k+1)`).
+
+### 🎯 NEXT FRONTIER — B4 (`H_{ω^α} = f_α`), the last charter ladder item
+The two-sided growth theorem is DONE; the charter ladder A–C is complete. The remaining explicit
+charter target is **B4: the classical identity `H_{ω^α} = f_α`** (flagged "long-horizon trap under
+mathlib's `ω[n]=n+1`"). Attack notes:
+  - `hardy_le_fastGrowing` is the `≤`-at-same-index half already in hand; B4 is the exact identity at
+    the special index `ω^α`. Under mathlib's `ω[n]=n+1` convention the clean equality likely needs a
+    shift (`H_{ω^α}(n) = f_α(n)` may hold as stated, or with an `n↦n+?` offset — MEASURE it on small
+    cases first with `native_decide` before committing to a statement).
+  - Start concretely: `H_{ω}(n) = ?` vs `f_1(n)=2n`. Repo already has `hardy_omega` (`H_ω(n)=2n+1`)
+    and `fastGrowing_one (2n)` — so `H_ω(n) = f_1(n) + 1` here, i.e. the `ω[n]=n+1` shift gives a `+1`.
+    Generalize that offset up the tower (`H_{ω^α}` vs `f_α`) — that offset pattern IS the reformulation
+    the charter asks for. Then `H_{ω^2}` vs `f_2`, etc.
+  - Good Aristotle candidate: a bounded `H_{ω^α}` ↔ `f_α` instance once the offset is pinned by
+    `native_decide` measurement.
+**Optional sharpenings** (lower priority): strict domination removing the `+2` (needs general index
+monotonicity = A3-hard); a single ε₀ capstone via `ε₀ = sup_o repr o` (presentation).
 
 ---
 

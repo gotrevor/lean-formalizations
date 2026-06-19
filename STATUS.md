@@ -1,16 +1,18 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8294 jobs, `src/` **sorry-free**) · **Updated**: lap 11 (review) · 2026-06-19 · `9b1e779` · **MATH AXIOMS: 0**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8295 jobs, `src/` **sorry-free**) · **Updated**: lap 11 (review) · 2026-06-19 · `904f5ea` · **MATH AXIOMS: 0**
 
-> 🎉🎉 **lap 11 — CICHOŃ'S LOWER BOUND IS COMPLETE UP TO ε₀.** The diagonal domination
-> `f_o(m) ≤ goodsteinLength m + 2` now holds for **EVERY `o < ε₀`** (every normal-form `ONote`),
-> not just finite/tower levels: `goodsteinLength_eventually_dominates_fastGrowing` (for any `o.NF`,
-> `∃ N, ∀ m ≥ N, f_o(m) ≤ goodsteinLength m + 2`). The whole ω-power tower was generalized in one
-> stroke (`fastGrowing_towerO_le_goodsteinLength`: every `ω↑↑k`), then lifted to all of ε₀ via tower
-> cofinality (`exists_repr_lt_omegaTower`, axiom-clean). The lap-10 worry — "needs an `f_{ω^ω}`-strength
-> deep-seed bound" — was **false**: the already-proved `o=ω` domination is strong enough at every depth,
-> carried by the clean finite-level tower bound `towerN_le_fastGrowing`. New file
-> `Logic/Goodstein/TowerDomination.lean`. The expedition's destination is reached. **Next: the matching
-> UPPER bound** (`goodsteinLength m ≤ f_{ε₀-ish}(m)`) for the two-sided "grows like `f_{ε₀}`".
+> 🎉🎉🎉 **lap 11 — "goodsteinLength GROWS LIKE f_{ε₀}" IS COMPLETE, TWO-SIDED.** Both directions
+> machine-checked (charter headline **C3 done**, ladder A–C complete):
+> • **LOWER (Cichoń's lower bound, every `o < ε₀`):** `goodsteinLength_dominates_fastGrowing` —
+>   for any `o.NF`, `∃ N, ∀ m ≥ N, f_o(m) ≤ goodsteinLength m + 2`. The whole ω-power tower generalized
+>   in one stroke (`fastGrowing_towerO_le_goodsteinLength`, every `ω↑↑k`) then lifted to all ε₀ via tower
+>   cofinality (`exists_repr_lt_omegaTower`). The lap-10 "needs `f_{ω^ω}`-strength deep-seed bound" worry
+>   was FALSE — the `o=ω` domination suffices at every depth (`towerN_le_fastGrowing`).
+> • **UPPER:** `goodsteinLength_le_fastGrowing_ordinal` — `goodsteinLength m + 2 ≤ f_{o_m}(2)`
+>   (`o_m =` base-2 ordinal of `m`), from the Cichoń identity + the new `hardy_le_fastGrowing`
+>   (Hardy ≤ fast-growing at the same index). **Fully axiom-clean** (no `native_decide`).
+> New files: `Logic/Goodstein/{TowerDomination,GrowthStatement}.lean` (audit surface).
+> **Next remaining charter item: B4 `H_{ω^α}=f_α`** (the long-horizon stretch).
 
 > ♾️ **ACTIVE EXPEDITION (2026-06-19): Goodstein-independence growth theory.** Read
 > `DIRECTION.md`. Unbounded run building the mathlib-only "Goodstein grows like `f_{ε₀}`"
@@ -34,22 +36,23 @@
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
-- **2026-06-19 lap 11 (🎉🎉 CICHOŃ'S LOWER BOUND COMPLETE TO ε₀ — diagonal domination for EVERY `o < ε₀`):**
-  The headline diagonal lower bound `f_o(m) ≤ goodsteinLength m + 2` is now proved for **every**
-  ordinal `< ε₀`, not just the tower spine: `goodsteinLength_eventually_dominates_fastGrowing`
-  (`o.NF → ∃ N, ∀ m ≥ N, …`). Built in one new file `Logic/Goodstein/TowerDomination.lean` via two
-  general engines, each subsuming lap-10's per-level closures: (1) the **general length bootstrap**
-  `two_mul_le_goodsteinLength_iter` (`goodsteinLength((log₂)^[k] m) ≥ 2m` for all `k`) — the lap-10
-  fear that this "needs an `f_{ω^ω}`-strength deep-seed bound" was FALSE; the already-proved `o=ω`
-  domination suffices at every depth, carried by the clean finite-level tower bound
-  `towerN_le_fastGrowing` (`f_{k+2}(t) ≥ towerN(k+1)(t+1)`); (2) the **general ordinal bridge**
-  `omegaTower_succ_le_seqONote_repr` (descent `≥ ω↑↑(k+1)` from the `k`-fold leading exponent in the
-  large regime, pure `toOrdinal` induction). Tower-spine domination
-  `fastGrowing_towerO_le_goodsteinLength` (every `ω↑↑k`), then lifted to all of ε₀ via tower
-  cofinality `exists_repr_lt_omegaTower` (axiom-clean) + the relaxed
-  `fastGrowing_le_goodsteinLength_of_repr_le_tower`. Unconditional closures carry the documented
-  finite-base-case `native_decide` axioms (inherited via the `f_ω` bootstrap); engines axiom-clean.
-  Build 🟢 (8294 jobs); commits `4856b9a` (tower spine) → `9b1e779` (full ε₀).
+- **2026-06-19 lap 11 (🎉🎉🎉 "goodsteinLength GROWS LIKE f_{ε₀}" — TWO-SIDED, charter C3 DONE):**
+  Both directions of the headline are now machine-checked.
+  **LOWER (Cichoń's lower bound, every `o < ε₀`):** `goodsteinLength_dominates_fastGrowing`
+  (`o.NF → ∃ N, ∀ m ≥ N, f_o(m) ≤ goodsteinLength m + 2`). New file `TowerDomination.lean`, two general
+  engines subsuming lap-10's per-level closures: (1) the **general length bootstrap**
+  `two_mul_le_goodsteinLength_iter` (`goodsteinLength((log₂)^[k] m) ≥ 2m` for all `k`) — the lap-10 fear
+  that this "needs an `f_{ω^ω}`-strength deep-seed bound" was FALSE; the already-proved `o=ω` domination
+  suffices at every depth, carried by the clean finite tower bound `towerN_le_fastGrowing`; (2) the
+  **general ordinal bridge** `omegaTower_succ_le_seqONote_repr` (pure `toOrdinal` induction). Lifted to
+  all ε₀ via tower cofinality `exists_repr_lt_omegaTower` (axiom-clean).
+  **UPPER:** `goodsteinLength_le_fastGrowing_ordinal` (`goodsteinLength m + 2 ≤ f_{o_m}(2)`), from the
+  Cichoń identity + the new `hardy_le_fastGrowing` (`hardy o n ≤ fastGrowing o n`, n≥2) — **fully
+  axiom-clean** (no `native_decide`). C3 stated thinly in audit surface `GrowthStatement.lean`, with the
+  faithfulness anchor `fastGrowingε₀_eq_towerO` (our tower IS mathlib's ε₀ fundamental sequence).
+  Lower closures carry the documented finite-base-case `native_decide` (engines clean). Build 🟢
+  (8295 jobs); commits `4856b9a` (tower spine) → `9b1e779` (full ε₀) → `08afea0` (audit surface) →
+  `9f8cb56` (`hardy_le_fastGrowing`) → `904f5ea` (upper bound).
 - **2026-06-19 lap 10 (CLIMBED to `o=ω^ω`):** diagonal domination closed at the individual limit
   levels `o=ω`, `o=ω^j` (finite `j`), `o=ω^ω` (`DominationOmega.lean`) via the self-similarity TOWER
   (`GoodsteinLike.lean`) + the doubly-iterated length bootstrap. Superseded this lap by the general
@@ -260,15 +263,16 @@ genuine Cichoń growth content, the 8-lap-then-3-lap crux — is now complete:
 `native_decide` artifacts (excluded from the math-axiom count per the doctrine; the engines are
 trust-base-clean).
 ### Short-term (mirror PENDING_WORK top — the live frontier)
-- **The matching UPPER bound** `goodsteinLength m ≤ (f_{ε₀}-flavoured)(m)` — for the two-sided
-  "`goodsteinLength` grows *like* `f_{ε₀}`". The Cichoń identity `goodsteinLength m = H_{o_m}(2) − 2`
-  (C3, proved) is the lever: bound the base-2 CNF ordinal `o_m` above by a tower level and use Hardy
-  monotonicity + `H_{ω^α}=f_α` (B4). This is the natural next frontier now the lower bound is done.
-- **A single clean ε₀ capstone statement** packaging the lower bound as "`goodsteinLength` dominates
-  `f_{ε₀}`" via `ε₀ = sup_o repr o` (mostly presentation; the content is `eventually_dominates`).
-- **DONE (do not re-iterate):** the entire diagonal lower bound up to ε₀
-  (`goodsteinLength_eventually_dominates_fastGrowing`); `f_1` dominated; `goodsteinLength`
-  NON-ELEMENTARY. Complete and bankable; further *lower-bound* refinements are NOT new progress.
+- **B4 `H_{ω^α} = f_α`** (the classical Hardy↔fast-growing identity) — the one remaining charter
+  ladder item, flagged "long-horizon trap under mathlib's `ω[n]=n+1`". The new `hardy_le_fastGrowing`
+  (Hardy ≤ fast-growing at the same index) is one direction of the inequality side; B4 wants the exact
+  identity at `ω^α` (with the `ω[n]=n+1` shift handled). Genuine multi-lap; bang on it.
+- **Optional sharpenings:** strict domination (remove the `+2`, needs a general index-monotonicity
+  step = A3-hard); a tighter upper bound in terms of `f_{ε₀}` directly (the current upper bound
+  `≤ f_{o_m}(2)` is already a faithful two-sided pin via the exact Cichoń identity).
+- **DONE (do not re-iterate):** the two-sided "grows like `f_{ε₀}`" — lower bound for every `o < ε₀`
+  (`goodsteinLength_dominates_fastGrowing`) AND upper bound (`goodsteinLength_le_fastGrowing_ordinal`);
+  `f_1` dominated; NON-ELEMENTARY. Complete and bankable; further restatements are NOT new progress.
 ### Long-term
 - **B4** (`H_{ω^α}=f_α`) — long-horizon trap under mathlib's `ω[n]=n+1` (measured: not a constant
   shift); needs a reformulated statement. Lower value than the diagonal headline.
@@ -277,17 +281,19 @@ trust-base-clean).
 ### To completion
 - Curtis ✅ · Power-tower SHARP iff ✅ · Wantzel iff ✅ · e/π-transcendence ✅ ·
   squaring-the-circle ✅ · Goodstein termination ✅ · **fast-growing growth theory A1–A4 ✅** ·
-  **Cichoń identity C1/C2/C3 ✅** · **DIAGONAL LOWER BOUND `f_o(m) ≤ goodsteinLength m + 2` for
-  every `o < ε₀` ✅** (`goodsteinLength_eventually_dominates_fastGrowing`). Repo math-axiom count:
-  **0** (diagonal closures carry finite-base-case `native_decide` artifacts only). **The matching
-  UPPER bound is the remaining piece toward the two-sided "grows like `f_{ε₀}`".**
+  **Cichoń identity C1/C2/C3 ✅** · **"goodsteinLength GROWS LIKE `f_{ε₀}`" — TWO-SIDED ✅**: lower
+  bound `f_o(m) ≤ goodsteinLength m + 2` every `o < ε₀` (`goodsteinLength_dominates_fastGrowing`) +
+  upper bound `goodsteinLength m + 2 ≤ f_{o_m}(2)` (`goodsteinLength_le_fastGrowing_ordinal`). Repo
+  math-axiom count: **0** (lower closures carry finite-base-case `native_decide` artifacts only).
+  **Charter ladder A–C complete; B4 `H_{ω^α}=f_α` is the remaining stretch.**
 
 ## Axiom ledger (the fidelity spine)
 | headline theorem | paper claim | `#print axioms` shows | status |
 |---|---|---|---|
 | `FastGrowing.fastGrowing_lt_fastGrowingε₀` | `f_{ε₀}` dominates every fixed `f_o` (A4; Kirby–Paris growth gap), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — A4 |
 | `Logic.Goodstein.goodsteinLength_eq_hardy` | **Cichoń identity** `goodsteinLength m = H_{seqONote m 0}(2) − 2`, uncond. (C2+C3 crown) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — borrowing crux `hstep_oadd_one_zero` discharged (lap 5) |
-| `Logic.Goodstein.goodsteinLength_eventually_dominates_fastGrowing` | **Cichoń lower bound, complete to ε₀**: `∀ o.NF, ∃ N, ∀ m≥N, f_o(m) ≤ goodsteinLength m + 2` (every `o < ε₀`) | `[propext, Classical.choice, Quot.sound]` + finite-base-case `native_decide` artifacts | ✅ 0 math axioms — diagonal lower bound DONE up to ε₀ (lap 11); `native_decide` = finite Goodstein base-case lengths, excluded per doctrine |
+| `Logic.Goodstein.goodsteinLength_dominates_fastGrowing` | **Cichoń lower bound, complete to ε₀**: `∀ o.NF, ∃ N, ∀ m≥N, f_o(m) ≤ goodsteinLength m + 2` (every `o < ε₀`) | `[propext, Classical.choice, Quot.sound]` + finite-base-case `native_decide` artifacts | ✅ 0 math axioms — diagonal lower bound DONE up to ε₀ (lap 11); `native_decide` = finite Goodstein base-case lengths, excluded per doctrine |
+| `Logic.Goodstein.goodsteinLength_le_fastGrowing_ordinal` | **upper bound** (two-sided "grows like `f_{ε₀}`"): `goodsteinLength m + 2 ≤ f_{o_m}(2)`, `o_m =` base-2 ordinal of `m` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **fully axiom-clean** (no `native_decide`); via Cichoń identity + `hardy_le_fastGrowing` |
 | `Logic.Goodstein.fastGrowing_one_le_goodsteinLength` | `f_1(m) ≤ goodsteinLength m + 2` (sub-fact (ii) at `o=1`), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 | `Logic.Goodstein.fastGrowing_{two_log,ofNat_log}_le_goodsteinLength` | `goodsteinLength` super-linear / **non-elementary** (`f_n(log₂ m − n + 2) ≤ goodsteinLength m + 2`) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — NON-diagonal (argument `~log m`, not `m`); diagonal still open |
 | `Logic.Goodstein.goodstein_terminates` | Goodstein's theorem (termination), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
