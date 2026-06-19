@@ -118,4 +118,31 @@ theorem hjsw_lower_seven : 3 * (7 - 1) ≤ maxNoThreeInLine (2 * 7) := by
     le_csSup (bddAbove_grid (2 * 7)) ⟨witness7, witness7_card.symm, witness7_grid, witness7_noThree⟩
   exact le_trans (by norm_num) h
 
+/-! ### Concrete witness anchor: the HJSW count `3(p−1)` at `p = 11`
+
+An exact `30 = 3·(11−1)`-point configuration in the `22 × 22` grid with no three collinear (greedy
+search under a spread-out ordering, certified by `native_decide`). Notably the count is NOT reachable
+by row-major greed here — it took a diversified order — consistent with the HJSW count being a real
+construction, not a trivial packing. Off the headline axiom path. -/
+def witness11 : Finset (ℕ × ℕ) :=
+  {(0, 0), (1, 15), (7, 4), (8, 19), (3, 14), (9, 3), (10, 18), (16, 7), (0, 8), (20, 5), (21, 20),
+    (2, 7), (5, 21), (7, 20), (2, 15), (6, 13), (20, 21), (1, 8), (9, 4), (5, 14), (14, 17), (16, 16),
+    (13, 10), (14, 2), (15, 17), (10, 12), (17, 1), (17, 9), (4, 9), (6, 16)}
+
+theorem witness11_card : witness11.card = 30 := by decide
+
+theorem witness11_grid : IsGridSet 22 witness11 := by
+  intro p hp; fin_cases hp <;> exact ⟨by decide, by decide⟩
+
+theorem witness11_noThree : NoThreeCollinear witness11 :=
+  decNoThree_imp (by native_decide)
+
+/-- **HJSW count, verified instance at `p = 11`:** the `22 × 22` grid admits `30 = 3·(11−1)` points
+with no three collinear. -/
+theorem hjsw_lower_eleven : 3 * (11 - 1) ≤ maxNoThreeInLine (2 * 11) := by
+  have h : 30 ≤ maxNoThreeInLine (2 * 11) :=
+    le_csSup (bddAbove_grid (2 * 11))
+      ⟨witness11, witness11_card.symm, witness11_grid, witness11_noThree⟩
+  exact le_trans (by norm_num) h
+
 end LeanFormalizations.NoThreeInLine
