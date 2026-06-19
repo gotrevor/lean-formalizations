@@ -106,6 +106,38 @@ theorem fastGrowing_le_succ_index {o a : ONote}
   have hexp : (id : ℕ → ℕ) ≤ fastGrowing a := fun m => le_fastGrowing a m
   simpa using (Function.monotone_iterate_of_id_le hexp hn) n
 
+/-- **Structural descent relation** `Reaches x β α`: from `β` one can step down to `α`
+through `fundamentalSequence`, using *predecessor* steps at successor notations and
+*index-`x`* steps at limit notations. This is a purely structural (no `fastGrowing`)
+relation on `ONote`, and it is exactly the "Bachmann path" along which the fast-growing
+hierarchy is monotone in the index. -/
+inductive Reaches (x : ℕ) : ONote → ONote → Prop
+  | refl (a : ONote) : Reaches x a a
+  | succ {β γ α : ONote} (h : fundamentalSequence β = Sum.inl (some γ))
+      (hr : Reaches x γ α) : Reaches x β α
+  | limit {β α : ONote} {g : ℕ → ONote} (h : fundamentalSequence β = Sum.inr g)
+      (hr : Reaches x (g x) α) : Reaches x β α
+
+/-- `Reaches x` is transitive (paths compose). -/
+theorem Reaches.trans {x : ℕ} {a b c : ONote} (h1 : Reaches x a b) (h2 : Reaches x b c) :
+    Reaches x a c := by
+  induction h1 with
+  | refl a => exact h2
+  | succ h _ ih => exact Reaches.succ h (ih h2)
+  | limit h _ ih => exact Reaches.limit h (ih h2)
+
+/-- **Value transfer (the analytic side, fully proved axiom-clean).** If `β` reaches `α`
+structurally with positive budget `x`, then `f_α(x) ≤ f_β(x)`. Each step is justified:
+a predecessor step by `fastGrowing_le_succ_index` (iterating an expansive map), a
+limit-`x` step by `fastGrowing_limit` (definitional equality). This reduces *all* index
+monotonicity of the fast-growing hierarchy to the structural `Reaches` relation. -/
+theorem fastGrowing_le_of_reaches {x : ℕ} (hx : 1 ≤ x) {β α : ONote}
+    (h : Reaches x β α) : fastGrowing α x ≤ fastGrowing β x := by
+  induction h with
+  | refl a => exact le_rfl
+  | succ hb _ ih => exact le_trans ih (fastGrowing_le_succ_index hb hx)
+  | limit hb _ ih => rw [fastGrowing_limit _ hb]; exact ih
+
 /-- The fundamental sequence of a successor *natural-number* notation is its
 predecessor: `(k+1)[·] = k`. (Both branches reduce to `rfl`.) -/
 theorem fundamentalSequence_ofNat_succ (k : ℕ) :
@@ -170,22 +202,35 @@ theorem fastGrowing_monotone_omega : Monotone (fastGrowing (oadd 1 1 0)) := by
     _ ≤ fastGrowing (ofNat (n + 2)) (n + 1) :=
         fastGrowing_ofNat_mono (Nat.le_succ (n + 1)) (Nat.succ_le_succ (Nat.zero_le n))
 
-/-- **The index-monotonicity crux (A3), limit step.**  *(disclosed `sorry` — this is
-the genuine hard core of the growth theory, banged on across laps.)*
+/-- **The Bachmann reachability crux (A3, structural form).**  *(disclosed `sorry` — the
+genuine hard core, now stated entirely structurally, free of `fastGrowing`.)*
 
-For a limit notation `o` with fundamental sequence `f` (`o[i] = f i`), stepping from
-index `f n` to the next index `f (n+1)` does not decrease the value at the argument
-`n+1`:  `f_{o[n]}(n+1) ≤ f_{o[n+1]}(n+1)`.
+For a limit notation `o` with fundamental sequence `f`, the *next* index `f (n+1)`
+structurally reaches the *current* index `f n` with budget `n+1`:
+`Reaches (n+1) (f (n+1)) (f n)`.
 
-This is the single inequality the monotonicity proof needs in the limit case (the
-argument `n+1` outpaces the index norm, which is exactly why the classical
-Wainer/Cichoń–Wainer proof works here). The successor analogue is
-`fastGrowing_le_succ_index` (proved). Reducing `fastGrowing_le_succ`/`fastGrowing_monotone`
-to *this* statement isolates all remaining difficulty into one clean lemma. -/
+This is the **Bachmann property** of the standard CNF fundamental sequences: the descent
+of `f (n+1)` (at the fixed index `n+1`) passes *exactly* through `f n` — because the
+`ONote` fundamental sequence descends tails first and the coefficients pass through every
+integer value, so no tail "overshoots". Once this is proved, *all* index monotonicity of
+the fast-growing hierarchy follows from `fastGrowing_le_of_reaches` (already proved).
+
+This is strictly sharper than the old analytic `sorry`: it isolates the difficulty into a
+pure statement about `fundamentalSequence`, attackable by structural induction on `o` and
+verifiable by `native_decide` on concrete notations. The successor-chain and `ω^2` cases
+are already discharged (`fastGrowing_fundSeq_step_of_succ`, `fastGrowing_omega_sq_…`). -/
+theorem fastGrowing_bachmann_reach {o : ONote} {f : ℕ → ONote}
+    (h : fundamentalSequence o = Sum.inr f) (n : ℕ) :
+    Reaches (n + 1) (f (n + 1)) (f n) := by
+  sorry
+
+/-- **The index-monotonicity crux (A3), limit step** — now a corollary of the structural
+Bachmann reachability via the value-transfer lemma. For a limit `o` with fundamental
+sequence `f`, `f_{o[n]}(n+1) ≤ f_{o[n+1]}(n+1)`. -/
 theorem fastGrowing_fundSeq_step {o : ONote} {f : ℕ → ONote}
     (h : fundamentalSequence o = Sum.inr f) (n : ℕ) :
-    fastGrowing (f n) (n + 1) ≤ fastGrowing (f (n + 1)) (n + 1) := by
-  sorry
+    fastGrowing (f n) (n + 1) ≤ fastGrowing (f (n + 1)) (n + 1) :=
+  fastGrowing_le_of_reaches (Nat.succ_le_succ (Nat.zero_le n)) (fastGrowing_bachmann_reach h n)
 
 /-- **The crux for "successor-chain" limits** — proved in full (axiom-clean).
 Whenever the fundamental sequence of `o` is a *successor chain*, i.e. each `f (n+1)`
