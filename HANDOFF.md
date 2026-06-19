@@ -5,37 +5,26 @@
 This file is a **thin pointer**. The durable overview is **`STATUS.md`**; the per-lap baton
 is the newest **`HANDOFF-<date>.md`**; open items/attack paths live in **`PENDING_WORK.md`**.
 
-## Where things stand (2026-06-19 lap 7 — newest baton: `HANDOFF-2026-06-19-1045.md`)
-- **`f_1` DOMINATED unconditionally + `goodsteinLength` proven NON-ELEMENTARY, axiom-clean.**
-  Sub-fact (ii) cracked at low levels via per-step rate bounds + plateau lemmas + the
-  leading-exponent recursion skeleton (`bump_gt`, `goodsteinSeq_ge_init`, `log_bump`,
-  `leadExp_drop_le_one`, the ordinal bridges, `fastGrowing_ofNat_log_le_goodsteinLength`). All in
-  `Logic/Goodstein/Domination.lean`. `src/` **sorry-free, 0 math axioms**; build 🟢 green (8289 jobs).
-- **The ONE remaining deep crux = the diagonal `f_o(m)` (true domination headline).** Gap is entirely
-  the budget `log₂ m → m`: needs the descent to keep `leadExp ≥ n` for `≥ m` steps, i.e. the
-  **steps-between-leading-exponent-drops = sub-Goodstein-length recursion**. Full mental model +
-  attack in the dated baton + `PENDING_WORK.md`. The local skeleton is the banked running start.
+## Where things stand (2026-06-19 lap 8 — DEEP-REFLECTION lap; newest baton: `HANDOFF-2026-06-19-1045.md`)
+- **DONE + axiom-clean:** A1–A4 (fast-growing growth theory, incl. `f_{ε₀}` domination =
+  Kirby–Paris growth gap); B1–B3 (Hardy); C1, C2, **C3 — the Cichoń identity
+  `goodsteinLength m = H_{seqONote m 0}(2) − 2`** (borrowing crux discharged lap 5); `f_1` dominated;
+  `goodsteinLength` NON-ELEMENTARY. `src/` **sorry-free, 0 math axioms**; build 🟢 green (8289 jobs).
+- **Lap-8 reflection call: direction SOUND, keep going.** All 12 headlines re-verified axiom-clean +
+  faithful. Full synthesis in **`PENDING_WORK.md` → `## Reflection — 2026-06-19`** (read it).
+- **The ONE remaining headline = the diagonal `f_o(m) ≤ goodsteinLength m + 2`** (every fixed `o`),
+  machine-reduced (lap 6) to **sub-fact (ii)**: the descent stays `≥ ω^o` for `≥ m` steps (Cichoń's
+  lower bound). NOT axiomatizable — keep as a disclosed open crux.
 
-## Where things stood (2026-06-19 lap 2)
-- Branch `no-three-in-line`. Build 🟢 green (8287 jobs). `src/` is **sorry-free** and
-  **0 math axioms**.
-- **Section A COMPLETE + axiom-clean**: A1/A2/A3 **and now A4** — the headline crux
-  `fastGrowing_lt_fastGrowingε₀` (`f_{ε₀}` dominates every fixed `f_o`), the unboundedness
-  that *is* the Kirby–Paris growth gap. New engine in `Logic/FastGrowing/Domination.lean`:
-  `norm`, `lt_fundamentalSequence_of_norm_le` (the genuinely new theorem), `reaches_of_lt`,
-  `osucc`. Plus general index monotonicity `fastGrowing_le_of_lt` / `hardy_le_of_lt`.
-- The `ON-LINE-REQUEST` fast-growing-norm ask was **self-resolved** (the `norm` derivation);
-  request file removed.
-
-- **C2 DONE** (`Logic/Goodstein/Growth.lean`): `toONote`, `repr_toONote`, `toONote_NF`, and
-  the descent on `ONote` `seqONote_lt`. All axiom-clean.
-
-## Next (see PENDING_WORK "ACTIVE FRONTIER")
-1. **C3 — the growth theorem** (crown jewel): `goodsteinLength` tracks `fastGrowingε₀`.
-   `goodsteinLength m` = length of the `seqONote m ·` descent; classically a **Hardy**
-   function of `seqONote m 0`. Needs a "Hardy-counts-steps" identity, then combine with A4 +
-   `hardy_le_of_lt`. Deep, multi-lap; `seqONote_lt` is the running start.
-2. B4 (`H_{ω^α}=f_α`) — long-horizon trap under mathlib's `ω[n]=n+1`.
+## Next (the lap-8 sharpened target — START HERE)
+1. **The `o=2` diagonal `f_2(m) ≤ goodsteinLength m + 2`** — smallest open instance of the headline.
+   Crack it by proving the **steps-between-drops base case**: leading CNF exponent stays `≥ 2` for
+   `≥ m` steps (⟺ `goodsteinSeq m j ≥ (j+2)²` sustained to `j ≈ m`). Running start: lap-7
+   `omega_opow_le_seqONote_repr` (`≥ ω²` for `j ≤ log₂ m − 2`) + `fastGrowing_step_le_goodsteinLength`;
+   the gap is the budget `log₂ m → m`. Feed Aristotle a bounded carve (a slot is free).
+2. **DO NOT** chase further *non-diagonal* lower-bound refinements — NON-ELEMENTARY is a complete,
+   bankable result; iterating it would simulate progress without advancing sub-fact (ii).
+3. B4 (`H_{ω^α}=f_α`) — long-horizon trap under mathlib's `ω[n]=n+1`. Lower priority.
 
 ## Discipline
 - Commit every green `lake build`. NEVER push. Verify `#print axioms` clean on closed theorems.

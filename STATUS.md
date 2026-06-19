@@ -1,5 +1,5 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8289 jobs, `src/` **sorry-free**) · **Updated**: lap 2026-06-19-lap7 · **MATH AXIOMS: 0**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8289 jobs, `src/` **sorry-free**) · **Updated**: lap 8 (deep-reflection) · 2026-06-19 · `626eec6` · **MATH AXIOMS: 0**
 
 > ♾️ **ACTIVE EXPEDITION (2026-06-19): Goodstein-independence growth theory.** Read
 > `DIRECTION.md`. Unbounded run building the mathlib-only "Goodstein grows like `f_{ε₀}`"
@@ -23,6 +23,20 @@
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 lap 8 (DEEP-REFLECTION lap — altitude audit, no proof churn):** full read-down of
+  STATUS/HANDOFF/PENDING/DIRECTION + git log; re-ran `#print axioms` on all 12 headlines (every one
+  = bare trust base `[propext, Classical.choice, Quot.sound]`, **0 math axioms**) and re-audited the
+  growth-theory statements against the math — all faithful, the `NON-ELEMENTARY` docstring honest
+  about not being the diagonal. **Direction call: SOUND, KEEP.** Real lap-over-lap motion (C3 closed
+  lap 5 · headline reduced to sub-fact (ii) lap 6 · `o=1` + machinery lap 7), not circling. The
+  Cichoń identity `goodsteinLength m = H_{seqONote m 0}(2) − 2` (C2+C3, axiom-clean) is a genuine
+  capstone. **STOP: chasing further *non-diagonal* lower-bound refinements as headline output** —
+  super-linear→non-elementary is a complete, bankable result that does NOT advance sub-fact (ii);
+  iterating it would simulate progress. **Highest-value next target: the `o=2` diagonal
+  `f_2(m) ≤ goodsteinLength m + 2`** — the smallest open instance of Cichoń's lower bound, forcing
+  the steps-between-drops *base case* (leadExp `≥ 2` sustained for `≥ m` steps ⟺ `goodsteinSeq m j ≥
+  (j+2)²` for `j ≤ ~m`). Fixed two stale docstrings (`hstep_oadd_one_zero`/`hstep_toONote` still said
+  "disclosed sorry"; both are PROVED). Full reasoning in `PENDING_WORK.md` → `## Reflection 2026-06-19`.
 - **2026-06-19 lap 7 (`f_1` DOMINATED unconditionally + recursion skeleton; 6 commits, all
   axiom-clean, `src/` sorry-free):** broke the deadlock on sub-fact (ii) at level `o = 1`.
   `bump_gt` (one bump strictly grows a value above its base) ⟹ `goodsteinSeq_ge_init` (value stays
@@ -172,58 +186,59 @@ The repo is **100% axiom-free** — every headline `#print axioms` is the bare t
   (b) to a SINGLE open fact `subsetSum_esymm_rational` (esymm of subset-sums is rational —
   the symmetric-function core). That fact is now an Aristotle job (`b7252abe`, RUNNING).
   Once it lands, π-transcendence is complete and `hermite_lindemann` dies.
-- **2026-06-16 (π PROVEN — axiom deleted):** the algebraic part landed.
-  `SubsetSumEsymm.subsetSum_esymm_rational` (fundamental theorem of symmetric polynomials over
-  the subset-sums of the `iπ` conjugates) — Aristotle `b7252abe`, **kernel-verified axiom-clean**
-  (the same 4-helper decomposition was independently developed locally this lap). Combined with
-  the conjugate-machinery assembly → `transcendental_pi_axiomClean : Transcendental ℚ Real.pi`,
-  axiom-clean. `squaring_the_circle_impossible_uncond` rewired to it; the `hermite_lindemann`
-  axiom (and its dependent theorem) **deleted**. Repo now carries **0 math axioms**.
-- **2026-06-16 (π algebraic-part lap):** drove the `hermite_lindemann`-at-π crux hard. New
-  file `PiLindemann.lean`, **all axiom-clean**, reduces π-transcendence to exactly two named
-  facts: (a) the monic root-sum integrality `sum_aeval_roots_int` (Aristotle job `9a19f72e`),
-  (b) the symmetric-function construction of the integer conjugate polynomial. Everything
-  else is machine-checked: `prod_one_add_exp_eq_sum_subsetSum` + `pi_exp_relation` (★) (the
-  combinatorial reduction `e^{iπ}=−1 ⟹ K + ∑_{σ_t≠0} e^{σ_t}=0`); `no_intPoly_exp_relation`
-  (the **general non-monic analytic engine** — the full integer-`N`/mod-`p` assembly over an
-  arbitrary `F.aroots`, generalizing the `e` proof); `aroots_integralNormalization` +
-  `hsum_of_monic_rootsum` (discharge `hsum` for **every** integer `F` from the monic case via
-  `integralNormalization`/`scaleRoots`); and the capstone `subsetSum_relation_impossible`
-  (assembles all three — the precise remaining frontier). The **entire analytic part of
-  Hermite–Lindemann at π is now done**; only the algebraic conjugate-polynomial construction
-  (the "algebraic part" PR #28013 supplies) remains.
-- **2026-06-16 (review lap):** π-transcendence narrowing shipped: stated **Hermite–Lindemann** (nonzero algebraic α ⟹ `exp α` transcendental) as ONE disclosed `axiom`, machine-checked `Transcendental ℚ π` from it (Euler `exp(iπ) = -1`) → `squaring_the_circle_impossible_uncond`. Then **PROVED transcendence of `e`** end-to-end (`ETranscendental.lean`): algebraic reduction + analytic decay/prime-selection + Hermite-polynomial roots + the full integer-`N`/mod-`p` assembly of `exp_polynomial_approx`. `e_transcendental` is `#print axioms`-clean — the α=1 instance of the cited axiom discharged. New dir `NumberTheory/Transcendence/`.
-- **2026-06-15 2358/2343:** Constructible/Wantzel thread COMPLETE — full equivalence `isConstructible_iff_constructiblePoint` both directions (forward = degree obstruction; converse = explicit compass arithmetic). 5 impossibilities (cube, trisection, nonagon, heptagon, + geometric-point versions), pentagon positive. All axiom-clean.
-- **2026-06-15:** Constructible Layer 1 (algebraic degree engine `IsSqrtTower.finrank_eq_pow_two`) + 3 classical impossibilities; Layer 2 geometric faithfulness bridge.
-- **2026-06-14 & earlier:** Curtis (no-Frobenius-formula) thread + power-tower convergence on
-  `[e^(-e), e^(1/e)]` proved axiom-clean; Curtis crux `substCurve_eq_zero`, Lemma 2
-  (Brauer–Shockley, Aristotle-verified). Foundational, frozen.
+- **2026-06-16 (π/e transcendence COMPLETE — `hermite_lindemann` axiom deleted; condensed, was 4
+  bullets):** the full Lindemann assembly for `π` landed and the cited axiom was discharged + deleted
+  → repo math-axiom count **0**. Chain (all axiom-clean): `e_transcendental` (Hermite 1873, the
+  integer-`N`/mod-`p` engine of `exp_polynomial_approx`) → `PiLindemann` (combinatorial reduction
+  `e^{iπ}=−1 ⟹ K+∑e^{σ_t}=0` + non-monic analytic engine) → fact (a) `sum_aeval_roots_int`
+  (Aristotle `9a19f72e`) → fact (b) `subsetSum_esymm_rational` (fundamental theorem of symmetric
+  polynomials, Aristotle `b7252abe`) → `transcendental_pi_axiomClean`; `squaring_the_circle_impossible_uncond`
+  rewired to it, now fully axiom-clean. Both Aristotle proofs independently kernel-verified.
+- **2026-06-14/15 (Curtis · power-tower convergence · Wantzel/constructible — condensed, was 3
+  bullets):** the three foundational frozen threads, all axiom-clean. Curtis 1990 no-Frobenius-formula
+  (`no_polynomial_relation`; crux `substCurve_eq_zero`, Lemma 2 Brauer–Shockley Aristotle-verified);
+  power-tower convergence on `[e^(-e), e^(1/e)]`; constructible numbers / Wantzel — full
+  `isConstructible_iff_constructiblePoint` (both directions) + 5 classical impossibilities (cube,
+  trisection, nonagon, heptagon, geometric-point versions), pentagon positive.
 
 ## Outstanding
 The five completed threads (transcendence/squaring-the-circle, power-tower sharp `iff`,
-Wantzel, Curtis, Goodstein termination) are **COMPLETE and axiom-free**. The ACTIVE
-expedition is the growth theory; **Section A is now done**. Remaining:
-### Short-term (mirror PENDING_WORK top)
-- **C2 — the semantic bridge** (the crown-jewel prerequisite): relate `Engine.toOrdinal` /
-  `Engine.seqOrd` (Goodstein term → `Ordinal < ε₀`, already the termination descent) to
-  `ONote.repr`, so the Goodstein descent is expressed on `ONote`. Then **C3** (`goodsteinLength`
-  eventually tracks `fastGrowingε₀`) = C2 + A4 (now available). This is the formal
-  "Goodstein grows too fast for PA".
-- **B ladder (Hardy):** B2 characterization lemmas are present; B3 anchors done. **B4**
-  (`H_{ω^α}=f_α`) is a long-horizon trap under mathlib's `ω[n]=n+1` (measured: not a constant
-  shift) — needs a reformulated statement.
+Wantzel, Curtis, Goodstein termination) are **COMPLETE and axiom-free**. In the ACTIVE
+expedition, **Section A (A1–A4), C1, C2, and C3 (the Cichoń identity) are all DONE + axiom-clean.**
+The ONE remaining headline is the **diagonal domination** `f_o(m) ≤ goodsteinLength m + 2` (every
+fixed `o`), which lap 6 reduced (machine-checked) to **sub-fact (ii)**: the Goodstein descent stays
+`≥ ω^o` for `≥ m` steps (Cichoń's lower bound). It is NOT axiomatizable (anti-smuggling: it IS the
+growth content) — a disclosed open crux, kept on a `sorry`-free path by stating only the partial
+results actually proved.
+### Short-term (mirror PENDING_WORK top — the live frontier)
+- **The `o=2` diagonal `f_2(m) ≤ goodsteinLength m + 2`** (next milestone, lap-8 reflection call):
+  smallest open instance of the headline. Needs the **steps-between-drops base case** — leading CNF
+  exponent stays `≥ 2` for `≥ m` steps, i.e. `goodsteinSeq m j ≥ (j+2)²` sustained to `j ≈ m` (a
+  super-polynomial value lower bound, the genuine Cichoń content). All lap-7 local machinery
+  (`leadExp_drop_le_one`, `leadExp_ge_of_base_le`, `log_bump`, `omega_opow_le_seqONote_repr`,
+  `fastGrowing_step_le_goodsteinLength`) is the running start; the gap is the budget `log₂ m → m`.
+- **DONE (do not re-iterate):** `f_1` dominated (`fastGrowing_one_le_goodsteinLength`);
+  `goodsteinLength` NON-ELEMENTARY (`fastGrowing_ofNat_log_le_goodsteinLength`). These are complete,
+  bankable; further *non-diagonal* refinements are NOT progress on the headline.
 ### Long-term
+- **B4** (`H_{ω^α}=f_α`) — long-horizon trap under mathlib's `ω[n]=n+1` (measured: not a constant
+  shift); needs a reformulated statement. Lower value than the diagonal headline.
 - General Hermite–Lindemann for arbitrary algebraic α — bounded extension of the π assembly.
 - PARKED P2/P3 (Curtis mathlib upstream; not-algebraic framing) — web/CLA-gated.
 ### To completion
 - Curtis ✅ · Power-tower SHARP iff ✅ · Wantzel iff ✅ · e/π-transcendence ✅ ·
-  squaring-the-circle ✅ · Goodstein termination ✅ · **fast-growing growth theory A1–A4 ✅**.
-  Repo math-axiom count: **0**. Crown jewel C3 (growth bridge) outstanding.
+  squaring-the-circle ✅ · Goodstein termination ✅ · **fast-growing growth theory A1–A4 ✅** ·
+  **Cichoń identity C1/C2/C3 ✅** · `f_1` dominated + NON-ELEMENTARY lower bound ✅.
+  Repo math-axiom count: **0**. **Diagonal domination `f_o(m) ≤ goodsteinLength m` (sub-fact (ii))
+  is the sole open headline** — the genuine multi-lap Cichoń lower bound.
 
 ## Axiom ledger (the fidelity spine)
 | headline theorem | paper claim | `#print axioms` shows | status |
 |---|---|---|---|
-| `FastGrowing.fastGrowing_lt_fastGrowingε₀` | `f_{ε₀}` dominates every fixed `f_o` (A4; Kirby–Paris growth gap), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **A4 closed this lap** |
+| `FastGrowing.fastGrowing_lt_fastGrowingε₀` | `f_{ε₀}` dominates every fixed `f_o` (A4; Kirby–Paris growth gap), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — A4 |
+| `Logic.Goodstein.goodsteinLength_eq_hardy` | **Cichoń identity** `goodsteinLength m = H_{seqONote m 0}(2) − 2`, uncond. (C2+C3 crown) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — borrowing crux `hstep_oadd_one_zero` discharged (lap 5) |
+| `Logic.Goodstein.fastGrowing_one_le_goodsteinLength` | `f_1(m) ≤ goodsteinLength m + 2` (sub-fact (ii) at `o=1`), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
+| `Logic.Goodstein.fastGrowing_{two_log,ofNat_log}_le_goodsteinLength` | `goodsteinLength` super-linear / **non-elementary** (`f_n(log₂ m − n + 2) ≤ goodsteinLength m + 2`) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — NON-diagonal (argument `~log m`, not `m`); diagonal still open |
 | `Logic.Goodstein.goodstein_terminates` | Goodstein's theorem (termination), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 | `Curtis.no_polynomial_relation` | Curtis 1990, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 | `PowerTower.tower_converges_iff_full` | converges **iff** `x ∈ [e^-e, e^1/e]` (sharp), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |

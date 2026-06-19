@@ -1,5 +1,65 @@
 # PENDING_WORK — lean-formalizations
 
+## 🧘 Reflection — 2026-06-19 (lap 8, deep-reflection lap)
+
+*Altitude pass over the whole expedition. Read STATUS/HANDOFF/PENDING/DIRECTION + git log; re-ran
+`#print axioms` on all 12 headlines (every one = bare trust base, 0 math axioms) and re-audited the
+growth-theory statements against the math (all faithful). This section is the lap's primary output.*
+
+### Direction call: **SOUND — KEEP GOING.**
+The expedition's destination (DIRECTION.md: build the mathlib-only growth theory behind Kirby–Paris,
+"`goodsteinLength` grows like `f_{ε₀}`") is **right and substantially achieved**. What's DONE and
+axiom-clean: **A1–A4** (fast-growing growth theory incl. `f_{ε₀}` domination, the Kirby–Paris growth
+gap); **B1–B3** (Hardy hierarchy); **C1, C2** (the `toOrdinal ↔ ONote.repr` bridge + the Goodstein
+descent on `ONote`); and **C3 — the Cichoń identity `goodsteinLength m = H_{seqONote m 0}(2) − 2`**,
+whose borrowing crux `hstep_oadd_one_zero` (the heart of Cichoń's theorem) was genuinely discharged.
+That is a coherent, novel, mathlib-PR-shaped body of formalization that did not exist anywhere. The
+lap-over-lap record is **real forward motion, not circling**: C3 closed (lap 5) → headline reduced to
+sub-fact (ii) (lap 6) → sub-fact (ii) at `o=1` + recursion machinery (lap 7).
+
+The honest realistic endpoint: this is an *unbounded* expedition with no finish line. The valuable
+artifact already exists; the ONE remaining headline — **diagonal domination `f_o(m) ≤ goodsteinLength
+m + 2` for every fixed `o`** — is a genuine multi-lap crux (Cichoń's *lower* bound proper). It is
+**not axiomatizable** (anti-smuggling: it *is* the growth content), so it stays a disclosed open
+crux, kept off the `sorry` path by stating only the partial results actually proved. Keep banging.
+
+### KEEP doing
+- Attacking the **diagonal domination headline** via the reduction already machine-checked in lap 6
+  (`goodstein_dominates_of_index` / `goodstein_dominates_of_index_le`): the headline ⟺ **sub-fact
+  (ii)** = "the Goodstein descent stays `≥ ω^o` for `≥ m` steps." This reduction is correct and the
+  norm-budget obstruction is resolved (`norm_seqONote_le`). Both natural routes (direct count; via
+  the Cichoń identity + telescope to a high-budget step) provably collapse to sub-fact (ii) — it is
+  irreducible (lap-6 analysis), so this IS the crux.
+- Anti-vacuity `native_decide` anchors on every new computable lemma; `#print axioms` on every
+  closed theorem; thin faithful headline statements. (All currently in good shape.)
+
+### STOP doing
+- **Stop producing further *non-diagonal* lower-bound refinements as the headline lap output.** The
+  super-linear → NON-ELEMENTARY ladder (`fastGrowing_ofNat_log_le_goodsteinLength`) is a *complete,
+  bankable* result — `goodsteinLength` outgrows every elementary function, proved clean. But it gives
+  `f_n` at argument `~log₂ m`, NOT the diagonal `f_n(m)`; pushing it further (to multiply-recursive,
+  to `f_ω`, etc.) would **simulate progress without advancing sub-fact (ii)**. That is the fixation
+  trap to avoid: don't bag another non-diagonal leaf and call the lap a win.
+
+### Single highest-value next target: **the `o=2` diagonal `f_2(m) ≤ goodsteinLength m + 2`.**
+Reasoning: it is the **smallest open instance of the headline** (`o=1` is done), it is concrete and
+checkable, and cracking it *forces* building the **steps-between-drops base case** — the technique
+that then generalizes to all `o`. Concretely, via `fastGrowing_step_le_goodsteinLength` at a step
+`j ≈ m`, the goal needs `(oadd 2 1 0).repr = ω² ≤ (seqONote m j).repr` at a step with budget `j+2 ≥
+m`, i.e. **the leading CNF exponent stays `≥ 2` for `≥ m` steps** — equivalently a *super-polynomial
+value lower bound* `goodsteinSeq m j ≥ (j+2)²` sustained to `j ≈ m`. The whole gap is the budget
+`log₂ m → m`: lap 7's `omega_opow_le_seqONote_repr` already gives `≥ ω²` but only for `j ≤ log₂ m − 2`
+(the per-step `leadExp drops ≤ 1` rate bound telescoped from `L₀ = log₂ m`). The truth is leadExp
+drops are *rare* — the number of steps between consecutive drops of the leading exponent from level
+`E` to `E−1` is itself a Goodstein length of the sub-structure (`≫ m`). The first concrete sub-lemma:
+a `dropTime`-style count showing leadExp `≥ 2` persists for `≥ m` steps (induction mirroring
+`hardy_oadd_iter`). **Feed Aristotle** a bounded, self-contained carve of this (a slot is free).
+
+*Detailed attack notes for sub-fact (ii) / the steps-between-drops recursion are in the lap-6/lap-7
+sections below — unchanged and still the operative plan.*
+
+---
+
 ## 🎯 ACTIVE FRONTIER (refreshed 2026-06-19 lap 2 — A4 CLOSED)
 
 **Section A (growth theory of `ONote.fastGrowing`) is COMPLETE + axiom-clean.** A1

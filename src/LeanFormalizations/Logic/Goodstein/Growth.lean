@@ -829,15 +829,16 @@ theorem hstep_pred_pow (b : ℕ) (hb : 2 ≤ b) :
         ih (f b).repr hltfb (f b) rfl hNFfb hfbne (Good_fundSeq b E f hgood hfs),
         evalNat_fundSeq b hfs]
 
-/-- **Lemma B (the `c = 1` predecessor — the lone open core of C3).** One Hardy step on
-`oadd (toONote b L) 1 0` (i.e. `ω^E` for `E = toONote b L`, `L ≥ 1`) at argument `b` is the
+/-- **Lemma B (the `c = 1` predecessor — the borrowing core of C3, FULLY PROVED lap 5).** One Hardy
+step on `oadd (toONote b L) 1 0` (i.e. `ω^E` for `E = toONote b L`, `L ≥ 1`) at argument `b` is the
 base-`(b+1)` notation of `(b+1)^(bump b L) − 1` — the fully-filled (all-digits-`b`) expansion
 produced by the borrowing descent through `fundamentalSequence`.
 
-*(disclosed `sorry`.)* This is the genuine borrowing core, now isolated to coefficient `1`.
-Almost all of the engine is PROVED; the remaining gap is a single coefficient-bound invariant.
+**PROVED + `#print axioms` clean** — this was the last disclosed `sorry` of C3 and it is discharged.
+The proof closes via `hstep_pred_pow` (WF recursion on `repr E`, using the `Good`/`Canon` coefficient-
+bound frontier invariant) + `evalNat_toONote`. The plan below is the historical close-out record.
 
-**Proved and ready** (all axiom-clean, this file):
+**Supporting engine** (all axiom-clean, this file):
 * **finite base case** `hstep_oadd_one_zero_finite` (`E = finite (d+1)`, `d ≤ b`) — exercises
   the whole engine end-to-end (descent `hstep_oadd_one_of_succ` → peel `hstep_oadd_coeff` →
   IH → reconstruct `toONote_oadd`);
@@ -880,11 +881,11 @@ Hardy descent. Strong induction on `p`, writing `p = c·b^L + r` (leading Cantor
   and the reconstruction `toONote_oadd` + bump-invariance `toONote_bump` close it.
 * **`r = 0`.** Here `p = c·b^L` and the step computes the *predecessor* of `c·(b+1)^(bump b L)`.
   - `L = 0` (single digit, FULLY PROVED): `oadd 0 c 0` is a successor (`hstep_oadd_zero_zero`).
-  - `L ≥ 1` (disclosed `sorry`): the genuine **borrowing** case — a nested `fundamentalSequence`
-    descent producing the filled `(b+1)`-ary expansion of `(b+1)^(bump b L) − 1`. The lone open
-    core of C3; verified *syntactically* by `native_decide` on small cases (see anchors).
+  - `L ≥ 1` (**FULLY PROVED**, lap 5, via `hstep_oadd_one_zero`): the genuine **borrowing** case —
+    a nested `fundamentalSequence` descent producing the filled `(b+1)`-ary expansion of
+    `(b+1)^(bump b L) − 1`. This was the borrowing core of C3; now discharged, `#print axioms` clean.
 
-Everything else (`r ≠ 0`, `r = 0 ∧ L = 0`, and all downstream of `hstep_toONote`) is proved. -/
+This theorem is now FULLY PROVED for all `p` (`r ≠ 0`, `r = 0 ∧ L = 0`, and `r = 0 ∧ L ≥ 1`). -/
 theorem hstep_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ p, p ≠ 0 →
     hstep (toONote b p) b = toONote (b + 1) (bump b p - 1) := by
   intro p
@@ -1015,7 +1016,7 @@ example : toONote 2 4 = oadd (oadd (oadd 0 1 0) 1 0) 1 0 := by native_decide -- 
 example : toONote 3 5 = oadd (oadd 0 1 0) 1 (oadd 0 2 0) := by native_decide  -- `5 = 1·3^1 + 2`
 -- the descent: `goodsteinSeq 3` starts `3 ↦ 3 ↦ 3 ↦ 2 ↦ …`, notations strictly drop
 example : seqONote 3 0 = oadd (oadd 0 1 0) 1 (oadd 0 1 0) := by native_decide -- `G₀=3` in base 2 ↦ `ω+1`
--- the Cichoń step `hstep_toONote` holds *syntactically* (the disclosed crux, here witnessed):
+-- the Cichoń step `hstep_toONote` (now FULLY PROVED) holds; here anchored on computable cases:
 example : hstep (toONote 2 3) 2 = toONote 3 (bump 2 3 - 1) := by native_decide
 example : hstep (toONote 3 5) 3 = toONote 4 (bump 3 5 - 1) := by native_decide
 example : hstep (seqONote 3 0) 2 = seqONote 3 1 := by native_decide
