@@ -137,6 +137,48 @@ theorem one_le_tsum_volume_fiber_union (g : ℕ → ℕ) {T : ℕ → Set ℝ}
   rw [heq]
   exact measure_iUnion_le _
 
+/-! ### Geometric foundation: a measurable pullback cover from a closed-piece cover
+
+The localized-Córdoba numerator needs the per-direction covered set `A k` to be **measurable** (the
+Córdoba `L²` integrals are over measurable indicators). The raw pullback `Tₙ = φ⁻¹(Uₙ) ∩ [0,1]` is
+measurable iff the cover piece `Uₙ` is (a general Kakeya cover piece may be non-measurable). The fix:
+work with **closed** pieces — `IsClosed Uₙ` makes `φ⁻¹(Uₙ)` closed (`φ` continuous), hence the
+pullback is measurable. In the discharge this is supplied by replacing each cover piece `tₙ` by its
+closure `closure tₙ` (same `ediam`, still covering `S`), so the content bound is unaffected. This
+brick packages the measurable pullback together with the forward containment `φ(Tₙ) ⊆ Uₙ` (the
+geometric link to the container) and the union-measure bound `vol(⋃ₙ Tₙ) ≥ 1` (a covered unit
+segment), the three facts the dominant-scale wiring consumes. -/
+
+/-- **Measurable pullback cover (geometric foundation of the discharge).** A unit segment in
+direction `v` covered by *closed* pieces `Uₙ` pulls back, along the unit-speed isometry
+`φ : t ↦ a + t•v`, to measurable pieces `Tₙ = {t∈[0,1] : φ t ∈ Uₙ}` with `φ(Tₙ) ⊆ Uₙ` and
+`vol(⋃ₙ Tₙ) ≥ 1`. Measurability (vs. the raw `exists_pullback_cover`) comes from `Uₙ` closed +
+`φ` continuous; the forward containment and union bound are what `exists_dominant_shift` (via
+`one_le_tsum_volume_fiber_union`) and the base-angle Córdoba count consume. -/
+theorem exists_measurable_pullback_cover {a v : Plane} (hv : ‖v‖ = 1) {U : ℕ → Set Plane}
+    (hU : ∀ n, IsClosed (U n)) (hcov : affineSegment ℝ a (a + v) ⊆ ⋃ n, U n) :
+    ∃ T : ℕ → Set ℝ, (∀ n, MeasurableSet (T n)) ∧ (∀ n, T n ⊆ Set.Icc (0 : ℝ) 1) ∧
+      (∀ n, (fun t => a + t • v) '' (T n) ⊆ U n) ∧ 1 ≤ volume (⋃ n, T n) := by
+  set φ : ℝ → Plane := fun t => a + t • v with hφ
+  have hφcont : Continuous φ := continuous_const.add (continuous_id.smul continuous_const)
+  set T : ℕ → Set ℝ := fun n => Set.Icc (0 : ℝ) 1 ∩ φ ⁻¹' (U n) with hT
+  refine ⟨T, ?_, fun n => Set.inter_subset_left, ?_, ?_⟩
+  · exact fun n => measurableSet_Icc.inter ((hU n).preimage hφcont).measurableSet
+  · -- forward containment `φ(Tₙ) ⊆ Uₙ`
+    intro n y hy
+    obtain ⟨t, ht, rfl⟩ := hy
+    exact ht.2
+  · -- `1 = vol[0,1] ≤ vol(⋃ₙ Tₙ)`
+    have hcover : Set.Icc (0 : ℝ) 1 ⊆ ⋃ n, T n := by
+      intro t ht
+      have hmem : φ t ∈ affineSegment ℝ a (a + v) := by
+        rw [affineSegment_eq]; exact ⟨t, ht, rfl⟩
+      obtain ⟨n, hn⟩ := Set.mem_iUnion.mp (hcov hmem)
+      exact Set.mem_iUnion.mpr ⟨n, ht, hn⟩
+    calc (1 : ℝ≥0∞) = volume (Set.Icc (0 : ℝ) 1) := by
+            rw [Real.volume_Icc, sub_zero, ENNReal.ofReal_one]
+      _ ≤ volume (⋃ n, T n) := measure_mono hcover
+
 /-! ### The combinatorial core, assembled: fine net ⟶ dominant scale ⟶ shifted subnet
 
 Packaging the two pigeonholes with the shift average into the single statement the geometric wiring
