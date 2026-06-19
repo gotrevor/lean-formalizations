@@ -28,7 +28,7 @@ Kakeya literature (Wolff, *Lectures on Harmonic Analysis*; Mattila, *Fourier Ana
 Dimension*, §22–23). -/
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Cover
 
-open Finset
+open Finset MeasureTheory
 open scoped ENNReal
 
 namespace LeanFormalizations.Kakeya2D
@@ -106,5 +106,35 @@ theorem exists_shift_ge {B : ℕ} (hB : 0 < B) (M : ℕ) (L : ℕ → ℝ≥0∞
       ≤ ∑ _β ∈ range B, S β₀ := Finset.sum_le_sum (fun β hβ => hmax β hβ)
     _ = (range B).card • S β₀ := by rw [Finset.sum_const]
     _ = (B : ℝ≥0∞) * S β₀ := by rw [Finset.card_range, nsmul_eq_mul]
+
+/-! ### Union-measure per-scale total (the localized-Córdoba numerator)
+
+The Córdoba count needs, per net direction, the measure of the **covered set** `A k`
+(`= vol{t : φₖ(t) ∈ some scale-`j` piece}`), i.e. the measure of a *union* of pullback pieces.
+This differs from the per-scale *sum* `∑_{n} vol(Tₙ)` exposed by `exists_pullback_cover`: same-scale
+cover pieces may overlap, so the sum overcounts and the genuine covered length is the union measure.
+The dyadic pigeonhole therefore must run on the union measures `L k j = vol(⋃_{g n = j} Tₙ)`. The next
+lemma supplies the per-direction hypothesis `1 ≤ ∑ⱼ L k j` (the input to the generic
+`exists_global_dominant_scale`): the per-scale union measures total `≥` the measure of the full
+union by countable subadditivity over scales. -/
+
+/-- **Per-scale union measures total ≥ the full union measure.** For any scale function `g` and any
+family `T : ℕ → Set ℝ`, grouping by scale and taking the union per scale loses no covering:
+`vol(⋃ₙ Tₙ) ≤ ∑ⱼ vol(⋃_{n : g n = j} Tₙ)` (countable subadditivity over the scales `j`). In
+particular a covered unit segment (`1 ≤ vol(⋃ₙ Tₙ)`) gives `1 ≤ ∑ⱼ vol(⋃_{g n = j} Tₙ)`, the
+per-direction input the global dominant-scale pigeonhole consumes — now on the genuine covered
+(union) length, not the overcounted sum. No measurability needed (`volume` is an outer measure). -/
+theorem one_le_tsum_volume_fiber_union (g : ℕ → ℕ) {T : ℕ → Set ℝ}
+    (h : 1 ≤ volume (⋃ n, T n)) :
+    1 ≤ ∑' j : ℕ, volume (⋃ n ∈ (g ⁻¹' {j} : Set ℕ), T n) := by
+  refine le_trans h ?_
+  have heq : (⋃ n, T n) = ⋃ j : ℕ, (⋃ n ∈ (g ⁻¹' {j} : Set ℕ), T n) := by
+    ext x
+    simp only [Set.mem_iUnion, Set.mem_preimage, Set.mem_singleton_iff, exists_prop]
+    constructor
+    · rintro ⟨n, hn⟩; exact ⟨g n, n, rfl, hn⟩
+    · rintro ⟨_, n, rfl, hn⟩; exact ⟨n, hn⟩
+  rw [heq]
+  exact measure_iUnion_le _
 
 end LeanFormalizations.Kakeya2D
