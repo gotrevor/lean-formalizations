@@ -171,4 +171,31 @@ theorem hjsw_lower_thirteen : 3 * (13 - 1) ≤ maxNoThreeInLine (2 * 13) := by
       ⟨witness13, witness13_card.symm, witness13_grid, witness13_noThree⟩
   exact le_trans (by norm_num) h
 
+/-! ### Structured witness: the SHEARED-HYPERBOLA construction at `p = 7`
+
+Unlike `witness7` (greedy), this `18 = 3·(7−1)`-point config is the **lift-of-a-base** construction
+that is the current lead for the general `hjsw_lower` (see `Hyperbola.lean`): every point's residue
+mod `7` lies on the sheared hyperbola `y·(2x+1) ≡ 1 (mod 7)` (base
+`{(0,1),(1,5),(2,3),(3,0),(4,4),(5,2),(6,6)}`), and the 18 points are a selection of the base's `4·7`
+lifts into the `14 × 14` grid that avoids every slope-`±1` triple. `native_decide`-certified, off the
+headline axiom path; it anchors the construction family in the kernel (the plain hyperbola `xy≡1`,
+`|B|=6`, cannot reach `18`). -/
+def witness7_shear : Finset (ℕ × ℕ) :=
+  {(0, 1), (0, 8), (1, 12), (2, 3), (2, 10), (4, 11), (5, 2), (5, 9), (6, 13), (7, 1), (8, 12),
+    (9, 3), (10, 0), (11, 4), (11, 11), (12, 2), (12, 9), (13, 6)}
+
+theorem witness7_shear_card : witness7_shear.card = 18 := by decide
+
+theorem witness7_shear_grid : IsGridSet 14 witness7_shear := by
+  intro p hp; fin_cases hp <;> exact ⟨by decide, by decide⟩
+
+theorem witness7_shear_noThree : NoThreeCollinear witness7_shear :=
+  decNoThree_imp (by native_decide)
+
+/-- **HJSW count via the sheared-hyperbola construction at `p = 7`:** the `14 × 14` grid admits
+`18 = 3·(7−1)` points with no three collinear, drawn from the lifts of `y·(2x+1) ≡ 1 (mod 7)`. -/
+theorem hjsw_lower_seven_shear : 3 * (7 - 1) ≤ maxNoThreeInLine (2 * 7) :=
+  le_csSup (bddAbove_grid (2 * 7))
+    ⟨witness7_shear, witness7_shear_card.symm, witness7_shear_grid, witness7_shear_noThree⟩
+
 end LeanFormalizations.NoThreeInLine
