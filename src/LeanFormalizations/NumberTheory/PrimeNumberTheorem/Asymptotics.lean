@@ -20,6 +20,8 @@ see `LSeries/PrimesInAP.lean`) remains the *preferred* discharge; continue this 
 -/
 import Mathlib.Analysis.Asymptotics.Lemmas
 import Mathlib.Topology.Order.Compact
+import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 
 open Filter Topology
 
@@ -57,5 +59,16 @@ theorem eventually_natCast {f : ℝ → Prop} (hf : ∀ᶠ x in atTop, f x) :
 theorem isBigO_natCast {E : Type*} [Norm E] {f g : ℝ → E} (h : f =O[atTop] g) :
     (fun n : ℕ => f n) =O[atTop] fun n : ℕ => g n :=
   h.comp_tendsto tendsto_natCast_atTop_atTop
+
+open Real in
+/-- `log^b x / x^a → 0` at infinity for `a > 0`. (Port of `Real.tendsto_pow_log_div_pow_atTop`, the
+`Mathlib/Analysis/SpecialFunctions/Log/Basic` patch; brick 2 — uses our pin's root-namespace
+`isLittleO_log_rpow_rpow_atTop`.) Used by PNTAnd's `WeakPNT` derivation. -/
+theorem tendsto_pow_log_div_pow_atTop (a b : ℝ) (ha : 0 < a) :
+    Tendsto (fun x ↦ Real.log x ^ b / x ^ a) atTop (nhds 0) := by
+  apply (isLittleO_iff_tendsto' ?_).mp (isLittleO_log_rpow_rpow_atTop b ha)
+  filter_upwards [eventually_gt_atTop 0] with x hx h
+  rw [Real.rpow_eq_zero hx.le ha.ne'] at h
+  exact absurd h hx.ne'
 
 end LeanFormalizations.PrimeNumberTheorem
