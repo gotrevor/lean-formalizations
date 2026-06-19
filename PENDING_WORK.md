@@ -43,6 +43,8 @@ S⊆⋃tₙ with ediam tₙ ≤ r, c ≤ ∑ₙ ediam(tₙ)^d`. The `d=0` endpoi
   localized-Córdoba entry point.
 - **`TubeFractional.volume_tube_ge_frac`** (DONE): `ofReal(2δ‖v‖) ≤ vol(tube a v δ)` for `v≠0` — the
   fractional (length-`‖v‖`) tube area bound, the localized-Córdoba numerator for sub-unit segments.
+- **`Cover.one_le_tsum_ediam_of_covers`** (DONE): covered unit segment ⟹ `∑ₙ ediam(Uₙ) ≥ 1`; and the
+  end-to-end axiom-clean `kakeya_hausdorffContentBound_one` / `hausdorffMeasure_one_ne_zero`.
 
 **Remaining = `kakeya_hausdorffContentBound` (the multi-scale Córdoba estimate, multi-lap).** Given a
 cover `{Uₙ}`, `ediam Uₙ ≤ r`, show `∑ ediam(Uₙ)^d ≳ 1`. The obstruction is **mixed scales** (the
@@ -63,20 +65,26 @@ be arbitrarily small). Plan (finite-net double pigeonhole — cleaner than a mea
 `ofReal(2δ‖v‖) ≤ vol(tube a v δ)` for `v≠0`, via the `e=‖v‖⁻¹•v` frame box (reuses `volume_frame_box`,
 `frame_decomp`; no new change-of-variables). The localized-Córdoba numerator input is now in hand.
 
-**Next-lap entry: the dyadic scale/direction bookkeeping + the two pigeonholes (steps 1–3) and their
-combination with `volume_thickening_tubes_ge` + `volume_tube_ge_frac` (step 4).** Concretely, the
-cleanest landable sub-bricks toward `kakeya_hausdorffContentBound`:
-  (a) **Per-direction covering ⟹ a covered sub-segment.** For a net direction `θ` with `ℓ_θ ⊆ ⋃Uₙ`,
-      formalize `∑ⱼ Lⱼ(θ) ≥ 1` and apply `exists_index_ge_of_tsum_lt` to extract a dominant scale
-      `j(θ)` and a covered sub-segment of length `≥ wⱼ`. (Needs a 1D length/`Real.volume` bound
-      `|ℓ_θ ∩ Uₙ| ≤ ediam Uₙ` — a clean real-analysis brick.)
-  (b) **Direction pigeonhole** over the `N`-net (`exists_index_ge_of_tsum_lt` again) ⟹ a single
-      dominant scale `j*` with `≳N/poly` directions covered.
-  (c) **Assemble step 4:** feed the scale-`j*` pieces as container `E` to `volume_thickening_tubes_ge`
-      (base points = the covered sub-segment endpoints), numerator via `volume_tube_ge_frac` (length
-      `wⱼ*`), `vol(E) ≤ ∑ vol((piece)δ)` via `volume_thickening_le_of_ediam_le` ⟹ piece count `M ≳
-      2^{2j*}/poly` ⟹ `∑_{scale j*} ediam^d ≳ 2^{j*(2-d)}/poly ≥ c`.
-Pick (a) first — it's the cleanest self-contained brick. Reference asked in `ON-LINE-REQUEST.md`. Then assemble steps 1–4 (the dyadic
+**DONE (2026-06-19):** sub-brick (a) core — `Cover.one_le_tsum_ediam_of_covers`: a covered unit
+segment `ℓ ⊆ ⋃Uₙ` forces `∑ₙ ediam(Uₙ) ≥ 1` (pull back along the isometry `φ:t↦a+t•v`; pieces
+`Tₙ={t∈[0,1]|φt∈Uₙ}` cover `[0,1]`, each length `≤ ediam(Uₙ)`; outer-measure subadditivity). Wired
+end-to-end axiom-clean: `kakeya_hausdorffContentBound_one` + `hausdorffMeasure_one_ne_zero`
+(`μH[1]S≠0`, NO sorry) — proof the whole K5 stack composes. (Geometrically the trivial `dimH≥1`.)
+
+**Next-lap entry: the dyadic refinement + double pigeonhole (the `d>1` content, the real crux).**
+The length bound collapses to `ediam`; the `d>1` upgrade must keep the per-scale covered *length*
+`volume(Tₙ)` and group by dyadic scale before bounding. Concretely:
+  (a′) **Refine `one_le_tsum_ediam_of_covers` to expose `1 ≤ ∑ₙ volume(Tₙ)`** (the intermediate, with
+      `Tₙ` the pulled-back covered set), then **group by dyadic scale** `j` of `ediam(Uₙ)`:
+      `1 ≤ ∑ⱼ Lⱼ(θ)`, `Lⱼ(θ)=∑_{n:scale j} volume(Tₙ)`. Pigeonhole (`exists_index_ge_of_tsum_lt`,
+      weights `6/π²(j+1)²`) ⟹ dominant scale `j(θ)` with `Lⱼ(θ) ≳ 1/j²` ⟹ a covered length `≥1/j²`.
+  (b) **Direction pigeonhole** over the `N`-net ⟹ single dominant `j*`, `≳N/poly` directions covered.
+  (c) **Assemble (localized Córdoba):** scale-`j*` pieces = container `E` for
+      `volume_thickening_tubes_ge`, numerator via `volume_tube_ge_frac` (length `wⱼ*`),
+      `vol(E) ≤ ∑ vol((piece)δ)` via `volume_thickening_le_of_ediam_le` ⟹ `M ≳ 2^{2j*}/poly` ⟹
+      `∑_{scale j*} ediam^d ≳ 2^{j*(2-d)}/poly ≥ c`.
+The dyadic-scale reindexing of a `tsum` (a′) is the main new technical hurdle. Reference asked in
+`ON-LINE-REQUEST.md`. Then assemble steps 1–4 (the dyadic
 scale/direction bookkeeping + the two pigeonholes via `exists_index_ge_of_tsum_lt`). Reference asked
 in `ON-LINE-REQUEST.md` (cleanest write-up / existing formalization of Córdoba-for-Hausdorff).
 

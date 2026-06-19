@@ -31,8 +31,14 @@ The repo is **100% axiom-free** — every headline `#print axioms` is the bare t
   inf boundary); `volume_thickening_le_of_ediam_le` (per-piece area `≤π(ρ+δ')²`);
   `exists_index_ge_of_tsum_lt` (weighted pigeonhole). `davies_kakeya_2d` axioms =
   `[propext, sorryAx, Classical.choice, Quot.sound]` (single `sorryAx`, now pinned to
-  the multi-scale Córdoba content bound). Remaining: the dyadic double-pigeonhole +
-  localized Córdoba count (multi-lap; `PENDING_WORK.md` §A).
+  the multi-scale Córdoba content bound). Also built (all axiom-clean): the K4 `L²`
+  refactor `volume_thickening_tubes_ge` (explicit family in any container `E`), the
+  fractional tube area bound `TubeFractional.volume_tube_ge_frac` (`≥2δ‖v‖`), and the
+  per-direction length bound `one_le_tsum_ediam_of_covers` (`∑ediam ≥ 1` from a covered
+  segment) — which composes the whole stack to an **axiom-clean `hausdorffMeasure_one_ne_zero`
+  (`μH[1]S≠0`, NO sorry)**, certifying the K5 reduction/geometry pipeline. Remaining: the
+  `d>1` upgrade = dyadic refinement + double pigeonhole + localized count (multi-lap;
+  `PENDING_WORK.md` §A).
 - **2026-06-19 (Goodstein — PROVED, axiom-clean):** `goodstein_terminates`
   (`∀ m, ∃ N, goodsteinSeq m N = 0`) is fully machine-checked,
   `#print axioms = [propext, Classical.choice, Quot.sound]`. `Defs.lean` carries

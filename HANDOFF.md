@@ -32,14 +32,17 @@ lacks). It reduces to the honest, mathlib-native **Hausdorff content bound**. Ne
   container `E` (drops `IsKakeya`); `volume_thickening_mul_ge` is its `E:=Sδ` corollary.
 - `TubeFractional.volume_tube_ge_frac` — `ofReal(2δ‖v‖) ≤ vol(tube a v δ)`, the fractional
   (length-`‖v‖`) tube area bound (localized-Córdoba numerator).
+- `Cover.one_le_tsum_ediam_of_covers` — covered unit segment ⟹ `∑ₙ ediam(Uₙ) ≥ 1`; and the
+  end-to-end **axiom-clean** `hausdorffMeasure_one_ne_zero` (`μH[1]S≠0`, NO sorry — the K5 stack
+  composes).
 
-## Next brick — the dyadic pigeonhole assembly (multi-lap; `PENDING_WORK.md` §A)
-**All geometric/L² inputs are now built and axiom-clean.** Remaining = the bookkeeping + double
-pigeonhole. Recommended entry = sub-brick (a): for a net direction `θ` with `ℓ_θ ⊆ ⋃Uₙ`, formalize
-`∑ⱼ Lⱼ(θ) ≥ 1` and pigeonhole (`exists_index_ge_of_tsum_lt`) to a dominant scale + covered
-sub-segment, needing the clean 1D brick `|ℓ_θ ∩ Uₙ| ≤ ediam Uₙ`. Then (b) direction pigeonhole and
-(c) assemble step 4 via `volume_thickening_tubes_ge` + `volume_tube_ge_frac`. Online ref requested in
-`ON-LINE-REQUEST.md` — not blocking.
+## Next brick — the dyadic refinement + double pigeonhole (the `d>1` content, `PENDING_WORK.md` §A)
+**All geometric/L² inputs are now built and axiom-clean, and the pipeline composes axiom-clean at
+`d=1`.** The remaining real crux is the `d>1` upgrade: refine `one_le_tsum_ediam_of_covers` to keep
+the per-scale covered length `volume(Tₙ)`, **group by dyadic scale** (the main technical hurdle = a
+`tsum` reindex), pigeonhole over scales then over the `N`-net directions, and assemble the localized
+Córdoba count via `volume_thickening_tubes_ge` + `volume_tube_ge_frac` + `volume_thickening_le_of_ediam_le`.
+Online ref requested in `ON-LINE-REQUEST.md` — not blocking.
 
 ## Invariants
 - Defs (`IsKakeya`, `KakeyaSetConjectureDim`) are the frozen audit surface — do not edit.
