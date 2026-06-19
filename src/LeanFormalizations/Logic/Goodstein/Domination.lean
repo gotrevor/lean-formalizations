@@ -433,6 +433,25 @@ theorem omega_le_seqONote_repr {n j : ℕ} (hj : j ≤ n) :
   show (ω : Ordinal) ≤ toOrdinal (j + 2) (goodsteinSeq (n + 2) j)
   rw [← hbeq]; exact hmono_le (j + 2) _ hval
 
+/-- **Telescoped leading-exponent lower bound:** `Nat.log 2 m ≤ leadExp_i + i` for `i + 1 ≤ m`,
+i.e. `leadExp_i ≥ (log₂ m) − i`. The leading exponent starts at `log₂ m` and drops by `≤ 1` per
+step (`leadExp_drop_le_one`, applicable since the value stays `≥` base over `[0, m)`). So the
+descent ordinal keeps a leading exponent `≥ 2` — hence `seqOrd m i ≥ ω²` — for the first
+`~log₂ m` steps. (The genuine `≫ m`-step persistence needs the steps-between-drops recursion.) -/
+theorem leadExp_ge_sub (m : ℕ) : ∀ i, i + 1 ≤ m →
+    Nat.log 2 m ≤ Nat.log (base i) (goodsteinSeq m i) + i := by
+  intro i
+  induction i with
+  | zero => intro _; show Nat.log 2 m ≤ Nat.log 2 m + 0; omega
+  | succ i ih =>
+    intro hi
+    have hib : base i ≤ goodsteinSeq m i := by
+      have := goodsteinSeq_ge_init m i (by omega)
+      simp only [base]; omega
+    have hdrop := leadExp_drop_le_one m i hib
+    have hih := ih (by omega)
+    omega
+
 /-- The Goodstein value drops by **at most one** per step (`bump b v ≥ v`, so
 `goodsteinSeq m (j+1) = bump _ v − 1 ≥ v − 1`). Telescoped: `goodsteinSeq m j ≤
 goodsteinSeq m (j + i) + i` — the value `i` steps later is at least `(value now) − i`. -/
