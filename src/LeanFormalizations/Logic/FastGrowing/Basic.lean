@@ -253,6 +253,67 @@ theorem fastGrowing_monotone_omega' : Monotone (fastGrowing (oadd 1 1 0)) := by
   exact fastGrowing_monotone_of_succ_chain_limit hfs
     (fun k => fundamentalSequence_ofNat_succ (k + 1)) (fastGrowing_ofNat_monotone 1)
 
+/-- **`f_{ω·(j+1)}` is monotone, for every `j` — the whole `ω·k` family.** Each `ω·(j+1)`
+(`= oadd 1 j.succPNat 0`) is a successor-chain limit whose bottom level is `ω·j + 1`, a
+notation-successor of `ω·j`; so monotonicity propagates up the `ω·k` ladder by induction
+on `k`, with `ω·1 = ω` (`fastGrowing_monotone_omega'`) as the base. This is the first
+*infinite family* of limit levels proved monotone — still all `β+ω`-type, but it exercises
+the successor-chain engine on genuinely varying notations and is the lemma the `ω^2`
+index step consumes. -/
+theorem fastGrowing_monotone_omega_mul (j : ℕ) :
+    Monotone (fastGrowing (oadd 1 j.succPNat 0)) := by
+  induction j with
+  | zero => exact fastGrowing_monotone_omega'
+  | succ j ih =>
+      have hlim : fundamentalSequence (oadd 1 (j + 1).succPNat 0)
+          = Sum.inr (fun i => oadd 1 j.succPNat (ofNat (i + 1))) := rfl
+      refine fastGrowing_monotone_of_succ_chain_limit hlim (fun k => rfl) ?_
+      have hsucc0 : fundamentalSequence (oadd 1 j.succPNat (ofNat (0 + 1)))
+          = Sum.inl (some (oadd 1 j.succPNat 0)) := rfl
+      exact fastGrowing_monotone_succ hsucc0 ih
+
+/-- An `oadd` whose tail is a *finite successor* `ofNat (t+1)` is itself a notation
+successor (of the same `oadd` with tail `ofNat t`). The structural fact powering every
+"finite tail" successor chain. -/
+theorem fundamentalSequence_oadd_ofNat_succ (a : ONote) (m : ℕ+) (t : ℕ) :
+    fundamentalSequence (oadd a m (ofNat (t + 1))) = Sum.inl (some (oadd a m (ofNat t))) := by
+  cases t <;> rfl
+
+/-- **The `ω^2` index step — the first genuine A3 instance outside the successor-chain
+class, proved axiom-clean.** `ω^2`'s fundamental sequence `i ↦ ω·(i+1)` is *not* a
+successor chain (consecutive `ω·(i+1)`, `ω·(i+2)` are both limits). The classical trick:
+`ω·(n+2)` descends *at index `n+1`* to `ω·(n+1) + (n+2)`, which **is** reachable from
+`ω·(n+1)` by a finite successor chain of length `n+2`. So the index step collapses to
+`fastGrowing_succ_chain_mono` after one limit unfolding — the concrete realization of the
+Bachmann "descent connects the two indices" property. -/
+theorem fastGrowing_omega_sq_index_step (n : ℕ) :
+    fastGrowing (oadd 1 n.succPNat 0) (n + 1)
+      ≤ fastGrowing (oadd 1 (n + 1).succPNat 0) (n + 1) := by
+  have hlim : fundamentalSequence (oadd 1 (n + 1).succPNat 0)
+      = Sum.inr (fun i => oadd 1 n.succPNat (ofNat (i + 1))) := rfl
+  rw [fastGrowing_limit _ hlim]
+  have hchain : ∀ t, fundamentalSequence (oadd 1 n.succPNat (ofNat (t + 1)))
+      = Sum.inl (some (oadd 1 n.succPNat (ofNat t))) :=
+    fun t => fundamentalSequence_oadd_ofNat_succ 1 n.succPNat t
+  have key := fastGrowing_succ_chain_mono (g := fun t => oadd 1 n.succPNat (ofNat t))
+    hchain (m := 0) (n := n + 2) (Nat.zero_le _) (x := n + 1) (Nat.succ_le_succ (Nat.zero_le n))
+  simpa using key
+
+/-- **`f_{ω^2}` is monotone, axiom-clean.** The first limit level *outside* the
+`β+ω` (successor-chain) class proved monotone — a real step into the hard A3 regime.
+The limit step `f_{ω·(n+1)}(n) ≤ f_{ω·(n+2)}(n+1)` is `fastGrowing_monotone_omega_mul`
+(argument monotonicity at the fixed index `ω·(n+1)`) followed by
+`fastGrowing_omega_sq_index_step` (the genuine index increment). -/
+theorem fastGrowing_monotone_omega_sq : Monotone (fastGrowing (oadd (ofNat 2) 1 0)) := by
+  have hlim : fundamentalSequence (oadd (ofNat 2) 1 0)
+      = Sum.inr (fun i => oadd 1 i.succPNat 0) := rfl
+  refine monotone_nat_of_le_succ (fun n => ?_)
+  rw [fastGrowing_limit _ hlim]
+  calc fastGrowing (oadd 1 n.succPNat 0) n
+      ≤ fastGrowing (oadd 1 n.succPNat 0) (n + 1) :=
+        fastGrowing_monotone_omega_mul n (Nat.le_succ n)
+    _ ≤ fastGrowing (oadd 1 (n + 1).succPNat 0) (n + 1) := fastGrowing_omega_sq_index_step n
+
 /-- **Monotonicity in the argument, successor form** `f_o(n) ≤ f_o(n+1)`.
 Well-founded recursion on `o`; the limit case is reduced to the single crux
 `fastGrowing_fundSeq_step`, everything else is `le_fastGrowing` + iterate monotonicity. -/
