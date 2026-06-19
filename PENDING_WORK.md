@@ -44,22 +44,30 @@ both take the selection as a HYPOTHESIS — no new axioms):**
   a θ+t·dir θ ∈ ⋃_{g n=j} C n} dθ`. Assembled from the keystone + `one_le_tsum_volume_fiber_union`
   (per-direction `∑ⱼ ℓⱼ ≥ 1`) + Tonelli (`lintegral_tsum`) + the `scaleWeight` pigeonhole.
 
-**TWO genuinely-deep inputs remain to deploy the route on a real Kakeya set (both reference-gated,
-`ON-LINE-REQUEST.md` UPDATE 5):**
-1. **Measurable selection** `∃ measurable a, ∀θ, segment(a θ,θ) ⊆ E` for the Fσ Kakeya set `E =
-   ⋃ closure(tₙ)`. mathlib gap (descriptive set theory). True theorem (KRN/JvN). Likely multi-lap
-   infra unless a bespoke explicit selection (argmin-‖a‖ over the closed-valued `B(θ)`) works.
-2. **Single-scale continuum Córdoba count** `(∫ℓ)² ≲ vol(thickening)·log(1/δ)` (Kakeya maximal `L²`
-   over the continuum of directions) — the integral analog of the proven discrete `cordoba_cover_count`.
-   A genuinely-new analytic build (continuum overlap integral `∫∫ vol(T_θ∩T_φ)dθdφ`).
+**UPDATE (same lap, cont.) — the continuum Córdoba is NOT needed; spine COMPLETE.** Architecture
+insight (`CASE_B_ANALYSIS.md`): once `j*` is the *uncapped* dominant scale, the count is done at its
+own resolution `2⁻ʲ*` by the **existing discrete `caseA_content`**, fed by a **continuous
+shift-average**. So no continuum Córdoba `L²` build is needed. The continuous shift-average is now
+**PROVEN** this lap: `exists_shift_ge_integral` (`MeasurableRoute.lean`, axiom-clean) — for measurable
+`f` with `∫_{[0,1]}f < ⊤`, some `α∈[0,2⁻ʲ)` has `2ʲ·∫f ≤ ∑_{i<2ʲ} f(α+i·2⁻ʲ)` (cell tiling +
+translation invariance + `ae_eq_of_ae_le_of_lintegral_le`). The whole measure-theoretic SPINE of the
+honest route (steps 2–4) is now proven: `measurable_coveredLength` → `exists_continuum_dominant_scale`
+→ `exists_shift_ge_integral` → existing `caseA_content`.
 
-**NEXT-LAP ENTRY:** harvest any `ON-LINE-FINDINGS-*` for UPDATE 5 first. Then, if no findings: either
-(a) build the single-scale continuum Córdoba count (input 2 — the larger but self-contained analytic
-brick; everything feeding it is in-repo), or (b) the content-assembly bridge `(continuum Córdoba count)
-+ exists_continuum_dominant_scale ⟹ ∑ ediam^d ≥ c` (reusing `content_ratio_lower`'s
-exponential-beats-poly arithmetic), giving a fully hypothesis-gated `kakeya_hausdorffContentBound`
-modulo exactly inputs 1 & 2. The discrete Case-A/B path (`Engine.kakeya_subresolution_content`) stays
-as the live critical path until the measurable route is complete — do NOT delete it.
+**ONLY two items remain (in order):**
+1. **(W) Wiring** (no new axioms): `kakeya_hausdorffContentBound_of_measurableSelection` taking a
+   measurable base-point selection as a *hypothesis* — reduce to closed pieces (Engine does this),
+   build `ℓ_{j*}`, apply the three spine lemmas + `caseA_content` (uncapped `g = dyadicIdx` gives the
+   genuine scale-`j*` window; finite/infinite-fiber split as in Engine). Mirrors the Engine assembly
+   at the *uncapped* dominant scale ⟹ no Case B. A real ~150-line assembly but all pieces proven.
+2. **(S) Measurable selection** `∃ measurable a, ∀θ, segment(a θ,θ) ⊆ E` for the Fσ Kakeya set. The
+   ONE genuine mathlib gap (descriptive set theory; KRN/JvN; true theorem). Reference-gated
+   (`ON-LINE-REQUEST.md` UPDATE 5 ask 1). Possibly a bespoke explicit selection (argmin-‖a‖ over the
+   closed-valued `B(θ)`) sidesteps full KRN.
+
+**NEXT-LAP ENTRY:** harvest any `ON-LINE-FINDINGS-*` (UPDATE 5) first. Then do (W) (it's all-proven
+pieces; gives a hypothesis-gated headline), then attack (S). The discrete Case-A/B path
+(`Engine.kakeya_subresolution_content`) stays the live critical path until (W)+(S) land — do NOT delete it.
 
 ### A0″. ⭐ MILESTONE (2026-06-19, Case-A discharge lap): opaque dominant-scale axiom GONE; Case B isolated.
 

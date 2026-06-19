@@ -88,11 +88,11 @@ the discrete route was invented to dodge.
    with `scaleWeight j* ≤ ∫_{[0,1]} ℓ_{j*}(θ) dθ`. This is `exists_continuum_dominant_scale`
    (**proven this lap**) — **cap-free, so no Case B**: `j*` is the *genuine* dyadic scale (the fiber
    `{g n = j*}` has the real diameter window `(2⁻⁽ʲ*⁺¹⁾, 2⁻ʲ*]`, no `min(·,J)` conflation).
-3. **Continuous shift-average** (the next brick — bounded measure theory, **no deep machinery**, was
-   blocked *only* by measurability, which (2) now supplies): partition `[0,1)` into the `2^{j*}` cells
-   `[i·2⁻ʲ*, (i+1)·2⁻ʲ*)` and substitute `θ = α + i·2⁻ʲ*`; then
-   `∫_{[0,1]} ℓ_{j*} = ∫_{[0,2⁻ʲ*)} (∑_{i<2^{j*}} ℓ_{j*}(α + i·2⁻ʲ*)) dα`, so **some base angle `α`**
-   has `∑_{i<2^{j*}} ℓ_{j*}(α + i·2⁻ʲ*) ≥ 2^{j*}·∫ℓ_{j*} ≥ 2^{j*}·scaleWeight j*` — exactly the
+3. **Continuous shift-average** — `exists_shift_ge_integral` (**PROVEN this lap**, axiom-clean; bounded
+   measure theory, no deep machinery; was blocked *only* by measurability, which (2) supplies):
+   partition `[0,1)` into the `2^{j*}` cells `[i·2⁻ʲ*, (i+1)·2⁻ʲ*)` and substitute `θ = α + i·2⁻ʲ*`;
+   then `∫_{[0,1]} ℓ_{j*} = ∫_{[0,2⁻ʲ*)} (∑_{i<2^{j*}} ℓ_{j*}(α + i·2⁻ʲ*)) dα`, so **some base angle
+   `α`** has `∑_{i<2^{j*}} ℓ_{j*}(α + i·2⁻ʲ*) ≥ 2^{j*}·∫ℓ_{j*} ≥ 2^{j*}·scaleWeight j*` — exactly the
    discrete numerator. (Continuous analog of the proven `exists_shift_ge`; the integral never exceeds
    `1` here, so the `∫=⊤` corner is vacuous.)
 4. **Existing discrete `caseA_content`** (already proven, `NetThinning.lean`): the shifted `2^{j*}`-net
@@ -103,9 +103,24 @@ the discrete route was invented to dodge.
 
 **Key consequence:** the earlier "two deep inputs (selection + continuum Córdoba)" framing was
 pessimistic. The continuum Córdoba `L²` is **not** needed — the discrete `caseA_content` suffices once
-the dominant scale is found at the right (uncapped) resolution. So the route reduces to **one deep
-axiom (measurable selection)** + **one bounded provable brick (the continuous shift-average, step 3)**
-+ already-proven machinery. That is a materially better state than the current ad-hoc Case-B residual.
+the dominant scale is found at the right (uncapped) resolution. Steps 2–4 of the spine are now all
+**proven, axiom-clean** (`exists_continuum_dominant_scale`, `exists_shift_ge_integral`, and the
+existing `caseA_content`). So the route reduces to exactly **one deep axiom (measurable selection,
+step 1)** + the **wiring** (assemble 2→3→4 into `kakeya_hausdorffContentBound`, gating only on the
+selection) — a materially better state than the ad-hoc Case-B residual.
+
+**Remaining work (next lap), in order:**
+- **(W) Wiring.** State `kakeya_hausdorffContentBound_of_measurableSelection` taking a measurable
+  base-point selection as a *hypothesis* (zero new axioms): reduce to closed pieces (Engine already
+  does this), build `ℓ_{j*}` via `measurable_coveredLength`, apply `exists_continuum_dominant_scale`
+  for `j*`, `exists_shift_ge_integral` for the base angle `α`, construct the `A_i` covered sets at
+  directions `dir(α + i·2⁻ʲ*)`, and feed `caseA_content` (uncapped `g = dyadicIdx` gives the genuine
+  scale-`j*` window; finite/infinite-fiber split as in `Engine`). Mirrors the existing Engine assembly
+  but at the *uncapped* dominant scale — so **no Case B**.
+- **(S) Selection.** Discharge the measurable base-point selection for an Fσ Kakeya set (KRN/JvN, or a
+  bespoke explicit selection). The one genuine mathlib gap; reference-gated (`ON-LINE-REQUEST` UPDATE
+  5 ask 1). Until then, (W) leaves it as a clean hypothesis and `Engine.kakeya_subresolution_content`
+  stays the live critical path.
 
 ## Do NOT relitigate
 - The fixed-net L² sum for `d>1` (proven divergent — (C1) above is the same fact).
