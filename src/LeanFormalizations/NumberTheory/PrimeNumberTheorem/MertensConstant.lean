@@ -560,4 +560,30 @@ lemma abel_boundary_tendsto {s : ℝ} (hs : 1 < s) :
   filter_upwards with n
   rw [sum_Icc_primeRecipCoeff]
 
+/-- **Abel bigO domination** (`hg_dom` of `tendsto_sum_mul_atTop_nhds_one_sub_integral₀`): the integrand
+`f'(t)·∑_{k≤⌊t⌋} c(k) = (1−s)t^{−s}·∑_{p≤⌊t⌋}1/p` is `O(t^{−s}(1+log t))` at `∞` (constant `|1−s|`, using
+`∑_{p≤⌊t⌋}1/p ≤ 1 + log⌊t⌋ ≤ 1 + log t`).  The dominator's integrability is `hg_int` (delegated). -/
+lemma abel_hg_dom {s : ℝ} (hs : 1 < s) :
+    (fun t : ℝ => deriv (fun u : ℝ => u ^ (1 - s)) t * ∑ k ∈ Finset.Icc 0 ⌊t⌋₊, primeRecipCoeff k)
+      =O[atTop] (fun t : ℝ => t ^ (-s) * (1 + Real.log t)) := by
+  rw [Asymptotics.isBigO_iff]
+  refine ⟨|1 - s|, ?_⟩
+  filter_upwards [eventually_ge_atTop (1 : ℝ)] with t ht
+  have ht0 : (0 : ℝ) < t := by linarith
+  have hfloor1 : 1 ≤ ⌊t⌋₊ := Nat.le_floor (by exact_mod_cast ht)
+  have hderiv : deriv (fun u : ℝ => u ^ (1 - s)) t = (1 - s) * t ^ (-s) := deriv_rpow_one_sub ht0
+  have htneg : (0 : ℝ) < t ^ (-s) := Real.rpow_pos_of_pos ht0 _
+  have hps0 : 0 ≤ primeRecipSum ⌊t⌋₊ := primeRecipSum_nonneg _
+  have hlogt : 0 ≤ Real.log t := Real.log_nonneg ht
+  have hps_le : primeRecipSum ⌊t⌋₊ ≤ 1 + Real.log t := by
+    refine (primeRecipSum_le_one_add_log _).trans ?_
+    have : Real.log ⌊t⌋₊ ≤ Real.log t :=
+      Real.log_le_log (by exact_mod_cast hfloor1) (Nat.floor_le ht0.le)
+    linarith
+  have hprod1 : (0 : ℝ) ≤ t ^ (-s) * primeRecipSum ⌊t⌋₊ := mul_nonneg htneg.le hps0
+  have hprod2 : (0 : ℝ) ≤ t ^ (-s) * (1 + Real.log t) := mul_nonneg htneg.le (by linarith)
+  rw [hderiv, sum_Icc_primeRecipCoeff, Real.norm_eq_abs, Real.norm_eq_abs, mul_assoc, abs_mul,
+    abs_of_nonneg hprod1, abs_of_nonneg hprod2]
+  exact mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hps_le htneg.le) (abs_nonneg _)
+
 end LeanFormalizations.Mertens
