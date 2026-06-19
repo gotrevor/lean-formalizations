@@ -26,13 +26,17 @@ The charter headline **C3 is done**; ladder A–C complete. Both directions mach
   three), but the per-level closures remain as anti-vacuity witnesses — don't delete them.
 
 ## Next (the lap-12 frontier — START HERE)
-1. **B4 `H_{ω^α} = f_α`** — the last charter ladder item; **lap 11 mapped the wall (see `PENDING_WORK.md`
-   → NEXT FRONTIER for the measured data).** Findings: the clean form is `H_{ω^α}(n)+1 = f_α(n+1)`,
-   TRUE for finite/successor α (measured α=0,1,2) but **FALSE at limit α** (measured: `H_{ω^ω}(1)+1=8`
-   ≠ `f_ω(2)=2048`) due to the `ω[n]=n+1` index shift picking `q n` vs `q(n+1)`. Correct attack: build
-   the **Hardy additive law `H_{α+β}(n)=H_α(H_β(n))`** (⇒ coefficient lemma `H_{ω^β·j}=(H_{ω^β})^[j]`)
-   FIRST — it's the key brick for the (true) finite-α restricted B4 and is a clean reusable target /
-   good Aristotle candidate. `hardy_le_fastGrowing` already gives the `≤`-half generally.
+1. **B4 `H_{ω^α} = f_α`** — the last charter ladder item; **lap 11 mapped the wall AND banked the root
+   brick.** Findings (measured): clean form `H_{ω^α}(n)+1 = f_α(n+1)` is TRUE at finite/successor α
+   (α=0,1,2) but **FALSE at limit α** (`H_{ω^ω}(1)+1=8 ≠ f_ω(2)=2048`, the `ω[n]=n+1` shift). So aim
+   for finite-α restricted B4 `H_{ω^k}(n)+1 = f_k(n+1)`.
+   - **DONE this lap (`5bf832f`, axiom-clean):** `hardy_oadd_tail` — the non-absorbing additive law
+     `hardy (oadd a m b) n = hardy (oadd a m 0) (hardy b n)`. The root brick.
+   - **NEXT (mechanical given the brick; see `PENDING_WORK.md` for the worked derivation):** the
+     coefficient lemma `hardy (oadd β j 0) n = (hardy (oadd β 1 0))^[j] n` (induct on `j`; step =
+     case β succ/limit → `(ω^β·(j+1))[n]` is an `oadd β j TAIL` → peel with `hardy_oadd_tail`; mind the
+     `ℕ+` `natPred`/`succPNat` arithmetic in the `fundamentalSequence` match). Then finite B4 by
+     induction on `k`. `hardy_le_fastGrowing` already gives the `≤`-half generally.
 2. **DO NOT** re-iterate the now-COMPLETE two-sided growth theorem (lower `goodsteinLength_dominates_fastGrowing`
    + upper `goodsteinLength_le_fastGrowing_ordinal`) or reopen the superseded `ppCount` sparsity route.
 3. Optional sharpenings (lower priority): strict domination removing `+2` (needs general index

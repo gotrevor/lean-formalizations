@@ -62,13 +62,19 @@ exact behavior — record before re-attacking:**
     the **Hardy additive law `H_{α+γ}(n) = H_α(H_γ(n))` for non-absorbing γ** (γ's CNF terms `≤` α's
     trailing term). NOTE the absorption caveat: the *general* `H_{α+β}=H_α∘H_β` is FALSE
     (`1+ω=ω` ⇒ `H_{1+ω}=H_ω` but `H_1∘H_ω ≠ H_ω`); only the non-absorbing form holds.
-  - **ROOT BRICK = the non-absorbing Hardy additive law.** Build it FIRST (clean, reusable; needs
-    ONote addition `ONote.add`/`repr_add` + the fundamental-sequence-of-a-sum relation
-    `fundamentalSequence (oadd a m b)` peeling the tail `b`, which the mathlib def already does:
-    `fundSeq(oadd a m b)` with `fundSeq b = inr f` gives `inr (fun i => oadd a m (f i))` — i.e. the
-    fund. seq. acts on the TAIL, exactly the additive-law recursion). The fund-seq def at
-    `Notation.lean:922` is the key — the tail-peeling branch is the additive step. Good Aristotle
-    candidate once scoped.
+  - **ROOT BRICK = the non-absorbing Hardy additive law — ✅ DONE (lap 11, `5bf832f`, axiom-clean):**
+    `hardy_oadd_tail (a m b n) : hardy (oadd a m b) n = hardy (oadd a m 0) (hardy b n)` in
+    `Logic/FastGrowing/Hardy.lean`. Tail-peeling by well-founded recursion on `b`; no ONote-addition
+    machinery needed (the fund-seq def at `Notation.lean:922` already acts on the tail).
+  - **NEXT concrete step — the coefficient lemma** `hardy (oadd β j 0) n = (hardy (oadd β 1 0))^[j] n`
+    (`j ≥ 1`, `β ≠ 0`). Derivation (worked out lap 11, just needs writing — mind the `ℕ+` coefficient
+    arithmetic): induct on `j`; the step is `hardy (oadd β (j+1) 0) n = hardy (oadd β j 0)
+    (hardy (oadd β 1 0) n)`, proved by casing `β` (successor: `fundamentalSequence_omega_pow_succ`;
+    limit: `_omega_pow_limit`) — in both, `(ω^β·(j+1))[n] = ω^β·j + (ω^β)[n] = oadd β j (TAIL)` where
+    `hardy TAIL n = hardy (oadd β 1 0) n`, so `hardy_oadd_tail` peels it to
+    `hardy (oadd β j 0) (hardy (oadd β 1 0) n)`. Then finite B4 `H_{ω^k}(n)+1 = f_k(n+1)` by induction
+    on `k` (the `k→k+1` step is exactly `(ω^{k+1})[n]=ω^k·(n+1)` + this coefficient lemma + the
+    measured base/offset). β=0 (`ω^0=1`, finite) handled separately via `hardy_ofNat`.
   - For limit α, do NOT chase the clean identity (false). The honest general statement is likely an
     *inequality* sandwich or a statement along the successor-α cofinal subsequence only.
   - `hardy_le_fastGrowing` (lap 11, axiom-clean) already gives the `≤`-at-same-index half generally.
