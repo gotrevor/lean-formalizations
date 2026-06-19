@@ -546,18 +546,65 @@ theorem shearSel_xres_of_yres {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P R : �
     simpa using this
   exact mul_left_cancel₀ h2 (by linear_combination hu)
 
-/-- **The cross-column slope crux** (the irreducible counting core). Two distinct kept lifts `P,Q`
-of one column, and a kept point `R` of a *different* column (its residues differ from `P`'s), are
-never collinear. `P,Q` lie on a slope `0/∞/±1` line; `shearY_injective` kills `0`/`∞`; the
-closed-form drop rule kills `±1` (no third kept lift lands on a kept diagonal/antidiagonal line —
-the heart of HJSW). Verified for all primes `≤ 109`; `native_decide` at `p ≤ 13`. -/
+/-- **The slope-`±1` diagonal core** — the irreducible heart of HJSW, now isolated to the case where
+`P,Q` (lifts of one column) differ in BOTH coordinates (a diagonal/antidiagonal pair, slope `±1`),
+and `R` is a kept lift of a different column. This is where the closed-form drop rule does its work:
+no third kept lift lands on a kept slope-`±1` line. Verified for all primes `≤ 109`; `native_decide`
+at `p ≤ 13`. -/
+theorem shearSel_cross_diag {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R : ℕ × ℕ}
+    (hP : P ∈ shearSel p) (hQ : Q ∈ shearSel p) (hR : R ∈ shearSel p)
+    (hres : (P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p))
+    (hRdiff : ¬ ((R.1 : ZMod p) = (P.1 : ZMod p) ∧ (R.2 : ZMod p) = (P.2 : ZMod p)))
+    (hPQ : P ≠ Q) (hPR : P ≠ R) (hQR : Q ≠ R) (hx1 : P.1 ≠ Q.1) (hy1 : P.2 ≠ Q.2) :
+    ¬ Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)) := by
+  sorry
+
+/-- **The cross-column slope crux.** Two distinct kept lifts `P,Q` of one column, and a kept point
+`R` of a *different* column (its residues differ from `P`'s), are never collinear. The slope `0`/`∞`
+cases (`P,Q` share a coordinate) are discharged here via curve-functionality
+(`shearSel_{y,x}res_of_{x,y}res`): a third point on a horizontal/vertical line through `P,Q` would
+share `P`'s residues, contradicting `hRdiff`. The remaining slope-`±1` case is `shearSel_cross_diag`. -/
 theorem shearSel_cross_column {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R : ℕ × ℕ}
     (hP : P ∈ shearSel p) (hQ : Q ∈ shearSel p) (hR : R ∈ shearSel p)
     (hres : (P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p))
     (hRdiff : ¬ ((R.1 : ZMod p) = (P.1 : ZMod p) ∧ (R.2 : ZMod p) = (P.2 : ZMod p)))
     (hPQ : P ≠ Q) (hPR : P ≠ R) (hQR : Q ≠ R) :
     ¬ Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)) := by
-  sorry
+  intro hcol
+  have hdet := collinear_imp_det3_zero hcol
+  simp only [det3, toReal] at hdet
+  have hZ : ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) - ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) = 0 := by
+    exact_mod_cast hdet
+  have cX : (R.1 : ZMod p) = (P.1 : ZMod p) → False := fun hh =>
+    hRdiff ⟨hh, shearSel_yres_of_xres hp hp2 hP hR hh⟩
+  have cY : (R.2 : ZMod p) = (P.2 : ZMod p) → False := fun hh =>
+    hRdiff ⟨shearSel_xres_of_yres hp hp2 hP hR hh, hh⟩
+  by_cases hx1 : P.1 = Q.1
+  · -- vertical line: P,Q share x, so R must too ⇒ same residue
+    have hP2neQ2 : P.2 ≠ Q.2 := fun e => hPQ (Prod.ext hx1 e)
+    have hy1 : (Q.2 : ℤ) - P.2 ≠ 0 := by
+      rw [sub_ne_zero]; intro e; exact hP2neQ2 ((by exact_mod_cast e : Q.2 = P.2).symm)
+    have hx0 : (Q.1 : ℤ) - P.1 = 0 := by rw [hx1]; ring
+    have hmul : ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) = 0 := by
+      rw [hx0, zero_mul] at hZ; linarith
+    rcases mul_eq_zero.mp hmul with h | h
+    · apply cX
+      have hRP : R.1 = P.1 := by exact_mod_cast sub_eq_zero.mp h
+      rw [hRP]
+    · exact hy1 h
+  · by_cases hy1 : P.2 = Q.2
+    · -- horizontal line: P,Q share y, so R must too
+      have hx1' : (Q.1 : ℤ) - P.1 ≠ 0 := by
+        rw [sub_ne_zero]; intro e; exact hx1 ((by exact_mod_cast e : Q.1 = P.1).symm)
+      have hy0 : (Q.2 : ℤ) - P.2 = 0 := by rw [hy1]; ring
+      have hmul : ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) = 0 := by
+        rw [hy0, mul_zero] at hZ; linarith
+      rcases mul_eq_zero.mp hmul with h | h
+      · exact hx1' h
+      · apply cY
+        have hRP : R.2 = P.2 := by exact_mod_cast sub_eq_zero.mp h
+        rw [hRP]
+    · exact shearSel_cross_diag hp hp2 hP hQ hR hres hRdiff hPQ hPR hQR hx1 hy1 hcol
 
 theorem shearSel_two_lifts_line {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R : ℕ × ℕ}
     (hP : P ∈ shearSel p) (hQ : Q ∈ shearSel p) (hR : R ∈ shearSel p)
