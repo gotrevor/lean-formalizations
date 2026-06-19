@@ -25,6 +25,7 @@ import LeanFormalizations.Logic.Goodstein.DominationBaseCases
 import LeanFormalizations.Logic.Goodstein.DominationCorollary
 import LeanFormalizations.Logic.Goodstein.DominationOmega
 import LeanFormalizations.Logic.Goodstein.TowerDomination
+import LeanFormalizations.Logic.Goodstein.GrowthStatement
 import LeanFormalizations.Logic.FastGrowing.Basic
 import LeanFormalizations.Logic.FastGrowing.Hardy
 import LeanFormalizations.Logic.FastGrowing.Domination
