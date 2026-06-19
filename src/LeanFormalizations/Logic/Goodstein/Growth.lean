@@ -192,6 +192,42 @@ theorem toONote_oadd (b : ℕ) (hb : 2 ≤ b) {c e s : ℕ} (hc : 1 ≤ c) (hcb 
   congr 1
   exact PNat.coe_injective (by simpa using PNat.toPNat'_coe hc)
 
+/-- Single-digit notation: for `1 ≤ d < b`, `toONote b d = oadd 0 ⟨d,_⟩ 0` (the finite
+ordinal `d`). Special case of `toONote_oadd` with exponent and remainder zero. -/
+theorem toONote_single (b : ℕ) (hb : 2 ≤ b) {d : ℕ} (hd1 : 1 ≤ d) (hdb : d < b) :
+    toONote b d = oadd 0 ⟨d, hd1⟩ 0 := by
+  simpa using toONote_oadd b hb hd1 hdb (show (0 : ℕ) < b ^ 0 by simp)
+
+/-- `fundamentalSequence` of `oadd 0 C 0` (a finite ordinal `C`): always a successor —
+predecessor `0` when `C = 1`, else `oadd 0 (C-1) 0`. Read off the definition's nested match. -/
+theorem fundamentalSequence_oadd_zero_zero (C : ℕ+) :
+    fundamentalSequence (oadd 0 C 0) =
+      match C.natPred with
+      | 0 => Sum.inl (some 0)
+      | j + 1 => Sum.inl (some (oadd 0 j.succPNat 0)) := by
+  conv_lhs => rw [fundamentalSequence]
+  simp only [show fundamentalSequence (0 : ONote) = Sum.inl none from rfl]
+  rcases C.natPred with _ | j <;> rfl
+
+/-- **The `r = 0`, `L = 0` (finite) base case of the Cichoń step.** For a single digit
+`1 ≤ c < b`, one Hardy step on `oadd 0 c 0` (the finite ordinal `c`) is the finite notation
+of `c − 1` in base `b+1`: `hstep (oadd 0 c 0) b = toONote (b+1) (c−1)`. `oadd 0 c 0` is a
+successor, so the step is a single decrement. -/
+theorem hstep_oadd_zero_zero (b : ℕ) (hb : 2 ≤ b) (c : ℕ) (hc1 : 1 ≤ c) (hcb : c < b) :
+    hstep (oadd 0 ⟨c, hc1⟩ 0) b = toONote (b + 1) (c - 1) := by
+  have hnp : PNat.natPred ⟨c, hc1⟩ = c - 1 := PNat.natPred_eq_pred hc1
+  rcases eq_or_ne c 1 with rfl | hc2
+  · rw [hstep_succ _ (by rw [fundamentalSequence_oadd_zero_zero, hnp])]; simp
+  · have hfs : fundamentalSequence (oadd 0 ⟨c, hc1⟩ 0)
+        = Sum.inl (some (oadd 0 (c - 2).succPNat 0)) := by
+      rw [fundamentalSequence_oadd_zero_zero, hnp, show c - 1 = (c - 2) + 1 from by omega]
+    rw [hstep_succ _ hfs, toONote_single (b + 1) (by omega) (show 1 ≤ c - 1 by omega) (by omega)]
+    show oadd 0 (c - 2).succPNat 0 = oadd 0 ⟨c - 1, by omega⟩ 0
+    congr 1
+    apply PNat.coe_injective
+    change (c - 2) + 1 = c - 1
+    omega
+
 /-- **The Cichoń step (THE C3 CRUX).** One budget-incrementing Hardy step on the base-`b`
 notation of `p ≠ 0`, at argument `b`, equals the notation (in base `b+1`) of the
 Goodstein operation `bump b p − 1`:
@@ -204,11 +240,13 @@ Hardy descent. Strong induction on `p`, writing `p = c·b^L + r` (leading Cantor
 * **`r ≠ 0` (FULLY PROVED).** The leading term is preserved and the step happens in the tail:
   `hstep (oadd E C R) b = oadd E C (hstep R b)` (`hstep_oadd_tail`), then the IH on `r < p`
   and the reconstruction `toONote_oadd` + bump-invariance `toONote_bump` close it.
-* **`r = 0` (the remaining base case, disclosed `sorry`).** Here `p = c·b^L` and the step must
-  compute the *predecessor* of `c·(b+1)^(bump b L)` — the borrowing case. Verified to hold
-  *syntactically* by `native_decide` on small cases (see anchors). This is the lone open core.
+* **`r = 0`.** Here `p = c·b^L` and the step computes the *predecessor* of `c·(b+1)^(bump b L)`.
+  - `L = 0` (single digit, FULLY PROVED): `oadd 0 c 0` is a successor (`hstep_oadd_zero_zero`).
+  - `L ≥ 1` (disclosed `sorry`): the genuine **borrowing** case — a nested `fundamentalSequence`
+    descent producing the filled `(b+1)`-ary expansion of `(b+1)^(bump b L) − 1`. The lone open
+    core of C3; verified *syntactically* by `native_decide` on small cases (see anchors).
 
-Everything downstream of `hstep_toONote` is fully proved; only the `r = 0` predecessor remains. -/
+Everything else (`r ≠ 0`, `r = 0 ∧ L = 0`, and all downstream of `hstep_toONote`) is proved. -/
 theorem hstep_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ p, p ≠ 0 →
     hstep (toONote b p) b = toONote (b + 1) (bump b p - 1) := by
   intro p
@@ -233,8 +271,17 @@ theorem hstep_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ p, p ≠ 0 →
       exact toONote_oadd b hb hc1 hcb hr_lt
     have hbump : bump b p = c * (b + 1) ^ bump b L + bump b r := bump_pos b p hp
     rcases eq_or_ne r 0 with hr0 | hr0
-    · -- r = 0: the predecessor of `c·b^L`  (the borrowing base case)
-      sorry
+    · -- r = 0: the predecessor of `c·b^L`
+      rcases Nat.eq_zero_or_pos L with hL0 | hLpos
+      · -- L = 0: a single digit `c`; `oadd 0 c 0` is a successor (PROVED)
+        have hEz : toONote b L = 0 := by rw [hL0, toONote_zero]
+        have hbumpL : bump b L = 0 := by rw [hL0, bump_zero]
+        rw [htoP, hr0, hEz, toONote_zero, hstep_oadd_zero_zero b hb c hc1 hcb]
+        congr 1
+        rw [hbump, hr0, hbumpL, bump_zero]; simp
+      · -- L ≥ 1: the genuine borrowing case — predecessor of `c·(b+1)^(bump b L)`
+        -- (a nested descent through `fundamentalSequence`). The lone open core of C3.
+        sorry
     · -- r ≠ 0: leading term preserved, the step happens in the tail
       have hRne : toONote b r ≠ 0 := by rw [Ne, toONote_eq_zero_iff]; exact hr0
       have hbr_pos : 0 < bump b r := by
