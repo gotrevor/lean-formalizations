@@ -26,12 +26,18 @@ bridge `aemeasurable_of_generateFrom_analytic` (also proven this lap, no `sorry`
   mathlib theory (mathlib has `AnalyticSet` + Lusin separation but neither universal measurability nor a
   measurable selector — confirmed by grep this lap). The bridge reduces ALL measurability to this.
 - **Brick B — `exists_generateFrom_analytic_section` (measurable leftmost-branch, CAPACITABILITY-FREE):**
-  for continuous `F : (ℕ→ℕ)→X×Y`, `D ⊆ Prod.fst '' range F`, a `generateFrom{AnalyticSet}`-measurable
-  selector `a` with `(x,ax)∈range F` on `D`. Construction = leftmost branch of the closed fibre `φ⁻¹{x}`
-  (`PiNat.cylinder`/`longestPrefix`/`inter_cylinder_longestPrefix_nonempty`;
-  `exists_lipschitz_retraction_of_isClosed` is the fixed-set analogue), level sets of `x↦σ x n` being
-  countable boolean combinations of the analytic `φ''(cylinder ·)` (`analyticSet_image_cylinder`, proven).
-  mathlib-reachable, no DST gap — the better next-lap target of the two.
+  now a PROVEN assembly; its CONSTRUCTION half is fully kernel-checked and only ONE measurability hole
+  remains. Built `cylL`/`Wlist`/`branchN` (greedy lexicographically-least prefix via `sInf` over
+  extendable children), with proven: `Wlist_length`, `Wlist_getElem?`, `mem_cylL_extend`,
+  `mem_image_cylL_Wlist` (extendability invariant), `branch_prefix`, and the payoff
+  **`phi_branchN : φ (branchN φ x ·) = x` for `x ∈ range φ`** (closed-fibre + `mem_of_forall_prefix_mem`).
+  `exists_generateFrom_analytic_section` is then proven from `phi_branchN` + the lone remaining brick:
+  - **`measurable_branchN`** (the ONLY hole in brick B): `x ↦ branchN φ x n` is
+    `generateFrom{AnalyticSet}`-measurable. Plan: strong induction on `n`, simultaneously with
+    `{x | Wlist φ x n = w} ∈ 𝒜` for each fixed `w` (countably many, length `n`); on each such piece
+    `branchN φ x n = sInf{k | x ∈ φ''cylL(w++[k])}`, whose level sets are boolean combinations of the
+    analytic generators `φ''cylL(w++[k])` (`analyticSet_image_isOpen`, `cylL w` is open). Measurable into
+    `ℕ` via `measurable_to_countable'`. Concrete, no DST gap — the better next-lap target of the two.
 
 **Wall mapped (two alternative attacks on the hole, both substantial, both missing from mathlib):**
 - (A-route) Capacitability → universal measurability → leftmost-branch measurability. General; needed
