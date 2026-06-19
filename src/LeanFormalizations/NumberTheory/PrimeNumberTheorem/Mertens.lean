@@ -594,4 +594,15 @@ theorem mertens_second_identity (N : ℕ) :
   rw [heq_int] at habel
   rw [habel]; ring
 
+/-- The first term of the Abel identity tends to `1`:  `(∑_{p≤N}(log p)/p)/log N → 1`.  (Immediate from
+`primeSumDiv ~ log`.)  So in `mertens_second_identity` the boundary term contributes `1 + o(1)`, and
+Mertens' second theorem reduces to the integral term `∫_2^N primeSumDiv ⌊t⌋ /(t log²t) = log log N + O(1)`. -/
+theorem primeSumDiv_div_log_tendsto_one :
+    Tendsto (fun N : ℕ ↦ primeSumDiv N / Real.log N) atTop (nhds 1) := by
+  have hv : ∀ᶠ N : ℕ in atTop, Real.log N ≠ 0 := by
+    have h : Tendsto (fun N : ℕ ↦ Real.log N) atTop atTop :=
+      Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop
+    filter_upwards [h.eventually_gt_atTop 0] with N hN using ne_of_gt hN
+  exact (isEquivalent_iff_tendsto_one hv).mp primeSumDiv_isEquivalent_log
+
 end LeanFormalizations.Mertens
