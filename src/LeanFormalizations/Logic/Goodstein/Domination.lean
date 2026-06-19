@@ -772,6 +772,39 @@ theorem fastGrowing_two_log_le_goodsteinLength {m : ℕ} (hm : 3 ≤ Nat.log 2 m
     (by omega) hnorm hidx
   rwa [show L - 2 + 2 = L from by omega] at h
 
+/-- `norm (ofNat n) = n`: a finite notation `ofNat (k+1) = oadd 0 ⟨k+1⟩ 0` has CNF norm its single
+coefficient. -/
+theorem norm_ofNat (n : ℕ) : norm (ONote.ofNat n) = n := by
+  cases n with
+  | zero => rfl
+  | succ k => rw [ONote.ofNat_succ, norm_oadd, norm_zero]; simp
+
+/-- **`goodsteinLength` is NON-ELEMENTARY:** for every finite level `n`,
+`fastGrowing (ofNat n) (log₂ m − n + 2) ≤ goodsteinLength m + 2` (for `1 ≤ m`, `2n ≤ log₂ m`).
+Generalizes `fastGrowing_two_log_le_goodsteinLength` to all `n`: at the early step `i = log₂ m − n`
+the leading exponent is still `≥ n` (`leadExp_ge_sub`), so the descent ordinal is `≥ ω^n =
+(oadd (ofNat n) 1 0).repr` (`omega_opow_le_seqONote_repr`); feed the non-diagonal reduction. The
+budget is `log₂ m − n` (not `m` — leadExp and budget trade off). Taking e.g. `n = log₂ m / 2` makes
+the RHS exceed `f_{(log₂ m)/2}(…)` — a tower of exponentials of height `~log₂ m`, hence
+`goodsteinLength` outgrows every elementary function. The diagonal `f_n(m)` (true domination, the
+headline) still needs the steps-between-drops recursion. -/
+theorem fastGrowing_ofNat_log_le_goodsteinLength (n : ℕ) {m : ℕ} (hm : 1 ≤ m)
+    (hn : 2 * n ≤ Nat.log 2 m) :
+    fastGrowing (ONote.ofNat n) (Nat.log 2 m - n + 2) ≤ goodsteinLength m + 2 := by
+  set L := Nat.log 2 m with hL
+  have hLlt : L < m := Nat.log_lt_self 2 (by omega)
+  have hglen : m ≤ goodsteinLength m := le_goodsteinLength m
+  have ho : (ONote.ofNat n).NF := inferInstance
+  have hrepr : (ONote.ofNat n).repr = (n : Ordinal) := ONote.repr_ofNat n
+  have hidx : (oadd (ONote.ofNat n) 1 0).repr ≤ (seqONote m (L - n)).repr := by
+    have hr : (oadd (ONote.ofNat n) 1 0).repr = ω ^ (n : Ordinal) := by
+      simp [ONote.repr, hrepr]
+    rw [hr]
+    exact omega_opow_le_seqONote_repr (m := m) (i := L - n) (k := n)
+      (by omega) (by omega) (by omega)
+  have hnorm : norm (ONote.ofNat n) ≤ (L - n) + 2 := by rw [norm_ofNat]; omega
+  exact fastGrowing_step_le_goodsteinLength ho (m := m) (j := L - n) (by omega) hnorm hidx
+
 /-! ### Anti-vacuity anchors (off any headline axiom path). -/
 
 example : hardy (oadd 1 2 (oadd 0 3 0)) 4 = hardy (oadd 1 2 0) (hardy (oadd 0 3 0) 4) := by
