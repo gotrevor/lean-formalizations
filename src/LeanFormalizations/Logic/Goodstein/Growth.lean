@@ -264,6 +264,39 @@ theorem hstep_oadd_coeff (b : ℕ) {E : ONote} (hE : E ≠ 0) {c : ℕ} (hc : 2 
   rw [hstep_oadd_tail E k.succPNat b (g b) hgb]
   congr 1
 
+/-- `evalNat b o` evaluates the ordinal notation `o` at `ω ↦ b+1`: it reads `repr o`'s Cantor
+normal form as a base-`(b+1)` numeral. This is the natural-number "size" the borrowing
+predecessor (`hstep_oadd_one_zero`) targets: `hstep (oadd E 1 0) b` is the all-digits-`b`
+notation of `(b+1)^(evalNat b E) − 1`. -/
+def evalNat (b : ℕ) : ONote → ℕ
+  | 0 => 0
+  | oadd e n r => (n : ℕ) * (b + 1) ^ evalNat b e + evalNat b r
+
+@[simp] theorem evalNat_zero (b : ℕ) : evalNat b 0 = 0 := rfl
+
+theorem evalNat_oadd (b : ℕ) (e : ONote) (n : ℕ+) (r : ONote) :
+    evalNat b (oadd e n r) = (n : ℕ) * (b + 1) ^ evalNat b e + evalNat b r := rfl
+
+/-- **`evalNat` reconstructs `bump`.** Evaluating the base-`b` notation `toONote b L` at
+`ω ↦ b+1` gives exactly the hereditary base-bump `bump b L`. Strong induction on `L`,
+mirroring `bump`'s own recursion. Hence the borrowing answer for `E = toONote b L`,
+`(b+1)^(evalNat b E) − 1`, is exactly `(b+1)^(bump b L) − 1`. -/
+theorem evalNat_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ L, evalNat b (toONote b L) = bump b L := by
+  intro L
+  induction L using Nat.strong_induction_on with
+  | _ L ih =>
+    rcases eq_or_ne L 0 with rfl | hL
+    · simp
+    · have hlog : Nat.log b L < L := Nat.log_lt_self b hL
+      have hbe_pos : 0 < b ^ Nat.log b L := Nat.pow_pos (by omega)
+      have hbe_le : b ^ Nat.log b L ≤ L := Nat.pow_log_le_self b hL
+      have hr_lt : L % b ^ Nat.log b L < L :=
+        lt_of_lt_of_le (Nat.mod_lt _ hbe_pos) hbe_le
+      have hc_pos : 0 < L / b ^ Nat.log b L := Nat.div_pos hbe_le hbe_pos
+      rw [toONote, dif_neg hL, evalNat_oadd, ih _ hlog, ih _ hr_lt, bump_pos b L hL]
+      congr 2
+      exact_mod_cast PNat.toPNat'_coe hc_pos
+
 /-- Predecessor of a finite successor `oadd 0 ⟨c⟩ 0` (= the ordinal `c`) at any argument:
 for `c ≥ 2`, `hstep (oadd 0 ⟨c⟩ 0) n = oadd 0 ⟨c-1⟩ 0`. -/
 theorem hstep_finite_pred (c : ℕ) (hc : 2 ≤ c) (n : ℕ) :
