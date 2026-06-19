@@ -113,8 +113,18 @@ imported (`Mathlib.NumberTheory.Harmonic.EulerMascheroni`, `Real.eulerMascheroni
   `tendsto_riemannZeta_sub_one_div` (`ζ(s) − 1/(s−1) → γ` as `s → 1⁺`, in `Harmonic/ZetaAsymp.lean`).
   Transfer `P(s)` as `s→1⁺` to the partial sum `∑_{p≤N}1/p` by a real Abel/Tauberian argument, match
   against `mertens_second_tendsto` to extract `M`, and against `log ζ ~ −log(s−1)+γ` to get the `γ`.
-  **Multi-lap.** First bounded sub-step to attempt next lap: formalize the real prime-zeta `P(s)` and the
-  `s→1⁺` limit of `log ζ(s) + log(s−1)` from the two mathlib facts above (no Tauberian yet).
+  **Multi-lap.** Progress accumulating in **`MertensConstant.lean`** (new module, all axiom-clean):
+  - ✅ `primeZeta s := ∑'_p p^{−s}`, `summable_primeZeta_term` (s>1), `primeZeta_nonneg`.
+  - ✅ `riemannZeta_eulerProduct_ofReal` (real specialisation of `riemannZeta_eulerProduct_exp_log`).
+  - ✅ `neg_clog_eq_ofReal` (term realness: `−clog(1−p^{−s}) = ↑(−log(1−p^{−s}))`, since `1−p^{−s}>0`),
+    `summable_real_eulerLog` (`≤ 2p^{−s}` via `|log(1−x)+x|≤x²`), `clog_tsum_eq_ofReal`.
+  - ✅ **`riemannZeta_eq_ofReal_exp`** : `ζ(s) = ↑(exp(∑'_p −log(1−p^{−s})))` — ζ manifestly real-positive
+    on `(1,∞)`; the **real Euler product**.
+  - **Next bricks** (in order): (i) `Real.log(ζ_ℝ s) = ∑'_p −log(1−p^{−s})` (take `Real.log` of the exp
+    identity; define `ζ_ℝ s := (riemannZeta s).re`, positive). (ii) expand `−log(1−p^{−s}) = p^{−s} +
+    ∑_{k≥2} p^{−ks}/k` to split `log ζ_ℝ(s) = primeZeta s + G(s)`, `G(1)` finite. (iii) `s→1⁺`:
+    `tendsto_riemannZeta_sub_one_div` ⟹ `log ζ_ℝ(s)+log(s−1)→0`, so `primeZeta s+log(s−1)→−G(1)`.
+    (iv) the Abel/Tauberian transfer to `∑_{p≤x}1/p` vs `mertens_second_tendsto` — the genuinely hard step.
 - Lower-hanging PNT-layer alternatives if the constant stalls: explicit Chebyshev `ψ/θ` two-sided bounds.
 
 ### (superseded) nagura wall — FINAL for elementary methods
