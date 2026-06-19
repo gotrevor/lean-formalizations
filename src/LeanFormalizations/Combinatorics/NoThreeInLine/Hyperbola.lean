@@ -169,6 +169,23 @@ theorem hyperbola_collinear_zmod {p : ℕ} [Fact p.Prime] {k : ZMod p} (hk : k �
   · refine Or.inr (Or.inl ⟨(sub_eq_zero.mp h31).symm, mul_left_cancel₀ hx1 ?_⟩)
     rw [h1, ← (sub_eq_zero.mp h31), h3]
 
+/-- **Mod-`p` projection of real collinearity (construction-agnostic).** If three grid points are
+collinear over `ℝ`, then the `2×2` collinearity determinant of their *residues* vanishes in
+`ZMod p` — for every `p` and every base curve. This is the universal bridge that lets any base
+set's mod-`p` non-collinearity rule out cross-residue collinear triples among its lifts: the
+integer determinant is `0`, hence `0` mod `p`, and `ℤ → ZMod p` is a ring hom. -/
+theorem collinear_imp_modp_det_zero (p : ℕ) {P Q R : ℕ × ℕ}
+    (hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ))) :
+    ((Q.1 : ZMod p) - P.1) * ((R.2 : ZMod p) - P.2)
+      - ((R.1 : ZMod p) - P.1) * ((Q.2 : ZMod p) - P.2) = 0 := by
+  have hdet := collinear_imp_det3_zero hcol
+  simp only [toReal, det3] at hdet
+  have hZ : ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) - ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) = 0 := by
+    exact_mod_cast hdet
+  have h := congrArg (Int.cast : ℤ → ZMod p) hZ
+  push_cast at h
+  linear_combination h
+
 /-- **Lift reduction (the covering-count lever).** If three grid points `P, Q, R` whose residues
 mod `p` all lie on the modular hyperbola `x·y ≡ k (mod p)` (`k ≢ 0`) are collinear over `ℝ`, then
 two of them share the *same residue* mod `p` — i.e. are two lifts of one base hyperbola point.
@@ -188,17 +205,8 @@ theorem hyperbola_lift_collinear_share_residue {p k : ℕ} (hp : p.Prime) (hk : 
     ((Q.1 : ZMod p) = (R.1 : ZMod p) ∧ (Q.2 : ZMod p) = (R.2 : ZMod p)) := by
   haveI : Fact p.Prime := ⟨hp⟩
   haveI : NeZero p := ⟨hp.pos.ne'⟩
-  have hdet := collinear_imp_det3_zero hcol
-  simp only [toReal, det3] at hdet
-  have hZ : ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) - ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) = 0 := by
-    exact_mod_cast hdet
-  have hcast : ((Q.1 : ZMod p) - P.1) * ((R.2 : ZMod p) - P.2)
-      - ((R.1 : ZMod p) - P.1) * ((Q.2 : ZMod p) - P.2) = 0 := by
-    have h := congrArg (Int.cast : ℤ → ZMod p) hZ
-    push_cast at h
-    linear_combination h
   have hkk : (k : ZMod p) ≠ 0 := by rw [Ne, ZMod.natCast_eq_zero_iff]; exact hk
-  exact hyperbola_collinear_zmod hkk hP hQ hR hcast
+  exact hyperbola_collinear_zmod hkk hP hQ hR (collinear_imp_modp_det_zero p hcol)
 
 /-- Two grid coordinates in `[0, 2p)` that are congruent mod `p` differ by `0` or exactly `p`.
 (The lift structure: a residue `r ∈ [0, p)` has the two lifts `r` and `r + p` inside `[0, 2p)`.)
