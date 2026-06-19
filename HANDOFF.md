@@ -28,13 +28,18 @@ lacks). It reduces to the honest, mathlib-native **Hausdorff content bound**. Ne
   `vol(Sδ) ≤ ∑ vol((Uₙ)δ')`.
 - `volume_thickening_le_of_ediam_le` — per-piece area `vol((U)δ') ≤ ofReal((ρ+δ')²)·vol(closedBall 0 1)`.
 - `exists_index_ge_of_tsum_lt` — weighted pigeonhole `c≤∑aₙ`, `∑wₙ<c ⟹ ∃n, wₙ≤aₙ`.
+- `CordobaL2.volume_thickening_tubes_ge` — K4 `L²` bound for an *explicit* tube family in any
+  container `E` (drops `IsKakeya`); `volume_thickening_mul_ge` is its `E:=Sδ` corollary.
+- `TubeFractional.volume_tube_ge_frac` — `ofReal(2δ‖v‖) ≤ vol(tube a v δ)`, the fractional
+  (length-`‖v‖`) tube area bound (localized-Córdoba numerator).
 
-## Next brick — the multi-scale Córdoba content bound (multi-lap; `PENDING_WORK.md` §A)
-Recommended entry: **refactor the K4 `L²` machine into `volume_thickening_tubes_ge`** — the bound
-for an *explicit* tube family of N tubes in net directions (drop the `IsKakeya`/`exists_tube_family`
-wrapper), allowing *fractional* tube lengths. That is the "localized Córdoba" needed at the dominant
-scale after the dyadic double-pigeonhole (steps 1–3 in §A). Online ref requested in
-`ON-LINE-REQUEST.md` (cleanest write-up / existing formalization) — not blocking.
+## Next brick — the dyadic pigeonhole assembly (multi-lap; `PENDING_WORK.md` §A)
+**All geometric/L² inputs are now built and axiom-clean.** Remaining = the bookkeeping + double
+pigeonhole. Recommended entry = sub-brick (a): for a net direction `θ` with `ℓ_θ ⊆ ⋃Uₙ`, formalize
+`∑ⱼ Lⱼ(θ) ≥ 1` and pigeonhole (`exists_index_ge_of_tsum_lt`) to a dominant scale + covered
+sub-segment, needing the clean 1D brick `|ℓ_θ ∩ Uₙ| ≤ ediam Uₙ`. Then (b) direction pigeonhole and
+(c) assemble step 4 via `volume_thickening_tubes_ge` + `volume_tube_ge_frac`. Online ref requested in
+`ON-LINE-REQUEST.md` — not blocking.
 
 ## Invariants
 - Defs (`IsKakeya`, `KakeyaSetConjectureDim`) are the frozen audit surface — do not edit.

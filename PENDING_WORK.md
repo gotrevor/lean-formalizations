@@ -41,6 +41,8 @@ S⊆⋃tₙ with ediam tₙ ≤ r, c ≤ ∑ₙ ediam(tₙ)^d`. The `d=0` endpoi
   EXPLICIT base-point family `b` and ANY measurable container `E ⊇` the N net-direction δ-tubes
   (drops `IsKakeya`; `volume_thickening_mul_ge` is now its `E:=Sδ` corollary). The reusable
   localized-Córdoba entry point.
+- **`TubeFractional.volume_tube_ge_frac`** (DONE): `ofReal(2δ‖v‖) ≤ vol(tube a v δ)` for `v≠0` — the
+  fractional (length-`‖v‖`) tube area bound, the localized-Córdoba numerator for sub-unit segments.
 
 **Remaining = `kakeya_hausdorffContentBound` (the multi-scale Córdoba estimate, multi-lap).** Given a
 cover `{Uₙ}`, `ediam Uₙ ≤ r`, show `∑ ediam(Uₙ)^d ≳ 1`. The obstruction is **mixed scales** (the
@@ -57,16 +59,24 @@ be arbitrarily small). Plan (finite-net double pigeonhole — cleaner than a mea
      `volume_thickening_tubes_ge` ⟹ `(num)² ≤ vol(E)·denom`, with `vol(E) ≤ M·π(2δ)²` (per-piece
      area), forcing `M ≳ 2^{2j*}/poly(j*)`, hence `∑_{scale j*} ediam^d ≳ M·2⁻ʲ*ᵈ ≳ 2^{j*(2-d)}/poly
      ≥ c` for `r` small (`d<2`).
-**Next-lap entry (well-scoped): the fractional `volume_tube_ge`.** The localized numerator needs
-`vol(δ-tube about a length-`w` segment) ≥ 2δw` (sub-unit `‖v‖=w`); the current `Tube.lean`
-`volume_tube_ge` assumes `‖v‖=1`. **Exact construction (worked out, just transcribe):** let
-`u = perp(v/‖v‖)` (unit ⊥ `v`). The parallelogram `R = {a + s•v + t•u : s∈[0,1], t∈[-δ,δ]}` sits in
-`tube a v δ` (each point is within `|t|≤δ` of core point `a+s•v`). `R` is the image of
-`[0,1]×[-δ,δ]` under the affine map `x ↦ a + L x` with `L = ![v, u]` (columns `v`,`u`), so
-`vol R = |det L|·vol([0,1]×[-δ,δ]) = ‖v‖·1·2δ = 2δ‖v‖` (`det[v|u]=‖v‖` since `u⊥v` unit). Hence
-`vol(tube) ≥ vol R = 2δ‖v‖`. Use `Measure.addHaar_image_linearMap`/`addHaar_preimage_linearMap`
-(same idiom as `Tube.lean`'s `volume_coordBox`) for the det transform. Do this in a NEW file (additive,
-no risk to delicate green `Tube.lean`). Then assemble steps 1–4 (the dyadic
+**DONE (2026-06-19):** the fractional `volume_tube_ge` — `TubeFractional.volume_tube_ge_frac`:
+`ofReal(2δ‖v‖) ≤ vol(tube a v δ)` for `v≠0`, via the `e=‖v‖⁻¹•v` frame box (reuses `volume_frame_box`,
+`frame_decomp`; no new change-of-variables). The localized-Córdoba numerator input is now in hand.
+
+**Next-lap entry: the dyadic scale/direction bookkeeping + the two pigeonholes (steps 1–3) and their
+combination with `volume_thickening_tubes_ge` + `volume_tube_ge_frac` (step 4).** Concretely, the
+cleanest landable sub-bricks toward `kakeya_hausdorffContentBound`:
+  (a) **Per-direction covering ⟹ a covered sub-segment.** For a net direction `θ` with `ℓ_θ ⊆ ⋃Uₙ`,
+      formalize `∑ⱼ Lⱼ(θ) ≥ 1` and apply `exists_index_ge_of_tsum_lt` to extract a dominant scale
+      `j(θ)` and a covered sub-segment of length `≥ wⱼ`. (Needs a 1D length/`Real.volume` bound
+      `|ℓ_θ ∩ Uₙ| ≤ ediam Uₙ` — a clean real-analysis brick.)
+  (b) **Direction pigeonhole** over the `N`-net (`exists_index_ge_of_tsum_lt` again) ⟹ a single
+      dominant scale `j*` with `≳N/poly` directions covered.
+  (c) **Assemble step 4:** feed the scale-`j*` pieces as container `E` to `volume_thickening_tubes_ge`
+      (base points = the covered sub-segment endpoints), numerator via `volume_tube_ge_frac` (length
+      `wⱼ*`), `vol(E) ≤ ∑ vol((piece)δ)` via `volume_thickening_le_of_ediam_le` ⟹ piece count `M ≳
+      2^{2j*}/poly` ⟹ `∑_{scale j*} ediam^d ≳ 2^{j*(2-d)}/poly ≥ c`.
+Pick (a) first — it's the cleanest self-contained brick. Reference asked in `ON-LINE-REQUEST.md`. Then assemble steps 1–4 (the dyadic
 scale/direction bookkeeping + the two pigeonholes via `exists_index_ge_of_tsum_lt`). Reference asked
 in `ON-LINE-REQUEST.md` (cleanest write-up / existing formalization of Córdoba-for-Hausdorff).
 
