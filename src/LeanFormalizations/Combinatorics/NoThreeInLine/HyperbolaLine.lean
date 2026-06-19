@@ -86,4 +86,43 @@ theorem hyperbola_line_two_congruent {p k : ℕ} [Fact p.Prime] (hk : (k : ZMod 
   · exact Or.inr (Or.inl ⟨h, hyperbola_y_residue_eq_of_x hxa rA rC h⟩)
   · exact Or.inr (Or.inr ⟨h, hyperbola_y_residue_eq_of_x hxb rB rC h⟩)
 
+/-! ### The slope-`±1` reflection structure (HJSW Theorem 2, Step 2)
+
+The two distinct congruence classes that a slope-`±1` line can meet are images of each other under
+the anti-diagonal reflection `σ : (x,y) ↦ (−y, −x)` (mod `p`). For a **slope-`+1`** line the
+relevant invariant is the difference `y − x`; two classes `(r,s)`, `(r',s')` on the same `+1` line
+have `s − r ≡ s' − r'`, and the lemma below shows the second class is exactly `σ` of the first:
+`r' = −s`, `s' = −r`. (Equivalently `r·r' ≡ −k`: the two `x`-residues are the two roots of the
+quadratic `t² + (s−r)t − k`, with product `−k` by Vieta.) This is what forces the two roots into
+*complementary* slope-families in the pinwheel, the mechanism that caps the gain at `3/2`. -/
+
+/-- **Slope-`+1` reflection (Vieta).** Two distinct congruence classes `(r,s) ≠ (r',s')` of the
+hyperbola `x·y ≡ k` lying on a common slope-`+1` line (`s − r ≡ s' − r'`) are anti-diagonal
+reflections: `r' = −s` and `s' = −r`. In particular `r·r' = −k`. -/
+theorem hyperbola_slope_one_reflection {p k : ℕ} [Fact p.Prime] (hk : (k : ZMod p) ≠ 0)
+    {r s r' s' : ZMod p} (hr : r ≠ 0)
+    (hrs : r * s = k) (hrs' : r' * s' = k)
+    (hslope : s - r = s' - r') (hne : r ≠ r') : r' = -s ∧ s' = -r := by
+  have hs : s ≠ 0 := by rintro rfl; simp at hrs; exact hk hrs.symm
+  -- s − s' = r − r' (rearrange the slope equality)
+  have hss' : s - s' = r - r' := by linear_combination hslope
+  -- (r·r' + k)·(r' − r) = 0, hence r·r' = −k since r' ≠ r.
+  have hfac : (r * r' + k) * (r' - r) = 0 := by
+    linear_combination (r * r') * hss' - r' * hrs + r * hrs'
+  have hrr : r * r' = -k := by
+    have hne' : r' - r ≠ 0 := sub_ne_zero.mpr (fun h => hne h.symm)
+    have := (mul_eq_zero.mp hfac).resolve_right hne'
+    linear_combination this
+  -- r' = −s : from r·r' = −k = r·(−s) and r ≠ 0.
+  have hr' : r' = -s := by
+    apply mul_left_cancel₀ hr
+    rw [hrr]; linear_combination hrs
+  -- s' = −r : from s·s' = ... via r' = −s and the relation.
+  have hs' : s' = -r := by
+    apply mul_left_cancel₀ hs
+    have : (-s) * s' = k := by rw [← hr']; exact hrs'
+    rw [show s * s' = -((-s) * s') by ring, this]
+    linear_combination hrs
+  exact ⟨hr', hs'⟩
+
 end LeanFormalizations.NoThreeInLine

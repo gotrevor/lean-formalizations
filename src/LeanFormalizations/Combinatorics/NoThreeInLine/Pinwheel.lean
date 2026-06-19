@@ -76,7 +76,7 @@ theorem pinCorner_snd (p k r : ℕ) (i : Fin 4) :
 theorem pinCorner_injective {p k r : ℕ} (hp : 0 < p) : Function.Injective (pinCorner p k r) := by
   intro i j hij
   fin_cases i <;> fin_cases j <;>
-    simp_all [pinCorner, Prod.ext_iff] <;> omega
+    simp_all [pinCorner, Prod.ext_iff] <;> try omega
 
 /-- Each kept set has exactly three points. -/
 theorem pinKeep_card {p k : ℕ} (drop : ℕ → Fin 4) {r : ℕ} (hp : 0 < p) :
