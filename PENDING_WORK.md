@@ -19,22 +19,27 @@ The current method gives a prime in `(n, c·n]` for any **fixed `c > 6/5`**, con
    `exists_prime_in_five_fourths` / `maxNoThreeInLine_ge_six_fifths` with `c = 31/25` (`>6/5`), margin
    `A/50`, larger threshold ⇒ constant `75/62 ≈ 1.21`. Diminishing returns; documents the limit but never
    reaches exactly `5/4`. Low priority.
-2. **Sharpen the leading constant `A` (the real prize).** `A = (7/15)log2+(3/10)log3+(1/6)log5 ≈ 0.9213`
-   comes from the `2,3,5,30` `T`-combination; the upper `(6/5)A` from the `6`-fold telescercurrence
-   (`1/(1−1/6)`). A **finer prime combination** (more primes / larger modulus, the Diamond–Erdős /
-   Rosser–Schoenfeld direction) pushes the lower constant `A → 1` and shrinks the upper-ratio below `6/5`,
-   so `U/A → 1` and `c` can approach `1`, constant `→ 3/2`. This is the genuine multi-lap road to HJSW's
-   `3N/2 − o(N)`. Start by generalizing `floor_comb_bounds` / `logFactorial_leading_identity` to a chosen
-   coefficient vector and re-running the lower/upper assembly.
-3. **`nagura_prime` (exact `6/5`, `n≥25`) — the small-threshold version.** UNreachable from the current
-   stack (needs `c=6/5` exactly, but `(6/5)A`-upper forces `c>6/5` strictly). Genuinely needs Nagura's
-   sharper finite numerical inequality (see `ON-LINE-REQUEST.md`) OR path 2's sharper `A`. Deep debt; the
-   `5/4` payoff `maxNoThreeInLine_ge_five_fourths` is wired to it but now superseded by the unconditional
-   `6/5`. Keep as a disclosed `sorry`; do NOT delete.
+2. **⚠️ The elementary ceiling is `5/4` — do NOT chase `3/2` with `T`-combinations.** My constants
+   `A ≈ 0.9213` (lower) and `(6/5)A ≈ 1.106` (upper) **are essentially the classical Chebyshev constants**
+   `0.921 < ψ(x)/x < 1.106`, which are the *best obtainable from the `T`-function method* (any finite
+   `log(⌊x/k⌋!)` combination). Their ratio is `≈ 6/5`, so `c > 6/5` is forced and the no-three constant
+   `3/(2c)` is capped strictly below **`5/4`**. A finer prime combination buys only a *tiny* improvement
+   toward this same `6/5` ratio — NOT toward `1`. **Exceeding `5/4` (toward HJSW's `3/2`) genuinely needs
+   PNT-strength** (`ψ(x) = x + o(x)`): either mathlib's analytic PNT (`PrimeNumberTheoremAnd`, if
+   portable) or an elementary Selberg/Erdős PNT (a large multi-lap formalization). This is the real deep
+   wall; the `T`-method has been mined out at `5/4 − ε`.
+3. **`nagura_prime` (exact `6/5`, `n≥25`) — the small-threshold version, = exact `5/4` constant.**
+   UNreachable from the current stack (needs `c=6/5` exactly, but `(6/5)A`-upper forces `c>6/5` strictly —
+   the ratio is exactly the Chebyshev ratio, with no slack). Genuinely needs Nagura's sharper finite
+   numerical inequality (see `ON-LINE-REQUEST.md`). Deep debt; the `5/4` payoff
+   `maxNoThreeInLine_ge_five_fourths` is wired to it but now superseded by the unconditional `6/5`. Keep
+   as a disclosed `sorry`; do NOT delete.
 
-**Recommended next lap:** path 2 (sharper `A`) — it is the only one that scales toward `3/2` and reuses
-the entire stack just built. Pick a richer prime set, re-derive the `{0,1}` floor combination, re-run
-`logFactorial_comb_lower`/`_upper` + the telescoping iterate.
+**Recommended next lap:** path 1 (cheap, bag a constant in `(6/5, 5/4)` like `75/62 ≈ 1.21` by copying
+`exists_prime_in_five_fourths` with `c = 31/25`) to approach the elementary ceiling, OR begin the real
+deep work: assess whether `~/src/PrimeNumberTheoremAnd` (a Lean PNT formalization seen in the tree) is
+portable to discharge `ψ(x) = x + o(x)`, which would blow the door to `3/2 − o(1)` open. Path 2 as
+originally framed (more primes → `3/2`) is a MIRAGE — the `T`-method caps at `5/4`.
 
 ---
 

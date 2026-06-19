@@ -46,8 +46,10 @@
   - **Status of `nagura_prime`** (exact `6/5`, `n≥25`): still a disclosed `sorry`, but now NON-blocking —
     the unconditional `6/5` constant is reached by the route above. Its exact `6/5` ratio (giving exactly
     `5/4`) is **unreachable from the current stack** (my method needs `c > 6/5` strictly; `(6/5)A`-upper
-    forces it). Reaching exactly `5/4` (or beyond, toward `3/2`) needs sharper Chebyshev constants
-    (a finer prime combination than `2,3,5,30`, pushing `A→1` / `U→A`) — a multi-lap research target.
+    forces it). NB `A ≈ 0.921` and `(6/5)A ≈ 1.106` **are the classical Chebyshev constants** — the
+    elementary `T`-method ceiling; ratio `6/5`, so the no-three constant caps strictly below `5/4`.
+    Exact `5/4` needs Nagura's sharp finite inequality; **beyond `5/4` toward `3/2` needs PNT-strength**
+    (`ψ(x)=x+o(x)`), e.g. porting `~/src/PrimeNumberTheoremAnd` — the real deep wall (see `PENDING_WORK`).
 - **2026-06-19 (refined-Chebyshev lap — the WHOLE prerequisite stack built):** Established the key
   strategic fact — **crude elementary Chebyshev bounds cannot beat Bertrand's `3/4` for ANY ratio
   `c<2`** (the central-binomial split needs `L·c > 8U/3 − 2log2`; crude `U,L` give `c>3.33`, true PNT
