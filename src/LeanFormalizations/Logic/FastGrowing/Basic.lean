@@ -114,20 +114,28 @@ theorem fundamentalSequence_ofNat_succ (k : ℕ) :
   | zero => rfl
   | succ k' => rfl
 
-/-- **Finite-level index monotonicity** — the base case of the whole index
-hierarchy, fully proved. For natural-number levels `m ≤ n` and positive argument,
-`f_m(x) ≤ f_n(x)`. Telescopes `fastGrowing_le_succ_index` along
-`fundamentalSequence_ofNat_succ`.
+/-- **Telescoping index monotonicity along a successor chain** — the general engine.
+If `g : ℕ → ONote` is a *successor chain* (`g (k+1) = g k + 1` notation-wise, i.e.
+`fundamentalSequence (g (k+1)) = inl (some (g k))`), then for `m ≤ n` and positive
+argument, `f_{g m}(x) ≤ f_{g n}(x)`: just telescope `fastGrowing_le_succ_index`.
 
-This is exactly the comparison the limit case needs whenever the fundamental
-sequence lands on finite levels (e.g. `ω[n] = n+1`), so it discharges the index
-crux for `o = ω` and is the seed for the general CNF induction. -/
-theorem fastGrowing_ofNat_mono {m n : ℕ} (hmn : m ≤ n) {x : ℕ} (hx : 1 ≤ x) :
-    fastGrowing (ofNat m) x ≤ fastGrowing (ofNat n) x := by
+This is the reusable core behind every "successor-chain" index comparison —
+finite levels (`g = ofNat`), `β+ω` limits, and the *finite slices* `β, β+1, β+2, …`
+of a limit's own fundamental sequence (which is how the limit-of-limits residue is
+attacked: each `o[n+1]` is reached from `o[n]` by finitely many successor steps). -/
+theorem fastGrowing_succ_chain_mono {g : ℕ → ONote}
+    (hchain : ∀ k, fundamentalSequence (g (k + 1)) = Sum.inl (some (g k)))
+    {m n : ℕ} (hmn : m ≤ n) {x : ℕ} (hx : 1 ≤ x) :
+    fastGrowing (g m) x ≤ fastGrowing (g n) x := by
   induction n, hmn using Nat.le_induction with
   | base => exact le_rfl
-  | succ n _ ih =>
-      exact le_trans ih (fastGrowing_le_succ_index (fundamentalSequence_ofNat_succ n) hx)
+  | succ n _ ih => exact le_trans ih (fastGrowing_le_succ_index (hchain n) hx)
+
+/-- **Finite-level index monotonicity** (the base case): `m ≤ n`, `1 ≤ x ⟹ f_m(x) ≤
+f_n(x)`. The `ofNat` instance of `fastGrowing_succ_chain_mono`. -/
+theorem fastGrowing_ofNat_mono {m n : ℕ} (hmn : m ≤ n) {x : ℕ} (hx : 1 ≤ x) :
+    fastGrowing (ofNat m) x ≤ fastGrowing (ofNat n) x :=
+  fastGrowing_succ_chain_mono fundamentalSequence_ofNat_succ hmn hx
 
 /-- **Finite-level argument monotonicity**, proved *cleanly* (no limit crux needed,
 since finite levels never enter the limit branch). `Monotone (f_k)` for `k : ℕ`, by
