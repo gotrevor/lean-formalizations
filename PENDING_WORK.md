@@ -43,15 +43,15 @@ not a heroic port.
 **Decisively resolve `weakPNT`** — it is the *only* thing between the flagship `3/2` result and full
 axiom-cleanliness; everything else in NTL is done, open-math (Main Conjecture), or diminishing-returns.
 Execute in this order:
-1. **(cheap, decisive, ~1 lap)** In a throwaway branch, add `~/src/PrimeNumberTheoremAnd` as a local lake
-   dependency and try `theorem weakPNT := PrimeNumberTheoremAnd.WeakPNT''`. **Expected to fail** — the *local*
-   PNTAnd clone (`~/src/PrimeNumberTheoremAnd`, last commit 2026-05-25) is lean **`v4.29.0`** + mathlib inputRev
-   `v4.29.0` (rev `8a178386`), while ours is lean **`v4.29.1`** + mathlib `v4.29.1` (rev `5e932f97`). Different
-   lean *patch* version ⇒ incompatible `.olean`s, and lake enforces one toolchain per workspace; the two mathlib
-   revs also can't coexist. **Record the exact `lake` error**, then revert. (Do NOT bump our toolchain to match —
-   that risks the six complete axiom-clean threads + an 8286-job re-verification; not worth it. Upstream PNTAnd
-   has since moved to `v4.30.0`, widening the gap further.) The target theorem in PNTAnd is `WienerIkeharaTheorem'`
-   (`Wiener.lean:2398`) → `WeakPNT''` (`Consequences.lean:105`).
+1. **~~(cheap dep-test)~~ — RUN 2026-06-19, DEFINITIVELY DEAD on-box. Do NOT retry.** Added
+   `path = "../PrimeNumberTheoremAnd"` require in a throwaway branch and ran `lake update PrimeNumberTheoremAnd`.
+   Result: the **toolchain check PASSED** (`toolchain not updated; already up-to-date` — so lean v4.29.0-vs-v4.29.1
+   is NOT the blocker), but lake then died fetching PNTAnd's **transitive git deps**:
+   `info: PrimeCert: cloning https://github.com/b-mehta/PrimeCert` → `git exited with code 128` (no GitHub egress).
+   PNTAnd requires `LeanArchitect`, `checkdecls`, `leancert`, `PrimeCert` (all GitHub `v4.29.0`) — none local —
+   **and** pins **mathlib `v4.29.0` ≠ our `v4.29.1`** (lake can't hold two mathlib revs). So the lake-require
+   route is blocked for two independent reasons (missing transitive deps + mathlib-rev conflict); neither is
+   fixable on this no-egress box. Workspace fully restored, build green (8286). **Don't re-run this.**
 2. **(lowest effort, preferred)** Treat `weakPNT` as wait-and-cite: periodically check whether mathlib has
    landed Wiener–Ikehara / `ψ∼x` (grep the pin for `WienerIkehara`, a `Chebyshev.psi` asymptotic). When it
    does, replace `axiom weakPNT` with the mathlib citation → flagship becomes axiom-clean for free.
@@ -68,7 +68,11 @@ Execute in this order:
    `Log/Basic` 17 ≈ 525 lines; the Sieve/* patches are NOT in the WeakPNT cone — exclude). Strip the
    `@[blueprint ...]` attrs + `import Architect`. Total ≈ **5000 lines, mostly mechanical**, risk = v4.29.0→v4.29.1
    API drift (likely small — one patch). A real multi-lap project but tractable; do it only if mathlib stalls
-   on landing Wiener–Ikehara natively.
+   on landing Wiener–Ikehara natively. **NB: the port route SIDESTEPS the dep-hell that killed option 1** —
+   `Wiener.lean`'s cone imports only `Architect` (strippable) + `Mathlib.*` + `PrimeNumberTheoremAnd.*`; it does
+   NOT use `PrimeCert`/`leancert`/`checkdecls` (those are the prime-certificate/sieve parts), so a source-copy
+   build against OUR mathlib needs none of the missing transitive deps. Since option 1 is now dead, this is the
+   only *active* discharge route besides wait-and-cite.
 4. **(fallback grind, low value)** If a green-producing lap is wanted and 1–3 stall: `nagura_prime` →
    unconditional `6/5 → 5/4`. Modest, hard (elementary ceiling). Documented; don't fixate.
 
