@@ -140,6 +140,41 @@ theorem vonMangoldtSumDiv_tendsto_atTop :
       (Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop)
   exact tendsto_atTop_mono' atTop key hg
 
+/-- `log x ≤ 2·√x` for `x ≥ 0` (from `log √x ≤ √x − 1`). -/
+lemma log_le_two_mul_sqrt {x : ℝ} (hx : 0 ≤ x) : Real.log x ≤ 2 * Real.sqrt x := by
+  rcases eq_or_lt_of_le hx with h | h
+  · simp [← h]
+  · have hs : 0 < Real.sqrt x := Real.sqrt_pos.mpr h
+    have h1 := Real.log_le_sub_one_of_pos hs
+    rw [Real.log_sqrt hx] at h1
+    linarith [hs.le]
+
+/-- **`∑ log n / n²` converges.** Comparison with `2/n^{3/2}` (a convergent `p`-series, `p = 3/2 > 1`)
+via `log n ≤ 2√n`.  The linchpin for the prime-power tail bound of the prime form below. -/
+lemma summable_log_div_sq :
+    Summable (fun n : ℕ ↦ Real.log n / (n : ℝ) ^ 2) := by
+  have hg : Summable (fun n : ℕ ↦ 2 / (n : ℝ) ^ (3 / 2 : ℝ)) := by
+    have h := (Real.summable_one_div_nat_rpow.mpr (by norm_num : (1 : ℝ) < 3 / 2)).mul_left 2
+    simpa [mul_one_div] using h
+  refine Summable.of_nonneg_of_le ?_ ?_ hg
+  · intro n
+    rcases Nat.eq_zero_or_pos n with rfl | hn
+    · simp
+    · exact div_nonneg (Real.log_nonneg (by exact_mod_cast hn)) (by positivity)
+  · intro n
+    rcases Nat.eq_zero_or_pos n with rfl | hn
+    · simp
+    · have hnpos : (0 : ℝ) < n := by exact_mod_cast hn
+      have hlog := log_le_two_mul_sqrt (x := (n : ℝ)) hnpos.le
+      rw [Real.sqrt_eq_rpow] at hlog
+      have h2 : (n : ℝ) ^ 2 = (n : ℝ) ^ (2 : ℝ) := by
+        rw [← Real.rpow_natCast (n : ℝ) 2]; norm_num
+      have heq : 2 * (n : ℝ) ^ (1 / 2 : ℝ) / (n : ℝ) ^ 2 = 2 / (n : ℝ) ^ (3 / 2 : ℝ) := by
+        rw [h2, mul_div_assoc, ← Real.rpow_sub hnpos,
+          show (1 / 2 : ℝ) - 2 = -(3 / 2) by norm_num, Real.rpow_neg hnpos.le, ← div_eq_mul_inv]
+      calc Real.log n / (n : ℝ) ^ 2 ≤ 2 * (n : ℝ) ^ (1 / 2 : ℝ) / (n : ℝ) ^ 2 := by gcongr
+        _ = 2 / (n : ℝ) ^ (3 / 2 : ℝ) := heq
+
 /-!
 ## Follow-up: the prime form `∑_{p ≤ x} (log p)/p = log x + O(1)`
 
