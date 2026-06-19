@@ -1,17 +1,19 @@
 # HANDOFF — Davies / planar Kakeya (branch `kakeya-davies`)
 
-**Thin pointer.** Durable overview = `STATUS.md`. Attack plan = `PENDING_WORK.md` §A0‴ + crux analysis
-= `Kakeya2D/CASE_B_ANALYSIS.md`. Frozen plan = `Kakeya2D/PLAN.md`. **Newest dated baton =
-`HANDOFF-2026-06-19-1530.md` — read that to resume.**
+**Thin pointer.** Durable overview = `STATUS.md`. Attack plan = `PENDING_WORK.md` §Reflection-2026-06-19
++ §A0‴; crux analysis = `Kakeya2D/CASE_B_ANALYSIS.md`. Frozen plan = `Kakeya2D/PLAN.md`. **Newest dated
+baton = `HANDOFF-2026-06-19-1700.md` — read that to resume.**
 
 Unbounded expedition to prove `davies_kakeya_2d : KakeyaSetConjectureDim 2` (planar Kakeya, Davies
 1971). The whole job is the lower bound `two_le_dimH`. Lane: only `Kakeya2D/`.
 
 ## State (one line)
 `lake build` green (8298 jobs). The whole lower bound is machine-checked **down to ONE cited axiom**
-`Engine.kakeya_subresolution_content` (NO `sorry`). This lap pinned the crux to **measurable
-base-point selection** and built the full measure-theoretic spine of the alternative continuum route
-(`Kakeya2D/MeasurableRoute.lean`, axiom-clean) — only the wiring assembly + the selection axiom remain.
+`Engine.kakeya_subresolution_content` (NO `sorry`). Deep-reflection lap (HEAD `f57d64c`): STATUS fully
+resynced + axiom-honesty recalibrated, and the **core glue of the wiring (W) is now PROVEN** —
+`exists_continuum_caseA_numerator` (`MeasurableRoute.lean`, axiom-clean) composes the spine into the
+exact `caseA_content` numerator. Remaining for (W): zero-`ediam` negligibility helper + the final
+`caseA_content` assembly (next-action skeleton in `HANDOFF-2026-06-19-1700.md`); then the selection axiom.
 `#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound, kakeya_subresolution_content]`.
 The entire dominant-scale orchestration (the historic blocker) is now PROVEN — the shifted, faithful
 Case A assembly. The lone axiom is the strictly-narrower **Case B** residual (cover dominated by pieces

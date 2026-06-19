@@ -112,6 +112,17 @@ honest route (steps 2–4) is now proven: `measurable_coveredLength` → `exists
    build `ℓ_{j*}`, apply the three spine lemmas + `caseA_content` (uncapped `g = dyadicIdx` gives the
    genuine scale-`j*` window; finite/infinite-fiber split as in Engine). Mirrors the Engine assembly
    at the *uncapped* dominant scale ⟹ no Case B. A real ~150-line assembly but all pieces proven.
+   **UPDATE (2026-06-19 deep-reflection lap): the CORE glue of (W) is now PROVEN —
+   `exists_continuum_caseA_numerator` (`MeasurableRoute.lean`, axiom-clean, commit `f57d64c`):**
+   it composes `exists_continuum_dominant_scale` + `exists_shift_ge_integral` into *exactly* the
+   `hnum` numerator that `caseA_content` consumes — `∃ j α, 1/((j+1)(j+2)) ≤ ∑_{i<2ʲ} 2·2⁻ʲ·vol(Aᵢ)`
+   with `Aᵢ = {t∈[0,1] : a(α+i·2⁻ʲ)+t·dir(α+i·2⁻ʲ) ∈ ⋃_{g n=j} C n}`. So the continuum→discrete bridge
+   is closed. **Remaining for the full (W):** feed this `j, α, Aᵢ` into `caseA_content` with the
+   finite-fiber diameter bookkeeping (`hediam_lo/hi` on `s = {n : g n = j}`, finite/infinite split) and
+   the closed-piece reduction + per-direction `hcov` construction from the selection — all of which
+   `Engine.kakeya_hausdorffContentBound` already does verbatim at the *capped* scale (copy that
+   skeleton, drop the `min(·,J)` cap and the Case-B branch). NEXT-LAP: assemble the headline-shaped
+   `kakeya_hausdorffContentBound_of_measurableSelection` around `exists_continuum_caseA_numerator`.
 2. **(S) Measurable selection** `∃ measurable a, ∀θ, segment(a θ,θ) ⊆ E` for the Fσ Kakeya set. The
    ONE genuine mathlib gap (descriptive set theory; KRN/JvN; true theorem). Reference-gated
    (`ON-LINE-REQUEST.md` UPDATE 5 ask 1). Possibly a bespoke explicit selection (argmin-‖a‖ over the
