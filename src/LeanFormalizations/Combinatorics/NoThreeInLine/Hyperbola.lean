@@ -483,15 +483,34 @@ theorem shearY_injective {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {x x' : ℕ} (
     _ = ((x' : ZMod p)).val := by rw [hxx]
     _ = x' := ZMod.val_cast_of_lt hx'
 
-/-- The slope-`±1` counting lemma for the closed-form rule — the lone remaining obligation. With
-this explicit selection, no real-collinear triple of `shearSel p` exists: by
-`shear_hyperbola_lift_share_residue` every collinear triple has two lifts of one base column, by
-`lift_triple_noncollinear` not all three, so it is two lifts of one column plus a lift of another on
-a slope-`±1` line — which this drop rule provably avoids (`coord_diff_of_residue_eq` reduces it to
-modular arithmetic). Verified `native_decide` at `p ≤ 13` and by exact determinant for all primes
-`≤ 109`. -/
-theorem shearSel_noThree {p : ℕ} (hp : p.Prime) : NoThreeCollinear (shearSel p) := by
+/-- **The pure-arithmetic crux** (no reals): every pairwise-distinct triple of `shearSel p` has
+nonzero integer orientation determinant. This is exactly the statement Aristotle job `1c2a55b7`
+(`aris-hjsw-shear`) is grinding; once returned it ports here verbatim. Verified by exact integer
+determinant for every prime `3 ≤ p ≤ 109`; `native_decide`-certified at `p = 7,11,13` in `Anchors`.
+
+**Proof route** (see `SELECTION-RULE-FOUND.md`): apply `shear_hyperbola_lift_share_residue` (via
+`shear_curve`) ⇒ two of `P,Q,R` are lifts of one column; `lift_triple_noncollinear` kills the
+all-same-column case; the rest is two-in-a-column + one other, a slope `0/∞/±1` line. `shearY_injective`
+kills slopes `0`/`∞`; the drop rule kills slope `±1` (`coord_diff_of_residue_eq` → modular arithmetic). -/
+theorem shearSel_intdet {p : ℕ} (hp : p.Prime) :
+    ∀ P ∈ shearSel p, ∀ Q ∈ shearSel p, ∀ R ∈ shearSel p, P ≠ Q → P ≠ R → Q ≠ R →
+      ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) - ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) ≠ 0 := by
   sorry
+
+/-- **No three points of the closed-form sheared selection are collinear.** Bridges the
+pure-arithmetic crux `shearSel_intdet` to `Collinear ℝ` exactly as `lift_triple_noncollinear` does
+(real collinearity ⇒ integer orientation determinant vanishes). The lone remaining content is
+`shearSel_intdet`. -/
+theorem shearSel_noThree {p : ℕ} (hp : p.Prime) : NoThreeCollinear (shearSel p) := by
+  intro P hP Q hQ R hR hcol
+  by_contra hne
+  rw [not_or, not_or] at hne
+  obtain ⟨hPQ, hPR, hQR⟩ := hne
+  have hdet := collinear_imp_det3_zero hcol
+  simp only [toReal, det3] at hdet
+  have hZ : ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) - ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) = 0 := by
+    exact_mod_cast hdet
+  exact shearSel_intdet hp P hP Q hQ R hR hPQ hPR hQR hZ
 
 /-- **HJSW lower bound.** For prime `p`, the `2p × 2p` grid admits `3(p−1)` points with no three
 collinear — the closed-form sheared-hyperbola construction `shearSel p` (the `3(n−2)/2` count with
