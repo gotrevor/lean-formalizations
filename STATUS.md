@@ -1,5 +1,5 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8287 jobs) · **Updated**: lap 2026-06-19-2300 · `977598b` · **MATH AXIOMS: 0**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8288 jobs, 1 disclosed `sorry`: the C3 borrowing core) · **Updated**: lap 2026-06-19-lap4 · `4459a17` · **MATH AXIOMS: 0**
 
 > ♾️ **ACTIVE EXPEDITION (2026-06-19): Goodstein-independence growth theory.** Read
 > `DIRECTION.md`. Unbounded run building the mathlib-only "Goodstein grows like `f_{ε₀}`"
@@ -17,6 +17,20 @@
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 lap 4 (C3 borrowing crux — massively narrowed; 6 commits, all axiom-clean):**
+  the `r=0 ∧ L≥1` borrowing case of `hstep_toONote` is now FULLY PROVED modulo a single
+  isolated lemma `hstep_oadd_one_zero` (the `c=1` predecessor of `ω^E`). Proved this lap, all
+  in `Logic/Goodstein/Growth.lean`: **Lemma A (coefficient peel)** `hstep_oadd_coeff`
+  (+`fundSeq_oadd_coeff`) reducing general `c` to `c=1`; **finite base case**
+  `hstep_oadd_one_zero_finite` (the engine end-to-end); **recursion primitives**
+  `hstep_oadd_one_of_succ`/`_of_limit`, `fundSeq_oadd_one_of_succ`/`_of_limit`,
+  `hstep_finite_pred`, `fundSeq_finite_succ`; the **answer characterization** `evalNat` +
+  `evalNat_toONote : evalNat b (toONote b L) = bump b L`; and **both descent identities**
+  `evalNat_succ` and `evalNat_fundSeq`. The only thing left to close `hstep_oadd_one_zero` is
+  one coefficient-bound invariant (`Good b E`) for the successor-case reconstruction — the
+  limit case already closes via `evalNat_fundSeq`. See `hstep_oadd_one_zero`'s docstring +
+  `PENDING_WORK.md` for the full close-out plan. Aristotle job `77c99f0e` grinds the (pre-
+  narrowing) general goal in parallel.
 - **2026-06-19 lap 2b (C2 bridge built — axiom-clean):** new `Logic/Goodstein/Growth.lean`
   crosses `Engine.toOrdinal` ↔ `ONote.repr`: `toONote b n` (computable notation),
   `repr_toONote : repr (toONote b n) = toOrdinal b n`, `toONote_NF`, and the Goodstein

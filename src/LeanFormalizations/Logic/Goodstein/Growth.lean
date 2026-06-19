@@ -509,20 +509,30 @@ base-`(b+1)` notation of `(b+1)^(bump b L) − 1` — the fully-filled (all-digi
 produced by the borrowing descent through `fundamentalSequence`.
 
 *(disclosed `sorry`.)* This is the genuine borrowing core, now isolated to coefficient `1`.
-The **finite base case** (`E = finite (d+1)`, `d ≤ b`) is fully PROVED in
-`hstep_oadd_one_zero_finite`, which exercises the entire recursion engine end-to-end
-(descent `hstep_oadd_one_of_succ` → coefficient peel `hstep_oadd_coeff` → IH → reconstruct
-`toONote_oadd`). The remaining work is the general `E = toONote b L`: a well-founded recursion
-on `repr E` using the same engine, with `E` a successor ⟹ peel to
-`oadd E' ⟨b⟩ (hstep (oadd E' 1 0) b)` with `E' = pred E` (`hstep_oadd_one_of_succ`); `E` a
-limit ⟹ recurse on `oadd (f b) 1 0` (`hstep_oadd_one_of_limit`). Closing it needs the general
-statement over arbitrary NF `E` with answer `toONote (b+1) ((b+1)^(evalNat E) − 1)`
-(`evalNat E` = `repr E` evaluated at `ω ↦ b+1`; note `evalNat (toONote b L) = bump b L`),
-carrying the two descent identities `evalNat (pred E) + 1 = evalNat E` (successor) and
-`evalNat (f b) = evalNat E` (limit, at the fixed index `b`), plus the invariant that the
-reachable `E` reconstruct (`toONote (b+1) (evalNat E') = E'`) — which holds because the only
-coefficient `b+1` the descent introduces (at index `b`) is immediately peeled by
-`hstep_oadd_coeff`. Verified syntactically by `native_decide` on small cases (see anchors). -/
+Almost all of the engine is PROVED; the remaining gap is a single coefficient-bound invariant.
+
+**Proved and ready** (all axiom-clean, this file):
+* **finite base case** `hstep_oadd_one_zero_finite` (`E = finite (d+1)`, `d ≤ b`) — exercises
+  the whole engine end-to-end (descent `hstep_oadd_one_of_succ` → peel `hstep_oadd_coeff` →
+  IH → reconstruct `toONote_oadd`);
+* the **answer characterization** `evalNat` + `evalNat_toONote : evalNat b (toONote b L) =
+  bump b L` (so the general answer `toONote (b+1) ((b+1)^(evalNat b E) − 1)` is the target);
+* both **descent identities**: `evalNat_succ` (`fundamentalSequence E = some E' ⟹
+  evalNat b E = evalNat b E' + 1`) and `evalNat_fundSeq` (`fundamentalSequence E = inr f ⟹
+  evalNat b (f b) = evalNat b E`).
+
+**Plan to close** — prove the general `∀ NF E ≠ 0, hstep (oadd E 1 0) b =
+toONote (b+1) ((b+1)^(evalNat b E) − 1)` by well-founded recursion on `repr E`:
+* **limit case CLOSES** outright: `hstep_oadd_one_of_limit` → IH on `f b` → `evalNat_fundSeq`.
+* **successor case** needs `evalNat_succ` (done) plus the reconstruction
+  `toONote (b+1) (evalNat b E') = E'` for `E' = pred E`. This is the LONE remaining piece: it
+  requires a coefficient-bound invariant `Good b E` (all coeffs ≤ b+1, and every coeff-`(b+1)`
+  term has tail `0`) carried through the recursion — `Good` holds at the start `toONote b L`
+  (coeffs `< b`), is preserved by `f b` (the new `b+1` coeff sits on a tail-`0` term) and by
+  `pred`, and for a *successor* `E` forces any `b+1` coeff into the finite lowest term, which
+  `pred` then removes — so `pred E` has all coeffs `< b+1` and reconstructs. Then
+  `hstep_oadd_one_zero` is the `E = toONote b L` instance (with `evalNat_toONote`).
+Verified syntactically by `native_decide` on small cases (see anchors). -/
 theorem hstep_oadd_one_zero (b : ℕ) (hb : 2 ≤ b) (L : ℕ) (hL : 1 ≤ L) :
     hstep (oadd (toONote b L) 1 0) b = toONote (b + 1) ((b + 1) ^ bump b L - 1) := by
   sorry
