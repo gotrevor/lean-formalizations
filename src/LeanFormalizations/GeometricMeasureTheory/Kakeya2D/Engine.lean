@@ -182,21 +182,120 @@ theorem content_ratio_lower {d : ℝ} (hd0 : 0 < d) (hd2 : d < 2) :
         mul_le_mul_of_nonneg_right hmain (by positivity)
     _ = q * ((1 / 4 : ℝ) ^ j * (4 * q) ^ j) := by ring
 
-/-- **The deep crux (Davies 1971, Hausdorff content form), as one named obligation.** For a planar
-Kakeya set `S` and every exponent `0 < d < 2`, the `d`-dimensional **Hausdorff content** of `S` is
-bounded below: there is a scale `r > 0` and a constant `c > 0` such that every fine countable cover
-of `S` has `∑ₙ ediam(tₙ)^d ≥ c`.
+/-- **The narrowed deep crux (cross-scale orchestration / dominant-scale extraction).** This is the
+one genuinely reference-gated combinatorial obligation of the planar Kakeya lower bound, isolated as a
+crisp `axiom`. Given a planar Kakeya set `S`, a cover `{tₙ}` (`ediam ≤ 1`), and `0 < d < 2`, it asserts
+the existence of a **dominant dyadic scale** `j` together with:
 
-This is the genuine remaining content of the planar Kakeya theorem and the lone `sorry` of the run.
-The proof (multi-lap) is Córdoba's argument run on an arbitrary cover: a dyadic pigeonhole reduces
-the cover to a dominant scale `δ`, where the K4 single-scale tube count `volume_thickening_log_ge`
-(`vol(Sδ) ≳ 1/log(1/δ)`) forces enough cover pieces that `∑ ediam^d ≳ δ^{d-2}/log ≥ c`. The reduction
-machinery (`Cover.lean`) turns this content bound into `μH[d] S ≠ 0`. See `PLAN.md` / `PENDING_WORK.md`. -/
+* base points `a k` and covered sets `A k ⊆ [0,1]` (one per net direction `θ_k = k·2⁻ʲ`);
+* a finite set `s` of cover pieces, each of diameter `∈ (2⁻⁽ʲ⁺¹⁾, 2⁻ʲ]` (genuinely *at* scale `j`);
+* the geometric containment `φ_k(A k) ⊆ ⋃_{n∈s} tₙ` (the covered segments lie in the scale-`j` pieces);
+* the **covered-length numerator bound** `∑ₖ 2δ·vol(A k) ≥ 1/((j+1)(j+2))` (`δ = 2⁻ʲ`) — a
+  `1/poly(j)` fraction of the `N = 2ʲ` net directions is covered at the dominant scale.
+
+This bundles the two dyadic pigeonholes (`Cover.exists_dominant_scale`, `exists_global_dominant_scale`)
+with the net-thinning + covered-length-retention step that breaks the net-scale circularity — the lone
+piece still open (see `ON-LINE-REQUEST.md`). **Everything downstream of it is now machine-checked**:
+`cover_content_per_scale` (Córdoba count ⟹ content), `content_ratio_lower` (the exponential-beats-poly
+constant), and the assembly below. Discharging this axiom into a proof is the remaining work. -/
+axiom kakeya_dominant_scale_count
+    {S : Set Plane} (h : IsKakeya S) {d : ℝ} (hd0 : 0 < d) (hd2 : d < 2)
+    (t : ℕ → Set Plane) (hcov : S ⊆ ⋃ n, t n) (hr : ∀ n, Metric.ediam (t n) ≤ 1) :
+    ∃ j : ℕ, ∃ (a : ℕ → Plane) (A : ℕ → Set ℝ),
+      (∀ k, MeasurableSet (A k)) ∧ (∀ k, A k ⊆ Set.Icc (0 : ℝ) 1) ∧
+      ∃ s : Finset ℕ,
+        (∀ n ∈ s, Metric.ediam (t n) ≤ ENNReal.ofReal ((1 / 2 : ℝ) ^ j)) ∧
+        (∀ n ∈ s, ENNReal.ofReal ((1 / 2 : ℝ) ^ (j + 1)) ≤ Metric.ediam (t n)) ∧
+        (∀ k, (fun u => a k + u • dir ((k : ℝ) * (1 / 2 : ℝ) ^ j)) '' (A k) ⊆ ⋃ n ∈ s, t n) ∧
+        ENNReal.ofReal (1 / (((j : ℝ) + 1) * ((j : ℝ) + 2)))
+          ≤ ∑ k ∈ Finset.range (2 ^ j), ENNReal.ofReal (2 * (1 / 2 : ℝ) ^ j) * volume (A k)
+
 theorem kakeya_hausdorffContentBound
     {S : Set (EuclideanSpace ℝ (Fin 2))} (h : IsKakeya S) {d : ℝ} (hd0 : 0 < d) (hd2 : d < 2) :
     HausdorffContentBound S d := by
-  -- **The remaining deep obligation (K5 core):** the multi-scale Córdoba cover-content estimate.
-  sorry
+  obtain ⟨cR, hcRpos, hcR⟩ := content_ratio_lower hd0 hd2
+  set D : ℝ≥0∞ := volume (Metric.closedBall (0 : Plane) 1) with hD
+  have hDpos : 0 < D := volume_closedBall_one_pos
+  have hDtop : D ≠ ⊤ := volume_closedBall_one_ne_top
+  refine ⟨1, zero_lt_one, D⁻¹ * ENNReal.ofReal cR, ?_, ?_⟩
+  · exact mul_ne_zero (ENNReal.inv_ne_zero.mpr hDtop) (ENNReal.ofReal_pos.mpr hcRpos).ne'
+  · intro t hcov hdiam
+    obtain ⟨j, a, A, hAmeas, hA01, s, hediam_hi, hediam_lo, hscov, hnum⟩ :=
+      kakeya_dominant_scale_count h hd0 hd2 t hcov hdiam
+    -- the single-scale content brick at the dominant scale `δ = ρ = (1/2)^j`, `N = 2^j`
+    have hps := cover_content_per_scale (δ := (1 / 2 : ℝ) ^ j) (ρ := (1 / 2 : ℝ) ^ j) (N := 2 ^ j)
+      (η := ENNReal.ofReal ((1 / 2 : ℝ) ^ (j + 1)))
+      (by positivity) (pow_le_one₀ (by norm_num) (by norm_num)) (by positivity)
+      (by rw [Nat.cast_pow, ← mul_pow]; norm_num) a A hAmeas hA01 s t hediam_hi hscov hd0.le hediam_lo
+    rw [← hD] at hps
+    set C0 : ℝ≥0∞ := ENNReal.ofReal (((1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j) ^ 2) * D
+        * ENNReal.ofReal (6 * Real.pi * (1 / 2 : ℝ) ^ j
+          * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ)))) with hC0def
+    -- real simplifications connecting the Córdoba coefficient to `content_ratio_lower`'s form
+    have hsq : ((1 / 2 : ℝ) ^ j) ^ 2 = (1 / 4 : ℝ) ^ j := by
+      rw [show (1 / 4 : ℝ) = (1 / 2 : ℝ) ^ 2 from by norm_num, ← pow_mul, ← pow_mul, mul_comm]
+    have hW1 : ((1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j) ^ 2 = 4 * (1 / 4 : ℝ) ^ j := by
+      rw [show (1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j = 2 * (1 / 2 : ℝ) ^ j from by ring, mul_pow, hsq]
+      norm_num
+    have hcast : ((2 ^ j : ℕ) : ℝ) = (2 : ℝ) ^ j := by rw [Nat.cast_pow, Nat.cast_ofNat]
+    have hW2 : 6 * Real.pi * (1 / 2 : ℝ) ^ j
+        * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ)))
+        = 12 * Real.pi * (1 + (j : ℝ) * Real.log 2) := by
+      rw [hcast, Real.log_pow,
+        show 6 * Real.pi * (1 / 2 : ℝ) ^ j * (2 * (2 : ℝ) ^ j * (1 + (j : ℝ) * Real.log 2))
+          = 12 * Real.pi * ((1 / 2 : ℝ) ^ j * (2 : ℝ) ^ j) * (1 + (j : ℝ) * Real.log 2) from by ring,
+        show (1 / 2 : ℝ) ^ j * (2 : ℝ) ^ j = 1 from by rw [← mul_pow]; norm_num]
+      ring
+    have hKEYreal : cR * (((1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j) ^ 2)
+          * (6 * Real.pi * (1 / 2 : ℝ) ^ j
+            * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ))))
+        ≤ (1 / (((j : ℝ) + 1) * ((j : ℝ) + 2))) ^ 2 * ((1 / 2 : ℝ) ^ (j + 1)) ^ d := by
+      rw [hW1, hW2]; exact hcR j
+    -- `C0 ≠ 0`, `C0 ≠ ⊤` for the cancellation
+    have hW2pos : 0 < 6 * Real.pi * (1 / 2 : ℝ) ^ j
+        * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ))) := by
+      rw [hW2]
+      have hp : (0 : ℝ) < 1 + (j : ℝ) * Real.log 2 := by
+        have h := mul_nonneg (Nat.cast_nonneg j) (Real.log_pos (by norm_num : (1 : ℝ) < 2)).le
+        linarith
+      exact mul_pos (by positivity) hp
+    have hC0pos : C0 ≠ 0 := by
+      rw [hC0def]
+      exact mul_ne_zero (mul_ne_zero (ENNReal.ofReal_pos.mpr (by positivity)).ne' hDpos.ne')
+        (ENNReal.ofReal_pos.mpr hW2pos).ne'
+    have hC0top : C0 ≠ ⊤ := by
+      rw [hC0def]
+      exact ENNReal.mul_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hDtop) ENNReal.ofReal_ne_top
+    -- `(D⁻¹·ofReal cR)·C0 = ofReal(cR·W1·W2)` (the `D⁻¹·D` cancels)
+    have hLHS : (D⁻¹ * ENNReal.ofReal cR) * C0
+        = ENNReal.ofReal (cR * ((1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j) ^ 2
+          * (6 * Real.pi * (1 / 2 : ℝ) ^ j
+            * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ))))) := by
+      rw [hC0def,
+        show (D⁻¹ * ENNReal.ofReal cR) * (ENNReal.ofReal (((1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j) ^ 2) * D
+            * ENNReal.ofReal (6 * Real.pi * (1 / 2 : ℝ) ^ j
+              * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ)))))
+          = (D⁻¹ * D) * (ENNReal.ofReal cR
+              * ENNReal.ofReal (((1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j) ^ 2)
+              * ENNReal.ofReal (6 * Real.pi * (1 / 2 : ℝ) ^ j
+                * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ))))) from by ring,
+        ENNReal.inv_mul_cancel hDpos.ne' hDtop, one_mul,
+        ← ENNReal.ofReal_mul hcRpos.le, ← ENNReal.ofReal_mul (by positivity)]
+    rw [← ENNReal.mul_le_mul_iff_left hC0pos hC0top]
+    calc (D⁻¹ * ENNReal.ofReal cR) * C0
+        = ENNReal.ofReal (cR * ((1 / 2 : ℝ) ^ j + (1 / 2 : ℝ) ^ j) ^ 2
+            * (6 * Real.pi * (1 / 2 : ℝ) ^ j
+              * (2 * ((2 ^ j : ℕ) : ℝ) * (1 + Real.log ((2 ^ j : ℕ) : ℝ))))) := hLHS
+      _ ≤ ENNReal.ofReal ((1 / (((j : ℝ) + 1) * ((j : ℝ) + 2))) ^ 2 * ((1 / 2 : ℝ) ^ (j + 1)) ^ d) :=
+          ENNReal.ofReal_le_ofReal hKEYreal
+      _ = (ENNReal.ofReal (1 / (((j : ℝ) + 1) * ((j : ℝ) + 2)))) ^ 2
+          * (ENNReal.ofReal ((1 / 2 : ℝ) ^ (j + 1))) ^ d := by
+          rw [ENNReal.ofReal_mul (by positivity), ENNReal.ofReal_pow (by positivity),
+            ← ENNReal.ofReal_rpow_of_pos (by positivity : (0 : ℝ) < (1 / 2 : ℝ) ^ (j + 1))]
+      _ ≤ (∑ k ∈ Finset.range (2 ^ j), ENNReal.ofReal (2 * (1 / 2 : ℝ) ^ j) * volume (A k)) ^ 2
+            * (ENNReal.ofReal ((1 / 2 : ℝ) ^ (j + 1))) ^ d := by gcongr
+      _ ≤ (∑ n ∈ s, Metric.ediam (t n) ^ d) * C0 := hps
+      _ ≤ (∑' n, Metric.ediam (t n) ^ d) * C0 := mul_le_mul_right' (ENNReal.sum_le_tsum s) C0
 
 /-- **The concrete crux (Davies 1971, measure form).** For a Kakeya set `S ⊆ ℝ²`, every
 `d`-dimensional Hausdorff measure with `d < 2` is *positive*: `μH[d] S ≠ 0`.
