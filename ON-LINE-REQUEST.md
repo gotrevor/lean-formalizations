@@ -140,3 +140,43 @@ The building blocks the proof will plug into are ALL machine-checked already: `C
 (scale pigeonhole), `Cover.exists_global_dominant_scale` (direction pigeonhole),
 `Cover.exists_pullback_cover` (per-direction covered length), `Cover.cover_content_per_scale`,
 `Engine.content_ratio_lower`. Only the orchestration that assembles the axiom's witnesses remains.
+
+---
+
+## UPDATE 3 (2026-06-19, retention lap) — net-thinning combinatorics SOLVED locally; now two narrower asks
+
+The net-thinning + covered-length-retention lemma from UPDATE 2 is **now proven in Lean** (the
+"shift average"): `NetThinning.lean`'s `exists_shift_ge` shows that decomposing the fine `2⁻ᴶ`-net
+into the `2^{J-j*}` dyadic shifts of the `2⁻ʲ*`-subnet, SOME shift retains ≥ the full average of the
+fine net's dominant-scale covered length — so the thinning loses nothing. (The earlier
+"diverge to 0" dead ends were artifacts of trying to use the UNSHIFTED grid / a fixed net; the shift
+average is the fix.) Combined with `one_le_tsum_volume_fiber_union` + the existing pigeonholes, the
+orchestration is mathematically complete **modulo two narrower points below.** UPDATE 2's asks are
+superseded by these.
+
+**ASK 3a — is the UNSHIFTED-grid dominant-scale claim TRUE, or is the shift essential?**
+Our cited axiom `kakeya_dominant_scale_count` asserts the *unshifted* net `dir(k·2⁻ʲ)` (`k<2ʲ`) is
+covered length `≥ 1/poly(j)` at some scale `j`. The shift average only proves SOME base angle `θ₀`
+works (net `dir(θ₀+k·2⁻ʲ)`). Question: does there exist a cover `{tₙ}` of a planar Kakeya set
+(`ediam ≤ 1`) such that for EVERY dyadic scale `j`, the unshifted `2⁻ʲ`-grid directions are each
+poorly covered (`∑_{k<2ʲ} covered-length(dir(k·2⁻ʲ) at scale j) < 1/((j+1)(j+2))`)? I.e. can an
+adversary make every dyadic-rational direction be covered only at scales other than its own grid
+scale? If YES (shift essential), our current axiom is possibly-false and we must restate to the
+shifted form (we plan to). If NO (unshifted suffices), a citation/proof of that would let us keep the
+simpler unshifted axiom. Either answer resolves a faithfulness question.
+
+**ASK 3b — how does the rigorous literature handle the NON-MEASURABLE segment family?**
+A general Kakeya set `S` (our `IsKakeya`: a unit segment in every direction, S possibly
+non-measurable) gives a base-point function `θ ↦ a(θ)` that is a bare choice function — so
+`θ ↦ (covered length of S's segment in direction θ at scale j)` need not be measurable, blocking a
+CONTINUOUS shift-average `∫₀^{2⁻ʲ} (…) dα`. We sidestep this with a DISCRETE shift over a finite
+`2ᴶ`-net (finitely many base points ⟹ no measurability needed). But this forces the dominant scale
+`j* ≤ J` (we cap the scale fn at `J`), leaving a "Case B" residual (`j*=J`: the cover is dominated
+by pieces finer than `2⁻ᴶ`). Question: in the standard proofs (Wolff lectures; Mattila §22–23;
+Córdoba), how is the dominant-scale extraction made rigorous for an arbitrary (non-measurable)
+Kakeya set — via a discrete net + Case-B argument like ours, via reduction to a Borel/compact
+Besicovitch set, or via the maximal-function formulation that integrates over base points cleanly?
+The exact handling of Case B (covered overwhelmingly by sub-resolution pieces) would let us close it.
+
+Both asks are about the SAME final gap; either unblocks the discharge. The retention combinatorics
+itself is done and needs nothing further.

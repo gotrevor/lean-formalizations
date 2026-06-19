@@ -19,6 +19,59 @@ every direction ⊆ Sδ); explicit trig net `dir θ=(cos θ,sin θ)` with `norm_
 (Cauchy–Schwarz via Hölder p=q=2), `volume_thickening_mul_ge` (`(N·2δ)² ≤ vol(Sδ)·denom`), and the
 capstone **`volume_thickening_log_ge`: `1 ≤ vol(Sδ)·12π(1+log(1/δ))`** for `δ≤1/2`. All axiom-clean.
 
+### A0′. ⭐ BREAKTHROUGH (2026-06-19, retention lap): the net-thinning combinatorics is PROVEN + a faithfulness fix identified.
+
+**Three new `#print axioms`-clean bricks (`NetThinning.lean`), the literal "retention" gap from A0:**
+- `sum_range_mul_eq_sum_shift` — AP decomposition `∑_{k<B·M} L k = ∑_{β<B} ∑_{i<M} L(β+B·i)`
+  (explicit bijection `range(B·M) ≃ range B ×ˢ range M`, `k↦(k%B,k/B)`).
+- `exists_shift_ge` — the **shift pigeonhole** `∃ β<B, ∑_{k<B·M} L k ≤ B·∑_{i<M} L(β+B·i)`: some
+  dyadic shift `β` of the coarse subnet captures ≥ the FULL average of the fine net's covered length.
+- `one_le_tsum_volume_fiber_union` — `vol(⋃ₙTₙ) ≤ ∑ⱼ vol(⋃_{g n=j}Tₙ)`; gives the per-direction
+  `1 ≤ ∑ⱼ L k j` with `L k j = vol(⋃_{g n=j} Tₙ)` = the genuine covered (UNION) length per scale.
+
+**The full resolution of the net-scale circularity (now fully mapped, mathematically airtight):**
+1. Fix a FINE net of `2ᴶ` directions `k·2⁻ᴶ` (each with its OWN chosen base point — FINITE, so NO
+   measurability issue). Pull back (`exists_pullback_cover`): `vol(⋃ₙ Tₙᵏ) ≥ 1`.
+2. `L k j := vol(⋃_{g n=j} Tₙᵏ)` (union, NOT the overcounted `∑vol` — overlaps among same-scale
+   pieces would otherwise inflate the numerator). `one_le_tsum_volume_fiber_union ⟹ 1 ≤ ∑ⱼ L k j`.
+3. `exists_global_dominant_scale` (generic, already proven) on `s=range 2ᴶ`, this `L` ⟹ a global
+   dominant scale `j*` with `∑_{k<2ᴶ} L k j* ≥ 2ᴶ·scaleWeight j*`.
+4. `exists_shift_ge` (B=2^{J-j*}, M=2^{j*}, needs `j*≤J`) ⟹ a shift `β` with
+   `∑_{i<2^{j*}} L (β+2^{J-j*}·i) j* ≥ 2^{j*}·scaleWeight j*`. The subnet directions are
+   `β·2⁻ᴶ + i·2⁻ʲ*` — a `2⁻ʲ*`-separated AP with **base angle `θ₀ = β·2⁻ᴶ`** — covered length
+   retained EXACTLY (no loss). `A_i := ⋃_{g n=j*} Tₙ^{β+2^{J-j*}i}`, `φ_i(A_i) ⊆ ⋃_{g n=j*} tₙ`.
+5. Feed the shifted subnet to (a **base-angle generalization of**) `cover_content_per_scale`.
+
+**TWO genuinely-open residuals (both now crisply isolated — the only things left):**
+- **(R1) `j* ≤ J` / Case B.** Step 4 needs `j* ≤ J`. Force it by CAPPING the scale fn at `J`
+  (`g_J n = min(scale n, J)`); then `j*≤J`. If `j*<J` (**Case A** — fully clean, no measurability,
+  no base-point issue) proceed. If `j*=J` (**Case B**: the cover is dominated by pieces FINER than
+  the net resolution `2⁻ᴶ`) the bucket isn't a single scale → handle separately (many tiny pieces ⟹
+  large `∑ediam^d` directly, OR re-run at larger `J`). Case B is a smaller, separate sub-lemma.
+- **(R2) base-angle Córdoba.** `cover_content_per_scale`/`cover_count_lower`/`cordoba_cover_count`/
+  `volume_thickening_sets_ge`/`sum_overlap_le`/`sum_tube_ge`/`volume_inter_dirTube_le` all hardcode
+  the net direction `dir(k·δ)`. The overlap depends ONLY on the angle gap `(k−j)·δ` (shift-invariant
+  — see `dir_det`/`dir_sep`: gap of `c+kδ`,`c+jδ` is `(k−j)δ`), so adding a base angle `c` and using
+  `dir(c+k·δ)` is MECHANICAL (each lemma's math is verbatim). ~7 lemmas, 3 files. **Alternative:**
+  ROTATE the whole config by `−c` (isometry; `ediam`-invariant, `dir`-equivariant) to reduce the
+  shifted net to the unshifted one on the rotated cover (same `∑ediam^d`) — avoids touching Córdoba
+  but needs a rotation `LinearIsometryEquiv` on `EuclideanSpace ℝ (Fin 2)` + `R(dir φ)=dir(φ−c)`.
+
+**⚠️ FAITHFULNESS FINDING — the current axiom uses the UNSHIFTED grid; its TRUTH is uncertain.**
+`kakeya_dominant_scale_count` asserts the **unshifted** net `dir(k·2⁻ʲ)` (k<2ʲ) is well-covered at
+some scale. The shift-average proves only that SOME shift `θ₀` works (the unshifted `θ₀=0` may be
+adversarially defeatable: cover the dyadic-grid directions only at scales ≠ their own). So the axiom
+is **SUFFICIENT** for `davies_kakeya_2d` (the reduction is a valid kernel proof) but its OWN truth is
+not established — a possibly-unprovable lemma. **The provably-true form is the SHIFTED net**
+(`∃ c, dir(c+k·2⁻ʲ)` well-covered). NEXT LAP: restate the axiom to the shifted form (do (R2) first),
+which is both the faithfulness fix AND the form the proven bricks discharge. Don't try to prove the
+unshifted form — it may be false. (See `ON-LINE-REQUEST` UPDATE 3.)
+
+**NEXT-LAP ENTRY (precise):** (i) do (R2) — base-angle generalize the Córdoba chain (or rotation);
+(ii) restate `kakeya_dominant_scale_count` to the shifted form `∃ c, …`; (iii) wire steps 1–4 (bricks
+all proven) to discharge Case A; (iv) isolate Case B (R1) as a final smaller axiom. This converts the
+one monolithic axiom into: PROVEN(Case A) + small-axiom(Case B), with the retention core already done.
+
 ### A0. ⭐ MILESTONE (2026-06-19, late lap): crux narrowed to ONE crisp axiom + machine-checked reduction.
 `davies_kakeya_2d` now `#print axioms`-reduces to `[propext, Classical.choice, Quot.sound,
 **kakeya_dominant_scale_count**]` — NO `sorryAx`. The monolithic `kakeya_hausdorffContentBound` sorry is
