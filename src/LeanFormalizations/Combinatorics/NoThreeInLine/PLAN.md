@@ -26,10 +26,16 @@ Two pieces:
 used it to *search* the natural "3 of the 4 rectangle-corners `{r,r+p}×{s,s+p}` per residue, with
 `s = r⁻¹ mod p`" family:
 - `p = 5`: valid 12-point configs exist — `witness5` (certified `hjsw_lower_five`, off-headline).
-- `p = 7`: **exhaustive** search over all `4^6` corner-drop assignments found **NONE** of size 18.
-So HJSW is **not** the rectangle-corner family (a `p=5` coincidence). Need the paper's actual
-construction → see root `ON-LINE-REQUEST.md`. Next lap: act on the findings doc when it lands; until
-then the certificate makes any candidate construction cheap to validate computationally first.
+- `p = 7`: **exhaustive** over all keys `k` AND all `4^6` corner-drops found **NONE** of size 18.
+- `p = 7`, **single-curve ceiling**: among ALL `24` lifts of one hyperbola `xy≡k`, the collinear
+  triples have minimum hitting set `≥ 7` for every `k` (exhaustive `C(20,6)`), so one curve's lifts
+  max out at `≤ 17 < 18`. **⇒ HJSW must combine ≥ 2 distinct curves.** The three-curves-in-three-
+  blocks family (all `k₁,k₂,k₃`) and three-arcs-with-reflections also failed for `p = 7`.
+
+**Bottom line:** HJSW is not any single modular hyperbola, nor the naive multi-block arc unions I
+tried. Need the paper's exact (multi-)curve construction → root `ON-LINE-REQUEST.md`. Next lap: act
+on the findings doc when it lands; the `decNoThree` certificate (now an exact iff) makes any
+candidate construction cheap to validate computationally before investing in a Lean proof.
 
 Mathlib has what's needed: `ZMod p` field, `Matrix.det`, `Nat.exists_prime_lt_and_le_two_mul`.
 

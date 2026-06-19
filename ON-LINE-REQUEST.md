@@ -32,6 +32,13 @@ certificate (`decNoThree`, `native_decide`), I searched the natural "3 of the 4 
   must differ (different curve, different lift rule, multiple curves, or a subset with non-uniform
   per-residue counts). I need the paper to know what it actually is.
 - The three-arcs-in-three-`p×p`-blocks family (with reflections, `k=1`) also fails for `p = 7`.
+- **Stronger negative result (computed this lap):** for `p = 7`, take ALL `24 = 4(p−1)` lifts of a
+  *single* hyperbola `xy ≡ k (mod p)` into `[0,2p)²`. The collinear triples among them have a minimum
+  hitting set of size `≥ 7` for **every** `k ∈ {1..6}` (exhaustive over `C(20,6)` drops), so the
+  maximum no-three subset of one curve's lifts is `≤ 17 < 18`. **⇒ HJSW cannot be a single modular
+  hyperbola; it must combine ≥ 2 distinct curves** (or use a genuinely different construction). So the
+  precise question I need answered: *which* curves/keys, and *which* lifts, does HJSW combine, and how
+  is the cross-curve non-collinearity proven?
 
 A scan of any modern exposition giving the construction explicitly (Brass–Moser–Pach *Research
 Problems in Discrete Geometry* §10.1; Pór–Wood; Flammenkamp's pages) would also do.
