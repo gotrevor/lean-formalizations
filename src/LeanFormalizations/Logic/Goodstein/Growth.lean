@@ -86,13 +86,40 @@ theorem toONote_NF (b : ℕ) (hb : 2 ≤ b) : ∀ n, (toONote b n).NF := by
       refine NF.oadd (ih _ hlog) _ (NF.below_of_lt' ?_ (ih _ hr_lt_n))
       rw [repr_toONote b hb, repr_toONote b hb]; exact hbound
 
+/-! ### The Goodstein descent, expressed on `ONote`
+
+With the bridge in hand, the engine's ordinal value `Engine.seqOrd m k` becomes a computable
+notation `seqONote m k`, and the strict ε₀-descent `Engine.seqOrd_step` becomes a strict
+`ONote` `<`-descent. This is the C2 deliverable: the Goodstein termination descent now lives
+on the same `ONote` where the fast-growing growth theory (`Logic/FastGrowing/*`, A4) does —
+the bridge that C3 (the growth theorem) will cross. -/
+
+/-- The `k`-th Goodstein term as an ordinal **notation** (read in its base `k+2`). -/
+def seqONote (m k : ℕ) : ONote := toONote (k + 2) (goodsteinSeq m k)
+
+theorem seqONote_NF (m k : ℕ) : (seqONote m k).NF := toONote_NF (k + 2) (by omega) _
+
+/-- `repr (seqONote m k) = Engine.seqOrd m k`: the notation carries the engine's ordinal. -/
+theorem repr_seqONote (m k : ℕ) : (seqONote m k).repr = seqOrd m k :=
+  repr_toONote (k + 2) (by omega) _
+
+/-- **The Goodstein descent on `ONote`.** While the term is nonzero, one Goodstein step
+strictly lowers the notation: `seqONote m (k+1) < seqONote m k`. Transported from
+`Engine.seqOrd_step` through the `repr` bridge. -/
+theorem seqONote_lt (m k : ℕ) (h : goodsteinSeq m k ≠ 0) :
+    seqONote m (k + 1) < seqONote m k := by
+  rw [lt_def, repr_seqONote, repr_seqONote]
+  exact seqOrd_step m k h
+
 /-! ### Anti-vacuity anchors (`native_decide`)
 
-The notation is computable; small values pin it (a wrong recursion would fail). -/
+The notations are computable; small values pin them (a wrong recursion would fail). -/
 
 example : toONote 2 1 = oadd 0 1 0 := by native_decide          -- `1 = ω^0`
 example : toONote 2 2 = oadd (oadd 0 1 0) 1 0 := by native_decide -- `2 = 2^1 ↦ ω^1 = ω`
 example : toONote 2 4 = oadd (oadd (oadd 0 1 0) 1 0) 1 0 := by native_decide -- `4 = 2^2 ↦ ω^ω`
 example : toONote 3 5 = oadd (oadd 0 1 0) 1 (oadd 0 2 0) := by native_decide  -- `5 = 1·3^1 + 2`
+-- the descent: `goodsteinSeq 3` starts `3 ↦ 3 ↦ 3 ↦ 2 ↦ …`, notations strictly drop
+example : seqONote 3 0 = oadd (oadd 0 1 0) 1 (oadd 0 1 0) := by native_decide -- `G₀=3` in base 2 ↦ `ω+1`
 
 end LeanFormalizations.Logic.Goodstein
