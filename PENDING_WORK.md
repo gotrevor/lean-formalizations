@@ -35,6 +35,32 @@ feared v4.29.0→v4.29.1 drift did not materialize. New modules under
    unconditional `3/2−o(N)` dominates its conditional `5/4`. Needs Nagura's sharp finite inequality
    (paper, in ON-LINE-REQUEST). Lowest value; leave disclosed.
 
+### ✅ 2026-06-19 (grind lap) — Mertens' First Theorem added; nagura wall pinned as FINAL
+- **NEW: `NumberTheory/PrimeNumberTheorem/Mertens.lean`** (commits `c5c015a`, `7915a2f`). Mertens'
+  first theorem in von Mangoldt form, **absent from mathlib**, axiom-clean
+  (`[propext, Classical.choice, Quot.sound]`):
+  - `abs_vonMangoldtSumDiv_sub_log_le` : `∀ N≥1, |∑_{d≤N}Λ(d)/d − log N| ≤ log 4 + 5` (explicit).
+  - `mertens_first` : `(∑_{d≤N}Λ(d)/d − log N) =O[atTop] 1`.
+  - `vonMangoldtSumDiv_tendsto_atTop` : the sum `→ ∞` (quantitative infinitude of primes).
+  - Proof: repo keystone `sum_vonMangoldt_mul_floor_div` (`∑Λ(d)⌊N/d⌋=log(N!)`) gives the sandwich
+    `0 ≤ N·S(N) − log(N!) ≤ ψ(N)`; Stirling + `psi_le_const_mul_self` pin both ends.
+  - **TODO (dedicated lap): the prime form** `∑_{p≤x}(log p)/p = log x + O(1)`. Recipe in the file's
+    closing docstring: bound the proper-prime-power tail `∑_{p^k≤N,k≥2}(log p)/p^k ≤ 2∑_b(log b)/b²`
+    via regrouping by base + geometric sum (NO pointwise majorant over all `n` works — the tail
+    converges only by prime-power sparsity, while `∑Λ(n)/n` itself diverges). ~100 lines of
+    finset/bijection surgery; deferred. (Abel-summation route via in-repo `θ∼x` is a comparable-effort
+    alternative.)
+- **nagura_prime wall is FINAL for elementary methods (sharpened this lap).** The refined constant
+  `A = (7/15)log2+(3/10)log3+(1/6)log5` is **EXACTLY** the Chebyshev constant
+  `(1/2)log2+(1/3)log3+(1/5)log5−(1/30)log30 ≈ 0.921292` (verified algebraically). So
+  `theta_refined_lower` (const `A`) and `psi_refined_upper` (const `(6/5)A`) are matched at `(6/5)A` by
+  construction with **zero slack**: a prime in `(n,6n/5]` needs `θ(6n/5)−θ(n)>0` ⟺ leading-order
+  `(6/5)A·n − (6/5)A·n > 0`, impossible. Elementary improvement is ruled out (Chebyshev's constant is
+  this method's ceiling). The ONLY routes to `nagura_prime`: (i) explicit-error PNT
+  (`θ(x)≥(1−ε)x` for *explicit* `X(ε)` — deeper than the qualitative `θ∼x` we have; qualitative gives a
+  non-constructive threshold, so the small-case ladder can't be bounded), or (ii) Nagura's 1952 finite
+  inequality (needs the paper). Superseded by the unconditional `3/2−o(N)`; lowest value.
+
 ### Next-lap quick win (do FIRST — cheap, possibly eliminates the whole port)
 **Re-grep an UPDATED mathlib pin for a native PNT before anything else.** Verified this lap: our pin
 `v4.29.1` has only the ζ≠0-on-Re=1 input + the conditional π↔θ reduction/bounds in `Chebyshev.lean`
