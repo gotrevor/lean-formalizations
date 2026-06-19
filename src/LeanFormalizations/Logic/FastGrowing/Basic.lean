@@ -129,6 +129,39 @@ theorem fastGrowing_ofNat_mono {m n : ℕ} (hmn : m ≤ n) {x : ℕ} (hx : 1 ≤
   | succ n _ ih =>
       exact le_trans ih (fastGrowing_le_succ_index (fundamentalSequence_ofNat_succ n) hx)
 
+/-- **Finite-level argument monotonicity**, proved *cleanly* (no limit crux needed,
+since finite levels never enter the limit branch). `Monotone (f_k)` for `k : ℕ`, by
+induction on `k`: the successor step is `(f_{k})^[a] a ≤ (f_k)^[b] b` for `a ≤ b`,
+from the IH (`f_k` monotone) and `le_fastGrowing` (`id ≤ f_k`). -/
+theorem fastGrowing_ofNat_monotone (k : ℕ) : Monotone (fastGrowing (ofNat k)) := by
+  induction k with
+  | zero =>
+      simp only [ofNat_zero, fastGrowing_zero]
+      exact fun a b h => Nat.succ_le_succ h
+  | succ k ih =>
+      rw [fastGrowing_succ _ (fundamentalSequence_ofNat_succ k)]
+      have hexp : (id : ℕ → ℕ) ≤ fastGrowing (ofNat k) := fun m => le_fastGrowing _ m
+      intro a b hab
+      calc (fastGrowing (ofNat k))^[a] a
+          ≤ (fastGrowing (ofNat k))^[a] b := ih.iterate a hab
+        _ ≤ (fastGrowing (ofNat k))^[b] b := (Function.monotone_iterate_of_id_le hexp hab) b
+
+/-- **Monotonicity of `f_ω`, fully proved (axiom-clean).** The first nontrivial limit
+level is monotone — discharging the limit case *without* the general crux, using only
+finite-level facts (`ω[n] = n+1`, both finite). This is the concrete witness that the
+reduction machinery is sound on a genuine limit ordinal.
+
+`f_ω(n) = f_{ofNat(n+1)}(n) ≤ f_{ofNat(n+1)}(n+1) ≤ f_{ofNat(n+2)}(n+1) = f_ω(n+1)`. -/
+theorem fastGrowing_monotone_omega : Monotone (fastGrowing (oadd 1 1 0)) := by
+  have hfs : fundamentalSequence (oadd 1 1 0) = Sum.inr (fun i => ofNat (i + 1)) := rfl
+  refine monotone_nat_of_le_succ (fun n => ?_)
+  rw [fastGrowing_limit _ hfs]
+  -- goal: f_{ofNat(n+1)}(n) ≤ f_{ofNat(n+2)}(n+1)
+  calc fastGrowing (ofNat (n + 1)) n
+      ≤ fastGrowing (ofNat (n + 1)) (n + 1) := fastGrowing_ofNat_monotone (n + 1) (Nat.le_succ n)
+    _ ≤ fastGrowing (ofNat (n + 2)) (n + 1) :=
+        fastGrowing_ofNat_mono (Nat.le_succ (n + 1)) (Nat.succ_le_succ (Nat.zero_le n))
+
 /-- **The index-monotonicity crux (A3), limit step.**  *(disclosed `sorry` — this is
 the genuine hard core of the growth theory, banged on across laps.)*
 
