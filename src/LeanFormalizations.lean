@@ -17,3 +17,4 @@ import LeanFormalizations.NumberTheory.Transcendence.PiTranscendental
 import LeanFormalizations.Geometry.Constructible.Statement
 import LeanFormalizations.Logic.Goodstein.Statement
 import LeanFormalizations.Logic.Goodstein.Anchors
+import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
