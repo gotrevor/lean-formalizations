@@ -184,8 +184,10 @@ The recognizable form of Mertens' first theorem sums only over primes.  It diffe
 `∑_p (log p)/(p(p−1)) ≤ 2 ∑_p (log p)/p²`.  Establishing that bound requires reindexing the tail as
 a double sum over `(p, k ≥ 2)` and summing the geometric series in `k` (no pointwise majorant over
 all `n` works — the tail converges only by the sparsity of prime powers, while `∑ Λ(n)/n` itself
-diverges).  With the keystone `Wiener.summable_vonMangoldt_div_rpow` (`s = 2`) bounding
-`∑_p (log p)/p²`, the tail bound `tail(N) ≤ C` follows, giving
+diverges).  The convergent majorant `2·∑_b (log b)/b²` is **already secured** by `summable_log_div_sq`
+above; what remains is purely the regrouping: an injection `proper-prime-power d ↦ (minFac d, exponent)`
+into `Icc 2 N ×ˢ Icc 2 N`, the per-base geometric bound
+`∑_{k≥2} (log p)/p^k ≤ 2(log p)/p²`, and `Finset.sum_image`/`sum_le_tsum`.  Then
 `∑_{p ≤ N} (log p)/p = vonMangoldtSumDiv N − tail(N) = log N + O(1)`.  Left for a dedicated lap.
 -/
 
