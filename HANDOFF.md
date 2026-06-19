@@ -2,7 +2,7 @@
 
 **Thin pointer.** Durable overview = `STATUS.md`. Attack plan = `PENDING_WORK.md` §Reflection-2026-06-19
 + §A0‴; crux analysis = `Kakeya2D/CASE_B_ANALYSIS.md`. Frozen plan = `Kakeya2D/PLAN.md`. **Newest dated
-baton = `HANDOFF-2026-06-19-1700.md` — read that to resume.**
+baton = `HANDOFF-2026-06-19-1800.md` — read that to resume. (W) is DONE; next = (S) measurable selection.**
 
 Unbounded expedition to prove `davies_kakeya_2d : KakeyaSetConjectureDim 2` (planar Kakeya, Davies
 1971). The whole job is the lower bound `two_le_dimH`. Lane: only `Kakeya2D/`.
