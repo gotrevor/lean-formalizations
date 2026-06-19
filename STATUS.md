@@ -1,5 +1,5 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8289 jobs, `src/` **sorry-free**) · **Updated**: lap 2026-06-19-lap6 · **MATH AXIOMS: 0**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8289 jobs, `src/` **sorry-free**) · **Updated**: lap 2026-06-19-lap7 · **MATH AXIOMS: 0**
 
 > ♾️ **ACTIVE EXPEDITION (2026-06-19): Goodstein-independence growth theory.** Read
 > `DIRECTION.md`. Unbounded run building the mathlib-only "Goodstein grows like `f_{ε₀}`"
@@ -23,6 +23,17 @@
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 lap 7 (`f_1` DOMINATED unconditionally + recursion skeleton; 6 commits, all
+  axiom-clean, `src/` sorry-free):** broke the deadlock on sub-fact (ii) at level `o = 1`.
+  `bump_gt` (one bump strictly grows a value above its base) ⟹ `goodsteinSeq_ge_init` (value stays
+  `≥ m` for the first `m` steps) ⟹ `omega_le_seqONote_repr` (descent ordinal stays `≥ ω`) =
+  **sub-fact (ii) at `o = 1`**; with the generalized reduction `goodstein_dominates_of_index_le`,
+  this gives `fastGrowing_one_le_goodsteinLength` — `goodsteinLength` dominates `f_1` for every
+  `m ≥ 2`, via the full Cichoń pipeline (not `native_decide`). Plus `goodsteinLength m ≥ 2m − 1`
+  (`two_mul_sub_one_le_goodsteinLength`). And the recursion skeleton toward `o ≥ 2`: `log_bump`
+  (the leading exponent bumps itself), `leadExp_drop_le_one` (leading CNF exponent drops `≤ 1`/step),
+  `leadExp_ge_of_base_le` (non-decreasing while `≥ base`). Remaining deep crux sharpened to:
+  **steps-between-leading-exponent-drops is itself a Goodstein length** (see `PENDING_WORK.md`).
 - **2026-06-19 lap 6 (DOMINATION HEADLINE REDUCED to one descent-count fact; norm obstruction
   RESOLVED; 4 commits, all axiom-clean, `src/` still sorry-free):** turned lap-5's negative
   finding into a clean reduction. (1) `goodstein_dominates_of_index` — the full Cichoń assembly

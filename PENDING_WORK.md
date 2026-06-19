@@ -35,6 +35,38 @@ NF condition `repr R < ω^(repr e)` IS the no-absorption side condition, sideste
 `succ_iterate`. Also `toOrdinal_two_cofinal` (`∀ NF β, ∃ N, repr β < toOrdinal 2 N`; via
 `toOrdinal_pow` building ω-towers). All `#print axioms`-clean; native_decide anchors present.
 
+### ✅ LAP 7 (2026-06-19) — `f_1` DOMINATED unconditionally + the recursion skeleton formalized
+
+Six axiom-clean commits in `Goodstein/Domination.lean`. The growth attack moved from "fully
+blocked on sub-fact (ii)" to "level `o = 1` CLOSED + the per-step recursion machinery built":
+
+1. **Growth engine (`bump_gt`):** `b ≤ n → n + 1 ≤ bump b n` — one bump strictly grows a value
+   above its base (leading power `b^L ↦ (b+1)^{bump b L} > b^L`). The first real growth fact.
+2. **`goodsteinSeq_ge_init`:** `k + 1 ≤ m → m ≤ goodsteinSeq m k` — the value stays `≥ m` for the
+   first `m` steps (non-decrease while `≥` base). ⟹ **`omega_le_seqONote_repr`:** the descent
+   ordinal stays `≥ ω` for `~m` steps = **sub-fact (ii) at `o = 1`**.
+3. **`goodstein_dominates_of_index_le`** (generalized reduction: any telescope step `j`, non-strict
+   index, equality ⟹ `rfl`) ⟹ **`fastGrowing_one_le_goodsteinLength`**: `goodsteinLength`
+   dominates `f_1` for every `m ≥ 2`, via the full Cichoń pipeline (NOT `native_decide`).
+4. **`two_mul_sub_one_le_goodsteinLength`:** `goodsteinLength m ≥ 2m − 1` (value drops by `≤ 1`/step
+   — `goodsteinSeq_sub_le` — from the `≥ m` plateau). Beats the old linear `≥ m`.
+5. **Recursion skeleton (the path to `o ≥ 2`):** `log_bump` (`log_{b+1}(bump b n) = bump b(log_b n)`
+   — *the leading exponent bumps itself*); `log_le_log_pred_succ` (a decrement lowers `Nat.log` by
+   `≤ 1`); **`leadExp_drop_le_one`** (leading CNF exponent `L_k` drops by `≤ 1`/step) and
+   **`leadExp_ge_of_base_le`** (`L_k` non-decreasing while `L_k ≥ base k`). The full per-step local
+   structure of the leading-exponent descent.
+
+**THE SHARPENED CRUX (what remains for `o ≥ 2`, i.e. the headline):** the per-step facts give only
+a **`log m`-step** guarantee that `L_k ≥ 2` (rate-bound `drop ≤ 1`/step from `L_0 = log_2 m`; and
+`leadExp_ge` only holds while `L_k ≥ base k = k+2`, i.e. `k ≲ log m`). The TRUTH is that `L_k`
+*drops are RARE*: **the number of steps between consecutive drops of `L_k` from level `E` to `E−1`
+is itself a Goodstein length of the sub-structure at level `E`** (astronomically `≫ m`). Formalizing
+"steps-between-drops = sub-Goodstein-length" is the genuine recursive heart of Cichoń's lower bound
+— the one remaining deep, multi-lap obligation. Concretely: define the drop-time function and prove
+a recursion `dropTime(E) ≥` (Goodstein length at level `E−1`), then `L_k ≥ 2` for `≥ m` steps
+follows. The local skeleton (lap 7) is the running start; next lap, attack the steps-between-drops
+recursion (likely an induction on the leading exponent mirroring `hardy_oadd_iter`).
+
 ### 🎯 NEXT CRUX (refreshed 2026-06-19 lap 6): headline REDUCED to one descent-count fact
 
 **Lap-6 result — the headline is now a machine-checked reduction to a single deep fact, and the
