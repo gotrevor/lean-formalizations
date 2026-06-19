@@ -246,6 +246,24 @@ theorem le_bump (b : ℕ) (hb : 2 ≤ b) : ∀ n, n ≤ bump b n := by
       have hdm : n / b ^ L * b ^ L + n % b ^ L = n := Nat.div_add_mod' n (b ^ L)
       omega
 
+/-- **`bump` is monotone in its argument** (for `b ≥ 2`): `a ≤ a' → bump b a ≤ bump b a'`. The
+hereditary base-`b` rewriting preserves order. *Proof via the ordinal bridge*, avoiding any direct
+induction on the recursive `bump`: `toOrdinal b` is strictly monotone (`toOrdinal_mono_and_bound`),
+and bumping is ordinal-invariant (`toOrdinal_bump : toOrdinal (b+1) (bump b n) = toOrdinal b n`), so
+`a ≤ a'` lifts to `toOrdinal (b+1) (bump b a) = toOrdinal b a ≤ toOrdinal b a' =
+toOrdinal (b+1) (bump b a')`, and strict monotonicity of `toOrdinal (b+1)` reflects this back to
+`bump b a ≤ bump b a'`. This is the missing comparison lemma behind the **self-similarity recursion**
+(`leadExp_ge_goodsteinSeq_log`): the leading-exponent sequence dominates a lower-level Goodstein
+sequence, the structural heart of Cichoń's lower bound. -/
+theorem bump_mono (b : ℕ) (hb : 2 ≤ b) {a a' : ℕ} (h : a ≤ a') : bump b a ≤ bump b a' := by
+  have hSMb : StrictMono (toOrdinal b) := fun x y hxy =>
+    (toOrdinal_mono_and_bound b hb y).1 x hxy
+  have hSMb1 : StrictMono (toOrdinal (b + 1)) := fun x y hxy =>
+    (toOrdinal_mono_and_bound (b + 1) (by omega) y).1 x hxy
+  have hle : toOrdinal (b + 1) (bump b a) ≤ toOrdinal (b + 1) (bump b a') := by
+    rw [toOrdinal_bump b hb, toOrdinal_bump b hb]; exact hSMb.monotone h
+  exact hSMb1.le_iff_le.1 hle
+
 /-- Each Goodstein term is at least `m − k` (truncated): `m − k ≤ goodsteinSeq m k`. Induction
 on `k` using `le_bump` (`G_{k+1} = bump(base k, G_k) − 1 ≥ G_k − 1`). -/
 theorem goodsteinSeq_ge_sub (m : ℕ) : ∀ k, m - k ≤ goodsteinSeq m k := by
@@ -648,6 +666,87 @@ theorem leadExp_ge_sub (m : ℕ) : ∀ i, i + 1 ≤ m →
     have hih := ih (by omega)
     omega
 
+/-- **Per-step leading-exponent floor (unconditional).** `bump (base k) L_k − 1 ≤ L_{k+1}`, writing
+`L_k = Nat.log (base k) (goodsteinSeq m k)`. The next leading exponent is at least the *bump* of the
+current one minus one: off pure powers it equals `bump (base k) L_k` (`log_bump_pred_of_not_pow`), at
+pure powers exactly `bump (base k) L_k − 1` (`log_bump_pred_of_pow`), and when the value vanishes both
+sides collapse to `0`. So the leading-exponent sequence obeys the Goodstein recursion (`bump` then
+`−1`) as a *lower bound* — the engine of the self-similarity below. -/
+theorem leadExp_step_ge (m k : ℕ) :
+    bump (base k) (Nat.log (base k) (goodsteinSeq m k)) - 1
+      ≤ Nat.log (base (k + 1)) (goodsteinSeq m (k + 1)) := by
+  have hb : 2 ≤ base k := Nat.le_add_left 2 k
+  have hbb1 : base (k + 1) = base k + 1 := by simp only [base]
+  have hstep : goodsteinSeq m (k + 1) = bump (base k) (goodsteinSeq m k) - 1 := rfl
+  rcases eq_or_ne (goodsteinSeq m k) 0 with hv0 | hv0
+  · rw [hv0]; simp
+  · by_cases hpp : base k ^ Nat.log (base k) (goodsteinSeq m k) = goodsteinSeq m k
+    · rcases Nat.eq_zero_or_pos (Nat.log (base k) (goodsteinSeq m k)) with he0 | hepos
+      · rw [he0, bump_zero]; omega
+      · rw [hbb1, hstep, log_bump_pred_of_pow (base k) hb hepos hpp.symm]
+    · have hlt : base k ^ Nat.log (base k) (goodsteinSeq m k) < goodsteinSeq m k := by
+        have hle := Nat.pow_log_le_self (base k) hv0; omega
+      rw [hbb1, hstep, log_bump_pred_of_not_pow (base k) hb hv0 hlt]; omega
+
+/-- **Self-similarity: the leading-exponent sequence dominates a lower-level Goodstein sequence.**
+`goodsteinSeq (Nat.log 2 m) k ≤ Nat.log (base k) (goodsteinSeq m k)` for every `k`. The leading
+exponent `L_k` starts at `L_0 = Nat.log 2 m` and, by `leadExp_step_ge`, evolves by
+`L_{k+1} ≥ bump (base k) L_k − 1` — *exactly* the Goodstein recursion (`bump` then `−1`), but with the
+`−1` firing only at the rare pure powers, hence dominating the genuine Goodstein sequence seeded at
+`Nat.log 2 m` (which subtracts `1` at every step). Monotonicity of `bump` (`bump_mono`) carries the
+induction step. **This is Cichoń's lower bound in miniature**: it reduces the `o = 2` diagonal crux
+(`leadExp_k ≥ 2` for `k ≤ m`) to the *one-level-smaller* length statement
+`m + 2 ≤ goodsteinLength (Nat.log 2 m)` (see `two_le_leadExp_of_log_length`) — a clean self-reference
+that powers a strong induction on `m`, replacing the `ppCount` sparsity bound as the frontier. -/
+theorem leadExp_ge_goodsteinSeq_log (m : ℕ) :
+    ∀ k, goodsteinSeq (Nat.log 2 m) k ≤ Nat.log (base k) (goodsteinSeq m k) := by
+  intro k
+  induction k with
+  | zero =>
+    have h0 : goodsteinSeq (Nat.log 2 m) 0 = Nat.log 2 m := rfl
+    have h1 : goodsteinSeq m 0 = m := rfl
+    have hb : base 0 = 2 := rfl
+    simp [h0, h1, hb]
+  | succ k ih =>
+    have hb : 2 ≤ base k := Nat.le_add_left 2 k
+    have hstepM : goodsteinSeq (Nat.log 2 m) (k + 1)
+        = bump (base k) (goodsteinSeq (Nat.log 2 m) k) - 1 := rfl
+    rw [hstepM]
+    have hmono : bump (base k) (goodsteinSeq (Nat.log 2 m) k)
+        ≤ bump (base k) (Nat.log (base k) (goodsteinSeq m k)) := bump_mono (base k) hb ih
+    have hstep := leadExp_step_ge m k
+    omega
+
+/-- **A Goodstein term is `≥ 2` until two steps before it terminates.** If `k + 1 < goodsteinLength M`
+then `2 ≤ goodsteinSeq M k`. The value is nonzero before the length (`goodsteinSeq_ne_zero_of_lt`); and
+it cannot equal `1` there, because `bump b 1 = 1` so a value of `1` at step `k` forces `0` at step
+`k + 1`, i.e. `goodsteinLength M ≤ k + 1` — contradicting `k + 1 < goodsteinLength M`. So the only `1`
+is at step `goodsteinLength M − 1` and the only `0` at `goodsteinLength M`. -/
+theorem two_le_goodsteinSeq (M k : ℕ) (h : k + 1 < goodsteinLength M) :
+    2 ≤ goodsteinSeq M k := by
+  have hne0 : goodsteinSeq M k ≠ 0 := goodsteinSeq_ne_zero_of_lt (by omega)
+  rcases Nat.lt_or_ge (goodsteinSeq M k) 2 with hlt | hge
+  · exfalso
+    have h1 : goodsteinSeq M k = 1 := by omega
+    have hbump1 : bump (base k) 1 = 1 := by rw [bump_pos (base k) 1 one_ne_zero]; simp
+    have hnext : goodsteinSeq M (k + 1) = 0 := by
+      show bump (base k) (goodsteinSeq M k) - 1 = 0
+      rw [h1, hbump1]
+    have := goodsteinLength_le hnext
+    omega
+  · exact hge
+
+/-- **The self-similarity reduction, made explicit.** If the *one-level-down* Goodstein sequence runs
+long enough — `m + 2 ≤ goodsteinLength (Nat.log 2 m)` — then the leading exponent of the seed-`m`
+descent stays `≥ 2` for the first `m` steps: `2 ≤ Nat.log (base k) (goodsteinSeq m k)` for all `k ≤ m`.
+Chains `leadExp_ge_goodsteinSeq_log` (`L_k ≥ goodsteinSeq (Nat.log 2 m) k`) with `two_le_goodsteinSeq`
+(the lower sequence is `≥ 2` for `k + 1 < goodsteinLength (Nat.log 2 m)`, which `k ≤ m` guarantees).
+This is exactly sub-fact (ii) at `o = 2`, *reduced* to the smaller length bound. -/
+theorem two_le_leadExp_of_log_length {m k : ℕ}
+    (hlen : m + 2 ≤ goodsteinLength (Nat.log 2 m)) (hk : k ≤ m) :
+    2 ≤ Nat.log (base k) (goodsteinSeq m k) :=
+  le_trans (two_le_goodsteinSeq (Nat.log 2 m) k (by omega)) (leadExp_ge_goodsteinSeq_log m k)
+
 /-- **The pure-power step counter.** `ppCount m k` = the number of Goodstein steps among the first
 `k` at which `G_i` is a pure power of its base `base i` (`G_i = (base i)^{log_{base i} G_i}`) — the
 *rare* leading-exponent "borrow" events (see `log_bump_pred_of_pow` / `log_bump_pred_of_not_pow`). -/
@@ -967,6 +1066,36 @@ theorem fastGrowing_two_log_le_goodsteinLength {m : ℕ} (hm : 3 ≤ Nat.log 2 m
     (by omega) hnorm hidx
   rwa [show L - 2 + 2 = L from by omega] at h
 
+/-- **The `o = 2` diagonal domination, REDUCED to a one-level-smaller length bound.** If
+`m + 2 ≤ goodsteinLength (Nat.log 2 m)` then `fastGrowing 2 m ≤ goodsteinLength m + 2` — the true
+diagonal `f_2(m)` bound (budget `m`, *not* `log₂ m`), the first genuine instance of Cichoń's lower
+bound beyond `o = 1`. Assembly: the hypothesis feeds `two_le_leadExp_of_log_length` to keep the
+leading exponent `≥ 2` through step `j = m − 2`, so the descent ordinal there is `≥ ω² =
+(oadd 2 1 0).repr` (`opow_le_seqONote_repr`); the diagonal reduction `goodstein_dominates_of_index_le`
+(budget `j + 2 = m`) then closes it. **This isolates the entire remaining `o = 2` obligation to the
+self-referential length bound `m + 2 ≤ goodsteinLength (Nat.log 2 m)`** — provable for large `m` by a
+strong induction on `m` (the lower length is astronomically larger than `m` once `Nat.log 2 m ≥ 4`),
+the clean successor to the abandoned `ppCount` sparsity route. -/
+theorem fastGrowing_two_le_goodsteinLength_of_log_length {m : ℕ} (hm : 4 ≤ m)
+    (hlen : m + 2 ≤ goodsteinLength (Nat.log 2 m)) :
+    fastGrowing 2 m ≤ goodsteinLength m + 2 := by
+  have ho : (2 : ONote).NF := by decide
+  have hr2 : (oadd (2 : ONote) 1 0).repr = ω ^ (2 : Ordinal) := by
+    rw [show (2 : ONote) = oadd 0 2 0 from rfl]; simp [ONote.repr]
+  set j := m - 2 with hj
+  have hlead : 2 ≤ Nat.log (base j) (goodsteinSeq m j) :=
+    two_le_leadExp_of_log_length hlen (by omega)
+  have hv : goodsteinSeq m j ≠ 0 := by
+    have := goodsteinSeq_ge_init m j (by omega); omega
+  have hkb : (2 : ℕ) < base j := by simp only [base]; omega
+  have hidx : (oadd (2 : ONote) 1 0).repr ≤ (seqONote m j).repr := by
+    rw [hr2]; exact opow_le_seqONote_repr (m := m) (i := j) (k := 2) hlead hv hkb
+  have hnorm : norm (2 : ONote) ≤ j + 2 := by
+    have : norm (2 : ONote) = 2 := by decide
+    omega
+  have hgl : j ≤ goodsteinLength m := le_trans (by omega) (le_goodsteinLength m)
+  exact goodstein_dominates_of_index_le (o := 2) (m := m) (j := j) ho hgl (by omega) hnorm hidx
+
 /-- `norm (ofNat n) = n`: a finite notation `ofNat (k+1) = oadd 0 ⟨k+1⟩ 0` has CNF norm its single
 coefficient. -/
 theorem norm_ofNat (n : ℕ) : norm (ONote.ofNat n) = n := by
@@ -1050,6 +1179,18 @@ example : Nat.log (base 1) (goodsteinSeq 2 1) ≤ Nat.log (base 0) (goodsteinSeq
 example : fastGrowing 2 3 = 2 ^ 3 * 3 := by native_decide  -- = 24
 example : Nat.log 2 8 = 3 := by native_decide
 
+-- `bump_mono`: monotone in its argument. `bump 2 3 = 4 ≤ bump 2 5 = 10`.
+example : bump 2 3 ≤ bump 2 5 := by native_decide
+-- `leadExp_step_ge`: the per-step floor `bump(base k)(L_k) − 1 ≤ L_{k+1}`. At `m=4, k=2`:
+-- `bump 4 2 − 1 = 1 ≤ log_5 54 = 2` (with `G(4,2)=41`, `L_2 = 2`, `G(4,3)=54`, `L_3 = 2`).
+example : bump (base 2) (Nat.log (base 2) (goodsteinSeq 4 2)) - 1
+    ≤ Nat.log (base 3) (goodsteinSeq 4 3) := by native_decide
+-- `leadExp_ge_goodsteinSeq_log` (self-similarity): the leadExp sequence dominates the one-level-down
+-- Goodstein sequence. `goodsteinSeq (log₂ 4 = 2) 2 = 1 ≤ log_4 41 = 2`. A backwards bound would fail.
+example : goodsteinSeq (Nat.log 2 4) 2 ≤ Nat.log (base 2) (goodsteinSeq 4 2) := by native_decide
+-- `two_le_goodsteinSeq`: a term stays `≥ 2` until two steps before it terminates.
+-- `goodsteinLength 3 = 5`; at `k = 2` (`2+1 < 5`) the value `goodsteinSeq 3 2 = 3 ≥ 2`.
+example : 2 ≤ goodsteinSeq 3 2 := by native_decide
 example : fastGrowing 0 2 ≤ goodsteinLength 2 + 2 := by native_decide  -- 3 ≤ 5
 example : fastGrowing 1 2 ≤ goodsteinLength 2 + 2 := by native_decide  -- 4 ≤ 5
 example : fastGrowing 0 3 ≤ goodsteinLength 3 + 2 := by native_decide  -- 4 ≤ 7
