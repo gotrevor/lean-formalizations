@@ -11,11 +11,13 @@ Goodstein *function* in λ-calculus over Church-encoded ordinals and *explicitly
 skips the hereditary-base-2 conversion* — the very bridge to the literal integer
 sequence. A faithful Lean proof that includes that bridge would be a first.
 
-## Status: IN PROGRESS (treadmill)
-- `goodsteinSeq` (`Defs.lean`) — **STUB**, to be replaced by the faithful definition.
-- `goodstein_terminates` (`Statement.lean`) — headline, `sorry`.
-- `Anchors.lean` — ground-truth trajectories, `sorry` (discharge by `native_decide`
-  once the definition is real). These gate completion.
+## Status: ✅ PROVED, axiom-clean
+- `goodsteinSeq` (`Defs.lean`) — **faithful** hereditary-base bump definition.
+- `goodstein_terminates` (`Statement.lean`) — **PROVED**;
+  `#print axioms = [propext, Classical.choice, Quot.sound]`.
+- `Anchors.lean` — m = 0,1,2,3 trajectories, all discharged by `native_decide`.
+
+The proof engine is `Engine.lean` (ordinal interpretation + descent).
 
 ## What to audit (the entire trust surface)
 1. **`Defs.lean`** — `base` and `goodsteinSeq`. Check the definition matches the
@@ -45,13 +47,27 @@ Worked example, m = 3: `3 = 2+1` (base 2) → bump → `3+1 = 4`, −1 → **3**
 `3 = 3¹` (base 3) → bump → `4`, −1 → **3**; `3` (base 4, a bare digit) → −1 → **2**;
 **2** → **1** → **0**. (m = 4 is finite too but astronomically long — not anchorable.)
 
-## Proof of termination
-Map `G k` (hereditary base `k+2`) to an ordinal by replacing the base with `ω`.
-Bump = invisible to the map; −1 = strict ordinal decrease; `Ordinal` well-founded
-(`Ordinal.wellFoundedLT`) ⇒ the strictly-decreasing ordinal sequence terminates ⇒
-`G k = 0`. mathlib provides `Ordinal.CNF`, `Ordinal.coeff`/`eval`, and
-well-foundedness; we build the hereditary-base ↔ ordinal interpretation and the
-bump-invariance + strict-decrease lemmas.
+## Proof of termination (`Engine.lean`)
+Map `G k` (hereditary base `k+2`) to an ordinal `toOrdinal (k+2) (G k)` by replacing
+the base with `ω` — the *same* top-power peeling as `bump`. The proof rests on:
+
+1. **`toOrdinal_mono_and_bound`** — `n ↦ toOrdinal b n` is strictly monotone, and
+   `toOrdinal b n < ω^(toOrdinal b (log b n) + 1)` (the CNF leading bound). These
+   two are mutually recursive, so proved together in one strong induction.
+   `bump_mono_and_bound` is the verbatim ℕ-twin (`ω ↦ b+1`).
+2. **`toOrdinal_bump`** — `toOrdinal (b+1) (bump b n) = toOrdinal b n`: bumping the
+   base is invisible to the map. Proof reads off the base-`(b+1)` digit structure
+   of `bump b n` (leading exponent `bump b (log b n)`, digit `n / b^(log b n)`,
+   remainder `bump b (n % …)`) via `Nat.log_eq_of_pow_le_of_lt_pow` and recurses.
+3. **`seqOrd_step`** — for `seqOrd m k := toOrdinal (k+2) (G k)`, a nonzero term
+   forces `seqOrd m (k+1) < seqOrd m k` (invariance fixes the base-bump; `−1` is a
+   strict ordinal drop by monotonicity).
+4. **`goodstein_terminates_engine`** — an infinite strictly-decreasing `seqOrd`
+   contradicts well-foundedness of `<` on `Ordinal` (`Ordinal.lt_wf.has_min`), so
+   some `G N = 0`.
+
+Built directly on `toOrdinal`/`bump`; uses `Mathlib.SetTheory.Ordinal.Exponential`
+(`opow`, `omega0`) rather than `Ordinal.CNF`.
 
 ## Out of scope: Kirby–Paris independence
 "PA does not prove Goodstein's theorem" (Kirby & Paris, *"Accessible independence

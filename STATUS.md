@@ -1,10 +1,26 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8277 jobs) · **Updated**: 2026-06-18 · **MATH AXIOMS: 0** · **Goodstein: 🟡 IN PROGRESS** (scaffold, `sorry`'d — see `DIRECTION.md`)
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8278 jobs) · **Updated**: 2026-06-19 · **MATH AXIOMS: 0** · **Goodstein: 🟢 PROVED, axiom-clean** (`goodstein_terminates`)
 
 ## Where it stands
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 (Goodstein — PROVED, axiom-clean):** `goodstein_terminates`
+  (`∀ m, ∃ N, goodsteinSeq m N = 0`) is fully machine-checked,
+  `#print axioms = [propext, Classical.choice, Quot.sound]`. `Defs.lean` carries
+  the faithful hereditary-base **bump** (peel the top power: `e=log b n`,
+  `c=n/b^e`, `r=n%b^e`, `bump b n = c·(b+1)^(bump b e) + bump b r`); the 14
+  `Anchors` trajectories (`m=0..3`, incl. `goodsteinSeq 3 3 = 2`) are discharged
+  by `native_decide`, and `bump 2 266 = 3^81+81+3` was checked. `Engine.lean`:
+  `toOrdinal` (read `n` in hereditary base `b`, replace `b` by `ω`); a single
+  combined strong induction `toOrdinal_mono_and_bound` (strict monotonicity +
+  the CNF leading bound `toOrdinal b n < ω^(toOrdinal b (log b n)+1)`, which are
+  mutually recursive) and its ℕ twin `bump_mono_and_bound`; the structural heart
+  `toOrdinal_bump : toOrdinal (b+1) (bump b n) = toOrdinal b n` (base-bump leaves
+  the ordinal fixed, via base-`(b+1)` digit extraction); then `seqOrd_step` (each
+  nonzero step strictly drops `seqOrd m k := toOrdinal (k+2) (G k)`) and a
+  well-foundedness (`Ordinal.lt_wf.has_min`) finish. Kirby–Paris PA-independence
+  stays out of scope (README documents it). The bounded Goodstein run is COMPLETE.
 - **2026-06-18 (Goodstein run STARTED — directed target):** new bounded run to
   formalize **Goodstein's theorem** (`∀ m, ∃ N, goodsteinSeq m N = 0`). Scaffold in
   `Logic/Goodstein/`: faithful-def `Defs.lean` (currently a STUB), `Anchors.lean`

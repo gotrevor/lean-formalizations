@@ -1,29 +1,39 @@
-# HANDOFF — lean-formalizations (thin pointer)
+# HANDOFF — lean-formalizations (2026-06-19)
 
-This is a **thin pointer**, not a durable overview.
+## Bounded Goodstein run: COMPLETE ✅
 
-## ⛔ Current run: read `DIRECTION.md` FIRST — bounded Goodstein run
-The active directed target is **Goodstein's theorem (termination)**, scaffolded in
-`src/LeanFormalizations/Logic/Goodstein/`. `DIRECTION.md` is authoritative: prove
-`goodstein_terminates` (replace the stub `goodsteinSeq`, discharge the `Anchors`,
-prove the headline, keep it axiom-clean), then **self-stop**. Touch ONLY
-`Logic/Goodstein/`. Do NOT reopen the four complete threads. Do NOT start any other
-new target — when Goodstein is done, the run is OVER.
+**`goodstein_terminates : ∀ m, ∃ N, goodsteinSeq m N = 0`** is fully proved and
+axiom-clean: `#print axioms = [propext, Classical.choice, Quot.sound]`.
+`lake build` green (8278 jobs), `src/` sorry-free. This was the sole target of the
+bounded run (`DIRECTION.md`); per that directive the run ends here.
 
-Then, in order:
-1. **`DIRECTION.md`** — the operator directive for THIS run (Goodstein).
-2. **`STATUS.md`** — living repo-wide overview (now 4 complete threads + Goodstein in progress).
-3. **`HANDOFF-2026-06-18-goodstein-START.md`** — the resume baton for this run.
-4. **`PENDING_WORK.md`** — older open-item inventory (all OUT OF SCOPE this run).
+### What landed (`src/LeanFormalizations/Logic/Goodstein/`)
+- **`Defs.lean`** — faithful hereditary-base **bump**: peel the top power
+  (`e = log b n`, `c = n/b^e`, `r = n%b^e`), `bump b n = c·(b+1)^(bump b e) + bump b r`,
+  `bump b 0 = 0` (well-founded; both recursive args `< n`). `goodsteinSeq m (k+1)
+  = bump (k+2) (G k) - 1`. Verified faithful: trajectories `m=2:[2,2,1,0]`,
+  `m=3:[3,3,3,2,1,0]`, and `bump 2 266 = 3^81+81+3`.
+- **`Anchors.lean`** — 14 `example`s (m=0..3 full trajectories) discharged by
+  `native_decide` (off the headline axiom path).
+- **`Engine.lean`** — `toOrdinal` (base `b ↦ ω`), the combined induction
+  `toOrdinal_mono_and_bound` (strict monotonicity + CNF leading bound, mutually
+  recursive) and its ℕ-twin `bump_mono_and_bound`; `bump_lt_pow`; the structural
+  heart `toOrdinal_bump : toOrdinal (b+1) (bump b n) = toOrdinal b n`; `seqOrd`,
+  `seqOrd_step` (descent), and `goodstein_terminates_engine` (well-foundedness via
+  `Ordinal.lt_wf.has_min`).
+- **`Statement.lean`** — thin audit surface; delegates to the engine.
 
-## Standing rules (this repo)
-- DO NOT push (host publishes). Commit every green build (verify from a real `lake build`).
-- Keep each `Statement.lean` the faithful audit surface; engines live in siblings.
-- `Curtis/Lemma2.lean` lint warnings: LEAVE THEM (intentional audit-surface hypotheses).
-- After any Aristotle port or `grind`/`simp_all`, re-check `#print axioms` (can inject `sorryAx`).
-- Reference corpus: `~/personal/claude/knowledge/core/projects/lean-journey/reference/`.
+### Out of scope (documented, not attempted)
+Kirby–Paris PA-independence ("PA ⊬ Goodstein") — metamathematics about PA, see the
+Goodstein `README.md`.
 
----
-**→ Next session: read `DIRECTION.md` and work the Goodstein target. The four prior
-threads (Curtis, transcendence/squaring-the-circle, Constructible, power-tower) are
-DONE + axiom-clean — do NOT reopen them.**
+## Repo state
+All five threads complete and axiom-clean: `NumberTheory/Transcendence` (e + π,
+Lindemann), `Geometry/Constructible` (Wantzel, Layer 1), `NumericalSemigroups/Curtis`,
+`RealAnalysis/PowerTower` (sharp Euler iff), and now `Logic/Goodstein`. **0 math
+axioms**; every headline `#print axioms` is the bare trust base.
+
+## If picking a new target (next run — operator's call)
+`PENDING_WORK.md` / older HANDOFFs list ideas: Constructible Layer-2 geometric
+faithfulness, general Hermite–Lindemann, gathering the Erdős repos. None were in
+scope for the (now-finished) bounded Goodstein run.
