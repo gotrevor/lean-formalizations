@@ -1,5 +1,51 @@
 # PENDING_WORK — lean-formalizations
 
+## 🧭 lap 12 — NO-THREE-IN-LINE: HJSW crux A.1 DONE; headline `3N/2` covering paper-blocked
+
+**Done + committed this lap (build 🟢 8297 jobs, all axiom-clean except the one documented
+`native_decide` witness):**
+- `Hyperbola.lean` — `hyperbola_noThreeCollinear` (single arc `xy≡k`, no 3 collinear) +
+  `hyperbolaWide_noThreeCollinear` (doubled arc `x∈[1,2p)\{p}`, `2(p−1)` pts) + the reusable crux
+  `hyperbola_xy_eq` and the residue/horizontal-line-collapse machinery.
+- `Collinearity.lean` — `collinear_iff_det3_zero` (added the missing converse `det3=0 ⇒ collinear`).
+- `Anchors.lean` — `collinear_diagonal`, `not_collinear_corner`, decidable `idet3` criterion
+  `noThreeCollinear_of_idet`, `parabola5_noThreeCollinear` (`native_decide` witness).
+
+### OPEN ITEM 1 — HJSW `3N/2` covering / count (the branch HEADLINE). STATUS: ⛔ paper-blocked.
+The arc non-collinearity (A.1) is DONE; the `3/2` is entirely in the covering combinatorics, which I
+cannot reconstruct from memory (a single/doubled arc gives only `~N` in a square grid; naive
+stacking of two strips gives `2`, too good — the cross-arc collinearity caps it at `3/2`).
+`ON-LINE-REQUEST.md` filed for the exact 1975 construction (point set, grid side, cross-arc lemma).
+Three paths:
+1. **Wait on the online request** (a networked lap answers it → assemble the count on the arcs
+   already proven). Most direct; gated on the host.
+2. **Reconstruct the construction myself** — derive `k₁,k₂` and `x`-ranges for ~3 strips and prove
+   cross-arc non-collinearity directly (the wall: which translates avoid inter-arc collinearity).
+   Attempted this lap; the cross-arc lemma is the genuine unknown. Possible but research-grade.
+3. **Bank a weaker honest bound** — formalize `maxNoThreeInLine` lower bounds from the arcs in
+   non-square (rectangular) form `2(p−1)` in `2p×p`, as a stepping stone (does NOT reach `3/2`).
+
+### OPEN ITEM 2 — Goodstein general limit-α B4 `H_{ω^α}(n)+1 = f_{α[n]}(n+1)`. STATUS: open, marginal.
+Pattern proven at `ω^ω` (`hardy_omega_pow_omega`); finite-k done (`hardy_omega_pow_ofNat`). The
+charter headline (`grows like f_{ε₀}`) is already delivered, so this is a sharpening. Three paths:
+1. **Well-founded induction on α** with a non-uniform RHS index (succ vs limit α split): limit case
+   peels `(ω^α)[n]=ω^{α[n]}` (brick `fundamentalSequence_omega_pow_limit`) → B4 at smaller `α[n]`;
+   succ case is finite-B4's step via `hardy_oadd_coeff`. Fiddly; NB Hardy.lean edits re-run ~4–5 min
+   `native_decide`.
+2. **Next concrete level only** — B4 at `ω^{ω+1}` or `ω^{ω·2}` (specific limits past `ω^ω`),
+   mirroring the `ω^ω` proof; cheaper, incremental.
+3. **Inequality sandwich** instead of the exact (succ/limit-uniform) identity, if the exact form
+   stays awkward.
+
+### OPEN ITEM 3 — Goodstein strict domination (remove the `+2`). STATUS: open.
+`f_o(m) ≤ goodsteinLength m + 2` → tighten. The `+2` is the Cichoń `H(2)−2` offset; A3 index
+monotonicity is now CLOSED (`fastGrowing_bachmann_reach`), so the old "A3-hard" blocker is gone.
+Paths: (1) trace where `+2` enters `GrowthStatement`/`TowerDomination` and see if a sharper seed
+bound removes it; (2) prove a strict variant on a cofinal subsequence; (3) leave as-is (the
+two-sided headline already holds with `+2`).
+
+---
+
 ## 🎉🎉🎉 lap 11 — CICHOŃ'S LOWER BOUND COMPLETE TO ε₀: f_o(m) ≤ goodsteinLength m + 2 for EVERY o < ε₀
 
 **Done + committed (`4856b9a` tower spine, `9b1e779` full ε₀); build 🟢 (8294 jobs).** New file
