@@ -487,4 +487,15 @@ lemma integral_inv_log_mul {a b : ℝ} (ha : 1 < a) (hab : a ≤ b) :
     · exact fun t ht => ne_of_gt (mul_pos (Real.log_pos (by simp only [Set.mem_Icc] at ht; linarith [ht.1])) (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))
   exact intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv hcont.intervalIntegrable
 
+/-- `d/dt (1/log t) = −1/(t·(log t)²)` for `t > 1`.  The weight derivative for the Abel-summation
+derivation of Mertens' second theorem (weight `f(t) = 1/log t`). -/
+lemma hasDerivAt_inv_log {t : ℝ} (ht : 1 < t) :
+    HasDerivAt (fun s ↦ (Real.log s)⁻¹) (-(t * (Real.log t) ^ 2)⁻¹) t := by
+  have ht0 : t ≠ 0 := ne_of_gt (by linarith)
+  have hlog : Real.log t ≠ 0 := ne_of_gt (Real.log_pos ht)
+  have h := (Real.hasDerivAt_log ht0).inv hlog
+  convert h using 1
+  rw [div_eq_mul_inv, mul_inv]
+  ring
+
 end LeanFormalizations.Mertens
