@@ -1,50 +1,20 @@
 # HANDOFF — Davies / planar Kakeya (branch `kakeya-davies`)
 
-**Thin pointer.** Durable overview = `STATUS.md`. Attack plan = `PENDING_WORK.md` §A. Frozen plan =
-`Kakeya2D/PLAN.md`. Newest dated baton = `HANDOFF-2026-06-19-*.md`. **Read `DIRECTION.md` first.**
+**Thin pointer.** Durable overview = `STATUS.md`. Attack plan = `PENDING_WORK.md` §A0′. Frozen plan =
+`Kakeya2D/PLAN.md`. **Newest dated baton = `HANDOFF-2026-06-19-0945.md` — read that to resume.**
 
 Unbounded expedition to prove `davies_kakeya_2d : KakeyaSetConjectureDim 2` (planar Kakeya, Davies
-1971). The whole job is the lower bound `two_le_dimH`. Lane: only
-`src/LeanFormalizations/GeometricMeasureTheory/Kakeya2D/`.
+1971). The whole job is the lower bound `two_le_dimH`. Lane: only `Kakeya2D/`.
 
-## State — K1–K4 COMPLETE + K5 reduction/geometry COMPLETE, all axiom-clean. One Kakeya `sorry`.
-`lake build` green (8295 jobs). The lone Kakeya `sorry` is now:
-- `Engine.lean : kakeya_hausdorffContentBound` — for a planar Kakeya `S` and every `0<d<2`, the
-  **Hausdorff content bound** `∃ r>0, c≠0, ∀ fine cover S⊆⋃tₙ, c ≤ ∑ ediam(tₙ)^d`. This is the
-  multi-scale Córdoba estimate (an arbitrary cover ⟹ `∑ediam^d ≳ 1`).
-
-`davies_kakeya_2d` `#print axioms` = `[propext, sorryAx, Classical.choice, Quot.sound]` (single
-`sorryAx`, pinned to that content bound). (A *separate, dormant* `sorry` lives in
-`Logic/FastGrowing/Basic.lean` — out of the Kakeya lane, do not touch.)
-
-## Done this lap (2026-06-19 review) — K5 switched to the measure-free cover route (`Cover.lean`)
-Engine no longer reduces to "construct a Frostman measure" (which forces a weak-* limit mathlib
-lacks). It reduces to the honest, mathlib-native **Hausdorff content bound**. New `Cover.lean`, all
-`#print axioms`-clean:
-- `hausdorffMeasure_ne_zero_of_content_bound` / `_diam_content` / `_contentBound` + the packaged
-  `HausdorffContentBound` Prop — content bound ⟹ `μH[d]S≠0` via `hausdorffMeasure_apply`.
-- `thickening_subset_iUnion_thickening` + `volume_thickening_le_tsum` — a cover of `S` thickens to a
-  cover of `Sδ` (strict slack `δ<δ'` dissolves the closed-thickening `iInf` boundary issue), giving
-  `vol(Sδ) ≤ ∑ vol((Uₙ)δ')`.
-- `volume_thickening_le_of_ediam_le` — per-piece area `vol((U)δ') ≤ ofReal((ρ+δ')²)·vol(closedBall 0 1)`.
-- `exists_index_ge_of_tsum_lt` — weighted pigeonhole `c≤∑aₙ`, `∑wₙ<c ⟹ ∃n, wₙ≤aₙ`.
-- `CordobaL2.volume_thickening_tubes_ge` — K4 `L²` bound for an *explicit* tube family in any
-  container `E` (drops `IsKakeya`); `volume_thickening_mul_ge` is its `E:=Sδ` corollary.
-- `TubeFractional.volume_tube_ge_frac` — `ofReal(2δ‖v‖) ≤ vol(tube a v δ)`, the fractional
-  (length-`‖v‖`) tube area bound (localized-Córdoba numerator).
-- `Cover.one_le_tsum_ediam_of_covers` — covered unit segment ⟹ `∑ₙ ediam(Uₙ) ≥ 1`; and the
-  end-to-end **axiom-clean** `hausdorffMeasure_one_ne_zero` (`μH[1]S≠0`, NO sorry — the K5 stack
-  composes).
-
-## Next brick — the dyadic refinement + double pigeonhole (the `d>1` content, `PENDING_WORK.md` §A)
-**All geometric/L² inputs are now built and axiom-clean, and the pipeline composes axiom-clean at
-`d=1`.** The remaining real crux is the `d>1` upgrade: refine `one_le_tsum_ediam_of_covers` to keep
-the per-scale covered length `volume(Tₙ)`, **group by dyadic scale** (the main technical hurdle = a
-`tsum` reindex), pigeonhole over scales then over the `N`-net directions, and assemble the localized
-Córdoba count via `volume_thickening_tubes_ge` + `volume_tube_ge_frac` + `volume_thickening_le_of_ediam_le`.
-Online ref requested in `ON-LINE-REQUEST.md` — not blocking.
+## State (one line)
+`lake build` green (8297 jobs). The whole lower bound is machine-checked **down to ONE cited axiom**
+`Engine.kakeya_dominant_scale_count` (NO `sorry`):
+`#print axioms davies_kakeya_2d = [propext, Classical.choice, Quot.sound, kakeya_dominant_scale_count]`.
+The axiom's hard combinatorial core (net-thinning shift average) + the base-angle Córdoba chain + the
+geometric foundation are all PROVEN this lap (`NetThinning.lean`, R2). Remaining = wire the assembly
+(Case A) + crack Case B (Hausdorff-vs-box gap) + restate the axiom to the shifted form (faithfulness).
 
 ## Invariants
 - Defs (`IsKakeya`, `KakeyaSetConjectureDim`) are the frozen audit surface — do not edit.
-- `dimH_le_two`, `two_le_dimH`, K2–K4, and the whole K5 reduction/geometry are done + axiom-clean.
-- Commit every green build; never push; never fake green; disclosed `sorry` only; no axiom-smuggling.
+- Commit every green build; never push; never fake green; disclosed `sorry`/`axiom` only; no smuggling.
+- A separate dormant `sorry` lives in `Logic/FastGrowing/Basic.lean` — out of the Kakeya lane, leave it.
