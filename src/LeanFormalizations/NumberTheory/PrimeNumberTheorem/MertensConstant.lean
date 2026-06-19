@@ -1090,4 +1090,82 @@ lemma integrableOn_log_mul_exp_neg_mul {δ : ℝ} (hδ : 0 < δ) :
   show (Real.log (δ * x) - Real.log δ) * Real.exp (-(δ * x)) = Real.log x * Real.exp (-(δ * x))
   rw [Real.log_mul (ne_of_gt hδ) (ne_of_gt hx)]; ring
 
+/-! ### The Tauberian-error remainder `r(x) = primeRecipSum⌊eˣ⌋ − log x − M → 0`. -/
+
+/-- `log⌊eˣ⌋ − x → 0` as `x → ∞`.  Squeeze: `log(1−e^{−x}) ≤ log⌊eˣ⌋ − x ≤ 0`, the lower bound from
+`eˣ−1 < ⌊eˣ⌋` (`Nat.lt_floor_add_one`) and `log((eˣ−1)/eˣ) = log(eˣ−1) − x`, both ends `→ 0`. -/
+lemma tendsto_log_floor_exp_sub :
+    Tendsto (fun x => Real.log ⌊Real.exp x⌋₊ - x) atTop (𝓝 0) := by
+  have hlower : Tendsto (fun x => Real.log (1 - Real.exp (-x))) atTop (𝓝 0) := by
+    have h0 : Tendsto (fun x => 1 - Real.exp (-x)) atTop (𝓝 1) := by
+      simpa using (tendsto_const_nhds (x := (1:ℝ))).sub Real.tendsto_exp_neg_atTop_nhds_zero
+    have := (Real.continuousAt_log (by norm_num : (1:ℝ) ≠ 0)).tendsto.comp h0
+    simpa [Real.log_one] using this
+  refine tendsto_of_tendsto_of_tendsto_of_le_of_le' hlower tendsto_const_nhds ?_ ?_
+  · filter_upwards [eventually_gt_atTop 0] with x hx
+    have hex1 : (0:ℝ) < Real.exp x - 1 := by
+      have : (1:ℝ) < Real.exp x := Real.one_lt_exp_iff.mpr hx
+      linarith
+    have hfloorgt : Real.exp x - 1 < (⌊Real.exp x⌋₊ : ℝ) := by
+      have h := Nat.lt_floor_add_one (Real.exp x)
+      push_cast at h
+      linarith
+    have heq : Real.log (1 - Real.exp (-x)) = Real.log (Real.exp x - 1) - x := by
+      have hd : (1 - Real.exp (-x)) = (Real.exp x - 1) / Real.exp x := by
+        rw [Real.exp_neg]; field_simp
+      rw [hd, Real.log_div hex1.ne' (Real.exp_pos x).ne', Real.log_exp]
+    rw [heq]
+    have hmono : Real.log (Real.exp x - 1) ≤ Real.log ⌊Real.exp x⌋₊ :=
+      Real.log_le_log hex1 hfloorgt.le
+    linarith
+  · filter_upwards [eventually_gt_atTop 0] with x hx
+    have hfloorpos : (0:ℝ) < (⌊Real.exp x⌋₊ : ℝ) := by
+      have h1 : 1 ≤ ⌊Real.exp x⌋₊ := Nat.le_floor (by simpa using Real.one_le_exp hx.le)
+      exact_mod_cast Nat.lt_of_lt_of_le Nat.zero_lt_one h1
+    have : Real.log ⌊Real.exp x⌋₊ ≤ x := by
+      calc Real.log ⌊Real.exp x⌋₊
+          ≤ Real.log (Real.exp x) := Real.log_le_log hfloorpos (Nat.floor_le (Real.exp_pos x).le)
+        _ = x := Real.log_exp x
+    linarith
+
+/-- `log log⌊eˣ⌋ − log x → 0` as `x → ∞`.  Since `log⌊eˣ⌋/x = 1 + (log⌊eˣ⌋−x)/x → 1` (numerator `→ 0`,
+denominator `→ ∞`), `log(log⌊eˣ⌋/x) → log 1 = 0`, and `log(log⌊eˣ⌋/x) = log log⌊eˣ⌋ − log x`. -/
+lemma tendsto_log_log_floor_exp_sub_log :
+    Tendsto (fun x => Real.log (Real.log ⌊Real.exp x⌋₊) - Real.log x) atTop (𝓝 0) := by
+  have hratio : Tendsto (fun x => Real.log ⌊Real.exp x⌋₊ / x) atTop (𝓝 1) := by
+    have hnum : Tendsto (fun x => (Real.log ⌊Real.exp x⌋₊ - x) / x) atTop (𝓝 0) :=
+      tendsto_log_floor_exp_sub.div_atTop tendsto_id
+    have hone : Tendsto (fun x => 1 + (Real.log ⌊Real.exp x⌋₊ - x) / x) atTop (𝓝 1) := by
+      simpa using tendsto_const_nhds.add hnum
+    refine hone.congr' ?_
+    filter_upwards [eventually_gt_atTop 0] with x hx
+    field_simp; ring
+  have hlog := (Real.continuousAt_log (by norm_num : (1:ℝ) ≠ 0)).tendsto.comp hratio
+  rw [Real.log_one] at hlog
+  refine hlog.congr' ?_
+  filter_upwards [eventually_gt_atTop (Real.log 2), eventually_gt_atTop 0] with x hx2 hx0
+  have he2 : (2:ℝ) < Real.exp x := by
+    have h := Real.exp_lt_exp.mpr hx2
+    rwa [Real.exp_log (by norm_num : (0:ℝ) < 2)] at h
+  have hfloor2 : (2:ℝ) ≤ (⌊Real.exp x⌋₊ : ℝ) := by
+    have : (2:ℕ) ≤ ⌊Real.exp x⌋₊ := Nat.le_floor (by exact_mod_cast he2.le)
+    exact_mod_cast this
+  have hlogpos : 0 < Real.log ⌊Real.exp x⌋₊ := Real.log_pos (by linarith)
+  simp only [Function.comp_apply]
+  rw [Real.log_div hlogpos.ne' hx0.ne']
+
+/-- **The Tauberian-error remainder `r(x) := primeRecipSum⌊eˣ⌋ − log x − M → 0`** as `x → ∞`.
+Writes `r(x) = (primeRecipSum⌊eˣ⌋ − log log⌊eˣ⌋ − M) + (log log⌊eˣ⌋ − log x)`, both summands `→ 0`
+(`tendsto_primeRecipSum_floor_exp` and `tendsto_log_log_floor_exp_sub_log`).  This is the input `f`
+to the Abelian final-value crux `tendsto_sub_one_mul_integral_abelian`. -/
+lemma tendsto_floorExpRemainder :
+    Tendsto (fun x => primeRecipSum ⌊Real.exp x⌋₊ - Real.log x - meisselMertensM) atTop (𝓝 0) := by
+  have h1 := tendsto_primeRecipSum_floor_exp.sub_const meisselMertensM
+  rw [sub_self] at h1
+  have hsum := h1.add tendsto_log_log_floor_exp_sub_log
+  rw [add_zero] at hsum
+  refine hsum.congr' ?_
+  filter_upwards with x
+  ring
+
 end LeanFormalizations.Mertens
