@@ -5,7 +5,7 @@
 This file is a **thin pointer**. The durable overview is **`STATUS.md`**; the per-lap baton
 is the newest **`HANDOFF-<date>.md`**; open items/attack paths live in **`PENDING_WORK.md`**.
 
-## Where things stand (2026-06-19 lap 5 — newest baton: `HANDOFF-2026-06-19-0847.md`)
+## Where things stand (2026-06-19 lap 5 — newest baton: `HANDOFF-2026-06-19-0859.md`)
 - **C3 CICHOŇ IDENTITY + Hardy↔fastGrowing BRIDGE + cofinality all PROVED, axiom-clean.**
   `goodsteinLength m = H_{seqONote m 0}(2) − 2` (`goodsteinLength_eq_hardy`); the bridge
   `fastGrowing_le_hardy_pow : f_α ≤ H_{ω^α}` (matching args, `Logic/Goodstein/Domination.lean`)
