@@ -6,8 +6,9 @@ The headline `dimH S = 2` splits into the two inequalities:
 * `dimH_le_two` — the **trivial** half: any subset of `ℝ²` has Hausdorff dimension `≤ 2`,
   by monotonicity into `univ`, whose dimension is `finrank ℝ (ℝ²) = 2`. **Proven.**
 * `two_le_dimH` — **Davies 1971**, the genuine content: a planar Kakeya set has Hausdorff
-  dimension `≥ 2`. This is the run's open crux (`sorry`). Strategy: Córdoba's dual / "bush"
-  `L²` argument — see `PLAN.md`.
+  dimension `≥ 2`. Now fully machine-checked *modulo the single crisp axiom*
+  `kakeya_dominant_scale_count` (the cross-scale orchestration / net-thinning). Strategy: Córdoba's
+  dual / "bush" `L²` argument — see `PLAN.md`.
 
 Only `two_le_dimH` uses `IsKakeya`; the upper bound holds for every set in the plane.
 -/
@@ -308,8 +309,9 @@ lower bound witnessing `μH[d] S > 0` for every `d < 2`.
 **Status (this run).** K2–K4 are **proven, axiom-clean**: the content bound `vol(Sδ) ≳ 1/log(1/δ)`
 is `volume_thickening_log_ge`. K5's measure-free reduction (`Cover.lean`,
 `hausdorffMeasure_ne_zero_of_contentBound`) turns the crux into the **Hausdorff content bound**
-`kakeya_hausdorffContentBound` — the lone remaining `sorry`. The `d = 0` endpoint is free from
-monotonicity of `μH` in `d` against the `d = 1` content bound. -/
+`kakeya_hausdorffContentBound`, now machine-checked modulo the lone axiom
+`kakeya_dominant_scale_count`. The `d = 0` endpoint is free from monotonicity of `μH` in `d`
+against the `d = 1` content bound. -/
 theorem hausdorffMeasure_pos_of_isKakeya
     (S : Set (EuclideanSpace ℝ (Fin 2))) (h : IsKakeya S) :
     ∀ d : ℝ≥0, (d : ℝ≥0∞) < 2 → μH[(d : ℝ)] S ≠ 0 := by
