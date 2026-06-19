@@ -49,6 +49,12 @@ theorem one_le_dimH_of_isKakeya {n : ℕ} {S : Set (EuclideanSpace ℝ (Fin n))}
   calc (1 : ℝ≥0∞) = dimH (affineSegment ℝ a (a + v)) := hdimseg.symm
     _ ≤ dimH S := dimH_mono ha
 
+/-- **A Kakeya set in `ℝⁿ` (`n ≥ 1`) has strictly positive Hausdorff dimension.** Immediate corollary of
+`one_le_dimH_of_isKakeya` (`0 < 1 ≤ dimH S`); a uniform non-degeneracy statement across all dimensions. -/
+theorem dimH_pos_of_isKakeya {n : ℕ} {S : Set (EuclideanSpace ℝ (Fin n))}
+    {v : EuclideanSpace ℝ (Fin n)} (hv : ‖v‖ = 1) (h : IsKakeya S) : 0 < dimH S :=
+  lt_of_lt_of_le (by norm_num : (0 : ℝ≥0∞) < 1) (one_le_dimH_of_isKakeya hv h)
+
 /-- **The Kakeya conjecture in dimension `0`.** `EuclideanSpace ℝ (Fin 0)` is a single point, so every
 set has `dimH = 0` (and `IsKakeya` is vacuously true — there is no unit vector). Axiom-clean. -/
 theorem kakeya_0d : KakeyaSetConjectureDim 0 := by
