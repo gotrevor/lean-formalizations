@@ -242,20 +242,23 @@ theorem inter_tube_subset_parallelogram {a b v w : Plane} (hv : ‖v‖ = 1) (hw
   exact ⟨tube_transverse hδ (norm_perp hv) (inner_perp v) hxv,
          tube_transverse hδ (norm_perp hw) (inner_perp w) hxw⟩
 
-/-- **Two-tube overlap bound** (the geometric heart of K2). For unit directions `v, w` whose
-angle is `θ` (so `‖v - w‖ ≈ θ` for small `θ`), the intersection of the two δ-tubes has area
-`≲ δ² / (θ + δ)`.
+/-- **Two-tube overlap bound** (the geometric heart of K2). For unit directions `v, w` the
+intersection of the two δ-tubes has area `≲ δ² / (s + δ)`, where `s := |v₀w₁ − v₁w₀| = |sin∠(v,w)|`
+is the (lines-invariant) angular separation.
 
-Stated with the chord length `s := ‖v - w‖` as the separation surrogate (comparable to the
-angle for unit vectors). The constant is left as `C`; sharpness is not needed downstream — only
-the `1/(s+δ)` decay, which is what makes Córdoba's `L²` sum converge to `δ·log(1/δ)`.
+Using `s = |det[v,w]|` rather than the chord `‖v-w‖` is both *faithful* — it is invariant under
+`v ↦ -v`/`w ↦ -w`, matching that a tube depends only on its line, whereas `‖v-w‖` wrongly reports
+near-antipodal (≈ parallel) directions as far apart — and *natural*: `s` is exactly the Jacobian
+`|det|` of the area computation. The constant `C` is not sharp; only the `1/(s+δ)` decay matters
+downstream (it makes Córdoba's `L²` sum converge to `δ·log(1/δ)`).
 
-TODO(K2): elementary planar geometry — the intersection lies in a parallelogram of side `≲ δ`
-and the `transversal` length `≲ δ/(s+δ)`; integrate. -/
+Two regimes: near-parallel `s ≤ δ` is bounded by the single tube (`volume_tube_le`); transversal
+`s > δ` by the parallelogram area `(2δ)²/s` (`inter_tube_subset_parallelogram` +
+`addHaar_preimage_linearMap` with Jacobian `det[v,w] = v₀w₁−v₁w₀`). `C = 12` suffices for both. -/
 theorem volume_inter_tube_le {a b v w : Plane} (hv : ‖v‖ = 1) (hw : ‖w‖ = 1)
     {δ : ℝ} (hδ : 0 < δ) :
-    ∃ C : ℝ, 0 < C ∧
-      volume (tube a v δ ∩ tube b w δ) ≤ ENNReal.ofReal (C * δ ^ 2 / (‖v - w‖ + δ)) := by
+    volume (tube a v δ ∩ tube b w δ)
+      ≤ ENNReal.ofReal (12 * δ ^ 2 / (|v 0 * w 1 - v 1 * w 0| + δ)) := by
   sorry
 
 end LeanFormalizations.Kakeya2D

@@ -1,5 +1,29 @@
 # PENDING_WORK — lean-formalizations
 
+## ♾️ ACTIVE (2026-06-19): planar Kakeya (Davies) — open `sorry` inventory + attack paths
+
+Branch `kakeya-davies`. Two open `sorry`s in the Kakeya thread (everything else axiom-clean):
+
+### A. `Tube.lean : volume_inter_tube_le` — two-tube overlap `≲ δ²/(‖v-w‖+δ)`. **Next brick.**
+Reduced (this lap) via `inter_tube_subset_parallelogram` to a parallelogram-area computation.
+Three viable paths:
+1. **(chosen) Determinant / `addHaar_preimage_linearMap`.** Near-parallel `‖v-w‖≤δ` is free
+   (`volume_tube_le` ⟹ `≤6δ`, and RHS `≥δ/2`). Transversal: parallelogram `= L⁻¹'box'`,
+   `L = (!![perp v 0,perp v 1; perp w 0,perp w 1]).toLpLin 2 2`, `det L = v0·w1−v1·w0`
+   (`LinearMap.det_toLpLin`, `Matrix.det_fin_two`); `volume = ofReal|det⁻¹|·(2δ)²`. Then
+   `|det| ≳ ‖v-w‖` for unit `v,w` (CARE antipodal). All lemmas confirmed present — see `HANDOFF.md`.
+2. **Fubini in the v-frame.** Re-use `frame`/`volume_coordBox` coords `(s,r)`; the `w`-slab
+   constrains `s` to length `≤ 2δ/|det|`; integrate `∫_{|r|≤δ} min(1+2δ, 2δ/|det|) dr`. More
+   elementary measure theory but needs an explicit Fubini/`lintegral` over the frame iso.
+3. **Crude `min` bound only.** Prove `≤ min(6δ, (2δ)²/|det|)` and hand K4 the un-simplified form;
+   defer the `δ²/(‖v-w‖+δ)` repackaging. Lets K4 start before the det↔‖v-w‖ inequality lands.
+
+### B. `Engine.lean : hausdorffMeasure_pos_of_isKakeya` — `∀ d<2, μH[d] S ≠ 0`. The deep crux.
+Needs the full K3 (δ-discretization) → K4 (Córdoba L²) → K5 (content→Frostman→Hausdorff) ladder
+(`Kakeya2D/PLAN.md`). Gated on A. Multi-lap; do not expect to close soon — advance one rung/lap.
+
+---
+
 ## 🔭 OPEN-ITEM INVENTORY (refreshed 2026-06-17, operator directive)
 
 `src/` is **100% axiom-free** (0 custom axioms, 0 `sorry`/`admit`; `lake build` green, 8274
