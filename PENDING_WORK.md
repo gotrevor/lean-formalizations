@@ -18,13 +18,20 @@ build stays sorry-free + axiom-clean; kernel-checked via `lake env lean <path>`)
 - `jvn_of_measurableSelection` — the exact `jvn` statement, by `X=ℝ, Y=Plane, μ=volume, D=Icc 0 1`.
   ⇒ discharging the single remaining hole makes `kakeya_aeMeasurable_selection` UNCONDITIONAL.
 
-**The single isolated hole** (`exists_aemeasurable_section_of_continuous_range`, the only `sorry`):
-a.e.-measurable section of a *continuous* `F : (ℕ→ℕ) → X×Y` over `D ⊆ Prod.fst '' range F`. Decomposes
-into (B) leftmost-branch construction [mathlib-reachable: `PiNat.cylinder`/`longestPrefix`/
-`inter_cylinder_longestPrefix_nonempty`, `exists_lipschitz_retraction_of_isClosed` is the fixed-set
-analogue] and (A) **capacitability** = analytic sets are `NullMeasurableSet μ` (Choquet via the Souslin
-operation) — the deep 🟡 core and the genuine missing mathlib theory (mathlib has `AnalyticSet` + Lusin
-separation but neither universal measurability nor a measurable selector; confirmed by grep this lap).
+**The remaining holes — now exactly TWO orthogonal, independently-attackable named bricks**, with the
+core `exists_aemeasurable_section_of_continuous_range` a PROVEN assembly of them via the capacitability
+bridge `aemeasurable_of_generateFrom_analytic` (also proven this lap, no `sorry`):
+- **Brick A — `analyticSet_nullMeasurableSet` (capacitability):** in a Polish space every analytic set
+  is `NullMeasurableSet μ` (Choquet via the Souslin operation). The deep 🟡 core, genuine missing
+  mathlib theory (mathlib has `AnalyticSet` + Lusin separation but neither universal measurability nor a
+  measurable selector — confirmed by grep this lap). The bridge reduces ALL measurability to this.
+- **Brick B — `exists_generateFrom_analytic_section` (measurable leftmost-branch, CAPACITABILITY-FREE):**
+  for continuous `F : (ℕ→ℕ)→X×Y`, `D ⊆ Prod.fst '' range F`, a `generateFrom{AnalyticSet}`-measurable
+  selector `a` with `(x,ax)∈range F` on `D`. Construction = leftmost branch of the closed fibre `φ⁻¹{x}`
+  (`PiNat.cylinder`/`longestPrefix`/`inter_cylinder_longestPrefix_nonempty`;
+  `exists_lipschitz_retraction_of_isClosed` is the fixed-set analogue), level sets of `x↦σ x n` being
+  countable boolean combinations of the analytic `φ''(cylinder ·)` (`analyticSet_image_cylinder`, proven).
+  mathlib-reachable, no DST gap — the better next-lap target of the two.
 
 **Wall mapped (two alternative attacks on the hole, both substantial, both missing from mathlib):**
 - (A-route) Capacitability → universal measurability → leftmost-branch measurability. General; needed
