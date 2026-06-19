@@ -778,6 +778,173 @@ theorem mertens_second :
   · linarith [e1.2, e2.2, neg_le_abs (Real.log (Real.log 2))]
 
 /-!
+## Mertens' second theorem, sharp form: convergence to the Meissel–Mertens constant `M`
+
+`mertens_second` gives `∑_{p≤N} 1/p − log log N = O(1)`.  The sharp statement is that this quantity
+*converges*: `∑_{p≤N} 1/p − log log N → M` (the Meissel–Mertens constant).  The bounded remainder
+integral of `mertens_second` is upgraded to an *improper* integral that converges, using mathlib's
+`integrableOn_Ioi_of_intervalIntegral_norm_bounded` + `intervalIntegral_tendsto_integral_Ioi`.  The
+deep identification `M = γ` (Euler–Mascheroni) is left for later. -/
+
+/-- The constant bounding the Mertens-2nd remainder numerator `|primeSumDiv ⌊t⌋₊ − log t|`, packaged
+as a single nonnegative real (the RHS of `abs_primeSumDiv_floor_sub_log_le`). -/
+noncomputable def mertensRemBound : ℝ :=
+  ((Real.log 4 + 5) + 2 * ∑' b : ℕ, Real.log b / (b : ℝ) ^ 2) + Real.log (3 / 2)
+
+lemma mertensRemBound_nonneg : 0 ≤ mertensRemBound := by
+  unfold mertensRemBound
+  have h1 : (0 : ℝ) ≤ Real.log 4 + 5 := by
+    have := Real.log_nonneg (show (1 : ℝ) ≤ 4 by norm_num); linarith
+  have h2 : (0 : ℝ) ≤ ∑' b : ℕ, Real.log b / (b : ℝ) ^ 2 := by
+    apply tsum_nonneg; intro b
+    rcases Nat.eq_zero_or_pos b with rfl | hb
+    · simp
+    · exact div_nonneg (Real.log_nonneg (Nat.one_le_cast.mpr hb)) (by positivity)
+  have h3 : (0 : ℝ) ≤ Real.log (3 / 2) := Real.log_nonneg (by norm_num)
+  linarith
+
+/-- The Mertens-2nd remainder integrand: the step-function integrand minus the `log log` weight.  Its
+improper integral over `(2,∞)` is the convergent tail that defines the Meissel–Mertens constant. -/
+noncomputable def mertensRemainder (t : ℝ) : ℝ :=
+  primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2) - (Real.log t * t)⁻¹
+
+open MeasureTheory in
+/-- The remainder integrand is integrable on every `[2,N]`. -/
+lemma integrableOn_mertensRemainder_Icc (N : ℕ) :
+    IntegrableOn mertensRemainder (Set.Icc (2 : ℝ) N) := by
+  have hw : IntegrableOn (fun t : ℝ => (Real.log t * t)⁻¹) (Set.Icc (2 : ℝ) N) := by
+    have hcont : ContinuousOn (fun t : ℝ => (Real.log t * t)⁻¹) (Set.Icc (2 : ℝ) N) := by
+      apply ContinuousOn.inv₀
+      · exact (Real.continuousOn_log.mono
+          (fun t ht => ne_of_gt (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))).mul
+            continuousOn_id
+      · exact fun t ht => ne_of_gt (mul_pos
+          (Real.log_pos (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))
+          (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))
+    exact hcont.integrableOn_compact isCompact_Icc
+  exact (integrableOn_primeSumDiv_floor_div N).sub hw
+
+open MeasureTheory in
+/-- The remainder integrand is integrable on every `(2,N]` (for the improper-integral hypothesis). -/
+lemma integrableOn_mertensRemainder_Ioc (N : ℕ) :
+    IntegrableOn mertensRemainder (Set.Ioc (2 : ℝ) N) :=
+  (integrableOn_mertensRemainder_Icc N).mono_set Set.Ioc_subset_Icc_self
+
+open MeasureTheory in
+/-- Uniform bound on the *total-variation* integral of the remainder: `∫_2^N ‖remainder‖ ≤ C/log 2`,
+the key estimate for improper-integrability. -/
+lemma integral_norm_mertensRemainder_le {N : ℕ} (hN : 2 ≤ N) :
+    ∫ t in (2 : ℝ)..N, ‖mertensRemainder t‖ ≤ mertensRemBound / Real.log 2 := by
+  have hNR : (2 : ℝ) ≤ N := by exact_mod_cast hN
+  have hlog2pos : (0 : ℝ) < Real.log 2 := Real.log_pos (by norm_num)
+  have hf : IntervalIntegrable mertensRemainder volume 2 N :=
+    (intervalIntegrable_iff_integrableOn_Icc_of_le hNR).mpr (integrableOn_mertensRemainder_Icc N)
+  have hcontInv : ContinuousOn (fun t : ℝ ↦ (t * (Real.log t) ^ 2)⁻¹) (Set.uIcc 2 N) := by
+    rw [Set.uIcc_of_le hNR]
+    apply ContinuousOn.inv₀
+    · exact continuousOn_id.mul ((Real.continuousOn_log.mono
+        (fun t ht => ne_of_gt (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))).pow 2)
+    · exact fun t ht => ne_of_gt (mul_pos (by simp only [Set.mem_Icc] at ht; linarith [ht.1])
+        (pow_pos (Real.log_pos (by simp only [Set.mem_Icc] at ht; linarith [ht.1])) 2))
+  have hg : IntervalIntegrable (fun t ↦ mertensRemBound * (t * (Real.log t) ^ 2)⁻¹) volume 2 N :=
+    (hcontInv.const_smul mertensRemBound).intervalIntegrable
+  have hmono : ∫ t in (2 : ℝ)..N, ‖mertensRemainder t‖
+      ≤ ∫ t in (2 : ℝ)..N, mertensRemBound * (t * (Real.log t) ^ 2)⁻¹ := by
+    apply intervalIntegral.integral_mono_on hNR hf.norm hg
+    intro t ht
+    rw [Set.mem_Icc] at ht
+    have htt : (1 : ℝ) < t := by linarith [ht.1]
+    have htpos : (0 : ℝ) < t := by linarith
+    have hlogtpos : (0 : ℝ) < Real.log t := Real.log_pos htt
+    have hden : (0 : ℝ) < t * (Real.log t) ^ 2 := mul_pos htpos (pow_pos hlogtpos 2)
+    have heq : primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2) - (Real.log t * t)⁻¹
+        = (primeSumDiv ⌊t⌋₊ - Real.log t) / (t * (Real.log t) ^ 2) := by field_simp
+    have hb := abs_primeSumDiv_floor_sub_log_le ht.1
+    show ‖primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2) - (Real.log t * t)⁻¹‖
+      ≤ mertensRemBound * (t * (Real.log t) ^ 2)⁻¹
+    rw [heq, Real.norm_eq_abs, abs_div, abs_of_pos hden, div_eq_mul_inv]
+    exact mul_le_mul_of_nonneg_right hb (by positivity)
+  have hval : ∫ t in (2 : ℝ)..N, mertensRemBound * (t * (Real.log t) ^ 2)⁻¹
+      = mertensRemBound * ((Real.log 2)⁻¹ - (Real.log N)⁻¹) := by
+    rw [intervalIntegral.integral_const_mul, integral_inv_mul_sq_log (by norm_num) hNR]
+  rw [hval] at hmono
+  have hlogN2 : Real.log 2 ≤ Real.log N := Real.log_le_log (by norm_num) hNR
+  have hlogNpos : (0 : ℝ) < Real.log N := lt_of_lt_of_le hlog2pos hlogN2
+  have hle : mertensRemBound * ((Real.log 2)⁻¹ - (Real.log N)⁻¹) ≤ mertensRemBound / Real.log 2 := by
+    rw [div_eq_mul_inv, mul_sub]
+    have h0 : 0 ≤ mertensRemBound * (Real.log N)⁻¹ := mul_nonneg mertensRemBound_nonneg (by positivity)
+    linarith
+  linarith
+
+open MeasureTheory in
+/-- **Improper-integrability** of the remainder: the bounded total variation `∫_2^N ‖·‖ ≤ C/log 2`
+upgrades to integrability on the half-line `(2,∞)`. -/
+lemma integrableOn_mertensRemainder_Ioi :
+    IntegrableOn mertensRemainder (Set.Ioi (2 : ℝ)) := by
+  refine MeasureTheory.integrableOn_Ioi_of_intervalIntegral_norm_bounded
+    (mertensRemBound / Real.log 2) 2 (b := fun N : ℕ => (N : ℝ)) (l := atTop)
+    (fun N => integrableOn_mertensRemainder_Ioc N) tendsto_natCast_atTop_atTop ?_
+  filter_upwards [eventually_ge_atTop 2] with N hN
+  exact integral_norm_mertensRemainder_le hN
+
+open MeasureTheory in
+/-- The finite remainder integral converges to the improper integral over `(2,∞)`. -/
+lemma mertensRemainder_integral_tendsto :
+    Tendsto (fun N : ℕ => ∫ t in (2 : ℝ)..N, mertensRemainder t) atTop
+      (nhds (∫ t in Set.Ioi (2 : ℝ), mertensRemainder t)) :=
+  MeasureTheory.intervalIntegral_tendsto_integral_Ioi 2 integrableOn_mertensRemainder_Ioi
+    tendsto_natCast_atTop_atTop
+
+/-- The **Meissel–Mertens constant** `M`, defined as the limit `lim (∑_{p≤N} 1/p − log log N)`. -/
+noncomputable def meisselMertensM : ℝ :=
+  1 + (∫ t in Set.Ioi (2 : ℝ), mertensRemainder t) - Real.log (Real.log 2)
+
+open MeasureTheory intervalIntegral in
+/-- **Mertens' second theorem, sharp form.**  `∑_{p≤N} 1/p − log log N → M` (the Meissel–Mertens
+constant) — strictly stronger than the `O(1)` of `mertens_second`, and **absent from mathlib**.
+Assembled from `mertens_second_identity` (Abel summation), the convergent boundary term
+`primeSumDiv_div_log_tendsto_one` (`→1`), and the convergent improper remainder integral
+`mertensRemainder_integral_tendsto`. -/
+theorem mertens_second_tendsto :
+    Tendsto (fun N : ℕ => primeRecipSum N - Real.log (Real.log N)) atTop (nhds meisselMertensM) := by
+  have hsum : Tendsto
+      (fun N : ℕ => primeSumDiv N / Real.log N + (∫ t in (2 : ℝ)..N, mertensRemainder t))
+      atTop (nhds (1 + ∫ t in Set.Ioi (2 : ℝ), mertensRemainder t)) :=
+    primeSumDiv_div_log_tendsto_one.add mertensRemainder_integral_tendsto
+  have hc : Tendsto (fun _ : ℕ => Real.log (Real.log 2)) atTop (nhds (Real.log (Real.log 2))) :=
+    tendsto_const_nhds
+  have hfin : Tendsto
+      (fun N : ℕ => (primeSumDiv N / Real.log N + (∫ t in (2 : ℝ)..N, mertensRemainder t))
+        - Real.log (Real.log 2)) atTop (nhds meisselMertensM) := hsum.sub hc
+  refine hfin.congr' ?_
+  filter_upwards [eventually_ge_atTop 2] with N hN
+  have hNR : (2 : ℝ) ≤ N := by exact_mod_cast hN
+  have hIr : IntervalIntegrable mertensRemainder volume 2 N :=
+    (intervalIntegrable_iff_integrableOn_Icc_of_le hNR).mpr (integrableOn_mertensRemainder_Icc N)
+  have hIw : IntervalIntegrable (fun t ↦ (Real.log t * t)⁻¹) volume 2 N := by
+    apply ContinuousOn.intervalIntegrable
+    rw [Set.uIcc_of_le hNR]
+    apply ContinuousOn.inv₀
+    · exact (Real.continuousOn_log.mono
+        (fun t ht => ne_of_gt (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))).mul continuousOn_id
+    · exact fun t ht => ne_of_gt (mul_pos
+        (Real.log_pos (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))
+        (by simp only [Set.mem_Icc] at ht; linarith [ht.1]))
+  have hJ : ∫ t in (2 : ℝ)..N, (Real.log t * t)⁻¹ = Real.log (Real.log N) - Real.log (Real.log 2) :=
+    integral_inv_log_mul (by norm_num) hNR
+  have hsplit : ∫ t in (2 : ℝ)..N, primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2)
+      = (∫ t in (2 : ℝ)..N, mertensRemainder t) + ∫ t in (2 : ℝ)..N, (Real.log t * t)⁻¹ := by
+    rw [← integral_add hIr hIw]
+    apply integral_congr
+    intro t _
+    unfold mertensRemainder
+    ring
+  have hidI : primeRecipSum N
+      = primeSumDiv N / Real.log N + ∫ t in (2 : ℝ)..N, primeSumDiv ⌊t⌋₊ / (t * (Real.log t) ^ 2) := by
+    rw [mertens_second_identity N, ← integral_of_le hNR]
+  rw [hidI, hsplit, hJ]; ring
+
+/-!
 ## Toward Mertens' third theorem `∏_{p ≤ x} (1 − 1/p) ~ e^{−γ}/log x`
 
 Entry point: `log ∏_{p≤N}(1−1/p) = ∑_{p≤N} log(1−1/p)`.  Writing `log(1−1/p) = −1/p + (log(1−1/p)+1/p)`
