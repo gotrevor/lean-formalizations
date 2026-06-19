@@ -32,7 +32,15 @@ The repo is **100% axiom-free** — every headline `#print axioms` is the bare t
   `Canon_pred` (a `Good` successor's predecessor is fully `Canon`); `Good_fundSeq` (`Good`
   preserved by the limit descent); and the general `hstep_pred_pow` (predecessor of `ω^E` for
   every NF `E` with `Good b E`, by WF recursion on `repr E`). `src/` is now **0 sorries, 0 math
-  axioms**. The parallel Aristotle job on the general goal was cancelled (subsumed).
+  axioms**. The parallel Aristotle job on the general goal was cancelled (subsumed). **Same lap,
+  also proved the Hardy↔fastGrowing BRIDGE** (`Logic/Goodstein/Domination.lean`, all axiom-clean):
+  `fastGrowing_le_hardy_pow : f_α ≤ H_{ω^α}` (matching args) via `hardy_split`
+  (`H_{ω^e·c+R}=H_{ω^e·c}∘H_R` — NF gives the no-absorption condition, sidestepping general
+  `ONote.add` additivity), the iteration law `hardy_oadd_iter` (`H_{ω^e·k}=(H_{ω^e})^[k]`), and
+  `toOrdinal_two_cofinal` (Goodstein ordinals cofinal in ε₀). **Negative finding** for the final
+  domination headline: `hardy_le_of_lt`'s `norm α ≤ x` budget makes Hardy index-monotonicity FAIL
+  at fixed small arg (`H_ω(2)=5 < H_5(2)=7`), so the diagonal `H_{toONote 2 m}(2)` needs a
+  budget-aware argument (multi-lap; bridge+cofinality are the banked prerequisites).
 - **2026-06-19 lap 4 (C3 borrowing crux — massively narrowed; 6 commits, all axiom-clean):**
   the `r=0 ∧ L≥1` borrowing case of `hstep_toONote` is now FULLY PROVED modulo a single
   isolated lemma `hstep_oadd_one_zero` (the `c=1` predecessor of `ω^E`). Proved this lap, all

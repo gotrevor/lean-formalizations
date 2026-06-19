@@ -5,16 +5,17 @@
 This file is a **thin pointer**. The durable overview is **`STATUS.md`**; the per-lap baton
 is the newest **`HANDOFF-<date>.md`**; open items/attack paths live in **`PENDING_WORK.md`**.
 
-## Where things stand (2026-06-19 lap 5 — newest baton: `HANDOFF-2026-06-19-0823.md`)
-- **C3 CICHOŇ IDENTITY PROVED + axiom-clean.** The borrowing crux `hstep_oadd_one_zero` is
-  discharged (the `Good`/`Canon` frontier invariant + `hstep_pred_pow`), so
-  `goodsteinLength m = H_{seqONote m 0}(2) − 2` is fully machine-checked
-  (`#print axioms = [propext, Classical.choice, Quot.sound]`). `src/` is **sorry-free, 0 math
-  axioms**; build 🟢 green (8288 jobs).
-- **Next crux = the domination corollary** (Hardy↔fastGrowing bridge, the "B4 trap"): turn the
-  identity into "`goodsteinLength` dominates every `f_o`". Linchpin = the Hardy iteration law
-  `H_{ω^e·k} = (H_{ω^e})^[k]` (fed to Aristotle job `26c3a445`); needs the Hardy additive law with
-  the absorption side condition. Full plan in the dated baton + `PENDING_WORK.md`.
+## Where things stand (2026-06-19 lap 5 — newest baton: `HANDOFF-2026-06-19-0847.md`)
+- **C3 CICHOŇ IDENTITY + Hardy↔fastGrowing BRIDGE + cofinality all PROVED, axiom-clean.**
+  `goodsteinLength m = H_{seqONote m 0}(2) − 2` (`goodsteinLength_eq_hardy`); the bridge
+  `fastGrowing_le_hardy_pow : f_α ≤ H_{ω^α}` (matching args, `Logic/Goodstein/Domination.lean`)
+  via `hardy_split` + the iteration law `hardy_oadd_iter`; `toOrdinal_two_cofinal` (Goodstein
+  ordinals cofinal in ε₀). `src/` is **sorry-free, 0 math axioms**; build 🟢 green (8289 jobs).
+- **Next crux = the FINAL domination headline** ("`goodsteinLength` dominates every `f_o`").
+  **OBSTRUCTION (lap 5):** `hardy_le_of_lt`'s `norm α ≤ x` budget makes Hardy index-monotonicity
+  FAIL at fixed small arg (`H_ω(2)=5 < H_5(2)=7`), so the diagonal `H_{toONote 2 m}(2)` needs a
+  BUDGET-AWARE argument (route via `fastGrowingε₀` + A4). Full plan in the dated baton +
+  `PENDING_WORK.md`. Bridge + cofinality are the banked prerequisites.
 
 ## Where things stood (2026-06-19 lap 2)
 - Branch `no-three-in-line`. Build 🟢 green (8287 jobs). `src/` is **sorry-free** and

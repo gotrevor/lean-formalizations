@@ -26,28 +26,38 @@ with ≤1 coeff `=b+1` at the active frontier): `canon_repr`/`canon_round_trip` 
 predecessor is `Canon`), `Good_fundSeq` (limit descent preserves `Good`), and the general
 `hstep_pred_pow` (WF recursion on `repr E`). `src/` is now sorry-free.
 
-### 🎯 NEXT CRUX: the domination corollary — bridge Hardy ↔ fastGrowing (the "B4 trap")
-The identity gives `goodsteinLength m = H_{toONote 2 m}(2) − 2` (since `seqONote m 0 = toONote 2 m`).
-To get the headline "**`goodsteinLength` eventually dominates every `fastGrowing o`**" we must
-relate the Hardy diagonal `H_{toONote 2 m}(2)` (large *index*, fixed *arg* 2) to `fastGrowing o m`
-(fixed index, large *arg* m). This is the Hardy↔fast-growing duality (Cichoń/Wainer). Classical
-identity `H_{ω^α} = f_α` holds under the `ω[n]=n` convention; **mathlib uses `ω[n]=n+1`**, which
-shifts/compounds it: measured `H_ω(n)=2n+1` vs `f_1(n)=2n` (off by 1), and `H_{ω²}(2)=23` vs
-`f_2(2)=8` (NOT a constant shift). So the naive identity is FALSE here — this is the genuine trap.
+### ✅ Hardy ↔ fastGrowing BRIDGE — **DONE 2026-06-19 lap 5** (`Logic/Goodstein/Domination.lean`)
+`fastGrowing_le_hardy_pow : NF α → fastGrowing α n ≤ hardy (oadd α 1 0) n` (`f_α ≤ H_{ω^α}`,
+**matching args**), axiom-clean. Engine: `hardy_split` (`H_{ω^e·c+R}=H_{ω^e·c}∘H_R` for NF — the
+NF condition `repr R < ω^(repr e)` IS the no-absorption side condition, sidestepping general
+`ONote.add` additivity); `hardy_oadd_iter` (iteration law `H_{ω^e·(k+1)}=(H_{ω^e})^[k+1]`, via
+`hardy_oadd_coeff_step_ne` + the lap-4 `fundSeq_oadd_coeff`); `hardy_finite`, `iterate_le_iterate`,
+`succ_iterate`. Also `toOrdinal_two_cofinal` (`∀ NF β, ∃ N, repr β < toOrdinal 2 N`; via
+`toOrdinal_pow` building ω-towers). All `#print axioms`-clean; native_decide anchors present.
 
-**Attack paths (next laps — pick one, advance it, leave a checkpoint `sorry`):**
-1. **Inequality, not identity.** For domination we only need `f_α(n) ≤ H_{ω^α}(n)` (a one-sided
-   bound), which is robust to the `+1` convention shift and likely far easier than the identity.
-   Prove `fastGrowing_le_hardy_omega_pow : NF α → fastGrowing α n ≤ hardy (ω^α-notation) n` by
-   transfinite induction on α (mirror the `f`/`H` recursions; the `+1` in `ω[n]` only helps the
-   `H` side). Then combine with `hardy_le_of_lt` + the fact `toONote 2 m`'s repr exceeds any fixed
-   `ω^α` for large m, and the arg/index duality, to dominate. **Most promising; start here.**
-2. **Pin the convention with exact small values.** Prove closed forms `hardy_omega : H_ω(n)=2n+1`,
-   `hardy_omega_mul`, … as `native_decide`-anchored lemmas to nail the exact shift, then state the
-   corrected bridge `H_{ω^α}(n) = f_α(n+c_α)` or similar. Slower but de-risks the identity.
-3. **Diagonal domination directly.** Skip the per-level bridge: show `H_{toONote 2 m}(2)` is
-   eventually `> f_o(m)` for each fixed NF `o`, using `le_hardy` + `hardy_le_of_lt` + the unbounded
-   growth of `toONote 2 m`'s index. Risk: the arg/index swap may make this need path 1 anyway.
+### 🎯 NEXT CRUX: the FINAL domination headline — budget-aware (NORM OBSTRUCTION found)
+The identity gives `goodsteinLength m = H_{toONote 2 m}(2) − 2`; the headline (DIRECTION.md C3) is
+"**`goodsteinLength` eventually dominates every `fastGrowing o`**". The diagonal `H_{toONote 2 m}(2)`
+has a large *index* but the **argument is fixed at 2**.
+**⚠ KEY OBSTRUCTION (found lap 5, the reason this is harder than it looks):** `hardy_le_of_lt`
+carries a budget hypothesis `norm α ≤ x`, and Hardy index-monotonicity GENUINELY FAILS at small
+fixed argument — measured: `H_ω(2)=5 < H_5(2)=7` although `ω > 5`. So you CANNOT dominate
+`H_{toONote 2 m}(2)` by comparing it (via `hardy_le_of_lt`) to a big-coefficient notation like
+`ω^o+(m+2)` at arg 2 (its `norm = m+2 > 2`). The naive arg-2 comparison is mathematically WRONG.
+
+**Budget-aware attack paths (next laps):**
+1. **Via fastGrowingε₀ + A4.** Relate `goodsteinLength m` to `fastGrowingε₀ m`, then A4
+   (`fastGrowing_lt_fastGrowingε₀`, already proved) dominates every `f_o`. Needs the deep half of
+   Cichoń: climb the index using the budget the descent itself provides (the bridge `f_α ≤ H_{ω^α}`
+   at matching args is the easy half; the missing half converts index-size to argument-size).
+2. **Hardy budget-climb.** `H_α(n+k) = H_{α+k}(n)` (finite additive shift — have `hardy_split` +
+   `hardy_finite`). Apply `hardy_le_of_lt` only at points along the descent where `norm ≤ arg`
+   already holds (the budget grows as the descent proceeds). Trace where the norm budget unlocks.
+3. **The `H_{ω^α}=f_α`-style matching-budget correspondence** (the genuine "B4 trap"): mathlib's
+   `ω[n]=n+1` shifts the classical identity (`H_ω(n)=2n+1` vs `f_1(n)=2n`; `H_{ω²}(2)=23` vs
+   `f_2(2)=8`, not a constant shift). The one-sided `f_α ≤ H_{ω^α}` is done; a reverse bound
+   `H_{ω^α}(n) ≤ f_{α+1}(n)` (matching args) would let the diagonal be squeezed.
+Bank: bridge + cofinality are the prerequisites; this is a multi-lap crux.
 
 **OLD (pre-2026-06-19-lap5) C3 close-out notes — kept for reference, now all DONE:**
 The whole C3 chain was built and the headline held modulo a single isolated lemma. Identity
