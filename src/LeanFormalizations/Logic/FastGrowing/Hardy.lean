@@ -19,6 +19,7 @@ The definition uses the *same* well-founded `<`-recursion on `ONote` that define
 `fastGrowing_zero'/_succ/_limit` and are proved the same way (`hardy_def` + `subst`).
 -/
 import Mathlib.SetTheory.Ordinal.Notation
+import LeanFormalizations.Logic.FastGrowing.Basic
 
 namespace LeanFormalizations.Logic.FastGrowing
 
@@ -138,6 +139,39 @@ decreasing_by all_goals exact hlt
 /-- **Monotonicity in the argument** of each Hardy level. -/
 theorem hardy_monotone (o : ONote) : Monotone (hardy o) :=
   monotone_nat_of_le_succ (hardy_le_succ o)
+
+/-- **Finite-level argument monotonicity for Hardy**, proved cleanly (no crux).
+`Monotone (H_k)` for `k : ℕ`: `H_0 = id`; `H_{k+1} = H_k ∘ (·+1)` is monotone as a
+composition. -/
+theorem hardy_ofNat_monotone (k : ℕ) : Monotone (hardy (ofNat k)) := by
+  induction k with
+  | zero => simpa [ofNat_zero, hardy_zero] using monotone_id
+  | succ k ih =>
+      rw [hardy_succ _ (fundamentalSequence_ofNat_succ k)]
+      exact ih.comp (monotone_id.add_const 1)
+
+/-- **Finite-level index monotonicity for Hardy** (no positivity needed, unlike
+`fastGrowing`): for `m ≤ n`, `H_m(x) ≤ H_n(x)`. Single step: `H_{k+1}(x) = H_k(x+1) ≥
+H_k(x)` by `hardy_ofNat_monotone`. -/
+theorem hardy_ofNat_mono {m n : ℕ} (hmn : m ≤ n) (x : ℕ) :
+    hardy (ofNat m) x ≤ hardy (ofNat n) x := by
+  induction n, hmn using Nat.le_induction with
+  | base => exact le_rfl
+  | succ n _ ih =>
+      refine le_trans ih ?_
+      rw [hardy_succ _ (fundamentalSequence_ofNat_succ n)]
+      exact hardy_ofNat_monotone n (Nat.le_succ x)
+
+/-- **Monotonicity of `H_ω`, fully proved (axiom-clean).** The Hardy companion of
+`fastGrowing_monotone_omega`: `H_ω(n) = H_{ofNat(n+1)}(n) ≤ H_{ofNat(n+2)}(n+1) =
+H_ω(n+1)`, using only finite-level facts (`ω[n] = n+1`). -/
+theorem hardy_monotone_omega : Monotone (hardy (oadd 1 1 0)) := by
+  have hfs : fundamentalSequence (oadd 1 1 0) = Sum.inr (fun i => ofNat (i + 1)) := rfl
+  refine monotone_nat_of_le_succ (fun n => ?_)
+  rw [hardy_limit _ hfs]
+  calc hardy (ofNat (n + 1)) n
+      ≤ hardy (ofNat (n + 1)) (n + 1) := hardy_ofNat_monotone (n + 1) (Nat.le_succ n)
+    _ ≤ hardy (ofNat (n + 2)) (n + 1) := hardy_ofNat_mono (Nat.le_succ (n + 1)) (n + 1)
 
 /-! ### Anti-vacuity anchors (`native_decide`)
 
