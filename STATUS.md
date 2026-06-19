@@ -1,17 +1,33 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8285 jobs) · **Updated**: 2026-06-19 · **MATH AXIOMS: 0**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8287 jobs) · **Updated**: lap 2026-06-19-2300 · `977598b` · **MATH AXIOMS: 0**
 
 > ♾️ **ACTIVE EXPEDITION (2026-06-19): Goodstein-independence growth theory.** Read
 > `DIRECTION.md`. Unbounded run building the mathlib-only "Goodstein grows like `f_{ε₀}`"
 > content of Kirby–Paris: growth theory of `ONote.fastGrowing`, the Hardy hierarchy, and
-> `goodsteinLength` → `fastGrowingε₀`. New WIP modules: `Logic/FastGrowing/Basic.lean`
-> (3 `sorry`'d targets) + `Logic/Goodstein/Length.lean` (done, anchored). The five threads
-> below are COMPLETE/axiom-clean and frozen — reuse `Logic/Goodstein/Engine`, don't touch them.
+> `goodsteinLength` → `fastGrowingε₀`. **Section A (growth theory of `fastGrowing`) is now
+> COMPLETE and axiom-clean — A1/A2/A3/A4 all proved**, incl. the headline domination crux
+> `fastGrowing_lt_fastGrowingε₀` (every fixed `f_o` is eventually `< f_{ε₀}`). Modules
+> `Logic/FastGrowing/{Basic,Hardy,Domination}.lean` are **`sorry`-free**. Next frontier:
+> **C2/C3** (the `goodsteinLength` ↔ hierarchy bridge — the crown jewel) and the Hardy `B`
+> ladder. The five threads below are COMPLETE/axiom-clean and frozen — don't touch them.
 
 ## Where it stands
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 lap 2 (A4 CLOSED — the headline growth crux, axiom-clean):** proved
+  `fastGrowing_lt_fastGrowingε₀` (`∀ NF o, ∃ N, ∀ n ≥ N, f_o(n) < f_{ε₀}(n)`) — the
+  unboundedness that *is* the Kirby–Paris growth gap. The lone `Domination.lean` sorry is
+  gone. New engine in `Logic/FastGrowing/Domination.lean`: the **CNF `norm`** + the genuinely
+  new theorem `lt_fundamentalSequence_of_norm_le` (for a limit `β` and `α<β` with `norm α ≤ x`,
+  already `α < g_β(x)` — proved by structural induction over all 6 `fundamentalSequence`
+  branches, with helpers `lt_oadd_cases` / `lt_oadd_of_lead_le`); **`reaches_of_lt`** (general
+  `α<β ⟹ Reaches x β α`, WF recursion on `β`); the notation-successor `osucc` + 4 lemmas for
+  the strict step (`fastGrowing_lt_succ_index`). Also added **general index monotonicity**
+  `fastGrowing_le_of_lt` + Hardy twin `hardy_le_of_lt` (full A3, off the consecutive-index
+  restriction). Every new headline `#print axioms` = `[propext, Classical.choice, Quot.sound]`.
+  The ON-LINE-REQUEST "fast-growing domination norm" ask was **resolved by independent
+  derivation** (the `norm` above) — no external literature needed; request removed.
 - **2026-06-19 (Goodstein — PROVED, axiom-clean):** `goodstein_terminates`
   (`∀ m, ∃ N, goodsteinSeq m N = 0`) is fully machine-checked,
   `#print axioms = [propext, Classical.choice, Quot.sound]`. `Defs.lean` carries
@@ -88,26 +104,36 @@ The repo is **100% axiom-free** — every headline `#print axioms` is the bare t
 - **2026-06-16 (review lap):** π-transcendence narrowing shipped: stated **Hermite–Lindemann** (nonzero algebraic α ⟹ `exp α` transcendental) as ONE disclosed `axiom`, machine-checked `Transcendental ℚ π` from it (Euler `exp(iπ) = -1`) → `squaring_the_circle_impossible_uncond`. Then **PROVED transcendence of `e`** end-to-end (`ETranscendental.lean`): algebraic reduction + analytic decay/prime-selection + Hermite-polynomial roots + the full integer-`N`/mod-`p` assembly of `exp_polynomial_approx`. `e_transcendental` is `#print axioms`-clean — the α=1 instance of the cited axiom discharged. New dir `NumberTheory/Transcendence/`.
 - **2026-06-15 2358/2343:** Constructible/Wantzel thread COMPLETE — full equivalence `isConstructible_iff_constructiblePoint` both directions (forward = degree obstruction; converse = explicit compass arithmetic). 5 impossibilities (cube, trisection, nonagon, heptagon, + geometric-point versions), pentagon positive. All axiom-clean.
 - **2026-06-15:** Constructible Layer 1 (algebraic degree engine `IsSqrtTower.finrank_eq_pow_two`) + 3 classical impossibilities; Layer 2 geometric faithfulness bridge.
-- **2026-06-14 (operator redirect):** Curtis verification-hardening run (n=2 boundary / Sylvester hypersurface, extra Frobenius anchors, refuted-candidate witness, findings doc) — complete, self-stopped.
-- **2026-06-14:** Power-tower convergence on the full Euler interval `[e^(-e), e^(1/e)]` proved + axiom-clean; lower-bound crux `two_cycle_collapse` via slope/Banach (not the invalid tangent-subtraction sketch). Sharp-iff lower direction (`0<x<e^(-e)` diverges) omitted, no sorry.
-- **2026-06-14 1511 & earlier:** Curtis crux `substCurve_eq_zero` closed (reformulation bypassing Lemma 1); repo sorry-free + axiom-clean. Engine, Step B, Lemma 2 (Brauer–Shockley, via Aristotle, verified) built.
+- **2026-06-14 & earlier:** Curtis (no-Frobenius-formula) thread + power-tower convergence on
+  `[e^(-e), e^(1/e)]` proved axiom-clean; Curtis crux `substCurve_eq_zero`, Lemma 2
+  (Brauer–Shockley, Aristotle-verified). Foundational, frozen.
 
 ## Outstanding
-The transcendence / squaring-the-circle thread AND the power-tower sharp `iff` are
-**COMPLETE and axiom-free**. Remaining open work is elsewhere:
+The five completed threads (transcendence/squaring-the-circle, power-tower sharp `iff`,
+Wantzel, Curtis, Goodstein termination) are **COMPLETE and axiom-free**. The ACTIVE
+expedition is the growth theory; **Section A is now done**. Remaining:
+### Short-term (mirror PENDING_WORK top)
+- **C2 — the semantic bridge** (the crown-jewel prerequisite): relate `Engine.toOrdinal` /
+  `Engine.seqOrd` (Goodstein term → `Ordinal < ε₀`, already the termination descent) to
+  `ONote.repr`, so the Goodstein descent is expressed on `ONote`. Then **C3** (`goodsteinLength`
+  eventually tracks `fastGrowingε₀`) = C2 + A4 (now available). This is the formal
+  "Goodstein grows too fast for PA".
+- **B ladder (Hardy):** B2 characterization lemmas are present; B3 anchors done. **B4**
+  (`H_{ω^α}=f_α`) is a long-horizon trap under mathlib's `ω[n]=n+1` (measured: not a constant
+  shift) — needs a reformulated statement.
 ### Long-term
-- General Hermite–Lindemann for arbitrary algebraic α (e.g. `log 2`, `cos 1`): the π assembly
-  generalizes (its `no_intPoly_exp_relation` + symmetric-function descent are α-agnostic); a
-  bounded extension, not required for any current headline.
+- General Hermite–Lindemann for arbitrary algebraic α — bounded extension of the π assembly.
 - PARKED P2/P3 (Curtis mathlib upstream; not-algebraic framing) — web/CLA-gated.
 ### To completion
-- Curtis ✅ · **Power-tower SHARP iff ✅** · Wantzel iff ✅ · **e-transcendence ✅** ·
-  **π-transcendence ✅ (axiom-clean)** · **squaring-the-circle ✅ (unconditional, axiom-clean)**.
-  Repo math-axiom count: **0**.
+- Curtis ✅ · Power-tower SHARP iff ✅ · Wantzel iff ✅ · e/π-transcendence ✅ ·
+  squaring-the-circle ✅ · Goodstein termination ✅ · **fast-growing growth theory A1–A4 ✅**.
+  Repo math-axiom count: **0**. Crown jewel C3 (growth bridge) outstanding.
 
 ## Axiom ledger (the fidelity spine)
 | headline theorem | paper claim | `#print axioms` shows | status |
 |---|---|---|---|
+| `FastGrowing.fastGrowing_lt_fastGrowingε₀` | `f_{ε₀}` dominates every fixed `f_o` (A4; Kirby–Paris growth gap), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **A4 closed this lap** |
+| `Logic.Goodstein.goodstein_terminates` | Goodstein's theorem (termination), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 | `Curtis.no_polynomial_relation` | Curtis 1990, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 | `PowerTower.tower_converges_iff_full` | converges **iff** `x ∈ [e^-e, e^1/e]` (sharp), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 | `Constructible.isConstructible_iff_constructiblePoint` | Wantzel iff, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
@@ -120,5 +146,6 @@ The transcendence / squaring-the-circle thread AND the power-tower sharp `iff` a
 **Math-axiom count (🟢+🟡+🟠): 0.** The repo is **fully axiom-free** — `grep '^axiom' src/` is empty, every headline `#print axioms` is the bare trust base, and there is no `sorry` in `src/`. The `hermite_lindemann` axiom was discharged (full Lindemann assembly for `π`) and deleted this lap. No 🟡/🟠/🔴 anywhere.
 
 ## Pointers
-- Open items / attack paths: **`PENDING_WORK.md`** · resume baton: newest **`HANDOFF-*.md`** · online asks: `ON-LINE-REQUEST.md`
-- Frontier files: `NumberTheory/Transcendence/{HermiteLindemann,ETranscendental}.lean`
+- Open items / attack paths: **`PENDING_WORK.md`** · resume baton: newest **`HANDOFF-*.md`** · charter: `DIRECTION.md`
+- Frontier files: `Logic/FastGrowing/{Basic,Domination,Hardy}.lean` (Section A ✅ sorry-free) · `Logic/Goodstein/{Engine,Length}.lean` (C2/C3 next)
+- No `ON-LINE-REQUEST.md` open (the fast-growing norm ask was self-resolved this lap).

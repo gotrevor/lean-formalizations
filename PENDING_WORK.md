@@ -1,5 +1,45 @@
 # PENDING_WORK — lean-formalizations
 
+## 🎯 ACTIVE FRONTIER (refreshed 2026-06-19 lap 2 — A4 CLOSED)
+
+**Section A (growth theory of `ONote.fastGrowing`) is COMPLETE + axiom-clean.** A1
+(`le_fastGrowing`), A2 (`fastGrowing_monotone`), A3 (`fastGrowing_bachmann_reach`), **A4
+(`fastGrowing_lt_fastGrowingε₀`)** all proved. The A4 engine (`Domination.lean`): CNF `norm`,
+`lt_fundamentalSequence_of_norm_le` (key cofinality bound), `reaches_of_lt` (general
+reachability), `osucc` + strict step. General index monotonicity `fastGrowing_le_of_lt` /
+`hardy_le_of_lt` added. `Logic/FastGrowing/*` is sorry-free.
+
+### NEXT CRUX: C2 — the semantic bridge `toOrdinal` ↔ `ONote.repr` (then C3)
+The crown jewel C3 ("`goodsteinLength` grows like `f_{ε₀}`") = C2 + A4. C2 is the prerequisite.
+`Engine.toOrdinal b n` reads `n` in hereditary base `b` and replaces `b` by `ω` — i.e. it IS
+the ordinal of the CNF tree of `n`. So it equals `ONote.repr` of the corresponding notation.
+
+**Three attack paths for C2 (pick path 1):**
+1. **`toONote` bridge (most direct).** Define `toONote : ℕ → ℕ → ONote` mirroring
+   `toOrdinal`'s recursion: `toONote b n = if n=0 then 0 else oadd (toONote b (log b n))
+   ⟨n / b^(log b n), _pos_⟩ (toONote b (n % b^(log b n)))`. Prove (a) `repr (toONote b n) =
+   toOrdinal b n` (same recursion, `toOrdinal_pos` unfolding); (b) `(toONote b n).NF` (the
+   leading-exponent ordering mirrors `toOrdinal_mono_and_bound`'s bound part — `log b r < e'`
+   gives the tail exponent `<` head exponent). The coefficient is positive since
+   `b^(log b n) ≤ n`. This makes the Goodstein descent (`seqOrd_step`) an `ONote` `<`-descent.
+2. **Direct on `Ordinal`.** Skip `toONote`; relate `seqOrd m k` descent to `fastGrowingε₀`
+   via the Hardy hierarchy on `Ordinal` (`exists_fundamental_sequence`). Heavier; the abstract
+   `Ordinal` fundamental-sequence API is separate from `ONote`'s computable one.
+3. **Feed Aristotle** a bounded `repr (toONote b n) = toOrdinal b n` once `toONote` is defined
+   (self-contained, inlines `toOrdinal`/`log`/`pow` facts).
+
+### C3 — the growth theorem (after C2)
+`goodsteinLength` eventually dominates every `fastGrowing o` (`o < ε₀`) ↔ tracks
+`fastGrowingε₀`. State as a thin audit-surface theorem delegating to the engine. Classical:
+`goodsteinLength` ≈ a Hardy function `H` of the starting CNF; combine `hardy_le_of_lt` (now
+available) with the bridge. Deep, multi-lap.
+
+### B ladder (Hardy) — lower priority
+B2/B3 done. **B4** (`H_{ω^α}=f_α`) is a trap under mathlib's `ω[n]=n+1` (measured: not a
+constant shift, `H_{ω^2}(2)=23 ≠ f_2(2)+1=9`). Needs a reformulated statement; long-horizon.
+
+---
+
 ## 🔭 OPEN-ITEM INVENTORY (refreshed 2026-06-17, operator directive)
 
 `src/` is **100% axiom-free** (0 custom axioms, 0 `sorry`/`admit`; `lake build` green, 8274
