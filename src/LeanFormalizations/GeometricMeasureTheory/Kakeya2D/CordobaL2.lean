@@ -15,7 +15,7 @@ Reference: A. Córdoba (1977). -/
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Cordoba
 
 open Finset MeasureTheory
-open scoped ENNReal
+open scoped ENNReal Real
 
 namespace LeanFormalizations.Kakeya2D
 
@@ -79,5 +79,50 @@ theorem lintegral_sq_le_measure_mul {f : Plane → ℝ≥0∞} (hf : Measurable 
         have hr : ∫⁻ x, f x ^ (2 : ℝ) ∂volume = ∫⁻ x, (f x) ^ 2 ∂volume :=
           lintegral_congr (fun x => ENNReal.rpow_two (f x))
         rw [hg2, hr, mul_comm]
+
+/-- **K4 — the Córdoba `L²` lower bound on the δ-neighbourhood (division-free form).** For a Kakeya
+set `S`, a δ-net of `N` directions (with `N δ ≤ 1`) gives `N` δ-tubes inside `Sδ`, and
+
+  `(N · 2δ)²  ≤  vol(Sδ) · (6π δ · 2N(1 + log N))`.
+
+This is the cross-multiplied `(∫ f)² ≤ vol(Sδ) · ∫ f²` of Córdoba's Cauchy–Schwarz estimate, with
+numerator `∫ f = ∑ vol(Tₖ) ≥ N·2δ` (`sum_tube_ge`) and denominator `∫ f² = ∑ vol(Tⱼ∩Tₖ) ≤
+6π δ·2N(1+log N)` (`sum_overlap_le`). Choosing `N ≈ δ⁻¹` and dividing yields
+`vol(Sδ) ≳ 1/log(1/δ)` — the Minkowski-content lower bound that K5 lifts to Hausdorff
+positivity. -/
+theorem volume_thickening_mul_ge {S : Set Plane} (h : IsKakeya S) {δ : ℝ}
+    (hδ : 0 < δ) (hδ1 : δ ≤ 1) {N : ℕ} (hN : (N : ℝ) * δ ≤ 1) :
+    ((N : ℝ≥0∞) * ENNReal.ofReal (2 * δ)) ^ 2
+      ≤ volume (thickening S δ) * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
+  obtain ⟨a, ha⟩ := exists_tube_family h δ
+  set b : ℕ → Plane := fun k => a ((k : ℝ) * δ) with hb_def
+  set T : ℕ → Set Plane := fun k => tube (b k) (dir ((k : ℝ) * δ)) δ with hT_def
+  have hTmeas : ∀ k, MeasurableSet (T k) := fun k => measurableSet_tube _ _ _
+  have hTsub : ∀ k, T k ⊆ thickening S δ := fun k => ha ((k : ℝ) * δ)
+  set f : Plane → ℝ≥0∞ := fun x => ∑ k ∈ range N, (T k).indicator 1 x with hf_def
+  have hfval : ∀ x, f x = ∑ k ∈ range N, (T k).indicator (1 : Plane → ℝ≥0∞) x := fun x => by
+    rw [hf_def]
+  have hfmeas : Measurable f := by
+    rw [hf_def]
+    exact Finset.measurable_sum _ (fun k _ => measurable_one.indicator (hTmeas k))
+  have hsupp : ∀ x, x ∉ thickening S δ → f x = 0 := by
+    intro x hx
+    rw [hfval]
+    exact Finset.sum_eq_zero (fun k _ => Set.indicator_of_notMem (fun hxk => hx (hTsub k hxk)) _)
+  have hint1 : ∫⁻ x, f x ∂volume = ∑ k ∈ range N, volume (T k) := by
+    rw [lintegral_congr hfval]; exact lintegral_sum_indicator T hTmeas N
+  have hint2 : ∫⁻ x, (f x) ^ 2 ∂volume = ∑ j ∈ range N, ∑ k ∈ range N, volume (T j ∩ T k) := by
+    rw [lintegral_congr (fun x => by rw [hfval])]; exact lintegral_sq_sum_indicator T hTmeas N
+  have hnum : (N : ℝ≥0∞) * ENNReal.ofReal (2 * δ) ≤ ∫⁻ x, f x ∂volume := by
+    rw [hint1]; exact sum_tube_ge b N
+  have hden : ∫⁻ x, (f x) ^ 2 ∂volume
+      ≤ ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
+    rw [hint2]; exact sum_overlap_le hδ hδ1 hN b
+  calc ((N : ℝ≥0∞) * ENNReal.ofReal (2 * δ)) ^ 2
+      ≤ (∫⁻ x, f x ∂volume) ^ 2 := by gcongr
+    _ ≤ volume (thickening S δ) * ∫⁻ x, (f x) ^ 2 ∂volume :=
+        lintegral_sq_le_measure_mul hfmeas (measurableSet_thickening S δ) hsupp
+    _ ≤ volume (thickening S δ) * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
+        gcongr
 
 end LeanFormalizations.Kakeya2D
