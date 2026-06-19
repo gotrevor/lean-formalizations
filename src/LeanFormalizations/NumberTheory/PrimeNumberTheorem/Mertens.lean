@@ -127,4 +127,31 @@ theorem mertens_first :
   rw [Real.norm_eq_abs, norm_one, mul_one]
   exact abs_vonMangoldtSumDiv_sub_log_le hN
 
+/-- **The von Mangoldt sum diverges.** `∑_{n ≤ N} Λ(n)/n → ∞` — a quantitative (rate `log N`)
+strengthening of the infinitude of primes, immediate from `mertens_first`. -/
+theorem vonMangoldtSumDiv_tendsto_atTop :
+    Tendsto vonMangoldtSumDiv atTop atTop := by
+  have key : ∀ᶠ N : ℕ in atTop, Real.log N - (Real.log 4 + 5) ≤ vonMangoldtSumDiv N := by
+    filter_upwards [eventually_ge_atTop 1] with N hN
+    have h := abs_vonMangoldtSumDiv_sub_log_le hN
+    rw [abs_le] at h; linarith [h.1]
+  have hg : Tendsto (fun N : ℕ ↦ Real.log N - (Real.log 4 + 5)) atTop atTop :=
+    Filter.tendsto_atTop_add_const_right atTop (-(Real.log 4 + 5))
+      (Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop)
+  exact tendsto_atTop_mono' atTop key hg
+
+/-!
+## Follow-up: the prime form `∑_{p ≤ x} (log p)/p = log x + O(1)`
+
+The recognizable form of Mertens' first theorem sums only over primes.  It differs from
+`vonMangoldtSumDiv` by the *proper prime-power tail*
+`∑_{p^k ≤ N, k ≥ 2} (log p)/p^k`, which is bounded by the convergent series
+`∑_p (log p)/(p(p−1)) ≤ 2 ∑_p (log p)/p²`.  Establishing that bound requires reindexing the tail as
+a double sum over `(p, k ≥ 2)` and summing the geometric series in `k` (no pointwise majorant over
+all `n` works — the tail converges only by the sparsity of prime powers, while `∑ Λ(n)/n` itself
+diverges).  With the keystone `Wiener.summable_vonMangoldt_div_rpow` (`s = 2`) bounding
+`∑_p (log p)/p²`, the tail bound `tail(N) ≤ C` follows, giving
+`∑_{p ≤ N} (log p)/p = vonMangoldtSumDiv N − tail(N) = log N + O(1)`.  Left for a dedicated lap.
+-/
+
 end LeanFormalizations.Mertens
