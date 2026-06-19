@@ -10,7 +10,15 @@
 
 ## Frontier (open work, in rough order of effort)
 
-### A. Hall–Jackson–Sudbery–Wild `3N/2` (the "hard mile")
+### A. Hall–Jackson–Sudbery–Wild `3N/2` — ✅ DONE & axiom-clean (lap 14)
+`three_mul_pred_le_maxNoThreeInLine : 3(p−1) ≤ maxNoThreeInLine(2p)` (odd prime `p`), trust base only.
+The genuine **half-band** pinwheel (`Pinwheel.lean`) — the naïve `{0,p}²`-corner version was brute-force
+FALSE (no-three for no drop rule; a class is coupled on a `+1` AND a `−1` line, can't break both with one
+drop). Crux `pinwheel_diagonal_false` (cross-class slope-`±1` incidence) proved via the σ-reflection +
+the `±p`-offset of the partner class's kept points, over all 4 `(left/right)×(lower/upper)` families.
+**Remaining frontier = the all-`N` `(3/2−ε)N` corollary** (needs a prime `p≈N/2`; PNT-grade — Bertrand
+gives only ratio `3/4`). Original plan text (now history):
+
 The best *proven* lower constant (1975, unimproved). Points on a hyperbola `xy ≡ k (mod p)`
 with `p ≈ N/2` prime, lifted across a covering of the grid by ~3 translated arcs to reach
 `3(N−2)/2` points. Two pieces:

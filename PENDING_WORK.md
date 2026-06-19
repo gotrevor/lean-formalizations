@@ -1,6 +1,15 @@
 # PENDING_WORK — lean-formalizations
 
-## 🚨 lap 14 — CRITICAL: the lap-13 `pinwheel` construction is FALSE; rewriting to the real HJSW half-band form
+## 🎉 lap 14 — DONE: HJSW `3(p−1)` no-three-in-line COMPLETE & axiom-clean (`three_mul_pred_le_maxNoThreeInLine`)
+
+The per-prime HJSW headline is **fully machine-checked** (commit `cd5a8ce`, trust base only). Found and
+fixed the false lap-13 construction (below), built the genuine half-band pinwheel, and proved the
+cross-class slope-`±1` diagonal crux (`pinwheel_diagonal_false`) across all 4 families. ITEM 1 below is
+**CLOSED**. **Next frontier = the all-`N` `(3/2−ε)N` corollary** (needs PNT-grade primes near `N/2`;
+Bertrand alone gives only ratio `3/4`). See STATUS.md → Short-term. Also minor: `p=2` witness to drop
+the `Odd p` hypothesis.
+
+## 🚨 lap 14 (HISTORY) — the lap-13 `pinwheel` construction was FALSE; rewrote to the real HJSW half-band form
 
 **Brute-force discovery (2026-06-19 lap 14):** the lap-13 `Pinwheel.lean` construction — single
 hyperbola, four `{0,p}²` translates per residue class, drop ONE corner (keep 3) — is **NOT
@@ -39,7 +48,8 @@ real HJSW construction is a **12-of-16-block "pinwheel"** carved from a single h
   Headline `three_mul_pred_le_maxNoThreeInLine : 3(p−1) ≤ maxNoThreeInLine(2p)` STATED, reduced to the
   one crux below.
 
-### OPEN ITEM 1 — `pinwheel_exists_noThree` (the branch HEADLINE crux). STATUS: narrowed, unblocked.
+### ✅ CLOSED ITEM 1 — the no-three crux. DONE lap 14 (`pinwheel_noThree`, axiom-clean). Text below is HISTORY.
+### OPEN ITEM 1 (HISTORY) — `pinwheel_exists_noThree` (the branch HEADLINE crux). STATUS: narrowed, unblocked.
 The lone disclosed `sorry`: ∃ a drop-rule making the pinwheel no-three-collinear. **KEY STRUCTURE
 (documented in `Pinwheel.lean`):** slopes 0/∞ are AUTOMATICALLY safe (each row/column residue belongs
 to a unique class ⇒ ≤2 points), and the general Lemma reduces any collinear triple to "two congruent

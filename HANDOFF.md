@@ -5,6 +5,12 @@
 This file is a **thin pointer**. The durable overview is **`STATUS.md`**; the per-lap baton
 is the newest **`HANDOFF-<date>.md`**; open items/attack paths live in **`PENDING_WORK.md`**.
 
+## 👉 Newest baton: `HANDOFF-2026-06-19-1645.md` (lap 14 — 🎉 HJSW `3(p−1)` no-three-in-line COMPLETE & axiom-clean)
+Per-prime headline `three_mul_pred_le_maxNoThreeInLine` done (trust base only). Branch `no-three-in-line`,
+HEAD `cd5a8ce`. Next frontier = all-`N` `(3/2−ε)N` via a prime `p≈N/2` (PNT-grade; Bertrand gives only
+`3/4`). Lap-14 lesson: the lap-13 construction was brute-force FALSE — half-band shift was required.
+See that dated handoff + STATUS.md + PENDING_WORK.md. The Goodstein summary below is older context.
+
 ## Where things stand (2026-06-19 lap 11 — 🎉🎉🎉 "goodsteinLength GROWS LIKE f_{ε₀}", TWO-SIDED)
 The charter headline **C3 is done**; ladder A–C complete. Both directions machine-checked:
 - **LOWER (every `o < ε₀`):** `goodsteinLength_dominates_fastGrowing` (`o.NF → ∃ N, ∀ m≥N,

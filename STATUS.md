@@ -1,5 +1,5 @@
 # STATUS — lean-formalizations 📊
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8295 jobs, `src/` **sorry-free**) · **Updated**: lap 11 (review) · 2026-06-19 · `6a63e12` · **MATH AXIOMS: 0**
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8299 jobs, `src/` **sorry-free**) · **Updated**: lap 14 (review) · 2026-06-19 · `cd5a8ce` · **MATH AXIOMS: 0**
 
 > 🎉🎉🎉 **lap 11 — "goodsteinLength GROWS LIKE f_{ε₀}" IS COMPLETE, TWO-SIDED.** Both directions
 > machine-checked (charter headline **C3 done**, ladder A–C complete):
@@ -39,6 +39,19 @@
 The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-19 lap 14 (🎉🎉🎉 HJSW `3(p−1)` no-three-in-line — COMPLETE & axiom-clean):** The best
+  *proven* density constant (`3/2`) for the no-three-in-line problem (Hall–Jackson–Sudbery–Wild 1975,
+  unimproved; to my knowledge never before formalized) is now fully machine-checked.
+  `three_mul_pred_le_maxNoThreeInLine : 3(p−1) ≤ maxNoThreeInLine(2p)` (odd prime `p`), axioms =
+  trust base only. **Lap-14 turning point:** the lap-13 `pinwheel` construction (single hyperbola,
+  four `{0,p}²` translates per class, drop one corner) was brute-force **FALSE** — no-three for NO
+  drop rule (infeasible at `p=7` ∀`k`). Replaced with the genuine HJSW **half-band** construction
+  (x-translate direction depends on the left/right half), brute-verified no-three for all `p≤17`.
+  The crux `pinwheel_diagonal_false` (cross-class slope-`±1` incidence): the σ-reflection pins the
+  partner class (`c=b, bc=a` slope `−1`; `c=p−b, bc=p−a` slope `+1`) and the drop rule puts its three
+  kept points on lines offset by exactly `±p` from the diagonal — proved over the 4 families via
+  `det3` collapse → line invariant (ℝ) → mod-`p` reflection → `omega`.
+  Files: `Combinatorics/NoThreeInLine/{Pinwheel,HyperbolaLine,Hyperbola}.lean`.
 - **2026-06-19 lap 11 (🎉🎉🎉 "goodsteinLength GROWS LIKE f_{ε₀}" — TWO-SIDED, charter C3 DONE):**
   Both directions of the headline are now machine-checked.
   **LOWER (Cichoń's lower bound, every `o < ε₀`):** `goodsteinLength_dominates_fastGrowing`
@@ -270,8 +283,16 @@ genuine Cichoń growth content, the 8-lap-then-3-lap crux — is now complete:
 `native_decide` artifacts (excluded from the math-axiom count per the doctrine; the engines are
 trust-base-clean).
 ### Short-term (mirror PENDING_WORK top — the live frontier)
-The charter ladder is COMPLETE (A1–A4, B1–B4-finite, C1–C3 + two-sided "grows like `f_{ε₀}`"). Only
-genuine *extensions* remain:
+**No-three-in-line HJSW `3(p−1)` is COMPLETE (lap 14).** The natural next frontier is the **all-`N`
+`(3/2−ε)N` corollary**: from the per-prime `3(p−1) ≤ maxNoThreeInLine(2p)`, lift to every large `N`
+by choosing a prime `p ≈ N/2`. Bertrand only gives `p > N/4` (ratio `3/4` — *weaker* than the existing
+parabola's ratio `1`), so reaching `3/2` genuinely needs a prime in `[(1−ε)N/2, N/2]` — i.e. PNT-grade
+prime distribution (a separate, likely multi-lap, mathlib-availability question). Until then the
+headline stands at `N = 2p`. (Also minor: extend the headline to `p = 2` via an explicit 3-point
+witness so it holds for *all* primes, not just odd.)
+
+For the Goodstein thread, the charter ladder is COMPLETE (A1–A4, B1–B4-finite, C1–C3 + two-sided
+"grows like `f_{ε₀}`"). Only genuine *extensions* remain:
 - **B4 at LIMIT levels** — the clean `H_{ω^α}(n)+1=f_α(n+1)` is FALSE at limit α under `ω[n]=n+1`
   (`H_{ω^ω}(1)+1=8≠f_ω(2)=2048`). A correct limit-α statement (inequality sandwich, or along the
   successor-cofinal subsequence) is the open refinement. Genuinely subtle; not clearly high-value.
@@ -299,6 +320,7 @@ genuine *extensions* remain:
 ## Axiom ledger (the fidelity spine)
 | headline theorem | paper claim | `#print axioms` shows | status |
 |---|---|---|---|
+| `NoThreeInLine.three_mul_pred_le_maxNoThreeInLine` | **HJSW `3/2` density**: `3(p−1) ≤ maxNoThreeInLine(2p)` (odd prime `p`); best PROVEN no-three-in-line constant (HJSW 1975) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — half-band pinwheel + slope-`±1` σ-reflection crux fully proved (lap 14) |
 | `FastGrowing.fastGrowing_lt_fastGrowingε₀` | `f_{ε₀}` dominates every fixed `f_o` (A4; Kirby–Paris growth gap), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — A4 |
 | `Logic.Goodstein.goodsteinLength_eq_hardy` | **Cichoń identity** `goodsteinLength m = H_{seqONote m 0}(2) − 2`, uncond. (C2+C3 crown) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — borrowing crux `hstep_oadd_one_zero` discharged (lap 5) |
 | `Logic.Goodstein.goodsteinLength_grows_like_fastGrowingε₀` | **THE HEADLINE (C3), two-sided**: lower (∀ `o<ε₀`, eventually `f_o(m) ≤ goodsteinLength m + 2`) ∧ upper (`goodsteinLength m + 2 ≤ f_{o_m}(2)`) | `[propext, Classical.choice, Quot.sound]` + finite-base-case `native_decide` artifacts | ✅ 0 math axioms — the definitive "Goodstein grows like `f_{ε₀}`" audit surface (lap 11) |
