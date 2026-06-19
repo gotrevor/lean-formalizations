@@ -13,6 +13,7 @@ since `f` is supported in `Sδ`) then yields `vol(Sδ) ≳ 1/log(1/δ)`. See `PL
 
 Reference: A. Córdoba (1977). -/
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Cordoba
+import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.TubeFractional
 
 open Finset MeasureTheory
 open scoped ENNReal Real
@@ -123,6 +124,72 @@ theorem volume_thickening_tubes_ge {E : Set Plane} (hE : MeasurableSet E) {δ : 
         lintegral_sq_le_measure_mul hfmeas hE hsupp
     _ ≤ volume E * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
         gcongr
+
+/-- **Localized fractional Córdoba `L²` bound — sub-brick (c) core.** The dominant-scale upgrade of
+`volume_thickening_tubes_ge`: the `N` net-direction tubes are now *fractional*, of length `w k ≤ 1`
+(the covered sub-segment furnished by the dyadic pigeonhole), each contained in a container `E` (the
+thickened dominant-scale cover pieces). Then
+
+  `(∑ₖ 2δ·wₖ)²  ≤  vol(E) · (6π δ · 2N(1 + log N))`.
+
+The **numerator** `∑ₖ vol(Tₖᶠ) ≥ ∑ₖ 2δ·wₖ` is `volume_tube_ge_frac` (length-`wₖ` tubes); the
+**denominator** is unchanged — `vol(Tⱼᶠ ∩ Tₖᶠ) ≤ vol(Tⱼ ∩ Tₖ)` since `Tₖᶠ ⊆ Tₖ` (`tube_smul_subset`),
+so the full-tube overlap estimate `sum_overlap_le` transfers verbatim. The `L²`/Cauchy–Schwarz chain
+is identical to the full-tube case. Combined with `vol(E) ≤ M·C·δ²` (per-piece thickened area), this
+forces `M ≳ (∑wₖ)²/(δ²·log)` cover pieces at the dominant scale — the final content bound. -/
+theorem volume_thickening_fracTubes_ge {E : Set Plane} (hE : MeasurableSet E) {δ : ℝ}
+    (hδ : 0 < δ) (hδ1 : δ ≤ 1) {N : ℕ} (hN : (N : ℝ) * δ ≤ 1)
+    (b : ℕ → Plane) (w : ℕ → ℝ) (hw0 : ∀ k, 0 ≤ w k) (hw1 : ∀ k, w k ≤ 1)
+    (hsub : ∀ k, tube (b k) (w k • dir ((k : ℝ) * δ)) δ ⊆ E) :
+    (∑ k ∈ range N, ENNReal.ofReal (2 * δ * w k)) ^ 2
+      ≤ volume E * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
+  set Tf : ℕ → Set Plane := fun k => tube (b k) (w k • dir ((k : ℝ) * δ)) δ with hTf_def
+  set Tfull : ℕ → Set Plane := fun k => tube (b k) (dir ((k : ℝ) * δ)) δ with hTfull_def
+  have hTmeas : ∀ k, MeasurableSet (Tf k) := fun k => measurableSet_tube _ _ _
+  have hsubfull : ∀ k, Tf k ⊆ Tfull k := fun k => tube_smul_subset (hw0 k) (hw1 k)
+  set f : Plane → ℝ≥0∞ := fun x => ∑ k ∈ range N, (Tf k).indicator 1 x with hf_def
+  have hfval : ∀ x, f x = ∑ k ∈ range N, (Tf k).indicator (1 : Plane → ℝ≥0∞) x := fun x => by
+    rw [hf_def]
+  have hfmeas : Measurable f := by
+    rw [hf_def]
+    exact Finset.measurable_sum _ (fun k _ => measurable_one.indicator (hTmeas k))
+  have hsupp : ∀ x, x ∉ E → f x = 0 := by
+    intro x hx
+    rw [hfval]
+    exact Finset.sum_eq_zero (fun k _ => Set.indicator_of_notMem (fun hxk => hx (hsub k hxk)) _)
+  have hint1 : ∫⁻ x, f x ∂volume = ∑ k ∈ range N, volume (Tf k) := by
+    rw [lintegral_congr hfval]; exact lintegral_sum_indicator Tf hTmeas N
+  have hint2 : ∫⁻ x, (f x) ^ 2 ∂volume = ∑ j ∈ range N, ∑ k ∈ range N, volume (Tf j ∩ Tf k) := by
+    rw [lintegral_congr (fun x => by rw [hfval])]; exact lintegral_sq_sum_indicator Tf hTmeas N
+  -- numerator: per tube `vol(Tf k) ≥ 2δ·wₖ`
+  have hnumk : ∀ k, ENNReal.ofReal (2 * δ * w k) ≤ volume (Tf k) := by
+    intro k
+    rcases eq_or_lt_of_le (hw0 k) with hk0 | hk0
+    · rw [← hk0, mul_zero, ENNReal.ofReal_zero]; exact zero_le _
+    · have hdir : dir ((k : ℝ) * δ) ≠ 0 := norm_ne_zero_iff.mp (by rw [norm_dir]; norm_num)
+      have hv : w k • dir ((k : ℝ) * δ) ≠ 0 := smul_ne_zero (ne_of_gt hk0) hdir
+      have hnorm : ‖w k • dir ((k : ℝ) * δ)‖ = w k := by
+        rw [norm_smul, norm_dir, mul_one, Real.norm_eq_abs, abs_of_nonneg (hw0 k)]
+      have hfr := volume_tube_ge_frac (a := b k) (δ := δ) hv
+      rw [hnorm] at hfr
+      exact hfr
+  have hnum : ∑ k ∈ range N, ENNReal.ofReal (2 * δ * w k) ≤ ∫⁻ x, f x ∂volume := by
+    rw [hint1]; exact Finset.sum_le_sum (fun k _ => hnumk k)
+  -- denominator: fractional overlaps bounded by full overlaps, then `sum_overlap_le`
+  have hden : ∫⁻ x, (f x) ^ 2 ∂volume
+      ≤ ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by
+    rw [hint2]
+    calc ∑ j ∈ range N, ∑ k ∈ range N, volume (Tf j ∩ Tf k)
+        ≤ ∑ j ∈ range N, ∑ k ∈ range N, volume (Tfull j ∩ Tfull k) := by
+          apply Finset.sum_le_sum; intro j _; apply Finset.sum_le_sum; intro k _
+          have hss : Tf j ∩ Tf k ⊆ Tfull j ∩ Tfull k :=
+            Set.inter_subset_inter (hsubfull j) (hsubfull k)
+          exact measure_mono hss
+      _ ≤ ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := sum_overlap_le hδ hδ1 hN b
+  calc (∑ k ∈ range N, ENNReal.ofReal (2 * δ * w k)) ^ 2
+      ≤ (∫⁻ x, f x ∂volume) ^ 2 := by gcongr
+    _ ≤ volume E * ∫⁻ x, (f x) ^ 2 ∂volume := lintegral_sq_le_measure_mul hfmeas hE hsupp
+    _ ≤ volume E * ENNReal.ofReal (6 * π * δ * (2 * N * (1 + Real.log N))) := by gcongr
 
 /-- The Kakeya specialization of `volume_thickening_tubes_ge`: the `N` net-direction δ-tubes
 furnished by `exists_tube_family` all lie in `Sδ`, so `E := thickening S δ`. -/

@@ -70,4 +70,24 @@ theorem volume_tube_ge_frac {a v : Plane} (hv : v ≠ 0) {δ : ℝ} :
         (volume_frame_box he1 a measurableSet_Icc measurableSet_Icc).symm
     _ ≤ volume (tube a v δ) := measure_mono (fracBox_subset_tube hv)
 
+/-- **Sub-segment containment.** For `w ∈ [0,1]`, the segment `[a, a+w•v]` is a sub-segment of
+`[a, a+v]` (its points `a + t•(w•v) = a + (tw)•v` with `tw ∈ [0,1]`). -/
+theorem affineSegment_smul_subset {a v : Plane} {w : ℝ} (hw0 : 0 ≤ w) (hw1 : w ≤ 1) :
+    affineSegment ℝ a (a + w • v) ⊆ affineSegment ℝ a (a + v) := by
+  intro x hx
+  rw [affineSegment_eq, mem_image] at hx ⊢
+  obtain ⟨t, ht, heq⟩ := hx
+  refine ⟨t * w, ⟨mul_nonneg ht.1 hw0, mul_le_one₀ ht.2 hw0 hw1⟩, ?_⟩
+  rw [← heq, smul_smul]
+
+/-- **Fractional tube ⊆ full tube.** For `w ∈ [0,1]`, the δ-tube about the length-`w‖v‖` sub-segment
+`[a, a+w•v]` is contained in the δ-tube about `[a, a+v]`. This is the geometric input to the
+**localized-Córdoba denominator**: the overlap of two *fractional* tubes is bounded by the overlap of
+the corresponding *full* tubes (`vol(Tⱼᶠ ∩ Tₖᶠ) ≤ vol(Tⱼ ∩ Tₖ)`), so the existing full-tube overlap
+estimate `volume_inter_dirTube_le` transfers verbatim to the dominant-scale fractional count. -/
+theorem tube_smul_subset {a v : Plane} {w δ : ℝ} (hw0 : 0 ≤ w) (hw1 : w ≤ 1) :
+    tube a (w • v) δ ⊆ tube a v δ := by
+  simp only [tube_def]
+  exact cthickening_subset_of_subset δ (affineSegment_smul_subset hw0 hw1)
+
 end LeanFormalizations.Kakeya2D
