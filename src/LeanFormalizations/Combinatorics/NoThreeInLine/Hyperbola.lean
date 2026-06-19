@@ -616,14 +616,14 @@ theorem shear_diag_partner {p a c : ℕ} (hp : p.Prime) (hp2 : p ≠ 2)
     have hXc : 2 * c + 2 * shearY p a + 1 = p ∨ 2 * c + 2 * shearY p a + 1 = 3 * p := by
       obtain ⟨m, hm⟩ := hd1
       have hm4 : m < 4 := by
-        by_contra hge; push_neg at hge
+        by_contra hge; rw [not_lt] at hge
         have : p * 4 ≤ p * m := Nat.mul_le_mul (le_refl p) hge
         omega
       interval_cases m <;> omega
     have hXs : 2 * shearY p c + 2 * a + 1 = p ∨ 2 * shearY p c + 2 * a + 1 = 3 * p := by
       obtain ⟨m, hm⟩ := hd2
       have hm4 : m < 4 := by
-        by_contra hge; push_neg at hge
+        by_contra hge; rw [not_lt] at hge
         have : p * 4 ≤ p * m := Nat.mul_le_mul (le_refl p) hge
         omega
       interval_cases m <;> omega
@@ -701,7 +701,7 @@ theorem shearSel_cross_diag {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R : �
     (hP : P ∈ shearSel p) (hQ : Q ∈ shearSel p) (hR : R ∈ shearSel p)
     (hres : (P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p))
     (hRdiff : ¬ ((R.1 : ZMod p) = (P.1 : ZMod p) ∧ (R.2 : ZMod p) = (P.2 : ZMod p)))
-    (hPQ : P ≠ Q) (hPR : P ≠ R) (hQR : Q ≠ R) (hx1 : P.1 ≠ Q.1) (hy1 : P.2 ≠ Q.2) :
+    (_hPQ : P ≠ Q) (_hPR : P ≠ R) (_hQR : Q ≠ R) (hx1 : P.1 ≠ Q.1) (hy1 : P.2 ≠ Q.2) :
     ¬ Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)) := by
   haveI : Fact p.Prime := ⟨hp⟩
   haveI : NeZero p := ⟨hp.pos.ne'⟩
