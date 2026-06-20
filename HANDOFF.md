@@ -8,7 +8,7 @@ content lives in the three docs below.
 1. **`STATUS.md`** — the living overview (axiom ledger re-verified, what's happened). REFRESHED 2026-06-20.
 2. **`PENDING_WORK.md`** — top is the dated **`## Completion-verification review lap — 2026-06-20`** (the
    self-stop direction call). START HERE.
-3. **newest dated `HANDOFF-2026-06-20-1631.md`** — the per-lap baton (outcome + next actions).
+3. **newest dated `HANDOFF-2026-06-20-2030.md`** — the per-lap baton (outcome + next actions).
    ✅ `STATUS.md`'s `🛑 FINISH-AND-STOP` directive (Trevor) is **EXECUTED & RE-VERIFIED**: src/ sorry-free,
    all 14 headlines axiom-clean (from real `#print axioms`), off-headline work in `wip/`, self-stopped.
    ✅ **Statements now also certified** (deep-reflection lap, 2026-06-20): fresh statement-faithfulness
