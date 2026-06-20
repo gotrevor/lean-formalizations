@@ -1,5 +1,31 @@
 # PENDING_WORK — no-three-in-line / HJSW frontier (branch `ntl-hjsw`)
 
+## Inventory + attack paths — 2026-06-20 (post-`d7699b1`, BV-decay family COMPLETE)
+**State:** `src/` sorry-free; all headlines + the BV-Fourier-decay bonuses (`prelim_decay_2_route_b`,
+`prelim_decay_3_route_b`) `#print axioms`-clean; full build green (8621 jobs). De-vendor + v4.31.0 upgrade
+DONE. **Operator authorized stopping** the treadmill once those were done. The items below are all
+**off-headline and multi-lap** — none completable in a small budget; left unopened under finish-and-stop.
+
+**Open-item inventory (full).**
+1. **Sharp constant `2π|u|`** for `prelim_decay_2/3` (we have the non-sharp `4|u|`/`8π·u²`). The blueprint's
+   own route is Lebesgue–Stieltjes integration-by-parts; mathlib has only differentiable-integrand IBP +
+   *monotone* `StieltjesFunction`, not general signed BV-IBP.
+   - (a) Port a signed BV integration-by-parts development onto mathlib (highest effort; the real wall).
+   - (b) Tighten route (b): the factor-2 slack is the half-period trick + the `|h|·V` bound; a quarter-period
+     or optimized-shift variant might recover a better constant without IBP. Low payoff.
+   - (c) Decompose BV `= ` difference of two monotones (`eVariationOn`-monotone parts), apply the EXISTING
+     monotone Stieltjes measure to each, and assemble — gets a genuine Stieltjes IBP for BV via two monotone
+     ones. **Most promising mathlib-only route to the sharp constant.**
+2. **`nagura_prime`** (`wip/NaguraFiveFourths.lean`) — the `5/4` prime-gap rung. SUPERSEDED by the
+   unconditional `3/2−o(N)`; constant has zero slack vs Chebyshev, so only Nagura 1952 / explicit-error PNT
+   closes it. Lowest priority; gates no headline.
+   - (a) explicit-error PNT (`|ψ(x)−x|` bound) — mathlib-absent, large. (b) Nagura's elementary interval
+     argument — tedious finite casework. (c) leave superseded (current call).
+3. **Upstream dep `Wiener.lean:323/342`** `prelim_decay_2/3` sorries — dead code off the WeakPNT path
+   (`weakPNT` axiom-clean with them present). Can't patch (external dep, no push). Our route-(b) reconstruction
+   in `BVFourierDecay.lean` is the in-repo answer; a PR to `kim-em/PrimeNumberTheoremAnd` would need a
+   networked host (see `ON-LINE-REQUEST.md` pattern).
+
 ## ✅ RESOLVED 2026-06-20 (`d17e7b8`): `prelim_decay_2` route (b) — COMPLETE & axiom-clean
 Route (b) below is **fully proven** and promoted to `src/LeanFormalizations/RealAnalysis/BVFourierDecay.lean`
 (`prelim_decay_2_route_b : ‖𝓕 f u‖ ≤ V(f)/(4|u|)`, `[propext, Classical.choice, Quot.sound]`, build green
