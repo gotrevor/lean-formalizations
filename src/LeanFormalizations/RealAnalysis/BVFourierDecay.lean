@@ -5,25 +5,34 @@
 upstream** in `PrimeNumberTheoremAnd` (now our dependency, `Wiener.lean:323`) and **absent from mathlib**.
 The blueprint route is Lebesgue–Stieltjes integration-by-parts (sharp `2π|u|`), which mathlib lacks.
 
-This file develops the **self-contained route (b)** (weaker constant `4|u|`, no BV-IBP):
+This file develops — and now fully PROVES — the **self-contained route (b)** (weaker constant `4|u|`,
+no BV-IBP):
 
-  ‖𝓕 f u‖ ≤ ½ ∫ ‖f t − f(t + 1/(2u))‖ dt        -- (b1) Fourier half-period shift
-            ≤ ½ · |1/(2u)| · V(f)  =  V(f)/(4|u|) -- (b2) L¹-translation-by-total-variation
+  ‖𝓕 f u‖ ≤ ½ ∫ ‖f t − f(t + 1/(2u))‖ dt        -- (b1) Fourier half-period shift     [PROVEN]
+            ≤ ½ · |1/(2u)| · V(f)  =  V(f)/(4|u|) -- (b2) L¹-translation-by-total-variation [PROVEN]
 
-This lap: the **pointwise variation bound is PROVEN** (`norm_sub_le_eVariationOn_toReal`, straight from
-`eVariationOn.edist_le`), the two analytic cruxes (b1)/(b2) are isolated as disclosed `sorry`s with proof
-sketches, and the **assembly** `prelim_decay_2_route_b` is verified in-kernel — so the one opaque upstream
-`sorry` is narrowed to exactly two precise, narrower mathlib-absent lemmas. Lives in `wip/` (outside the
-build); `src/` stays sorry-free. NOT a headline; dead code on the WeakPNT path (clean `#print axioms`).
+**COMPLETE & axiom-clean** (`#print axioms prelim_decay_2_route_b = [propext, Classical.choice,
+Quot.sound]`). Both analytic cruxes are machine-checked:
+  • (b1) write `𝓕` in the `exp(↑r·I)` phase form (norm 1), shift by `1/(2u)`, pick up `𝐞(−½) = −1`
+    so the shifted integral is `−𝓕 f u`, add the two reps, take norms.
+  • (b2) via the **monotone variation function** `W(t) = V(f on (−∞,t])`: pointwise
+    `‖f t − f(t+h)‖ ≤ W(t+h) − W(t)` (superadditivity + `edist_le`), then the finite-window telescoping
+    `∫_{−N}^{N}(W(·+k) − W) = ∫_N^{N+k}W − ∫_{−N}^{−N+k}W ≤ k·V` with a monotone-convergence limit —
+    **no variation/Stieltjes measure needed** (mathlib-absent for signed BV).
+
+A complete, mathlib-only, axiom-clean BV-Fourier decay bound (non-sharp constant `4|u|` vs the sharp
+`2π|u|`). NOT a headline; dead code on the WeakPNT path (`weakPNT` is axiom-clean with the upstream
+`prelim_decay` sorries present). Lives in `wip/` (outside the build); `src/` stays sorry-free.
 -/
 import Mathlib.Analysis.Fourier.FourierTransform
 import Mathlib.Topology.EMetricSpace.BoundedVariation
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 
-open MeasureTheory Real
+open MeasureTheory Real Filter
 open scoped FourierTransform
 
-namespace BVFourierDecay
+namespace LeanFormalizations.RealAnalysis.BVFourierDecay
 
 /-- **Pointwise variation bound (PROVEN).** For `f` of bounded variation on `univ`, any two values differ
 by at most the total variation: `‖f a − f b‖ ≤ V(f)`. Direct from `eVariationOn.edist_le`. -/
@@ -42,7 +51,7 @@ theorem fourierChar_neg_half : ((Real.fourierChar (-(1 / 2 : ℝ))) : ℂ) = -1 
     Complex.ofReal_neg, neg_mul, Complex.exp_neg, Complex.exp_pi_mul_I]
   norm_num
 
-/-- **(b1) Fourier half-period shift (CRUX — disclosed `sorry`).**
+/-- **(b1) Fourier half-period shift (PROVEN).**
 `‖𝓕 f u‖ ≤ ½ ∫ ‖f t − f(t + 1/(2u))‖ dt`.
 
 Proof sketch: substitute `t ↦ t + 1/(2u)` in `𝓕 f u = ∫ 𝐞(−tu) f t dt`; since `𝐞(−½) = e^{−πi} = −1`,
@@ -119,6 +128,14 @@ theorem varFn_mono {f : ℝ → ℂ} (hbv : BoundedVariationOn f Set.univ) : Mon
   intro s t hst
   exact ENNReal.toReal_mono (evar_ne_top hbv _) (eVariationOn.mono f (Set.Iic_subset_Iic.mpr hst))
 
+/-- The variation function is nonnegative. -/
+theorem varFn_nonneg (f : ℝ → ℂ) (t : ℝ) : 0 ≤ varFn f t := ENNReal.toReal_nonneg
+
+/-- The variation function is bounded by the total variation `V`. -/
+theorem varFn_le_V {f : ℝ → ℂ} (hbv : BoundedVariationOn f Set.univ) (t : ℝ) :
+    varFn f t ≤ (eVariationOn f Set.univ).toReal :=
+  ENNReal.toReal_mono (evar_ne_top hbv _) (eVariationOn.mono f (Set.subset_univ _))
+
 /-- **Pointwise bound (PROVEN).** `‖f t − f(t+h)‖ ≤ W(t+h) − W(t)` for `h ≥ 0`. Superadditivity of
 the variation over `Iic t ⊎ Icc t (t+h) = Iic (t+h)` (`eVariationOn.add_le_union`) plus the two-point
 lower bound `‖f t − f(t+h)‖ ≤ V(Icc t (t+h))` (`eVariationOn.edist_le`). -/
@@ -151,19 +168,62 @@ theorem norm_sub_le_varFn_sub {f : ℝ → ℂ} (hbv : BoundedVariationOn f Set.
     rwa [edist_dist, ENNReal.toReal_ofReal dist_nonneg] at this
   simp only [varFn]; linarith
 
-/-- **Narrowed analytic core of (b2) (disclosed `sorry`).** For `h ≥ 0` the monotone variation
-function's translate-difference `t ↦ W(t+h) − W(t)` is integrable, with `∫(W(·+h) − W) ≤ h·V`.
+/-- **Analytic core of (b2) (PROVEN).** For `k ≥ 0` the monotone variation function's
+translate-difference `t ↦ W(t+k) − W(t)` is integrable, with `∫(W(·+k) − W) ≤ k·V`.
 
-This is exactly the monotone Stieltjes–Fubini content, now over a function mathlib CAN handle: let
-`μ_W` be the (existing, monotone) Stieltjes measure of `W`, so `W(t+h) − W(t) = μ_W((t, t+h])`; then
-Tonelli gives `∫_t μ_W((t,t+h]) dt = ∫_s (∫_t 𝟙_{s−h ≤ t < s} dt) dμ_W(s) = ∫_s h dμ_W = h·μ_W(ℝ) = h·V`
-(`μ_W(ℝ) = lim_{+∞} W − lim_{−∞} W ≤ V`). The remaining gap is building `μ_W` from `W` and the Tonelli
-swap. -/
+Proved by an **elementary route that needs no variation/Stieltjes measure** (mathlib-absent for
+signed BV): the finite-window integral telescopes,
+`∫_{−N}^{N}(W(t+k) − W(t)) dt = ∫_{N}^{N+k} W − ∫_{−N}^{−N+k} W ≤ k·V − 0`
+(substitution `intervalIntegral.integral_comp_add_right`, oriented interval additivity, then
+`W ≤ V` and `W ≥ 0`); the bound is uniform in `N`, so the nonneg integrand is integrable
+(`integrable_of_intervalIntegral_norm_bounded`) and `∫_ℝ = lim_N ∫_{−N}^{N} ≤ k·V`
+(`intervalIntegral_tendsto_integral` + `le_of_tendsto`). -/
 theorem integrable_and_integral_varFn_diff_le
     (f : ℝ → ℂ) (hbv : BoundedVariationOn f Set.univ) (k : ℝ) (hk : 0 ≤ k) :
     Integrable (fun t => varFn f (t + k) - varFn f t) ∧
       (∫ t, (varFn f (t + k) - varFn f t)) ≤ k * (eVariationOn f Set.univ).toReal := by
-  sorry
+  set V := (eVariationOn f Set.univ).toReal with hV
+  have hmono := varFn_mono hbv
+  have hmonosh : Monotone (fun t => varFn f (t + k)) := hmono.comp (monotone_id.add_const k)
+  have hii : ∀ a b : ℝ, IntervalIntegrable (varFn f) volume a b := fun a b => hmono.intervalIntegrable
+  have hiish : ∀ a b : ℝ, IntervalIntegrable (fun t => varFn f (t + k)) volume a b :=
+    fun a b => hmonosh.intervalIntegrable
+  have hgnn : ∀ t, 0 ≤ varFn f (t + k) - varFn f t := by
+    intro t; have := hmono (le_add_of_nonneg_right hk : t ≤ t + k); linarith
+  -- finite-window bound, uniform in N (oriented interval additivity ⇒ no size constraint on N)
+  have hfin : ∀ N : ℝ, (∫ t in (-N)..N, (varFn f (t + k) - varFn f t)) ≤ k * V := by
+    intro N
+    rw [intervalIntegral.integral_sub (hiish _ _) (hii _ _),
+      intervalIntegral.integral_comp_add_right (varFn f) k]
+    have e1 : (∫ t in (-N)..N, varFn f t)
+        = (∫ t in (-N)..(-N+k), varFn f t) + (∫ t in (-N+k)..N, varFn f t) :=
+      (intervalIntegral.integral_add_adjacent_intervals (hii _ _) (hii _ _)).symm
+    have e2 : (∫ t in (-N+k)..(N+k), varFn f t)
+        = (∫ t in (-N+k)..N, varFn f t) + (∫ t in N..(N+k), varFn f t) :=
+      (intervalIntegral.integral_add_adjacent_intervals (hii _ _) (hii _ _)).symm
+    rw [e1, e2]
+    have hhi : (∫ t in N..(N+k), varFn f t) ≤ k * V := by
+      calc (∫ t in N..(N+k), varFn f t) ≤ ∫ _t in N..(N+k), V :=
+            intervalIntegral.integral_mono_on (by linarith) (hii _ _)
+              intervalIntegrable_const (fun x _ => varFn_le_V hbv x)
+        _ = k * V := by rw [intervalIntegral.integral_const, smul_eq_mul]; ring
+    have hlo : 0 ≤ (∫ t in (-N)..(-N+k), varFn f t) :=
+      intervalIntegral.integral_nonneg (by linarith) (fun x _ => varFn_nonneg f x)
+    linarith
+  have hint : Integrable (fun t => varFn f (t + k) - varFn f t) := by
+    apply integrable_of_intervalIntegral_norm_bounded (k * V)
+      (a := fun x : ℝ => -x) (b := fun x : ℝ => x) (l := atTop)
+    · intro x; exact ((hiish (-x) x).sub (hii (-x) x)).1
+    · exact tendsto_neg_atTop_atBot
+    · exact tendsto_id
+    · filter_upwards [eventually_ge_atTop (0 : ℝ)] with N _
+      rw [intervalIntegral.integral_congr (g := fun t => varFn f (t + k) - varFn f t)
+        (fun x _ => Real.norm_of_nonneg (hgnn x))]
+      exact hfin N
+  refine ⟨hint, ?_⟩
+  have htend := intervalIntegral_tendsto_integral hint
+    (a := fun x : ℝ => -x) (b := fun x : ℝ => x) tendsto_neg_atTop_atBot tendsto_id
+  exact le_of_tendsto htend (Eventually.of_forall fun N => hfin N)
 
 /-- **(b2) L¹-translation by total variation.** `∫ ‖f t − f(t+h)‖ dt ≤ |h| · V(f)`, for ALL `h`.
 Reduces to the nonneg case via the proven pointwise bound + `integral_mono_of_nonneg`, with the
@@ -192,9 +252,9 @@ theorem integral_norm_sub_translate_le
     rw [heq, abs_of_nonpos hh]
     exact hpos (-h) hh'
 
-/-- **Assembly (PROVEN modulo the two cruxes).** Route-(b) decay bound `‖𝓕 f u‖ ≤ V(f)/(4|u|)` — the
-weaker (non-sharp) form of `prelim_decay_2`. Verified in-kernel from (b1)+(b2): this is the structural
-content; only the two analytic cruxes above remain open. -/
+/-- **Assembly (PROVEN — fully, axiom-clean).** Route-(b) decay bound `‖𝓕 f u‖ ≤ V(f)/(4|u|)` — the
+weaker (non-sharp) form of `prelim_decay_2`. Both analytic cruxes (b1)+(b2) above are now machine-checked,
+so this is a complete mathlib-only proof (`#print axioms = [propext, Classical.choice, Quot.sound]`). -/
 theorem prelim_decay_2_route_b
     (f : ℝ → ℂ) (hf : Integrable f) (hbv : BoundedVariationOn f Set.univ) (u : ℝ) (hu : u ≠ 0) :
     ‖𝓕 f u‖ ≤ (eVariationOn f Set.univ).toReal / (4 * |u|) := by
@@ -214,4 +274,4 @@ theorem prelim_decay_2_route_b
           rw [habs]; field_simp <;> ring
   exact hb1.trans hstep
 
-end BVFourierDecay
+end LeanFormalizations.RealAnalysis.BVFourierDecay
