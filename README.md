@@ -40,3 +40,7 @@ After the first successful build, enable the green-gate:
   at n = 2. Curtis's natural long-term home is a PR extending that file.
 - `AxiomMath/FelConjecture` (github.com/AxiomMath/fel-polynomial) — active
   numerical-semigroup formalization (Fel's syzygy conjecture, arXiv:2602.03716).
+
+## License
+
+[Apache License 2.0](LICENSE), Copyright 2026 Trevor Morris
