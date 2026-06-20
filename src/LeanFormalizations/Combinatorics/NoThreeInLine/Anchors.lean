@@ -261,8 +261,8 @@ The closed-form selection rule (see `SELECTION-RULE-FOUND.md` / `Hyperbola.lean`
 `p = 7, 11, 13` (off the headline axiom path — the general theorem uses a `Collinear ℝ` argument). -/
 theorem shearSel_seven_card : (shearSel 7).card = 18 := by native_decide
 
-theorem shearSel_seven_grid : IsGridSet 14 (shearSel 7) := by
-  intro q hq; fin_cases hq <;> exact ⟨by decide, by decide⟩
+theorem shearSel_seven_grid : IsGridSet 14 (shearSel 7) :=
+  shearSel_grid (p := 7) (by decide)
 
 theorem shearSel_seven_noThree : NoThreeCollinear (shearSel 7) :=
   decNoThree_imp (by native_decide)

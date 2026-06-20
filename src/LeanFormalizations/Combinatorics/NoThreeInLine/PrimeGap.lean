@@ -24,7 +24,7 @@ it carried a lap-crossing `sorry`, gated no headline, and is superseded by the u
 `wip/NaguraFiveFourths.lean` and git history.
 -/
 import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
-import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Consequences
+import PrimeNumberTheoremAnd.Consequences
 import Mathlib.NumberTheory.Chebyshev
 import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt
 import Mathlib.Analysis.SpecialFunctions.Stirling
@@ -74,7 +74,7 @@ theorem centralBinom_dvd_lcm_Icc {n : ℕ} (hn : 0 < n) :
     have hdvd : p ^ k ∣ (Finset.Icc 1 (2 * n)).lcm id := by
       simpa using Finset.dvd_lcm (f := id) hmem
     exact (Nat.Prime.pow_dvd_iff_le_factorization hp hL).mp hdvd
-  · rw [Nat.factorization_eq_zero_of_non_prime _ hp]; exact Nat.zero_le _
+  · rw [Nat.factorization_eq_zero_of_not_prime _ hp]; exact Nat.zero_le _
 
 /-- **ℕ Chebyshev lower bound.** `4ⁿ < n · lcm(1,…,2n)` for `n ≥ 4` — the integer form of
 `ψ(2n) ≳ n·log 4`, and the foundation for a `θ` lower bound (the ingredient Nagura needs that mathlib

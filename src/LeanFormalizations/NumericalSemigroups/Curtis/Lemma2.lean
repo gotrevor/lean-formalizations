@@ -58,7 +58,8 @@ lemma curtis_class_min (s₁ s₂ s₃ k : ℕ)
     nlinarith only [ hb_ge, h2, h3, hr_lo, hr_hi, Nat.sub_add_cancel ( by linarith : k ≤ s₁ ) ];
   · contrapose! hres; simp_all +decide [ ← Nat.mul_mod ] ;
     rw [ Nat.mod_eq_of_lt ];
-    · lia;
+    · have hb_lt_k : b < k := Nat.lt_of_mul_lt_mul_right hres;
+      omega;
     · nlinarith only [ hres, hk_hi, Nat.sub_add_cancel ( by linarith : k + 1 + 1 ≤ s₁ ) ];
   · nlinarith [ Nat.sub_add_cancel ( by linarith : k + 1 + 1 ≤ s₁ ) ]
 

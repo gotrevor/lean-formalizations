@@ -7,7 +7,12 @@ srcDir = "src"
 [[require]]
 name = "mathlib"
 scope = "leanprover-community"
-rev = "v4.29.1"
+rev = "v4.31.0"
 
 [[lean_lib]]
 name = "LeanFormalizations"
+
+[[require]]
+name = "PrimeNumberTheoremAnd"
+git = "https://github.com/kim-em/PrimeNumberTheoremAnd.git"
+rev = "40e5246b0cf0070875842488ccf60c461e60bc62"

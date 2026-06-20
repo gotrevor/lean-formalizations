@@ -5,7 +5,7 @@ A headline corollary of the discharged PNT (`Consequences.pi_alt'`, π(x) ∼ x/
 most recognizable form: the ratio `π(x) / (x / log x) → 1` as `x → ∞`. Axiom-clean
 (`#print axioms`), the natural capstone of the in-repo Wiener–Ikehara discharge of `weakPNT`.
 -/
-import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Consequences
+import PrimeNumberTheoremAnd.Consequences
 
 open Nat Filter Real Asymptotics
 open scoped Topology

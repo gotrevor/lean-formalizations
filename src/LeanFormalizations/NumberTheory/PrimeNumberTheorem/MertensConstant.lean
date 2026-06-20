@@ -1100,7 +1100,7 @@ lemma tendsto_log_floor_exp_sub :
     have h0 : Tendsto (fun x => 1 - Real.exp (-x)) atTop (𝓝 1) := by
       simpa using (tendsto_const_nhds (x := (1:ℝ))).sub Real.tendsto_exp_neg_atTop_nhds_zero
     have := (Real.continuousAt_log (by norm_num : (1:ℝ) ≠ 0)).tendsto.comp h0
-    simpa [Real.log_one] using this
+    simpa [Real.log_one, Function.comp_def] using this
   refine tendsto_of_tendsto_of_tendsto_of_le_of_le' hlower tendsto_const_nhds ?_ ?_
   · filter_upwards [eventually_gt_atTop 0] with x hx
     have hex1 : (0:ℝ) < Real.exp x - 1 := by

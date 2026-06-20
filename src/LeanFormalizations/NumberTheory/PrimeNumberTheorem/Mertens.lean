@@ -156,7 +156,7 @@ lemma summable_log_div_sq :
     Summable (fun n : ℕ ↦ Real.log n / (n : ℝ) ^ 2) := by
   have hg : Summable (fun n : ℕ ↦ 2 / (n : ℝ) ^ (3 / 2 : ℝ)) := by
     have h := (Real.summable_one_div_nat_rpow.mpr (by norm_num : (1 : ℝ) < 3 / 2)).mul_left 2
-    simpa [mul_one_div] using h
+    simpa [mul_one_div] using! h
   refine Summable.of_nonneg_of_le ?_ ?_ hg
   · intro n
     rcases Nat.eq_zero_or_pos n with rfl | hn
@@ -495,9 +495,7 @@ lemma hasDerivAt_inv_log {t : ℝ} (ht : 1 < t) :
   have ht0 : t ≠ 0 := ne_of_gt (by linarith)
   have hlog : Real.log t ≠ 0 := ne_of_gt (Real.log_pos ht)
   have h := (Real.hasDerivAt_log ht0).inv hlog
-  convert h using 1
-  rw [div_eq_mul_inv, mul_inv]
-  ring
+  convert h using 1 <;> first | rfl | (field_simp <;> ring)
 
 open MeasureTheory in
 /-- `∫_a^b 1/(t·(log t)²) dt = 1/log a − 1/log b` for `1 < a ≤ b`.  Bounds the **convergent remainder**
@@ -510,7 +508,7 @@ lemma integral_inv_mul_sq_log {a b : ℝ} (ha : 1 < a) (hab : a ≤ b) :
       HasDerivAt (fun s ↦ -(Real.log s)⁻¹) ((t * (Real.log t) ^ 2)⁻¹) t := by
     intro t ht
     rw [hsub, Set.mem_Icc] at ht
-    simpa using (hasDerivAt_inv_log (by linarith [ht.1])).neg
+    simpa using! (hasDerivAt_inv_log (by linarith [ht.1])).neg
   have hcont : ContinuousOn (fun t ↦ (t * (Real.log t) ^ 2)⁻¹) (Set.uIcc a b) := by
     rw [hsub]
     apply ContinuousOn.inv₀
@@ -970,9 +968,9 @@ lemma log_one_sub_add_self_abs_le {x : ℝ} (hx0 : 0 < x) (hx : x ≤ 1 / 2) :
     have hlog : HasDerivAt (fun z => Real.log (1 - z)) (-(1 - y)⁻¹) y := by
       have hinner : HasDerivAt (fun z : ℝ => 1 - z) (-1) y := by
         simpa using (hasDerivAt_id y).const_sub 1
-      simpa using (Real.hasDerivAt_log (ne_of_gt hy)).comp y hinner
+      simpa using! (Real.hasDerivAt_log (ne_of_gt hy)).comp y hinner
     have h2 : HasDerivAt (fun z : ℝ => z ^ 2) (2 * y) y := by simpa using hasDerivAt_pow 2 y
-    convert (hlog.add (hasDerivAt_id y)).add h2 using 1
+    convert (hlog.add (hasDerivAt_id y)).add h2 using 1 <;> first | rfl | ring
   have hmono : MonotoneOn (fun y => Real.log (1 - y) + y + y ^ 2) (Set.Icc (0 : ℝ) (1 / 2)) := by
     apply monotoneOn_of_deriv_nonneg (convex_Icc 0 (1 / 2))
     · -- ContinuousOn

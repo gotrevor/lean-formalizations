@@ -445,7 +445,7 @@ theorem shear_two_ne {p x : ℕ} (hp : p.Prime) (hx : x < p) (hne : x ≠ (p - 1
   have hp1 : 1 ≤ p := hp.one_lt.le
   have hk2 : k < 2 := by
     by_contra hge
-    push_neg at hge
+    push Not at hge
     have : 2 * p ≤ p * k := by nlinarith
     omega
   have hk0 : 1 ≤ k := by
@@ -910,6 +910,21 @@ theorem shearSel_two_lifts_line {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R 
     exact lift_triple_noncollinear hp.pos hP1 hP2 hQ1 hQ2 hR1 hR2 e1Q e1R e2Q e2R hPQ hPR hQR
   · exact shearSel_cross_column hp hp2 hP hQ hR hres hRres hPQ hPR hQR
 
+/-- `shearY 2 1 = 1` (the `ZMod 2` inverse `(2·1+1)⁻¹ = 1⁻¹ = 1`). Computed explicitly because at
+mathlib v4.31 the `ZMod` field-inverse no longer kernel-reduces, so `decide` can't evaluate `shearY 2`.
+-/
+theorem shearY_two_one : shearY 2 1 = 1 := by
+  unfold shearY
+  have : (2 * ((1:ℕ) : ZMod 2) + 1) = 1 := by decide
+  rw [this, inv_one]
+  decide
+
+/-- The `p = 2` selection: only the (non-pole) column `1` survives, keeping 3 of its 4 lifts. -/
+theorem shearSel_two : shearSel 2 = {(3,1),(1,3),(3,3)} := by
+  have hrange : ((Finset.range 2).erase ((2 - 1) / 2)) = {1} := by decide
+  rw [shearSel, hrange, Finset.singleton_biUnion, shearKept, shearY_two_one]
+  decide
+
 /-- **The pure-arithmetic crux** (no reals): every pairwise-distinct triple of `shearSel p` has
 nonzero integer orientation determinant. Reduced (via `shearSel_share_residue`, symmetrised over the
 three sharing cases) to `shearSel_two_lifts_line`. -/
@@ -917,7 +932,7 @@ theorem shearSel_intdet {p : ℕ} (hp : p.Prime) :
     ∀ P ∈ shearSel p, ∀ Q ∈ shearSel p, ∀ R ∈ shearSel p, P ≠ Q → P ≠ R → Q ≠ R →
       ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) - ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) ≠ 0 := by
   rcases eq_or_ne p 2 with rfl | hp2
-  · decide
+  · rw [shearSel_two]; decide
   intro P hP Q hQ R hR hPQ hPR hQR hdet0
   have hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)) := by
     apply collinear_of_det3_zero

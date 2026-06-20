@@ -42,8 +42,9 @@ lemma subsetSum_esymm_isSymmetric (n m : ℕ) :
         : Multiset (MvPolynomial (Fin n) ℚ)).esymm m).IsSymmetric := by
   intro e
   set f : MvPolynomial (Fin n) ℚ →+* MvPolynomial (Fin n) ℚ := (MvPolynomial.rename e).toRingHom
-  convert ringHom_map_multiset_esymm f _ m using 1
-  rw [ show ( Multiset.map ( ⇑f ) ( Multiset.map ( fun t => ∑ k ∈ t, MvPolynomial.X k ) Finset.univ.powerset.val ) ) = Multiset.map ( fun t => ∑ k ∈ t, MvPolynomial.X k ) Finset.univ.powerset.val from ?_ ]
+  show f _ = _
+  rw [ringHom_map_multiset_esymm f _ m]
+  congr 1
   simp +zetaDelta at *
   convert Multiset.map_univ_val_equiv ( Equiv.finsetCongr e ) using 2
   constructor <;> intro h <;> simp_all +decide
@@ -102,11 +103,13 @@ theorem subsetSum_esymm_rational (n : ℕ) (theta : Fin n → ℂ) (G : Polynomi
   have h_eval : MvPolynomial.aeval theta p = (Multiset.map (fun t => ∑ k ∈ t, theta k) (Finset.univ.powerset : Finset (Finset (Fin n))).val).esymm j := by
     convert ringHom_map_multiset_esymm ( MvPolynomial.aeval theta ).toRingHom M j using 1
     simp +zetaDelta at *
+    congr 1
+    simp +zetaDelta [Multiset.map_map, Function.comp, map_sum]
   obtain ⟨q, hq⟩ : ∃ q : MvPolynomial (Fin n) ℚ, MvPolynomial.aeval (fun i : Fin n => MvPolynomial.esymm (Fin n) ℚ (i + 1)) q = p := by
     have h_surjective : Function.Surjective (MvPolynomial.esymmAlgHom (Fin n) ℚ n) := by
       apply MvPolynomial.esymmAlgHom_surjective; norm_num
-    obtain ⟨ q, hq ⟩ := h_surjective ⟨ p, by
-      convert SubsetSumEsymm.subsetSum_esymm_isSymmetric n j using 1 ⟩
+    obtain ⟨ q, hq ⟩ := h_surjective ⟨ p,
+      (MvPolynomial.mem_symmetricSubalgebra p).mpr (SubsetSumEsymm.subsetSum_esymm_isSymmetric n j) ⟩
     generalize_proofs at *
     exact ⟨ q, by simpa [ MvPolynomial.esymmAlgHom_apply ] using congr_arg Subtype.val hq ⟩
   have h_comp : MvPolynomial.aeval theta p = MvPolynomial.aeval (fun i : Fin n => MvPolynomial.aeval theta (MvPolynomial.esymm (Fin n) ℚ (i + 1))) q := by
