@@ -1,5 +1,44 @@
 # PENDING_WORK — no-three-in-line / HJSW frontier (branch `ntl-hjsw`)
 
+## Reflection — 2026-06-20 (DEEP-REFLECTION lap #2, strong model @ high effort) 🧘
+**The math is settled; the only open question now is a PROCESS one.** I re-derived completion from ground
+truth this lap (not docs): `lake build` GREEN (8621 jobs); `#print axioms` on all 14 `.bump-axioms`
+headlines = `[propext, Classical.choice, Quot.sound]` in a single real `lake env lean` pass (zero math
+axioms, zero `sorryAx`, zero `native_decide` artifacts); `src/` sorry-free + axiom-decl-free (every grep-hit
+is prose); flagship statement `(3/2−ε)·N ≤ maxNoThreeInLine N` faithful to HJSW `3/2−o(N)`, `NoThreeCollinear`
+genuine `Collinear ℝ`. The prior DEEP-REFLECTION (#1, above) already closed the statement-faithfulness gap
+and the external-dep seam — both re-confirmed, nothing reopened.
+
+**Direction call (unchanged, and now I can say WHY at the meta level): COMPLETE — leave it stopped.** The
+honest altitude finding is not about any `sorry`; it's about the *loop*. The git log shows **~15 consecutive
+laps** that each (a) rebuild, (b) re-run the identical 14-headline `#print axioms`, (c) write a fresh
+`HANDOFF-*.md`, (d) re-write a `mode=complete` stop sentinel, (e) self-stop — and then get relaunched by the
+reflection/fresh-mind *cadence*, which fires on a schedule regardless of the (valid, present) sentinel. That
+is not forward motion; it is the treadmill circling a finished project. The marginal cost of this repo is now
+**the loop itself** — tokens + ~60 accreted handoff docs — not any open mathematics.
+
+**Is there genuinely no higher-value target? Tested, not assumed.** I stress-tested the "complete" verdict
+against the reflection charter's "recalibrate, don't surrender":
+- *Headline walls?* None open. Not one of the 14 headlines cites any math axiom (🟡/🟠/🔴 frontier is empty).
+  The flagship sits at HJSW's optimal `3/2−o(N)` — the best *known unconditional* bound; the Main Conjecture
+  beyond it (`max N ~ 1.87 N`) is **open mathematics, not formalizable**. There is no headline left to chip.
+- *The lone open item* (sharp `2π|u|` BV-Fourier constant, item 1) is **off-headline** (refines a bonus;
+  gates nothing — proven by the clean axiom seam), and even reclassified optimistically as a multi-lap 🟡 it
+  would advance **no headline**. Trevor explicitly **fenced it under FINISH-AND-STOP** (2026-06-19). Grinding
+  it would be exactly the "adjacent bonus problem" side quest the directive forbids. "Recalibrate, don't
+  surrender" governs *headline* walls; there are none — so there is nothing to recalibrate, only an operator
+  directive to honor.
+
+**KEEP:** the axiom-clean `.bump-axioms` discipline; the clean isolation architecture; honoring finish-and-stop.
+**STOP:** the per-lap re-verification + new-handoff theatre. The footprint is stable, statements are audited,
+the seam holds. A relaunch is a cadence artifact, not reopened work.
+**Process recommendation to Trevor (the real course change this lap can offer — there is no math one to make):**
+retire `lean-formalizations-ntl` from the active treadmill rotation, **or** make finish-and-stop sticky against
+the reflection/fresh-mind cadence for a `mode=complete` repo. Until then, the correct response to each relaunch
+is: re-confirm green + `src/` sorry-free (the gate needs it anyway) and stop — which is what this lap did.
+**Single highest-value target IF finish-and-stop is ever lifted:** the sharp `2π|u|` constant via route (c)
+(Jordan decomposition → mathlib monotone Stieltjes measures → assembled signed IBP), item 1 below.
+
 ## Reflection — 2026-06-20 (DEEP-REFLECTION lap, strong model @ high effort) 🧘
 Stepped all the way back. **Direction call: the project is genuinely COMPLETE and the destination was the
 right one — self-stop re-affirmed.** What makes *this* reflection lap different from the ~7 re-verification

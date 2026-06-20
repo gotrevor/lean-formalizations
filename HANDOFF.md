@@ -1,32 +1,14 @@
-# Handoff: completion re-verified from real output, SELF-STOP
+# HANDOFF — thin pointer
 
-**Date**: 2026-06-20 ~21:15 UTC · **Branch**: `ntl-hjsw` · **HEAD**: `3175d7f` (+ this doc) · `LEAN_LAP_ALLOW_STOP=1`
+**Project COMPLETE + axiom-clean; treadmill should stay stopped (finish-and-stop in force).**
 
-## 🎯 What this lap did
-Fresh relaunch again carried the *stale* de-vendor / "v4.29.1→v4.31.0 upgrade" kickoff objective — that
-landed 2+ laps ago (`a0f17d1`). Rather than redo done work or echo the doc chain, I re-audited completion
-**from ground truth this lap** (real `lake build` + real `#print axioms`, not docs) and self-stopped.
+- **Durable overview + axiom ledger** → `STATUS.md`
+- **Newest baton (this lap)** → `HANDOFF-2026-06-20-DEEP-REFLECTION-2.md`
+- **Open-items / attack paths / reflections** → `PENDING_WORK.md` (top: `## Reflection — 2026-06-20 (DEEP-REFLECTION lap #2)`)
+- **Frozen plan** → `src/LeanFormalizations/Combinatorics/NoThreeInLine/PLAN.md`
 
-## ✅ Ground truth re-verified (real output)
-- **`lake build` GREEN — 8621 jobs** (cached replay; only deprecation/unused-simp warnings).
-- **All 14 `.bump-axioms` headlines `#print axioms`-clean** — single `lake env lean /tmp/axcheck.lean`
-  pass; every footprint exactly `[propext, Classical.choice, Quot.sound]`. Zero math axioms, zero
-  `sorryAx`. Includes `weakPNT` / `maxNoThreeInLine_ge_three_halves_sub` / `hjsw_lower_bound` resolving
-  clean **through** the external `kim-em/PrimeNumberTheoremAnd` dep (its `prelim_decay` sorries are
-  provably dead-code off the WeakPNT path — a `sorryAx` would surface otherwise).
-- **`src/` sorry-free + axiom-decl-free** — precise tactic-level grep: every `sorry` hit is docstring
-  prose; the one `axiom`-grep hit is a comment in `Anchors.lean`.
-- **Toolchain `v4.31.0`; lakefile `[[require]]` PrimeNumberTheoremAnd** — de-vendor confirmed real.
-
-## 🛑 Decision: COMPLETION EXIT (self-stop)
-Finish-and-stop in force; all three bars met (zero open `sorry`/`axiom` in `src/`; every headline
-axiom-clean; frontier saturated). Lone repo-connected open item = off-headline 🟠 sharp `2π|u|` BV-Fourier
-constant (needs mathlib-absent signed-BV / Lebesgue–Stieltjes IBP; gates no headline; feasible `4|u|` form
-already complete in `src/`) — the exact side quest finish-and-stop forbids manufacturing. Stop sentinel
-(`source=lap mode=complete`) written; governor will honor it (armed + `src/` clean).
-
-## 🎬 Next session
-**Default: stay stopped.** Do NOT reopen the stale de-vendor objective; do NOT manufacture side quests.
-`ON-LINE-REQUEST.md` remains correctly open (external-repo doc propagation a sandbox can't do; blocks
-nothing here). Only if Trevor explicitly lifts finish-and-stop is there a real multi-lap target: the sharp
-`2π|u|` constant via Jordan decomposition + signed Stieltjes measure + IBP (`PENDING_WORK.md` item 1).
+**One-line state**: branch `ntl-hjsw`, mathlib v4.31.0 + PNTAnd real dep; `lake build` green (8621 jobs);
+all 14 `.bump-axioms` headlines `#print axioms` = `[propext, Classical.choice, Quot.sound]`; `src/` sorry-free.
+The lone open item (sharp `2π|u|` BV-Fourier constant) is off-headline + Trevor-fenced. Stop sentinel
+(`mode=complete`) is the correct state. The real open question is PROCESS (retire from rotation / make
+finish-and-stop sticky vs. the reflection cadence), not math.
