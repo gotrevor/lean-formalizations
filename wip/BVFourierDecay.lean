@@ -98,17 +98,99 @@ theorem norm_fourierIntegral_le_half_integral_norm_sub_shift
   rw [h2norm] at hnb
   linarith [hnb]
 
-/-- **(b2) L¹-translation by total variation (CRUX — disclosed `sorry`).**
-`∫ ‖f t − f(t + h)‖ dt ≤ |h| · V(f)`.
+/-! ### (b2) L¹-translation by total variation, via the monotone variation function
 
-Proof sketch: pointwise `‖f t − f(t+h)‖ ≤ V_{[t,t+h]}(f) = μ_V((t, t+h])` where `μ_V` is the variation
-(Stieltjes) measure; then Fubini `∫_t μ_V((t,t+h]) dt = ∫_s (∫_t 𝟙_{t < s ≤ t+h} dt) dμ_V(s) = ∫_s |h| dμ_V
-= |h|·V`. The variation-measure layer is mathlib-absent (only monotone `StieltjesFunction`); the pointwise
-input is `norm_sub_le_eVariationOn_toReal` applied on `Icc t (t+h)`. -/
+The key to making this mathlib-reachable (avoiding the mathlib-absent *signed* variation measure)
+is the **monotone variation function** `W(t) = V(f on (-∞,t])`, whose Stieltjes measure mathlib
+*does* have. Below: `W` is monotone, and the pointwise bound `‖f t − f(t+h)‖ ≤ W(t+h) − W(t)`
+(for `h ≥ 0`) is PROVEN from `eVariationOn.add_le_union` + `eVariationOn.edist_le`. (b2) then reduces
+to the single monotone Stieltjes–Fubini fact `∫(W(·+h) − W) ≤ h·V`. -/
+
+/-- The **monotone variation function** `W(t) = V(f on (-∞, t])`. -/
+noncomputable def varFn (f : ℝ → ℂ) (t : ℝ) : ℝ := (eVariationOn f (Set.Iic t)).toReal
+
+/-- `eVariationOn` on any subset is finite when `f` has bounded variation on `univ`. -/
+theorem evar_ne_top {f : ℝ → ℂ} (hbv : BoundedVariationOn f Set.univ) (s : Set ℝ) :
+    eVariationOn f s ≠ ⊤ :=
+  ne_top_of_le_ne_top hbv (eVariationOn.mono f (Set.subset_univ s))
+
+/-- The variation function is monotone. -/
+theorem varFn_mono {f : ℝ → ℂ} (hbv : BoundedVariationOn f Set.univ) : Monotone (varFn f) := by
+  intro s t hst
+  exact ENNReal.toReal_mono (evar_ne_top hbv _) (eVariationOn.mono f (Set.Iic_subset_Iic.mpr hst))
+
+/-- **Pointwise bound (PROVEN).** `‖f t − f(t+h)‖ ≤ W(t+h) − W(t)` for `h ≥ 0`. Superadditivity of
+the variation over `Iic t ⊎ Icc t (t+h) = Iic (t+h)` (`eVariationOn.add_le_union`) plus the two-point
+lower bound `‖f t − f(t+h)‖ ≤ V(Icc t (t+h))` (`eVariationOn.edist_le`). -/
+theorem norm_sub_le_varFn_sub {f : ℝ → ℂ} (hbv : BoundedVariationOn f Set.univ)
+    (t h : ℝ) (hh : 0 ≤ h) :
+    ‖f t - f (t + h)‖ ≤ varFn f (t + h) - varFn f t := by
+  have hunion : Set.Iic t ∪ Set.Icc t (t + h) = Set.Iic (t + h) := by
+    ext x; simp only [Set.mem_union, Set.mem_Iic, Set.mem_Icc]; constructor
+    · rintro (hx | ⟨_, hx⟩) <;> linarith
+    · intro hx; rcases le_total x t with h1 | h1
+      · exact Or.inl h1
+      · exact Or.inr ⟨h1, hx⟩
+  have hsuper : eVariationOn f (Set.Iic t) + eVariationOn f (Set.Icc t (t+h))
+      ≤ eVariationOn f (Set.Iic (t+h)) := by
+    calc eVariationOn f (Set.Iic t) + eVariationOn f (Set.Icc t (t+h))
+        ≤ eVariationOn f (Set.Iic t ∪ Set.Icc t (t+h)) :=
+          eVariationOn.add_le_union f (fun x hx y hy => le_trans hx hy.1)
+      _ = eVariationOn f (Set.Iic (t+h)) := by rw [hunion]
+  have hedist : edist (f t) (f (t + h)) ≤ eVariationOn f (Set.Icc t (t+h)) :=
+    eVariationOn.edist_le f (by simp [hh]) (by simp [hh])
+  have hfin1 := evar_ne_top hbv (Set.Iic t)
+  have hfin2 := evar_ne_top hbv (Set.Icc t (t+h))
+  have hfin3 := evar_ne_top hbv (Set.Iic (t+h))
+  have key : (eVariationOn f (Set.Iic t)).toReal + (eVariationOn f (Set.Icc t (t+h))).toReal
+      ≤ (eVariationOn f (Set.Iic (t+h))).toReal := by
+    rw [← ENNReal.toReal_add hfin1 hfin2]; exact ENNReal.toReal_mono hfin3 hsuper
+  have hnorm : ‖f t - f (t + h)‖ ≤ (eVariationOn f (Set.Icc t (t+h))).toReal := by
+    rw [← dist_eq_norm]
+    have := ENNReal.toReal_mono hfin2 hedist
+    rwa [edist_dist, ENNReal.toReal_ofReal dist_nonneg] at this
+  simp only [varFn]; linarith
+
+/-- **Narrowed analytic core of (b2) (disclosed `sorry`).** For `h ≥ 0` the monotone variation
+function's translate-difference `t ↦ W(t+h) − W(t)` is integrable, with `∫(W(·+h) − W) ≤ h·V`.
+
+This is exactly the monotone Stieltjes–Fubini content, now over a function mathlib CAN handle: let
+`μ_W` be the (existing, monotone) Stieltjes measure of `W`, so `W(t+h) − W(t) = μ_W((t, t+h])`; then
+Tonelli gives `∫_t μ_W((t,t+h]) dt = ∫_s (∫_t 𝟙_{s−h ≤ t < s} dt) dμ_W(s) = ∫_s h dμ_W = h·μ_W(ℝ) = h·V`
+(`μ_W(ℝ) = lim_{+∞} W − lim_{−∞} W ≤ V`). The remaining gap is building `μ_W` from `W` and the Tonelli
+swap. -/
+theorem integrable_and_integral_varFn_diff_le
+    (f : ℝ → ℂ) (hbv : BoundedVariationOn f Set.univ) (k : ℝ) (hk : 0 ≤ k) :
+    Integrable (fun t => varFn f (t + k) - varFn f t) ∧
+      (∫ t, (varFn f (t + k) - varFn f t)) ≤ k * (eVariationOn f Set.univ).toReal := by
+  sorry
+
+/-- **(b2) L¹-translation by total variation.** `∫ ‖f t − f(t+h)‖ dt ≤ |h| · V(f)`, for ALL `h`.
+Reduces to the nonneg case via the proven pointwise bound + `integral_mono_of_nonneg`, with the
+analytic core isolated in `integrable_and_integral_varFn_diff_le`; the `h < 0` case folds back to
+`h ≥ 0` by translation invariance (`integral_add_right_eq_self`) and `norm_sub_rev`. -/
 theorem integral_norm_sub_translate_le
     (f : ℝ → ℂ) (hf : Integrable f) (hbv : BoundedVariationOn f Set.univ) (h : ℝ) :
     (∫ t, ‖f t - f (t + h)‖) ≤ |h| * (eVariationOn f Set.univ).toReal := by
-  sorry
+  -- the nonneg-shift bound, valid for any `k ≥ 0`
+  have hpos : ∀ k : ℝ, 0 ≤ k →
+      (∫ t, ‖f t - f (t + k)‖) ≤ k * (eVariationOn f Set.univ).toReal := by
+    intro k hk
+    obtain ⟨hRint, hRle⟩ := integrable_and_integral_varFn_diff_le f hbv k hk
+    exact le_trans (integral_mono_of_nonneg
+      (Filter.Eventually.of_forall fun t => norm_nonneg _) hRint
+      (Filter.Eventually.of_forall fun t => norm_sub_le_varFn_sub hbv t k hk)) hRle
+  rcases le_total 0 h with hh | hh
+  · rw [abs_of_nonneg hh]; exact hpos h hh
+  · -- h ≤ 0 : substitute `t ↦ t − h` and use `norm_sub_rev`
+    have hh' : 0 ≤ -h := by linarith
+    have heq : (∫ t, ‖f t - f (t + h)‖) = ∫ t, ‖f t - f (t + -h)‖ := by
+      rw [← MeasureTheory.integral_add_right_eq_self (fun t => ‖f t - f (t + h)‖) (-h)]
+      refine integral_congr_ae (Filter.Eventually.of_forall fun u => ?_)
+      dsimp only
+      rw [show u + -h + h = u by ring, norm_sub_rev]
+    rw [heq, abs_of_nonpos hh]
+    exact hpos (-h) hh'
 
 /-- **Assembly (PROVEN modulo the two cruxes).** Route-(b) decay bound `‖𝓕 f u‖ ≤ V(f)/(4|u|)` — the
 weaker (non-sharp) form of `prelim_decay_2`. Verified in-kernel from (b1)+(b2): this is the structural
