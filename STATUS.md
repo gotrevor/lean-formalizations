@@ -1,5 +1,19 @@
 # STATUS — lean-formalizations 📊
 
+> 🟢⬆️ **mathlib v4.31.0 + DE-VENDOR — DONE (2026-06-20, `a0f17d1`, branch `ntl-hjsw`).** Forward-ported
+> the whole repo from mathlib `v4.29.1`→`v4.31.0` AND **de-vendored** the hand-ported PNTAnd Wiener–Ikehara
+> tower into a **real lake dependency** on `kim-em/PrimeNumberTheoremAnd @ bump/v4.31.0` (the maintainers'
+> own v4.31 port). The 8 vendored tower files are **deleted**; the two consumers now
+> `import PrimeNumberTheoremAnd.Consequences` (`WeakPNT''` for PrimeGap, `pi_alt'` for PNT). **Full build
+> green (8620 jobs); all 13 headlines `#print axioms`-clean** `[propext, Classical.choice, Quot.sound]` —
+> *including* `weakPNT` and `prime_number_theorem`, which now resolve through the EXTERNAL dependency (the
+> dep's WeakPNT path is provably sorry-free; the dep carries 2 dead-code `prelim_decay` sorries off-path).
+> Own-file v4.31 fixes were proof-body-only (Mertens/MertensConstant `using!`/`convert … <;> first | rfl |
+> (field_simp <;> ring)`/`Function.comp_def`; PrimeGap `factorization_eq_zero_of_non_prime`→`…_not_prime`).
+> DivisorProblem promoted back into `src/` (complete bonus). ⚠️ **First-from-source full builds hit macOS-
+> side FD exhaustion** (v4.31's 3-file olean split × parallel heavy leaves on the orbstack bind mount) — build
+> each module sequentially once to cache, then the full build is a clean replay. See HANDOFF + ON-LINE-REQUEST.
+
 > 🛑✅ **FINISH-AND-STOP — WIND-DOWN COMPLETE (Trevor, 2026-06-19; executed 2026-06-19 reflection lap).** The headlines are COMPLETE + axiom-clean: the **HJSW no-three-in-line ladder** (`3/2−o(N)`, `weakPNT` discharged) and the **classical Mertens trilogy** (`e^{−γ}` unconditional). The directive's wind-down is now **DONE**: no new threads opened; the divisor side-quest was reverted (preserved at `d356584`); the three off-headline `sorry`s (`nagura_prime` + its `5/4` rung, and the dead-code `prelim_decay_2/3` island) were **quarantined** out of `src/` into `wip/` (`NaguraFiveFourths.lean`, `WienerDecayIsland.lean`; preserved verbatim, plus git history). **`src/` is now sorry-free** (governor self-stop gate verified clean), **every headline `#print axioms` is `[propext, Classical.choice, Quot.sound]`** (re-verified from real output this lap). → **self-stop.**
 **Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8297 jobs, kernel-reverified) · **Updated**: **FINISH-AND-STOP wind-down lap — `src/` SORRY-FREE, all headlines axiom-clean** · 2026-06-19 · post-`1869f4f` · **Branch `ntl-hjsw`** · **`weakPNT` DISCHARGED → the flagship `maxNoThreeInLine_ge_three_halves_sub` (HJSW-optimal `3/2−o(N)`) is UNCONDITIONAL and axiom-clean** (`[propext, Classical.choice, Quot.sound]`). Full Wiener–Ikehara PNT tower ported in-repo (PNTAnd, zero math edits). General-`N` constant ladder CLOSED: Bertrand 3/4 → 15/16 → 6/5 → 3/2−o(N), all axiom-clean. **The classical Mertens TRILOGY is COMPLETE & axiom-clean** (`Mertens.lean` + `MertensConstant.lean`): 1st & 2nd (`∑log p/p=log x+O(1)`, `∑1/p=log log x+O(1)`); 3rd **SHARP `e^{−γ}` UNCONDITIONAL** — `mertens_third_classical_eGamma` (`∏(1−1/p)·log N→e^{−γ}`) and `mertensThirdConst_eq_neg_gamma` (`C₃=−γ`), via the **PROVEN Limit B** (`tendsto_primeZeta_add_logSub_limitB`); the deep Abelian/Tauberian final-value crux `tendsto_sub_one_mul_integral_abelian` (`δ∫₀^∞ f·e^{−δx}→0`, ε–X argument) is fully machine-checked. All mathlib-absent. **No open `sorry` remains in `src/`; no `axiom` declared.** (Quarantined off-headline items live under `wip/`.)
 
