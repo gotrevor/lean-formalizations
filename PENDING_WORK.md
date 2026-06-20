@@ -1,5 +1,36 @@
 # PENDING_WORK — no-three-in-line / HJSW frontier (branch `ntl-hjsw`)
 
+## Inventory + attack paths — 2026-06-20 (post-de-vendor, governor-driven)
+
+**Open-item inventory (full).** `src/` is **sorry-free** and all 14 headlines `#print axioms`-clean
+(verified this lap). The only genuinely-open items connected to this repo:
+1. **`prelim_decay_2`** — `‖𝓕 ψ u‖ ≤ V(ψ)/(2π|u|)` for ψ integrable + BV. Still `sorry` upstream
+   (PNTAnd, now our dependency `Wiener.lean:323`), absent from mathlib. Dead code on the WeakPNT path
+   (clean `#print axioms weakPNT` proves it) → gates no headline, but a real open theorem behind a
+   mathlib wall (Lebesgue–Stieltjes IBP / BV-translation). Parked: `wip/WienerDecayIsland.lean`.
+2. **`prelim_decay_3`** — `‖𝓕 ψ u‖ ≤ V(ψ')/(2π|u|)²` (AC ψ, BV ψ'). Follows from `prelim_decay_2` by one
+   more shift/IBP. Same status.
+3. **`nagura_prime`** (`wip/NaguraFiveFourths.lean`) — the elementary `5/4` prime-gap rung. SUPERSEDED by
+   the unconditional `3/2−o(N)`; its constant exactly equals the Chebyshev constant (zero slack), so only
+   Nagura 1952 / explicit-error PNT closes it. Correctly lowest priority; not pursued.
+
+**Three attack paths for `prelim_decay_2`** (the live hard target):
+- **(a) Lebesgue–Stieltjes IBP** (the blueprint's own route, sharp `2π|u|`): `2πiu·𝓕ψ(u)=∫e(−tu)dψ(t)`,
+  then `|·|≤∫dV=V`. Needs general BV integration-by-parts — NOT in mathlib (only differentiable-integrand
+  IBP + monotone `StieltjesFunction`). Highest-risk; would mean porting a BV-IBP development.
+- **(b) Half-period shift + L¹-translation-by-TV** (weaker `4|u|`, self-contained — PREFERRED): two
+  mathlib-absent lemmas — (b1) `2·𝓕f(u)=∫(f t − f(t+1/(2u)))·e(−tu)dt` via the substitution `t↦t+1/(2u)`
+  and `e(−½)=e^{−πi}=−1`, giving `‖𝓕f u‖≤½∫‖f t−f(t+1/(2u))‖dt`; (b2) `∫‖f t−f(t+h)‖dt ≤ |h|·V(f)` from
+  the pointwise `‖f t−f(t+h)‖≤V_{[t,t+h]}` + Fubini over the variation measure. Combine → `≤ V/(4|u|)`.
+- **(c) Reformulate / narrow** — even if (b1)/(b2) aren't fully closed, VERIFY the assembly
+  (shift+translation ⟹ decay) in-kernel, reducing the one opaque `sorry` to the two precise narrower
+  lemmas. The pointwise bound `‖f a−f b‖≤(eVariationOn f univ).toReal` IS mathlib-direct
+  (`eVariationOn.edist_le`). ← attacking this in `wip/BVFourierDecay.lean` this lap.
+
+**This lap:** building route (b) scaffolding in `wip/BVFourierDecay.lean` — pointwise variation bound
+proven; (b1)/(b2) stated as the two disclosed sub-sorries; the assembly into the weaker `prelim_decay_2`
+form verified. Keeps `src/` sorry-free (wip is outside the build).
+
 ## Reflection — 2026-06-19 (deep-reflection lap, strong model)
 
 **Direction call: the project is COMPLETE. Execute the FINISH-AND-STOP wind-down and self-stop.**
