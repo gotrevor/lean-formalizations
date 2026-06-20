@@ -13,9 +13,14 @@ DONE. **Operator authorized stopping** the treadmill once those were done. The i
    - (a) Port a signed BV integration-by-parts development onto mathlib (highest effort; the real wall).
    - (b) Tighten route (b): the factor-2 slack is the half-period trick + the `|h|·V` bound; a quarter-period
      or optimized-shift variant might recover a better constant without IBP. Low payoff.
-   - (c) Decompose BV `= ` difference of two monotones (`eVariationOn`-monotone parts), apply the EXISTING
-     monotone Stieltjes measure to each, and assemble — gets a genuine Stieltjes IBP for BV via two monotone
-     ones. **Most promising mathlib-only route to the sharp constant.**
+   - (c) Decompose BV `= ` difference of two monotones, apply the EXISTING monotone Stieltjes measure to
+     each, and assemble — gets a genuine Stieltjes IBP for BV via two monotone ones. **Most promising
+     mathlib-only route to the sharp constant. CONFIRMED mathlib has the pieces** (found 2026-06-20,
+     `Topology/EMetricSpace/BoundedVariation.lean`): `LocallyBoundedVariationOn.exists_monotoneOn_sub_monotoneOn`
+     (the Jordan decomposition, `f = g − h` with `g,h` monotone) and `variationOnFromTo f s a b` (the signed
+     variation function, additive: `variationOnFromTo.add`, monotone in `b`). Next-lap plan: build the two
+     monotone parts' `StieltjesFunction.measure`s, write `𝓕 f' = ∫ e(−tu) d(μ_g − μ_h)`, IBP to `2πiu·𝓕 f`,
+     bound `|∫ d(μ_g+μ_h)| = V`. This would supersede the route-(b) `4|u|` with the sharp `2π|u|`.
 2. **`nagura_prime`** (`wip/NaguraFiveFourths.lean`) — the `5/4` prime-gap rung. SUPERSEDED by the
    unconditional `3/2−o(N)`; constant has zero slack vs Chebyshev, so only Nagura 1952 / explicit-error PNT
    closes it. Lowest priority; gates no headline.
