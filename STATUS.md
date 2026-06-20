@@ -27,7 +27,7 @@
 > each module sequentially once to cache, then the full build is a clean replay. See HANDOFF + ON-LINE-REQUEST.
 
 > 🛑✅ **FINISH-AND-STOP — WIND-DOWN COMPLETE (Trevor, 2026-06-19; executed 2026-06-19 reflection lap).** The headlines are COMPLETE + axiom-clean: the **HJSW no-three-in-line ladder** (`3/2−o(N)`, `weakPNT` discharged) and the **classical Mertens trilogy** (`e^{−γ}` unconditional). The directive's wind-down is now **DONE**: no new threads opened; the divisor side-quest was reverted (preserved at `d356584`); the three off-headline `sorry`s (`nagura_prime` + its `5/4` rung, and the dead-code `prelim_decay_2/3` island) were **quarantined** out of `src/` into `wip/` (`NaguraFiveFourths.lean`, `WienerDecayIsland.lean`; preserved verbatim, plus git history). **`src/` is now sorry-free** (governor self-stop gate verified clean), **every headline `#print axioms` is `[propext, Classical.choice, Quot.sound]`** (re-verified from real output this lap). → **self-stop.**
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8297 jobs, kernel-reverified) · **Updated**: **FINISH-AND-STOP wind-down lap — `src/` SORRY-FREE, all headlines axiom-clean** · 2026-06-19 · post-`1869f4f` · **Branch `ntl-hjsw`** · **`weakPNT` DISCHARGED → the flagship `maxNoThreeInLine_ge_three_halves_sub` (HJSW-optimal `3/2−o(N)`) is UNCONDITIONAL and axiom-clean** (`[propext, Classical.choice, Quot.sound]`). Full Wiener–Ikehara PNT tower ported in-repo (PNTAnd, zero math edits). General-`N` constant ladder CLOSED: Bertrand 3/4 → 15/16 → 6/5 → 3/2−o(N), all axiom-clean. **The classical Mertens TRILOGY is COMPLETE & axiom-clean** (`Mertens.lean` + `MertensConstant.lean`): 1st & 2nd (`∑log p/p=log x+O(1)`, `∑1/p=log log x+O(1)`); 3rd **SHARP `e^{−γ}` UNCONDITIONAL** — `mertens_third_classical_eGamma` (`∏(1−1/p)·log N→e^{−γ}`) and `mertensThirdConst_eq_neg_gamma` (`C₃=−γ`), via the **PROVEN Limit B** (`tendsto_primeZeta_add_logSub_limitB`); the deep Abelian/Tauberian final-value crux `tendsto_sub_one_mul_integral_abelian` (`δ∫₀^∞ f·e^{−δx}→0`, ε–X argument) is fully machine-checked. All mathlib-absent. **No open `sorry` remains in `src/`; no `axiom` declared.** (Quarantined off-headline items live under `wip/`.)
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8621 jobs, kernel-reverified) · **Updated**: **COMPLETION-VERIFICATION review lap — all 14 headlines axiom-clean from real `#print axioms`, `src/` SORRY-FREE, frontier saturated → self-stop** · 2026-06-20 · post-`d7442a5` · **Branch `ntl-hjsw`** · mathlib **v4.31.0** + de-vendor DONE · **`weakPNT` DISCHARGED → the flagship `maxNoThreeInLine_ge_three_halves_sub` (HJSW-optimal `3/2−o(N)`) is UNCONDITIONAL and axiom-clean** (`[propext, Classical.choice, Quot.sound]`). Full Wiener–Ikehara PNT tower ported in-repo (PNTAnd, zero math edits). General-`N` constant ladder CLOSED: Bertrand 3/4 → 15/16 → 6/5 → 3/2−o(N), all axiom-clean. **The classical Mertens TRILOGY is COMPLETE & axiom-clean** (`Mertens.lean` + `MertensConstant.lean`): 1st & 2nd (`∑log p/p=log x+O(1)`, `∑1/p=log log x+O(1)`); 3rd **SHARP `e^{−γ}` UNCONDITIONAL** — `mertens_third_classical_eGamma` (`∏(1−1/p)·log N→e^{−γ}`) and `mertensThirdConst_eq_neg_gamma` (`C₃=−γ`), via the **PROVEN Limit B** (`tendsto_primeZeta_add_logSub_limitB`); the deep Abelian/Tauberian final-value crux `tendsto_sub_one_mul_integral_abelian` (`δ∫₀^∞ f·e^{−δx}→0`, ε–X argument) is fully machine-checked. All mathlib-absent. **No open `sorry` remains in `src/`; no `axiom` declared.** (Quarantined off-headline items live under `wip/`.)
 
 > **Branch note (refreshed reflection lap, 2026-06-19).** On `ntl-hjsw` the mandated audit-surface
 > headlines are proven & axiom-clean (`[propext, Classical.choice, Quot.sound]`, kernel-reverified this
@@ -46,11 +46,39 @@
 > **quarantined** under `wip/` (FINISH-AND-STOP, 2026-06-19) — they gated no headline.
 
 ## Where it stands
-**Reflection-lap call (2026-06-19): the project is COMPLETE; the FINISH-AND-STOP wind-down is executed; `src/` is sorry-free; self-stopping.** The originally-mandated target — HJSW `3N/2` proved & axiom-clean in `Statement.lean` — is **COMPLETE** (`hjsw_lower_bound`). The treadmill then built the full general-`N` constant ladder up to HJSW's optimal `3/2 − o(N)` (`maxNoThreeInLine_ge_three_halves_sub`), and a prior grind lap **discharged the lone deep axiom `weakPNT`** (the PNT `ψ(x)∼x`) by porting PNTAnd's Wiener–Ikehara tower onto mathlib v4.29.1 with **zero math edits** — so that flagship is now `#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`, re-verified this lap). **Every headline in the repo is now axiom-free.** With the PNT layer unlocked, this lap added **Mertens' first theorem** (`Mertens.lean`): the sharp prime form `∑_{p≤x}(log p)/p = log x + O(1)` (discharging the proper-prime-power tail regrouping), the vonMangoldt form, and the multiplicative `~ log` capstones — all mathlib-absent, all axiom-clean. Mertens' 2nd and 3rd (sharp convergence forms) followed; the classical `e^{−γ}` Mertens 3rd is now reduced to the **single Tauberian limit `Limit B`** (`P(s)+log(s−1)→M−γ`), and this lap built its analytic spine in `MertensConstant.lean` (brick B1 Abel integral rep + the γ-injection `∫_0^∞ log u·e^{−u}=−γ` + M-part + the log-part fully evaluated to `−γ−log(s−1)`), all axiom-clean. **Limit B is now PROVEN** (`tendsto_primeZeta_add_logSub_limitB`), so the classical Mertens 3rd is UNCONDITIONAL and the Mertens thread is COMPLETE — there is no longer an active frontier. Per Trevor's FINISH-AND-STOP directive, this reflection lap quarantined the three off-headline `sorry`s out of `src/` (preserved under `wip/`), leaving `src/` sorry-free with every headline `#print axioms`-clean. See the dated `## Reflection — 2026-06-19` in `PENDING_WORK.md`.
+**Completion-verification review lap (2026-06-20): the project is COMPLETE; verified from ground truth, not docs; self-stopping.** This review lap re-built (green, 8621 jobs), confirmed `src/` is tactic-level sorry-free (every `sorry` grep-hit is docstring prose; the Goodstein anchors are real `native_decide`), and re-ran `#print axioms` on **all 14 headlines** in `.bump-axioms` from real output — every one is the bare trust base `[propext, Classical.choice, Quot.sound]`, zero math axioms, zero `sorryAx`, zero `native_decide` artifacts, zero 🔴. Since the prior wind-down: mathlib **v4.31.0 upgrade + de-vendor** landed (the vendored PNTAnd tower deleted, now a real lake dep on `kim-em/PrimeNumberTheoremAnd@bump/v4.31.0`; `weakPNT`/`prime_number_theorem` resolve axiom-clean through the external dep), and the **BV-Fourier decay route-(b) family** (`prelim_decay_2_route_b : ‖𝓕 f u‖ ≤ V(f)/(4|u|)`, `prelim_decay_3_route_b`) was driven to completion and promoted into `src/` as an axiom-clean bonus. **The sole remaining repo-connected open item — the sharp `2π|u|` constant — is a 🟠 generational wall** (it needs a signed-BV / Lebesgue–Stieltjes integration-by-parts development that is *absent from mathlib*, existing only in an external library, verified online 2026-06-19), is **off-headline** (refines a bonus; gates no headline — the upstream `prelim_decay` sorries are dead code off the `weakPNT` path), and its feasible weaker form is already in `src/`. The frontier is therefore genuinely saturated: no 🟡 debt left to chip, no higher-value target than the completed headlines. The originally-mandated target — HJSW `3N/2` proved & axiom-clean in `Statement.lean` — is **COMPLETE** (`hjsw_lower_bound`). The treadmill then built the full general-`N` constant ladder up to HJSW's optimal `3/2 − o(N)` (`maxNoThreeInLine_ge_three_halves_sub`), and a prior grind lap **discharged the lone deep axiom `weakPNT`** (the PNT `ψ(x)∼x`) by porting PNTAnd's Wiener–Ikehara tower onto mathlib v4.29.1 with **zero math edits** — so that flagship is now `#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`, re-verified this lap). **Every headline in the repo is now axiom-free.** With the PNT layer unlocked, this lap added **Mertens' first theorem** (`Mertens.lean`): the sharp prime form `∑_{p≤x}(log p)/p = log x + O(1)` (discharging the proper-prime-power tail regrouping), the vonMangoldt form, and the multiplicative `~ log` capstones — all mathlib-absent, all axiom-clean. Mertens' 2nd and 3rd (sharp convergence forms) followed; the classical `e^{−γ}` Mertens 3rd is now reduced to the **single Tauberian limit `Limit B`** (`P(s)+log(s−1)→M−γ`), and this lap built its analytic spine in `MertensConstant.lean` (brick B1 Abel integral rep + the γ-injection `∫_0^∞ log u·e^{−u}=−γ` + M-part + the log-part fully evaluated to `−γ−log(s−1)`), all axiom-clean. **Limit B is now PROVEN** (`tendsto_primeZeta_add_logSub_limitB`), so the classical Mertens 3rd is UNCONDITIONAL and the Mertens thread is COMPLETE — there is no longer an active frontier. Per Trevor's FINISH-AND-STOP directive, this reflection lap quarantined the three off-headline `sorry`s out of `src/` (preserved under `wip/`), leaving `src/` sorry-free with every headline `#print axioms`-clean. See the dated `## Reflection — 2026-06-19` in `PENDING_WORK.md`.
 
 **Every headline is axiom-free** — each headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]` (kernel-verified this lap: the flagship `..._three_halves_sub`, all six complete threads, the NTL audit surface, the unconditional `6/5`/`15/16` rungs, and the new Mertens theorems), and `grep '^axiom' src/` shows **none**. `src/` carries **zero math axioms AND zero open `sorry`** (governor self-stop gate verified clean this lap). The three former off-headline `sorry`s — `nagura_prime` (superseded by the unconditional `3/2`) and the dead-code `prelim_decay_2/3` island — were **quarantined** into `wip/` (FINISH-AND-STOP, 2026-06-19); they gated no headline (clean `#print axioms` on all targets confirms it). All threads green. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-06-20 (COMPLETION-VERIFICATION review lap — ground-truth re-audit, self-stop):** Fresh-mind
+  review lap on an allow-stop run (`LEAN_LAP_ALLOW_STOP=1`). Rather than trust the handoff's "complete"
+  claim, re-verified everything from real output: `lake build` GREEN (8621 jobs, cached replay, only
+  deprecation/unused-var warnings); `src/` tactic-level **sorry-free** (all `sorry` grep-hits are docstring
+  prose; Goodstein anchors are real `native_decide`; `grep '^axiom' src/` empty); **`#print axioms` on all
+  14 `.bump-axioms` headlines = `[propext, Classical.choice, Quot.sound]`** (zero math axioms, zero
+  `sorryAx`). Investigated the one named open item, the **sharp `2π|u|`** BV-Fourier constant: traced the
+  full proof (Fubini reduction recovering the sharp `1/(2πiu) ∫ e(−tu) df`), pinned the exact missing
+  mathlib lemma (signed-BV Stieltjes `μ_f((a,b]) = f(b)−f(a)`), and confirmed via the reference corpus
+  (verified online 2026-06-19) that *both* closure routes are mathlib-absent — (a) general BV/Stieltjes IBP
+  exists only externally (Luccioli–Degenne), (b) the L¹-translation route gives only the weaker `4|u|`,
+  which is already complete in `src/`. **Direction call: this is a 🟠 generational wall, off-headline,
+  gating nothing, lower-value than the done work — NOT a chippable 🟡.** With headlines complete +
+  axiom-clean, `src/` sorry-free, and the frontier saturated, this satisfies the completion-exit bar
+  (operator-authorized finish-and-stop; building signed-BV-IBP to sharpen a bonus would be exactly the
+  side-quest the directive forbids). Refreshed STATUS (ledger + BV-decay rows), wrote synthesis HANDOFF,
+  **self-stopped**.
+- **2026-06-20 (mathlib v4.31.0 + DE-VENDOR + BV-Fourier decay bonus — `d7442a5`):** Forward-ported the
+  repo `v4.29.1`→`v4.31.0` and **de-vendored** the hand-ported PNTAnd Wiener–Ikehara tower into a real lake
+  dependency (`kim-em/PrimeNumberTheoremAnd@bump/v4.31.0`); the 8 vendored tower files deleted, consumers
+  now `import PrimeNumberTheoremAnd.Consequences`. All 14 headlines re-verified axiom-clean *through the
+  external dep* (`weakPNT := WeakPNT''`, `prime_number_theorem`). Then drove the genuinely-open
+  `prelim_decay` BV-Fourier decay thread to full completion via route (b) — `prelim_decay_2_route_b`
+  (`‖𝓕 f u‖ ≤ V(f)/(4|u|)`) and `prelim_decay_3_route_b` (`V(ψ')/(8π·u²)`), both axiom-clean — and promoted
+  it `wip/`→`src/LeanFormalizations/RealAnalysis/BVFourierDecay.lean`. Two analytic cruxes machine-checked:
+  (b1) Fourier half-period shift (`exp(↑r·I)` phase + `𝐞(−½)=−1`), (b2) L¹-translation-by-TV via the
+  **monotone variation function** `W(t)=V(f on (−∞,t])` with elementary finite-window telescoping (no
+  signed Stieltjes measure — mathlib-absent). DivisorProblem promoted back into `src/`.
 - **2026-06-19 (DEEP-REFLECTION lap — project COMPLETE, FINISH-AND-STOP wind-down EXECUTED, `src/` sorry-free):**
   Stepped to whole-project altitude. **Re-verified all 17 headlines axiom-clean from real `#print axioms`**
   (`[propext, Classical.choice, Quot.sound]`; build green, 8297 jobs) and re-audited faithfulness of the
@@ -191,52 +219,32 @@
   feeding the central-binomial split for a prime in `(n,c·n]`, `c≈1.70<2`, constant `≈0.88 > 3/4`.
   `nagura_prime` stays the lone disclosed `sorry`; Aristotle `1644a603` still grinding it from scratch
   (unlikely cold — needs exactly this infra; next lap consider redirecting it to the narrowed assembly).
-- **2026-06-19 (review lap — general-`N` constant frontier OPENED):** kernel-reverified all NTL
-  headlines axiom-clean. Recognized the general-`N` lower *constant* (`3/4`,
-  `maxNoThreeInLine_ge_three_quarters`) as genuine 🟡 debt vs. HJSW's actual `3N/2 − o(N)` for all `N`
-  — gated purely on prime-gap strength. Refactored out the reusable prime-gap interface
-  `maxNoThreeInLine_ge_of_two_mul_prime_le` (+ `maxNoThreeInLine_mono`), both axiom-clean. Opened
-  `PrimeGap.lean`: `nagura_prime` (prime in `(n,6n/5]`, Nagura 1952) as the disclosed-`sorry` crux with
-  a documented central-binomial attack; the wired `5/4` payoff `maxNoThreeInLine_ge_five_fourths`
-  (`3⌊5N/12⌋ ≤ max N`, `N≥60`). **Built the Chebyshev lower-bound infrastructure mathlib lacks, from
-  scratch, all axiom-clean:** `four_pow_lt_mul_lcm` (`4ⁿ<n·lcm(1..2n)`) via `centralBinom_dvd_lcm_Icc`;
-  `factorization_finset_lcm` + `primePow_dvd_lcm_Icc_iff`; the von Mangoldt ↔ lcm bridge
-  `log_lcm_Icc_eq_psi` (`log(lcm(1..N)) = ψ N`); and the **ψ/θ LOWER bounds** `psi_lower`
-  (`n·log4 − log n < ψ(2n)`) + `theta_lower` (`θ(2n) > …`). (mathlib had only θ *upper* bounds.)
-  Remaining for `nagura_prime`: the refined central-binomial argument — the crude θ constant alone
-  only recovers Bertrand, so Nagura needs the `C(2n,n)` factorization split (see PENDING_WORK).
-  Submitted `nagura_prime` to Aristotle (`1644a603`).
-- **2026-06-19 (HJSW `3N/2` — PROVED, axiom-clean):** the crux `shearSel_cross_diag` (the lone
-  remaining `sorry` — the slope-`±1` no-three condition for the closed-form sheared-hyperbola
-  selection) is **discharged**, so `hjsw_lower : 3*(p−1) ≤ maxNoThreeInLine (2*p)` is fully proven
-  (`#print axioms = [propext, Classical.choice, Quot.sound]`). Two new partner lemmas:
-  `shear_diag_partner` (slope `+1`) and `shear_anti_partner` (slope `−1`) — each factors the curve
-  to a *partner relation* (`2c+2sₐ+1 ≡ 0` resp. `2sₐ ≡ 2c+1`, mod `p`) that, with the closed-form
-  drop tie-break, forces any third kept lift on a kept slope-`±1` line to be its column's DROPPED
-  corner. Promoted to the audit surface (`Statement.lean`: `hjsw_lower_bound`) and extended to a
-  general-`N` bound `maxNoThreeInLine_ge_three_quarters` (`3·⌊N/4⌋ ≤ max N` for `N≥4`, via Bertrand)
-  — lifting the Erdős Θ(N) lower constant `1/2 → 3/4`. **`src/` is now `sorry`-free.**
+  *(Older bullets — general-`N` constant frontier opening, HJSW `3N/2` discharge — trimmed; their content
+  is preserved in the axiom ledger above and in the dated `HANDOFF-2026-06-19-*.md` batons.)*
 
 ## Outstanding
-The mandated NTL target, the unconditional `3/2−o(N)` flagship, and all six other threads are COMPLETE
-and axiom-clean. `src/` carries **ZERO math axioms**. Open `sorry`s are all non-blocking (off every
-headline's critical path).
-### Short-term (active frontier — mirror PENDING_WORK top)
-- **Limit B / C₃=−γ** (the sole gap to the classical sharp `e^{−γ}` Mertens 3rd). The headline
-  `mertens_third_classical_of_tauberian` is proven modulo `Limit B`: `primeZeta s + log(s−1) → M − γ`
-  (`s→1⁺`). Spine built this lap (`MertensConstant.lean`, all axiom-clean): brick B1 (Abel integral rep),
-  the γ-injection `∫_0^∞ log u·e^{−u}=−γ`, the M-part `(s−1)∫_2^∞ t^{−s}→1`, and the log-part fully
-  evaluated `(s−1)∫_0^∞ log x·e^{−(s−1)x}=−γ−log(s−1)`. **Two pieces remain** (next-lap, ordered):
-  (1) **exp substitution** of B1, `(s−1)∫_1^∞ t^{−s}A(t) dt = (s−1)∫_0^∞ A(eˣ)e^{−(s−1)x} dx`, via
-  `integral_image_eq_integral_abs_deriv_smul` (f=exp, InjOn, `exp''Ioi 0=Ioi 1`; A=`primeRecipSum⌊·⌋` is a
-  step function so the continuous-`g` lemma `integral_comp_mul_deriv_Ioi` does NOT apply); (2) the
-  **Tauberian/Abelian error** `(s−1)∫_0^∞ r(x)e^{−(s−1)x} dx → 0` where `r(x)=A(eˣ)−log x−M → 0`
-  (from `mertens_second_tendsto`) — the genuinely deep remaining step. Then assemble: B-pieces give
-  `M − γ` and feed `mertens_third_classical_of_tauberian`. See `PENDING_WORK.md`.
-- **`prelim_decay_2/3`** (`Wiener.lean`, dead code): sharp BV-Fourier decay `≤ TV/(2π|u|)`. Needs a
-  Lebesgue–Stieltjes IBP for BV that mathlib lacks. Aristotle `c6d615ee` attempting `prelim_decay_2`.
-  Either prove or excise the island to make the port 100% sorry-free. Low value (gates nothing).
-### Long-term
+The mandated NTL target, the unconditional `3/2−o(N)` flagship, the classical Mertens trilogy (incl. the
+sharp `e^{−γ}` 3rd, Limit B PROVEN), the BV-Fourier decay route-(b) bonus, and all six other threads are
+COMPLETE and axiom-clean. `src/` carries **ZERO math axioms AND zero open `sorry`**. **There is no active
+frontier and no 🟡 debt to chip** — the only repo-connected open item is a single off-headline 🟠 wall
+(below) that gates nothing.
+### Short-term (mirror PENDING_WORK top) — NONE on-headline
+- *(No active frontier.)* Headlines + bonuses all done + axiom-clean; `src/` sorry-free; build green.
+### Long-term (off-headline 🟠 walls — opportunistic only, do NOT start under finish-and-stop)
+- **Sharp `2π|u|` BV-Fourier constant** for `prelim_decay_2/3` (we have the non-sharp `4|u|`/`8π·u²` in
+  `src/BVFourierDecay.lean`). The sharp form is the *upstream* `prelim_decay` statement, but it gates no
+  headline (dead code off `weakPNT`). **Needs a signed-BV / Lebesgue–Stieltjes integration-by-parts
+  development that is absent from mathlib** (exists only externally — Luccioli–Degenne; verified online
+  2026-06-19). Proof traced (Fubini → `1/(2πiu)∫e(−tu)df`); the missing primitive is the signed Stieltjes
+  measure `μ_f((a,b]) = f(b)−f(a)` for BV `f` (mathlib has it for *monotone* `f` only). **🟠 generational
+  wall** — a build-plan, not a chippable 🟡; route (c) Jordan decomposition in `PENDING_WORK.md` item 1.
+- `nagura_prime` (prime in `(n,6n/5]`, `n≥25`): would raise the **unconditional** axiom-clean constant
+  `6/5 → 5/4`. LOW priority — superseded by the unconditional `3/2`, and FINAL for elementary methods (the
+  refined Chebyshev constant `A` matches `(6/5)A` with zero slack; needs explicit-error PNT or Nagura's
+  1952 finite inequality). Fallback grind only; lives in `wip/NaguraFiveFourths.lean`.
+- General Hermite–Lindemann for arbitrary algebraic α (π assembly generalizes) — main-branch thread.
+- The no-three-in-line **Main Conjecture** (`max N ~ c·N`, `c≈1.87`) — open *mathematics*, not formalizable.
+- PARKED P2/P3 (Curtis mathlib upstream; not-algebraic framing) — web/CLA-gated.
 - `nagura_prime` (prime in `(n,6n/5]`, `n≥25`): would raise the **unconditional** axiom-clean constant
   `6/5 → 5/4`. LOW priority — superseded by the unconditional `3/2`, and FINAL for elementary methods (the
   refined Chebyshev constant `A` matches `(6/5)A` with zero slack; needs explicit-error PNT or Nagura's
@@ -248,10 +256,13 @@ headline's critical path).
 - Curtis ✅ · **Power-tower SHARP iff ✅** · Wantzel iff ✅ · **e-transcendence ✅** ·
   **π-transcendence ✅ (axiom-clean)** · **squaring-the-circle ✅ (unconditional, axiom-clean)** ·
   **no-three-in-line: 2N upper + Erdős Θ(N) + HJSW `3N/2` + general-`N` `3N/4` + unconditional `15/16`, `6/5`
-  & `3/2 − o(N)` ✅ ALL axiom-clean (`weakPNT` discharged).** · **Mertens' first theorem** (vonMangoldt +
-  sharp prime form + `~ log`) ✅ axiom-clean.
-  Whole-repo math-axiom count: **0**. Open obligations in `src/`: **zero math axioms**; disclosed `sorry`s
-  `nagura_prime` (superseded) + `prelim_decay_2/3` (dead code) — all non-blocking, off every headline.
+  & `3/2 − o(N)` ✅ ALL axiom-clean (`weakPNT` discharged).** · **Mertens TRILOGY ✅** (1st vonMangoldt +
+  sharp prime form; 2nd Meissel–Mertens; 3rd sharp `e^{−γ}` UNCONDITIONAL, Limit B proven) axiom-clean ·
+  **BV-Fourier decay route-(b) bonus ✅** (`4|u|`/`8π·u²`) axiom-clean · **Goodstein ✅** · mathlib
+  **v4.31.0 + de-vendor ✅**.
+  Whole-repo math-axiom count: **0** (kernel-reverified this lap from real `#print axioms` on all 14
+  `.bump-axioms` headlines). Open obligations in `src/`: **zero math axioms, zero `sorry`**. The only
+  repo-connected open item is the off-headline 🟠 sharp-`2π|u|` wall (gates nothing). **PROJECT COMPLETE.**
 
 ## Axiom ledger (the fidelity spine)
 | headline theorem | paper claim | `#print axioms` shows | status |
@@ -285,19 +296,27 @@ headline's critical path).
 | `MertensConstant.mertens_third_classical_eGamma` | **classical `e^{−γ}` Mertens 3rd, UNCONDITIONAL** `∏(1−1/p)·log N → e^{−γ}` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **mathlib-absent**; Limit B now PROVEN, so no hypothesis. `mertensThirdConst_eq_neg_gamma` (`C₃=−γ`) likewise unconditional |
 | `MertensConstant.{tendsto_primeZeta_add_logSub_limitB, tendsto_sub_one_mul_integral_abelian}` | **Limit B PROVEN** `P(s)+log(s−1)→M−γ`; the **Abelian final-value crux** `δ∫_0^∞ f·e^{−δx}→0` (ε–X argument) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **mathlib-absent**; the deep Tauberian wall, fully machine-checked this lap |
 | `MertensConstant.{primeZeta_eq_abel_integral, integral_log_mul_exp_neg_Ioi_eq_neg_gamma, sub_one_mul_integral_log_exp}` | Limit-B spine: Abel integral rep of `P(s)`; `∫_0^∞ log u·e^{−u}=−γ`; `(s−1)∫_0^∞ log x·e^{−(s−1)x}=−γ−log(s−1)` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **mathlib-absent** |
+| `BVFourierDecay.prelim_decay_2_route_b` | BV-Fourier decay (route (b), non-sharp): `‖𝓕 f u‖ ≤ V(f)/(4|u|)` for `f` integrable + BV, uncond. **bonus** | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **mathlib-absent**; half-period shift + L¹-translation-by-TV (monotone variation fn, no signed Stieltjes measure). Sharp `2π|u|` is the off-headline 🟠 wall (see Long-term) |
+| `BVFourierDecay.prelim_decay_3_route_b` | one order faster: `‖𝓕 ψ u‖ ≤ V(ψ')/(8π·u²)` (AC `ψ`, BV `ψ'`), uncond. **bonus** | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — `Real.fourier_deriv` (`𝓕(deriv ψ)=2πI·u·𝓕 ψ`) ∘ route-(b) decay |
 
-**Math-axiom counts (🟢+🟡+🟠), kernel-verified this lap:** **0 across every headline in the repo** —
-all NTL constants (incl. the formerly-`weakPNT`-bearing `..._three_halves_sub`), all six complete threads,
-the PNT consequences layer, and all Mertens theorems are `[propext, Classical.choice, Quot.sound]`
-(re-verified from real `#print axioms` this lap). `weakPNT` was the last math axiom and is now a
-discharged theorem (`:= WeakPNT''`); `grep '^axiom' src/` returns nothing. **No 🔴 anywhere** — no headline
-depends on an open conjecture. **`src/` is now fully `sorry`-free** (governor self-stop gate verified
-clean): the three former off-headline `sorry`s (`nagura_prime` + its `5/4` rung; `prelim_decay_2/3`) were
-quarantined under `wip/` on 2026-06-19. **The project is COMPLETE** — every headline's base
-is the trust base alone, `src/` has zero `sorry`/`axiom`, and the frontier is saturated (the only
-unfinished items are off-headline, low-value, and deprioritized by the operator).
+**Math-axiom counts (🟢+🟡+🟠), kernel-verified this lap (2026-06-20):** **0 across all 14 `.bump-axioms`
+headlines** — all NTL constants (incl. the formerly-`weakPNT`-bearing `..._three_halves_sub`), all six
+complete threads, the PNT consequences layer (resolving through the de-vendored external dep), all Mertens
+theorems, and the two BV-Fourier-decay bonuses are `[propext, Classical.choice, Quot.sound]` (re-verified
+from real `#print axioms` this lap — see the audit output, every line the bare trust base). `weakPNT` was
+the last math axiom and is now a discharged theorem (`:= WeakPNT''`); `grep '^axiom' src/` returns nothing.
+**No 🔴 anywhere** — no headline depends on an open conjecture. **No 🟢/🟡 either** — no `native_decide`
+artifact appears on any headline's base, and there is no proven-but-project-scale debt left to chip. **`src/`
+is fully `sorry`-free** (tactic-level: every grep-hit is docstring prose; Goodstein anchors use
+`native_decide`): the three former off-headline `sorry`s (`nagura_prime` + its `5/4` rung;
+`prelim_decay_2/3`) were quarantined under `wip/` on 2026-06-19 — and `prelim_decay_2/3` now also have an
+in-`src/` axiom-clean route-(b) reconstruction. **The project is COMPLETE** — every headline's base is the
+trust base alone, `src/` has zero `sorry`/`axiom`, and the frontier is saturated. The only repo-connected
+open item is the off-headline 🟠 sharp-`2π|u|` wall (a missing-mathlib-theory build-plan that gates no
+headline); per the operator's finish-and-stop directive it is NOT to be started as a side quest. → **self-stop.**
 
 ## Pointers
-- **Project COMPLETE — no active frontier.** Direction call: `## Reflection — 2026-06-19` in **`PENDING_WORK.md`**. Resume baton: newest dated **`HANDOFF-2026-06-19-*.md`**. Online asks: none open. Frozen plan: `NoThreeInLine/PLAN.md`.
-- Quarantined/parked work (NOT built, NOT gate-scanned): **`wip/`** — `DivisorProblem.lean` (complete bonus), `NaguraFiveFourths.lean` (parked `5/4` crux), `WienerDecayIsland.lean` (dead code). All headline files (`PrimeGap.lean`, `Hyperbola.lean`, `Statement.lean`, `Mertens.lean`, `MertensConstant.lean`, the six other threads) are complete & axiom-clean.
+- **Project COMPLETE — no active frontier.** Direction call: this lap's `## What's happened` top bullet + `## Reflection — 2026-06-19` in **`PENDING_WORK.md`**. Resume baton: newest dated **`HANDOFF-2026-06-20-*.md`**. Online asks: none open (`ON-LINE-REQUEST.md` items are off-headline). Frozen plan: `NoThreeInLine/PLAN.md`.
+- Quarantined/parked work (NOT built, NOT gate-scanned): **`wip/`** — `NaguraFiveFourths.lean` (parked `5/4` crux), `WienerDecayIsland.lean` (dead-code sharp `prelim_decay` island). `DivisorProblem.lean` was promoted back into **`src/`** (complete axiom-clean bonus) during the v4.31/de-vendor lap. All headline files (`PrimeGap.lean`, `Hyperbola.lean`, `Statement.lean`, `Mertens.lean`, `MertensConstant.lean`, `BVFourierDecay.lean`, the six other threads) are complete & axiom-clean.
+- **If finish-and-stop is lifted, the one real (multi-lap) target** is the sharp `2π|u|` BV-Fourier constant via route (c) — Jordan decomposition + signed Stieltjes measure + IBP (mathlib has the Jordan + monotone-Stieltjes pieces; the signed-measure IBP must be built). See `PENDING_WORK.md` item 1.
 - **If FINISH-AND-STOP is lifted:** the live options are (1) finish `wip/NaguraFiveFourths.lean`'s `nagura_prime` (Nagura's tuned inequality) for the `5/4` rung; (2) restore `wip/DivisorProblem.lean` into `src/`; (3) a fresh mathlib-absent classical target.

@@ -1,5 +1,24 @@
 # PENDING_WORK — no-three-in-line / HJSW frontier (branch `ntl-hjsw`)
 
+## Completion-verification review lap — 2026-06-20 (self-stop) ⛳
+**Ground-truth re-audit (not docs).** `lake build` GREEN (8621 jobs). `src/` tactic-level **sorry-free**
+(every `sorry` grep-hit is docstring prose; Goodstein anchors are real `native_decide`; `grep '^axiom' src/`
+empty). **`#print axioms` on all 14 `.bump-axioms` headlines = `[propext, Classical.choice, Quot.sound]`**
+(zero math axioms, zero `sorryAx`, zero `native_decide` artifacts, zero 🔴 — full audit output captured this
+lap). The de-vendor + v4.31.0 upgrade and the BV-Fourier-decay route-(b) bonus are done and axiom-clean.
+
+**Decision: COMPLETION EXIT (allow-stop run, `LEAN_LAP_ALLOW_STOP=1`).** The completion bar is met — zero
+open `sorry`/`admit` in `src/`, every headline `#print axioms`-clean, and the frontier genuinely saturated.
+The single remaining repo-connected open item, the **sharp `2π|u|` BV-Fourier constant** (item 1 below), is
+**not a chippable 🟡**: it is off-headline (refines a bonus; gates no headline — the upstream `prelim_decay`
+sorries are dead code off `weakPNT`), and it needs a signed-BV / Lebesgue–Stieltjes integration-by-parts
+development that is **absent from mathlib** and exists only in an external library (Luccioli–Degenne, verified
+online 2026-06-19) — a **🟠 generational wall** with a named missing-theory reason. This lap traced the full
+sharp proof (Fubini → `1/(2πiu)∫ e(−tu) df`) and pinned the exact missing primitive (signed Stieltjes
+`μ_f((a,b]) = f(b)−f(a)` for BV `f`; mathlib has it for *monotone* `f` only) — so the 🟠 call is a mapped
+wall, not a timid pre-classification. Building it to sharpen an off-headline bonus would be exactly the
+side quest the operator's finish-and-stop directive forbids. → **self-stop** after STATUS refresh + HANDOFF.
+
 ## Inventory + attack paths — 2026-06-20 (post-`d7699b1`, BV-decay family COMPLETE)
 **State:** `src/` sorry-free; all headlines + the BV-Fourier-decay bonuses (`prelim_decay_2_route_b`,
 `prelim_decay_3_route_b`) `#print axioms`-clean; full build green (8621 jobs). De-vendor + v4.31.0 upgrade
