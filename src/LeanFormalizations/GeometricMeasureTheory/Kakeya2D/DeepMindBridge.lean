@@ -32,8 +32,11 @@ open Set MeasureTheory
 
 namespace LeanFormalizations.Kakeya2D
 
-/-- DeepMind's `ℝ^n` notation, verbatim (`FormalConjecturesForMathlib/Geometry/Euclidean.lean:22`). -/
-local notation "ℝ^" n:65 => EuclideanSpace ℝ (Fin n)
+/-- DeepMind's `ℝ^n` notation, transcribed verbatim **including the exact `scoped[EuclideanGeometry]`
+form** (`FormalConjecturesForMathlib/Geometry/Euclidean.lean:22`), then activated with
+`open scoped EuclideanGeometry` exactly as their `Wikipedia/Kakeya.lean` does. -/
+scoped[EuclideanGeometry] notation "ℝ^" n:65 => EuclideanSpace ℝ (Fin n)
+open scoped EuclideanGeometry
 
 /- Verbatim transcription of DeepMind `formal-conjectures`' Kakeya definitions
 (`FormalConjectures/Wikipedia/Kakeya.lean:37,54`), to bridge our headline against. -/
