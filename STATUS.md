@@ -1,5 +1,17 @@
 # STATUS — lean-formalizations 📊
 
+> 🟢🆕 **BV-FOURIER DECAY — COMPLETE & axiom-clean (2026-06-20, `d17e7b8`, branch `ntl-hjsw`).** The
+> route-(b) reconstruction of `prelim_decay_2` (`‖𝓕 f u‖ ≤ V(f)/(4|u|)` for integrable `f` of bounded
+> variation) is now **fully machine-checked, mathlib-only, axiom-clean** (`prelim_decay_2_route_b`,
+> `[propext, Classical.choice, Quot.sound]`) and **promoted `wip/` → `src/LeanFormalizations/RealAnalysis/
+> BVFourierDecay.lean`** (root-imported, in `.bump-axioms`; full build green, 8621 jobs). Both analytic
+> cruxes closed: **(b1)** Fourier half-period shift (`exp(↑r·I)` phase form + `𝐞(−½)=−1` + translation)
+> and **(b2)** L¹-translation-by-TV via the **monotone variation function** `W(t)=V(f on (−∞,t])` —
+> pointwise `‖f t−f(t+h)‖≤W(t+h)−W(t)` (`eVariationOn.add_le_union`+`edist_le`), then an **elementary
+> finite-window telescoping** `∫_{−N}^{N}(W(·+k)−W)=∫_N^{N+k}W−∫_{−N}^{−N+k}W≤k·V` + monotone-convergence
+> limit — **no variation/Stieltjes measure** (mathlib-absent for signed BV). NOT a headline; `weakPNT`
+> stays axiom-clean independently (the upstream `prelim_decay` sorries are dead code off its path).
+
 > 🟢⬆️ **mathlib v4.31.0 + DE-VENDOR — DONE (2026-06-20, `a0f17d1`, branch `ntl-hjsw`).** Forward-ported
 > the whole repo from mathlib `v4.29.1`→`v4.31.0` AND **de-vendored** the hand-ported PNTAnd Wiener–Ikehara
 > tower into a **real lake dependency** on `kim-em/PrimeNumberTheoremAnd @ bump/v4.31.0` (the maintainers'
