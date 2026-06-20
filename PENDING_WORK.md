@@ -1,5 +1,59 @@
 # PENDING_WORK — no-three-in-line / HJSW frontier (branch `ntl-hjsw`)
 
+## Reflection — 2026-06-20 (DEEP-REFLECTION lap, strong model @ high effort) 🧘
+Stepped all the way back. **Direction call: the project is genuinely COMPLETE and the destination was the
+right one — self-stop re-affirmed.** What makes *this* reflection lap different from the ~7 re-verification
+laps before it: instead of re-running the proof-axiom footprint a 7th time (the prior handoff is right that
+that "adds nothing"), I closed the *one* verification gap those laps left open.
+
+**1. Destination — still right.** The repo is a constellation of solved-but-hard impossibility / transcendence
+/ no-formula meta-theorems. The flagship (HJSW no-three-in-line ladder → `3/2 − o(N)`, unconditional &
+axiom-clean) is reached; the nine supporting threads (Curtis, power-tower sharp iff, Wantzel, e/π
+transcendence + squaring-the-circle, Goodstein, Mertens trilogy incl. sharp `e^{−γ}`, BV-Fourier decay,
+Dirichlet divisor) are all complete & axiom-clean. No new information (no paper, no mathlib addition, no
+Aristotle result) changes what the valuable endpoint is. This is a saturated endpoint, not a stalled one.
+
+**2. Highest-value thing — there is no higher-value open target on this branch.** The only repo-connected open
+item is the sharp `2π|u|` BV-Fourier constant (item 1): off-headline (gates nothing — the `prelim_decay`
+sorries are dead code off `weakPNT`, *proven* below by the clean axiom seam check), needs mathlib-absent
+signed-BV Lebesgue–Stieltjes IBP (🟠), and refines a *bonus*. It is strictly lower-value than the done
+headlines and forbidden as a side quest under finish-and-stop. `nagura_prime` (5/4) is superseded; general
+Hermite–Lindemann is a *main-branch* thread, not this branch's scope. No fixation, no easy-leaf-bagging, no
+dead-end grind — there is simply nothing left of higher value than what is done.
+
+**3. What an outside expert would scrutinize — the external-dep seam (and it holds).** The de-vendor
+(`a0f17d1`) made the flagship's axiom-cleanliness contingent on `kim-em/PrimeNumberTheoremAnd@bump/v4.31.0`
+rather than an in-repo tower. That is the single most load-bearing architectural fact, so I checked it from
+ground truth this lap: `#print axioms weakPNT` and `#print axioms maxNoThreeInLine_ge_three_halves_sub` both
+= `[propext, Classical.choice, Quot.sound]` *through the external dep* — definitive proof the dep's two
+`prelim_decay` sorries are off-path (a `sorryAx` would otherwise surface). The seam is sound. (Maintenance
+note for a future bump: re-pinning the dep must re-gate on this seam staying clean.)
+
+**4. Faithfulness at altitude — the gap I closed.** `#print axioms` certifies *proofs*, never *statements* —
+transcription drift is the silent failure the re-audit laps never tested. This lap ran a fresh
+**statement-faithfulness audit** of all headline *signatures* against their classical claims (a fanned-out
+read of every headline's type + the definitions it unfolds to). **All faithful** — e.g. `NoThreeCollinear`
+is genuine `Collinear ℝ` over real-plane embeddings (every slope, the *corrected* form of the upstream
+`Green72` bug), `transcendental_pi_axiomClean : Transcendental ℚ Real.pi` uses mathlib's real predicate on
+the real π, `goodstein_terminates (m) : ∃ N, goodsteinSeq m N = 0` over the genuine hereditary-base-bump
+sequence, `tower_converges_iff_full ... ↔ x ∈ Set.Icc eNegE eInvE` with both sharp endpoints,
+`mertens_third_classical_eGamma` is `∏_{p≤N}(1−1/p)·log N → exp(−γ)` with `γ = eulerMascheroniConstant`.
+No drift, no vacuity, no silently-weakened form. **This is the certification the project was missing** — it
+materially strengthens the completion claim (statements + proofs both now audited), and it should NOT need
+redoing unless a statement changes.
+
+**KEEP doing:** the axiom-clean discipline (`.bump-axioms` gate); the clean architecture (deep inputs
+isolated, audit surface in `Statement.lean`/`Defs.lean`); honoring finish-and-stop.
+**STOP doing:** the per-lap *proof-axiom* re-audit theatre (7 laps of identical `#print axioms` on an
+unchanged tree). The footprint is stable; the statements are now audited too. A relaunch is a *cadence
+artifact* (reflection/fresh-mind laps fire regardless of the stop sentinel, which is already written &
+valid), **not** a signal that work reopened. Correct response to a relaunch: absorb this synthesis, confirm
+build green + `src/` sorry-free (the gate needs that anyway), and stop — do NOT reopen, do NOT re-pin, do
+NOT manufacture a side quest.
+**Single highest-value next target — ONLY if Trevor lifts finish-and-stop:** the sharp `2π|u|` constant via
+**route (c)** (Jordan decomposition into two monotones → existing monotone Stieltjes measures → assembled
+signed IBP), item 1 below — the pieces are confirmed present in mathlib's `BoundedVariation.lean`.
+
 ## Completion-verification review lap — 2026-06-20 (self-stop) ⛳
 **Ground-truth re-audit (not docs).** `lake build` GREEN (8621 jobs). `src/` tactic-level **sorry-free**
 (every `sorry` grep-hit is docstring prose; Goodstein anchors are real `native_decide`; `grep '^axiom' src/`
