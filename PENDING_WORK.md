@@ -1,5 +1,16 @@
 # PENDING_WORK — no-three-in-line / HJSW frontier (branch `ntl-hjsw`)
 
+## ✅ RESOLVED 2026-06-20 (`d17e7b8`): `prelim_decay_2` route (b) — COMPLETE & axiom-clean
+Route (b) below is **fully proven** and promoted to `src/LeanFormalizations/RealAnalysis/BVFourierDecay.lean`
+(`prelim_decay_2_route_b : ‖𝓕 f u‖ ≤ V(f)/(4|u|)`, `[propext, Classical.choice, Quot.sound]`, build green
+8621 jobs). Both cruxes closed: **(b1)** half-period shift (`exp(↑r·I)` phase + `𝐞(−½)=−1` + translation);
+**(b2)** L¹-translation-by-TV via the **monotone variation function** `W(t)=V(f on (−∞,t])` — pointwise
+`‖f t−f(t+h)‖≤W(t+h)−W(t)` (`add_le_union`+`edist_le`) then **elementary finite-window telescoping**
+`∫_{−N}^{N}(W(·+k)−W)=∫_N^{N+k}W−∫_{−N}^{−N+k}W≤k·V` + monotone-convergence limit, **no signed
+variation/Stieltjes measure** (mathlib-absent) needed. The inventory below is kept for history; items 1–3
+remain off-headline. The only NOT-done remnant is the **sharp** `2π|u|` constant (route (a), needs
+mathlib-absent BV integration-by-parts) — a new side quest, left unopened under finish-and-stop.
+
 ## Inventory + attack paths — 2026-06-20 (post-de-vendor, governor-driven)
 
 **Open-item inventory (full).** `src/` is **sorry-free** and all 14 headlines `#print axioms`-clean
