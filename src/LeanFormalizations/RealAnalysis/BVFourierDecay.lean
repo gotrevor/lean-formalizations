@@ -231,7 +231,7 @@ Reduces to the nonneg case via the proven pointwise bound + `integral_mono_of_no
 analytic core isolated in `integrable_and_integral_varFn_diff_le`; the `h < 0` case folds back to
 `h ≥ 0` by translation invariance (`integral_add_right_eq_self`) and `norm_sub_rev`. -/
 theorem integral_norm_sub_translate_le
-    (f : ℝ → ℂ) (hf : Integrable f) (hbv : BoundedVariationOn f Set.univ) (h : ℝ) :
+    (f : ℝ → ℂ) (_hf : Integrable f) (hbv : BoundedVariationOn f Set.univ) (h : ℝ) :
     (∫ t, ‖f t - f (t + h)‖) ≤ |h| * (eVariationOn f Set.univ).toReal := by
   -- the nonneg-shift bound, valid for any `k ≥ 0`
   have hpos : ∀ k : ℝ, 0 ≤ k →
