@@ -35,6 +35,13 @@ theorem norm_sub_le_eVariationOn_toReal {f : ℝ → ℂ} (hf : BoundedVariation
   have h2 := ENNReal.toReal_mono hf h
   rwa [ENNReal.toReal_ofReal (norm_nonneg _)] at h2
 
+/-- **Helper toward (b1) — PROVEN.** The Fourier character at `−½` is `−1` (`𝐞(−½) = e^{−πi} = −1`).
+This is the algebraic heart of the half-period shift: it turns the shifted Fourier integral into `−𝓕 f u`. -/
+theorem fourierChar_neg_half : ((Real.fourierChar (-(1 / 2 : ℝ))) : ℂ) = -1 := by
+  rw [Real.fourierChar_apply, show ((2 : ℝ) * π * (-(1 / 2))) = -π from by ring,
+    Complex.ofReal_neg, neg_mul, Complex.exp_neg, Complex.exp_pi_mul_I]
+  norm_num
+
 /-- **(b1) Fourier half-period shift (CRUX — disclosed `sorry`).**
 `‖𝓕 f u‖ ≤ ½ ∫ ‖f t − f(t + 1/(2u))‖ dt`.
 
