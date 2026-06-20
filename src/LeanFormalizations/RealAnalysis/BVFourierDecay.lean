@@ -25,6 +25,7 @@ A complete, mathlib-only, axiom-clean BV-Fourier decay bound (non-sharp constant
 `prelim_decay` sorries present). Lives in `wip/` (outside the build); `src/` stays sorry-free.
 -/
 import Mathlib.Analysis.Fourier.FourierTransform
+import Mathlib.Analysis.Fourier.FourierTransformDeriv
 import Mathlib.Topology.EMetricSpace.BoundedVariation
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Integral.IntegralEqImproper
@@ -273,5 +274,41 @@ theorem prelim_decay_2_route_b
       _ = V / (4 * |u|) := by
           rw [habs]; field_simp <;> ring
   exact hb1.trans hstep
+
+/-- **Route-(b) `prelim_decay_3` (PROVEN).** One order faster: if `ψ` is differentiable with `ψ'`
+integrable and of bounded variation, then `‖𝓕 ψ u‖ ≤ V(ψ')/(8π·u²)`.
+
+The Fourier transform turns differentiation into multiplication by `2πI·u`
+(`Real.fourier_deriv`: `𝓕 (deriv ψ) u = (2πI·u)·𝓕 ψ u`), so `‖𝓕 ψ u‖ = ‖𝓕 ψ' u‖ / (2π|u|)`; feeding the
+route-(b) decay `‖𝓕 ψ' u‖ ≤ V(ψ')/(4|u|)` gives the `1/u²` bound. (Non-sharp constant `8π` vs the
+blueprint's `(2π)²`; same `u⁻²` order.) -/
+theorem prelim_decay_3_route_b
+    (ψ : ℝ → ℂ) (hψ : Integrable ψ) (hdiff : Differentiable ℝ ψ)
+    (hψ' : Integrable (deriv ψ)) (hbv : BoundedVariationOn (deriv ψ) Set.univ)
+    (u : ℝ) (hu : u ≠ 0) :
+    ‖𝓕 ψ u‖ ≤ (eVariationOn (deriv ψ) Set.univ).toReal / (8 * π * u ^ 2) := by
+  have hu' : 0 < |u| := abs_pos.mpr hu
+  have hπ : 0 < π := Real.pi_pos
+  -- `𝓕 (deriv ψ) u = (2πI·u) • 𝓕 ψ u`
+  have hkey : 𝓕 (deriv ψ) u = (2 * π * Complex.I * u) • 𝓕 ψ u := by
+    rw [Real.fourier_deriv hψ hdiff hψ']
+  -- norms: `‖𝓕 (deriv ψ) u‖ = 2π|u| · ‖𝓕 ψ u‖`
+  have hnphase : ‖(2 * π * Complex.I * u : ℂ)‖ = 2 * π * |u| := by
+    rw [show (2 * π * Complex.I * u : ℂ) = ((2 * π * u : ℝ) : ℂ) * Complex.I by push_cast; ring,
+      norm_mul, Complex.norm_I, mul_one, Complex.norm_real, Real.norm_eq_abs,
+      abs_mul, abs_mul, abs_of_pos (by norm_num : (0:ℝ) < 2), abs_of_pos hπ]
+  have hnorm : ‖𝓕 (deriv ψ) u‖ = 2 * π * |u| * ‖𝓕 ψ u‖ := by
+    rw [hkey, norm_smul, hnphase]
+  -- route-(b) decay on `ψ'`
+  have hdec : ‖𝓕 (deriv ψ) u‖ ≤ (eVariationOn (deriv ψ) Set.univ).toReal / (4 * |u|) :=
+    prelim_decay_2_route_b (deriv ψ) hψ' hbv u hu
+  rw [hnorm] at hdec
+  -- clear denominators in `hdec` and the goal, then close
+  rw [le_div_iff₀ (by positivity : (0:ℝ) < 4 * |u|)] at hdec
+  rw [le_div_iff₀ (by positivity : (0:ℝ) < 8 * π * u ^ 2)]
+  have hu2 : |u| * |u| = u ^ 2 := by rw [← pow_two, sq_abs]
+  have heq : ‖𝓕 ψ u‖ * (8 * π * u ^ 2) = 2 * π * |u| * ‖𝓕 ψ u‖ * (4 * |u|) := by
+    rw [← hu2]; ring
+  linarith [hdec, heq]
 
 end LeanFormalizations.RealAnalysis.BVFourierDecay

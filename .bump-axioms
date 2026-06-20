@@ -31,3 +31,4 @@ LeanFormalizations.Mertens.mertens_third_classical_eGamma
 
 # Real analysis — BV-Fourier decay (route-(b), non-sharp 4|u|), bonus, axiom-clean
 LeanFormalizations.RealAnalysis.BVFourierDecay.prelim_decay_2_route_b
+LeanFormalizations.RealAnalysis.BVFourierDecay.prelim_decay_3_route_b
