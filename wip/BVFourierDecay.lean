@@ -52,7 +52,51 @@ translation invariance of `volume` and the `Real.fourierChar` value at `−½`. 
 theorem norm_fourierIntegral_le_half_integral_norm_sub_shift
     (f : ℝ → ℂ) (hf : Integrable f) (u : ℝ) (hu : u ≠ 0) :
     ‖𝓕 f u‖ ≤ (1 / 2) * ∫ t, ‖f t - f (t + 1 / (2 * u))‖ := by
-  sorry
+  set h : ℝ := 1 / (2 * u) with hh
+  -- the Fourier phase, written in the `Complex.exp (↑r * I)` form (so it lives in ℂ, norm 1)
+  set c : ℝ → ℂ := fun v => Complex.exp ((↑(-2 * π * (v * u)) : ℝ) * Complex.I) with hc
+  have hcnorm : ∀ v, ‖c v‖ = 1 := fun v => Complex.norm_exp_ofReal_mul_I _
+  have hcm : AEStronglyMeasurable c volume := by
+    apply Continuous.aestronglyMeasurable; fun_prop
+  have hcbd : ∀ᵐ v, ‖c v‖ ≤ 1 := Filter.Eventually.of_forall fun v => le_of_eq (hcnorm v)
+  have hfsh : Integrable (fun v => f (v + h)) := hf.comp_add_right h
+  have hI1 : Integrable (fun v => c v * f v) := hf.bdd_mul hcm hcbd
+  have hI2 : Integrable (fun v => c v * f (v + h)) := hfsh.bdd_mul hcm hcbd
+  -- (i) `𝓕 f u = ∫ c v · f v`  (unfold `fourier_eq'`, real inner `⟪v,u⟫ = v*u`)
+  have hFT : 𝓕 f u = ∫ v, c v * f v := by
+    rw [fourier_eq']
+    refine integral_congr_ae (Filter.Eventually.of_forall fun v => ?_)
+    simp only [smul_eq_mul, hc, inner_apply]
+  -- the phase satisfies `c (v + h) = - c v`  (since `𝐞(-½) = e^{-πi} = -1`)
+  have hcs : ∀ v, c (v + h) = - c v := by
+    intro v
+    simp only [hc]
+    have hreal : (-2 * π * ((v + h) * u) : ℝ) = (-2 * π * (v * u)) + (-π) := by
+      rw [hh]; field_simp; ring
+    rw [hreal, Complex.ofReal_add, add_mul, Complex.exp_add,
+      show ((↑(-π : ℝ)) : ℂ) * Complex.I = -(↑π * Complex.I) by push_cast; ring,
+      Complex.exp_neg, Complex.exp_pi_mul_I, inv_neg, inv_one, mul_neg, mul_one]
+  -- (ii) translation invariance ⇒ `𝓕 f u = - ∫ c v · f (v + h)`
+  have hshift : 𝓕 f u = - ∫ v, c v * f (v + h) := by
+    rw [hFT, ← MeasureTheory.integral_add_right_eq_self (fun v => c v * f v) h, ← integral_neg]
+    refine integral_congr_ae (Filter.Eventually.of_forall fun v => ?_)
+    simp only [hcs v, neg_mul]
+  -- (iii) add the two reps ⇒ `2 · 𝓕 f u = ∫ c v · (f v − f (v+h))`
+  have hrep : (2 : ℂ) * 𝓕 f u = ∫ v, c v * (f v - f (v + h)) := by
+    have hsum : (2 : ℂ) * 𝓕 f u = (∫ v, c v * f v) - (∫ v, c v * f (v + h)) := by
+      rw [two_mul]; nth_rewrite 1 [hFT]; nth_rewrite 1 [hshift]; ring
+    rw [hsum, ← integral_sub hI1 hI2]
+    refine integral_congr_ae (Filter.Eventually.of_forall fun v => ?_)
+    simp only [mul_sub]
+  -- (iv) take norms: `‖c v‖ = 1` ⇒ `2‖𝓕 f u‖ ≤ ∫ ‖f v − f(v+h)‖`
+  have hnb : ‖(2 : ℂ) * 𝓕 f u‖ ≤ ∫ v, ‖f v - f (v + h)‖ := by
+    rw [hrep]
+    refine (norm_integral_le_integral_norm _).trans_eq ?_
+    refine integral_congr_ae (Filter.Eventually.of_forall fun v => ?_)
+    simp only [norm_mul, hcnorm, one_mul]
+  have h2norm : ‖(2 : ℂ) * 𝓕 f u‖ = 2 * ‖𝓕 f u‖ := by rw [norm_mul]; norm_num
+  rw [h2norm] at hnb
+  linarith [hnb]
 
 /-- **(b2) L¹-translation by total variation (CRUX — disclosed `sorry`).**
 `∫ ‖f t − f(t + h)‖ dt ≤ |h| · V(f)`.
