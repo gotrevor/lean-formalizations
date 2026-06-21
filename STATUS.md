@@ -1,5 +1,23 @@
 # STATUS — lean-formalizations 📊
 
+> 🔀 **INTEGRATED TRUNK (2026-06-21).** Three parallel expedition clones merged back into `main`:
+> **goodstein** (Goodstein/Kirby–Paris growth theory + Curtis/power-tower/constructibles/e,π-transcendence
+> + the `hyperbolaWide`/arc no-three-in-line construction), **kakeya** (Davies planar Kakeya `dimH = 2`,
+> `Kakeya2D.davies_kakeya_2d`), and **ntl** (PNT / Mertens / Dirichlet divisor / BV-Fourier decay + a second,
+> independent **sheared-hyperbola (HJSW)** no-three-in-line construction).
+> · **Build**: 🟢 green (**8656 jobs**, `src/` **sorry-free**, **0 custom axioms**, every spot-checked headline
+> `[propext, Classical.choice, Quot.sound]`).
+> · **No-three-in-line — BOTH constructions kept** (Trevor's call): goodstein's `hyperbolaWide`/arc lives in
+> `Combinatorics.NoThreeInLine.*`; ntl's shear construction (+ its prime-gap general-`N` extension) lives in
+> the sibling sub-namespace `Combinatorics.NoThreeInLine.Shear.*`, reusing the shared core
+> (`Defs`/`UpperBound`/`Parabola`/`Collinearity`). Both reach the `3(p−1)` lower bound.
+> · **Off-headline:** `wip/` is built as the non-default `DaviesWip` lean_lib (jvn 2nd-route GMT files sorry-free;
+> FastGrowing `Bachmann` sorry-free; `Basic` carries the single disclosed A3 sorry). The PNT work now uses a
+> real `PrimeNumberTheoremAnd` git dependency (de-vendored).
+> · Pre-merge branch tips preserved as `premerge/{goodstein-no-three-in-line,kakeya-davies,ntl-hjsw}` tags.
+> _The expedition-specific banners below are retained as-is; a full review-lap refresh of this file is a
+> separate task._
+
 > 🛑 **FINISH-AND-STOP (per charter — Trevor, 2026-06-19).** All umbrella headlines are COMPLETE + axiom-clean (Goodstein grows-like-`f_{ε₀}`, Curtis, power-tower, constructibles, e/π transcendence). **Do NOT start new side quests.** ONE correctness item to finish first: the **no-three-in-line pinwheel faithfulness repair** — you caught + are replacing a FALSE construction (`Pinwheel.lean:376`); that is a headline *correctness fix*, so close it (don't leave a known-false construction half-replaced). Then wind down: clear/quarantine the off-headline scratch sorries so `src/` is sorry-free, confirm headline `#print axioms` clean, and **self-stop.** Do not open new threads.
 >
 > ✅ **DONE (lap 14, 2026-06-19, `cd5a8ce`→`2b6c9a2`).** The pinwheel faithfulness repair is COMPLETE: the FALSE `{0,p}²`-corner construction was replaced by the genuine HJSW **half-band** pinwheel, and `pinwheel_noThree` / `three_mul_pred_le_maxNoThreeInLine` are FULLY PROVED and axiom-clean (trust base only). `src/` is **sorry-free** (`grep` confirms no `sorry`/`admit`/custom `axiom`), every headline `#print axioms` is the bare trust base. No new threads opened. **The ONLY thing gating the self-stop is `LEAN_LAP_ALLOW_STOP` — still `0` this lap, and the charter forbids writing the stop sentinel unless it is `1`. To finish the treadmill: set `LEAN_LAP_ALLOW_STOP=1` and the next lap will write the sentinel.** (All required work is done; remaining no-three frontier — all-`N` `(3/2−ε)N` — is blocked on PNT-grade primes and is NOT a wind-down item.)
