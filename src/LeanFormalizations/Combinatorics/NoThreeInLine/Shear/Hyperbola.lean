@@ -1,0 +1,974 @@
+/-
+# Hall–Jackson–Sudbery–Wild `3N/2` lower bound — PROVEN, axiom-clean
+
+The best *proven* lower bound for the no-three-in-line problem (1975), unimproved since.
+Improves Erdős's `~N` parabola to `3(N−2)/2` via a sheared modular hyperbola.
+
+**The headline `hjsw_lower : 3*(p−1) ≤ maxNoThreeInLine (2*p)` is fully proven**
+(`#print axioms hjsw_lower = [propext, Classical.choice, Quot.sound]`, no `sorry`, no custom axiom).
+The construction is the closed-form sheared hyperbola `shearSel p`: base column `x ↦ (x, (2x+1)⁻¹)`,
+drop the pole column `(p−1)/2`, keep 3 of the 4 lifts of every other column (drop the corner nearest
+the grid centre). `|shearSel p| = 3(p−1)`. The combinatorial heart — no kept slope-`±1` line carries
+three points — is `shearSel_cross_diag`, discharged via the partner lemmas
+`shear_diag_partner` / `shear_anti_partner` (curve-factoring → partner relation → drop tie-break).
+See `SELECTION-RULE-FOUND.md`, `PLAN.md`, `HANDOFF.md`.
+
+## The arc non-collinearity argument (proven below)
+Three grid points `(aᵢ, yᵢ)` on the arc satisfy `aᵢ · yᵢ ≡ k (mod p)`. Collinearity over `ℝ`
+forces the integer determinant to vanish, and mod `p` that determinant `D` obeys the identity
+`k · (a₁−a₂)(a₂−a₃)(a₃−a₁) = a₁a₂a₃ · D`  (a Vandermonde reduction, using `aᵢyᵢ = k`).
+With `k ≢ 0` and `ZMod p` a domain, `D ≡ 0` forces two of the `aᵢ` to agree mod `p`, hence (being
+`< p`) to be equal — so two of the points coincide. Primality does exactly one job: `ZMod p` a field.
+-/
+import LeanFormalizations.Combinatorics.NoThreeInLine.UpperBound
+import LeanFormalizations.Combinatorics.NoThreeInLine.Parabola
+import Mathlib.Data.ZMod.Basic
+import Mathlib.Algebra.Field.ZMod
+import Mathlib.Tactic.LinearCombination
+
+namespace LeanFormalizations.NoThreeInLine.Shear
+
+open Finset
+
+/-- The modular-hyperbola arc in the `p × p` grid: the points `(a, val(k · a⁻¹ mod p))` for nonzero
+`a ∈ [0, p)`. For `p` prime and `k ≢ 0 (mod p)` these are the `p − 1` solutions of `x·y ≡ k (mod p)`
+with `x ≠ 0`. -/
+def hyperbola (p k : ℕ) : Finset (ℕ × ℕ) :=
+  ((Finset.range p).erase 0).image (fun a => (a, (↑k * (↑a : ZMod p)⁻¹).val))
+
+/-- The arc has exactly `p − 1` points (the first coordinates are the nonzero residues). -/
+theorem hyperbola_card {p : ℕ} (hp : 0 < p) (k : ℕ) : (hyperbola p k).card = p - 1 := by
+  have hinj : Function.Injective (fun a : ℕ => (a, (↑k * (↑a : ZMod p)⁻¹).val)) := by
+    intro i j hij; simpa using congrArg Prod.fst hij
+  rw [hyperbola, Finset.card_image_of_injective _ hinj,
+    Finset.card_erase_of_mem (Finset.mem_range.mpr hp), Finset.card_range]
+
+/-- The arc lies in the `p × p` grid. -/
+theorem hyperbola_grid {p : ℕ} (hp : 0 < p) (k : ℕ) : IsGridSet p (hyperbola p k) := by
+  haveI : NeZero p := ⟨hp.ne'⟩
+  intro x hx
+  simp only [hyperbola, Finset.mem_image, Finset.mem_erase, Finset.mem_range] at hx
+  obtain ⟨a, ⟨_, ha⟩, rfl⟩ := hx
+  exact ⟨ha, ZMod.val_lt _⟩
+
+/-- **No three points of the modular-hyperbola arc are collinear.** -/
+theorem hyperbola_noThreeCollinear {p k : ℕ} (hp : p.Prime) (hk : ¬ (p ∣ k)) :
+    NoThreeCollinear (hyperbola p k) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  intro P hP Q hQ R hR hcol
+  simp only [hyperbola, Finset.mem_image, Finset.mem_erase, Finset.mem_range] at hP hQ hR
+  obtain ⟨a, ⟨ha0, ha⟩, rfl⟩ := hP
+  obtain ⟨b, ⟨hb0, hb⟩, rfl⟩ := hQ
+  obtain ⟨c, ⟨hc0, hc⟩, rfl⟩ := hR
+  -- Collinearity ⇒ the real determinant vanishes.
+  have hdet := collinear_imp_det3_zero hcol
+  simp only [toReal, det3] at hdet
+  -- Cast the determinant equation into `ZMod p` (it is a ℤ-equation between nat-casts).
+  have hcast : (((b : ZMod p) - a) * (((↑k * (↑c : ZMod p)⁻¹).val : ZMod p) - (↑k * (↑a : ZMod p)⁻¹).val)
+      - ((c : ZMod p) - a) * (((↑k * (↑b : ZMod p)⁻¹).val : ZMod p) - (↑k * (↑a : ZMod p)⁻¹).val)) = 0 := by
+    have : ((b : ℝ) - a) * (((↑k * (↑c : ZMod p)⁻¹).val : ℝ) - (↑k * (↑a : ZMod p)⁻¹).val)
+        - ((c : ℝ) - a) * (((↑k * (↑b : ZMod p)⁻¹).val : ℝ) - (↑k * (↑a : ZMod p)⁻¹).val) = 0 := hdet
+    have hZ : ((b : ℤ) - a) * (((↑k * (↑c : ZMod p)⁻¹).val : ℤ) - (↑k * (↑a : ZMod p)⁻¹).val)
+        - ((c : ℤ) - a) * (((↑k * (↑b : ZMod p)⁻¹).val : ℤ) - (↑k * (↑a : ZMod p)⁻¹).val) = 0 := by
+      exact_mod_cast this
+    have := congrArg (Int.cast : ℤ → ZMod p) hZ
+    push_cast at this
+    convert this using 2
+  -- Abbreviate.  We deliberately do NOT fold `↑a, ↑b, ↑c` (they live inside the grid coordinates,
+  -- which the final `rw` of a nat-equality must still reach).
+  set kZ : ZMod p := (k : ZMod p) with hkZ
+  set yaZ : ZMod p := ((↑k * (↑a : ZMod p)⁻¹).val : ZMod p) with hyaZ
+  set ybZ : ZMod p := ((↑k * (↑b : ZMod p)⁻¹).val : ZMod p) with hybZ
+  set ycZ : ZMod p := ((↑k * (↑c : ZMod p)⁻¹).val : ZMod p) with hycZ
+  -- Each first coordinate is a nonzero residue.
+  have hane : (a : ZMod p) ≠ 0 := by
+    rw [Ne, ZMod.natCast_eq_zero_iff]; exact fun h => ha0 (Nat.eq_zero_of_dvd_of_lt h ha ▸ rfl)
+  have hbne : (b : ZMod p) ≠ 0 := by
+    rw [Ne, ZMod.natCast_eq_zero_iff]; exact fun h => hb0 (Nat.eq_zero_of_dvd_of_lt h hb ▸ rfl)
+  have hcne : (c : ZMod p) ≠ 0 := by
+    rw [Ne, ZMod.natCast_eq_zero_iff]; exact fun h => hc0 (Nat.eq_zero_of_dvd_of_lt h hc ▸ rfl)
+  have hkne : kZ ≠ 0 := by rw [hkZ, Ne, ZMod.natCast_eq_zero_iff]; exact hk
+  -- The hyperbola relations `aᵢ · yᵢ = k`.
+  have ea : (a : ZMod p) * yaZ = kZ := by
+    rw [hyaZ, ZMod.natCast_rightInverse, hkZ, mul_comm, mul_assoc, inv_mul_cancel₀ hane, mul_one]
+  have eb : (b : ZMod p) * ybZ = kZ := by
+    rw [hybZ, ZMod.natCast_rightInverse, hkZ, mul_comm, mul_assoc, inv_mul_cancel₀ hbne, mul_one]
+  have ec : (c : ZMod p) * ycZ = kZ := by
+    rw [hycZ, ZMod.natCast_rightInverse, hkZ, mul_comm, mul_assoc, inv_mul_cancel₀ hcne, mul_one]
+  -- The Vandermonde reduction: `k·(a−b)(b−c)(c−a) = a·b·c · D`, with `D` the vanishing determinant.
+  have hprod : kZ * (((a : ZMod p) - b) * ((b : ZMod p) - c) * ((c : ZMod p) - a)) = 0 := by
+    have identity : kZ * (((a : ZMod p) - b) * ((b : ZMod p) - c) * ((c : ZMod p) - a))
+        = (a : ZMod p) * b * c * ((((b : ZMod p) - a) * (ycZ - yaZ)) - (((c : ZMod p) - a) * (ybZ - yaZ))) := by
+      linear_combination (-((b : ZMod p) * c * (c - b))) * ea + (-((a : ZMod p) * c * (a - c))) * eb
+        + (-((a : ZMod p) * b * (b - a))) * ec
+    rw [identity, hcast, mul_zero]
+  -- A domain: one factor of the product is zero, so two of `a, b, c` agree mod p, hence are equal.
+  have hprod' : ((a : ZMod p) - b) * ((b : ZMod p) - c) * ((c : ZMod p) - a) = 0 := by
+    rcases mul_eq_zero.mp hprod with h | h
+    · exact absurd h hkne
+    · exact h
+  rcases mul_eq_zero.mp hprod' with hxy | h3
+  · rcases mul_eq_zero.mp hxy with h1 | h2
+    · left
+      have hab : a % p = b % p := (ZMod.natCast_eq_natCast_iff' a b p).mp (sub_eq_zero.mp h1)
+      rw [Nat.mod_eq_of_lt ha, Nat.mod_eq_of_lt hb] at hab
+      rw [hab]
+    · right; right
+      have hbc : b % p = c % p := (ZMod.natCast_eq_natCast_iff' b c p).mp (sub_eq_zero.mp h2)
+      rw [Nat.mod_eq_of_lt hb, Nat.mod_eq_of_lt hc] at hbc
+      rw [hbc]
+  · right; left
+    have hca : c % p = a % p := (ZMod.natCast_eq_natCast_iff' c a p).mp (sub_eq_zero.mp h3)
+    rw [Nat.mod_eq_of_lt hc, Nat.mod_eq_of_lt ha] at hca
+    rw [hca]
+
+/-! ## Reduction toolkit for the lifted construction (the covering count)
+
+The HJSW construction places its `3(p−1)` points in the `2p × 2p` grid as **lifts** of the
+`p × p` modular hyperbola: each base point `(a, ā)` (with `a·ā ≡ k`) has four lifts
+`(a + εp, ā + δp)`, `ε, δ ∈ {0,1}`. The lemmas below isolate the *geometric* content of
+"no three of the chosen lifts are collinear" so that the only remaining obligation is the
+*combinatorial* choice of which lifts to keep.
+
+The key reduction (`hyperbola_lift_collinear_share_residue`): **any** three real-collinear grid
+points whose residues lie on one modular hyperbola must have two points sharing the same residue
+mod `p` — i.e. being two lifts of the *same* base point. (Proof: reduce the integer collinearity
+determinant mod `p`; the mod-`p` Vandermonde core `hyperbola_collinear_zmod` then forces two
+residues to coincide.) Combined with `coord_diff_of_residue_eq` (two same-residue grid points in
+`[0,2p)` differ by `0` or `±p` in each coordinate), this shows the only possible collinear triples
+are "two lifts of one base point + one lift of another, on a line of slope `0, ∞, +1` or `−1`" —
+exactly the slope-`±1` obstruction recorded in `PLAN.md`. The covering count is then the purely
+combinatorial task of choosing lifts so no such slope-`±1` line carries three chosen points. -/
+
+/-- **Mod-`p` Vandermonde core.** Three points of the modular hyperbola `x·y = k` over the field
+`ZMod p` (`k ≠ 0`) whose `2×2` collinearity determinant vanishes must have two coordinates fully
+coincide. This is the field-theoretic heart shared by the arc lemma and the lift reduction:
+`k·(x₁−x₂)(x₂−x₃)(x₃−x₁) = x₁x₂x₃·D` with `D` the determinant, so `D = 0` and `k, xᵢ ≠ 0` force
+two of the `xᵢ` equal; the hyperbola relation then equates the matching `yᵢ`. -/
+theorem hyperbola_collinear_zmod {p : ℕ} [Fact p.Prime] {k : ZMod p} (hk : k ≠ 0)
+    {x₁ y₁ x₂ y₂ x₃ y₃ : ZMod p}
+    (h1 : x₁ * y₁ = k) (h2 : x₂ * y₂ = k) (h3 : x₃ * y₃ = k)
+    (hdet : (x₂ - x₁) * (y₃ - y₁) - (x₃ - x₁) * (y₂ - y₁) = 0) :
+    (x₁ = x₂ ∧ y₁ = y₂) ∨ (x₁ = x₃ ∧ y₁ = y₃) ∨ (x₂ = x₃ ∧ y₂ = y₃) := by
+  have hx1 : x₁ ≠ 0 := fun h => hk (by rw [← h1, h, zero_mul])
+  have hx2 : x₂ ≠ 0 := fun h => hk (by rw [← h2, h, zero_mul])
+  have hprod : k * ((x₁ - x₂) * (x₂ - x₃) * (x₃ - x₁)) = 0 := by
+    have identity : k * ((x₁ - x₂) * (x₂ - x₃) * (x₃ - x₁))
+        = x₁ * x₂ * x₃ * ((x₂ - x₁) * (y₃ - y₁) - (x₃ - x₁) * (y₂ - y₁)) := by
+      linear_combination (-(x₂ * x₃ * (x₃ - x₂))) * h1 + (-(x₁ * x₃ * (x₁ - x₃))) * h2
+        + (-(x₁ * x₂ * (x₂ - x₁))) * h3
+    rw [identity, hdet, mul_zero]
+  have hprod' : (x₁ - x₂) * (x₂ - x₃) * (x₃ - x₁) = 0 := by
+    rcases mul_eq_zero.mp hprod with h | h
+    · exact absurd h hk
+    · exact h
+  rcases mul_eq_zero.mp hprod' with hxy | h31
+  · rcases mul_eq_zero.mp hxy with h12 | h23
+    · refine Or.inl ⟨sub_eq_zero.mp h12, mul_left_cancel₀ hx1 ?_⟩
+      rw [h1, sub_eq_zero.mp h12, h2]
+    · refine Or.inr (Or.inr ⟨sub_eq_zero.mp h23, mul_left_cancel₀ hx2 ?_⟩)
+      rw [h2, sub_eq_zero.mp h23, h3]
+  · refine Or.inr (Or.inl ⟨(sub_eq_zero.mp h31).symm, mul_left_cancel₀ hx1 ?_⟩)
+    rw [h1, ← (sub_eq_zero.mp h31), h3]
+
+/-- **Mod-`p` projection of real collinearity (construction-agnostic).** If three grid points are
+collinear over `ℝ`, then the `2×2` collinearity determinant of their *residues* vanishes in
+`ZMod p` — for every `p` and every base curve. This is the universal bridge that lets any base
+set's mod-`p` non-collinearity rule out cross-residue collinear triples among its lifts: the
+integer determinant is `0`, hence `0` mod `p`, and `ℤ → ZMod p` is a ring hom. -/
+theorem collinear_imp_modp_det_zero (p : ℕ) {P Q R : ℕ × ℕ}
+    (hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ))) :
+    ((Q.1 : ZMod p) - P.1) * ((R.2 : ZMod p) - P.2)
+      - ((R.1 : ZMod p) - P.1) * ((Q.2 : ZMod p) - P.2) = 0 := by
+  have hdet := collinear_imp_det3_zero hcol
+  simp only [toReal, det3] at hdet
+  have hZ : ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) - ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) = 0 := by
+    exact_mod_cast hdet
+  have h := congrArg (Int.cast : ℤ → ZMod p) hZ
+  push_cast at h
+  linear_combination h
+
+/-- **Lift reduction (the covering-count lever).** If three grid points `P, Q, R` whose residues
+mod `p` all lie on the modular hyperbola `x·y ≡ k (mod p)` (`k ≢ 0`) are collinear over `ℝ`, then
+two of them share the *same residue* mod `p` — i.e. are two lifts of one base hyperbola point.
+
+This is the hyperbola twin of `hyperbola_noThreeCollinear` extended to the full `2p × 2p` lift
+problem: collinearity between points on *different* lifted arcs (distinct residues) is impossible,
+so the only collinear triples that survive are pairs of lifts of a single base point together with
+a third point — reducing no-three-in-line to a finite slope-`±1` combinatorial condition. -/
+theorem hyperbola_lift_collinear_share_residue {p k : ℕ} (hp : p.Prime) (hk : ¬ p ∣ k)
+    {P Q R : ℕ × ℕ}
+    (hP : (P.1 : ZMod p) * (P.2 : ZMod p) = (k : ZMod p))
+    (hQ : (Q.1 : ZMod p) * (Q.2 : ZMod p) = (k : ZMod p))
+    (hR : (R.1 : ZMod p) * (R.2 : ZMod p) = (k : ZMod p))
+    (hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ))) :
+    ((P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p)) ∨
+    ((P.1 : ZMod p) = (R.1 : ZMod p) ∧ (P.2 : ZMod p) = (R.2 : ZMod p)) ∨
+    ((Q.1 : ZMod p) = (R.1 : ZMod p) ∧ (Q.2 : ZMod p) = (R.2 : ZMod p)) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  have hkk : (k : ZMod p) ≠ 0 := by rw [Ne, ZMod.natCast_eq_zero_iff]; exact hk
+  exact hyperbola_collinear_zmod hkk hP hQ hR (collinear_imp_modp_det_zero p hcol)
+
+/-- Two grid coordinates in `[0, 2p)` that are congruent mod `p` differ by `0` or exactly `p`.
+(The lift structure: a residue `r ∈ [0, p)` has the two lifts `r` and `r + p` inside `[0, 2p)`.)
+Together with `hyperbola_lift_collinear_share_residue` this pins every collinear triple of lifts to
+two lifts of one base point — whose connecting line has slope `0, ∞, +1`, or `−1`. -/
+theorem coord_diff_of_residue_eq {p a b : ℕ} (ha : a < 2 * p) (hb : b < 2 * p)
+    (h : a % p = b % p) : a = b ∨ a = b + p ∨ b = a + p := by
+  rcases Nat.lt_or_ge a p with ha1 | ha1 <;> rcases Nat.lt_or_ge b p with hb1 | hb1
+  · rw [Nat.mod_eq_of_lt ha1, Nat.mod_eq_of_lt hb1] at h; exact Or.inl h
+  · rw [Nat.mod_eq_of_lt ha1] at h
+    have hb2 : b % p = b - p := by rw [Nat.mod_eq_sub_mod hb1, Nat.mod_eq_of_lt (by omega)]
+    rw [hb2] at h; exact Or.inr (Or.inr (by omega))
+  · rw [Nat.mod_eq_of_lt hb1] at h
+    have ha2 : a % p = a - p := by rw [Nat.mod_eq_sub_mod ha1, Nat.mod_eq_of_lt (by omega)]
+    rw [ha2] at h; exact Or.inr (Or.inl (by omega))
+  · have ha2 : a % p = a - p := by rw [Nat.mod_eq_sub_mod ha1, Nat.mod_eq_of_lt (by omega)]
+    have hb2 : b % p = b - p := by rw [Nat.mod_eq_sub_mod hb1, Nat.mod_eq_of_lt (by omega)]
+    rw [ha2, hb2] at h; exact Or.inl (by omega)
+
+/-- A coordinate difference between two same-residue nats factors through `p`: writing each as
+`residue + p·(·/p)`, the integer difference is `p` times the difference of the (nat) high parts. -/
+theorem intCoord_diff_factor {p u v : ℕ} (h : u % p = v % p) :
+    (u : ℤ) - (v : ℤ) = (p : ℤ) * (((u / p : ℕ) : ℤ) - ((v / p : ℕ) : ℤ)) := by
+  have hu : (p : ℤ) * ((u / p : ℕ) : ℤ) + ((u % p : ℕ) : ℤ) = u := by exact_mod_cast Nat.div_add_mod u p
+  have hv : (p : ℤ) * ((v / p : ℕ) : ℤ) + ((v % p : ℕ) : ℤ) = v := by exact_mod_cast Nat.div_add_mod v p
+  have hmod : ((u % p : ℕ) : ℤ) = ((v % p : ℕ) : ℤ) := by exact_mod_cast h
+  linear_combination -hu + hv + hmod
+
+/-- **The same-base-point case.** Three *distinct* grid points in `[0,2p)²` that are pairwise
+congruent mod `p` in both coordinates (i.e. three lifts of one base point) are never collinear:
+they are three distinct corners of a `p × p` axis-aligned rectangle, so the integer orientation
+determinant is `±p² ≠ 0`. Together with `*_lift_share_residue` this closes the geometry — every
+collinear triple of lifts must be two lifts of one base point plus a lift of a *different* one. -/
+theorem lift_triple_noncollinear {p : ℕ} (hp : 0 < p) {P Q R : ℕ × ℕ}
+    (hP1 : P.1 < 2 * p) (hP2 : P.2 < 2 * p) (hQ1 : Q.1 < 2 * p) (hQ2 : Q.2 < 2 * p)
+    (hR1 : R.1 < 2 * p) (hR2 : R.2 < 2 * p)
+    (e1Q : P.1 % p = Q.1 % p) (e1R : P.1 % p = R.1 % p)
+    (e2Q : P.2 % p = Q.2 % p) (e2R : P.2 % p = R.2 % p)
+    (hPQ : P ≠ Q) (hPR : P ≠ R) (hQR : Q ≠ R) :
+    ¬ Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)) := by
+  intro hcol
+  have hdet := collinear_imp_det3_zero hcol
+  simp only [toReal, det3] at hdet
+  have hZ : ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) - ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) = 0 := by
+    exact_mod_cast hdet
+  -- factor each difference through `p`
+  rw [intCoord_diff_factor e1Q.symm, intCoord_diff_factor e2R.symm,
+      intCoord_diff_factor e1R.symm, intCoord_diff_factor e2Q.symm] at hZ
+  -- hZ now reads `p² · B = 0`; since `p ≠ 0`, the high-bit determinant `B` vanishes
+  have hpZ : (p : ℤ) ≠ 0 := by exact_mod_cast hp.ne'
+  have hB : (((Q.1 / p : ℕ) : ℤ) - ((P.1 / p : ℕ) : ℤ)) * (((R.2 / p : ℕ) : ℤ) - ((P.2 / p : ℕ) : ℤ))
+      - (((R.1 / p : ℕ) : ℤ) - ((P.1 / p : ℕ) : ℤ)) * (((Q.2 / p : ℕ) : ℤ) - ((P.2 / p : ℕ) : ℤ))
+      = 0 := by
+    have h2 : (p : ℤ) * p * ((((Q.1 / p : ℕ) : ℤ) - ((P.1 / p : ℕ) : ℤ))
+          * (((R.2 / p : ℕ) : ℤ) - ((P.2 / p : ℕ) : ℤ))
+        - (((R.1 / p : ℕ) : ℤ) - ((P.1 / p : ℕ) : ℤ))
+          * (((Q.2 / p : ℕ) : ℤ) - ((P.2 / p : ℕ) : ℤ))) = 0 := by linear_combination hZ
+    rcases mul_eq_zero.mp h2 with h | h
+    · exact absurd (mul_eq_zero.mp h |>.elim id id) hpZ
+    · exact h
+  -- the high parts are `0` or `1`; distinctness of the three corners contradicts `B = 0`
+  have hb : ∀ {u : ℕ}, u < 2 * p → u / p = 0 ∨ u / p = 1 := by
+    intro u hu
+    have h2 : u / p < 2 := (Nat.div_lt_iff_lt_mul hp).mpr (by omega)
+    interval_cases (u / p) <;> tauto
+  -- recompose: same residue + same high part ⇒ equal coordinate
+  have recompose : ∀ {u v : ℕ}, u % p = v % p → u / p = v / p → u = v := by
+    intro u v hm hd
+    calc u = p * (u / p) + u % p := (Nat.div_add_mod u p).symm
+      _ = p * (v / p) + v % p := by rw [hd, hm]
+      _ = v := Nat.div_add_mod v p
+  have dPQ : ¬ (P.1 / p = Q.1 / p ∧ P.2 / p = Q.2 / p) :=
+    fun ⟨h1, h2⟩ => hPQ (Prod.ext (recompose e1Q h1) (recompose e2Q h2))
+  have dPR : ¬ (P.1 / p = R.1 / p ∧ P.2 / p = R.2 / p) :=
+    fun ⟨h1, h2⟩ => hPR (Prod.ext (recompose e1R h1) (recompose e2R h2))
+  have dQR : ¬ (Q.1 / p = R.1 / p ∧ Q.2 / p = R.2 / p) :=
+    fun ⟨h1, h2⟩ => hQR (Prod.ext (recompose (e1Q.symm.trans e1R) h1)
+      (recompose (e2Q.symm.trans e2R) h2))
+  rcases hb hP1 with a1 | a1 <;> rcases hb hP2 with a2 | a2 <;>
+    rcases hb hQ1 with b1 | b1 <;> rcases hb hQ2 with b2 | b2 <;>
+    rcases hb hR1 with c1 | c1 <;> rcases hb hR2 with c2 | c2 <;>
+    (simp only [a1, a2, b1, b2, c1, c2] at hB dPQ dPR dQR; revert hB dPQ dPR dQR; decide)
+
+/-! ### The sheared-hyperbola base (the current construction lead)
+
+Computational search (lap 2026-06-19) found that the plain hyperbola `xy ≡ 1` (`|B| = p−1`) cannot
+reach `3(p−1)` (it caps at `2p−... ≤ 17` at `p=7` by an over-constraint), but the **sheared**
+hyperbola `y·(2x+1) ≡ 1 (mod p)` — a conic with `|B| = p` (the pole `x = −2⁻¹` maps to `0`) — *does*
+reach `3(p−1)` (verified at p = 7, 11, 13). The shear `x ↦ 2x+1` is an affine change of the first
+coordinate, so non-collinearity of the sheared base reduces to the plain hyperbola core; the lift
+geometry below is the analogue of `hyperbola_lift_collinear_share_residue` for this base. (The open
+part is the non-uniform lift-selection rule — see `PENDING_WORK.md` Path B.) -/
+
+/-- Mod-`p` Vandermonde core for the **sheared** hyperbola `(2x+1)·y = 1`. Reduces to
+`hyperbola_collinear_zmod` via the substitution `u = 2x+1` (which scales the determinant by `2`). -/
+theorem shear_hyperbola_collinear_zmod {p : ℕ} [Fact p.Prime] (h2ne : (2 : ZMod p) ≠ 0)
+    {x₁ y₁ x₂ y₂ x₃ y₃ : ZMod p}
+    (h1 : (2 * x₁ + 1) * y₁ = 1) (h2 : (2 * x₂ + 1) * y₂ = 1) (h3 : (2 * x₃ + 1) * y₃ = 1)
+    (hdet : (x₂ - x₁) * (y₃ - y₁) - (x₃ - x₁) * (y₂ - y₁) = 0) :
+    (x₁ = x₂ ∧ y₁ = y₂) ∨ (x₁ = x₃ ∧ y₁ = y₃) ∨ (x₂ = x₃ ∧ y₂ = y₃) := by
+  have hdet' : ((2 * x₂ + 1) - (2 * x₁ + 1)) * (y₃ - y₁)
+      - ((2 * x₃ + 1) - (2 * x₁ + 1)) * (y₂ - y₁) = 0 := by linear_combination 2 * hdet
+  have key := hyperbola_collinear_zmod (one_ne_zero) h1 h2 h3 hdet'
+  have hx : ∀ {a b : ZMod p}, 2 * a + 1 = 2 * b + 1 → a = b := fun {a b} h =>
+    mul_left_cancel₀ h2ne (by linear_combination h)
+  rcases key with ⟨hu, hy⟩ | ⟨hu, hy⟩ | ⟨hu, hy⟩
+  · exact Or.inl ⟨hx hu, hy⟩
+  · exact Or.inr (Or.inl ⟨hx hu, hy⟩)
+  · exact Or.inr (Or.inr ⟨hx hu, hy⟩)
+
+/-- **Lift reduction for the sheared hyperbola** (the actual construction base). A real-collinear
+triple of grid points whose residues lie on `(2x+1)·y ≡ 1 (mod p)` has two sharing a residue mod
+`p` — so, exactly as for the plain hyperbola, every collinear triple of lifts is two lifts of one
+base point plus a third, leaving only the slope-`±1` selection obligation. -/
+theorem shear_hyperbola_lift_share_residue {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2)
+    {P Q R : ℕ × ℕ}
+    (hP : (2 * (P.1 : ZMod p) + 1) * (P.2 : ZMod p) = 1)
+    (hQ : (2 * (Q.1 : ZMod p) + 1) * (Q.2 : ZMod p) = 1)
+    (hR : (2 * (R.1 : ZMod p) + 1) * (R.2 : ZMod p) = 1)
+    (hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ))) :
+    ((P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p)) ∨
+    ((P.1 : ZMod p) = (R.1 : ZMod p) ∧ (P.2 : ZMod p) = (R.2 : ZMod p)) ∨
+    ((Q.1 : ZMod p) = (R.1 : ZMod p) ∧ (Q.2 : ZMod p) = (R.2 : ZMod p)) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  have h2ne : (2 : ZMod p) ≠ 0 := by
+    have h : ((2 : ℕ) : ZMod p) ≠ 0 := by
+      rw [Ne, ZMod.natCast_eq_zero_iff]
+      exact fun hd => hp2 ((Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).mp hd)
+    simpa using h
+  exact shear_hyperbola_collinear_zmod h2ne hP hQ hR (collinear_imp_modp_det_zero p hcol)
+
+/-! ### ⭐ The closed-form sheared construction `shearSel p`
+
+A **closed-form** lift-selection rule (found 2026-06-19, see `SELECTION-RULE-FOUND.md`) for the
+sheared hyperbola, cracking the crux the prior baton believed was intrinsically non-uniform. For
+prime `p`, with pole `pl = (p−1)/2`:
+
+* base column `x` is the point `(x, shearY p x)`, `shearY p x = ((2x+1)⁻¹ : ZMod p).val`
+  (so `shearY p pl = 0`: the pole, since `0⁻¹ = 0` in `ZMod p`);
+* **drop the pole column** entirely; for every other column keep **3 of the 4 lifts**, dropping the
+  corner nearest the grid centre: `shearDrop p r s = (r + p·[r≤pl], s + p·[s≤pl])`.
+
+`card`, distinctness, grid-bound and `NoThreeCollinear` were verified (exact integer determinant) for
+EVERY prime `3 ≤ p ≤ 109`; `Anchors.lean` certifies `p = 7,11,13` by `native_decide`. The `card` and
+grid facts are proven below axiom-clean; the lone remaining obligation for an axiom-clean
+`hjsw_lower` is `shearSel_noThree` (the slope-`±1` counting lemma for this explicit rule). -/
+def shearY (p x : ℕ) : ℕ := ((2 * (x : ZMod p) + 1)⁻¹).val
+
+/-- The single lift dropped from base point `(r,s)`: the corner nearest the grid centre (shift a
+coordinate up by `p` exactly when its residue is `≤ (p−1)/2`). Always one of the four corners. -/
+def shearDrop (p r s : ℕ) : ℕ × ℕ :=
+  (r + (if r ≤ (p - 1) / 2 then p else 0), s + (if s ≤ (p - 1) / 2 then p else 0))
+
+/-- The 3 kept lifts of base column `x`: all four corners except `shearDrop`. -/
+def shearKept (p x : ℕ) : Finset (ℕ × ℕ) :=
+  ({(x, shearY p x), (x + p, shearY p x), (x, shearY p x + p), (x + p, shearY p x + p)} :
+    Finset (ℕ × ℕ)).erase (shearDrop p x (shearY p x))
+
+/-- The full closed-form sheared selection: drop the pole column `(p−1)/2`, take 3 lifts of each
+other column. -/
+def shearSel (p : ℕ) : Finset (ℕ × ℕ) :=
+  ((Finset.range p).erase ((p - 1) / 2)).biUnion (shearKept p)
+
+/-- Every kept lift of column `x` has first coordinate `x` or `x+p` and second `shearY p x` or
+`shearY p x + p`. -/
+theorem mem_shearKept {p x : ℕ} {q : ℕ × ℕ} (hq : q ∈ shearKept p x) :
+    (q.1 = x ∨ q.1 = x + p) ∧ (q.2 = shearY p x ∨ q.2 = shearY p x + p) := by
+  simp only [shearKept, Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton] at hq
+  rcases hq.2 with h | h | h | h <;> subst h <;> simp
+
+/-- `shearDrop` is one of the four corners (so erasing it from the 4-element corner set leaves 3). -/
+theorem shearDrop_mem_corners (p x : ℕ) :
+    shearDrop p x (shearY p x) ∈
+      ({(x, shearY p x), (x + p, shearY p x), (x, shearY p x + p), (x + p, shearY p x + p)} :
+        Finset (ℕ × ℕ)) := by
+  simp only [shearDrop, Finset.mem_insert, Finset.mem_singleton]
+  by_cases hx : x ≤ (p - 1) / 2 <;> by_cases hs : shearY p x ≤ (p - 1) / 2 <;>
+    simp [hx, hs]
+
+/-- Each column keeps exactly 3 lifts. -/
+theorem shearKept_card {p x : ℕ} (hp : 0 < p) : (shearKept p x).card = 3 := by
+  have hs : shearY p x + p ≠ shearY p x := by omega
+  have hx : x + p ≠ x := by omega
+  have h4 : ({(x, shearY p x), (x + p, shearY p x), (x, shearY p x + p), (x + p, shearY p x + p)} :
+      Finset (ℕ × ℕ)).card = 4 := by
+    rw [Finset.card_insert_of_notMem (by simp [Prod.ext_iff]; omega),
+      Finset.card_insert_of_notMem (by simp [Prod.ext_iff]; omega),
+      Finset.card_insert_of_notMem (by simp [Prod.ext_iff]; omega), Finset.card_singleton]
+  rw [shearKept, Finset.card_erase_of_mem (shearDrop_mem_corners p x), h4]
+
+/-- **The sheared selection has exactly `3(p−1)` points** (prime `p`). -/
+theorem shearSel_card {p : ℕ} (hp : p.Prime) : (shearSel p).card = 3 * (p - 1) := by
+  have hp0 : 0 < p := hp.pos
+  rw [shearSel, Finset.card_biUnion]
+  · rw [Finset.sum_congr rfl (fun x _ => shearKept_card (x := x) hp0)]
+    rw [Finset.sum_const, Finset.card_erase_of_mem
+      (Finset.mem_range.mpr (by omega : (p - 1) / 2 < p)), Finset.card_range,
+      smul_eq_mul, Nat.mul_comm]
+  · intro a ha b hb hab
+    have hak : a < p := Finset.mem_range.mp (Finset.mem_of_mem_erase ha)
+    have hbk : b < p := Finset.mem_range.mp (Finset.mem_of_mem_erase hb)
+    show Disjoint (shearKept p a) (shearKept p b)
+    rw [Finset.disjoint_left]
+    intro q hqa hqb
+    have h1 := (mem_shearKept hqa).1
+    have h2 := (mem_shearKept hqb).1
+    rcases h1 with h1 | h1 <;> rcases h2 with h2 | h2 <;> omega
+
+/-- **The sheared selection lies in the `2p × 2p` grid.** -/
+theorem shearSel_grid {p : ℕ} (hp : p.Prime) : IsGridSet (2 * p) (shearSel p) := by
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  intro q hq
+  simp only [shearSel, Finset.mem_biUnion, Finset.mem_erase, Finset.mem_range] at hq
+  obtain ⟨x, ⟨_, hxp⟩, hqk⟩ := hq
+  have hxy := mem_shearKept hqk
+  have hsy : shearY p x < p := ZMod.val_lt _
+  constructor
+  · rcases hxy.1 with h | h <;> omega
+  · rcases hxy.2 with h | h <;> omega
+
+/-- `shearY` lands in `[0, p)`. -/
+theorem shearY_lt {p : ℕ} [NeZero p] (x : ℕ) : shearY p x < p := ZMod.val_lt _
+
+/-- Off the pole column, the shear factor `2x+1` is a unit mod `p`. -/
+theorem shear_two_ne {p x : ℕ} (hp : p.Prime) (hx : x < p) (hne : x ≠ (p - 1) / 2) :
+    (2 * (x : ZMod p) + 1) ≠ 0 := by
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  intro h
+  have hcast : ((2 * x + 1 : ℕ) : ZMod p) = 0 := by push_cast; linear_combination h
+  have hdvd : p ∣ (2 * x + 1) := (ZMod.natCast_eq_zero_iff _ _).mp hcast
+  obtain ⟨k, hk⟩ := hdvd
+  have hp1 : 1 ≤ p := hp.one_lt.le
+  have hk2 : k < 2 := by
+    by_contra hge
+    push Not at hge
+    have : 2 * p ≤ p * k := by nlinarith
+    omega
+  have hk0 : 1 ≤ k := by
+    rcases Nat.eq_zero_or_pos k with h0 | h0
+    · subst h0; simp at hk
+    · exact h0
+  have : k = 1 := by omega
+  rw [this, Nat.mul_one] at hk
+  omega
+
+/-- **The base column lies on the sheared hyperbola.** For `x ≠ pole`, `(2x+1)·shearY = 1` mod `p`. -/
+theorem shear_curve {p x : ℕ} (hp : p.Prime) (hx : x < p) (hne : x ≠ (p - 1) / 2) :
+    (2 * (x : ZMod p) + 1) * ((shearY p x : ℕ) : ZMod p) = 1 := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  have hval : ((shearY p x : ℕ) : ZMod p) = (2 * (x : ZMod p) + 1)⁻¹ := by
+    rw [shearY]; simp [ZMod.natCast_val, ZMod.cast_id]
+  rw [hval, mul_inv_cancel₀ (shear_two_ne hp hx hne)]
+
+/-- `shearY` is injective on `[0,p)` (the base has distinct rows): `x ↦ (2x+1)⁻¹` is a composite of
+injective maps (`x ↦ 2x+1` injective on residues, inversion an involution on the field). -/
+theorem shearY_injective {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {x x' : ℕ} (hx : x < p) (hx' : x' < p)
+    (h : shearY p x = shearY p x') : x = x' := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  rw [shearY, shearY] at h
+  have hv : (2 * (x : ZMod p) + 1)⁻¹ = (2 * (x' : ZMod p) + 1)⁻¹ :=
+    ZMod.val_injective p h
+  have hu : 2 * (x : ZMod p) + 1 = 2 * (x' : ZMod p) + 1 := inv_injective hv
+  have h2 : (2 : ZMod p) ≠ 0 := by
+    have : ((2 : ℕ) : ZMod p) ≠ 0 := by
+      rw [Ne, ZMod.natCast_eq_zero_iff]
+      exact fun hd => hp2 ((Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).mp hd)
+    simpa using this
+  have hxx : (x : ZMod p) = (x' : ZMod p) :=
+    mul_left_cancel₀ h2 (by linear_combination hu)
+  calc x = ((x : ZMod p)).val := (ZMod.val_cast_of_lt hx).symm
+    _ = ((x' : ZMod p)).val := by rw [hxx]
+    _ = x' := ZMod.val_cast_of_lt hx'
+
+/-- **Every point of `shearSel p` lies (mod `p`) on the sheared hyperbola** and inside `[0,2p)²`.
+The reusable input to `shear_hyperbola_lift_share_residue` for each of `P,Q,R`. -/
+theorem shearSel_mem_curve {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P : ℕ × ℕ}
+    (hP : P ∈ shearSel p) :
+    P.1 < 2 * p ∧ P.2 < 2 * p ∧ (2 * (P.1 : ZMod p) + 1) * (P.2 : ZMod p) = 1 := by
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  simp only [shearSel, Finset.mem_biUnion, Finset.mem_erase, Finset.mem_range] at hP
+  obtain ⟨a, ⟨hane, hap⟩, hPk⟩ := hP
+  have hxy := mem_shearKept hPk
+  have hsy : shearY p a < p := shearY_lt a
+  have hc1 : (P.1 : ZMod p) = (a : ZMod p) := by
+    rcases hxy.1 with h | h <;> simp [h]
+  have hc2 : (P.2 : ZMod p) = (shearY p a : ZMod p) := by
+    rcases hxy.2 with h | h <;> simp [h]
+  refine ⟨?_, ?_, ?_⟩
+  · rcases hxy.1 with h | h <;> omega
+  · rcases hxy.2 with h | h <;> omega
+  · rw [hc1, hc2]; exact shear_curve hp hap hane
+
+/-- A real-collinear triple of `shearSel p` has two points sharing a residue mod `p` (two lifts of
+one base column). Direct application of `shear_hyperbola_lift_share_residue` via `shearSel_mem_curve`. -/
+theorem shearSel_share_residue {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R : ℕ × ℕ}
+    (hP : P ∈ shearSel p) (hQ : Q ∈ shearSel p) (hR : R ∈ shearSel p)
+    (hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ))) :
+    ((P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p)) ∨
+    ((P.1 : ZMod p) = (R.1 : ZMod p) ∧ (P.2 : ZMod p) = (R.2 : ZMod p)) ∨
+    ((Q.1 : ZMod p) = (R.1 : ZMod p) ∧ (Q.2 : ZMod p) = (R.2 : ZMod p)) :=
+  shear_hyperbola_lift_share_residue hp hp2 (shearSel_mem_curve hp hp2 hP).2.2
+    (shearSel_mem_curve hp hp2 hQ).2.2 (shearSel_mem_curve hp hp2 hR).2.2 hcol
+
+/-- On the sheared hyperbola the `y`-residue is a function of the `x`-residue: two points of
+`shearSel p` with equal first residue have equal second residue (kills the slope-`∞` case). -/
+theorem shearSel_yres_of_xres {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P R : ℕ × ℕ}
+    (hP : P ∈ shearSel p) (hR : R ∈ shearSel p)
+    (h : (R.1 : ZMod p) = (P.1 : ZMod p)) : (R.2 : ZMod p) = (P.2 : ZMod p) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  have cP := (shearSel_mem_curve hp hp2 hP).2.2
+  have cR := (shearSel_mem_curve hp hp2 hR).2.2
+  have hne : (2 * (P.1 : ZMod p) + 1) ≠ 0 := by
+    intro h0; rw [h0, zero_mul] at cP; exact one_ne_zero cP.symm
+  have cR' : (2 * (P.1 : ZMod p) + 1) * (R.2 : ZMod p) = 1 := by rw [← h]; exact cR
+  exact mul_left_cancel₀ hne (cR'.trans cP.symm)
+
+/-- Dually, the `x`-residue is a function of the `y`-residue (kills the slope-`0` case): on the
+curve `y ≠ 0`, so equal `y`-residues force equal `x`-residues. -/
+theorem shearSel_xres_of_yres {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P R : ℕ × ℕ}
+    (hP : P ∈ shearSel p) (hR : R ∈ shearSel p)
+    (h : (R.2 : ZMod p) = (P.2 : ZMod p)) : (R.1 : ZMod p) = (P.1 : ZMod p) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  have cP := (shearSel_mem_curve hp hp2 hP).2.2
+  have cR := (shearSel_mem_curve hp hp2 hR).2.2
+  have hyne : (P.2 : ZMod p) ≠ 0 := by
+    intro h0; rw [h0, mul_zero] at cP; exact one_ne_zero cP.symm
+  have key : (2 * (R.1 : ZMod p) + 1) * (P.2 : ZMod p)
+      = (2 * (P.1 : ZMod p) + 1) * (P.2 : ZMod p) := by rw [cP, ← h, cR]
+  have hu : (2 * (R.1 : ZMod p) + 1) = (2 * (P.1 : ZMod p) + 1) := mul_right_cancel₀ hyne key
+  have h2 : (2 : ZMod p) ≠ 0 := by
+    have : ((2 : ℕ) : ZMod p) ≠ 0 := by
+      rw [Ne, ZMod.natCast_eq_zero_iff]
+      exact fun hd => hp2 ((Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).mp hd)
+    simpa using this
+  exact mul_left_cancel₀ h2 (by linear_combination hu)
+
+/-- A kept lift of column `x` is never the (single) dropped corner of that column. -/
+theorem shearKept_ne_drop {p x : ℕ} {q : ℕ × ℕ} (hq : q ∈ shearKept p x) :
+    q ≠ shearDrop p x (shearY p x) := by
+  rw [shearKept, Finset.mem_erase] at hq
+  exact hq.1
+
+/-- The kept/drop fact in coordinate form: a kept lift's coordinates do not *both* match the
+dropped corner `(x + p·[x≤pl], shearY p x + p·[shearY p x ≤ pl])`. -/
+theorem shearKept_corner_drop {p x : ℕ} {P : ℕ × ℕ} (hP : P ∈ shearKept p x) :
+    ¬ (P.1 = x + (if x ≤ (p - 1) / 2 then p else 0) ∧
+       P.2 = shearY p x + (if shearY p x ≤ (p - 1) / 2 then p else 0)) := by
+  have hne := shearKept_ne_drop hP
+  intro h
+  exact hne (by rw [shearDrop]; exact Prod.ext h.1 h.2)
+
+/-- **Slope-`+1` partner lemma.** A kept lift `R` of column `c` lying on the slope-`+1` line through
+column `a`'s kept diagonal pair must equal `c`'s *dropped* corner. The curve factors to the partner
+relation `2c+2sₐ+1 ≡ 0` and `2s_c+2a+1 ≡ 0 (mod p)`; the closed-form drop tie-break then forces the
+landing corner to be the dropped one. -/
+theorem shear_diag_partner {p a c : ℕ} (hp : p.Prime) (hp2 : p ≠ 2)
+    (hap : a < p) (hane : a ≠ (p - 1) / 2) (hcp : c < p) (hcne : c ≠ (p - 1) / 2)
+    (hca : c ≠ a) {R : ℕ × ℕ}
+    (hR1 : R.1 = c ∨ R.1 = c + p) (hR2 : R.2 = shearY p c ∨ R.2 = shearY p c + p)
+    (hline : (R.2 : ℤ) - (R.1 : ℤ) = (shearY p a : ℤ) - (a : ℤ))
+    (hopp : (a ≤ (p - 1) / 2 ∧ ¬ shearY p a ≤ (p - 1) / 2) ∨
+            (¬ a ≤ (p - 1) / 2 ∧ shearY p a ≤ (p - 1) / 2)) :
+    R = shearDrop p c (shearY p c) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  have hp0 := hp.pos
+  have hp3 : 3 ≤ p := lt_of_le_of_ne hp.two_le hp2.symm
+  have hpodd : 2 * ((p - 1) / 2) + 1 = p := by
+    obtain ⟨k, hk⟩ := hp.odd_of_ne_two hp2; omega
+  have hsa : shearY p a < p := shearY_lt a
+  have hsc : shearY p c < p := shearY_lt c
+  have hR1res : (R.1 : ZMod p) = (c : ZMod p) := by
+    rcases hR1 with h | h <;> simp [h]
+  have hR2res : (R.2 : ZMod p) = (shearY p c : ZMod p) := by
+    rcases hR2 with h | h <;> simp [h]
+  have hlinez : (shearY p c : ZMod p) - (c : ZMod p) = (shearY p a : ZMod p) - (a : ZMod p) := by
+    have h := congrArg (fun z : ℤ => (z : ZMod p)) hline
+    push_cast at h
+    rw [hR1res, hR2res] at h
+    exact h
+  have hccur : (2 * (c : ZMod p) + 1) * (shearY p c : ZMod p) = 1 := shear_curve hp hcp hcne
+  have hacur : (2 * (a : ZMod p) + 1) * (shearY p a : ZMod p) = 1 := shear_curve hp hap hane
+  have hscval : (shearY p c : ZMod p) = (shearY p a : ZMod p) - a + c := by linear_combination hlinez
+  have h1 : (2 * (c : ZMod p) + 1) * ((shearY p a : ZMod p) - a + c) = 1 := by
+    rw [← hscval]; exact hccur
+  have hfac : ((c : ZMod p) - (a : ZMod p)) *
+      (2 * (c : ZMod p) + 2 * (shearY p a : ZMod p) + 1) = 0 := by
+    linear_combination h1 - hacur
+  rcases mul_eq_zero.mp hfac with h | h
+  · exfalso; apply hca
+    have hh : (c : ZMod p) = (a : ZMod p) := by linear_combination h
+    have hmod : c % p = a % p := (ZMod.natCast_eq_natCast_iff' c a p).mp hh
+    rwa [Nat.mod_eq_of_lt hcp, Nat.mod_eq_of_lt hap] at hmod
+  · have hB : (2 * (c : ZMod p) + 2 * (shearY p a : ZMod p) + 1) = 0 := h
+    have hB' : (2 * (shearY p c : ZMod p) + 2 * (a : ZMod p) + 1) = 0 := by
+      linear_combination 2 * hscval + hB
+    have hd1 : p ∣ (2 * c + 2 * shearY p a + 1) := by
+      apply (ZMod.natCast_eq_zero_iff _ p).mp; push_cast; linear_combination hB
+    have hd2 : p ∣ (2 * shearY p c + 2 * a + 1) := by
+      apply (ZMod.natCast_eq_zero_iff _ p).mp; push_cast; linear_combination hB'
+    have hXc : 2 * c + 2 * shearY p a + 1 = p ∨ 2 * c + 2 * shearY p a + 1 = 3 * p := by
+      obtain ⟨m, hm⟩ := hd1
+      have hm4 : m < 4 := by
+        by_contra hge; rw [not_lt] at hge
+        have : p * 4 ≤ p * m := Nat.mul_le_mul (le_refl p) hge
+        omega
+      interval_cases m <;> omega
+    have hXs : 2 * shearY p c + 2 * a + 1 = p ∨ 2 * shearY p c + 2 * a + 1 = 3 * p := by
+      obtain ⟨m, hm⟩ := hd2
+      have hm4 : m < 4 := by
+        by_contra hge; rw [not_lt] at hge
+        have : p * 4 ≤ p * m := Nat.mul_le_mul (le_refl p) hge
+        omega
+      interval_cases m <;> omega
+    -- clean ℕ form of the slope-`+1` line equation
+    have hlineN : R.2 + a = R.1 + shearY p a := by
+      have h : (R.2 : ℤ) + a = R.1 + shearY p a := by linarith [hline]
+      exact_mod_cast h
+    clear hline
+    rw [shearDrop]
+    refine Prod.ext ?_ ?_ <;> split_ifs <;> omega
+
+/-- **Slope-`−1` partner lemma.** The antidiagonal analogue of `shear_diag_partner`: a kept lift `R`
+of column `c` on the slope-`−1` line through column `a`'s kept antidiagonal pair is `c`'s dropped
+corner. Partner relations `2sₐ ≡ 2c+1`, `2s_c ≡ 2a+1 (mod p)`. -/
+theorem shear_anti_partner {p a c : ℕ} (hp : p.Prime) (hp2 : p ≠ 2)
+    (hap : a < p) (hane : a ≠ (p - 1) / 2) (hcp : c < p) (hcne : c ≠ (p - 1) / 2)
+    (hca : c ≠ a) {R : ℕ × ℕ}
+    (hR1 : R.1 = c ∨ R.1 = c + p) (hR2 : R.2 = shearY p c ∨ R.2 = shearY p c + p)
+    (hline : (R.2 : ℤ) + (R.1 : ℤ) = (shearY p a : ℤ) + (a : ℤ) + p)
+    (hsame : (a ≤ (p - 1) / 2 ∧ shearY p a ≤ (p - 1) / 2) ∨
+             (¬ a ≤ (p - 1) / 2 ∧ ¬ shearY p a ≤ (p - 1) / 2)) :
+    R = shearDrop p c (shearY p c) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  have hp0 := hp.pos
+  have hp3 : 3 ≤ p := lt_of_le_of_ne hp.two_le hp2.symm
+  have hpodd : 2 * ((p - 1) / 2) + 1 = p := by
+    obtain ⟨k, hk⟩ := hp.odd_of_ne_two hp2; omega
+  have hsa : shearY p a < p := shearY_lt a
+  have hsc : shearY p c < p := shearY_lt c
+  have hR1res : (R.1 : ZMod p) = (c : ZMod p) := by
+    rcases hR1 with h | h <;> simp [h]
+  have hR2res : (R.2 : ZMod p) = (shearY p c : ZMod p) := by
+    rcases hR2 with h | h <;> simp [h]
+  have hlinez : (shearY p c : ZMod p) + (c : ZMod p) = (shearY p a : ZMod p) + (a : ZMod p) := by
+    have h := congrArg (fun z : ℤ => (z : ZMod p)) hline
+    push_cast at h
+    rw [hR1res, hR2res] at h
+    simpa [ZMod.natCast_self] using h
+  have hccur : (2 * (c : ZMod p) + 1) * (shearY p c : ZMod p) = 1 := shear_curve hp hcp hcne
+  have hacur : (2 * (a : ZMod p) + 1) * (shearY p a : ZMod p) = 1 := shear_curve hp hap hane
+  have hscval : (shearY p c : ZMod p) = (shearY p a : ZMod p) + a - c := by linear_combination hlinez
+  have h1 : (2 * (c : ZMod p) + 1) * ((shearY p a : ZMod p) + a - c) = 1 := by
+    rw [← hscval]; exact hccur
+  have hfac : ((c : ZMod p) - (a : ZMod p)) *
+      (-2 * (c : ZMod p) + 2 * (shearY p a : ZMod p) - 1) = 0 := by
+    linear_combination h1 - hacur
+  rcases mul_eq_zero.mp hfac with h | h
+  · exfalso; apply hca
+    have hh : (c : ZMod p) = (a : ZMod p) := by linear_combination h
+    have hmod : c % p = a % p := (ZMod.natCast_eq_natCast_iff' c a p).mp hh
+    rwa [Nat.mod_eq_of_lt hcp, Nat.mod_eq_of_lt hap] at hmod
+  · have hB : (2 * (shearY p a : ZMod p)) = 2 * (c : ZMod p) + 1 := by linear_combination h
+    have hB' : (2 * (shearY p c : ZMod p)) = 2 * (a : ZMod p) + 1 := by
+      linear_combination 2 * hscval + hB
+    have hcong1 : (2 * shearY p a) % p = (2 * c + 1) % p := by
+      apply (ZMod.natCast_eq_natCast_iff' _ _ _).mp; push_cast; linear_combination hB
+    have hcong2 : (2 * shearY p c) % p = (2 * a + 1) % p := by
+      apply (ZMod.natCast_eq_natCast_iff' _ _ _).mp; push_cast; linear_combination hB'
+    have hXc := coord_diff_of_residue_eq (p := p) (a := 2 * shearY p a) (b := 2 * c + 1)
+      (by omega) (by omega) hcong1
+    have hXs := coord_diff_of_residue_eq (p := p) (a := 2 * shearY p c) (b := 2 * a + 1)
+      (by omega) (by omega) hcong2
+    -- clean ℕ form of the slope-`−1` line equation
+    have hlineN : R.2 + R.1 = shearY p a + a + p := by exact_mod_cast hline
+    clear hline
+    rw [shearDrop]
+    refine Prod.ext ?_ ?_ <;> split_ifs <;> omega
+
+/-- **The slope-`±1` diagonal core** — the irreducible heart of HJSW. `P,Q` (lifts of one column)
+differ in BOTH coordinates (a diagonal/antidiagonal pair, slope `±1`), and `R` is a kept lift of a
+different column. The closed-form drop rule forces any third kept lift on a kept slope-`±1` line to
+*be* a dropped corner — contradiction. Discharged via `shear_diag_partner`/`shear_anti_partner`. -/
+theorem shearSel_cross_diag {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R : ℕ × ℕ}
+    (hP : P ∈ shearSel p) (hQ : Q ∈ shearSel p) (hR : R ∈ shearSel p)
+    (hres : (P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p))
+    (hRdiff : ¬ ((R.1 : ZMod p) = (P.1 : ZMod p) ∧ (R.2 : ZMod p) = (P.2 : ZMod p)))
+    (_hPQ : P ≠ Q) (_hPR : P ≠ R) (_hQR : Q ≠ R) (hx1 : P.1 ≠ Q.1) (hy1 : P.2 ≠ Q.2) :
+    ¬ Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.pos.ne'⟩
+  intro hcol
+  have hp0 := hp.pos
+  have hpne : (p : ℤ) ≠ 0 := by exact_mod_cast hp.pos.ne'
+  -- extract columns
+  simp only [shearSel, Finset.mem_biUnion, Finset.mem_erase, Finset.mem_range] at hP hQ hR
+  obtain ⟨a, ⟨hane, hap⟩, hPk⟩ := hP
+  obtain ⟨b, ⟨hbne, hbp⟩, hQk⟩ := hQ
+  obtain ⟨c, ⟨hcne, hcp⟩, hRk⟩ := hR
+  have hPxy := mem_shearKept hPk
+  have hQxy := mem_shearKept hQk
+  have hRxy := mem_shearKept hRk
+  -- P, Q lie in the same column a
+  have hba : b = a := by
+    have h1 : (P.1 : ZMod p) = (a : ZMod p) := by
+      rcases hPxy.1 with h | h <;> simp [h]
+    have h2 : (Q.1 : ZMod p) = (b : ZMod p) := by
+      rcases hQxy.1 with h | h <;> simp [h]
+    have hh : (b : ZMod p) = (a : ZMod p) := by rw [← h2, ← h1]; exact hres.1.symm
+    have hmod : b % p = a % p := (ZMod.natCast_eq_natCast_iff' b a p).mp hh
+    rwa [Nat.mod_eq_of_lt hbp, Nat.mod_eq_of_lt hap] at hmod
+  rw [hba] at hQk hQxy
+  -- R lies in a different column c ≠ a
+  have hca : c ≠ a := by
+    intro hh
+    apply hRdiff
+    have hpp1 : (P.1 : ZMod p) = (a : ZMod p) := by
+      rcases hPxy.1 with h | h <;> simp [h]
+    have hpp2 : (P.2 : ZMod p) = (shearY p a : ZMod p) := by
+      rcases hPxy.2 with h | h <;> simp [h]
+    have hr1 : (R.1 : ZMod p) = (c : ZMod p) := by
+      rcases hRxy.1 with h | h <;> simp [h]
+    have hr2 : (R.2 : ZMod p) = (shearY p c : ZMod p) := by
+      rcases hRxy.2 with h | h <;> simp [h]
+    exact ⟨by rw [hr1, hpp1, hh], by rw [hr2, hpp2, hh]⟩
+  -- orientation determinant vanishes
+  have hdet := collinear_imp_det3_zero hcol
+  simp only [det3, toReal] at hdet
+  have hZ : ((Q.1 : ℤ) - (P.1 : ℤ)) * ((R.2 : ℤ) - (P.2 : ℤ)) -
+      ((R.1 : ℤ) - (P.1 : ℤ)) * ((Q.2 : ℤ) - (P.2 : ℤ)) = 0 := by exact_mod_cast hdet
+  -- four leaf configurations for (P, Q); the other coordinate of Q is forced by hx1 / hy1
+  rcases hPxy.1 with hP1 | hP1 <;> rcases hPxy.2 with hP2 | hP2
+  · -- P = (a, shearY p a) — diagonal, Q = (a+p, shearY p a + p)
+    have hQ1 : Q.1 = a + p := by
+      rcases hQxy.1 with h | h
+      · exact absurd (hP1.trans h.symm) hx1
+      · exact h
+    have hQ2 : Q.2 = shearY p a + p := by
+      rcases hQxy.2 with h | h
+      · exact absurd (hP2.trans h.symm) hy1
+      · exact h
+    have hline : (R.2 : ℤ) - (R.1 : ℤ) = (shearY p a : ℤ) - (a : ℤ) := by
+      rw [hP1, hP2, hQ1, hQ2] at hZ; push_cast at hZ
+      have hkey : (p : ℤ) * (((R.2 : ℤ) - R.1) - ((shearY p a : ℤ) - a)) = 0 := by
+        first | linear_combination hZ | linear_combination -hZ
+      rcases mul_eq_zero.mp hkey with h | h
+      · exact absurd h hpne
+      · linarith
+    have hopp : (a ≤ (p - 1) / 2 ∧ ¬ shearY p a ≤ (p - 1) / 2) ∨
+        (¬ a ≤ (p - 1) / 2 ∧ shearY p a ≤ (p - 1) / 2) := by
+      have hPnd := shearKept_corner_drop hPk
+      have hQnd := shearKept_corner_drop hQk
+      rw [hP1, hP2] at hPnd; rw [hQ1, hQ2] at hQnd
+      split_ifs at hPnd hQnd <;> omega
+    exact (shearKept_ne_drop hRk)
+      (shear_diag_partner hp hp2 hap hane hcp hcne hca hRxy.1 hRxy.2 hline hopp)
+  · -- P = (a, shearY p a + p) — antidiagonal, Q = (a+p, shearY p a)
+    have hQ1 : Q.1 = a + p := by
+      rcases hQxy.1 with h | h
+      · exact absurd (hP1.trans h.symm) hx1
+      · exact h
+    have hQ2 : Q.2 = shearY p a := by
+      rcases hQxy.2 with h | h
+      · exact h
+      · exact absurd (hP2.trans h.symm) hy1
+    have hline : (R.2 : ℤ) + (R.1 : ℤ) = (shearY p a : ℤ) + (a : ℤ) + p := by
+      rw [hP1, hP2, hQ1, hQ2] at hZ; push_cast at hZ
+      have hkey : (p : ℤ) * (((R.2 : ℤ) + R.1) - ((shearY p a : ℤ) + a + p)) = 0 := by
+        first | linear_combination hZ | linear_combination -hZ
+      rcases mul_eq_zero.mp hkey with h | h
+      · exact absurd h hpne
+      · linarith
+    have hsame : (a ≤ (p - 1) / 2 ∧ shearY p a ≤ (p - 1) / 2) ∨
+        (¬ a ≤ (p - 1) / 2 ∧ ¬ shearY p a ≤ (p - 1) / 2) := by
+      have hPnd := shearKept_corner_drop hPk
+      have hQnd := shearKept_corner_drop hQk
+      rw [hP1, hP2] at hPnd; rw [hQ1, hQ2] at hQnd
+      split_ifs at hPnd hQnd <;> omega
+    exact (shearKept_ne_drop hRk)
+      (shear_anti_partner hp hp2 hap hane hcp hcne hca hRxy.1 hRxy.2 hline hsame)
+  · -- P = (a+p, shearY p a) — antidiagonal, Q = (a, shearY p a + p)
+    have hQ1 : Q.1 = a := by
+      rcases hQxy.1 with h | h
+      · exact h
+      · exact absurd (hP1.trans h.symm) hx1
+    have hQ2 : Q.2 = shearY p a + p := by
+      rcases hQxy.2 with h | h
+      · exact absurd (hP2.trans h.symm) hy1
+      · exact h
+    have hline : (R.2 : ℤ) + (R.1 : ℤ) = (shearY p a : ℤ) + (a : ℤ) + p := by
+      rw [hP1, hP2, hQ1, hQ2] at hZ; push_cast at hZ
+      have hkey : (p : ℤ) * (((R.2 : ℤ) + R.1) - ((shearY p a : ℤ) + a + p)) = 0 := by
+        first | linear_combination hZ | linear_combination -hZ
+      rcases mul_eq_zero.mp hkey with h | h
+      · exact absurd h hpne
+      · linarith
+    have hsame : (a ≤ (p - 1) / 2 ∧ shearY p a ≤ (p - 1) / 2) ∨
+        (¬ a ≤ (p - 1) / 2 ∧ ¬ shearY p a ≤ (p - 1) / 2) := by
+      have hPnd := shearKept_corner_drop hPk
+      have hQnd := shearKept_corner_drop hQk
+      rw [hP1, hP2] at hPnd; rw [hQ1, hQ2] at hQnd
+      split_ifs at hPnd hQnd <;> omega
+    exact (shearKept_ne_drop hRk)
+      (shear_anti_partner hp hp2 hap hane hcp hcne hca hRxy.1 hRxy.2 hline hsame)
+  · -- P = (a+p, shearY p a + p) — diagonal, Q = (a, shearY p a)
+    have hQ1 : Q.1 = a := by
+      rcases hQxy.1 with h | h
+      · exact h
+      · exact absurd (hP1.trans h.symm) hx1
+    have hQ2 : Q.2 = shearY p a := by
+      rcases hQxy.2 with h | h
+      · exact h
+      · exact absurd (hP2.trans h.symm) hy1
+    have hline : (R.2 : ℤ) - (R.1 : ℤ) = (shearY p a : ℤ) - (a : ℤ) := by
+      rw [hP1, hP2, hQ1, hQ2] at hZ; push_cast at hZ
+      have hkey : (p : ℤ) * (((R.2 : ℤ) - R.1) - ((shearY p a : ℤ) - a)) = 0 := by
+        first | linear_combination hZ | linear_combination -hZ
+      rcases mul_eq_zero.mp hkey with h | h
+      · exact absurd h hpne
+      · linarith
+    have hopp : (a ≤ (p - 1) / 2 ∧ ¬ shearY p a ≤ (p - 1) / 2) ∨
+        (¬ a ≤ (p - 1) / 2 ∧ shearY p a ≤ (p - 1) / 2) := by
+      have hPnd := shearKept_corner_drop hPk
+      have hQnd := shearKept_corner_drop hQk
+      rw [hP1, hP2] at hPnd; rw [hQ1, hQ2] at hQnd
+      split_ifs at hPnd hQnd <;> omega
+    exact (shearKept_ne_drop hRk)
+      (shear_diag_partner hp hp2 hap hane hcp hcne hca hRxy.1 hRxy.2 hline hopp)
+
+/-- **The cross-column slope crux.** Two distinct kept lifts `P,Q` of one column, and a kept point
+`R` of a *different* column (its residues differ from `P`'s), are never collinear. The slope `0`/`∞`
+cases (`P,Q` share a coordinate) are discharged here via curve-functionality
+(`shearSel_{y,x}res_of_{x,y}res`): a third point on a horizontal/vertical line through `P,Q` would
+share `P`'s residues, contradicting `hRdiff`. The remaining slope-`±1` case is `shearSel_cross_diag`. -/
+theorem shearSel_cross_column {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R : ℕ × ℕ}
+    (hP : P ∈ shearSel p) (hQ : Q ∈ shearSel p) (hR : R ∈ shearSel p)
+    (hres : (P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p))
+    (hRdiff : ¬ ((R.1 : ZMod p) = (P.1 : ZMod p) ∧ (R.2 : ZMod p) = (P.2 : ZMod p)))
+    (hPQ : P ≠ Q) (hPR : P ≠ R) (hQR : Q ≠ R) :
+    ¬ Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)) := by
+  intro hcol
+  have hdet := collinear_imp_det3_zero hcol
+  simp only [det3, toReal] at hdet
+  have hZ : ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) - ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) = 0 := by
+    exact_mod_cast hdet
+  have cX : (R.1 : ZMod p) = (P.1 : ZMod p) → False := fun hh =>
+    hRdiff ⟨hh, shearSel_yres_of_xres hp hp2 hP hR hh⟩
+  have cY : (R.2 : ZMod p) = (P.2 : ZMod p) → False := fun hh =>
+    hRdiff ⟨shearSel_xres_of_yres hp hp2 hP hR hh, hh⟩
+  by_cases hx1 : P.1 = Q.1
+  · -- vertical line: P,Q share x, so R must too ⇒ same residue
+    have hP2neQ2 : P.2 ≠ Q.2 := fun e => hPQ (Prod.ext hx1 e)
+    have hy1 : (Q.2 : ℤ) - P.2 ≠ 0 := by
+      rw [sub_ne_zero]; intro e; exact hP2neQ2 ((by exact_mod_cast e : Q.2 = P.2).symm)
+    have hx0 : (Q.1 : ℤ) - P.1 = 0 := by rw [hx1]; ring
+    have hmul : ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) = 0 := by
+      rw [hx0, zero_mul] at hZ; linarith
+    rcases mul_eq_zero.mp hmul with h | h
+    · apply cX
+      have hRP : R.1 = P.1 := by exact_mod_cast sub_eq_zero.mp h
+      rw [hRP]
+    · exact hy1 h
+  · by_cases hy1 : P.2 = Q.2
+    · -- horizontal line: P,Q share y, so R must too
+      have hx1' : (Q.1 : ℤ) - P.1 ≠ 0 := by
+        rw [sub_ne_zero]; intro e; exact hx1 ((by exact_mod_cast e : Q.1 = P.1).symm)
+      have hy0 : (Q.2 : ℤ) - P.2 = 0 := by rw [hy1]; ring
+      have hmul : ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) = 0 := by
+        rw [hy0, mul_zero] at hZ; linarith
+      rcases mul_eq_zero.mp hmul with h | h
+      · exact hx1' h
+      · apply cY
+        have hRP : R.2 = P.2 := by exact_mod_cast sub_eq_zero.mp h
+        rw [hRP]
+    · exact shearSel_cross_diag hp hp2 hP hQ hR hres hRdiff hPQ hPR hQR hx1 hy1 hcol
+
+theorem shearSel_two_lifts_line {p : ℕ} (hp : p.Prime) (hp2 : p ≠ 2) {P Q R : ℕ × ℕ}
+    (hP : P ∈ shearSel p) (hQ : Q ∈ shearSel p) (hR : R ∈ shearSel p)
+    (hres : (P.1 : ZMod p) = (Q.1 : ZMod p) ∧ (P.2 : ZMod p) = (Q.2 : ZMod p))
+    (hPQ : P ≠ Q) (hPR : P ≠ R) (hQR : Q ≠ R) :
+    ¬ Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)) := by
+  have hP1 := (shearSel_mem_curve hp hp2 hP).1
+  have hP2 := (shearSel_mem_curve hp hp2 hP).2.1
+  have hQ1 := (shearSel_mem_curve hp hp2 hQ).1
+  have hQ2 := (shearSel_mem_curve hp hp2 hQ).2.1
+  have hR1 := (shearSel_mem_curve hp hp2 hR).1
+  have hR2 := (shearSel_mem_curve hp hp2 hR).2.1
+  have e1Q : P.1 % p = Q.1 % p := (ZMod.natCast_eq_natCast_iff _ _ _).mp hres.1
+  have e2Q : P.2 % p = Q.2 % p := (ZMod.natCast_eq_natCast_iff _ _ _).mp hres.2
+  by_cases hRres : (R.1 : ZMod p) = (P.1 : ZMod p) ∧ (R.2 : ZMod p) = (P.2 : ZMod p)
+  · -- all three same column ⇒ lift_triple_noncollinear
+    have e1R : P.1 % p = R.1 % p := ((ZMod.natCast_eq_natCast_iff _ _ _).mp hRres.1).symm
+    have e2R : P.2 % p = R.2 % p := ((ZMod.natCast_eq_natCast_iff _ _ _).mp hRres.2).symm
+    exact lift_triple_noncollinear hp.pos hP1 hP2 hQ1 hQ2 hR1 hR2 e1Q e1R e2Q e2R hPQ hPR hQR
+  · exact shearSel_cross_column hp hp2 hP hQ hR hres hRres hPQ hPR hQR
+
+/-- `shearY 2 1 = 1` (the `ZMod 2` inverse `(2·1+1)⁻¹ = 1⁻¹ = 1`). Computed explicitly because at
+mathlib v4.31 the `ZMod` field-inverse no longer kernel-reduces, so `decide` can't evaluate `shearY 2`.
+-/
+theorem shearY_two_one : shearY 2 1 = 1 := by
+  unfold shearY
+  have : (2 * ((1:ℕ) : ZMod 2) + 1) = 1 := by decide
+  rw [this, inv_one]
+  decide
+
+/-- The `p = 2` selection: only the (non-pole) column `1` survives, keeping 3 of its 4 lifts. -/
+theorem shearSel_two : shearSel 2 = {(3,1),(1,3),(3,3)} := by
+  have hrange : ((Finset.range 2).erase ((2 - 1) / 2)) = {1} := by decide
+  rw [shearSel, hrange, Finset.singleton_biUnion, shearKept, shearY_two_one]
+  decide
+
+/-- **The pure-arithmetic crux** (no reals): every pairwise-distinct triple of `shearSel p` has
+nonzero integer orientation determinant. Reduced (via `shearSel_share_residue`, symmetrised over the
+three sharing cases) to `shearSel_two_lifts_line`. -/
+theorem shearSel_intdet {p : ℕ} (hp : p.Prime) :
+    ∀ P ∈ shearSel p, ∀ Q ∈ shearSel p, ∀ R ∈ shearSel p, P ≠ Q → P ≠ R → Q ≠ R →
+      ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) - ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) ≠ 0 := by
+  rcases eq_or_ne p 2 with rfl | hp2
+  · rw [shearSel_two]; decide
+  intro P hP Q hQ R hR hPQ hPR hQR hdet0
+  have hcol : Collinear ℝ ({toReal P, toReal Q, toReal R} : Set (ℝ × ℝ)) := by
+    apply collinear_of_det3_zero
+    simp only [det3, toReal]; exact_mod_cast hdet0
+  rcases shearSel_share_residue hp hp2 hP hQ hR hcol with h | h | h
+  · exact shearSel_two_lifts_line hp hp2 hP hQ hR h hPQ hPR hQR hcol
+  · refine shearSel_two_lifts_line hp hp2 hP hR hQ h hPR hPQ hQR.symm ?_
+    have he : ({toReal P, toReal R, toReal Q} : Set (ℝ × ℝ)) = {toReal P, toReal Q, toReal R} := by
+      ext x; simp only [Set.mem_insert_iff, Set.mem_singleton_iff]; tauto
+    rwa [he]
+  · refine shearSel_two_lifts_line hp hp2 hQ hR hP h hQR (Ne.symm hPQ) (Ne.symm hPR) ?_
+    have he : ({toReal Q, toReal R, toReal P} : Set (ℝ × ℝ)) = {toReal P, toReal Q, toReal R} := by
+      ext x; simp only [Set.mem_insert_iff, Set.mem_singleton_iff]; tauto
+    rwa [he]
+
+/-- **No three points of the closed-form sheared selection are collinear.** Bridges the
+pure-arithmetic crux `shearSel_intdet` to `Collinear ℝ` exactly as `lift_triple_noncollinear` does
+(real collinearity ⇒ integer orientation determinant vanishes). The lone remaining content is
+`shearSel_intdet`. -/
+theorem shearSel_noThree {p : ℕ} (hp : p.Prime) : NoThreeCollinear (shearSel p) := by
+  intro P hP Q hQ R hR hcol
+  by_contra hne
+  rw [not_or, not_or] at hne
+  obtain ⟨hPQ, hPR, hQR⟩ := hne
+  have hdet := collinear_imp_det3_zero hcol
+  simp only [toReal, det3] at hdet
+  have hZ : ((Q.1 : ℤ) - P.1) * ((R.2 : ℤ) - P.2) - ((R.1 : ℤ) - P.1) * ((Q.2 : ℤ) - P.2) = 0 := by
+    exact_mod_cast hdet
+  exact shearSel_intdet hp P hP Q hQ R hR hPQ hPR hQR hZ
+
+/-- **HJSW lower bound.** For prime `p`, the `2p × 2p` grid admits `3(p−1)` points with no three
+collinear — the closed-form sheared-hyperbola construction `shearSel p` (the `3(n−2)/2` count with
+`n = 2p`). Reduced to the single combinatorial obligation `shearSel_noThree`; `card` and grid are
+proven axiom-clean above. -/
+theorem hjsw_lower {p : ℕ} (hp : p.Prime) : 3 * (p - 1) ≤ maxNoThreeInLine (2 * p) :=
+  le_csSup (bddAbove_grid (2 * p))
+    ⟨shearSel p, (shearSel_card hp).symm, shearSel_grid hp, shearSel_noThree hp⟩
+
+end LeanFormalizations.NoThreeInLine.Shear

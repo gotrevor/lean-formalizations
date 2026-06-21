@@ -110,4 +110,11 @@ theorem collinear_of_eq_snd {p q r : ℝ × ℝ}
   · simp only [vadd_eq_add, Prod.snd_add, Prod.smul_snd, smul_eq_mul, mul_zero, zero_add]
     exact hx2
 
+/-- Alias for `det3_zero_imp_collinear`, the name used by the sheared-hyperbola (HJSW)
+construction in `NoThreeInLine.Shear.*`. Same statement; kept so both no-three-in-line
+developments share this one core lemma. -/
+theorem collinear_of_det3_zero {p q r : ℝ × ℝ} (h : det3 p q r = 0) :
+    Collinear ℝ ({p, q, r} : Set (ℝ × ℝ)) :=
+  det3_zero_imp_collinear h
+
 end LeanFormalizations.NoThreeInLine

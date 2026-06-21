@@ -29,11 +29,18 @@ import LeanFormalizations.Logic.Goodstein.GrowthStatement
 import LeanFormalizations.Logic.FastGrowing.Basic
 import LeanFormalizations.Logic.FastGrowing.Hardy
 import LeanFormalizations.Logic.FastGrowing.Domination
+-- No-three-in-line (Green's problem #72): two independent constructions of the
+-- 3(p−1) lower bound share one core. The `hyperbolaWide`/arc development:
 import LeanFormalizations.Combinatorics.NoThreeInLine.Statement
 import LeanFormalizations.Combinatorics.NoThreeInLine.Hyperbola
 import LeanFormalizations.Combinatorics.NoThreeInLine.HyperbolaLine
 import LeanFormalizations.Combinatorics.NoThreeInLine.Pinwheel
 import LeanFormalizations.Combinatorics.NoThreeInLine.Anchors
+-- The sheared-hyperbola (HJSW) development + its prime-gap consequence:
+import LeanFormalizations.Combinatorics.NoThreeInLine.Shear.Hyperbola
+import LeanFormalizations.Combinatorics.NoThreeInLine.Shear.Anchors
+import LeanFormalizations.Combinatorics.NoThreeInLine.Shear.Statement
+import LeanFormalizations.Combinatorics.NoThreeInLine.Shear.PrimeGap
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Statement
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.FaithfulnessCheck
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.SmallCases
@@ -50,3 +57,8 @@ import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.MeasurableRoute
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Wiring
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Selection
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.DeepMindBridge
+import LeanFormalizations.NumberTheory.PrimeNumberTheorem.PNT
+import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Mertens
+import LeanFormalizations.NumberTheory.PrimeNumberTheorem.MertensConstant
+import LeanFormalizations.NumberTheory.DivisorProblem
+import LeanFormalizations.RealAnalysis.BVFourierDecay
