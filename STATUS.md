@@ -15,8 +15,21 @@
 > FastGrowing `Bachmann` sorry-free; `Basic` carries the single disclosed A3 sorry). The PNT work now uses a
 > real `PrimeNumberTheoremAnd` git dependency (de-vendored).
 > · Pre-merge branch tips preserved as `premerge/{goodstein-no-three-in-line,kakeya-davies,ntl-hjsw}` tags.
-> _The expedition-specific banners below are retained as-is; a full review-lap refresh of this file is a
-> separate task._
+> _Refreshed 2026-06-21 to cover all threads — see the at-a-glance map + full axiom ledger below._
+
+## Threads at a glance 🗺️
+- 🧊 **Foundational (frozen, all ✅ axiom-clean):** Curtis 1990 no-Frobenius-formula (`Curtis.no_polynomial_relation`) · power-tower **sharp iff** `x ∈ [e^-e, e^1/e]` (`PowerTower.tower_converges_iff_full`) · Wantzel/constructibles (iff + 5 classical impossibilities) · transcendence of **e** (Hermite) & **π** (Lindemann) ⇒ squaring-the-circle impossible.
+- ♾️ **Goodstein / Kirby–Paris:** `goodstein_terminates` ✅ + the full growth story — FastGrowing/Hardy theory (A1–A4), the **Cichoń identity** (`goodsteinLength_eq_hardy`), and **"`goodsteinLength` grows like `f_{ε₀}`" two-sided** ✅. By far the densest thread; detailed banners + lap log below.
+- 📐 **No-three-in-line (Green's #72) — TWO independent constructions, both reach `3(p−1)`:** goodstein's `hyperbolaWide`/arc in `Combinatorics.NoThreeInLine.*` (`three_mul_pred_le_maxNoThreeInLine`, odd `p`) + ntl's **sheared-hyperbola (HJSW)** in `Combinatorics.NoThreeInLine.Shear.*` (`hjsw_lower_bound`, all primes). Open frontier: all-`N` `(3/2−ε)N` (needs PNT-grade primes).
+- 🔦 **Davies planar Kakeya:** `Kakeya2D.davies_kakeya_2d` — a planar Kakeya set has Hausdorff dim 2 ✅ axiom-clean (Córdoba L²/net-thinning; carries a machine-checked DeepMind-target faithfulness bridge).
+- 🔢 **Analytic number theory (ntl):** Mertens' first theorem (`Mertens.mertens_first`) · Dirichlet divisor `O(√N)` error (`DirichletDivisor.sum_sigma0_isBigO_sqrt`) · BV ⇒ Fourier decay (`RealAnalysis.BVFourierDecay`). Builds on the de-vendored `PrimeNumberTheoremAnd` git dep.
+- 🚧 **Off-headline (`wip/`, non-default `DaviesWip` lean_lib):** jvn 2nd-route GMT (`Capacitability`/`VonNeumannSelection`, sorry-free) + FastGrowing `Bachmann` (sorry-free); `Basic` carries the single disclosed A3 sorry. Excluded from the default `lake build`.
+
+## Build & fidelity 🟢
+`lake build` green (**8656 jobs**) · `src/` **sorry-free** · **0 custom/math axioms** (`grep '^axiom' src/` empty) · every headline `#print axioms = [propext, Classical.choice, Quot.sound]`. Per-headline ledger near the bottom.
+
+## Goodstein / Kirby–Paris thread — detailed history
+_The banners + lap log that follow are the goodstein expedition's internal record (the densest thread). The kakeya + ntl threads' blow-by-blow lives in their `premerge/{kakeya-davies,ntl-hjsw}`-tagged commit history; their current state is the at-a-glance map above + the full ledger + each area's `Statement.lean`/`README.md`._
 
 > 🛑 **FINISH-AND-STOP (per charter — Trevor, 2026-06-19).** All umbrella headlines are COMPLETE + axiom-clean (Goodstein grows-like-`f_{ε₀}`, Curtis, power-tower, constructibles, e/π transcendence). **Do NOT start new side quests.** ONE correctness item to finish first: the **no-three-in-line pinwheel faithfulness repair** — you caught + are replacing a FALSE construction (`Pinwheel.lean:376`); that is a headline *correctness fix*, so close it (don't leave a known-false construction half-replaced). Then wind down: clear/quarantine the off-headline scratch sorries so `src/` is sorry-free, confirm headline `#print axioms` clean, and **self-stop.** Do not open new threads.
 >
@@ -342,7 +355,13 @@ For the Goodstein thread, the charter ladder is COMPLETE (A1–A4, B1–B4-finit
 ## Axiom ledger (the fidelity spine)
 | headline theorem | paper claim | `#print axioms` shows | status |
 |---|---|---|---|
-| `NoThreeInLine.three_mul_pred_le_maxNoThreeInLine` | **HJSW `3/2` density**: `3(p−1) ≤ maxNoThreeInLine(2p)` (odd prime `p`); best PROVEN no-three-in-line constant (HJSW 1975) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — half-band pinwheel + slope-`±1` σ-reflection crux fully proved (lap 14) |
+| `NoThreeInLine.three_mul_pred_le_maxNoThreeInLine` | **HJSW `3/2` density (arc construction)**: `3(p−1) ≤ maxNoThreeInLine(2p)` (odd prime `p`); best PROVEN no-three-in-line constant (HJSW 1975) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — half-band pinwheel + slope-`±1` σ-reflection crux fully proved (lap 14) |
+| `NoThreeInLine.Shear.hjsw_lower_bound` | **HJSW `3/2` density (shear construction)**: `3(p−1) ≤ maxNoThreeInLine(2p)` (**all** primes `p`) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — ntl's independent sheared-hyperbola dev, kept alongside the arc one (keep-both, `NoThreeInLine.Shear.*`) |
+| `NoThreeInLine.Shear.maxNoThreeInLine_bounds` | general-`N` two-sided `maxNoThreeInLine` bounds (shear + prime-gap extension) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
+| `Kakeya2D.davies_kakeya_2d` | **Davies' theorem**: a planar Kakeya set has Hausdorff dimension 2 | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — Córdoba L²/net-thinning; machine-checked DeepMind-target faithfulness bridge |
+| `Mertens.mertens_first` | **Mertens' first theorem** `∑_{d≤N} Λ(d)/d = log N + O(1)` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — via the ψ/θ Chebyshev machinery in `Shear.PrimeGap`; uses de-vendored PNTAnd |
+| `DirichletDivisor.sum_sigma0_isBigO_sqrt` | **Dirichlet divisor problem (asymptotic)** — error term `O(√N)` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
+| `RealAnalysis.BVFourierDecay.norm_fourierIntegral_le_half_integral_norm_sub_shift` | **BV ⇒ Fourier decay** (half-period reflection bound; the BV-Fourier decay family) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 | `FastGrowing.fastGrowing_lt_fastGrowingε₀` | `f_{ε₀}` dominates every fixed `f_o` (A4; Kirby–Paris growth gap), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — A4 |
 | `Logic.Goodstein.goodsteinLength_eq_hardy` | **Cichoń identity** `goodsteinLength m = H_{seqONote m 0}(2) − 2`, uncond. (C2+C3 crown) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — borrowing crux `hstep_oadd_one_zero` discharged (lap 5) |
 | `Logic.Goodstein.goodsteinLength_grows_like_fastGrowingε₀` | **THE HEADLINE (C3), two-sided**: lower (∀ `o<ε₀`, eventually `f_o(m) ≤ goodsteinLength m + 2`) ∧ upper (`goodsteinLength m + 2 ≤ f_{o_m}(2)`) | `[propext, Classical.choice, Quot.sound]` + finite-base-case `native_decide` artifacts | ✅ 0 math axioms — the definitive "Goodstein grows like `f_{ε₀}`" audit surface (lap 11) |
@@ -361,7 +380,7 @@ For the Goodstein thread, the charter ladder is COMPLETE (A1–A4, B1–B4-finit
 | `Transcendence.transcendental_pi_axiomClean` | `π` transcendental (Lindemann 1882), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **fully proved (axiom deleted)** |
 | `Transcendence.e_transcendental` (+ `transcendental_exp_{nat,int,rat}`) | `e`, `eⁿ`, `eᵃ`, `e^q` transcendental (Hermite 1873; rational-exponent Hermite–Lindemann), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 
-**Math-axiom count (🟢+🟡+🟠): 0.** `grep '^axiom' src/` is empty and there is **no `sorry` in `src/`**. Every non-Goodstein-diagonal headline is the bare trust base `[propext, Classical.choice, Quot.sound]`. The Goodstein diagonal-domination closures (`goodsteinLength_eventually_dominates_fastGrowing` and the per-level/tower variants) additionally carry **finite-base-case `native_decide` artifacts** (`goodsteinLength_base_cases._native.*`) — the computed lengths of the finitely many small Goodstein runs `4≤M<16`, a 🟢 finite/computational dependency excluded from the math-axiom count per the discharge doctrine. The proof *engines* (`towerN_le_fastGrowing`, `omegaTower_le_toOrdinal`, `exists_repr_lt_omegaTower`, …) are trust-base-clean. No 🟡/🟠/🔴 anywhere.
+**Math-axiom count (🟢+🟡+🟠): 0.** `grep '^axiom' src/` is empty and there is **no `sorry` in `src/`**. Every non-Goodstein-diagonal headline is the bare trust base `[propext, Classical.choice, Quot.sound]` — this includes all three merged threads (the kakeya `davies_kakeya_2d`, the shear no-three `hjsw_lower_bound`/`maxNoThreeInLine_bounds`, and the NT `mertens_first`/`sum_sigma0_isBigO_sqrt`/BV-Fourier headlines). Because `src/` is sorry-free with zero custom axioms, *every* `src/` theorem is necessarily trust-base — the table samples the headlines. The Goodstein diagonal-domination closures (`goodsteinLength_eventually_dominates_fastGrowing` and the per-level/tower variants) additionally carry **finite-base-case `native_decide` artifacts** (`goodsteinLength_base_cases._native.*`) — the computed lengths of the finitely many small Goodstein runs `4≤M<16`, a 🟢 finite/computational dependency excluded from the math-axiom count per the discharge doctrine. The proof *engines* (`towerN_le_fastGrowing`, `omegaTower_le_toOrdinal`, `exists_repr_lt_omegaTower`, …) are trust-base-clean. No 🟡/🟠/🔴 anywhere.
 
 ## Pointers
 - Open items / attack paths: **`PENDING_WORK.md`** · resume baton: newest **`HANDOFF-*.md`** · charter: `DIRECTION.md`
