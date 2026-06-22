@@ -5,10 +5,10 @@ Hand-computed FULL Goodstein trajectories for the seeds `m = 0,1,2,3` (bases
 `2,3,4,…`; bump-then-subtract-one; `0` absorbing). Derivation in `README.md`.
 
 These are the anti-vacuity lock on the `goodsteinSeq` definition: a placeholder
-or vacuous definition cannot reproduce the nonzero intermediate values. They are
-currently `sorry`; once `goodsteinSeq` is faithfully defined, discharge each by
-`decide`/`native_decide`. They MUST stay in `src/` so they count toward the
-`--allow-stop` sorry-gate (the run does not finish until the definition is real).
+or vacuous definition cannot reproduce the nonzero intermediate values. Now that
+`goodsteinSeq` is faithfully defined, each is discharged by `native_decide` (the
+definition computes the genuine trajectories below). They MUST stay in `src/` so
+they count toward the `--allow-stop` sorry-gate.
 
 `native_decide` here is fine — these are standalone `example`s, never on
 `goodstein_terminates`'s axiom path. Re-check `#print axioms goodstein_terminates`
