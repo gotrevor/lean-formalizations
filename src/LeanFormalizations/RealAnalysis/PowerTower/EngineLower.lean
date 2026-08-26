@@ -10,7 +10,8 @@ Convergence of the whole tower is exactly `β = γ`.
 `β = γ` for `x ≥ e^(-e)` is the genuine content of the lower bound — the
 bifurcation at `x = e^(-e)`. **The crux is isolated as `two_cycle_collapse`** (see
 its docstring for the precise analytic statement and why the naive tangent-line
-argument is insufficient). Everything else here is machine-checked scaffolding:
+argument is insufficient); it is itself fully machine-checked, with no axiom. The rest
+here is machine-checked scaffolding:
 continuity / monotonicity of `f`, monotone-bounded convergence of the two
 subsequences, the limit relations, and the even/odd ⟹ whole reassembly.
 

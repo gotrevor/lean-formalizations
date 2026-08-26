@@ -39,7 +39,7 @@ For finite `μ` with outer measure `μ*`:
   subset of `∏ᵢ Finset.range (nᵢ+1)`), so `K = f '' C` is compact, `K ⊆ s`, and the regularisation
   budget gives `μ* s ≤ μ K + ε` (the **measure-extraction core**);
 * (already discharged here) inner + outer regularity ⇒ `NullMeasurable`.
-A port of `RemyDegenne/brownian-motion`'s `Choquet/` stack (see `ON-LINE-REQUEST.md`) is the mechanical
+A port of `RemyDegenne/brownian-motion`'s `Choquet/` stack (see the online-research request) is the mechanical
 alternative to this from-scratch proof; whichever lands first discharges the core.
 -/
 import Mathlib
@@ -700,7 +700,7 @@ inner-approximated by compacts: for `ε > 0` there is a compact `K ⊆ range f` 
 `μ (range f) ≤ μ K + ε`. This is the genuine content of Choquet's capacitability theorem (inner
 regularity of analytic sets by compacts); see the file header / `PENDING_WORK.md` for the Lusin-scheme
 argument (the naive cumulative-bound regularisation has a real diameter-control gap) and the
-`brownian-motion` port alternative (`ON-LINE-REQUEST.md`). -/
+`brownian-motion` port alternative (the online-research request). -/
 theorem choquet_core_range
     {X : Type*} [TopologicalSpace X] [PolishSpace X] [MeasurableSpace X] [BorelSpace X]
     (μ : Measure X) [IsFiniteMeasure μ] {f : (ℕ → ℕ) → X} (hf : Continuous f)

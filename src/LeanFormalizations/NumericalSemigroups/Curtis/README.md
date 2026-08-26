@@ -10,7 +10,8 @@
   no `sorryAx`, no custom axioms): `no_polynomial_relation` (the main theorem),
   `no_finite_polynomial_formula` (+ `_of_algebra` / `_int` / `_rat`), and
   `no_finite_polynomial_formula_multivar` (the `n ≥ 3` generalization).
-- Faithfulness anchors in `Anchors.lean` (six concrete triples) and boundary /
+- Faithfulness anchors in `Anchors.lean` (five concrete triples, six Frobenius-value
+  theorems in the admissible family) and boundary /
   refutation cross-checks in `Boundary.lean`. See `FINDINGS.md` for the two
   consequences the proof gives for free (not-algebraic; sub-families still have
   formulas). Proof internals live in `Engine.lean` (+ `Lemma2.lean`,
@@ -37,4 +38,6 @@ Not in mathlib (only the 2-var `frobeniusNumber_pair`), not in
 `google-deepmind/formal-conjectures`, not in the Lean Zulip ITC corpus, not in
 FineLeanCorpus (509k pairs — only concrete instances + the 2-var formula), and no
 Reservoir package. Closest neighbor: `AxiomMath/FelConjecture` (numerical-
-semigroup *syzygies*, a different result). First known formalization of Curtis.
+semigroup *syzygies*, a different result). We found no existing formalization in any of the
+sources above (searched 2026-06-14). Those are all bounded mirrors of `master` branches, so
+this is "none found", not "none exists" - in particular open PRs were not searched.

@@ -324,8 +324,8 @@ theorem fastGrowing_monotone_omega : Monotone (fastGrowing (oadd 1 1 0)) := by
     _ ≤ fastGrowing (ofNat (n + 2)) (n + 1) :=
         fastGrowing_ofNat_mono (Nat.le_succ (n + 1)) (Nat.succ_le_succ (Nat.zero_le n))
 
-/-- **The Bachmann reachability crux (A3, structural form).**  *(disclosed `sorry` — the
-genuine hard core, now stated entirely structurally, free of `fastGrowing`.)*
+/-- **The Bachmann reachability crux (A3, structural form).**  *(Fully proved, axiom-clean —
+the genuine hard core, stated entirely structurally, free of `fastGrowing`.)*
 
 For a limit notation `o` with fundamental sequence `f`, the *next* index `f (n+1)`
 structurally reaches the *current* index `f n` with budget `n+1`:
@@ -392,9 +392,9 @@ is the notation-successor of `f n` (`fundamentalSequence (f (n+1)) = inl (some (
 the index step is just `fastGrowing_le_succ_index`. This covers every limit of the form
 `β + ω` (e.g. `ω, ω·k, ω+k`), whose fundamental sequence increments a finite tail.
 
-Consequently the remaining genuine difficulty in `fastGrowing_fundSeq_step` lives
-*only* at limits-of-limits (`ω^ω`, `ω^(ω+1)`, …), where `f n` is itself a limit and the
-chain is not successor-stepwise — that is the sharp residue of the A3 crux. -/
+The hard case for `fastGrowing_fundSeq_step` is limits-of-limits (`ω^ω`, `ω^(ω+1)`, …), where
+`f n` is itself a limit and the chain is not successor-stepwise. That case is discharged by the
+A3 crux above, so `fastGrowing_fundSeq_step` is now a short corollary of it. -/
 theorem fastGrowing_fundSeq_step_of_succ {o : ONote} {f : ℕ → ONote}
     (_h : fundamentalSequence o = Sum.inr f)
     (hsucc : ∀ k, fundamentalSequence (f (k + 1)) = Sum.inl (some (f k))) (n : ℕ) :

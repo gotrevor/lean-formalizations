@@ -1,7 +1,7 @@
 /-
 # Infinite power tower (Euler 1783) — proof engine (upper half)
 
-The real proofs behind the two load-bearing `sorry`s of `Statement.lean`. Per the
+The real proofs behind the two load-bearing statements of `Statement.lean`. Per the
 repo's audit-surface doctrine the engine lives in this sibling and `Statement.lean`
 delegates to `tower_converges_engine` / `tower_diverges_engine`.
 

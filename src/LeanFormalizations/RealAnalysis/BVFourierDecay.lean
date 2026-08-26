@@ -22,7 +22,7 @@ Quot.sound]`). Both analytic cruxes are machine-checked:
 
 A complete, mathlib-only, axiom-clean BV-Fourier decay bound (non-sharp constant `4|u|` vs the sharp
 `2π|u|`). NOT a headline; dead code on the WeakPNT path (`weakPNT` is axiom-clean with the upstream
-`prelim_decay` sorries present). Lives in `wip/` (outside the build); `src/` stays sorry-free.
+`prelim_decay` sorries present). `src/` stays sorry-free.
 -/
 import Mathlib.Analysis.Fourier.FourierTransform
 import Mathlib.Analysis.Fourier.FourierTransformDeriv

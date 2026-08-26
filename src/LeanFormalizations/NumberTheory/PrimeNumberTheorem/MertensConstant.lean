@@ -1,20 +1,25 @@
 /-
-# Toward the sharp Mertens constant `C₃ = −γ`
+# The sharp Mertens constant: `C₃ = −γ`, unconditionally
 
 `Mertens.lean` proves `∏_{p≤N}(1−1/p)·log N → e^{C₃}` (`mertens_third_tendsto_exp`) with
 `C₃ = mertensThirdConst`, and reduces the classical `e^{−γ}` headline to the single deep equation
-`mertensThirdConst = −γ` (`mertens_third_classical`).  This file collects the first **provable**
-scaffolding bricks toward that equation, via the real prime-zeta function and mathlib's complex ζ
-Euler product.
+`mertensThirdConst = −γ` (`mertens_third_classical`).  **This file discharges that equation**, via
+the real prime-zeta function and mathlib's complex ζ Euler product.
 
-**The classical route** (still multi-lap): for `s > 1`,
+**The classical route**, as executed here: for `s > 1`,
 `log ζ(s) = ∑_p ∑_{k≥1} p^{−ks}/k = P(s) + ∑_{k≥2} P(ks)/k` where `P(s) = ∑_p p^{−s}` is the prime
 zeta; as `s → 1⁺`, `ζ(s) − 1/(s−1) → γ` (`tendsto_riemannZeta_sub_one_div`) gives the `γ`, and an
 Abel/Tauberian transfer connects `P(s)` to the partial sums `∑_{p≤x} 1/p = log log x + M + o(1)`
 (`mertens_second_tendsto`), yielding `M = γ + ∑'_p (log(1−1/p)+1/p)`, i.e. `C₃ = −γ`.
 
-This file currently establishes: the real prime zeta `primeZeta` is well-defined (summable for `s>1`)
-and the real specialisation of mathlib's `riemannZeta_eulerProduct_exp_log`.  Both are axiom-clean.
+**Headline results, both axiom-clean and unconditional:**
+* `mertensThirdConst_eq_neg_gamma` — `mertensThirdConst = -γ`, the deep identification itself.
+* `mertens_third_classical_eGamma` — `∏_{p≤N}(1−1/p)·log N → e^{−γ}`, the classical statement.
+
+The Tauberian hypothesis of `mertensThirdConst_eq_neg_gamma_of_tauberian` is discharged by
+`tendsto_primeZeta_add_logSub_limitB`.  Along the way the file establishes that the real prime
+zeta `primeZeta` is well-defined (summable for `s>1`) and the real specialisation of mathlib's
+`riemannZeta_eulerProduct_exp_log`.
 -/
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Mertens
 import Mathlib.NumberTheory.EulerProduct.DirichletLSeries
@@ -140,8 +145,8 @@ lemma log_realZeta_eq {s : ℝ} (hs : 1 < s) :
 
 /-- **Per-prime Mercator expansion** (brick (ii-a)): `−log(1−p^{−s}) = ∑'_{n} (p^{−s})^{n+1}/(n+1)`
 (mathlib `hasSum_pow_div_log_of_abs_lt_one`, applicable since `0 < p^{−s} < 1`).  The `n = 0` term is
-`p^{−s}` (the prime-zeta contribution); the `n ≥ 1` tail is the correction `G`.  Next lap: Fubini this
-over `Nat.Primes × ℕ` and combine with `log_realZeta_eq` to split `log ζ(s) = primeZeta s + G(s)`. -/
+`p^{−s}` (the prime-zeta contribution); the `n ≥ 1` tail is the correction `G`.  The split
+`log ζ(s) = primeZeta s + G(s)` is carried out in `log_realZeta_split` below (via `tsum_add`). -/
 lemma neg_log_one_sub_prime_hasSum {s : ℝ} (hs : 1 < s) (p : Nat.Primes) :
     HasSum (fun n : ℕ => ((p : ℝ) ^ (-s)) ^ (n + 1) / (n + 1)) (-Real.log (1 - (p : ℝ) ^ (-s))) := by
   apply Real.hasSum_pow_div_log_of_abs_lt_one

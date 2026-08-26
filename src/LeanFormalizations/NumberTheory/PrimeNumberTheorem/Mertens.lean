@@ -453,7 +453,7 @@ theorem vonMangoldtSumDiv_isEquivalent_log :
 /-!
 ## Toward Mertens' second theorem `∑_{p ≤ x} 1/p = log log x + O(1)`
 
-The recipe (next lap): apply mathlib's continuous Abel summation `sum_mul_eq_sub_integral_mul` with
+The recipe, executed by `mertens_second` below: apply mathlib's continuous Abel summation `sum_mul_eq_sub_integral_mul` with
 coefficients `c(n) = [n prime]·(log n)/n` (so `c(n)·(1/log n) = [n prime]/n`, summing to `∑_{p≤x} 1/p`)
 and weight `f(t) = 1/log t`.  The partial sums `∑_{n≤t} c(n) = primeSumDiv ⌊t⌋ = log t + O(1)` (proved
 above), so the integral term splits into the `log log x` main term `∫ 1/(t log t)` plus a convergent
@@ -783,7 +783,8 @@ theorem mertens_second :
 *converges*: `∑_{p≤N} 1/p − log log N → M` (the Meissel–Mertens constant).  The bounded remainder
 integral of `mertens_second` is upgraded to an *improper* integral that converges, using mathlib's
 `integrableOn_Ioi_of_intervalIntegral_norm_bounded` + `intervalIntegral_tendsto_integral_Ioi`.  The
-deep identification `M = γ` (Euler–Mascheroni) is left for later. -/
+deep identification `M = γ` (Euler–Mascheroni) is discharged downstream in
+`MertensConstant.lean` (`mertensThirdConst_eq_neg_gamma`). -/
 
 /-- The constant bounding the Mertens-2nd remainder numerator `|primeSumDiv ⌊t⌋₊ − log t|`, packaged
 as a single nonnegative real (the RHS of `abs_primeSumDiv_floor_sub_log_le`). -/
@@ -949,7 +950,7 @@ theorem mertens_second_tendsto :
 Entry point: `log ∏_{p≤N}(1−1/p) = ∑_{p≤N} log(1−1/p)`.  Writing `log(1−1/p) = −1/p + (log(1−1/p)+1/p)`
 splits the sum into `−primeRecipSum N` (`= −log log N − M + O(1)` by Mertens' 2nd) plus the absolutely
 convergent correction `∑_p (log(1−1/p)+1/p)` (comparison with `∑ 1/p²`).  The `e^{−γ}` constant
-identification is the deep remaining part.
+identification is discharged downstream in `MertensConstant.lean`.
 -/
 
 /-- **Correction-term bound** for Mertens' third theorem: `|log(1−x) + x| ≤ x²` for `0 < x ≤ 1/2`.
@@ -1066,7 +1067,7 @@ lemma primeCorr_isBigO_one : (fun N : ℕ ↦ primeCorr N) =O[atTop] (fun _ ↦ 
 
 /-- **Mertens' third theorem, up to the constant.** `log ∏_{p≤N}(1−1/p) + log log N =O[atTop] 1`,
 i.e. `∏_{p≤N}(1−1/p) ≍ 1/log N`.  The sharp constant — `∏(1−1/p) ~ e^{−γ}/log x`, the Meissel–Mertens /
-Euler–Mascheroni constant — is the deeper remaining part. -/
+Euler–Mascheroni constant — is discharged downstream in `MertensConstant.lean`. -/
 theorem mertens_third_up_to_const :
     (fun N : ℕ ↦ Real.log (primeProd N) + Real.log (Real.log N)) =O[atTop] (fun _ ↦ (1 : ℝ)) := by
   have heq : (fun N : ℕ ↦ Real.log (primeProd N) + Real.log (Real.log N))
@@ -1081,7 +1082,8 @@ theorem mertens_third_up_to_const :
 `mertens_third_up_to_const` gives only `∏(1−1/p) ≍ 1/log N`.  The sharp statement is convergence:
 `log ∏_{p≤N}(1−1/p) + log log N → C₃` for a definite constant `C₃` (classically `−γ`).  This follows
 from the convergence of the correction series `∑_p (log(1−1/p)+1/p)` together with the sharp Mertens 2nd
-(`mertens_second_tendsto`).  The identification `C₃ = −γ` is the deep remaining part. -/
+(`mertens_second_tendsto`).  The identification `C₃ = −γ` is discharged downstream in
+`MertensConstant.lean` (`mertensThirdConst_eq_neg_gamma`). -/
 
 /-- The `n`-indexed correction coefficient: `log(1−1/n)+1/n` at primes, `0` elsewhere.  Its sum is the
 limit of `primeCorr`. -/
@@ -1132,13 +1134,14 @@ lemma primeCorr_tendsto :
   exact (primeCorr_eq_sum_range N).symm
 
 /-- The Mertens' third constant `C₃ = (∑'_p (log(1−1/p)+1/p)) − M`, the limit of
-`log ∏_{p≤N}(1−1/p) + log log N`.  Classically `C₃ = −γ` (the deep, still-open identification). -/
+`log ∏_{p≤N}(1−1/p) + log log N`.  Classically `C₃ = −γ`; that identification is proved in
+`MertensConstant.lean` (`mertensThirdConst_eq_neg_gamma`). -/
 noncomputable def mertensThirdConst : ℝ := (∑' n : ℕ, primeCorrCoeff n) - meisselMertensM
 
 /-- **Mertens' third theorem, sharp form.**  `log ∏_{p≤N}(1−1/p) + log log N → C₃` — strictly stronger
 than the `O(1)` of `mertens_third_up_to_const`, i.e. `∏(1−1/p)·log N → e^{C₃}`.  Assembled from the
 convergent correction series (`primeCorr_tendsto`) and the sharp Mertens 2nd (`mertens_second_tendsto`).
-The classical identification `C₃ = −γ` is the deep remaining part. -/
+The classical identification `C₃ = −γ` is discharged downstream in `MertensConstant.lean`. -/
 theorem mertens_third_tendsto :
     Tendsto (fun N : ℕ => Real.log (primeProd N) + Real.log (Real.log N)) atTop
       (nhds mertensThirdConst) := by
@@ -1192,16 +1195,17 @@ theorem mertens_third_isEquivalent :
 
 The repo now has the *sharp* Mertens 3rd up to a definite constant: `mertens_third_tendsto_exp` proves
 `∏_{p≤N}(1−1/p)·log N → e^{C₃}` with `C₃ = mertensThirdConst := (∑'_p (log(1−1/p)+1/p)) − M`
-(`M` = Meissel–Mertens).  The *only* remaining gap to the classical statement is the single deep
-identity `C₃ = −γ` (equivalently `M = γ + ∑'_p (log(1−1/p)+1/p)`), where `γ` is Euler–Mascheroni.
+(`M` = Meissel–Mertens).  The last step to the classical statement is the deep identity
+`C₃ = −γ` (equivalently `M = γ + ∑'_p (log(1−1/p)+1/p)`), where `γ` is Euler–Mascheroni; it is
+proved in `MertensConstant.lean` (`mertensThirdConst_eq_neg_gamma`).
 
 That identity is **not** elementary: `γ = lim (∑_{k≤n} 1/k − log n)` is a statement about *all*
 integers, while `C₃` is a statement about *primes*; bridging them is the classical analytic argument
 via the ζ Euler product `ζ(s) = ∏_p (1−p^{-s})^{-1}` (Re s > 1).  Route (all ingredients are in mathlib):
 `riemannZeta_eulerProduct_exp_log` (log ζ(s) = ∑_p ∑_{k≥1} p^{-ks}/k = ∑_p p^{-s} + bounded) +
 `tendsto_riemannZeta_sub_one_div` (`ζ(s) − 1/(s−1) → γ` as `s → 1⁺`), transferred to the prime sum by
-a real Tauberian/Abel argument and matched against `mertens_second_tendsto`.  Multi-lap; see
-`PENDING_WORK.md`.  The lemma below isolates *exactly* that one equation as an explicit hypothesis, so
+a real Tauberian/Abel argument and matched against `mertens_second_tendsto`.  Carried out in
+`MertensConstant.lean`.  The lemma below isolates *exactly* that one equation as an explicit hypothesis, so
 the classical `e^{−γ}` headline is machine-checked modulo it — and the rest of this file stays
 axiom-clean. -/
 theorem mertens_third_classical

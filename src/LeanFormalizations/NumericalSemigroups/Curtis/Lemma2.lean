@@ -13,7 +13,7 @@ This is Curtis 1990, Lemma 2 (Math. Scand. 67, p. 191), feeding Step A
 Proof produced by Harmonic's Aristotle auto-formalizer (job
 `03706c46-1ccd-44b2-8b2a-ea4b2dfd9e83`, prompt archived at
 `tools/aristotle/curtis-lemma2-prompt.txt`) and **independently re-verified in this
-repo's kernel** (Lean v4.29.1): `#print axioms lemma2` = `[propext,
+repo's kernel**: `#print axioms lemma2` = `[propext,
 Classical.choice, Quot.sound]` (no `sorry`, no added `axiom`). The Apéry-set
 argument is decomposed into the helper lemmas below.
 -/
@@ -21,6 +21,9 @@ import Mathlib
 
 open scoped Classical
 
+-- Resource knob, not a trust knob: the Aristotle-produced `curtis_class_min` / `curtis_cover`
+-- proofs run deep `simp_all`/`nlinarith` chains that exceed the default elaboration budget.
+-- Raising it changes nothing about what the kernel checks.
 set_option maxHeartbeats 8000000
 
 namespace LeanFormalizations.NumericalSemigroups.Curtis.Lemma2

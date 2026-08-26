@@ -19,7 +19,8 @@ This is exactly the obstruction that kills the three classical construction prob
 cannot be doubled.
 
 The geometric faithfulness layer — that compass-and-straightedge constructions yield
-*precisely* these quadratic towers — is a separate development (see `PENDING_WORK.md`).
+*precisely* these quadratic towers — is proved in `ConstructiblePoint.lean` / `Converse.lean`,
+giving the equivalence `isConstructible_iff_constructiblePoint`.
 -/
 import Mathlib
 

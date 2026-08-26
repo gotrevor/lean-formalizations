@@ -6,10 +6,10 @@ straightedge geometry — and its classical corollaries:
 
 - **Doubling the cube** is impossible: `∛2` is not constructible.
 - **Trisecting the 60° angle** is impossible: `cos 20°` is not constructible.
-- **The regular nonagon and heptagon** are not constructible (`cos 40°`, `cos(2π/7)`
-  have degree 3).
-- **Squaring the circle** is impossible (given `π` transcendental): `√π` is not
-  constructible.
+- **The regular nonagon and heptagon** are not constructible (`2cos 40°`, `2cos(2π/7)`
+  have degree 3 — that is the form the repo proves).
+- **Squaring the circle** is impossible: `√π` is not constructible (unconditional — the
+  transcendence of `π` is proved in this repo).
 - **Positive side:** the regular **pentagon** *is* constructible (`cos(π/5)=(1+√5)/4`).
 
 The impossibilities fall out of one engine: a constructible real has degree a **power of
@@ -29,12 +29,15 @@ square-root-tower definition. Both directions are proved and axiom-clean.
 The headline theorems, stated against the audited definitions `IsConstructible` /
 `IsSqrtTower`:
 
-- `cbrt2_not_constructible : ¬ IsConstructible (2 ^ (1/3))` — **doubling the cube**.
+- `cbrt2_not_constructible : ¬ IsConstructible cbrt2` (where `cbrt2 = (2:ℝ) ^ ((1:ℝ)/3)`)
+  — **doubling the cube**.
 - `no_constructible_cube_root_of_two : ¬ ∃ x, IsConstructible x ∧ x ^ 3 = 2`.
 - `cos20_not_constructible : ¬ IsConstructible (cos (π/9))` — **trisecting 60°**.
 - `twoCos20_not_constructible`.
+- `squaring_the_circle_impossible_uncond : ¬ IsConstructible (√π)` — **squaring the
+  circle**, unconditional (π-transcendence supplied in-repo).
 - `squaring_the_circle_impossible (hπ : Transcendental ℚ π) : ¬ IsConstructible (√π)`
-  — **squaring the circle**, conditional on the transcendence of `π`.
+  — the hypothesis-carrying form, kept for reuse.
 
 Each is `#print axioms`-clean: `[propext, Classical.choice, Quot.sound]` — no
 `sorry`, no custom axiom, no `native_decide`.
@@ -102,7 +105,8 @@ Thales/geometric-mean for `√`, parallelogram-translate primitive `cp_translate
 square-root-tower induction (`isSqrtTower_le_axisField`) packages this into the converse,
 giving the full `isConstructible_iff_constructiblePoint`.
 
-**Squaring the circle** remains conditional on `Transcendental ℚ π`, which mathlib does
-not yet have (only the analytic part of Lindemann–Weierstrass). Stated with that as an
-explicit hypothesis, so the theorem is unconditionally axiom-clean. See
-`ON-LINE-REQUEST.md` (repo root) for the open research request on π-transcendence.
+**Squaring the circle is unconditional.** mathlib has only the analytic part of
+Lindemann–Weierstrass, so this repo proved π-transcendence itself
+(`Transcendence.transcendental_pi_axiomClean`); `squaring_the_circle_impossible_uncond`
+discharges the hypothesis and is axiom-clean. The hypothesis-carrying
+`squaring_the_circle_impossible` is kept alongside it.

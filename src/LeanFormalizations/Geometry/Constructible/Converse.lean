@@ -14,9 +14,11 @@ field operation. A square-root-tower induction (built on those closure lemmas) t
 shows every constructible number lands on the axis.
 
 This is the genuine geometric content of "you can add, multiply, invert and take square
-roots with compass and straightedge". It is being developed incrementally; the additive
-constructions are in place, with multiplication / inversion / square root and the final
-tower induction to follow.
+roots with compass and straightedge". The axis-constructible reals are shown closed under
+`+`, `−`, `·`, `⁻¹`, `/` and `√` by explicit ruler-and-compass constructions
+(`AxisConstructible.mul`, `.inv`, `.sqrt`); the square-root-tower induction
+`isSqrtTower_le_axisField` packages these into the equivalence
+`isConstructible_iff_constructiblePoint`.
 -/
 import LeanFormalizations.Geometry.Constructible.ConstructiblePoint
 

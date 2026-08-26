@@ -16,7 +16,7 @@ first-order-logic machinery) is what the `Logic/FastGrowing/` files develop, and
 `Logic/Goodstein/Growth.lean` (to be built) connects this function to it.
 
 The PA-syntactic wrapper (`PA ⊬ γ`) is a separate expedition; see the repo
-`~/src/goodstein-independence`. This file builds only the object-level function and
+the companion `goodstein-independence` repo. This file builds only the object-level function and
 its basic API.
 -/
 import LeanFormalizations.Logic.Goodstein.Statement

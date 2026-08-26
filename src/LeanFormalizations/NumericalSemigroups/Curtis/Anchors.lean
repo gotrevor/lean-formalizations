@@ -5,7 +5,7 @@ The headline theorems in `Statement.lean` are only meaningful if the definitions
 they quantify over (`IsAdmissible`, `FrobeniusNumber`, and Lemma 2's value
 formula) mean what Curtis means. A subtle mis-statement could make a headline
 *vacuously* true. This file pins the definitions to concrete, hand-checked
-witnesses — the `native_decide`/`omega`-style anchors that the audit relies on.
+witnesses — the `decide`/`norm_num`/`omega`-style anchors that the audit relies on.
 
 We use the admissible triple `⟨3, 7, 8⟩`. Its numerical semigroup is
 `{0, 3, 6, 7, 8, 9, 10, …}`; the non-representable numbers are `1, 2, 4, 5`, so
@@ -34,8 +34,10 @@ agrees with mathlib's independently-defined `FrobeniusNumber`:
 - `⟨5, 11, 23⟩`, `k = 3`: value `1·11 + 23 − 5 = 29` (exercises `k = 3`, so the
   `(k−2)` coefficient is non-trivial here, not just `0`).
 
-Each is an independent point at which two unrelated definitions of "the Frobenius
-number" coincide — fresh evidence that Lemma 2's value formula is stated faithfully.
+`⟨3, 7, 11⟩` is an independent point at which two unrelated computations of "the Frobenius
+number" coincide (`frobeniusNumber_3_7_11` direct, and `..._via_lemma2`), as is `⟨3, 7, 8⟩`
+above. `⟨3, 13, 14⟩` and `⟨5, 11, 23⟩` widen the coverage of the value formula (including
+`k = 3`) without a second, independent route.
 -/
 import LeanFormalizations.NumericalSemigroups.Curtis.Engine
 
@@ -129,8 +131,9 @@ theorem frobeniusNumber_5_11_23_via_lemma2 : FrobeniusNumber 29 ({5, 11, 23} : S
 not prime), so this exercises mathlib's `FrobeniusNumber` predicate on a surface
 *outside* Curtis's `IsAdmissible` family — a different faithfulness check than the
 Lemma-2 anchors. Proved directly (`43` not representable as `6a + 9b + 20c`; every
-`k > 43` is, covering the six residues mod `6`). No `native_decide` is used, so the
-repo's `ofReduceBool`-free trust base is untouched. -/
+`k > 43` is, covering the six residues mod `6`). No `native_decide` is used here, so these
+anchors add nothing to the trust base. (Scope: this file. Elsewhere in the repo the Goodstein
+growth closures do carry `native_decide` artifacts - see `STATUS.md`.) -/
 theorem frobeniusNumber_6_9_20 : FrobeniusNumber 43 ({6, 9, 20} : Set ℕ) := by
   rw [frobeniusNumber_iff]
   refine ⟨?_, ?_⟩

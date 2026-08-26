@@ -4,7 +4,7 @@
 Independent faithfulness cross-checks for the headline `no_polynomial_relation`
 (and its corollaries in `Statement.lean`). Curtis's theorem is a *boundary*
 phenomenon: for `n = 2` generators a closed Frobenius formula exists (Sylvester),
-and the whole content of the paper is that this breaks at `n = 3`. The two checks
+and the whole content of the paper is that this breaks at `n = 3`. The three checks
 here exhibit both sides of that boundary on concrete, externally-known facts:
 
 1. `n2_polynomial_relation_exists` — the `n = 2` analogue of `no_polynomial_relation`

@@ -15,6 +15,8 @@ The definitions referenced here (`tower`, `eInvE`, `eNegE`) live in `Defs.lean`;
 audit those alongside this file.
 
 ## Status — PROVED (axiom-clean)
+- `tower_converges_iff_full` — **the sharp headline**: for `x > 0`, the tower converges **iff**
+  `x ∈ [e^(-e), e^(1/e)]` (both endpoints, both divergence directions), **PROVED**.
 - `tower_converges` — convergence for `1 ≤ x ≤ e^(1/e)`, **PROVED**
   (`tower_converges_engine`: monotone-bounded convergence to a fixed point).
 - `tower_diverges` — divergence for `x > e^(1/e)`, **PROVED**.

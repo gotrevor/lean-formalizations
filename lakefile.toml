@@ -27,5 +27,7 @@ name = "LeanFormalizations"
 [[lean_lib]]
 name = "DaviesWip"
 srcDir = "../wip"
-globs = ["GeometricMeasureTheory.Capacitability", "GeometricMeasureTheory.VonNeumannSelection",
-         "Logic.FastGrowing.Bachmann", "Logic.FastGrowing.Basic"]
+# Logic.FastGrowing.{Basic,Bachmann} were dropped 2026-08-24: `src/` now proves the A3 crux
+# (`fastGrowing_bachmann_reach`) outright, so the wip copies are superseded duplicates that
+# share the same namespace and would emit a sorry warning for an already-proved theorem.
+globs = ["GeometricMeasureTheory.Capacitability", "GeometricMeasureTheory.VonNeumannSelection"]

@@ -1,7 +1,8 @@
 /-
-# Two classical impossibilities (audit surface)
+# Wantzel's theorem and the classical constructions (audit surface)
 
-Two of the three classical Greek construction problems, formalised via the algebraic
+All three classical Greek construction problems — plus the regular heptagon/nonagon and the
+positive pentagon construction — formalised via the algebraic
 core of Wantzel's theorem (`SqrtTower.lean`): a compass-and-straightedge–constructible
 real number generates an extension of `ℚ` of degree a power of two.
 
