@@ -612,10 +612,11 @@ constant shift, `H_{ω^2}(2)=23 ≠ f_2(2)+1=9`). Needs a reformulated statement
 
 ---
 
-## 🔭 OPEN-ITEM INVENTORY (refreshed 2026-06-17, operator directive)
+## 🔭 OPEN-ITEM INVENTORY (refreshed 2026-06-17)
 
-`src/` is **100% axiom-free** (0 custom axioms, 0 `sorry`/`admit`; `lake build` green, 8274
-jobs). Three threads are COMPLETE + axiom-clean — **do not reopen**: Curtis 1990
+`src/` declares **no custom axioms** and has no `sorry`/`admit` (`lake build` green, 8274
+jobs at the time of writing). Note this is not the same as "axiom-free": the Goodstein growth
+closures carry `native_decide` artifacts, as `STATUS.md` records. Three threads are COMPLETE + axiom-clean — **do not reopen**: Curtis 1990
 (no-Frobenius-formula), π/e-transcendence + squaring-the-circle (the `hermite_lindemann` axiom
 was discharged + deleted 2026-06-16), and constructible numbers / Wantzel (full iff + 5 classical
 impossibilities). Completion records below.
