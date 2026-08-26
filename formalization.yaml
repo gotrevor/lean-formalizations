@@ -1,0 +1,125 @@
+# formalization.yaml -- self-reported provenance for LeanFormalizations.
+# Schema: https://github.com/mathlib-initiative/formalization.yaml (v0.3)
+#
+# Everything below is either machine-derived or explicitly marked as an estimate. Where a fact was
+# not recorded at the time (per-run model versions, active effort), it says so rather than guessing.
+
+version: "v0.3"
+
+project:
+  name: "LeanFormalizations"
+  authors: ["Trevor Morris"]
+  license: "Apache-2.0"
+
+sources:
+  - title: "Ueber die Zahl π"
+    authors: ["Ferdinand Lindemann"]
+    id: "https://doi.org/10.1007/BF01446522"
+    type: "paper"
+    author_contacted: "n/a"
+  - title: "Sur la fonction exponentielle"
+    authors: ["Charles Hermite"]
+    id: "C. R. Acad. Sci. Paris 77 (1873), 18-24 (no DOI exists for this volume)"
+    type: "paper"
+    author_contacted: "n/a"
+
+status:
+  scope: >-
+    This repository is an umbrella for several independent formalizations of solved-but-unformalized
+    results (see the README's contents table). The comparator harness covers the TRANSCENDENCE
+    chain -- the results publicly pointed at from mathlib's docs/100.yaml entry 53: transcendence
+    of π (`LeanFormalizations.Transcendence.transcendental_pi_axiomClean`, Lindemann 1882) and of e
+    (`LeanFormalizations.Transcendence.e_transcendental`, Hermite 1873), both sorry-free and
+    kernel-verified axiom-clean against mathlib v4.31.0 (re-verified 2026-08-26). The harnessed
+    statements contain NO project definitions -- the whole trusted vocabulary is Mathlib's own
+    `Transcendental`. The repository's other threads (Curtis 1990 no-Frobenius-formula, the Euler
+    power-tower sharp iff, Wantzel/constructibles including the unconditional squaring-the-circle
+    impossibility, Goodstein termination + growth theory, no-three-in-line, the planar-Kakeya
+    faithfulness bridge, PNT-cluster corollaries) build green with per-headline `#print axioms`
+    footprints recorded in STATUS.md, but are NOT yet comparator-harnessed.
+  sorry_count: "0 in src/ (the default build target); wip/ scratch is excluded from the default target"
+  sorry_in_definitions: 0
+  # For the harnessed declarations, verified by `#print axioms` (see harness_results).
+  axioms: ["propext", "Quot.sound", "Classical.choice"]
+
+  main_results:
+    - declaration: "LeanFormalizations.Transcendence.transcendental_pi_axiomClean"
+      file: "src/LeanFormalizations/NumberTheory/Transcendence/PiTranscendental.lean"
+      status: "proved (kernel-verified axiom-clean, re-verified 2026-08-26)"
+      note: "Lindemann 1882: π is transcendental over ℚ. In the comparator harness."
+    - declaration: "LeanFormalizations.Transcendence.e_transcendental"
+      file: "src/LeanFormalizations/NumberTheory/Transcendence/ETranscendental.lean"
+      status: "proved (kernel-verified axiom-clean, re-verified 2026-08-26)"
+      note: "Hermite 1873: e is transcendental over ℚ. In the comparator harness."
+
+  harness_results:
+    - declaration: "LeanFormalizations.Transcendence.transcendental_pi_axiomClean"
+      comparator_config: "Comparator/Transcendence/config.json"
+      axioms: ["propext", "Quot.sound", "Classical.choice"]
+    - declaration: "LeanFormalizations.Transcendence.e_transcendental"
+      comparator_config: "Comparator/Transcendence/config.json"
+      axioms: ["propext", "Quot.sound", "Classical.choice"]
+
+automation:
+  methods:
+    - method: "agent"
+      framework: "Claude Code"
+      tool_setup: >-
+        Interactive agent sessions for target selection, scaffolding, statement authoring and
+        review. Statements on the trusted surface are reviewed with a human in the loop, since
+        `#print axioms` certifies proofs, not statements.
+      cost:
+        hardware: "local laptop (Apple M4 Max); API-only for the models"
+    - method: "autonomous"
+      framework: "lean-treadmill (custom autonomous grind harness over Claude Code)"
+      tool_setup: >-
+        Long-running autonomous "laps" in a network-isolated container, grinding on remaining
+        `sorry`s against a build-must-be-green gate and an axiom gate that rejects any lap
+        introducing a new axiom or `native_decide` on a headline path. The π chain (the full
+        Lindemann assembly over Mathlib's `exp_polynomial_approx`) was closed this way in June
+        2026; the previously cited `hermite_lindemann` axiom was discharged and deleted.
+      cost:
+        hardware: "local laptop; API-only for the models"
+    - method: "external prover"
+      framework: "Aristotle (Harmonic)"
+      tool_setup: >-
+        Two symmetric-function lemmas on the π path came from Harmonic's Aristotle
+        (`sum_aeval_roots_int`, job 9a19f72e, and `subsetSum_esymm_rational` -- the fundamental
+        theorem of symmetric polynomials applied to the subset sums -- job b7252abe) and were
+        re-verified by this repository's own kernel build. The prompts are kept in
+        `tools/aristotle/`.
+  spend_usd: >-
+    subscription-based usage (Claude Max), not metered API spend -- no meaningful dollar figure to
+    report. Per-run model versions were not logged and are not reconstructed here.
+
+review:
+  status: "self-assessed"
+  reviewers: ["Trevor Morris"]
+  notes: >-
+    No external peer review. Machine-enforced on the harness: `leanprover/comparator` checks the
+    solution proves the challenge's statements against identical declarations, replays through the
+    Lean kernel AND the independent `nanoda` kernel (`enable_nanoda: true`), and enforces the axiom
+    whitelist, under a `landrun` sandbox. The usual residual risk -- a human must read the
+    challenge's DEFINITIONS against the source -- is unusually small here: the statements are
+    written entirely in Mathlib's own vocabulary (`Transcendental ℚ Real.pi`,
+    `Transcendental ℚ (Real.exp 1)`), so there are no project definitions to audit.
+
+alignment:
+  namespace: "LeanFormalizations"
+  statements:
+    - source: "Lindemann 1882 (π is transcendental)"
+      lean: "LeanFormalizations.Transcendence.transcendental_pi_axiomClean"
+      module: "LeanFormalizations.NumberTheory.Transcendence.PiTranscendental"
+      status: "formalized"
+    - source: "Hermite 1873 (e is transcendental)"
+      lean: "LeanFormalizations.Transcendence.e_transcendental"
+      module: "LeanFormalizations.NumberTheory.Transcendence.ETranscendental"
+      status: "formalized"
+
+acknowledgements: >-
+  Mathlib and the Lean FRO -- the analytic half of the Lindemann assembly rides Mathlib's own
+  `NumberTheory.Transcendental.Lindemann.AnalyticalPart` (`exp_polynomial_approx`).
+  `leanprover/comparator` and the `nanoda` kernel, which make the headline statements checkable by
+  someone who does not trust, or run, our code. Harmonic's Aristotle for the two symmetric-function
+  lemmas noted above. The Lean Zulip `#AI authored projects` channel, where the
+  Challenge/Solution/comparator/formalization.yaml convention was worked out.

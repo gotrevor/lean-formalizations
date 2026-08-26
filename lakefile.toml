@@ -19,6 +19,16 @@ rev = "40e5246b0cf0070875842488ccf60c461e60bc62"
 [[lean_lib]]
 name = "LeanFormalizations"
 
+# comparator harness (Comparator/<Result>/{Challenge,Solution}.lean at the repo root) —
+# deliberately NOT in defaultTargets and NOT imported by the main lib: challenge files carry
+# `sorry` by design. Built on demand (`lake build Comparator`) and in CI (comparator.yml).
+# srcDir here is relative to the package srcDir ("src"), so ".." puts the module root at the
+# repo root — same layout as tao-collatz / lean-gallery.
+[[lean_lib]]
+name = "Comparator"
+srcDir = ".."
+globs = ["Comparator.+"]
+
 # Off-headline working library (NOT in defaultTargets, so the headline `lake build`
 # is unchanged). Built explicitly with `lake build DaviesWip`. Holds the jvn 2nd-route
 # GMT files (sorry-free) and the FastGrowing growth theory: Bachmann is sorry-free;

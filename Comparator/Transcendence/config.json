@@ -1,0 +1,10 @@
+{
+  "challenge_module": "Comparator.Transcendence.Challenge",
+  "solution_module": "Comparator.Transcendence.Solution",
+  "theorem_names": [
+    "LeanFormalizations.Transcendence.transcendental_pi_axiomClean",
+    "LeanFormalizations.Transcendence.e_transcendental"
+  ],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "enable_nanoda": true
+}
