@@ -1117,15 +1117,15 @@ is a hard wall. Breaking past `5/4` to HJSW's full `3N/2 − o(N)` needs PNT-str
 i.e. **Chebyshev's ratio `→ 1`**. mathlib does not (yet) have the PNT, but **`PrimeNumberTheoremAnd`**
 (a complete Lean 4 formalization, Wiener–Ikehara route) proves it; its `WeakPNT''` is literally a
 statement about *this* `Chebyshev.psi` (its proof rewrites via `Chebyshev.psi_eq_sum_Icc`). We cite it
-as the single disclosed deep axiom `weakPNT` below — a *proven theorem behind a wall mathlib lacks*, not
-a conjecture — and build the entire `3/2 − o(N)` frontier on top, axiom-clean modulo `weakPNT`. -/
+as `weakPNT` below. It was briefly carried as a disclosed axiom; it is now a fully machine-checked
+theorem (see its docstring), so the entire `3/2 − o(N)` frontier on top of it is axiom-clean outright. -/
 
 open scoped Asymptotics in
 open Asymptotics Filter in
 /-- **The Prime Number Theorem for `ψ` (discharged).** `ψ(x) ∼ x` as `x → ∞`. Formerly a cited axiom;
-now a fully machine-checked theorem, supplied by the in-repo port of `PrimeNumberTheoremAnd`'s
-Wiener–Ikehara tower (`NumberTheory/PrimeNumberTheorem/Consequences.WeakPNT''`, built on the ported
-`Wiener`, `Fourier`, `Sobolev`, `SmoothExistence` modules against our mathlib `v4.29.1`). `WeakPNT''` is `ψ ∼ x`
+now a fully machine-checked theorem, supplied by `PrimeNumberTheoremAnd`'s Wiener–Ikehara tower
+(`Consequences.WeakPNT''`), which this repo takes as a real `lakefile.toml` git dependency
+(the earlier in-tree port was de-vendored). `WeakPNT''` is `ψ ∼ x`
 with `ψ = Chebyshev.psi` (`open scoped Chebyshev`), and `#print axioms WeakPNT''` is clean
 (`[propext, Classical.choice, Quot.sound]`). This is the deep input that lifts the no-three-in-line
 constant from the elementary ceiling `5/4` to HJSW's full `3/2 − o(1)`. -/

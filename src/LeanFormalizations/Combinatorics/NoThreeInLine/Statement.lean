@@ -72,7 +72,7 @@ The doubled hyperbola arc `xy ≡ 1 (mod p)` over `x ∈ [1,2p) \ {p}` realizes 
 points in the `2p × 2p` grid. This is the algebraic core of the Hall–Jackson–Sudbery–Wild `3N/2`
 construction (`Hyperbola.lean`), wired here into an actual `maxNoThreeInLine` bound. NOTE: as a square
 bound this is `Θ(N)` (ratio `~1`, same order as Erdős) — the `3/2` improvement is in the *covering* of
-the grid by several translated arcs, not the single arc; see `PLAN.md` / `ON-LINE-REQUEST.md`. -/
+the grid by several translated arcs, not the single arc; see `PLAN.md`. -/
 
 /-- **Existence form of the single hyperbola arc.** For prime `p`, the `p × p` grid contains
 `p − 1` points with no three collinear — the arc `(x, x⁻¹ mod p)`, `x ∈ [1,p)`. -/

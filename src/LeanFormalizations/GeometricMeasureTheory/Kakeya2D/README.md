@@ -16,8 +16,8 @@ Two items in this directory, nothing else:
 ## Status
 - ✅ `dimH_le_two` — upper bound `dimH S ≤ 2` for any planar set. **Proven, axiom-clean**
   (`#print axioms = [propext, Classical.choice, Quot.sound]`).
-- ⏳ `two_le_dimH` — Davies' actual content `2 ≤ dimH S`. **Open crux** (disclosed `sorry`).
-  Córdoba `L²`/bush strategy laid out in `PLAN.md`.
+- ✅ `two_le_dimH` — Davies' actual content `2 ≤ dimH S`. **Proven, axiom-clean.** The Córdoba
+  `L²`/bush strategy laid out in `PLAN.md` is how it was closed.
 - `davies_kakeya_2d` is assembled from the two halves, so closing `two_le_dimH` completes it.
 
 ## Why this is the genuine work

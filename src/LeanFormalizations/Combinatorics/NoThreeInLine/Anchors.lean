@@ -11,8 +11,13 @@ out the two ways such a definition could be silently vacuous:
   `Parabola.parabola_noThreeCollinear` (a proven nonempty no-three-collinear family).
 
 Together with the exact criterion `collinear_iff_det3_zero`, these pin the predicate to its
-intended geometric meaning. They are tiny `norm_num` computations on explicit points — concrete
+intended geometric meaning. Most are tiny `norm_num` computations on explicit points — concrete
 witnesses in the spirit of the other modules' `Anchors.lean`.
+
+⚠️ The two concrete-witness theorems below (`parabola5_noThreeCollinear`,
+`hyperbolaWide3_noThreeCollinear`) close by `native_decide`, so they carry `Lean.ofReduceBool` in
+addition to the bare trust base. No headline imports this file, so the headline footprints are
+unaffected.
 -/
 import LeanFormalizations.Combinatorics.NoThreeInLine.Collinearity
 import LeanFormalizations.Combinatorics.NoThreeInLine.Hyperbola

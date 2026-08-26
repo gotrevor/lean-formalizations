@@ -11,7 +11,7 @@ to a dominant scale `j*`, and run a single-scale Córdoba count at resolution `2
 The *only* thing blocking that integral is the **measurability of the per-direction covered-length
 function** `θ ↦ ℓ(θ) = vol{t∈[0,1] : a(θ)+t·v(θ) ∈ F}` — which in turn needs a **measurable base-point
 selection** `θ ↦ a(θ)` (`IsKakeya` supplies only a `Classical.choice` selection; measurable selection
-— Jankov–von Neumann / Kuratowski–Ryll-Nardzewski — is a genuine mathlib gap as of v4.29.1).
+— Jankov–von Neumann / Kuratowski–Ryll-Nardzewski — is a genuine mathlib gap; it was still absent at this repo's mathlib pin).
 
 This file proves the keystone that the continuum route consumes and the discrete route dodged:
 

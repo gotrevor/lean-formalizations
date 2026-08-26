@@ -1,5 +1,10 @@
 /-
-# Toward `hermite_lindemann` for `π`: the conjugate-product reduction (scaffold)
+# π-transcendence: the conjugate-product reduction (algebraic part)
+
+> **Status: complete.** Every ingredient described below as "remaining" or "still open here" was
+> subsequently discharged. `PiTranscendental.lean` assembles them into the unconditional
+> `transcendental_pi_axiomClean : Transcendental ℚ Real.pi`, axiom-clean. The wording in this
+> file is scoped to *this module's own* contents, which is the intermediate layer.
 
 This file develops the **algebraic part** of Lindemann's π-transcendence proof — the
 piece that `ETranscendental.lean` did *not* need (because the Hermite polynomial there

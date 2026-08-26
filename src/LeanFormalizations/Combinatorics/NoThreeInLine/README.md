@@ -49,7 +49,7 @@ problem; everything else is machine-checked proof delegating to them.
   no three collinear (`hyperbola_noThreeCollinear`). The doubled arc `x ∈ [1,2p)\{p}`
   (`hyperbolaWide_noThreeCollinear`, `2(p−1)` points) proves the residue/horizontal-line collapse
   the HJSW `3N/2` covering relies on. (These arcs alone give `~N` points — the crux, not the
-  bound; the `3/2` covering needs the 1975 paper, see `PLAN.md` / `ON-LINE-REQUEST.md`.)
+  bound; the `3/2` covering needs the 1975 paper, see `PLAN.md`.)
 
 ## Provenance & novelty
 

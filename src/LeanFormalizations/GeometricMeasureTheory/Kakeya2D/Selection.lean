@@ -1,8 +1,11 @@
 /-
 # Narrowing the measurable-selection crux to a standard Jankov–von Neumann statement
 
-The headline `davies_kakeya_2d` rests (after the rewire in `Wiring.lean`) on the lone axiom
-`kakeya_measurable_selection`: a **measurable** base-point selection `a : ℝ → Plane` whose unit
+This file narrows what was once the last gap under `davies_kakeya_2d` to a standard statement.
+**That gap is now closed**: the headline is proved outright and `#print axioms davies_kakeya_2d`
+is `[propext, Classical.choice, Quot.sound]`; no `kakeya_measurable_selection` axiom exists in
+`src/` (`grep '^axiom' src/` is empty). The analysis below is kept because it is what the route
+had to clear. The statement in question: a **measurable** base-point selection `a : ℝ → Plane` whose unit
 segment over each direction `θ ∈ [0,1]` lies *pointwise* in a measurable cover `⋃ C n` of the Kakeya
 set. That pointwise form is logically **coanalytic-uniformization (Kondô) strength**: the graph
 `G = {(θ,p) : ∀t∈[0,1], p+t·dirθ ∈ ⋃ C n}` is the co-projection of a Borel set along the compact fibre
@@ -38,7 +41,7 @@ uniformization of a Borel set, i.e. mathlib's missing measurable-selection theor
 universal measurability of analytic sets nor the Souslin-scheme selector); (ii) upgrading the
 `MeasurableRoute`/`Wiring` spine from `Measurable a` + pointwise coverage to `AEMeasurable a` + a.e.
 coverage (mechanical: `exists_continuum_dominant_scale` already only consumes the measure bound). See
-`ON-LINE-REQUEST.md` and `CASE_B_ANALYSIS.md`.
+`CASE_B_ANALYSIS.md`.
 -/
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.MeasurableRoute
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Wiring
@@ -139,7 +142,7 @@ a measurable/Borel set under the continuous projection `fst`, via `MeasurableSet
 and the non-empty-sections hypothesis puts the whole direction arc `[0,1]` inside it. What remains for
 the full selector is the Souslin-scheme / "von Neumann derivative" construction on `G` (needing
 analytic-set universal measurability — the genuine mathlib gap; see the file header and
-`ON-LINE-REQUEST.md` UPDATE 6). Proven here as an axiom-clean down payment. -/
+the online-research request for this route). Proven here as an axiom-clean down payment. -/
 theorem analyticSet_proj_and_Icc_subset
     (G : Set (ℝ × Plane)) (hG : MeasurableSet G)
     (hsec : ∀ θ ∈ Set.Icc (0 : ℝ) 1, ∃ p : Plane, (θ, p) ∈ G) :

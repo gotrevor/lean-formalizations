@@ -10,7 +10,7 @@ the elementary symmetric functions of `θ` (= ± coefficients of `G`, Vieta), he
 
 **Provenance.** Produced by Harmonic's Aristotle auto-formalizer (job `b7252abe`, prompt
 `tools/aristotle/pi-subsetsum-esymm-submitted.txt`) and **independently kernel-verified** in
-this repo (Lean v4.29.1): `#print axioms subsetSum_esymm_rational = [propext,
+this repo: `#print axioms subsetSum_esymm_rational = [propext,
 Classical.choice, Quot.sound]` (no `sorry`, no added axiom). Ported verbatim. The four helper
 lemmas (`ringHom_map_multiset_esymm`, `subsetSum_esymm_isSymmetric`, `esymm_theta_mem_range`,
 `aeval_mem_range`) coincide with the local roadmap independently developed this lap.

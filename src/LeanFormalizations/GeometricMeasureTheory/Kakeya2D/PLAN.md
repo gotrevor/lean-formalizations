@@ -3,7 +3,9 @@
 > **STATUS 2026-06-19: K1–K4 COMPLETE + axiom-clean.** The Córdoba `L²` content bound
 > `vol(Sδ) ≳ 1/log(1/δ)` is proved (`CordobaL2.volume_thickening_log_ge`). K5 brick 1
 > (`Frostman.hausdorffMeasure_ne_zero_of_frostmanExists`) reduces the crux to building a Frostman
-> measure (`FrostmanMeasureExists S d`). The **only** open `sorry` is that measure construction —
+> measure (`FrostmanMeasureExists S d`). **[Superseded: that measure construction was completed;
+> `davies_kakeya_2d` is proved and axiom-clean. This plan is kept as the route that was taken.]**
+> The last open `sorry` was that measure construction —
 > see `PENDING_WORK.md` for the three attack paths. Files: `Tube`(K2) `Discretize`+`Directions`(K3)
 > `Cordoba`+`CordobaL2`(K4) `Frostman`(K5.1) `Engine`(crux).
 

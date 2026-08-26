@@ -16,7 +16,7 @@ The chain is Vieta + Newton's identities:
 
 **Provenance.** This proof was produced by Harmonic's Aristotle auto-formalizer (job
 `9a19f72e`, prompt archived at `tools/aristotle/pi-sum-aeval-roots-int-prompt.txt`) and then
-**independently verified in this repository's kernel** (Lean v4.29.1 / our mathlib pin):
+**independently verified in this repository's kernel** (at this repo's mathlib pin):
 `#print axioms sum_aeval_roots_int = [propext, Classical.choice, Quot.sound]` (no `sorry`, no
 added axiom). Ported verbatim into the project namespace.
 -/
