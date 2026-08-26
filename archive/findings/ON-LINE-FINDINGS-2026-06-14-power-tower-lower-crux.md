@@ -143,8 +143,7 @@ prove the *global* `β = γ`. The rigorous global step is exactly what your even
 monotone-subsequence framework (`tendsto_of_even_odd` + `g_mono`) plus the crux
 (`two_cycle_collapse`) already supplies. So **Lóczi §3 offers no lemma chain to port
 beyond confirming the threshold mechanism** — your contraction bound (§1) and the
-elementary `(★)` (§3) are both *more* rigorous than the paper on the crux itself. Don't
-wait on the paper; you already have the better argument.
+elementary `(★)` (§3) both establish the crux independently. No need to block on the paper.
 
 ---
 

@@ -28,4 +28,4 @@ is a single-paper harmonic-analysis result, expected to take many laps. See `PLA
 
 ## Portability
 Because the definitions match `formal-conjectures` verbatim, a finished proof drops directly onto
-that repo's `kakeya_2d` `sorry` (the DeepMind submission is gated by the Proof-Legal/Google-CLA step).
+that repo's `kakeya_2d` `sorry`.

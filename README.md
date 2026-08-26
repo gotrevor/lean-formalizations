@@ -4,7 +4,16 @@ Formalizations of **solved-but-unformalized** mathematical results in Lean 4 +
 mathlib — with a soft spot for *no-formula / impossibility* meta-theorems (the
 genre where you reify a class of formulas and prove the target escapes it).
 
-**Status:** local, unpublished. Not pushed, not registered, not announced.
+**Status:** public. Build green; `src/` is `sorry`-free; per-headline `#print axioms`
+footprints are in [`STATUS.md`](STATUS.md).
+
+> **How this was built.** Most of the Lean here, and most of these docs, were written by
+> Claude working in long autonomous sessions against a `lake build` + `#print axioms` gate;
+> two symmetric-function lemmas came from Harmonic's Aristotle and were re-verified in this
+> repo's kernel (`tools/aristotle/` keeps the prompts). I reviewed and directed the work, but
+> I did not hand-write most of it. `git log` shows the co-authorship. Everything is
+> machine-checked, so judge it by the kernel and not by me - and see
+> [`archive/README.md`](archive/README.md) for the unedited session log, warts included.
 
 ## Contents
 
@@ -32,8 +41,6 @@ Planned: gather the Erdős formalizations here once their publishing gate clears
 lake exe cache get      # fetch prebuilt mathlib oleans (do this first)
 lake build              # non-vacuous: defaultTargets = ["LeanFormalizations"]
 ```
-After the first successful build, enable the green-gate:
-`git config core.hooksPath .githooks` (see `.githooks/README.md`).
 
 ## Prior art / neighbors in the Lean ecosystem
 - mathlib `Mathlib.NumberTheory.FrobeniusNumber` — the general def + the 2-var

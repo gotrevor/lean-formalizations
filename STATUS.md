@@ -5,8 +5,9 @@
 > + the `hyperbolaWide`/arc no-three-in-line construction), **kakeya** (Davies planar Kakeya `dimH = 2`,
 > `Kakeya2D.davies_kakeya_2d`), and **ntl** (PNT / Mertens / Dirichlet divisor / BV-Fourier decay + a second,
 > independent **sheared-hyperbola (HJSW)** no-three-in-line construction).
-> · **Build**: 🟢 green (**8656 jobs**, `src/` **sorry-free**, **0 custom axioms**, every spot-checked headline
-> `[propext, Classical.choice, Quot.sound]`).
+> · **Build**: 🟢 green (**8656 jobs**, `src/` **sorry-free**, **0 custom axioms**). Every headline is
+> `[propext, Classical.choice, Quot.sound]` **except** the Goodstein growth closures, which additionally
+> carry `Lean.ofReduceBool` from their finite base-case `native_decide` (see the ledger).
 > · **No-three-in-line — BOTH constructions kept** (Trevor's call): goodstein's `hyperbolaWide`/arc lives in
 > `Combinatorics.NoThreeInLine.*`; ntl's shear construction (+ its prime-gap general-`N` extension) lives in
 > the sibling sub-namespace `Combinatorics.NoThreeInLine.Shear.*`, reusing the shared core
@@ -26,7 +27,7 @@
 - 🚧 **Off-headline (`wip/`, non-default `DaviesWip` lean_lib):** jvn 2nd-route GMT (`Capacitability`/`VonNeumannSelection`, sorry-free) + FastGrowing `Bachmann` (sorry-free); `Basic` carries the single disclosed A3 sorry. Excluded from the default `lake build`.
 
 ## Build & fidelity 🟢
-`lake build` green (**8656 jobs**) · `src/` **sorry-free** · **0 custom/math axioms** (`grep '^axiom' src/` empty) · every headline `#print axioms = [propext, Classical.choice, Quot.sound]`. Per-headline ledger near the bottom.
+`lake build` green (**8656 jobs**) · `src/` **sorry-free** · **0 custom axioms** (`grep '^axiom' src/` empty) · every headline `#print axioms = [propext, Classical.choice, Quot.sound]`, **except** the Goodstein growth closures, which additionally carry `Lean.ofReduceBool` (finite base-case `native_decide`, `DominationBaseCases.lean`). Per-headline ledger near the bottom.
 
 ## Goodstein / Kirby–Paris thread — detailed history
 _The banners + lap log that follow are the goodstein expedition's internal record (the densest thread). The kakeya + ntl threads' blow-by-blow lives in their `premerge/{kakeya-davies,ntl-hjsw}`-tagged commit history; their current state is the at-a-glance map above + the full ledger + each area's `Statement.lean`/`README.md`._
@@ -71,7 +72,7 @@ _The banners + lap log that follow are the goodstein expedition's internal recor
 > resolved (`norm_seqONote_le`: budget is free on the descent). The five threads below are frozen.
 
 ## Where it stands
-The repo is **100% axiom-free** — every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]`, and `grep '^axiom' src/` is empty. Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
+The repo declares **no custom axioms** (`grep '^axiom' src/` is empty), and every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]` - with one disclosed exception: the Goodstein growth closures additionally carry `Lean.ofReduceBool` from their finite base-case `native_decide` (`DominationBaseCases.lean`). Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
 - **2026-06-19 lap 14 (🎉🎉🎉 HJSW `3(p−1)` no-three-in-line — COMPLETE & axiom-clean):** The best

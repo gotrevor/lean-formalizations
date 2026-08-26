@@ -32,9 +32,8 @@ problem; everything else is machine-checked proof delegating to them.
   * `IsGridSet N s` — `∀ p ∈ s, p.1 < N ∧ p.2 < N`, i.e. `s ⊆ [0,N) × [0,N)`.
   * `NoThreeCollinear s` — `∀ p q r ∈ s, Collinear ℝ {toReal p, toReal q, toReal r} → p = q ∨ p = r ∨ q = r`.
     This is the genuine geometric collinearity (`Mathlib`'s `Collinear ℝ`), so it forbids three
-    distinct points on **any** real line. It is the **corrected** form of the
-    `formal-conjectures` entry `Green72.AllowedSet`, whose `not_collinear` field is mis-stated
-    (asserts `Collinear` with no negation, and over the whole set rather than the chosen triple).
+    distinct points on **any** real line. It agrees with the `formal-conjectures` entry
+    `Green72.AllowedSet` (stated there for general `k`; ours is the `k = 3` instance).
   * `maxNoThreeInLine N := sSup {s.card | IsGridSet N s ∧ NoThreeCollinear s}` — the grid maximum.
 * **`Statement.lean`** — the headlines, each delegating to the engines.
 

@@ -4,3 +4,6 @@
 # Copyrighted full-text PDFs travel locally only; commit summaries + provenance,
 # never the binary (this repo is eventually-public). See papers/README.md.
 papers/**/*.pdf
+
+# Local-only Claude memory pointer (also in the global ignore; was tracked before that rule)
+CLAUDE.local.md

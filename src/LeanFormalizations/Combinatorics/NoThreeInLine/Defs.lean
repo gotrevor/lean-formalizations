@@ -10,9 +10,10 @@ A grid point is a pair `(i, j) : ℕ × ℕ`; collinearity is the genuine geomet
 *distinct* grid points lie on a common real line — every line of every rational slope,
 not just rows/columns/diagonals.
 
-This is the audited definition. Compare the `formal-conjectures` entry `Green72.AllowedSet`,
-whose `not_collinear` field is mis-stated (it asserts `Collinear` with no negation and
-ranges over the whole set rather than the chosen triple); ours is the corrected form.
+This is the audited definition. It agrees with the `formal-conjectures` entry
+`Green72.AllowedSet` (stated there for general `k`; ours is the `k = 3` instance).
+An early revision of that entry stated `not_collinear` without its negation; upstream
+fixed it in google-deepmind/formal-conjectures#4182 (2026-06-12).
 -/
 import Mathlib.LinearAlgebra.AffineSpace.FiniteDimensional
 import Mathlib.Algebra.Module.Prod

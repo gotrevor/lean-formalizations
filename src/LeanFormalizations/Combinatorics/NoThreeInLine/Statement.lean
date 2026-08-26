@@ -6,7 +6,7 @@ load-bearing definitions are in `Defs.lean`:
 
 * `IsGridSet N s` — `s ⊆ [0,N) × [0,N)`;
 * `NoThreeCollinear s` — no three *distinct* points of `s` are `Collinear ℝ` (every line,
-  every slope), the corrected form of `formal-conjectures`' `Green72.AllowedSet`;
+  every slope), the `k = 3` instance of `formal-conjectures`' `Green72.AllowedSet`;
 * `maxNoThreeInLine N` — the largest such `s.card`.
 
 Two results, both fully proven and axiom-clean (`#print axioms` = the bare trust base

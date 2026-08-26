@@ -2,8 +2,8 @@
 
 ## Done (axiom-clean, sorry-free)
 
-1. **Definitions** (`Defs.lean`) — faithful `Collinear ℝ` predicate; fixes the upstream
-   `Green72.AllowedSet` mis-statement.
+1. **Definitions** (`Defs.lean`) — faithful `Collinear ℝ` predicate; the `k = 3`
+   instance of upstream `Green72.AllowedSet`.
 2. **`2N` upper bound** (`UpperBound.lean`) — pigeonhole: ≤ 2 per row × `N` rows.
 3. **Erdős `Θ(N)` lower bound** (`Parabola.lean`) — `(i, i² mod p)` for prime `p`; mod-`p`
    determinant `(b−a)(c−a)(c−b) ≢ 0`. Lifted to all `N ≥ 2` via Bertrand.
