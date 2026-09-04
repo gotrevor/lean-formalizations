@@ -68,3 +68,13 @@ import LeanFormalizations.NumberTheory.Catalan.Residual
 import LeanFormalizations.NumberTheory.Catalan.TwoAdic
 import LeanFormalizations.NumberTheory.Catalan.Statement
 import LeanFormalizations.NumberTheory.Catalan.Frame
+
+-- Dirichlet beta values: Phase 4 — one of β(2), β(4), …, β(20) is irrational
+-- (Rivoal–Zudilin 2003 / Zudilin 2019 §2, elementary route).  β(2) = Catalan's constant.
+import LeanFormalizations.NumberTheory.DirichletBeta.Beta
+import LeanFormalizations.NumberTheory.DirichletBeta.Rational
+import LeanFormalizations.NumberTheory.DirichletBeta.LinearForm
+import LeanFormalizations.NumberTheory.DirichletBeta.Integral
+import LeanFormalizations.NumberTheory.DirichletBeta.Bound
+import LeanFormalizations.NumberTheory.DirichletBeta.Lcm
+import LeanFormalizations.NumberTheory.DirichletBeta.Statement

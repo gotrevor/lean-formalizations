@@ -150,43 +150,78 @@ entry), do not build a road to it.  No asymptotic ledger is to be attempted in L
 propose Lean discharges for Phase-2 nodes; the deliverable there is the stated `Prop` + probe
 result + the next story.
 
-## Phase 4 (proposed 2026-09-04, awaiting Trevor) — the nearest TRUE theorem: one of β(2),…,β(20) is irrational
+## Phase 4 — ACTIVE (planted 2026-09-04) — the nearest TRUE theorem: one of β(2),…,β(20) is irrational
 
-Trevor: *"Any path leading toward a correct formalization?  If so, prioritize that path."*  No path
-proves `G ∉ ℚ`.  The strongest PROVED statement about `G`'s family is Rivoal–Zudilin 2003 /
-Zudilin 2019 (arXiv:1804.09922, `papers/zudilin-2019-arithmetic-catalan-relatives.txt`): "at least
-one of β(2), β(4), …, β(2k) is irrational".  Zudilin's §2 construction, made **elementary** (no
-saddle point, no Nesterenko criterion — the pattern of his SIGMA 2018 paper for odd zeta values,
-`papers/zudilin-2018-odd-zeta-elementary.txt`) and fed by the in-repo PNT, reaches **`s = 21`:
-one of β(2), β(4), …, β(20)**.  Nobody has formalized any result of this type (reservoir + mathlib
-swept 2026-09-04).  Every ingredient was numerically validated before proposal
-(`papers/catalan-beta-validate.py`, `papers/catalan-beta-ledger.py`):
+**Lane**: *formalizing a known result* (not moonshot).  Directory
+`src/LeanFormalizations/NumberTheory/DirichletBeta/`.  Scaffold planted and green; eight `sorry`
+leaves remain, and **the headline is already wired**: `Statement.lean` is proof-complete, so
+closing the leaves closes the theorem with no further design work.
 
-    R_n(t) = 2^{6n} n!^{s−3} (2t+n) ∏_{j=1}^{3n}(t−n+j−½) / ∏_{j=0}^{n}(t+j)^s,   s = 21 odd, n even
-    r_n    = Σ_{ν≥1} (−1)^ν R_n(ν−½) = Σ_{i even ≤ s−1} A_i β(i) + A_0,   d_n^{s−i} A_i ∈ ℤ, d_n^s A_0 ∈ ℤ
-    |r_n|  = 2^{6n}(3n+1)!/n!³ · ∫_{[0,1]^s} (1−T) ∏ t_j^{n−½}(1−t_j)^n dt / (1+T)^{3n+2}  > 0,  T = ∏ t_j
-    |r_n|^{1/n} → e^{m(s)},  m(21) = −21.657 = −s − 0.657   (max-term rate = exact rate: NO cancellation loss)
-    d_n^{1/n} → e  (log lcm(1..n) = ψ(n), `WeakPNT''` in the PrimeNumberTheoremAnd dep)
-    ⇒ if all β(2i) ∈ ℚ with common denominator q:  q·d_n^s·r_n ∈ ℤ∖{0} and → 0.  Contradiction.
+**The theorem** (Rivoal–Zudilin 2003, Math. Ann. **326** 705–721 / Zudilin 2019 arXiv:1804.09922 §2,
+made elementary in the pattern of his SIGMA 2018 odd-zeta paper `papers/zudilin-2018-odd-zeta-elementary.txt`):
 
-Nodes (each a file; frozen statements to be planted when authorized):
-- **N1 arithmetic** — partial fractions of `R_n` and `d_n^{s−i} a_{i,k} ∈ ℤ` (SIGMA Lemma 1: the
-  four binomial partial-fraction identities + the product lemma).  Elementary, Node-B-like.
-- **N2 decomposition** — `r_n = Σ A_i β(i) + A_0` with the integrality, odd `i` vanish by
-  `R_n(−t−n) = R_n(t)`; the half-integer tails use `oddLcm` (Frame.lean) again.
-- **N3 positivity** — the `s`-fold integral: `integral_fintype_prod_eq_prod` turns it into
-  `Σ_ν c_ν B(n+½+ν, n+1)^s` (binomial series of `(1−T)/(1+T)^{3n+2}`, absolutely convergent for
-  `s ≥ 3`), each term `= const · (−1)^ν R_n(ν−½)`; positivity from the integrand.  **The crux.**
-- **N4 upper bound** — `|r_n| ≤ poly(n) · max_ν |R_n(ν−½)|`, then Stirling-type bounds give
-  `limsup |r_n|^{1/n} ≤ e^{m(s)}`.  Elementary but fiddly; a review lap should pick the cleanest
-  route (e.g. bound the peak term via explicit factorial inequalities, geometric tail after it).
-- **N5 lcm** — `(lcm 1..n)^{1/n} → e` from `WeakPNT''`.
-- **N6 wiring** — `irrational_of_forms` generalized to `p` numbers (Frame.lean W, one more index).
-Headline: `theorem exists_even_beta_irrational : ∃ i ∈ {2,4,…,20}, Irrational (dirichletBeta i)`.
-Size estimate: 2–3× Phase 1+3 combined; multi-lap.  Nonvanishing is the only non-elementary piece.
+    exists_even_beta_irrational : ∃ i ∈ Icc 1 10, Irrational (dirichletBeta (2 * i))
+
+i.e. **at least one of β(2), β(4), …, β(20) is irrational**.  `β(2) = G`, so
+`catalan_or_higher_beta_irrational` restates it as "`G` is irrational, or one of β(4),…,β(20) is".
+⚠️ This does **not** claim `G ∉ ℚ`; every disjunct is individually open.  Nobody has formalized any
+result of this type (reservoir + mathlib swept 2026-09-04).
+
+**The ledger** (`s = 21`, `n` even, `d_n = lcm(1..n) = Nat.lcmUpto n`):
+
+    Rval s n u = 2^{6n}(n!)^{s-3}(3n+1+2u)·(u+3n)!/u! / ∏_{j=0}^{n}((2(n+1+u+j)-1)/2)^s
+    rForm s n  = Σ_{u≥0} (-1)^{n+u+1} Rval s n u                       ( = r_n, Zudilin's linear form )
+    d_n^21·r_n = A_0 + Σ_{i=1}^{10} A_i β(2i),  A_i ∈ ℤ                (N2)
+    r_n < 0                                                            (N3, the crux)
+    |r_n| ≤ e^{-21.3 n},   d_n ≤ e^{1.01 n}                            (N4, N5)
+    ⇒ |d_n^21 r_n| ≤ e^{(21·1.01 − 21.3)n} = e^{-0.09n} → 0, a nonzero integer form → contradiction.
+
+True rates: `lim|r_n|^{1/n} = e^{-21.657}` and `d_n^{1/n} → e`, so `21 < 21.657` closes with
+`0.657/n` to spare; the frozen constants `-21.3` and `1.01` spend part of that margin to keep the
+bounds coarse.  **Do not tighten them** — any pair with `21·c₅ < −c₄` works, and the slack is what
+makes N4/N5 elementary.
+
+**Frozen names** (guard by name; the shapes are the contract):
+- `Beta.lean` — `dirichletBeta`, `summable_betaTerm`, `beta_two_eq_catalanConst`
+- `Rational.lean` — `Rval`, `rForm`, `Rval_pos`, `summable_Rval`
+- `LinearForm.lean` — `dn`, **`exists_int_combination`** (N2)
+- `Integral.lean` — **`rForm_neg`** (N3, the crux), `rForm_ne_zero`
+- `Bound.lean` — **`abs_rForm_le_exp`** (N4)
+- `Lcm.lean` — **`dn_le_exp`** (N5)
+- `Statement.lean` — `exists_irrational_of_forms` (W', proved), `exists_even_beta_irrational`
+  (proved from the leaves), `catalan_or_higher_beta_irrational` (proved)
+
+**Order of attack** (easiest first; each is independent):
+1. **N5 `dn_le_exp`** — nearly free: `Chebyshev.psi_eq_log_lcmUpto` (mathlib) + `WeakPNT''`
+   (`PrimeNumberTheoremAnd.Consequences`) give `log d_n / n → 1`.
+2. **`summable_betaTerm`, `beta_two_eq_catalanConst`** — routine; `Catalan/Tails.lean` has the
+   summability pattern and `catalanConst = tail 0` is definitionally the same series.
+3. **`Rval_pos`, `summable_Rval`** — positivity is `positivity` once the factorials are unfolded;
+   summability from the `u^{3n+1−s(n+1)} ≤ u^{-2}` decay.
+4. **N2 `exists_int_combination`** — the arithmetic grind: partial fractions of `R_n`, SIGMA
+   Lemma 1 integrality `d_n^{s−i}a_{i,k} ∈ ℤ`, odd-`i` vanishing from `R_n(−t−n) = R_n(t)`.
+   Only the *existential* is frozen, so any route is fair.
+5. **N4 `abs_rForm_le_exp`** — bound `|r_n|` by `poly(n)·max_u|Rval 21 n u|` (legitimate: the
+   ledger probe shows max-term rate = exact rate), then explicit factorial/Stirling bounds.
+6. **N3 `rForm_neg`** — the crux: the `s`-fold Beta integral
+   (`integral_fintype_prod_eq_prod`, binomial series of `(1−T)/(1+T)^{3n+2}`).  Sign convention
+   `r_n = −C_n·∫` is **verified numerically** — do not re-derive it from scratch.
+
+**Every frozen statement was validated numerically before planting**, on exactly the hypothesis
+range it states (`Odd s`, `Even n`, `3 ≤ s`) — the Phase 3 `E1` lesson.  Probes:
+`papers/catalan-beta-validate.py` (integrality, decomposition, the integral at `s=3,n=2`),
+`papers/catalan-beta-ledger.py` (rates, odd `s` from 7 to 41 at `n=40`),
+`papers/catalan-beta-rval-check.py` (the shifted `Rval` against the source `R_n(ν−½)`: termwise
+**exact**).  ⚠️ If a lap finds a frozen statement FALSE, say so loudly and stop that leaf — that
+is a result, not a failure (Phase 3 found `E1` false and it was the most valuable thing the lap did).
+
+## NOT a stop condition
+Do NOT stop because a leaf landed, "to take stock", or because N3 is hard.  Closing N5 or the
+`Beta.lean` pair is a lap's worth of progress on its own.  Trevor ends the run.
 
 ## Lane discipline
-- Work ONLY in `src/LeanFormalizations/NumberTheory/Catalan/`.  New files get wired into
+- Work ONLY in `src/LeanFormalizations/NumberTheory/DirichletBeta/` (Phase 4, the live lane) and
+  `src/LeanFormalizations/NumberTheory/Catalan/` (Phases 1–3, green — read, don't churn).  New files get wired into
   `src/LeanFormalizations.lean` (the lib builds only what is reachable from that root).
 - **DO NOT TOUCH** any other thread (`Transcendence/`, `Constructible/`, `Curtis/`, `PowerTower/`,
   `Logic/`, `Combinatorics/`, `Kakeya2D/`, `PrimeNumberTheorem/`).  Read them for technique.
@@ -209,5 +244,6 @@ Size estimate: 2–3× Phase 1+3 combined; multi-lap.  Nonvanishing is the only 
   on the governor's budget signal, `/handoff` and end the lap.
 
 ## NOT a stop condition
-No self-stop until Phase 3 (`Frame.lean`) is green and axiom-clean.  Do NOT stop because a leaf landed, "to take
-stock", or because the crux is hard.  Trevor ends the run.
+No self-stop until every `sorry` in `src/LeanFormalizations/NumberTheory/DirichletBeta/` is closed
+and `exists_even_beta_irrational` is axiom-clean.  Do NOT stop because a leaf landed, "to take
+stock", or because N3 is hard.  Trevor ends the run.
