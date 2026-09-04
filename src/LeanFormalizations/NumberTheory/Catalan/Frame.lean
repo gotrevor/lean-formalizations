@@ -92,11 +92,109 @@ theorem irrational_of_forms (x : ℝ) (N : ℤ → ℤ → ℕ → ℤ)
 
 variable {F : Type*} [Field F] [CharZero F]
 
+lemma alt_choose_sum_succ (g : ℕ → F) (n : ℕ) :
+    ∑ i ∈ range (n + 2), (-1 : F) ^ i * ((n + 1).choose i : F) * g i =
+      ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) * g i
+        - ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) * g (i + 1) := by
+  rw [sum_range_succ' (fun i => (-1 : F) ^ i * ((n + 1).choose i : F) * g i),
+    sum_range_succ' (fun i => (-1 : F) ^ i * (n.choose i : F) * g i)]
+  simp only [Nat.choose_succ_succ, Nat.cast_add, pow_succ, Nat.choose_zero_right, Nat.cast_one,
+    pow_zero]
+  have h3 : ∑ k ∈ range (n + 1), (-1 : F) ^ k * -1 * (n.choose (k + 1) : F) * g (k + 1)
+      = ∑ k ∈ range n, (-1 : F) ^ k * -1 * (n.choose (k + 1) : F) * g (k + 1) := by
+    rw [sum_range_succ, Nat.choose_succ_self]; simp
+  have h4 : ∑ k ∈ range (n + 1), (-1 : F) ^ k * -1 * (n.choose k : F) * g (k + 1)
+      = - ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) * g (i + 1) := by
+    rw [← sum_neg_distrib]; refine sum_congr rfl fun k _ => ?_; ring
+  simp only [mul_add, add_mul, sum_add_distrib]
+  rw [h3, h4]; ring
+
+/-- `∀ x` form of D1, for the induction. -/
+theorem alt_choose_sum_inv_eq_aux (n : ℕ) : ∀ x : F, (∀ i ∈ range (n + 1), x + i ≠ 0) →
+    ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) / (x + i) =
+      (n.factorial : F) / ∏ i ∈ range (n + 1), (x + i) := by
+  induction n with
+  | zero => intro x hx; simp
+  | succ n ih =>
+    intro x hx
+    have hx0 : x ≠ 0 := by simpa using hx 0 (by simp)
+    have hx1 : ∀ i ∈ range (n + 1), x + i ≠ 0 := fun i hi => hx i (by simp at hi ⊢; omega)
+    have hx2 : ∀ i ∈ range (n + 1), (x + 1) + i ≠ 0 := fun i hi => by
+      have := hx (i + 1) (by simp at hi ⊢; omega); push_cast at this; rwa [add_assoc, add_comm 1]
+    have hxn : x + (n + 1 : ℕ) ≠ 0 := hx (n + 1) (by simp)
+    have e := alt_choose_sum_succ (fun i : ℕ => 1 / (x + i)) n
+    simp only [mul_one_div] at e
+    have e2 : ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) / (x + ((i + 1 : ℕ) : F)) =
+        ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) / ((x + 1) + i) := by
+      refine sum_congr rfl fun i _ => ?_; push_cast; ring_nf
+    rw [e, e2, ih x hx1, ih (x + 1) hx2]
+    have p1 : ∏ i ∈ range (n + 2), (x + i) = (∏ i ∈ range (n + 1), (x + i)) * (x + (n + 1 : ℕ)) :=
+      prod_range_succ _ _
+    have p2 : ∏ i ∈ range (n + 2), (x + i) = x * ∏ i ∈ range (n + 1), ((x + 1) + i) := by
+      rw [prod_range_succ']; simp only [Nat.cast_zero, add_zero]
+      rw [mul_comm]; congr 1; refine prod_congr rfl fun i _ => ?_; push_cast; ring
+    have hP1 : ∏ i ∈ range (n + 1), (x + i) ≠ 0 := prod_ne_zero_iff.2 hx1
+    have hP2 : ∏ i ∈ range (n + 1), ((x + 1) + i) ≠ 0 := prod_ne_zero_iff.2 hx2
+    have hP : ∏ i ∈ range (n + 2), (x + i) ≠ 0 := by rw [p1]; exact mul_ne_zero hP1 hxn
+    rw [div_sub_div _ _ hP1 hP2, div_eq_div_iff (mul_ne_zero hP1 hP2) hP]
+    have : (∏ i ∈ range (n + 1), ((x + 1) + i)) = (∏ i ∈ range (n + 2), (x + i)) / x := by
+      rw [p2]; field_simp
+    rw [this, p1]
+    field_simp
+    push_cast [Nat.factorial_succ]
+    ring
+
 /-- **D1 (Beta identity).**  `Σ_{i≤n} (−1)^i C(n,i)/(x+i) = n!/∏_{i≤n}(x+i)`. -/
 theorem alt_choose_sum_inv_eq (x : F) (n : ℕ) (hx : ∀ i ∈ range (n + 1), x + i ≠ 0) :
     ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) / (x + i) =
-      (n.factorial : F) / ∏ i ∈ range (n + 1), (x + i) := by
-  sorry
+      (n.factorial : F) / ∏ i ∈ range (n + 1), (x + i) :=
+  alt_choose_sum_inv_eq_aux n x hx
+
+/-- `∀ x` form of D2, for the induction. -/
+theorem alt_choose_sum_inv_sq_eq_aux (n : ℕ) : ∀ x : F, (∀ i ∈ range (n + 1), x + i ≠ 0) →
+    ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) / (x + i) ^ 2 =
+      (n.factorial : F) / (∏ i ∈ range (n + 1), (x + i)) *
+        ∑ i ∈ range (n + 1), 1 / (x + i) := by
+  induction n with
+  | zero => intro x hx; simp; ring
+  | succ n ih =>
+    intro x hx
+    have hx0 : x ≠ 0 := by simpa using hx 0 (by simp)
+    have hx1 : ∀ i ∈ range (n + 1), x + i ≠ 0 := fun i hi => hx i (by simp at hi ⊢; omega)
+    have hx2 : ∀ i ∈ range (n + 1), (x + 1) + i ≠ 0 := fun i hi => by
+      have := hx (i + 1) (by simp at hi ⊢; omega); push_cast at this; rwa [add_assoc, add_comm 1]
+    have hxn : x + (n + 1 : ℕ) ≠ 0 := hx (n + 1) (by simp)
+    have e := alt_choose_sum_succ (fun i : ℕ => 1 / (x + i) ^ 2) n
+    simp only [mul_one_div] at e
+    have e2 : ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) / (x + ((i + 1 : ℕ) : F)) ^ 2 =
+        ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) / ((x + 1) + i) ^ 2 := by
+      refine sum_congr rfl fun i _ => ?_; push_cast; ring_nf
+    rw [e, e2, ih x hx1, ih (x + 1) hx2]
+    have s1 : ∑ i ∈ range (n + 2), 1 / (x + i) =
+        ∑ i ∈ range (n + 1), 1 / (x + i) + 1 / (x + ((n + 1 : ℕ) : F)) := sum_range_succ _ _
+    have s2 : ∑ i ∈ range (n + 2), 1 / (x + i) = 1 / x + ∑ i ∈ range (n + 1), 1 / ((x + 1) + i) := by
+      rw [sum_range_succ']; simp only [Nat.cast_zero, add_zero]
+      rw [add_comm]; congr 1; refine sum_congr rfl fun i _ => ?_; push_cast; ring_nf
+    have p1 : ∏ i ∈ range (n + 2), (x + i) = (∏ i ∈ range (n + 1), (x + i)) * (x + (n + 1 : ℕ)) :=
+      prod_range_succ _ _
+    have p2 : ∏ i ∈ range (n + 2), (x + i) = x * ∏ i ∈ range (n + 1), ((x + 1) + i) := by
+      rw [prod_range_succ']; simp only [Nat.cast_zero, add_zero]
+      rw [mul_comm]; congr 1; refine prod_congr rfl fun i _ => ?_; push_cast; ring
+    have hP1 : ∏ i ∈ range (n + 1), (x + i) ≠ 0 := prod_ne_zero_iff.2 hx1
+    have hP2 : ∏ i ∈ range (n + 1), ((x + 1) + i) ≠ 0 := prod_ne_zero_iff.2 hx2
+    have s1' : ∑ i ∈ range (n + 1), 1 / (x + i) =
+        ∑ i ∈ range (n + 2), 1 / (x + i) - 1 / (x + ((n + 1 : ℕ) : F)) := by rw [s1]; ring
+    have s2' : ∑ i ∈ range (n + 1), 1 / ((x + 1) + i) =
+        ∑ i ∈ range (n + 2), 1 / (x + i) - 1 / x := by rw [s2]; ring
+    have p1' : ∏ i ∈ range (n + 1), (x + i) =
+        (∏ i ∈ range (n + 2), (x + i)) / (x + (n + 1 : ℕ)) := by rw [p1]; field_simp
+    have p2' : ∏ i ∈ range (n + 1), ((x + 1) + i) = (∏ i ∈ range (n + 2), (x + i)) / x := by
+      rw [p2]; field_simp
+    have hP : ∏ i ∈ range (n + 2), (x + i) ≠ 0 := prod_ne_zero_iff.2 hx
+    rw [s1', s2', p1', p2']
+    field_simp
+    push_cast [Nat.factorial_succ]
+    ring
 
 /-- **D2 (squared Beta identity).**
 `Σ_{i≤n} (−1)^i C(n,i)/(x+i)^2 = n!/∏_{i≤n}(x+i) · Σ_{i≤n} 1/(x+i)`  (minus the `x`-derivative
@@ -104,8 +202,62 @@ of D1). -/
 theorem alt_choose_sum_inv_sq_eq (x : F) (n : ℕ) (hx : ∀ i ∈ range (n + 1), x + i ≠ 0) :
     ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) / (x + i) ^ 2 =
       (n.factorial : F) / (∏ i ∈ range (n + 1), (x + i)) *
-        ∑ i ∈ range (n + 1), 1 / (x + i) := by
-  sorry
+        ∑ i ∈ range (n + 1), 1 / (x + i) :=
+  alt_choose_sum_inv_sq_eq_aux n x hx
+
+/-- Annihilation, allowing `n = 0` when `p = 0`. -/
+lemma alt_choose_sum_eval_eq_zero' (P : F[X]) {n : ℕ} (hP : P.natDegree + 1 ≤ n ∨ P = 0) :
+    ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) * P.eval (i : F) = 0 := by
+  rcases hP with hP | rfl
+  · exact alt_choose_sum_eval_eq_zero P (by omega)
+  · simp
+
+omit [CharZero F] in
+/-- Two-step Taylor decomposition at `a`: `p = (X − a)^2 Q + α (X − a) + β` with
+`α = p'(a)`, `β = p(a)`, `natDegree Q ≤ natDegree p − 2`. -/
+lemma exists_taylor_two (p : F[X]) (a : F) :
+    ∃ Q : F[X], p = (X - C a) ^ 2 * Q + C (p.derivative.eval a) * (X - C a) + C (p.eval a) ∧
+      (Q.natDegree + 2 ≤ p.natDegree ∨ Q = 0) := by
+  set q1 := p /ₘ (X - C a) with hq1
+  set Q := q1 /ₘ (X - C a) with hQ
+  have hp : p = (X - C a) * q1 + C (p.eval a) := by
+    have := modByMonic_add_div p (X - C a)
+    rw [modByMonic_X_sub_C_eq_C_eval, add_comm] at this
+    exact this.symm
+  have hq : q1 = (X - C a) * Q + C (q1.eval a) := by
+    have := modByMonic_add_div q1 (X - C a)
+    rw [modByMonic_X_sub_C_eq_C_eval, add_comm] at this
+    exact this.symm
+  have hderiv : p.derivative.eval a = q1.eval a := by
+    conv_lhs => rw [hp]
+    simp [derivative_mul]
+  refine ⟨Q, ?_, ?_⟩
+  · rw [hderiv]
+    conv_lhs => rw [hp, hq]
+    ring
+  · by_cases hQ0 : Q = 0
+    · exact Or.inr hQ0
+    left
+    have h1 : Q.natDegree = q1.natDegree - 1 := by
+      rw [hQ, natDegree_divByMonic _ (monic_X_sub_C a), natDegree_X_sub_C]
+    have h2 : q1.natDegree = p.natDegree - 1 := by
+      rw [hq1, natDegree_divByMonic _ (monic_X_sub_C a), natDegree_X_sub_C]
+    have hq10 : q1 ≠ 0 := by
+      intro h; apply hQ0; rw [hQ, h, zero_divByMonic]
+    have hp0 : p ≠ 0 := by
+      intro h; apply hq10; rw [hq1, h, zero_divByMonic]
+    have : 1 ≤ q1.natDegree := by
+      by_contra h
+      apply hQ0
+      rw [hQ, divByMonic_eq_zero_iff (monic_X_sub_C a), degree_X_sub_C, degree_eq_natDegree hq10]
+      exact_mod_cast (by omega : q1.natDegree < 1)
+    have : 1 ≤ p.natDegree := by
+      by_contra h
+      apply hq10
+      rw [hq1, divByMonic_eq_zero_iff (monic_X_sub_C a), degree_X_sub_C, degree_eq_natDegree hp0]
+      exact_mod_cast (by omega : p.natDegree < 1)
+    omega
+
 
 /-- **D4 (finite difference of a rational function).**  For a polynomial `p` with
 `natDegree p ≤ n + 1` and `c` avoiding `−0, …, −n`,
@@ -117,21 +269,57 @@ theorem alt_choose_sum_div_sq (p : F[X]) (n : ℕ) (hp : p.natDegree ≤ n + 1) 
     ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) * p.eval (i : F) / ((i : F) + c) ^ 2 =
       (n.factorial : F) / (∏ i ∈ range (n + 1), ((i : F) + c)) *
         (p.derivative.eval (-c) + p.eval (-c) * ∑ i ∈ range (n + 1), 1 / ((i : F) + c)) := by
-  sorry
+  obtain ⟨Q, hpQ, hQdeg⟩ := exists_taylor_two p (-c)
+  set α := p.derivative.eval (-c)
+  set β := p.eval (-c)
+  have hc' : ∀ i ∈ range (n + 1), c + (i : F) ≠ 0 := fun i hi => by rw [add_comm]; exact hc i hi
+  have hterm : ∀ i ∈ range (n + 1),
+      (-1 : F) ^ i * (n.choose i : F) * p.eval (i : F) / ((i : F) + c) ^ 2 =
+        (-1 : F) ^ i * (n.choose i : F) * Q.eval (i : F) +
+        α * ((-1 : F) ^ i * (n.choose i : F) / (c + i)) +
+        β * ((-1 : F) ^ i * (n.choose i : F) / (c + i) ^ 2) := by
+    intro i hi
+    have h0 := hc i hi
+    have h0' : c + (i : F) ≠ 0 := hc' i hi
+    conv_lhs => rw [hpQ]
+    simp only [eval_add, eval_mul, eval_pow, eval_sub, eval_X, eval_C, sub_neg_eq_add]
+    field_simp
+    ring
+  rw [sum_congr rfl hterm, sum_add_distrib, sum_add_distrib, ← mul_sum, ← mul_sum,
+    alt_choose_sum_eval_eq_zero' Q (by rcases hQdeg with h | h <;> [left; right] <;> [omega; exact h]),
+    alt_choose_sum_inv_eq c n hc', alt_choose_sum_inv_sq_eq c n hc']
+  have e1 : ∏ i ∈ range (n + 1), (c + (i : F)) = ∏ i ∈ range (n + 1), ((i : F) + c) :=
+    prod_congr rfl fun i _ => add_comm _ _
+  have e2 : ∑ i ∈ range (n + 1), 1 / (c + (i : F)) = ∑ i ∈ range (n + 1), 1 / ((i : F) + c) :=
+    sum_congr rfl fun i _ => by rw [add_comm]
+  rw [e1, e2]
+  ring
+
 
 /-- `Π / (2X + 2j + 1)`: the normaliser polynomial with one copy of the `h = j` factor removed
 (exact division in `F[X]` for `1 ≤ j ≤ B`, since `lin j ^ 2 ∣ bigPi B`). -/
 noncomputable def redPi (B j : ℕ) : F[X] := bigPi B / lin j
 
-lemma lin_dvd_bigPi {B j : ℕ} (hj : 1 ≤ j) (hjB : j ≤ B) : (lin j : F[X]) ∣ bigPi B := by
-  sorry
+omit [CharZero F] in
+lemma lin_dvd_bigPi {B j : ℕ} (hj : 1 ≤ j) (hjB : j ≤ B) : (lin j : F[X]) ∣ bigPi B :=
+  (dvd_pow_self _ two_ne_zero).trans (dvd_prod_of_mem _ (by simp; omega))
 
 lemma redPi_mul_lin {B j : ℕ} (hj : 1 ≤ j) (hjB : j ≤ B) :
     (redPi B j : F[X]) * lin j = bigPi B := by
-  sorry
+  rw [mul_comm, redPi]; exact EuclideanDomain.mul_div_cancel' (lin_ne_zero j) (lin_dvd_bigPi hj hjB)
 
-lemma natDegree_redPi_le (B j : ℕ) : (redPi B j : F[X]).natDegree ≤ 2 * B := by
-  sorry
+omit [CharZero F] in
+lemma natDegree_bigPi_le (B : ℕ) : (bigPi B : F[X]).natDegree ≤ 2 * B := by
+  unfold bigPi
+  refine (natDegree_prod_le _ _).trans ?_
+  calc ∑ h ∈ Ico 1 (B + 1), ((lin h : F[X]) ^ 2).natDegree
+      ≤ ∑ h ∈ Ico 1 (B + 1), 2 := sum_le_sum fun h _ =>
+        (natDegree_pow_le).trans (by have := natDegree_lin_le (F := F) h; omega)
+    _ = 2 * B := by simp [mul_comm]
+
+omit [CharZero F] in
+lemma natDegree_redPi_le (B j : ℕ) : (redPi B j : F[X]).natDegree ≤ 2 * B :=
+  (natDegree_le_natDegree (degree_div_le _ _)).trans (natDegree_bigPi_le B)
 
 /-- **D5 (closed form of the true residual entries).**  With `n = a + 2B`, `c_r = j + r + 3/2`
 and `P = redPi B (j+1)`:
