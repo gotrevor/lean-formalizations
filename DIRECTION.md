@@ -156,7 +156,22 @@ result + the next story.
 are `#print axioms` = `[propext, Classical.choice, Quot.sound]`; no `sorry` in the directory.  N2 landed via
 `Symmetry.lean` (reflection `R_n(-t-n)=R_n(t)`, symmetrized coefficients, odd vanishing) +
 `PartialSums.lean` (shift recursion `T_q(a+1) = 1/a^q - T_q(a)` from the base `T_q(½)=2^q E_q`) +
-the assembly in `LinearForm.lean`.  Original planting text follows.
+the assembly in `LinearForm.lean`.
+
+**Independently verified by the architect (2026-09-04), not taken on the lap's word.**  Definitions
+did not drift: `dirichletBeta`, `Rval`, `rForm`, `dn` are byte-identical to the scaffold commit
+`225c11f`, so the headline is about the objects that were frozen and numerically validated.  The
+only frozen-signature change in the whole run is `rForm_neg`'s unused `hodd` binder becoming
+`_hodd`.  Axiom footprints re-printed from a separate file, including the wiring
+`exists_irrational_of_forms`.  `src/` is `sorry`-free by a scan that excludes prose (a naive grep
+returns 38 hits, all of them the word "sorry" inside docstrings — do not read that number as
+checkpoints).
+
+**Two laps found better mathematics than the plan specified.**  N3, the crux, went **integral-free**
+— strictly completely monotone sequences instead of the `s`-fold Beta integral, and it does not need
+`Odd s`.  N2 avoided derivatives entirely, via a partial-fraction integrality lattice.  That is the
+scaffold working as intended: the frozen statements were the contract, the routes were the lap's to
+choose, and it chose better than I had.  Original planting text follows.
 
 **Lane**: *formalizing a known result* (not moonshot).  Directory
 `src/LeanFormalizations/NumberTheory/DirichletBeta/`.  Scaffold planted and green; eight `sorry`
