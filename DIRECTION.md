@@ -83,6 +83,21 @@ integer forms, with or without `F_B`.**  N1 is refuted as a repair; N2 (even nor
 for the same reason unless it also shrinks `Δ_B` by ~S·B in the log, which nothing suggests.
 Re-run: `uv run --with mpmath python3 papers/sun-2026-catalan-twoadic-check.py ledger 14 2`.
 
+### ☠️ Killed thread: Path 1 positive forms from the EMN motive (2026-09-04, host, `papers/catalan-emn-search.py`)
+
+Eskandari–Murty–Nemoto (arXiv:2510.20648) give `I(F,t) = ∫_Δ F/(1−x²−y²)^{t+1} = a + bG` for
+σ-invariant `F` with `x^{2⌈t/2⌉}y^{2⌈t/2⌉} | F`.  Their construction was made exact and general
+here (every branch validated to 30 digits against quadrature).  The only non-Dirichlet-trivial
+search is over **positive** forms `F = σ-orbit-sum(h²)`, where `I(F,t) = cᵀ(A + BG)c` is an exact
+quadratic form and the minimisation is an SVP (LLL).  Scan `N ≤ 20`, `0 ≤ t ≤ 6`: best
+`log10(D·I) ≈ −1.16` (`N=16–18, t=3`), never trending to `−∞`; per degree the integral shrinks
+like `≈ 10^{−0.35}` (≈ `2^{−1}`) while the exact integerizer grows like `≈ 10^{+0.5}` — the same
+factor-of-4-per-degree gap the authors computed from their uniform bound (Remark 8.3.4).  LLL beats
+the best single monomial square by ≤ 1 order of magnitude, not exponentially.  Limits: `N ≤ 20`,
+float64 LLL (dims ≤ 66).  Positivity via SOS is sufficient, not necessary; a signed family needs a
+*proof* of decay (Padé/hypergeometric), which is Path 3's world.  Re-run:
+`./papers/catalan-emn-search.py validate && ./papers/catalan-emn-search.py scan 20 6`.
+
 ### Phase 3 — ACTIVE (authorized by Trevor 2026-09-04, "dig in!") — the generic frame
 
 **File: `Frame.lean`** (wired into `src/LeanFormalizations.lean`; module docstring carries a
