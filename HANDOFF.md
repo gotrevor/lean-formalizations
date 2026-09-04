@@ -2,7 +2,7 @@
 
 ## 👉 READ `DIRECTION.md` FIRST.  ACTIVE (2026-09-04): the **Catalan salvage** — Sun's arXiv:2609.04176v1, Thm 2.1 + the 2-adic no-go.  Phase 1 grind on branch `catalan`.
 
-## 👉 Newest baton: `HANDOFF-2026-09-04-catalan-phase1-green.md` — **PHASE 1 GREEN**: all four Catalan modules sorry-free, every headline `[propext, Classical.choice, Quot.sound]`.  Next = Phase 2 (probe-first; review laps own it).
+## 👉 Newest baton: `HANDOFF-2026-09-04-catalan-phase3-kickoff.md` — **PHASE 3 ACTIVE**: `Frame.lean` (14 named `sorry` leaves: wiring W, integrality E, real-place engine D).  Phase 1 is green (`HANDOFF-2026-09-04-catalan-phase1-green.md`); Phase 2's N1/N2 were probe-refuted on the host.  Order and frozen names in `DIRECTION.md` Phase 3.
 
 Everything below this line is the OLDER record of the finished threads (Goodstein growth theory,
 HJSW no-three-in-line, Kakeya); it is kept for context and is NOT the active objective.

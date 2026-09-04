@@ -83,21 +83,36 @@ integer forms, with or without `F_B`.**  N1 is refuted as a repair; N2 (even nor
 for the same reason unless it also shrinks `Δ_B` by ~S·B in the log, which nothing suggests.
 Re-run: `uv run --with mpmath python3 papers/sun-2026-catalan-twoadic-check.py ledger 14 2`.
 
-### Phase 3 (proposed, awaiting Trevor) — the generic frame, ready for any v2
+### Phase 3 — ACTIVE (authorized by Trevor 2026-09-04, "dig in!") — the generic frame
 
-Everything a v2 (or any Apéry/Nesterenko-style attempt on `G`) needs, stated for a **generic
-weight family** so a new construction drops into slots rather than restarting:
-- **W (wiring, cheap)**: `irrational_of_small_integer_forms` — if for every `a/q` some `B` gives an
-  integer `N_B(a,q) ≠ 0` with `|N_B| < 1`, then `Irrational G`.  The sink edge, once.
-- **D (real place)**: the Beta identity `Σ_i (−1)^i C(n,i)/(x+i) = n!/∏_{i≤n}(x+i)` and from it a
-  closed form + explicit bound for `Σ_i (−1)^i C(n,i) W_i u_{i+j}` for a generic polynomial
-  weight family `W_i`.  Real analysis + combinatorics; the reusable engine.
-- **E (integrality)**: for a generic weight family that covers the tail denominators, the entries
-  of `R` lie in `(1/Δ)ℤ + (1/Δ)ℤ·G` with `Δ` explicit; hence `det R[A,J] ∈ (1/Δ^S)ℤ[G]`.
-- **Frontier Prop** (never a Lean discharge): `∃` weight family with D-bound + E-bound `→ −∞`.
-  That is the open problem restated honestly.  For Sun's weights the probe above says NO.
-Discharging W, D, E is real Lean work (a lap or two); the payoff is speed of independent
-verification when a v2 lands, not a proof of irrationality.
+**File: `Frame.lean`** (wired into `src/LeanFormalizations.lean`; module docstring carries a
+proof plan per leaf; every statement below was hand-derived AND numerically checked before
+freezing — D5 to 55 digits, E1 exactly).  The payoff is being the fastest independent verifier
+of whatever v2 lands, not a proof of irrationality: **the sink stays a non-target**, `SmallForms`
+is a `def … : Prop` and must never become a theorem (the host probe says it is false for these
+weights).
+
+**Frozen statements, guarded BY NAME** (host `--require-decls` on `Frame.lean`; do not rename,
+weaken, generalise-into-restriction, or delete — if one is WRONG, fix it loudly, per Phase 1):
+`irrational_of_forms` · `alt_choose_sum_inv_eq` · `alt_choose_sum_inv_sq_eq` ·
+`alt_choose_sum_div_sq` · `redPi` · `resid_tail_eq` · `oddLcm` · `resid_fakeTail_den` ·
+`det_resid_fakeTail_den` · `abs_det_ge_of_rational` · `SmallForms` ·
+`catalan_irrational_of_smallForms`.
+
+**Order** (each a green checkpoint — commit each):
+1. **W**: `irrational_of_forms` (cheap; `Int.one_le_abs` against `Tendsto … (𝓝 0)`).
+2. **E**: `oddLcm_pos` → `odd_dvd_oddLcm` → `resid_fakeTail_den` → `det_resid_fakeTail_den` →
+   `abs_det_ge_of_rational` → **`catalan_irrational_of_smallForms`** (the sink edge; consumes E3
+   + `fakeTail_eq_tail_of_catalan_eq` + `RingHom.map_det`).  Landing the sink edge is the lap's
+   headline: it makes "the ledger is the only missing thing, and E3 is its floor" kernel-checked.
+3. **D**: `alt_choose_sum_inv_eq` → `alt_choose_sum_inv_sq_eq` → `lin_dvd_bigPi` /
+   `redPi_mul_lin` / `natDegree_redPi_le` → `alt_choose_sum_div_sq` → **`resid_tail_eq`**
+   (the real-place engine; the swap of `Σ_i` with `∑'_r` is the only analysis).
+Steps 1–2 and 3 are independent; if D stalls, land W+E and come back.  Decomposing a fat leaf
+into named sub-lemmas is progress.  **No asymptotic estimate is to be attempted in Lean** — the
+bound on the RHS of `resid_tail_eq` is a probe question, not a Lean question.
+
+**Before the hard part of any lap: commit a compiling skeleton with named `sorry` leaves.**
 
 ### The original Phase 2 text (kept for provenance)
 
@@ -144,5 +159,5 @@ result + the next story.
   on the governor's budget signal, `/handoff` and end the lap.
 
 ## NOT a stop condition
-No self-stop until Phase 1 is green and axiom-clean.  Do NOT stop because a leaf landed, "to take
+No self-stop until Phase 3 (`Frame.lean`) is green and axiom-clean.  Do NOT stop because a leaf landed, "to take
 stock", or because the crux is hard.  Trevor ends the run.

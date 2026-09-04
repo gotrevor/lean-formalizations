@@ -67,3 +67,4 @@ import LeanFormalizations.NumberTheory.Catalan.Tails
 import LeanFormalizations.NumberTheory.Catalan.Residual
 import LeanFormalizations.NumberTheory.Catalan.TwoAdic
 import LeanFormalizations.NumberTheory.Catalan.Statement
+import LeanFormalizations.NumberTheory.Catalan.Frame
