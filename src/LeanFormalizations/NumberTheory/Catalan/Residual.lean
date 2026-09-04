@@ -150,7 +150,7 @@ theorem exists_poly_of_alt_sums_eq_zero (f : ℕ → F) (m N : ℕ)
   · intro i hi
     have hN := shift_eq_sum_fwdDiff_iter (h := (1 : ℕ)) f i 0
     simp only [zero_add, smul_eq_mul, mul_one] at hN
-    rw [hN, eval_finset_sum]
+    rw [hN, eval_finsetSum]
     have key : ∀ k, (C ((fwdDiff (1 : ℕ))^[k] f 0 / (k.factorial : F)) * descPochhammer F k).eval (i : F)
         = (i.choose k : F) * (fwdDiff (1 : ℕ))^[k] f 0 := by
       intro k
@@ -417,13 +417,69 @@ lemma mulVec_resid_eq (T : ℕ → F) (B S : ℕ) (lam : Fin S → F) (a : Fin (
     (resid T B S).mulVec lam a =
       ∑ i ∈ range (a.val + 2 * B + 1),
         (-1 : F) ^ i * ((a.val + 2 * B).choose i : F) * rowFun T B S lam i := by
-  sorry
+  simp only [Matrix.mulVec, dotProduct, resid, rowFun, Finset.sum_mul]
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [Finset.mul_sum, Finset.mul_sum]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  ring
 
 /-- **Step 2 of the plan**: `f_i = T_{i+1} D_λ(i) + P_λ(i)`. -/
 lemma rowFun_eq {T : ℕ → F} (hT : IsTailSeq T) {B S : ℕ} (hSB : S < B) (lam : Fin S → F)
     (i : ℕ) :
     rowFun T B S lam i = T (i + 1) * (Dpoly S B lam).eval (i : F) + (Ppoly B S lam).eval (i : F) := by
-  sorry
+  unfold rowFun
+  rw [Finset.mul_sum]
+  have hterm : ∀ j : Fin S,
+      (normaliser B i : F) * (lam j * (T (i + j.val + 1) / (2 * ((i + j.val + 1 : ℕ) : F) + 1)))
+        = (-1 : F) ^ j.val * lam j * T (i + 1) *
+            ((Wpoly S B : F[X]).eval (i : F) * (Lsub S j.val : F[X]).eval (i : F))
+          + ∑ k ∈ Icc 1 j.val, lam j * (-1 : F) ^ (j.val - k) * (Psub B j.val k : F[X]).eval (i : F) := by
+    intro j
+    have hj : j.val < S := j.isLt
+    have hPi : (normaliser B i : F) = (lin (j.val + 1) : F[X]).eval (i : F) *
+        ((Wpoly S B : F[X]).eval (i : F) * (Lsub S j.val : F[X]).eval (i : F)) := by
+      rw [← bigPi_eval, bigPi_eq_Wpoly_mul_Lpoly hSB.le, Lpoly_eq_lin_mul_Lsub hj]
+      simp only [eval_mul]; ring
+    have hden : (2 * ((i + j.val + 1 : ℕ) : F) + 1) = (lin (j.val + 1) : F[X]).eval (i : F) := by
+      rw [lin_eval]; push_cast; ring
+    have hlin : (lin (j.val + 1) : F[X]).eval (i : F) ≠ 0 := lin_eval_nat_ne_zero _ _
+    have hP : ∀ k ∈ Icc 1 j.val,
+        (Wpoly S B : F[X]).eval (i : F) * (Lsub S j.val : F[X]).eval (i : F)
+          = ((lin k : F[X]).eval (i : F)) ^ 2 * (Psub B j.val k : F[X]).eval (i : F) := by
+      intro k hk
+      obtain ⟨hk1, hk2⟩ := Finset.mem_Icc.1 hk
+      have h1 := congrArg (eval (i : F)) (bigPi_eq_Wpoly_mul_Lpoly (F := F) (S := S) (B := B) hSB.le)
+      have h2 := congrArg (eval (i : F))
+        (bigPi_eq_Psub (F := F) (B := B) (j := j.val) (k := k) (by omega) hk1 hk2)
+      rw [Lpoly_eq_lin_mul_Lsub hj] at h1
+      simp only [eval_mul, eval_pow] at h1 h2
+      apply mul_left_cancel₀ hlin
+      linear_combination -h1 + h2
+    rw [hPi, hden]
+    have hcancel : (lin (j.val + 1) : F[X]).eval (i : F) *
+        ((Wpoly S B : F[X]).eval (i : F) * (Lsub S j.val : F[X]).eval (i : F)) *
+        (lam j * (T (i + j.val + 1) / (lin (j.val + 1) : F[X]).eval (i : F)))
+        = lam j * ((Wpoly S B : F[X]).eval (i : F) * (Lsub S j.val : F[X]).eval (i : F)) *
+          T (i + j.val + 1) := by
+      field_simp
+    rw [hcancel, hT.shift i j.val, mul_add, Finset.mul_sum]
+    congr 1
+    · ring
+    · refine Finset.sum_congr rfl fun k hk => ?_
+      rw [hP k hk]
+      have hk0 : (2 * ((i + k : ℕ) : F) + 1) = (lin k : F[X]).eval (i : F) := by
+        rw [lin_eval]; push_cast; ring
+      rw [hk0]
+      have := lin_eval_nat_ne_zero (F := F) k i
+      field_simp
+  rw [Finset.sum_congr rfl fun j _ => hterm j, Finset.sum_add_distrib]
+  congr 1
+  · simp only [Dpoly, Qpoly, eval_mul, eval_finsetSum, eval_C]
+    rw [Finset.mul_sum, Finset.mul_sum]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    ring
+  · simp only [Ppoly, eval_finsetSum, eval_mul, eval_C]
 
 /-- **Step 3**: in the kernel, the alternating sums of `g_i := T_{i+1} D_λ(i)` of orders
 `2B, …, 2B+S+2` vanish, so `g` is a polynomial of degree `< 2B` on `{0, …, 2B+S+2}`. -/
@@ -431,7 +487,37 @@ lemma exists_interp {T : ℕ → F} (hT : IsTailSeq T) {B S : ℕ} (hSB : S < B)
     (h : (resid T B S).mulVec lam = 0) :
     ∃ A : F[X], A.natDegree < 2 * B ∧
       ∀ i ≤ 2 * B + S + 2, A.eval (i : F) = T (i + 1) * (Dpoly S B lam).eval (i : F) := by
-  sorry
+  -- the kernel condition: alternating sums of `rowFun` of orders `2B, …, 2B+S+2` vanish
+  have hrow : ∀ n, 2 * B ≤ n → n ≤ 2 * B + S + 2 →
+      ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) * rowFun T B S lam i = 0 := by
+    intro n h1 h2
+    have := congrFun h ⟨n - 2 * B, by omega⟩
+    rw [mulVec_resid_eq, Pi.zero_apply] at this
+    have hn : n - 2 * B + 2 * B = n := by omega
+    simpa only [hn] using this
+  -- subtract the polynomial part
+  have hg : ∀ n, 2 * B ≤ n → n ≤ 2 * B + S + 2 →
+      ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) *
+        (T (i + 1) * (Dpoly S B lam).eval (i : F)) = 0 := by
+    intro n h1 h2
+    have hP := alt_choose_sum_eval_eq_zero (Ppoly B S lam)
+      (lt_of_lt_of_le (natDegree_Ppoly_lt hSB lam) h1)
+    have hr := hrow n h1 h2
+    have : ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) *
+        (T (i + 1) * (Dpoly S B lam).eval (i : F))
+        = ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) * rowFun T B S lam i
+          - ∑ i ∈ range (n + 1), (-1 : F) ^ i * (n.choose i : F) * (Ppoly B S lam).eval (i : F) := by
+      rw [← Finset.sum_sub_distrib]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [rowFun_eq hT hSB lam i]
+      ring
+    rw [this, hr, hP, sub_zero]
+  obtain ⟨A, hAdeg, hA⟩ := exists_poly_of_alt_sums_eq_zero
+    (fun i => T (i + 1) * (Dpoly S B lam).eval (i : F)) (2 * B) (2 * B + S + 2) hg
+  refine ⟨A, ?_, hA⟩
+  by_cases hA0 : A = 0
+  · rw [hA0, natDegree_zero]; omega
+  · exact (natDegree_lt_iff_degree_lt hA0).2 hAdeg
 
 /-- The paper's `K` with its forced factor `lin 1 * Gpoly` removed. -/
 noncomputable def Kpoly (S B : ℕ) (A Q : F[X]) : F[X] :=
@@ -449,7 +535,31 @@ lemma Kpoly_eval_eq_zero {T : ℕ → F} (hT : IsTailSeq T) {B S : ℕ} (hS : 0 
     (hA : ∀ i ≤ 2 * B + S + 2, A.eval (i : F) = T (i + 1) * (Dpoly S B lam).eval (i : F))
     (i : ℕ) (hi : i ≤ 2 * B + S + 1) :
     (Kpoly S B A (Qpoly S lam)).eval (i : F) = 0 := by
-  sorry
+  have hAi := hA i (by omega)
+  have hAi1 := hA (i + 1) (by omega)
+  have hrec := hT (i + 1)
+  have hW : (Wpoly S B : F[X]).eval (i : F) = (lin 1 : F[X]).eval (i : F) *
+      (lin (S + 1) : F[X]).eval (i : F) * (Gpoly S B).eval (i : F) := by
+    rw [Wpoly_eq hS hSB, eval_mul, eval_mul]
+  have hW1 : (Wpoly S B : F[X]).eval ((i : F) + 1) = (Gpoly S B).eval (i : F) *
+      ((lin (B + 1) : F[X]).eval (i : F)) ^ 2 := by
+    have := congrArg (eval (i : F)) (Wpoly_comp (F := F) hS hSB)
+    rwa [eval_comp, eval_add, eval_X, eval_one, eval_mul, eval_pow] at this
+  simp only [Dpoly, eval_mul] at hAi hAi1
+  push_cast at hAi1
+  rw [hW] at hAi
+  rw [hW1] at hAi1
+  have h1 : (lin 1 : F[X]).eval (i : F) = 2 * ((i : F) + 1) + 1 := by
+    rw [lin_eval]; push_cast; ring
+  have hne : (2 * ((i : F) + 1) + 1) ≠ 0 := by
+    have : (2 * ((i : F) + 1) + 1) = ((2 * i + 2 : ℕ) : F) + 1 := by push_cast; ring
+    rw [this]; exact Nat.cast_add_one_ne_zero _
+  have hrec' : (2 * ((i : F) + 1) + 1) ^ 2 * (T (i + 1) + T (i + 1 + 1)) = 1 := by
+    rw [hrec]; push_cast; field_simp
+  simp only [Kpoly, eval_sub, eval_mul, eval_add, eval_pow, eval_comp, eval_X, eval_one]
+  rw [hAi, hAi1, h1]
+  linear_combination ((lin (S + 1) : F[X]).eval (i : F) * ((lin (B + 1) : F[X]).eval (i : F)) ^ 2 *
+    (Gpoly S B).eval (i : F) * (Qpoly S lam).eval (i : F) * (Qpoly S lam).eval ((i : F) + 1)) * hrec'
 
 lemma Kpoly_eq_zero {T : ℕ → F} (hT : IsTailSeq T) {B S : ℕ} (hS : 0 < S) (hSB : S < B)
     (lam : Fin S → F) {A : F[X]} (hAdeg : A.natDegree < 2 * B)
