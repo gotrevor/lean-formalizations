@@ -46,6 +46,76 @@ only `o(N^2)` savings against a quadratic deficit, throughout an expanding exact
 Why this is a jump: “special sublattices may help” becomes a source-driven prediction.  Frobenius
 selects the sublattices; LLL only finds short positive vectors inside them.
 
+### First local Smith measurement
+
+`catalan-emn-smith-profile.py` measures a deliberately weaker proxy before Frobenius has been
+identified.  On the full lattice of sigma-invariant integer polynomials it clears the exact EMN
+map to an integer `2 x d` matrix, computes its two Smith valuations prime by prime, and obtains the
+exact index of the coefficient sublattice on which both output coordinates are divisible by the
+common denominator.
+
+The result is encouraging rather than dispositive.  At `(N,t)=(20,0)`, `d=86`,
+`log10(D)=14.779`, and `log10(index)=15.080`, so the full-clearance lattice has index about
+`D^1.020`.  Along the higher-pole ray `t=N/4`, the measured `log10(index)/d` falls as follows:
+
+```text
+(N,t,d)       log10(index)/d
+(16,4,17)          0.448
+(24,6,34)          0.360
+(32,8,57)          0.318
+```
+
+At `(32,8)`, `log10(D)=15.405` and `log10(index)=18.114`, an index of about `D^1.176`.  Thus the
+observable local saturation does not have an index exponential in the ambient quadratic dimension;
+its geometry-of-numbers penalty per dimension is declining on the tested ray.
+
+This does **not** yet validate Frobenius saturation.  It measures the unrestricted linear `F`
+lattice, whereas positivity is currently imposed by the nonlinear parameterization
+`F=orbit_sum(h^2)`.  The next decisive proxy is to solve the Smith congruences while retaining a
+positive certificate.  Failure of that intersection can still kill the jump.
+
+### Positive-cone intersection measurement
+
+`catalan-emn-positive-saturation.py` tests that nonlinear intersection directly by sampling small
+ternary coefficient vectors for `h`, evaluating the two exact quadratic congruences, and measuring
+the real integral of the certified-positive form `F=orbit_sum(h^2)`.
+
+The first measurements are positive:
+
+```text
+(N,t,p)    delta   trials      full hits   observed density exponent
+(16,4,2)     13    1,000,000       26              15.23
+(20,4,2)     16    2,000,000        2              19.93
+(24,6,2)     19   20,000,000        2              23.25
+```
+
+Two independent random quadrics would predict exponents `2*delta`, namely `26,32,38`.  The positive
+EMN quadrics are therefore much more dependent modulo powers of two than a generic pair.  The best
+`(20,4)` hit has
+
+```text
+a = -47099/10395,  b = 5,  a+bG = 0.0488996399578... .
+```
+
+Relative to the best positive form in the same sample, it pays a real factor `111.8` while removing
+the complete `2^16` denominator contribution, a net local improvement of about `586`.
+
+At `(24,6)`, the best fully `2^19`-saturated hit has
+
+```text
+a = -12962/4725,  b = 3,  a+bG = 0.00461635925123... .
+```
+
+It pays a sampled real factor `113.9` for a local clearance gain `2^19`, a net improvement of about
+`4600`.  At the odd primes `3,5,7`, the observed full-saturation densities are approximately
+`p^(-delta)`, rather than `p^(-2 delta)`, with sampled real penalties only `2.60,2.41,1.91`.
+
+This resolves the first objection: the saturation conditions do intersect the positive
+orbit-square cone cheaply at each tested prime.  It does not yet produce a globally integral small
+form.  The next exact problem is simultaneous modular quadratic optimization across all primes of
+`D`; independent random sampling would be wasteful, so it needs Hensel/CRT construction followed by
+a small-representative or lattice reduction step.
+
 ## Jump 2: modular-unit Padé basis on `X_1(4)`
 
 Calegari writes the 2-adic Catalan construction in the genus-zero coordinate
