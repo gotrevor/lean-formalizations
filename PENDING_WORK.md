@@ -1,6 +1,13 @@
 # PENDING_WORK — lean-formalizations
 
-## 🔢 Catalan salvage (branch `catalan`, 2026-09-04) — Phase 1 GREEN
+## 🔢 Catalan salvage (branch `catalan`, 2026-09-04) — Phase 3 GREEN (all of Catalan/ sorry-free)
+- **Done (lap 2, 2026-09-04):** `Frame.lean` 14/14 leaves, axiom-clean; sink edge
+  `catalan_irrational_of_smallForms` kernel-checked.  E1/E2 statements corrected (`S ≤ B` added;
+  frozen form refuted by exact probe at `B=0, S=7`).  See `HANDOFF-2026-09-04-catalan-phase3-green.md`.
+- **Open (not a Lean question):** `SmallForms` is a `Prop`, numerically false for Sun's weights.
+  A corrected construction would replace `resid`/`oddLcm` and re-run the ledger probe.
+
+### (older) Phase 1 GREEN
 - **Done:** Theorem 2.1 (`residual_rank`) and the 2-adic no-go (`sun_ledger_impossible`), all
   axiom-clean; see `HANDOFF-2026-09-04-catalan-phase1-green.md`.
 - **Open (Phase 2, probe-first, no Lean discharges):** the frontier question — weakest open node on
