@@ -76,7 +76,17 @@ theorem irrational_of_forms (x : ℝ) (N : ℤ → ℤ → ℕ → ℤ)
     (hsmall : ∀ a q : ℤ, 0 < q → x = (a : ℝ) / q →
       Tendsto (fun B => ((|N a q B| : ℤ) : ℝ)) atTop (𝓝 0)) :
     Irrational x := by
-  sorry
+  rintro ⟨r, hr⟩
+  have hq : (0 : ℤ) < (r.den : ℤ) := by exact_mod_cast r.pos
+  have hx : x = (r.num : ℝ) / ((r.den : ℤ) : ℝ) := by
+    rw [← hr, Rat.cast_def]; push_cast; rfl
+  have h1 := hne _ _ hq hx
+  have h2 := hsmall _ _ hq hx
+  obtain ⟨B, hB⟩ := (h2.eventually (gt_mem_nhds zero_lt_one)).exists
+  have h3 : (1 : ℤ) ≤ |N r.num r.den B| := Int.one_le_abs (h1 B)
+  have h4 : (1 : ℝ) ≤ ((|N r.num r.den B| : ℤ) : ℝ) := by exact_mod_cast h3
+  linarith
+
 
 /-! ### D — the real place: Beta identities and the closed form of the true entries -/
 
@@ -143,24 +153,148 @@ theorem resid_tail_eq {B S : ℕ} (hS : 0 < S) (hBS : S < B) (a : Fin (S + 3)) (
 def oddLcm (n : ℕ) : ℕ := (range (n + 1)).lcm fun k => 2 * k + 1
 
 lemma oddLcm_pos (n : ℕ) : 0 < oddLcm n := by
-  sorry
+  unfold oddLcm
+  exact Nat.pos_of_ne_zero (Finset.lcm_ne_zero_iff.2 fun k _ => by omega)
 
-lemma odd_dvd_oddLcm {n k : ℕ} (hk : k ≤ n) : 2 * k + 1 ∣ oddLcm n := by
-  sorry
 
-/-- **E1.**  Under `G = a/q`, every entry of the residual matrix lies in
-`(1 / (q · L_{a+2B+S}^2)) ℤ`, with `L = oddLcm`.  (Paper's Lemma 5.4, at every prime.) -/
-theorem resid_fakeTail_den (a q : ℤ) (hq : q ≠ 0) (B S : ℕ) (i : Fin (S + 3)) (j : Fin S) :
+lemma odd_dvd_oddLcm {n k : ℕ} (hk : k ≤ n) : 2 * k + 1 ∣ oddLcm n :=
+  Finset.dvd_lcm (by simp; omega)
+
+/-- `x ∈ ℤ` inside `ℚ`. -/
+def IsInt (x : ℚ) : Prop := ∃ z : ℤ, x = z
+
+lemma isInt_intCast (z : ℤ) : IsInt (z : ℚ) := ⟨z, rfl⟩
+lemma isInt_natCast (n : ℕ) : IsInt (n : ℚ) := ⟨n, by simp⟩
+lemma IsInt.add {x y : ℚ} (hx : IsInt x) (hy : IsInt y) : IsInt (x + y) := by
+  obtain ⟨a, rfl⟩ := hx; obtain ⟨b, rfl⟩ := hy; exact ⟨a + b, by push_cast; rfl⟩
+lemma IsInt.mul {x y : ℚ} (hx : IsInt x) (hy : IsInt y) : IsInt (x * y) := by
+  obtain ⟨a, rfl⟩ := hx; obtain ⟨b, rfl⟩ := hy; exact ⟨a * b, by push_cast; rfl⟩
+lemma IsInt.neg {x : ℚ} (hx : IsInt x) : IsInt (-x) := by
+  obtain ⟨a, rfl⟩ := hx; exact ⟨-a, by push_cast; rfl⟩
+lemma IsInt.sub {x y : ℚ} (hx : IsInt x) (hy : IsInt y) : IsInt (x - y) := by
+  rw [sub_eq_add_neg]; exact hx.add hy.neg
+lemma IsInt.pow {x : ℚ} (hx : IsInt x) (n : ℕ) : IsInt (x ^ n) := by
+  obtain ⟨a, rfl⟩ := hx; exact ⟨a ^ n, by push_cast; rfl⟩
+lemma IsInt.sum {ι : Type*} (s : Finset ι) (f : ι → ℚ) (h : ∀ i ∈ s, IsInt (f i)) :
+    IsInt (∑ i ∈ s, f i) := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => exact ⟨0, by simp⟩
+  | insert a s ha ih =>
+    rw [sum_insert ha]
+    exact (h a (mem_insert_self _ _)).add (ih fun i hi => h i (mem_insert_of_mem hi))
+lemma IsInt.prod {ι : Type*} (s : Finset ι) (f : ι → ℚ) (h : ∀ i ∈ s, IsInt (f i)) :
+    IsInt (∏ i ∈ s, f i) := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => exact ⟨1, by simp⟩
+  | insert a s ha ih =>
+    rw [prod_insert ha]
+    exact (h a (mem_insert_self _ _)).mul (ih fun i hi => h i (mem_insert_of_mem hi))
+lemma isInt_natCast_div {d n : ℕ} (h : d ∣ n) : IsInt ((n : ℚ) / d) := by
+  obtain ⟨c, rfl⟩ := h
+  rcases Nat.eq_zero_or_pos d with hd | hd
+  · subst hd; exact ⟨0, by simp⟩
+  · exact ⟨c, by push_cast; field_simp⟩
+
+lemma oddLcm_dvd_oddLcm {m n : ℕ} (h : m ≤ n) : oddLcm m ∣ oddLcm n :=
+  Finset.lcm_dvd fun k hk => odd_dvd_oddLcm (by simp at hk; omega)
+
+lemma odd_dvd_normaliser {B i h : ℕ} (h1 : 1 ≤ h) (hB : h ≤ B) :
+    2 * (h + i) + 1 ∣ normaliser B i :=
+  (dvd_pow_self _ two_ne_zero).trans (Finset.dvd_prod_of_mem _ (by simp [h1, hB]))
+
+/-- The scaled partial sums are integers: `L_n^2 · S_m ∈ ℤ` for `m ≤ n + 1`. -/
+lemma isInt_oddLcm_sq_mul_partial {m n : ℕ} (hm : m ≤ n + 1) :
+    IsInt ((oddLcm n : ℚ) ^ 2 * ∑ k ∈ range m, (-1 : ℚ) ^ k / (2 * (k : ℚ) + 1) ^ 2) := by
+  rw [mul_sum]
+  refine IsInt.sum _ _ fun k hk => ?_
+  have hk' : k ≤ n := by simp at hk; omega
+  have : (oddLcm n : ℚ) ^ 2 * ((-1 : ℚ) ^ k / (2 * (k : ℚ) + 1) ^ 2)
+      = (-1 : ℚ) ^ k * ((((oddLcm n) ^ 2 : ℕ) : ℚ) / (((2 * k + 1) ^ 2 : ℕ) : ℚ)) := by
+    push_cast; ring
+  rw [this]
+  exact ((isInt_intCast (-1)).pow k).mul (isInt_natCast_div (pow_dvd_pow_of_dvd (odd_dvd_oddLcm hk') 2))
+
+lemma isInt_mul_fakeTail (a q : ℤ) (hq : q ≠ 0) {m n : ℕ} (hm : m ≤ n + 1) :
+    IsInt ((q : ℚ) * (oddLcm n : ℚ) ^ 2 * fakeTail ((a : ℚ) / q) m) := by
+  have hq' : (q : ℚ) ≠ 0 := Int.cast_ne_zero.2 hq
+  have : (q : ℚ) * (oddLcm n : ℚ) ^ 2 * fakeTail ((a : ℚ) / q) m
+      = (-1 : ℚ) ^ m * ((a : ℚ) * ((oddLcm n : ℚ) ^ 2) -
+          (q : ℚ) * ((oddLcm n : ℚ) ^ 2 * ∑ k ∈ range m, (-1 : ℚ) ^ k / (2 * (k : ℚ) + 1) ^ 2)) := by
+    unfold fakeTail; field_simp
+  rw [this]
+  exact ((isInt_intCast (-1)).pow m).mul (((isInt_intCast a).mul ((isInt_natCast _).pow 2)).sub
+    ((isInt_intCast q).mul (isInt_oddLcm_sq_mul_partial hm)))
+
+theorem isInt_resid_fakeTail (a q : ℤ) (hq : q ≠ 0) {B S : ℕ} (hSB : S ≤ B) (i : Fin (S + 3))
+    (j : Fin S) :
+    IsInt ((q : ℚ) * (oddLcm (i.val + 2 * B + S) : ℚ) ^ 2 * resid (fakeTail ((a : ℚ) / q)) B S i j) := by
+  rw [resid, mul_sum]
+  refine IsInt.sum _ _ fun i' hi' => ?_
+  have hi'' : i' ≤ i.val + 2 * B := by simp at hi'; omega
+  have : (q : ℚ) * (oddLcm (i.val + 2 * B + S) : ℚ) ^ 2 *
+      ((-1 : ℚ) ^ i' * ((i.val + 2 * B).choose i' : ℚ) * (normaliser B i' : ℚ) *
+      (fakeTail ((a : ℚ) / q) (i' + j.val + 1) / (2 * ((i' + j.val + 1 : ℕ) : ℚ) + 1)))
+      = (-1 : ℚ) ^ i' * ((i.val + 2 * B).choose i' : ℚ) *
+        ((normaliser B i' : ℚ) / ((2 * (j.val + 1 + i') + 1 : ℕ) : ℚ)) *
+        ((q : ℚ) * (oddLcm (i.val + 2 * B + S) : ℚ) ^ 2 * fakeTail ((a : ℚ) / q) (i' + j.val + 1)) := by
+    have : ((2 * (j.val + 1 + i') + 1 : ℕ) : ℚ) = 2 * ((i' + j.val + 1 : ℕ) : ℚ) + 1 := by
+      push_cast; ring
+    rw [this]; ring
+  rw [this]
+  refine (((isInt_intCast (-1)).pow i').mul (isInt_natCast _)).mul
+    (isInt_natCast_div (odd_dvd_normaliser (by omega) (by have := j.isLt; omega))) |>.mul ?_
+  exact isInt_mul_fakeTail a q hq (by have := j.isLt; omega)
+
+/-- **E1.**  Under `G = a/q` and `S ≤ B`, every entry of the residual matrix lies in
+`(1 / (q · L_{a+2B+S}^2)) ℤ`, with `L = oddLcm`.  (Paper's Lemma 5.4, at every prime.)
+
+**Statement fixed 2026-09-04 (lap 2):** the frozen version lacked `S ≤ B`, and is FALSE without
+it — exact probe: `B = 0, S = 7, a/q = 1` leaves a denominator `15` after scaling by `q·L^2`
+(the pole `1/(2(i+j+1)+1)` is only absorbed by `Π_i` when `j+1 ≤ B`).  E3 already assumed
+`S < B`, so nothing downstream changes. -/
+theorem resid_fakeTail_den (a q : ℤ) (hq : q ≠ 0) {B S : ℕ} (hSB : S ≤ B) (i : Fin (S + 3))
+    (j : Fin S) :
     ∃ z : ℤ, resid (fakeTail ((a : ℚ) / q)) B S i j =
       (z : ℚ) / ((q : ℚ) * (oddLcm (i.val + 2 * B + S) : ℚ) ^ 2) := by
-  sorry
+  obtain ⟨z, hz⟩ := isInt_resid_fakeTail a q hq hSB i j
+  refine ⟨z, ?_⟩
+  have hq' : (q : ℚ) ≠ 0 := Int.cast_ne_zero.2 hq
+  have hL : (oddLcm (i.val + 2 * B + S) : ℚ) ≠ 0 := Nat.cast_ne_zero.2 (oddLcm_pos _).ne'
+  rw [← hz]; field_simp
+
+/-- Common denominator for all rows. -/
+theorem isInt_resid_fakeTail_common (a q : ℤ) (hq : q ≠ 0) {B S : ℕ} (hSB : S ≤ B) (i : Fin (S + 3))
+    (j : Fin S) :
+    IsInt ((q : ℚ) * (oddLcm (2 * B + 2 * S + 2) : ℚ) ^ 2 * resid (fakeTail ((a : ℚ) / q)) B S i j) := by
+  obtain ⟨c, hc⟩ := oddLcm_dvd_oddLcm (show i.val + 2 * B + S ≤ 2 * B + 2 * S + 2 by
+    have := i.isLt; omega)
+  have : (q : ℚ) * (oddLcm (2 * B + 2 * S + 2) : ℚ) ^ 2 * resid (fakeTail ((a : ℚ) / q)) B S i j
+      = (c : ℚ) ^ 2 * ((q : ℚ) * (oddLcm (i.val + 2 * B + S) : ℚ) ^ 2 *
+          resid (fakeTail ((a : ℚ) / q)) B S i j) := by
+    rw [hc]; push_cast; ring
+  rw [this]
+  exact ((isInt_natCast c).pow 2).mul (isInt_resid_fakeTail a q hq hSB i j)
 
 /-- **E2.**  Every `S × S` minor of the fake-tail residual matrix lies in
-`(1 / (q · L_{2B+2S+2}^2)^S) ℤ`. -/
-theorem det_resid_fakeTail_den (a q : ℤ) (hq : q ≠ 0) (B S : ℕ) (A : Fin S → Fin (S + 3)) :
+`(1 / (q · L_{2B+2S+2}^2)^S) ℤ`.  (Hypothesis `S ≤ B` added with E1, 2026-09-04.) -/
+theorem det_resid_fakeTail_den (a q : ℤ) (hq : q ≠ 0) {B S : ℕ} (hSB : S ≤ B)
+    (A : Fin S → Fin (S + 3)) :
     ∃ z : ℤ, ((resid (fakeTail ((a : ℚ) / q)) B S).submatrix A id).det =
       (z : ℚ) / ((q : ℚ) * (oddLcm (2 * B + 2 * S + 2) : ℚ) ^ 2) ^ S := by
-  sorry
+  set d : ℚ := (q : ℚ) * (oddLcm (2 * B + 2 * S + 2) : ℚ) ^ 2 with hd
+  have hd0 : d ≠ 0 := mul_ne_zero (Int.cast_ne_zero.2 hq)
+    (pow_ne_zero _ (Nat.cast_ne_zero.2 (oddLcm_pos _).ne'))
+  have key : IsInt (d ^ S * ((resid (fakeTail ((a : ℚ) / q)) B S).submatrix A id).det) := by
+    rw [show d ^ S = d ^ Fintype.card (Fin S) by simp, ← Matrix.det_smul, Matrix.det_apply]
+    refine IsInt.sum _ _ fun σ _ => ?_
+    rw [Units.smul_def, zsmul_eq_mul]
+    refine (isInt_intCast _).mul (IsInt.prod _ _ fun k _ => ?_)
+    simp only [Matrix.smul_apply, Matrix.submatrix_apply, id, smul_eq_mul]
+    exact isInt_resid_fakeTail_common a q hq hSB _ _
+  obtain ⟨z, hz⟩ := key
+  exact ⟨z, by rw [← hz]; field_simp⟩
 
 /-- **E3 (the `F_B`-free no-go).**  Under `G = a/q`, some row selection has a nonzero minor
 bounded BELOW by the integrality floor `1/(q · L^2)^S`.  This is `sun_ledger_impossible` with the
@@ -170,7 +304,16 @@ theorem abs_det_ge_of_rational (a q : ℤ) (hq : q ≠ 0) {B S : ℕ} (hS : 0 < 
       ((resid (fakeTail ((a : ℚ) / q)) B S).submatrix A id).det ≠ 0 ∧
       1 / (|(q : ℚ)| * (oddLcm (2 * B + 2 * S + 2) : ℚ) ^ 2) ^ S ≤
         |((resid (fakeTail ((a : ℚ) / q)) B S).submatrix A id).det| := by
-  sorry
+  obtain ⟨A, -, hdet⟩ := exists_row_set_det_ne_zero (fakeTail_isTailSeq ((a : ℚ) / q)) hS hBS
+  refine ⟨A, hdet, ?_⟩
+  obtain ⟨z, hz⟩ := det_resid_fakeTail_den a q hq hBS.le A
+  have hz0 : z ≠ 0 := by rintro rfl; simp at hz; exact hdet hz
+  have h1 : (1 : ℚ) ≤ |(z : ℚ)| := by exact_mod_cast Int.one_le_abs hz0
+  have hd0 : 0 < |(q : ℚ)| * (oddLcm (2 * B + 2 * S + 2) : ℚ) ^ 2 :=
+    mul_pos (abs_pos.2 (Int.cast_ne_zero.2 hq)) (pow_pos (Nat.cast_pos.2 (oddLcm_pos _)) 2)
+  rw [hz, abs_div, abs_pow, abs_mul, abs_pow, Nat.abs_cast]
+  rw [div_le_div_iff_of_pos_right (pow_pos hd0 _)]
+  exact h1
 
 /-! ### The frontier, stated honestly -/
 
@@ -185,10 +328,45 @@ def SmallForms : Prop :=
       |((resid tail B S).submatrix A id).det| <
         1 / ((q : ℝ) * (oddLcm (2 * B + 2 * S + 2) : ℝ) ^ 2) ^ S
 
+/-- `resid` commutes with a ring hom applied to the tail sequence. -/
+lemma resid_map {K : Type*} [Field K] [CharZero K] (f : F →+* K) (T : ℕ → F) (B S : ℕ) :
+    (resid T B S).map f = resid (fun m => f (T m)) B S := by
+  ext a j
+  simp only [Matrix.map_apply, resid, map_sum, map_mul, map_pow, map_neg, map_one, map_natCast,
+    map_div₀, map_add, map_ofNat]
+
+lemma resid_fakeTail_cast_eq_tail (a q : ℤ) (hG : catalanConst = (a : ℝ) / q) (B S : ℕ) :
+    (resid (fakeTail ((a : ℚ) / q)) B S).map (Rat.castHom ℝ) = resid tail B S := by
+  rw [resid_map]
+  congr 1
+  funext m
+  exact fakeTail_eq_tail_of_catalan_eq a q hG m
+
 /-- **The sink edge.**  `SmallForms → Irrational catalanConst`.  Green means: the ledger is the
 ONLY thing missing, and E3 is the floor it must beat.  `SmallForms` itself is open (and, for
 these weights, numerically false). -/
 theorem catalan_irrational_of_smallForms (h : SmallForms) : Irrational catalanConst := by
-  sorry
+  rintro ⟨r, hr⟩
+  have hq : (0 : ℤ) < (r.den : ℤ) := by exact_mod_cast r.pos
+  have hG : catalanConst = (r.num : ℝ) / ((r.den : ℤ) : ℝ) := by
+    rw [← hr, Rat.cast_def]; push_cast; rfl
+  obtain ⟨B, S, hS, hBS, hsmall⟩ := h r.num r.den hq hG
+  obtain ⟨A, -, hge⟩ := abs_det_ge_of_rational r.num r.den hq.ne' hS hBS
+  have hcast : ((resid tail B S).submatrix A id).det =
+      ((((resid (fakeTail ((r.num : ℚ) / (r.den : ℤ))) B S).submatrix A id).det : ℚ) : ℝ) := by
+    rw [← resid_fakeTail_cast_eq_tail r.num r.den hG B S, Matrix.submatrix_map,
+      ← RingHom.mapMatrix_apply, ← RingHom.map_det]
+    rfl
+  have h1 := hsmall A
+  rw [hcast] at h1
+  have habs : |((r.den : ℤ) : ℚ)| = (r.den : ℚ) := by simp
+  rw [habs] at hge
+  have hden : (((r.den : ℤ) : ℝ)) = ((r.den : ℚ) : ℝ) := by simp
+  have hL : ((oddLcm (2 * B + 2 * S + 2) : ℕ) : ℝ) = ((oddLcm (2 * B + 2 * S + 2) : ℚ) : ℝ) := by
+    simp
+  rw [hden, hL, ← Rat.cast_abs, ← Rat.cast_pow, ← Rat.cast_mul, ← Rat.cast_pow, ← Rat.cast_one,
+    ← Rat.cast_div, Rat.cast_lt] at h1
+  linarith
+
 
 end LeanFormalizations.Catalan
