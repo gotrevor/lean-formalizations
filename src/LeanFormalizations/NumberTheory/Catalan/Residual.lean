@@ -278,10 +278,210 @@ theorem no_rational_solution (A D : F[X]) (hD : D ≠ 0) (c : F) (hc : c ≠ 0)
       rw [show (-1 / 2 + ((k + 1 : ℕ) : F)) = -1 / 2 + (k : F) + 1 by push_cast; ring]
       exact this
 
+/-! ### The crux, decomposed: explicit polynomials
+
+Notation (all polynomials over `F`, `lin h := 2X + (2h+1)`):
+* `bigPi B = ∏_{h=1}^{B} lin h ^ 2`, so `bigPi B` at `i` is `Π_i = normaliser B i`;
+* `Lpoly S = ∏_{h=1}^{S} lin h`, `Epoly S B = ∏_{h=S+1}^{B} lin h`, `Wpoly = Lpoly * Epoly^2`,
+  so `bigPi B = Wpoly * Lpoly` (`S ≤ B`) — `Wpoly` is the λ-independent part of `D_λ`;
+* `Gpoly S B = ∏_{h=2}^{S+1} lin h * ∏_{h=S+2}^{B} lin h ^ 2` = `gcd(Wpoly(X), Wpoly(X+1))`:
+  `Wpoly = lin 1 * lin (S+1) * Gpoly` and `Wpoly(X+1) = Gpoly * lin (B+1) ^ 2`;
+* `Lsub S j = Lpoly S / lin (j+1)`, `Qpoly S λ = Σ_j (-1)^j λ_j Lsub S j` (degree `≤ S-1`,
+  nonzero iff `λ ≠ 0`), `Dpoly = Wpoly * Qpoly` = the paper's `D_λ` (up to sign convention);
+* `Psub B j k = bigPi B / (lin (j+1) * lin k ^ 2)` for `1 ≤ k ≤ j < S`, and
+  `Ppoly = Σ_j Σ_{k=1}^{j} λ_j (-1)^{j-k} Psub B j k` = the polynomial part `P_λ`;
+* `rowFun T B S λ i = Π_i Σ_j λ_j T_{i+j+1}/(2(i+j+1)+1)` = the paper's `f_i`, and
+  `rowFun i = T_{i+1} · Dpoly(i) + Ppoly(i)` (`rowFun_eq`);
+* `Kpoly S B A Q` = the paper's `K` divided by its forced factor `lin 1 * Gpoly`: it has degree
+  `≤ 2B+S+1` and vanishes at `0, …, 2B+S+1`, hence is `0`. -/
+
+/-- `lin h = 2X + (2h+1)`; `lin 1 = 2X + 3`, and `(lin h)(X+1) = lin (h+1)`. -/
+noncomputable def lin (h : ℕ) : F[X] := C 2 * X + C (2 * (h : F) + 1)
+
+@[simp] lemma lin_eval (h : ℕ) (x : F) : (lin h).eval x = 2 * x + (2 * h + 1) := by
+  simp [lin]
+
+lemma lin_one : (lin 1 : F[X]) = 2 * X + 3 := by
+  simp only [lin, Nat.cast_one]
+  rw [show (2 * (1 : F) + 1) = 3 by norm_num, show (C 2 : F[X]) = 2 from C_ofNat 2,
+    show (C 3 : F[X]) = 3 from C_ofNat 3]
+
+lemma lin_comp_X_add_one (h : ℕ) : (lin h : F[X]).comp (X + 1) = lin (h + 1) := by
+  simp only [lin, add_comp, mul_comp, C_comp, X_comp]
+  rw [mul_add, mul_one, add_assoc, ← C_add]
+  congr 2
+  push_cast
+  ring
+
+omit [CharZero F] in
+lemma natDegree_lin_le (h : ℕ) : (lin h : F[X]).natDegree ≤ 1 := by
+  unfold lin
+  refine (natDegree_add_le _ _).trans ?_
+  simp only [natDegree_C, max_le_iff, zero_le, and_true]
+  exact (natDegree_C_mul_le _ _).trans (by simp)
+
+lemma lin_ne_zero (h : ℕ) : (lin h : F[X]) ≠ 0 := by
+  intro h0
+  have := congrArg (eval (0 : F)) h0
+  simp at this
+  have : ((2 * h : ℕ) : F) + 1 = 0 := by push_cast; linear_combination this
+  exact Nat.cast_add_one_ne_zero _ this
+
+lemma lin_eval_nat_ne_zero (h i : ℕ) : (lin h : F[X]).eval (i : F) ≠ 0 := by
+  rw [lin_eval]
+  have : (2 * (i : F) + (2 * h + 1)) = ((2 * i + 2 * h : ℕ) : F) + 1 := by push_cast; ring
+  rw [this]
+  exact Nat.cast_add_one_ne_zero _
+
+/-- `bigPi B = ∏_{h=1}^{B} lin h ^ 2`; at `i` this is `Π_i`. -/
+noncomputable def bigPi (B : ℕ) : F[X] := ∏ h ∈ Ico 1 (B + 1), lin h ^ 2
+
+lemma bigPi_eval (B i : ℕ) : (bigPi B : F[X]).eval (i : F) = (normaliser B i : F) := by
+  sorry
+
+noncomputable def Lpoly (S : ℕ) : F[X] := ∏ h ∈ Ico 1 (S + 1), lin h
+noncomputable def Epoly (S B : ℕ) : F[X] := ∏ h ∈ Ico (S + 1) (B + 1), lin h
+noncomputable def Wpoly (S B : ℕ) : F[X] := Lpoly S * Epoly S B ^ 2
+noncomputable def Gpoly (S B : ℕ) : F[X] :=
+  (∏ h ∈ Ico 2 (S + 2), lin h) * ∏ h ∈ Ico (S + 2) (B + 1), lin h ^ 2
+
+lemma bigPi_eq_Wpoly_mul_Lpoly {S B : ℕ} (hSB : S ≤ B) :
+    (bigPi B : F[X]) = Wpoly S B * Lpoly S := by
+  sorry
+
+lemma Wpoly_eq {S B : ℕ} (hS : 0 < S) (hSB : S < B) :
+    (Wpoly S B : F[X]) = lin 1 * lin (S + 1) * Gpoly S B := by
+  sorry
+
+lemma Wpoly_comp {S B : ℕ} (hS : 0 < S) (hSB : S < B) :
+    (Wpoly S B : F[X]).comp (X + 1) = Gpoly S B * lin (B + 1) ^ 2 := by
+  sorry
+
+lemma Wpoly_ne_zero (S B : ℕ) : (Wpoly S B : F[X]) ≠ 0 := by
+  sorry
+
+lemma natDegree_Gpoly_le {S B : ℕ} (hSB : S + 1 ≤ B) :
+    (Gpoly S B : F[X]).natDegree ≤ 2 * B - S - 2 := by
+  sorry
+
+/-- `Lsub S j = Lpoly S / lin (j+1)` (for `j < S`). -/
+noncomputable def Lsub (S j : ℕ) : F[X] := ∏ h ∈ (Ico 1 (S + 1)).erase (j + 1), lin h
+
+lemma Lpoly_eq_lin_mul_Lsub {S j : ℕ} (hj : j < S) :
+    (Lpoly S : F[X]) = lin (j + 1) * Lsub S j := by
+  sorry
+
+lemma natDegree_Lsub_le {S j : ℕ} (hj : j < S) : (Lsub S j : F[X]).natDegree ≤ S - 1 := by
+  sorry
+
+/-- `Qpoly S λ = Σ_j (-1)^j λ_j Lsub S j`: the λ-dependent factor of `D_λ`. -/
+noncomputable def Qpoly (S : ℕ) (lam : Fin S → F) : F[X] :=
+  ∑ j : Fin S, C ((-1) ^ j.val * lam j) * Lsub S j.val
+
+lemma natDegree_Qpoly_le (S : ℕ) (lam : Fin S → F) : (Qpoly S lam).natDegree ≤ S - 1 := by
+  sorry
+
+/-- `Qpoly` at `X = -(2j+3)/2` is `(-1)^j λ_j ∏_{h ≠ j+1} (2h - 2j - 3) ≠ 0` for `λ_j ≠ 0`. -/
+lemma Qpoly_ne_zero {S : ℕ} {lam : Fin S → F} (hlam : lam ≠ 0) : Qpoly S lam ≠ 0 := by
+  sorry
+
+/-- `Dpoly = Wpoly * Qpoly`: the paper's `D_λ`. -/
+noncomputable def Dpoly (S B : ℕ) (lam : Fin S → F) : F[X] := Wpoly S B * Qpoly S lam
+
+/-- `Psub B j k = bigPi B / (lin (j+1) * lin k ^ 2)`. -/
+noncomputable def Psub (B j k : ℕ) : F[X] :=
+  lin (j + 1) * ∏ h ∈ ((Ico 1 (B + 1)).erase (j + 1)).erase k, lin h ^ 2
+
+lemma bigPi_eq_Psub {B j k : ℕ} (hj : j + 1 ≤ B) (hk : 1 ≤ k) (hkj : k ≤ j) :
+    (bigPi B : F[X]) = lin (j + 1) * lin k ^ 2 * Psub B j k := by
+  sorry
+
+lemma natDegree_Psub_lt {B j k : ℕ} (hj : j + 1 ≤ B) : (Psub B j k : F[X]).natDegree < 2 * B := by
+  sorry
+
+/-- The polynomial part `P_λ`. -/
+noncomputable def Ppoly (B S : ℕ) (lam : Fin S → F) : F[X] :=
+  ∑ j : Fin S, ∑ k ∈ Icc 1 j.val, C (lam j * (-1) ^ (j.val - k)) * Psub B j.val k
+
+lemma natDegree_Ppoly_lt {B S : ℕ} (hSB : S < B) (lam : Fin S → F) :
+    (Ppoly B S lam).natDegree < 2 * B := by
+  sorry
+
+/-- The paper's `f_i = Π_i Σ_j λ_j u_{i+j}`. -/
+noncomputable def rowFun (T : ℕ → F) (B S : ℕ) (lam : Fin S → F) (i : ℕ) : F :=
+  (normaliser B i : F) *
+    ∑ j : Fin S, lam j * (T (i + j.val + 1) / (2 * ((i + j.val + 1 : ℕ) : F) + 1))
+
+/-- Row `a` of `resid ⬝ λ` is the alternating binomial sum of order `a + 2B` of `rowFun`. -/
+lemma mulVec_resid_eq (T : ℕ → F) (B S : ℕ) (lam : Fin S → F) (a : Fin (S + 3)) :
+    (resid T B S).mulVec lam a =
+      ∑ i ∈ range (a.val + 2 * B + 1),
+        (-1 : F) ^ i * ((a.val + 2 * B).choose i : F) * rowFun T B S lam i := by
+  sorry
+
+/-- **Step 2 of the plan**: `f_i = T_{i+1} D_λ(i) + P_λ(i)`. -/
+lemma rowFun_eq {T : ℕ → F} (hT : IsTailSeq T) {B S : ℕ} (hSB : S < B) (lam : Fin S → F)
+    (i : ℕ) :
+    rowFun T B S lam i = T (i + 1) * (Dpoly S B lam).eval (i : F) + (Ppoly B S lam).eval (i : F) := by
+  sorry
+
+/-- **Step 3**: in the kernel, the alternating sums of `g_i := T_{i+1} D_λ(i)` of orders
+`2B, …, 2B+S+2` vanish, so `g` is a polynomial of degree `< 2B` on `{0, …, 2B+S+2}`. -/
+lemma exists_interp {T : ℕ → F} (hT : IsTailSeq T) {B S : ℕ} (hSB : S < B) (lam : Fin S → F)
+    (h : (resid T B S).mulVec lam = 0) :
+    ∃ A : F[X], A.natDegree < 2 * B ∧
+      ∀ i ≤ 2 * B + S + 2, A.eval (i : F) = T (i + 1) * (Dpoly S B lam).eval (i : F) := by
+  sorry
+
+/-- The paper's `K` with its forced factor `lin 1 * Gpoly` removed. -/
+noncomputable def Kpoly (S B : ℕ) (A Q : F[X]) : F[X] :=
+  lin 1 * (A * lin (B + 1) ^ 2 * Q.comp (X + 1) + A.comp (X + 1) * lin 1 * lin (S + 1) * Q)
+    - lin (S + 1) * lin (B + 1) ^ 2 * Gpoly S B * Q * Q.comp (X + 1)
+
+lemma natDegree_Kpoly_le {S B : ℕ} (hS : 0 < S) (hSB : S < B) {A Q : F[X]}
+    (hA : A.natDegree < 2 * B) (hQ : Q.natDegree ≤ S - 1) :
+    (Kpoly S B A Q).natDegree ≤ 2 * B + S + 1 := by
+  sorry
+
+/-- **Step 4**: `K` vanishes at `0, …, 2B+S+1` by the recurrence at `m = i+1`. -/
+lemma Kpoly_eval_eq_zero {T : ℕ → F} (hT : IsTailSeq T) {B S : ℕ} (hS : 0 < S) (hSB : S < B)
+    (lam : Fin S → F) {A : F[X]}
+    (hA : ∀ i ≤ 2 * B + S + 2, A.eval (i : F) = T (i + 1) * (Dpoly S B lam).eval (i : F))
+    (i : ℕ) (hi : i ≤ 2 * B + S + 1) :
+    (Kpoly S B A (Qpoly S lam)).eval (i : F) = 0 := by
+  sorry
+
+lemma Kpoly_eq_zero {T : ℕ → F} (hT : IsTailSeq T) {B S : ℕ} (hS : 0 < S) (hSB : S < B)
+    (lam : Fin S → F) {A : F[X]} (hAdeg : A.natDegree < 2 * B)
+    (hA : ∀ i ≤ 2 * B + S + 2, A.eval (i : F) = T (i + 1) * (Dpoly S B lam).eval (i : F)) :
+    Kpoly S B A (Qpoly S lam) = 0 := by
+  refine Polynomial.eq_zero_of_natDegree_lt_card_of_eval_eq_zero _
+    (f := fun i : Fin (2 * B + S + 2) => (i.val : F)) ?_ ?_ ?_
+  · intro a b hab
+    exact Fin.ext (Nat.cast_injective hab)
+  · intro i
+    exact Kpoly_eval_eq_zero hT hS hSB lam hA i.val (by omega)
+  · rw [Fintype.card_fin]
+    exact Nat.lt_succ_of_le (natDegree_Kpoly_le hS hSB hAdeg (natDegree_Qpoly_le S lam))
+
+/-- **Step 5**: `K = 0` is the rational-function identity `R(X) + R(X+1) = 1/(2X+3)^2` for
+`R = A / D_λ`, in the polynomial form `no_rational_solution` consumes. -/
+lemma key_identity {S B : ℕ} (hS : 0 < S) (hSB : S < B) {A Q : F[X]}
+    (hK : Kpoly S B A Q = 0) :
+    (2 * X + 3) ^ 2 * (A * (Wpoly S B * Q).comp (X + 1) + A.comp (X + 1) * (Wpoly S B * Q)) =
+      C 1 * ((Wpoly S B * Q) * (Wpoly S B * Q).comp (X + 1)) := by
+  rw [mul_comp, Wpoly_comp hS hSB, Wpoly_eq hS hSB, C_1, one_mul, ← lin_one]
+  unfold Kpoly at hK
+  linear_combination (lin 1 * Gpoly S B) * hK
+
 /-- **The crux** (steps 2–5 of the plan): the right kernel of `resid T B S` is trivial. -/
 theorem resid_mulVec_eq_zero {T : ℕ → F} (hT : IsTailSeq T) {B S : ℕ} (hS : 0 < S)
     (hBS : S < B) (lam : Fin S → F) (h : (resid T B S).mulVec lam = 0) : lam = 0 := by
-  sorry
+  by_contra hlam
+  obtain ⟨A, hAdeg, hA⟩ := exists_interp hT hBS lam h
+  have hK := Kpoly_eq_zero hT hS hBS lam hAdeg hA
+  have hD : Wpoly S B * Qpoly S lam ≠ 0 := mul_ne_zero (Wpoly_ne_zero S B) (Qpoly_ne_zero hlam)
+  exact no_rational_solution A _ hD 1 one_ne_zero (key_identity hS hBS hK)
 
 /-- **Theorem 2.1** for an abstract tail sequence: `rank (resid T B S) = S` when `B > S > 0`.
 Wiring: trivial right kernel ⟹ `mulVecLin` injective ⟹ `rank = finrank (Fin S → F) = S`. -/
