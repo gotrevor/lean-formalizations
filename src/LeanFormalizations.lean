@@ -73,6 +73,7 @@ import LeanFormalizations.NumberTheory.Catalan.Frame
 -- (Rivoal–Zudilin 2003 / Zudilin 2019 §2, elementary route).  β(2) = Catalan's constant.
 import LeanFormalizations.NumberTheory.DirichletBeta.Beta
 import LeanFormalizations.NumberTheory.DirichletBeta.Rational
+import LeanFormalizations.NumberTheory.DirichletBeta.CompleteMonotone
 import LeanFormalizations.NumberTheory.DirichletBeta.LinearForm
 import LeanFormalizations.NumberTheory.DirichletBeta.Integral
 import LeanFormalizations.NumberTheory.DirichletBeta.Bound
