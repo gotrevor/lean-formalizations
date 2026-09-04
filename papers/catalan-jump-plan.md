@@ -85,20 +85,23 @@ The first measurements are positive:
 ```text
 (N,t,p)    delta   trials      full hits   observed density exponent
 (16,4,2)     13    1,000,000       26              15.23
-(20,4,2)     16    2,000,000        2              19.93
+(20,4,2)     16   20,000,000       58              18.40
 (24,6,2)     19   20,000,000        2              23.25
 ```
 
 Two independent random quadrics would predict exponents `2*delta`, namely `26,32,38`.  The positive
-EMN quadrics are therefore much more dependent modulo powers of two than a generic pair.  The best
-`(20,4)` hit has
+EMN quadrics are therefore much more dependent modulo powers of two than a generic pair.  The larger
+`(20,4)` run replaced an unreliable two-hit density estimate.  Its excess exponent
+`18.40-16=2.40` agrees closely with the `(16,4)` excess `15.23-13=2.23`; there is no observed drift
+toward the generic exponent `2*delta` between those adequately sampled points.  The best `(20,4)`
+hit has
 
 ```text
-a = -47099/10395,  b = 5,  a+bG = 0.0488996399578... .
+a = -380596/51975,  b = 8,  a+bG = 0.00505039074339... .
 ```
 
-Relative to the best positive form in the same sample, it pays a real factor `111.8` while removing
-the complete `2^16` denominator contribution, a net local improvement of about `586`.
+Relative to the best positive form in the same sample, it pays a real factor `22.3` while removing
+the complete `2^16` denominator contribution, a net local improvement of about `2938`.
 
 At `(24,6)`, the best fully `2^19`-saturated hit has
 
@@ -109,6 +112,21 @@ a = -12962/4725,  b = 3,  a+bG = 0.00461635925123... .
 It pays a sampled real factor `113.9` for a local clearance gain `2^19`, a net improvement of about
 `4600`.  At the odd primes `3,5,7`, the observed full-saturation densities are approximately
 `p^(-delta)`, rather than `p^(-2 delta)`, with sampled real penalties only `2.60,2.41,1.91`.
+
+The last denominator prime at `(24,6)`, `p=11`, has observed exponent `1.17` for `delta=1` and a
+sampled real penalty `2.19`.  Multiplying the five separately measured local penalties gives the
+screening estimate
+
+```text
+log10(D*I_baseline)                  =  6.043
+- total available denominator gain  = -10.435
++ sum log10(local real penalties)    =  3.476
+screening ledger                     = -0.916
+```
+
+This clears the cheap pre-CRT screen by just under one decimal order.  It is not a construction:
+local minimizing vectors differ, so multiplying marginal penalties assumes compatibility that must
+be tested by the simultaneous solver.
 
 This resolves the first objection: the saturation conditions do intersect the positive
 orbit-square cone cheaply at each tested prime.  It does not yet produce a globally integral small
