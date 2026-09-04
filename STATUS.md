@@ -8,7 +8,9 @@
 > `N_B` is divisible by `2^{v₂(F_B)}`, `v₂(F_B) ≈ 2B²`).  ⚠️ Nothing in the repo claims `G ∉ ℚ`.
 > **Phase 1 GREEN (2026-09-04, same day):** all four modules sorry-free; `residual_rank`,
 > `sun_ledger_impossible` and every other headline are `[propext, Classical.choice, Quot.sound]`.
-> Phase 2 (the moonshot, probe-first) is next.  Objective + frozen names: `DIRECTION.md`.  _(The banner below describes the integrated trunk as of June.)_
+> **Phase 4 GREEN (2026-09-04):** `NumberTheory/DirichletBeta/` proves **at least one of β(2),…,β(20) is
+> irrational** (Rivoal–Zudilin), `exists_even_beta_irrational` / `catalan_or_higher_beta_irrational`
+> both `[propext, Classical.choice, Quot.sound]`, directory sorry-free.  Objective + frozen names: `DIRECTION.md`.  _(The banner below describes the integrated trunk as of June.)_
 
 > 🔀 **INTEGRATED TRUNK (2026-06-21).** Three parallel expedition clones merged back into `main`:
 > **goodstein** (Goodstein/Kirby–Paris growth theory + Curtis/power-tower/constructibles/e,π-transcendence

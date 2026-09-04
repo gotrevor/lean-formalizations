@@ -150,11 +150,17 @@ entry), do not build a road to it.  No asymptotic ledger is to be attempted in L
 propose Lean discharges for Phase-2 nodes; the deliverable there is the stated `Prop` + probe
 result + the next story.
 
-## Phase 4 — ACTIVE (planted 2026-09-04) — the nearest TRUE theorem: one of β(2),…,β(20) is irrational
+## Phase 4 — ✅ DONE 2026-09-04 (planted 2026-09-04) — the nearest TRUE theorem: one of β(2),…,β(20) is irrational
+
+**Status**: all eight leaves closed; `exists_even_beta_irrational` and `catalan_or_higher_beta_irrational`
+are `#print axioms` = `[propext, Classical.choice, Quot.sound]`; no `sorry` in the directory.  N2 landed via
+`Symmetry.lean` (reflection `R_n(-t-n)=R_n(t)`, symmetrized coefficients, odd vanishing) +
+`PartialSums.lean` (shift recursion `T_q(a+1) = 1/a^q - T_q(a)` from the base `T_q(½)=2^q E_q`) +
+the assembly in `LinearForm.lean`.  Original planting text follows.
 
 **Lane**: *formalizing a known result* (not moonshot).  Directory
 `src/LeanFormalizations/NumberTheory/DirichletBeta/`.  Scaffold planted and green; eight `sorry`
-leaves remain, and **the headline is already wired**: `Statement.lean` is proof-complete, so
+leaves remained at planting (all now closed), and **the headline is already wired**: `Statement.lean` is proof-complete, so
 closing the leaves closes the theorem with no further design work.
 
 **The theorem** (Rivoal–Zudilin 2003, Math. Ann. **326** 705–721 / Zudilin 2019 arXiv:1804.09922 §2,
