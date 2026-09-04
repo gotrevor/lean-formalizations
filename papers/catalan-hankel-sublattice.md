@@ -72,3 +72,66 @@ constructions keep the denominator tied to `d_n` alone.  A live route to `G` nee
 positivity-based nonvanishing **and** a denominator that does not grow with the size of the object.
 Neither of the two families probed today has both, and that pair of requirements is a sharper filter
 for the next construction than either probe alone.
+
+---
+
+# Addendum (same day): the fixed-size shifted family closes the moment route entirely
+
+Probe: `catalan-shifted-hankel.py`.
+
+The refutation above is about the determinant's **size**: an `m×m` determinant must reach moment
+index `2m`, so clearing costs `e^{4m²}` against a numerator of `e^{-(log 4)m²}`.  That invites an
+obvious repair — hold `m` **fixed** and grow the *shift* instead:
+
+    M(n)_{ij} = μ_{n+i+j},  0 ≤ i,j < m.
+
+This looked like the first object with all three of the properties the day's two refutations
+demand.  **(A)** nonvanishing is free — `M(n)` is the Gram matrix of the positive measure `xⁿ dμ`.
+**(C)** the beam stays narrow — the `G`-part is `(-1)^{n+i+j} = (-1)^n(-1)^i(-1)^j`, rank one, so
+`H_m(n) = A + B·G` is a linear form in Catalan's constant **alone**.  **(B)** the denominator index
+is `n + 2m - 2`, linear in the growing parameter rather than quadratic.
+
+**It fails, by an infinite margin rather than a constant.**
+
+| `m` | `n` = 2 | 8 | 16 | 32 | 64 | slope |
+|---|---|---|---|---|---|---|
+| 2 | +0.99 | +7.03 | +21.43 | +46.15 | +100.83 | ≈ **+1.6 per unit `n`** |
+| 3 | +6.14 | +16.58 | +26.47 | +51.47 | +111.28 | ≈ **+1.7 per unit `n`** |
+
+The ledger *rises*.  The reason is visible in the two rates:
+
+* **Numerator: polynomial.**  `log₁₀|H_2(n)|` falls by a near-constant `≈ -1.7` per **doubling** of
+  `n` — that is `H_m(n) ~ n^{-c}` (measured `c ≈ 5.3` at `m=2`, steeper at `m=3`).  Polynomial,
+  because the moments themselves decay polynomially: `μ_n = ±(G - S_n)` with tail `~ 1/(2n)²`.
+* **Denominator: exponential.**  `log₁₀ D` grows `≈ 1.75` per unit `n`, since the clearance is
+  `lcm{(2j+1)² : j < n+2m}^m ≈ e^{cmn}`.
+
+Polynomial against exponential is not a margin one optimises away.
+
+## Why this closes the family rather than one member of it
+
+The moment construction has exactly two degrees of freedom, the determinant size `m` and the shift
+`n`, and **the same quantity governs the numerator's only source of exponential smallness and the
+denominator's multiplier**:
+
+* grow `m`: numerator `e^{-1.386 m²}` against denominator `e^{4m²}` — loses by a constant factor;
+* grow `n`: numerator polynomial against denominator exponential — loses by an infinite one.
+
+Exponential decay in this family comes *only* from the determinant's size, and the size is *also*
+the exponent on the clearance.  The two refutations are therefore one fact seen twice, and there is
+no third direction to try.  Whatever eventually works on `G` will not be a moment determinant.
+
+## Where that leaves the three-way filter
+
+The day's honest scoreboard, with `rForm_neg` proved (so Rivoal–Zudilin *does* have positivity-based
+nonvanishing — the earlier two-criterion phrasing was too coarse):
+
+| family | (A) positivity nonvanishing | (B) bounded denominators | (C) narrow beam |
+|---|---|---|---|
+| Rivoal–Zudilin | ✅ | ✅ | ❌ (and `catalan-annihilation-margin.md` says it cannot be narrowed) |
+| moment / Hankel, any `m`, any shift | ✅ | ❌ | ✅ |
+
+**No known family has all three, and both of today's candidate repairs are refuted with a
+mechanism.**  That is a sharper starting point for the next construction than any of the three
+individual probes, and it is a genuinely useful screen: a proposal that does not visibly carry all
+three does not need a ledger computed for it.
