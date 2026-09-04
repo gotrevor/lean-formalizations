@@ -321,6 +321,15 @@ omit [CharZero F] in
 lemma natDegree_redPi_le (B j : ℕ) : (redPi B j : F[X]).natDegree ≤ 2 * B :=
   (natDegree_le_natDegree (degree_div_le _ _)).trans (natDegree_bigPi_le B)
 
+/-- `Π_i / (2(i+j+1)+1) = redPi B (j+1) (i)` for `j + 1 ≤ B`. -/
+lemma normaliser_div_eq_redPi_eval {B j : ℕ} (hjB : j + 1 ≤ B) (i : ℕ) :
+    (normaliser B i : ℝ) / (2 * ((i + j + 1 : ℕ) : ℝ) + 1) = (redPi B (j + 1) : ℝ[X]).eval (i : ℝ) := by
+  have h := congrArg (eval (i : ℝ)) (redPi_mul_lin (F := ℝ) (B := B) (j := j + 1) (by omega) hjB)
+  rw [eval_mul, bigPi_eval, lin_eval] at h
+  have hne : (2 * (i : ℝ) + (2 * ((j + 1 : ℕ) : ℝ) + 1)) ≠ 0 := by positivity
+  rw [← h, div_eq_iff (by positivity)]
+  push_cast; ring
+
 /-- **D5 (closed form of the true residual entries).**  With `n = a + 2B`, `c_r = j + r + 3/2`
 and `P = redPi B (j+1)`:
 `R_{a,j} = Σ'_r (−1)^r · (1/4) · n!/∏_{i≤n}(i + c_r) · (P'(−c_r) + P(−c_r) Σ_{i≤n} 1/(i + c_r))`.
@@ -333,7 +342,38 @@ theorem resid_tail_eq {B S : ℕ} (hS : 0 < S) (hBS : S < B) (a : Fin (S + 3)) (
         ((redPi B (j.val + 1) : ℝ[X]).derivative.eval (-((j.val : ℝ) + r + 3 / 2)) +
           (redPi B (j.val + 1) : ℝ[X]).eval (-((j.val : ℝ) + r + 3 / 2)) *
             ∑ i ∈ range (a.val + 2 * B + 1), 1 / ((i : ℝ) + ((j.val : ℝ) + r + 3 / 2)))) := by
-  sorry
+  set n := a.val + 2 * B with hn
+  set P : ℝ[X] := redPi B (j.val + 1) with hP
+  have hjB : j.val + 1 ≤ B := by have := j.isLt; omega
+  -- Step 1: each `i`-term is a tsum over `r`.
+  have step1 : ∀ i ∈ range (n + 1),
+      (-1 : ℝ) ^ i * (n.choose i : ℝ) * (normaliser B i : ℝ) *
+        (tail (i + j.val + 1) / (2 * ((i + j.val + 1 : ℕ) : ℝ) + 1)) =
+      ∑' r : ℕ, ((-1 : ℝ) ^ i * (n.choose i : ℝ) * P.eval (i : ℝ)) *
+        ((-1 : ℝ) ^ r / (2 * (((i + j.val + 1 : ℕ) : ℝ) + r) + 1) ^ 2) := by
+    intro i _
+    rw [tsum_mul_left, ← tail, ← normaliser_div_eq_redPi_eval hjB]
+    ring
+  rw [resid, sum_congr rfl step1]
+  rw [← Summable.tsum_finsetSum fun i _ => (summable_tailTerm _).mul_left _]
+  refine tsum_congr fun r => ?_
+  set c : ℝ := (j.val : ℝ) + r + 3 / 2 with hc
+  have hc' : ∀ i ∈ range (n + 1), (i : ℝ) + c ≠ 0 := fun i _ => by rw [hc]; positivity
+  have hdeg : P.natDegree ≤ n + 1 := (natDegree_redPi_le B _).trans (by omega)
+  have step2 : ∀ i ∈ range (n + 1),
+      ((-1 : ℝ) ^ i * (n.choose i : ℝ) * P.eval (i : ℝ)) *
+        ((-1 : ℝ) ^ r / (2 * (((i + j.val + 1 : ℕ) : ℝ) + r) + 1) ^ 2) =
+      ((-1 : ℝ) ^ r * (1 / 4)) *
+        ((-1 : ℝ) ^ i * (n.choose i : ℝ) * P.eval (i : ℝ) / ((i : ℝ) + c) ^ 2) := by
+    intro i hi
+    have h0 := hc' i hi
+    have h1 : (2 * (((i + j.val + 1 : ℕ) : ℝ) + r) + 1) = 2 * ((i : ℝ) + c) := by
+      rw [hc]; push_cast; ring
+    rw [h1]
+    field_simp
+    ring
+  rw [sum_congr rfl step2, ← mul_sum, alt_choose_sum_div_sq P n hdeg c hc']
+
 
 /-! ### E — integrality: the exact `F_B`-free integerizer -/
 
