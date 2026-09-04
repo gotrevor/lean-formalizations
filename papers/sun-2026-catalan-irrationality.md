@@ -1,7 +1,8 @@
 # Sun 2026, "Catalan's constant is irrational" — analysis, refutation, and the salvage
 
 **Status: the paper is wrong.  There is no irrationality proof here.  One piece is worth
-formalizing anyway.**  This file is a self-contained briefing: hand it to a fresh session and it
+formalizing anyway — and is being formalized: `src/LeanFormalizations/NumberTheory/Catalan/`
+(Targets A and B below), branch `catalan`, since 2026-09-04.**  This file is a self-contained briefing: hand it to a fresh session and it
 should need nothing else except the PDF sitting next to it.
 
 | | |
@@ -146,6 +147,25 @@ Estimated shape: a few hundred lines, one file, no exotic imports, `Matrix.rank`
 the field `ℚ(G)`).  Fits the house pattern of a self-contained `NumberTheory/` leaf.
 **Caveat before starting:** Thm 2.1's proof is the part of the paper least scrutinized publicly —
 we checked it by reading, not by machine.  Expect to find at least the (2.3) sign slip.
+
+**Found on the second read (2026-09-04, host):** the proof has two index slips, one repair.
+(2.4)–(2.8) expand `T_{i+j}` around `T_i`, but the polynomial `K` of (2.12) carries `(2X+3)²`,
+which annihilates the integers only if the expansion is around **`T_{i+1}`** — the recurrence is
+`T_i + T_{i+1} = 1/(2i+1)²`, so with base `T_i` one gets `K(i) = D(i)D(i+1)[(2i+3)²/(2i+1)² − 1] ≠ 0`.
+And `P_λ` as printed sums from `k = 0`, where `(2i+1)² ∤ Π_i`, so it is not a polynomial.  Expanding
+around `T_{i+1}` with `k ≥ 1` fixes both at once (it is what the paper's own page-4 display for
+`R_{a,j}` already does, up to the `(−1)^j` vs `(−1)^{j−1}` sign), keeps `deg P_λ ≤ 2B−3`, keeps the
+free zero `K(−3/2) = 0`, and the `4B+1 > 4B` count goes through.  The "no rational solution" step
+needs one case the paper skips (a pole-free `S₀`, i.e. a polynomial — immediate) and is best done
+for a general nonzero right-hand constant so the sign never matters.  **The theorem is true**:
+rank probe at the true `G`, 400-digit precision, `σ_min/σ_max` far from zero for `(B,S)` up to
+`(8,5)` (`~/src/lean-formalizations` scaffold header records the probe).  Also noted: the theorem
+uses *nothing* about the tails beyond the recurrence, so it holds for any sequence with
+`T_m + T_{m+1} = 1/(2m+1)²` — including the fake rational tails of Target B.
+
+**Lean thread (planted 2026-09-04):** `src/LeanFormalizations/NumberTheory/Catalan/`
+(`Tails`, `Residual`, `TwoAdic`, `Statement`), branch `catalan`; frozen names + proof plan in
+`DIRECTION.md`; grind by treadmill.
 
 ### 🟢 Target B — the refutation as a machine-checked no-go
 

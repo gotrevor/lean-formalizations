@@ -62,3 +62,8 @@ import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Mertens
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.MertensConstant
 import LeanFormalizations.NumberTheory.DivisorProblem
 import LeanFormalizations.RealAnalysis.BVFourierDecay
+-- Catalan's constant: the salvage of Sun's arXiv:2609.04176v1 (Thm 2.1) + the 2-adic no-go.
+import LeanFormalizations.NumberTheory.Catalan.Tails
+import LeanFormalizations.NumberTheory.Catalan.Residual
+import LeanFormalizations.NumberTheory.Catalan.TwoAdic
+import LeanFormalizations.NumberTheory.Catalan.Statement

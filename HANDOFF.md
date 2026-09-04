@@ -1,5 +1,14 @@
 # HANDOFF — lean-formalizations (thin pointer)
 
+## 👉 READ `DIRECTION.md` FIRST.  ACTIVE (2026-09-04): the **Catalan salvage** — Sun's arXiv:2609.04176v1, Thm 2.1 + the 2-adic no-go.  Phase 1 grind on branch `catalan`.
+
+## 👉 Newest baton: `HANDOFF-2026-09-04-catalan-kickoff.md` (scaffold planted, all leaves `sorry`)
+
+Everything below this line is the OLDER record of the finished threads (Goodstein growth theory,
+HJSW no-three-in-line, Kakeya); it is kept for context and is NOT the active objective.
+
+---
+
 ## 👉 READ `DIRECTION.md` FIRST. UNBOUNDED expedition (growth theory behind Goodstein/Kirby–Paris). No self-stop.
 
 This file is a **thin pointer**. The durable overview is **`STATUS.md`**; the per-lap baton

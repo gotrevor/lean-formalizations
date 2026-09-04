@@ -67,8 +67,15 @@ def run(B, S, q, a):
         HB = x.denominator                      # H_B^min
         NB = x * HB                             # the paper's nonzero integer
         assert NB.denominator == 1
+        # Phase-2 probe (DIRECTION.md, node N1): the F_B-FREE integer from binomial reference
+        # columns, N'_B := num(q^S det R[A,J] / prod Pi).  Its 2-adic content is gone by
+        # construction; the open question is its REAL size, so we print the digit count.
+        xp = F(q)**S * dR / prodPi
+        NBp = xp.numerator
         print(f"  A={A}: v2(q^S detR)={v2(F(q)**S*dR):>4}  v2(H_B^min)={v2(F(HB)):>3}"
-              f"  v2(N_B)={v2(NB):>5}  |N_B| ~ 2^{v2(NB)}  digits={len(str(abs(NB.numerator)))}")
+              f"  v2(N_B)={v2(NB):>5}  |N_B| ~ 2^{v2(NB)}  digits={len(str(abs(NB.numerator)))}"
+              f"  |  F_B-free N'_B: v2={v2(F(NBp)) if NBp else None}  digits={len(str(abs(NBp)))}"
+              f"  den(x')={len(str(xp.denominator))}d")
 
 run(4, 2, 7, 6)
 run(5, 2, 11, 10)
