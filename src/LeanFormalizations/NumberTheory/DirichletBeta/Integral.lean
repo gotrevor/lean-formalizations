@@ -314,9 +314,26 @@ lemma tsum_alt_cseq {s n : ℕ} (hs : 3 ≤ s) :
     show m + (3 * n + 1) = 3 * n + 1 + m by ring, show 1 + m = m + 1 by ring]
   ring
 
-/-- **N3 (the crux).**  For odd `s ≥ 3` and even `n`, the linear form is strictly negative.
-The leading term `u = 0` carries the sign `(-1)^{n+1} = -1` and dominates. -/
-theorem rForm_neg {s n : ℕ} (hs : 3 ≤ s) (_hodd : Odd s) (hn : Even n) : rForm s n < 0 := by
+/-- `N_j ≤ M` pointwise, for `j ≤ 3n+1`. -/
+lemma Nseq_le_Mseq {s n : ℕ} (hs : 3 ≤ s) :
+    ∀ j, j ≤ 3 * n + 1 → ∀ u, Nseq s n j u ≤ Mseq s n u := by
+  intro j
+  induction j with
+  | zero =>
+    intro _ u
+    rw [Nseq_zero_eq_alt]
+    exact alt_le (summable_Mseq hs) (strictCM_Mseq (by omega) n).antitone u
+  | succ j ih =>
+    intro hj u
+    have h1 := ih (by omega) u
+    have h2 := Nseq_rec hs hj u
+    have h3 := ((Nseq_strictCM hs (j + 1) hj).1).pos (u + 1)
+    linarith
+
+/-- The closed form of the linear form for even `n`:
+`r_n = -C_n · (N_{3n+1}(0) - N_{3n+1}(1))`. -/
+theorem rForm_eq {s n : ℕ} (hs : 3 ≤ s) (hn : Even n) :
+    rForm s n = -(Cn n * (Nseq s n (3 * n + 1) 0 - Nseq s n (3 * n + 1) 1)) := by
   have hterm : ∀ u : ℕ, (-1 : ℝ) ^ (n + u + 1) * (Rval s n u : ℝ)
       = -(Cn n * ((-1 : ℝ) ^ u * (cseq n u * Mseq s n u))) := by
     intro u
@@ -325,10 +342,29 @@ theorem rForm_neg {s n : ℕ} (hs : 3 ≤ s) (_hodd : Odd s) (hn : Even n) : rFo
   unfold rForm
   simp_rw [hterm]
   rw [tsum_neg, tsum_mul_left, tsum_alt_cseq hs]
+
+/-- The bracket in `rForm_eq` is strictly positive. -/
+theorem Nseq_sub_pos {s n : ℕ} (hs : 3 ≤ s) :
+    0 < Nseq s n (3 * n + 1) 0 - Nseq s n (3 * n + 1) 1 := by
   have h := (Nseq_strictCM (n := n) hs (3 * n + 1) le_rfl).1 1 0
-  simp only [Function.iterate_one, fd_apply, zero_add] at h
+  simpa only [Function.iterate_one, fd_apply, zero_add] using h
+
+/-- **N3 (the crux).**  For odd `s ≥ 3` and even `n`, the linear form is strictly negative.
+The leading term `u = 0` carries the sign `(-1)^{n+1} = -1` and dominates. -/
+theorem rForm_neg {s n : ℕ} (hs : 3 ≤ s) (_hodd : Odd s) (hn : Even n) : rForm s n < 0 := by
+  rw [rForm_eq hs hn]
   have := Cn_pos n
+  have := Nseq_sub_pos (n := n) hs
   nlinarith
+
+/-- `|r_n| ≤ C_n · M_0` for even `n`: the whole real-place bound of `Bound.lean` rests on this. -/
+theorem abs_rForm_le_Cn_mul_Mseq {s n : ℕ} (hs : 3 ≤ s) (hn : Even n) :
+    |rForm s n| ≤ Cn n * Mseq s n 0 := by
+  rw [rForm_eq hs hn, abs_neg, abs_of_pos (mul_pos (Cn_pos n) (Nseq_sub_pos hs))]
+  refine mul_le_mul_of_nonneg_left ?_ (Cn_pos n).le
+  have h1 := Nseq_le_Mseq (n := n) hs (3 * n + 1) le_rfl 0
+  have h2 := ((Nseq_strictCM (n := n) hs (3 * n + 1) le_rfl).1).pos 1
+  linarith
 
 /-- **Nonvanishing** — what the ledger consumes. -/
 theorem rForm_ne_zero {s n : ℕ} (hs : 3 ≤ s) (hodd : Odd s) (hn : Even n) : rForm s n ≠ 0 :=
