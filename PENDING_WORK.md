@@ -1,5 +1,16 @@
 # PENDING_WORK — lean-formalizations
 
+## 🔢 Catalan salvage (branch `catalan`, 2026-09-04) — Phase 1 GREEN
+- **Done:** Theorem 2.1 (`residual_rank`) and the 2-adic no-go (`sun_ledger_impossible`), all
+  axiom-clean; see `HANDOFF-2026-09-04-catalan-phase1-green.md`.
+- **Open (Phase 2, probe-first, no Lean discharges):** the frontier question — weakest open node on
+  a path from A to the sink `Irrational catalanConst`.  N1 (`F_B`-free `N'_B` via binomial reference
+  columns): extend `papers/sun-2026-catalan-twoadic-check.py` to report the real-place growth of
+  `N'_B` in `B`; N2 (even normaliser): extend the probe first.  A node whose probe says the integer
+  grows with `B` is refuted — record that, build no road.
+- **⚠️ Nothing in the repo claims Catalan's constant is irrational.**
+
+
 ## 🎉 lap 14 — DONE: HJSW `3(p−1)` no-three-in-line COMPLETE & axiom-clean (`three_mul_pred_le_maxNoThreeInLine`)
 
 The per-prime HJSW headline is **fully machine-checked** (commit `cd5a8ce`, trust base only). Found and
