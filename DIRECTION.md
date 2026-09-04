@@ -57,7 +57,49 @@ Steps 1, 3 and 4a are independent of step 2 — if the crux stalls, land those a
 that dies with nothing committed loses the hour whatever killed it (an output-token cap kills a
 lap the same way a spent window does, and no model switch helps).
 
-## Phase 2 — the moonshot (only once Phase 1 is green; review laps own this)
+## Phase 1 — GREEN (2026-09-04, one lap, merged to `main`)
+
+All seven headlines axiom-clean; every frozen statement char-identical to the scaffold.  Record:
+`HANDOFF-2026-09-04-catalan-phase1-green.md`.
+
+## Phase 2 — the moonshot (review laps own this)
+
+### ☠️ Killed thread: N1 alone (2026-09-04, host, `papers/sun-2026-catalan-twoadic-check.py ledger`)
+
+The fake-rational probe was the wrong instrument for the real place (with `G = a/q` the "tails"
+do not decay).  With `G` **formal**, `det R[A,J]` is a degree-`≤S` polynomial `P_A(G) ∈ ℚ[G]`
+(interpolated exactly); `y_A := P_A/∏_{i<N}Π_i`; `Δ_B` := lcm of `y_A`'s coefficient denominators
+(so `Δ_B q^S y_A(a/q) ∈ ℤ` for **every** `a/q`, F_B-free by construction, `v₂(Δ_B) = 0`); and
+`|y_A(G)|` at the true `G`, 4000 digits.  Then, minimised over `A`:
+
+    log10|N_B| = log10 Δ_B + log10|y_A(G)|  ≈  +3.4·S·B   and GROWING at every (B,S) tested
+    (S=2: 12.8 → 91.0 for B=3..14; S=3: 30.9 → 142.9 for B=4..14).
+    Real-place decay ≈ −7.4 B² (log10) against an integerizer ≈ +7.9 B²; both are B², the
+    difference is ~ S·B.  No constant fixes this; the construction loses at the odd primes / ∞
+    once the 2-adic F_B is removed.
+
+Verdict: **Sun's construction (weights `1/(2m+1)`, normaliser `Π_i`) does not produce small
+integer forms, with or without `F_B`.**  N1 is refuted as a repair; N2 (even normaliser) is moot
+for the same reason unless it also shrinks `Δ_B` by ~S·B in the log, which nothing suggests.
+Re-run: `uv run --with mpmath python3 papers/sun-2026-catalan-twoadic-check.py ledger 14 2`.
+
+### Phase 3 (proposed, awaiting Trevor) — the generic frame, ready for any v2
+
+Everything a v2 (or any Apéry/Nesterenko-style attempt on `G`) needs, stated for a **generic
+weight family** so a new construction drops into slots rather than restarting:
+- **W (wiring, cheap)**: `irrational_of_small_integer_forms` — if for every `a/q` some `B` gives an
+  integer `N_B(a,q) ≠ 0` with `|N_B| < 1`, then `Irrational G`.  The sink edge, once.
+- **D (real place)**: the Beta identity `Σ_i (−1)^i C(n,i)/(x+i) = n!/∏_{i≤n}(x+i)` and from it a
+  closed form + explicit bound for `Σ_i (−1)^i C(n,i) W_i u_{i+j}` for a generic polynomial
+  weight family `W_i`.  Real analysis + combinatorics; the reusable engine.
+- **E (integrality)**: for a generic weight family that covers the tail denominators, the entries
+  of `R` lie in `(1/Δ)ℤ + (1/Δ)ℤ·G` with `Δ` explicit; hence `det R[A,J] ∈ (1/Δ^S)ℤ[G]`.
+- **Frontier Prop** (never a Lean discharge): `∃` weight family with D-bound + E-bound `→ −∞`.
+  That is the open problem restated honestly.  For Sun's weights the probe above says NO.
+Discharging W, D, E is real Lean work (a lap or two); the payoff is speed of independent
+verification when a v2 lands, not a proof of irrationality.
+
+### The original Phase 2 text (kept for provenance)
 
 Sun's stages 3–5 die for a *structural* reason: the `2B` monomial reference columns `i^r` make
 the finite-difference transform triangular with pivots `r!`, planting `F_B = ∏_{r<2B} r!`
