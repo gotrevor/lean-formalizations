@@ -4,8 +4,15 @@ Formalizations of **solved-but-unformalized** mathematical results in Lean 4 +
 mathlib — with a soft spot for *no-formula / impossibility* meta-theorems (the
 genre where you reify a class of formulas and prove the target escapes it).
 
-**Status:** public. Build green; `src/` is `sorry`-free; per-headline `#print axioms`
-footprints are in [`STATUS.md`](STATUS.md).
+**Status:** public. Build green. Every *completed* thread is `sorry`-free with its
+per-headline `#print axioms` footprint recorded in [`STATUS.md`](STATUS.md); a thread under
+active construction carries disclosed `sorry` checkpoints in `src/` until it lands (currently
+`NumberTheory/DirichletBeta/`, see [`DIRECTION.md`](DIRECTION.md) "Phase 4"). A disclosed
+`sorry` is a checkpoint; a bare `axiom` is not, and there are none.
+
+**Multiple agents work this repo.** Their cross-session channel is
+[`exchange/`](exchange/README.md) — one timestamped Markdown file per message, git as the
+transport. Findings and lane claims live there; orders for an autonomous lap do not.
 
 **Checking this repo without trusting it:** the transcendence headlines carry a
 [`comparator`](https://github.com/leanprover/comparator) harness - read
