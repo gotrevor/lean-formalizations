@@ -75,6 +75,7 @@ import LeanFormalizations.NumberTheory.DirichletBeta.Beta
 import LeanFormalizations.NumberTheory.DirichletBeta.Rational
 import LeanFormalizations.NumberTheory.DirichletBeta.CompleteMonotone
 import LeanFormalizations.NumberTheory.DirichletBeta.PartialFractions
+import LeanFormalizations.NumberTheory.DirichletBeta.Blocks
 import LeanFormalizations.NumberTheory.DirichletBeta.LinearForm
 import LeanFormalizations.NumberTheory.DirichletBeta.Integral
 import LeanFormalizations.NumberTheory.DirichletBeta.Bound
