@@ -121,7 +121,9 @@ changed**, because everything in §3 above is a statement about v1 only.
 
 ## 5. What is worth formalizing
 
-### 🟢 Target A — Theorem 2.1, full column rank of the weighted residual matrix
+### ✅ Target A — Theorem 2.1, full column rank of the weighted residual matrix
+
+**FORMALIZED 2026-09-04** (branch `catalan`, `8d966d1`): `residual_rank` + `exists_row_set_det_ne_zero`, axiom-clean.
 
 The one clean, correct, self-contained mathematical object in the paper, and completely independent
 of the broken asymptotics.  Statement:
@@ -169,7 +171,9 @@ uses *nothing* about the tails beyond the recurrence, so it holds for any sequen
 (`Tails`, `Residual`, `TwoAdic`, `Statement`), branch `catalan`; frozen names + proof plan in
 `DIRECTION.md`; grind by treadmill.
 
-### 🟢 Target B — the refutation as a machine-checked no-go
+### ✅ Target B — the refutation as a machine-checked no-go
+
+**FORMALIZED 2026-09-04** (branch `catalan`, `8d966d1`): `sun_ledger_impossible`, `two_pow_padicValNat_bigF_dvd_NB`, `padicValNat_two_bigF_ge`, axiom-clean.
 
 Genuinely mechanizable and small: define the paper's `q̂_B`/`N_B` schematically and prove
 
