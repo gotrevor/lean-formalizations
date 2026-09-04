@@ -663,6 +663,23 @@ polynomials, Aristotle `b7252abe`) → `PiTranscendental.lean`. Both Aristotle p
 kernel-verified. (For the *alternative* path not taken — adopting mathlib PR #28013 on a future
 bump — see `archive/findings/ON-LINE-FINDINGS-2026-06-15-pi-transcendence.md`.)
 
+### 🧹 Deferred one-liner: a stale docstring in `PiLindemann.lean`
+
+`PiLindemann.lean:48` still describes its two missing ingredients as "the isolated remaining crux
+toward discharging `hermite_lindemann` at `π` (equivalently, adopting mathlib PR #28013 on the next
+bump)".  **Both ingredients were supplied and the axiom was discharged and deleted** — verified
+2026-09-04 by `#print axioms`: `transcendental_pi_axiomClean` and
+`squaring_the_circle_impossible_uncond` are both `[propext, Classical.choice, Quot.sound]`.  The
+docstring is a recorded plan that outlived the problem it solved, and it reads as an open TODO.
+Rewrite it to describe what the file *does*.  Deferred only because editing a `.lean` file mid-run
+contends with the treadmill's `lake` lock; it is a comment change, no proof content.
+
+Same check settled the vendoring question: mathlib `v4.31.0` already ships
+`NumberTheory/Transcendental/Lindemann/AnalyticalPart.lean` (`exp_polynomial_approx`, which this
+repo uses), and `Analysis/Real/Pi/Irrational.lean` already has `irrational_pi`.  PR #28013 is still
+OPEN (checked 2026-09-04, updated that same day) and its remaining files supply the *general*
+Lindemann–Weierstrass theorem, which this repo does not need for `π`.  **Nothing to vendor.**
+
 
 ## ✅ COMPLETE (2026-06-14, operator-bounded run): Curtis verification hardening
 
