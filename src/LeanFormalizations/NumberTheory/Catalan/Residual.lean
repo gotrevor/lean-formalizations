@@ -337,7 +337,10 @@ lemma lin_eval_nat_ne_zero (h i : ℕ) : (lin h : F[X]).eval (i : F) ≠ 0 := by
 noncomputable def bigPi (B : ℕ) : F[X] := ∏ h ∈ Ico 1 (B + 1), lin h ^ 2
 
 lemma bigPi_eval (B i : ℕ) : (bigPi B : F[X]).eval (i : F) = (normaliser B i : F) := by
-  sorry
+  simp only [bigPi, normaliser, eval_prod, eval_pow, lin_eval, Nat.cast_prod, Nat.cast_pow]
+  rw [← Finset.Ico_add_one_right_eq_Icc]
+  refine Finset.prod_congr rfl fun h _ => ?_
+  push_cast; ring
 
 noncomputable def Lpoly (S : ℕ) : F[X] := ∏ h ∈ Ico 1 (S + 1), lin h
 noncomputable def Epoly (S B : ℕ) : F[X] := ∏ h ∈ Ico (S + 1) (B + 1), lin h
@@ -345,45 +348,110 @@ noncomputable def Wpoly (S B : ℕ) : F[X] := Lpoly S * Epoly S B ^ 2
 noncomputable def Gpoly (S B : ℕ) : F[X] :=
   (∏ h ∈ Ico 2 (S + 2), lin h) * ∏ h ∈ Ico (S + 2) (B + 1), lin h ^ 2
 
+omit [CharZero F] in
 lemma bigPi_eq_Wpoly_mul_Lpoly {S B : ℕ} (hSB : S ≤ B) :
     (bigPi B : F[X]) = Wpoly S B * Lpoly S := by
-  sorry
+  unfold bigPi Wpoly Lpoly Epoly
+  rw [← Finset.prod_Ico_consecutive _ (by omega : 1 ≤ S + 1) (by omega : S + 1 ≤ B + 1),
+    Finset.prod_pow, Finset.prod_pow]
+  ring
 
+omit [CharZero F] in
 lemma Wpoly_eq {S B : ℕ} (hS : 0 < S) (hSB : S < B) :
     (Wpoly S B : F[X]) = lin 1 * lin (S + 1) * Gpoly S B := by
-  sorry
+  unfold Wpoly Lpoly Epoly Gpoly
+  rw [Finset.prod_eq_prod_Ico_succ_bot (by omega : 1 < S + 1),
+    Finset.prod_eq_prod_Ico_succ_bot (by omega : S + 1 < B + 1),
+    show S + 2 = S + 1 + 1 from rfl, Finset.prod_Ico_succ_top (by omega : 2 ≤ S + 1),
+    Finset.prod_pow, show (1 : ℕ) + 1 = 2 from rfl]
+  ring
 
 lemma Wpoly_comp {S B : ℕ} (hS : 0 < S) (hSB : S < B) :
     (Wpoly S B : F[X]).comp (X + 1) = Gpoly S B * lin (B + 1) ^ 2 := by
-  sorry
+  unfold Wpoly Lpoly Epoly Gpoly
+  simp only [mul_comp, pow_comp, Polynomial.prod_comp, lin_comp_X_add_one]
+  rw [Finset.prod_Ico_add' (fun h => (lin h : F[X])) 1 (S + 1) 1,
+    Finset.prod_Ico_add' (fun h => (lin h : F[X])) (S + 1) (B + 1) 1,
+    Finset.prod_Ico_succ_top (by omega : S + 1 + 1 ≤ B + 1), Finset.prod_pow,
+    show (1 : ℕ) + 1 = 2 from rfl, show S + 2 = S + 1 + 1 from rfl]
+  ring
 
 lemma Wpoly_ne_zero (S B : ℕ) : (Wpoly S B : F[X]) ≠ 0 := by
-  sorry
+  unfold Wpoly Lpoly Epoly
+  refine mul_ne_zero (Finset.prod_ne_zero_iff.2 fun h _ => lin_ne_zero h)
+    (pow_ne_zero _ (Finset.prod_ne_zero_iff.2 fun h _ => lin_ne_zero h))
 
 lemma natDegree_Gpoly_le {S B : ℕ} (hSB : S + 1 ≤ B) :
     (Gpoly S B : F[X]).natDegree ≤ 2 * B - S - 2 := by
-  sorry
+  unfold Gpoly
+  have h1 : (∏ h ∈ Ico 2 (S + 2), (lin h : F[X])).natDegree ≤ S := by
+    refine le_trans (natDegree_prod_le _ _) ?_
+    refine (Finset.sum_le_sum fun h _ => natDegree_lin_le h).trans ?_
+    simp
+  have h2 : (∏ h ∈ Ico (S + 2) (B + 1), (lin h : F[X]) ^ 2).natDegree ≤ 2 * (B - S - 1) := by
+    refine le_trans (natDegree_prod_le _ _) ?_
+    refine (Finset.sum_le_sum fun h _ =>
+      natDegree_pow_le.trans (Nat.mul_le_mul_left 2 (natDegree_lin_le h))).trans ?_
+    simp only [Finset.sum_const, Nat.card_Ico, smul_eq_mul]
+    omega
+  have := natDegree_mul_le_of_le h1 h2
+  omega
 
 /-- `Lsub S j = Lpoly S / lin (j+1)` (for `j < S`). -/
 noncomputable def Lsub (S j : ℕ) : F[X] := ∏ h ∈ (Ico 1 (S + 1)).erase (j + 1), lin h
 
+omit [CharZero F] in
 lemma Lpoly_eq_lin_mul_Lsub {S j : ℕ} (hj : j < S) :
     (Lpoly S : F[X]) = lin (j + 1) * Lsub S j := by
-  sorry
+  unfold Lpoly Lsub
+  exact (Finset.mul_prod_erase _ _ (by simp only [Finset.mem_Ico]; omega)).symm
 
 lemma natDegree_Lsub_le {S j : ℕ} (hj : j < S) : (Lsub S j : F[X]).natDegree ≤ S - 1 := by
-  sorry
+  unfold Lsub
+  refine le_trans (natDegree_prod_le _ _) ?_
+  refine (Finset.sum_le_sum fun h _ => natDegree_lin_le h).trans ?_
+  simp only [Finset.sum_const, smul_eq_mul, mul_one]
+  rw [Finset.card_erase_of_mem (by simp only [Finset.mem_Ico]; omega), Nat.card_Ico]
+  omega
 
 /-- `Qpoly S λ = Σ_j (-1)^j λ_j Lsub S j`: the λ-dependent factor of `D_λ`. -/
 noncomputable def Qpoly (S : ℕ) (lam : Fin S → F) : F[X] :=
   ∑ j : Fin S, C ((-1) ^ j.val * lam j) * Lsub S j.val
 
 lemma natDegree_Qpoly_le (S : ℕ) (lam : Fin S → F) : (Qpoly S lam).natDegree ≤ S - 1 := by
-  sorry
+  unfold Qpoly
+  refine natDegree_sum_le_of_forall_le _ _ fun j _ => ?_
+  exact (natDegree_C_mul_le _ _).trans (natDegree_Lsub_le j.isLt)
 
 /-- `Qpoly` at `X = -(2j+3)/2` is `(-1)^j λ_j ∏_{h ≠ j+1} (2h - 2j - 3) ≠ 0` for `λ_j ≠ 0`. -/
 lemma Qpoly_ne_zero {S : ℕ} {lam : Fin S → F} (hlam : lam ≠ 0) : Qpoly S lam ≠ 0 := by
-  sorry
+  obtain ⟨j₀, hj₀⟩ := Function.ne_iff.1 hlam
+  rw [Pi.zero_apply] at hj₀
+  set x₀ : F := -(2 * (j₀.val : F) + 3) / 2 with hx₀
+  have hlin0 : (lin (j₀.val + 1) : F[X]).eval x₀ = 0 := by rw [lin_eval, hx₀]; push_cast; ring
+  have hzero : ∀ j : Fin S, j ≠ j₀ → (Lsub S j.val : F[X]).eval x₀ = 0 := by
+    intro j hj
+    unfold Lsub
+    rw [eval_prod]
+    refine Finset.prod_eq_zero (i := j₀.val + 1) ?_ hlin0
+    simp only [Finset.mem_erase, Finset.mem_Ico]
+    refine ⟨?_, by omega, by omega⟩
+    intro h; apply hj; exact Fin.ext (by omega)
+  have hne : (Lsub S j₀.val : F[X]).eval x₀ ≠ 0 := by
+    unfold Lsub
+    rw [eval_prod]
+    refine Finset.prod_ne_zero_iff.2 fun h hh => ?_
+    simp only [Finset.mem_erase, Finset.mem_Ico] at hh
+    rw [lin_eval, hx₀]
+    intro h0
+    have : (h : F) = ((j₀.val + 1 : ℕ) : F) := by push_cast; linear_combination h0 / 2
+    exact hh.1 (Nat.cast_injective this)
+  intro hQ
+  have := congrArg (eval x₀) hQ
+  rw [Qpoly, eval_finsetSum, Finset.sum_eq_single j₀, eval_mul, eval_C, eval_zero] at this
+  · exact (mul_ne_zero (mul_ne_zero (pow_ne_zero _ (neg_ne_zero.2 one_ne_zero)) hj₀) hne) this
+  · intro j _ hj; rw [eval_mul, hzero j hj, mul_zero]
+  · intro h; exact absurd (Finset.mem_univ _) h
 
 /-- `Dpoly = Wpoly * Qpoly`: the paper's `D_λ`. -/
 noncomputable def Dpoly (S B : ℕ) (lam : Fin S → F) : F[X] := Wpoly S B * Qpoly S lam
@@ -392,12 +460,31 @@ noncomputable def Dpoly (S B : ℕ) (lam : Fin S → F) : F[X] := Wpoly S B * Qp
 noncomputable def Psub (B j k : ℕ) : F[X] :=
   lin (j + 1) * ∏ h ∈ ((Ico 1 (B + 1)).erase (j + 1)).erase k, lin h ^ 2
 
+omit [CharZero F] in
 lemma bigPi_eq_Psub {B j k : ℕ} (hj : j + 1 ≤ B) (hk : 1 ≤ k) (hkj : k ≤ j) :
     (bigPi B : F[X]) = lin (j + 1) * lin k ^ 2 * Psub B j k := by
-  sorry
+  unfold bigPi Psub
+  rw [← Finset.mul_prod_erase (Ico 1 (B + 1)) (fun h => (lin h : F[X]) ^ 2)
+      (by simp only [Finset.mem_Ico]; omega : j + 1 ∈ Ico 1 (B + 1)),
+    ← Finset.mul_prod_erase ((Ico 1 (B + 1)).erase (j + 1)) (fun h => (lin h : F[X]) ^ 2)
+      (by simp only [Finset.mem_erase, Finset.mem_Ico]; omega : k ∈ (Ico 1 (B + 1)).erase (j + 1))]
+  ring
 
+omit [CharZero F] in
 lemma natDegree_Psub_lt {B j k : ℕ} (hj : j + 1 ≤ B) : (Psub B j k : F[X]).natDegree < 2 * B := by
-  sorry
+  unfold Psub
+  have hmem : j + 1 ∈ Ico 1 (B + 1) := by simp only [Finset.mem_Ico]; omega
+  have hcard : (((Ico 1 (B + 1)).erase (j + 1)).erase k).card ≤ B - 1 := by
+    refine Finset.card_erase_le.trans ?_
+    rw [Finset.card_erase_of_mem hmem, Nat.card_Ico]; omega
+  have h2 : (∏ h ∈ ((Ico 1 (B + 1)).erase (j + 1)).erase k, (lin h : F[X]) ^ 2).natDegree
+      ≤ 2 * (B - 1) := by
+    refine le_trans (natDegree_prod_le _ _) ?_
+    refine (Finset.sum_le_sum fun h _ =>
+      natDegree_pow_le.trans (Nat.mul_le_mul_left 2 (natDegree_lin_le h))).trans ?_
+    rw [Finset.sum_const, smul_eq_mul]; omega
+  have := natDegree_mul_le_of_le (natDegree_lin_le (F := F) (j + 1)) h2
+  omega
 
 /-- The polynomial part `P_λ`. -/
 noncomputable def Ppoly (B S : ℕ) (lam : Fin S → F) : F[X] :=
@@ -405,13 +492,22 @@ noncomputable def Ppoly (B S : ℕ) (lam : Fin S → F) : F[X] :=
 
 lemma natDegree_Ppoly_lt {B S : ℕ} (hSB : S < B) (lam : Fin S → F) :
     (Ppoly B S lam).natDegree < 2 * B := by
-  sorry
+  unfold Ppoly
+  have : (∑ j : Fin S, ∑ k ∈ Icc 1 j.val, C (lam j * (-1 : F) ^ (j.val - k)) * Psub B j.val k).natDegree
+      ≤ 2 * B - 1 := by
+    refine natDegree_sum_le_of_forall_le _ _ fun j _ => ?_
+    refine natDegree_sum_le_of_forall_le _ _ fun k _ => ?_
+    refine (natDegree_C_mul_le _ _).trans ?_
+    have := natDegree_Psub_lt (F := F) (j := j.val) (k := k) (by omega : j.val + 1 ≤ B)
+    omega
+  omega
 
 /-- The paper's `f_i = Π_i Σ_j λ_j u_{i+j}`. -/
 noncomputable def rowFun (T : ℕ → F) (B S : ℕ) (lam : Fin S → F) (i : ℕ) : F :=
   (normaliser B i : F) *
     ∑ j : Fin S, lam j * (T (i + j.val + 1) / (2 * ((i + j.val + 1 : ℕ) : F) + 1))
 
+omit [CharZero F] in
 /-- Row `a` of `resid ⬝ λ` is the alternating binomial sum of order `a + 2B` of `rowFun`. -/
 lemma mulVec_resid_eq (T : ℕ → F) (B S : ℕ) (lam : Fin S → F) (a : Fin (S + 3)) :
     (resid T B S).mulVec lam a =
@@ -527,7 +623,32 @@ noncomputable def Kpoly (S B : ℕ) (A Q : F[X]) : F[X] :=
 lemma natDegree_Kpoly_le {S B : ℕ} (hS : 0 < S) (hSB : S < B) {A Q : F[X]}
     (hA : A.natDegree < 2 * B) (hQ : Q.natDegree ≤ S - 1) :
     (Kpoly S B A Q).natDegree ≤ 2 * B + S + 1 := by
-  sorry
+  have hX : ((X + 1 : F[X])).natDegree = 1 := by rw [← C_1, natDegree_X_add_C]
+  have hA1 : A.natDegree ≤ 2 * B - 1 := by omega
+  have hA' : (A.comp (X + 1)).natDegree ≤ 2 * B - 1 := by
+    rw [natDegree_comp, hX, mul_one]; exact hA1
+  have hQ' : (Q.comp (X + 1)).natDegree ≤ S - 1 := by rw [natDegree_comp, hX, mul_one]; exact hQ
+  have hG := natDegree_Gpoly_le (F := F) (S := S) (B := B) (by omega)
+  have l1 := natDegree_lin_le (F := F) 1
+  have lS := natDegree_lin_le (F := F) (S + 1)
+  have lB : ((lin (B + 1) : F[X]) ^ 2).natDegree ≤ 2 := by
+    simpa using natDegree_pow_le_of_le 2 (natDegree_lin_le (F := F) (B + 1))
+  have t1 : (A * lin (B + 1) ^ 2 * Q.comp (X + 1)).natDegree ≤ (2 * B - 1) + 2 + (S - 1) :=
+    natDegree_mul_le_of_le (natDegree_mul_le_of_le hA1 lB) hQ'
+  have t2 : (A.comp (X + 1) * lin 1 * lin (S + 1) * Q).natDegree ≤ (2 * B - 1) + 1 + 1 + (S - 1) :=
+    natDegree_mul_le_of_le (natDegree_mul_le_of_le (natDegree_mul_le_of_le hA' l1) lS) hQ
+  have t3 : (A * lin (B + 1) ^ 2 * Q.comp (X + 1) + A.comp (X + 1) * lin 1 * lin (S + 1) * Q).natDegree
+      ≤ 2 * B + S :=
+    natDegree_add_le_of_degree_le (t1.trans (by omega)) (t2.trans (by omega))
+  have t4 : (lin 1 * (A * lin (B + 1) ^ 2 * Q.comp (X + 1) + A.comp (X + 1) * lin 1 * lin (S + 1) * Q)).natDegree
+      ≤ 1 + (2 * B + S) := natDegree_mul_le_of_le l1 t3
+  have t5 : (lin (S + 1) * lin (B + 1) ^ 2 * Gpoly S B * Q * Q.comp (X + 1)).natDegree
+      ≤ 1 + 2 + (2 * B - S - 2) + (S - 1) + (S - 1) :=
+    natDegree_mul_le_of_le (natDegree_mul_le_of_le (natDegree_mul_le_of_le
+      (natDegree_mul_le_of_le lS lB) hG) hQ) hQ'
+  unfold Kpoly
+  refine (natDegree_sub_le_of_le t4 t5).trans ?_
+  omega
 
 /-- **Step 4**: `K` vanishes at `0, …, 2B+S+1` by the recurrence at `m = i+1`. -/
 lemma Kpoly_eval_eq_zero {T : ℕ → F} (hT : IsTailSeq T) {B S : ℕ} (hS : 0 < S) (hSB : S < B)
