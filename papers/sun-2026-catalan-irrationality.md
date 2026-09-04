@@ -113,9 +113,11 @@ digit counts are *not themselves* the refutation — the structural identity plu
 **No, not as a patch.**  The gap is ~1.4 B² against a margin of 0.0097 B²: two orders of magnitude,
 not a lost constant.  Any repair must change the *construction* so that `F_B` no longer enters `N_B`
 against an all-odd normalizer — i.e. redo stages 3–5.  Stages 1–2 survive; nothing downstream of §3
-does.  Sun was reported (WeChat, 2026-09-04) to be claiming a correction; **if you pick this up
-later, first check whether a v2 exists and whether its normalization changed**, because everything
-in §3 above is a statement about v1 only.
+does.  Sun was reported to be claiming a correction - the **sole source** is one second-hand Reddit comment
+(u/TacoYaci, r/math, 2026-09-04 10:07 UTC: *"In the wechat group he claims to have found a
+correction for it"*); arXiv showed v1 only as of 2026-09-04 07:30 EDT.  **If you pick this up later,
+first run `arxiv-buzz 2609.04176` and check whether a v2 exists and whether its normalization
+changed**, because everything in §3 above is a statement about v1 only.
 
 ## 5. What is worth formalizing
 
@@ -188,7 +190,8 @@ The main theorem.  There is nothing to formalize; Catalan's constant remains ope
 ## 6. Surrounding context you'll want
 
 - **Community reaction (2026-09-04):** r/math and r/mathematics both lit up within hours; an OpenAI
-  researcher posted the "claimed negative bound is wrong" call on X; multiple people independently
+  researcher (@AcerFur, replying to @AndrewCurran_) posted the "claimed negative bound is wrong"
+  call on X (links, thread-by-thread summary, and the publish-venue list live in the KB leaf below); multiple people independently
   ran the paper through models and converged on Prop 9.5 / the same 2-adic contradiction.  The
   interesting meta-fact is the *speed* of refutation, and that the author's stated verification
   (`"passed the verification of Chatgpt 5.6 Solar"`) was the same model family that produced the
