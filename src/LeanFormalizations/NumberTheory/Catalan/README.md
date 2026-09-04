@@ -26,6 +26,9 @@ This thread formalises exactly what survives, plus the refutation as a kernel-ch
 
 ## Status
 
-Scaffold planted 2026-09-04 with the statements frozen and the proof plan in each file's header;
-the paper's two index slips in the proof of Theorem 2.1 are documented and repaired in
-`Residual.lean`.  Grind in progress (see the repo `DIRECTION.md`).
+**Both targets are proved (2026-09-04).**  All four modules are sorry-free and every headline
+above is `[propext, Classical.choice, Quot.sound]`.  The paper's two index slips in the proof of
+Theorem 2.1 are documented and repaired in `Residual.lean`; the formal proof of the crux
+(`resid_mulVec_eq_zero`) replaces the paper's `K` by `K/(lin 1 · Gpoly)` so that the zero count is
+`2B+S+2` simple integer roots against degree `≤ 2B+S+1` (no multiplicity bookkeeping).
+Phase 2 — the conjecture-graph frontier — is described in the repo `DIRECTION.md`.

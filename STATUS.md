@@ -6,8 +6,9 @@
 > survives — **Theorem 2.1** (full column rank of the weighted residual matrix, `residual_rank`) —
 > and the refutation as a kernel-checked no-go (`sun_ledger_impossible`: the paper's own integer
 > `N_B` is divisible by `2^{v₂(F_B)}`, `v₂(F_B) ≈ 2B²`).  ⚠️ Nothing in the repo claims `G ∉ ℚ`.
-> Scaffold planted 2026-09-04, every leaf a named `sorry`; grind via treadmill.  Objective +
-> frozen names: `DIRECTION.md`.  _(The banner below describes the integrated trunk as of June.)_
+> **Phase 1 GREEN (2026-09-04, same day):** all four modules sorry-free; `residual_rank`,
+> `sun_ledger_impossible` and every other headline are `[propext, Classical.choice, Quot.sound]`.
+> Phase 2 (the moonshot, probe-first) is next.  Objective + frozen names: `DIRECTION.md`.  _(The banner below describes the integrated trunk as of June.)_
 
 > 🔀 **INTEGRATED TRUNK (2026-06-21).** Three parallel expedition clones merged back into `main`:
 > **goodstein** (Goodstein/Kirby–Paris growth theory + Curtis/power-tower/constructibles/e,π-transcendence

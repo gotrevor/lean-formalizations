@@ -2,7 +2,7 @@
 
 ## 👉 READ `DIRECTION.md` FIRST.  ACTIVE (2026-09-04): the **Catalan salvage** — Sun's arXiv:2609.04176v1, Thm 2.1 + the 2-adic no-go.  Phase 1 grind on branch `catalan`.
 
-## 👉 Newest baton: `HANDOFF-2026-09-04-catalan-kickoff.md` (scaffold planted, all leaves `sorry`)
+## 👉 Newest baton: `HANDOFF-2026-09-04-catalan-phase1-green.md` — **PHASE 1 GREEN**: all four Catalan modules sorry-free, every headline `[propext, Classical.choice, Quot.sound]`.  Next = Phase 2 (probe-first; review laps own it).
 
 Everything below this line is the OLDER record of the finished threads (Goodstein growth theory,
 HJSW no-three-in-line, Kakeya); it is kept for context and is NOT the active objective.
