@@ -81,24 +81,94 @@ theorem odd_normaliserProd (B S : ℕ) : Odd (normaliserProd B S) := by
   exact Finset.prod_induction _ (fun n => Odd n) (fun a b ha hb => ha.mul hb) odd_one
     (fun i _ => odd_normaliser B i)
 
+/-! ### Odd-denominator (2-integral) rationals: a closure toolkit -/
+
+/-- `x` has odd denominator, i.e. `x` is 2-integral. -/
+def OddDen (x : ℚ) : Prop := Odd x.den
+
+lemma oddDen_intCast (n : ℤ) : OddDen (n : ℚ) := by simp [OddDen]
+
+lemma oddDen_natCast (n : ℕ) : OddDen (n : ℚ) := by simp [OddDen]
+
+lemma OddDen.add {x y : ℚ} (hx : OddDen x) (hy : OddDen y) : OddDen (x + y) :=
+  (Odd.mul hx hy).of_dvd_nat (Rat.add_den_dvd x y)
+
+lemma OddDen.mul {x y : ℚ} (hx : OddDen x) (hy : OddDen y) : OddDen (x * y) :=
+  (Odd.mul hx hy).of_dvd_nat (Rat.mul_den_dvd x y)
+
+lemma OddDen.neg {x : ℚ} (hx : OddDen x) : OddDen (-x) := by
+  unfold OddDen at *; rwa [Rat.den_neg_eq_den]
+
+lemma OddDen.pow {x : ℚ} (hx : OddDen x) (n : ℕ) : OddDen (x ^ n) := by
+  induction n with
+  | zero => simpa using oddDen_intCast 1
+  | succ n ih => rw [pow_succ]; exact ih.mul hx
+
+lemma OddDen.sum {ι : Type*} (s : Finset ι) (f : ι → ℚ) (h : ∀ i ∈ s, OddDen (f i)) :
+    OddDen (∑ i ∈ s, f i) :=
+  Finset.sum_induction f OddDen (fun _ _ => OddDen.add) (by simpa using oddDen_intCast 0) h
+
+lemma OddDen.prod {ι : Type*} (s : Finset ι) (f : ι → ℚ) (h : ∀ i ∈ s, OddDen (f i)) :
+    OddDen (∏ i ∈ s, f i) :=
+  Finset.prod_induction f OddDen (fun _ _ => OddDen.mul) (by simpa using oddDen_intCast 1) h
+
+lemma oddDen_inv_intCast {n : ℤ} (hn : Odd n) : OddDen ((n : ℚ)⁻¹) := by
+  have h1 : ((n : ℚ)⁻¹) = Rat.divInt 1 n := by rw [Rat.divInt_eq_div]; simp
+  have h2 := Rat.den_dvd 1 n
+  rw [← h1] at h2
+  exact (Int.natAbs_odd.2 hn).of_dvd_nat (Int.natCast_dvd.1 h2)
+
+lemma OddDen.div_int {x : ℚ} (hx : OddDen x) {n : ℤ} (hn : Odd n) : OddDen (x / n) := by
+  rw [div_eq_mul_inv]; exact hx.mul (oddDen_inv_intCast hn)
+
+lemma OddDen.div_nat {x : ℚ} (hx : OddDen x) {n : ℕ} (hn : Odd n) : OddDen (x / n) := by
+  have := hx.div_int (n := n) (by exact_mod_cast hn)
+  simpa using this
+
+lemma OddDen.not_two_dvd_den {x : ℚ} (hx : OddDen x) : ¬ 2 ∣ x.den :=
+  fun h => (Nat.not_even_iff_odd.2 hx) (even_iff_two_dvd.2 h)
+
 /-- **Lemma 5.4, first half**: `q · T_m = ±(a − q S_{m−1})` has odd denominator, since
 `S_{m−1}` has denominator dividing `∏_{k<m} (2k+1)^2`. -/
 theorem odd_den_mul_fakeTail (a q : ℤ) (hq : q ≠ 0) (m : ℕ) :
     Odd ((q : ℚ) * fakeTail ((a : ℚ) / q) m).den := by
-  sorry
+  have hq' : (q : ℚ) ≠ 0 := Int.cast_ne_zero.2 hq
+  have : (q : ℚ) * fakeTail ((a : ℚ) / q) m
+      = (-1 : ℚ) ^ m * ((a : ℚ) - (q : ℚ) * ∑ k ∈ range m, (-1 : ℚ) ^ k / (2 * (k : ℚ) + 1) ^ 2) := by
+    unfold fakeTail; field_simp
+  rw [this, sub_eq_add_neg]
+  refine ((oddDen_intCast (-1)).pow m).mul ((oddDen_intCast a).add ?_)
+  refine ((oddDen_intCast q).mul (OddDen.sum _ _ fun k _ => ?_)).neg
+  have : (-1 : ℚ) ^ k / (2 * (k : ℚ) + 1) ^ 2 = (-1 : ℚ) ^ k / (((2 * k + 1) ^ 2 : ℕ) : ℚ) := by
+    push_cast; ring
+  rw [this]
+  exact ((oddDen_intCast (-1)).pow k).div_nat (Odd.pow ⟨k, rfl⟩)
 
 /-- **Lemma 5.4, second half**: every entry of `q · R` is 2-integral — division by the odd
 `2(i+j)+1` preserves odd denominators, and odd denominators are closed under `+`, `*`
 (`Rat.add_den_dvd`, `Rat.mul_den_dvd`). -/
 theorem odd_den_smul_resid (a q : ℤ) (hq : q ≠ 0) (B S : ℕ) (i : Fin (S + 3)) (j : Fin S) :
     Odd (((q : ℚ) • resid (fakeTail ((a : ℚ) / q)) B S) i j).den := by
-  sorry
+  rw [Matrix.smul_apply, smul_eq_mul, resid, Finset.mul_sum]
+  refine OddDen.sum _ _ fun i' _ => ?_
+  have : (q : ℚ) * ((-1 : ℚ) ^ i' * ((i.val + 2 * B).choose i' : ℚ) * (normaliser B i' : ℚ) *
+      (fakeTail ((a : ℚ) / q) (i' + j.val + 1) / (2 * ((i' + j.val + 1 : ℕ) : ℚ) + 1)))
+      = (-1 : ℚ) ^ i' * ((i.val + 2 * B).choose i' : ℚ) * (normaliser B i' : ℚ) *
+        (((q : ℚ) * fakeTail ((a : ℚ) / q) (i' + j.val + 1)) / ((2 * (i' + j.val + 1) + 1 : ℕ) : ℚ)) := by
+    push_cast; ring
+  rw [this]
+  refine ((((oddDen_intCast (-1)).pow i').mul (oddDen_natCast _)).mul (oddDen_natCast _)).mul ?_
+  exact OddDen.div_nat (x := (q : ℚ) * fakeTail ((a : ℚ) / q) (i' + j.val + 1))
+    (odd_den_mul_fakeTail a q hq _) ⟨i' + j.val + 1, rfl⟩
 
 /-- A determinant of odd-denominator rationals has odd denominator (`Matrix.det_apply`: a
 signed sum of products). -/
 theorem odd_den_det {n : Type*} [Fintype n] [DecidableEq n] (M : Matrix n n ℚ)
     (hM : ∀ i j, Odd (M i j).den) : Odd M.det.den := by
-  sorry
+  rw [Matrix.det_apply]
+  refine OddDen.sum _ _ fun σ _ => ?_
+  rw [Units.smul_def, zsmul_eq_mul]
+  exact (oddDen_intCast _).mul (OddDen.prod _ _ fun i _ => hM _ _)
 
 /-- **The 2-adic obstruction: `2^{v₂(F_B)} ∣ N_B`.**
 With `y := det(q • R[A,J])` (odd denominator by `odd_den_det`, and `q^S det R[A,J] = y` by
@@ -108,14 +178,75 @@ With `y := det(q • R[A,J])` (odd denominator by `odd_den_det`, and `q^S det R[
 theorem two_pow_padicValNat_bigF_dvd_NB (a q : ℤ) (hq : q ≠ 0) (B S : ℕ)
     (A : Fin S → Fin (S + 3)) :
     (2 : ℤ) ^ padicValNat 2 (bigF B) ∣ NB a q B S A := by
-  sorry
+  unfold NB qhat
+  set R := resid (fakeTail ((a : ℚ) / q)) B S with hR
+  set y := (((q : ℚ) • R).submatrix A id).det with hy
+  have hdet : y = (q : ℚ) ^ S * (R.submatrix A id).det := by
+    have : ((q : ℚ) • R).submatrix A id = (q : ℚ) • R.submatrix A id := by
+      ext i j; simp [Matrix.submatrix_apply, Matrix.smul_apply]
+    rw [hy, this, Matrix.det_smul, Fintype.card_fin]
+  have hyodd : OddDen y :=
+    odd_den_det _ fun i j => odd_den_smul_resid a q hq B S (A i) j
+  have hx : (q : ℚ) ^ S * ((bigF B : ℚ) * (R.submatrix A id).det / (normaliserProd B S : ℚ))
+      = (bigF B : ℚ) * (y / (normaliserProd B S : ℚ)) := by
+    rw [hdet]; ring
+  rw [hx]
+  set z := y / (normaliserProd B S : ℚ) with hz
+  have hzodd : OddDen z := hyodd.div_nat (odd_normaliserProd B S)
+  by_cases hz0 : z = 0
+  · simp [hz0]
+  have hF : (bigF B : ℚ) ≠ 0 :=
+    Nat.cast_ne_zero.2 (Finset.prod_ne_zero_iff.2 fun r _ => Nat.factorial_ne_zero r)
+  rw [show (2 : ℤ) = ((2 : ℕ) : ℤ) by norm_num, padicValInt_dvd_iff]
+  right
+  have h1 : padicValRat 2 ((bigF B : ℚ) * z) = padicValRat 2 (bigF B : ℚ) + padicValRat 2 z :=
+    padicValRat.mul hF hz0
+  have h2 : padicValRat 2 (bigF B : ℚ) = padicValNat 2 (bigF B) := padicValRat.of_nat
+  have h3 : 0 ≤ padicValRat 2 z := by
+    rw [padicValRat_def, padicValNat.eq_zero_of_not_dvd hzodd.not_two_dvd_den]; simp
+  have h4 : padicValRat 2 ((bigF B : ℚ) * z) ≤ padicValInt 2 ((bigF B : ℚ) * z).num := by
+    rw [padicValRat_def]; simp
+  omega
 
 /-- **Legendre**: `v₂(r!) = r − s₂(r) ≥ r − (⌊log₂ r⌋ + 1)`
 (`sub_one_mul_padicValNat_factorial`), summed over `r < 2B`:
 `v₂(F_B) ≥ B(2B−1) − 2B(⌊log₂ 2B⌋ + 1)`, which is `2B² − O(B log B)`. -/
 theorem padicValNat_two_bigF_ge (B : ℕ) :
     B * (2 * B - 1) - 2 * B * (Nat.log 2 (2 * B) + 1) ≤ padicValNat 2 (bigF B) := by
-  sorry
+  -- `v₂` of a product of factorials is the sum of the `v₂`'s
+  have hprod : ∀ n, padicValNat 2 (∏ r ∈ range n, r.factorial)
+      = ∑ r ∈ range n, padicValNat 2 r.factorial := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ n ih =>
+      rw [Finset.prod_range_succ, Finset.sum_range_succ, ← ih]
+      exact padicValNat.mul (Finset.prod_ne_zero_iff.2 fun r _ => Nat.factorial_ne_zero r)
+        (Nat.factorial_ne_zero n)
+  unfold bigF
+  rw [hprod]
+  set L := Nat.log 2 (2 * B) with hL
+  -- Legendre per factor: `v₂(r!) + (L + 1) ≥ r` for `r < 2B`
+  have hr : ∀ r ∈ range (2 * B), r ≤ padicValNat 2 r.factorial + (L + 1) := by
+    intro r hr
+    have hr' : r < 2 * B := Finset.mem_range.1 hr
+    have hleg := sub_one_mul_padicValNat_factorial (p := 2) r
+    rw [show (2 - 1 : ℕ) = 1 by norm_num, one_mul] at hleg
+    rcases Nat.eq_zero_or_pos r with h0 | hpos
+    · omega
+    have hdig : (Nat.digits 2 r).sum ≤ (Nat.digits 2 r).length := by
+      have := List.sum_le_card_nsmul (Nat.digits 2 r) 1
+        (fun d hd => Nat.lt_succ_iff.1 (Nat.digits_lt_base (by norm_num) hd))
+      simpa using this
+    have hlen : (Nat.digits 2 r).length = Nat.log 2 r + 1 :=
+      Nat.length_digits 2 r (by norm_num) (by omega)
+    have hlog : Nat.log 2 r ≤ L := Nat.log_mono_right (by omega)
+    omega
+  have hsum := Finset.sum_le_sum hr
+  rw [Finset.sum_add_distrib, Finset.sum_const, Finset.card_range, smul_eq_mul] at hsum
+  have hid := Finset.sum_range_id_mul_two (2 * B)
+  have hB : B * (2 * B - 1) * 2 = 2 * B * (2 * B - 1) := by ring
+  omega
 
 /-- A nonzero `N_B` is at least `2^{v₂(F_B)}` in absolute value — the opposite of `|N_B| < 1`. -/
 theorem two_pow_le_abs_NB (a q : ℤ) (hq : q ≠ 0) (B S : ℕ) (A : Fin S → Fin (S + 3))
