@@ -150,6 +150,41 @@ entry), do not build a road to it.  No asymptotic ledger is to be attempted in L
 propose Lean discharges for Phase-2 nodes; the deliverable there is the stated `Prop` + probe
 result + the next story.
 
+## Phase 4 (proposed 2026-09-04, awaiting Trevor) — the nearest TRUE theorem: one of β(2),…,β(20) is irrational
+
+Trevor: *"Any path leading toward a correct formalization?  If so, prioritize that path."*  No path
+proves `G ∉ ℚ`.  The strongest PROVED statement about `G`'s family is Rivoal–Zudilin 2003 /
+Zudilin 2019 (arXiv:1804.09922, `papers/zudilin-2019-arithmetic-catalan-relatives.txt`): "at least
+one of β(2), β(4), …, β(2k) is irrational".  Zudilin's §2 construction, made **elementary** (no
+saddle point, no Nesterenko criterion — the pattern of his SIGMA 2018 paper for odd zeta values,
+`papers/zudilin-2018-odd-zeta-elementary.txt`) and fed by the in-repo PNT, reaches **`s = 21`:
+one of β(2), β(4), …, β(20)**.  Nobody has formalized any result of this type (reservoir + mathlib
+swept 2026-09-04).  Every ingredient was numerically validated before proposal
+(`papers/catalan-beta-validate.py`, `papers/catalan-beta-ledger.py`):
+
+    R_n(t) = 2^{6n} n!^{s−3} (2t+n) ∏_{j=1}^{3n}(t−n+j−½) / ∏_{j=0}^{n}(t+j)^s,   s = 21 odd, n even
+    r_n    = Σ_{ν≥1} (−1)^ν R_n(ν−½) = Σ_{i even ≤ s−1} A_i β(i) + A_0,   d_n^{s−i} A_i ∈ ℤ, d_n^s A_0 ∈ ℤ
+    |r_n|  = 2^{6n}(3n+1)!/n!³ · ∫_{[0,1]^s} (1−T) ∏ t_j^{n−½}(1−t_j)^n dt / (1+T)^{3n+2}  > 0,  T = ∏ t_j
+    |r_n|^{1/n} → e^{m(s)},  m(21) = −21.657 = −s − 0.657   (max-term rate = exact rate: NO cancellation loss)
+    d_n^{1/n} → e  (log lcm(1..n) = ψ(n), `WeakPNT''` in the PrimeNumberTheoremAnd dep)
+    ⇒ if all β(2i) ∈ ℚ with common denominator q:  q·d_n^s·r_n ∈ ℤ∖{0} and → 0.  Contradiction.
+
+Nodes (each a file; frozen statements to be planted when authorized):
+- **N1 arithmetic** — partial fractions of `R_n` and `d_n^{s−i} a_{i,k} ∈ ℤ` (SIGMA Lemma 1: the
+  four binomial partial-fraction identities + the product lemma).  Elementary, Node-B-like.
+- **N2 decomposition** — `r_n = Σ A_i β(i) + A_0` with the integrality, odd `i` vanish by
+  `R_n(−t−n) = R_n(t)`; the half-integer tails use `oddLcm` (Frame.lean) again.
+- **N3 positivity** — the `s`-fold integral: `integral_fintype_prod_eq_prod` turns it into
+  `Σ_ν c_ν B(n+½+ν, n+1)^s` (binomial series of `(1−T)/(1+T)^{3n+2}`, absolutely convergent for
+  `s ≥ 3`), each term `= const · (−1)^ν R_n(ν−½)`; positivity from the integrand.  **The crux.**
+- **N4 upper bound** — `|r_n| ≤ poly(n) · max_ν |R_n(ν−½)|`, then Stirling-type bounds give
+  `limsup |r_n|^{1/n} ≤ e^{m(s)}`.  Elementary but fiddly; a review lap should pick the cleanest
+  route (e.g. bound the peak term via explicit factorial inequalities, geometric tail after it).
+- **N5 lcm** — `(lcm 1..n)^{1/n} → e` from `WeakPNT''`.
+- **N6 wiring** — `irrational_of_forms` generalized to `p` numbers (Frame.lean W, one more index).
+Headline: `theorem exists_even_beta_irrational : ∃ i ∈ {2,4,…,20}, Irrational (dirichletBeta i)`.
+Size estimate: 2–3× Phase 1+3 combined; multi-lap.  Nonvanishing is the only non-elementary piece.
+
 ## Lane discipline
 - Work ONLY in `src/LeanFormalizations/NumberTheory/Catalan/`.  New files get wired into
   `src/LeanFormalizations.lean` (the lib builds only what is reachable from that root).

@@ -1,0 +1,669 @@
+arXiv:2103.12113v2  [math.NT]  5 Apr 2021
+On transference principle and Nesterenko’s linear
+independence criterion
+Oleg N. German, Nikolay G. Moshchevitin
+Dedicated to Yu. V. Nesterenko
+on the occasion of his 75-th anniversary
+Abstract
+We consider the problem of simultaneous approximation of re al numbers θ1, . . . , θ n
+with rationals and the dual problem of approximating zero wi th the values of the
+linear form x0 + θ1x1 + . . . + θnxn at integer points. In this setting we analyse
+two transference inequalities obtained by Schmidt and Summ erer. We present a
+rather simple geometric observation, which proves their re sult. We also derive sev-
+eral corollaries previously unknown. Particularly, we sho w that, together with the
+transference inequalities for uniform exponents, Schmidt and Summerer’s inequali-
+ties imply the inequalities by Bugeaud and Laurent and “one h alf” of the inequalities
+by Marnat and Moshchevitin. Besides that, we show that our ma in construction
+provides a rather simple proof of Nesterenko’s linear indep endence criterion.
+1 Introduction
+This paper originated as a result of studying the prominent paper [ 1] by Nesterenko,
+where he proves his linear independence criterion.
+Given an integer n /greaterorequalslant2, let us ﬁx an arbitrary n-tuple θθθ = (θ1,...,θ n) ∈ Rn. The
+problem of approximating θ1,...,θ n simultaneously with rational numbers having equal
+denominators is well known to be related to the problem of approxima ting zero with the
+values of the linear form x0 +θ1x1 +... +θnxn at nonzero integer points. This relation
+is performed by the so called transference principle discovered by Khintchine [ 2]. He
+formulated it in terms of Diophantine exponents .
+Deﬁnition 1. The (regular) Diophantine exponent λ =λ(θθθ) is deﬁned as the supremum
+of real numbers γ such that the system of inequalities
+max
+1⩽ i⩽ n
+|x0θi −xi| ⩽ t−γ, 0< |x0| ⩽ t (1)
+admits solutions in x = (x0,...,x n) ∈ Zn+1 for some arbitrarily large values of t.
+The respective uniform Diophantine exponent ˆλ = ˆλ(θθθ) is deﬁned as the supremum of
+real numbers γ such that ( 1) admits solutions in x = (x0,...,x n) ∈ Zn+1 for every t large
+enough.
+Deﬁnition 2. The (regular) Diophantine exponent ω =ω(θθθ) is deﬁned as the supremum
+of real numbers γ such that the system of inequalities
+|x0 +θ1x1 +... +θnxn| ⩽ t−γ, 0< max
+1⩽ i⩽ n
+|xi| ⩽ t (2)
+1
+admits solutions in x = (x0,...,x n) ∈ Zn+1 for some arbitrarily large values of t.
+The respective uniform Diophantine exponent ˆω = ˆω(θθθ) is deﬁned as the supremum
+of real numbers γ such that ( 2) admits solutions in x = (x0,...,x n) ∈ Zn+1 for every t
+large enough.
+It follows immediately from Dirichlet’s approximation theorem (or from Minkowski’s
+convex body theorem) that the Diophantine exponents satisfy th e trivial relations λ /greaterorequalslant
+ˆλ /greaterorequalslant1/n and ω /greaterorequalslantˆω /greaterorequalslantn. It is also known (see [ 3]) that, unless all the θi are rational, we
+have a slightly less trivial inequality ˆλ ⩽ 1.
+Let us give a brief account on the existing nontrivial relations.
+The aforementioned Khintchine’s transference principle was publish ed in 1926. It can
+be formulated as follows:
+1 +ω
+1 +λ /greaterorequalslantn, 1 +ω−1
+1 +λ−1 /greaterorequalslant1
+n. (3)
+Later on, in 2007–10, Bugeaud and Laurent [ 4, 5] improved upon ( 3) by showing that
+1 +ω
+1 +λ /greaterorequalslantn − 1
+1 − ˆλ
+, 1 +ω−1
+1 +λ−1 /greaterorequalslant1 − ˆω−1
+n − 1 , (4)
+provided that 1,θ 1,...,θ n are linearly independent over Q. It can be easily veriﬁed that
+(4) implies ( 3), as ˆω−1 ⩽ 1/n ⩽ ˆλ ⩽ 1.
+As for the uniform exponents, Jarn ´ ık [3] proved in 1938 that, if n = 2 and 1,θ 1,θ 2 are
+linearly independent over Q, a remarkable identity holds:
+ˆω−1 + ˆλ = 1. (5)
+In 2012 it was shown by German [ 6, 7] that for arbitrary n /greaterorequalslant2 we have
+ˆω /greaterorequalslantn − 1
+1 − ˆλ
+, ˆλ /greaterorequalslant1 − ˆω−1
+n − 1 . (6)
+Clearly, (6) turns into Jarn ´ ık’s identity forn = 2.
+In 2013 Schmidt and Summerer [ 8] showed that
+ˆω ⩽ 1 +ω
+1 +λ, ˆλ ⩽ 1 +ω−1
+1 +λ−1 , (7)
+provided that 1,θ 1,...,θ n are linearly independent over Q. An alternative proof of their
+result can be found in [ 9]. Clearly, ( 6) and ( 7) imply Bugeaud and Laurent’s inequalities
+(4).
+Furthermore, in 1950–54 Jarn ´ ık [10, 11] proved for n = 2 the inequalities
+ω
+ˆω /greaterorequalslantˆω − 1, λ
+ˆλ
+/greaterorequalslant
+ˆλ
+1 − ˆλ
+. (8)
+It is interesting to note that by ( 5) the right-hand sides in ( 8) coincide (for n = 2) and are
+both equal to ˆωˆλ, as well as to (1 − ˆω−1)/(1 − ˆλ). We shall mention this fact in Section
+3.1.
+Inequalities ( 8) were generalised recently to the case of arbitrary n /greaterorequalslant2 by Marnat
+and Moshchevitin [ 12]. They showed that
+ω
+ˆω /greaterorequalslantGlin(ˆω), λ
+ˆλ
+/greaterorequalslantGsim(ˆλ), (9)
+2
+where Glin(ˆω) and Gsim(ˆλ) are the largest roots of the polynomials
+f (x) = ˆω−1xn −x + (1 − ˆω−1), g (x) = (1 − ˆλ)xn −xn−1 + ˆλ (10)
+respectively. An alternative proof of the second inequality ( 9) can be found in [ 13].
+Summing up, we can say that all the nontrivial relations known up to n ow follow
+from ( 6), ( 7), and ( 9). The main purpose of the current paper is to present a geometric
+observation, a rather simple one, which proves ( 7) almost immediately. It appears that
+this observation also provides a quite simple proof of Nesterenko’s lin ear independence
+criterion.
+The rest of the paper is organised as follows. In Section 2 we formulate and prove
+our main result and apply it to prove ( 7). In Section 3 we derive some corollaries to ( 7)
+concerning lower bounds for the ratios ω/ ˆω, λ/ˆλ and show that ( 7) implies the weakest
+of inequalities ( 9). Besides that, we analyse how ( 6) and ( 7) split Bugeaud and Laurent’s
+inequalities ( 4), and compare some of our corollaries with a recent result by Schleis chitz.
+Finally, Section 4 is devoted to Nesterenko’s linear independence criterion. We prese nt
+a rather simple proof of his theorem, which is based on our main geome tric observation
+described in Section 2. We also show that, in order to prove the linear independence
+criterion itself, it suﬃces to use the ﬁrst step of Nesterenko’s indu ction.
+2 Empty cylinder lemma
+Let us introduce some notation. Let us denote by ℓ the one-dimensional subspace gener-
+ated by (1 ,θ 1,...,θ n) and by ℓ⊥ its orthogonal complement. For every x ∈ Rn+1 let us
+denote by r(x) the Euclidean distance from x to ℓ and by h(x) the Euclidean distance
+from x to ℓ⊥. Let us also denote by ⟨ ·, · ⟩ the inner product in Rn+1.
+Our main geometric observation is described by the following stateme nt.
+Lemma 1. Let t,α,β be positive real numbers such that tβ > 2tα . Suppose v ∈ Zn+1
+satisﬁes
+r(v) = tα −1−β, h (v) = tα. (11)
+Consider the half open cylinder
+C = C(t,α,β ) =
+{
+x ∈ Rn+1
+⏐⏐⏐r(x)<t, t −β ⩽ h(x) ⩽ t−α −t−β
+}
+. (12)
+Then C ∩ Zn+1 = ∅ .
+Proof. Consider an arbitrary x ∈ C . Let us show that 0 < ⟨v, x⟩ < 1. To this end
+let us denote by y the orthogonal projection of x onto the two-dimensional subspace π
+spanned by ℓ and v. Then r(y) and h(y) can be interpreted as the absolute values of
+the coordinates of y inπ with respect to the coordinate axes ℓ andℓ⊥ ∩π (see Figure 1).
+Hence
+⟨v, x⟩ = ⟨v, y⟩ /greaterorequalslanth(v)h(y) −r(v)r(y)>t α −β −tα −β = 0
+and
+⟨v, x⟩ = ⟨v, y⟩ ⩽ h(v)h(y) +r(v)r(y)< 1 −tα −β +tα −β = 1.
+Thus, indeed, 0 < ⟨v, x⟩< 1, and x cannot be an integer point.
+Now we can prove Schmidt and Summerer’s inequalities ( 7).
+3
+ℓ⊥ ∩π
+ℓ
+v
+⟨v, x⟩ = 0
+⟨v, x⟩ = 1
+t−t tα −1−β
+tα
+t−α −t−β
+t−β
+C
+Figure 1: Empty cylinder
+Proof of (7). We may assume that λ> 1/n andω >n. Indeed, by Khintchine’s inequal-
+ities ( 3) the equalities λ = 1/n and ω = n are equivalent, and if they hold, due to the
+trivial inequalities we also have ˆλ = 1/n, ˆω =n. With such values of the exponents both
+inequalities ( 7) are obviously true. So, let us suppose that λ> 1/n and ω >n.
+By the deﬁnition of λ and ω we can choose a point v ∈ Zn+1 and a positive real
+numberγ to satisfy any of the following two collections of conditions:
+1. h(v) is arbitrarily large, r(v) = h(v)−γ , γ >1/n, γ is arbitrarily close to λ;
+2. h(v) is arbitrarily small, r(v) = h(v)−γ , γ <1/n, γ is arbitrarily close to 1 /ω.
+We shall refer to the ﬁrst choice as Case 1 , and to the second one as Case 2 .
+In either Case the main part of the argument is basically the same. So , let us choose
+v andγ according to one of the two Cases. Set t =t(v,γ ) to be the smallest positive real
+number such that the cylinder
+Cv =
+{
+x ∈ Rn+1
+⏐⏐⏐r(x) ⩽ t, h(x) ⩽ t ·h(v)−1−γ
+}
+(13)
+contains a nonzero integer point. Deﬁne also α =α(v,γ ) and β =β(v,γ ) by the relations
+h(v) = tα, α = 1 +β
+1 +γ . (14)
+Then r(v) = h(v)−γ =t−αγ =tα −1−β and t ·h(v)−1−γ =t−β . Hence v satisﬁes ( 11) and
+Cv =
+{
+x ∈ Rn+1
+⏐⏐⏐r(x) ⩽ t, h(x) ⩽ t−β
+}
+.
+In order to fulﬁl the hypothesis of Lemma 1 it remains to provide thattβ > 2tα . We remind
+that in Case 1 h(v) is arbitrarily large and γ > 1/n, and in Case 2 h(v) is arbitrarily
+4
+small and γ <1/n. In both Cases by Minkowski’s convex body theorem the volume of Cv
+is bounded (by 2 n+1), so the product tn+1h(v)−1−γ = h(v)(n+1)/α −(1+γ ) is also bounded.
+Hence in Case 1 we have αγ /greaterorequalslant(n + 1)γ/(1 +γ)> 1, and therefore, β =α +αγ − 1>α ,
+whereas in Case 2 we have αγ ⩽ (n + 1)γ/(1 +γ)< 1, and therefore, β =α +αγ − 1<α .
+Thus, in both Cases we have
+tβ =h(v)β/α > 2h(v) = 2tα.
+Having the hypothesis of Lemma 1 fulﬁlled, we conclude that there are no integer points
+in the cylinder C = C(t,α,β ) deﬁned by ( 12). At the same time there are some nonzero
+integer points in Cv, but all of them lie on the boundary of Cv. Moreover, every such
+point satisﬁes the condition r(x) = t, since
+{
+x ∈ C v
+⏐⏐⏐r(x)<t, h (x) = t−β
+}
+= Cv ∩ (C ∪ (−C))
+and C ∪ (−C) is empty. Thus, there is an integer point satisfying
+r(x) = t, h (x) ⩽ t−β,
+and there are no nonzero integer points satisfying
+r(x)<t, h (x) ⩽ t−α −t−β.
+Suppose now that Case 1 holds. Then β > αand t can be arbitrarily large. Hence
+ω /greaterorequalslantβ, ˆω ⩽ α, and
+ˆω ⩽ α = 1 +β
+1 +γ ⩽ 1 +ω
+1 +λ −ε
+with ε positive and arbitrarily small, which gives us the ﬁrst inequality ( 7).
+Suppose that Case 2 holds. Then β <α andt can be arbitrarily small. Hence λ /greaterorequalslant1/β,
+ˆλ ⩽ 1/α, and
+ˆλ ⩽ α−1 = 1 +γ
+1 +β ⩽ 1 +ω−1 +ε
+1 +λ−1
+with ε positive and arbitrarily small, which gives us the second inequality ( 7).
+3 Corollaries to Schmidt and Summerer’s inequali-
+ties
+3.1 Lower bounds for the ratios ω/ ˆω and λ/ˆλ
+Inequalities ( 7) can be rewritten as
+ω
+ˆω /greaterorequalslant1 +λ
+1 +ω−1, λ
+ˆλ
+/greaterorequalslant1 +λ
+1 +ω−1, (15)
+giving thus new lower bounds in the problem of estimating the ratio bet ween the regular
+and the uniform exponents.
+Note that, same as in Jarn ´ ık’s inequalities (8) for n = 2, the right-hand sides in ( 15)
+coincide. However, the lower estimate for ω/ ˆω and λ/ˆλ provided by ( 15) is a function
+of ω and λ, whereas it has been more traditional to think in this context of fun ctions
+of ˆω and ˆλ. It appears that the right-hand side (1 + λ)/(1 + ω−1) can be weakened to
+(1 − ˆω−1)/(1 − ˆλ), generalising thus Jarn ´ ık’s inequalities (8) to arbitrary dimension.
+5
+Proposition 1. Suppose 1,θ 1,...,θ n are linearly independent over Q. Then
+1 +λ
+1 +ω−1 /greaterorequalslant1 − ˆω−1
+1 − ˆλ
+. (16)
+Proof. Set B = (1 + λ)/(1 +ω−1). Then ( 15) reads as ω /greaterorequalslantˆωB and λ /greaterorequalslantˆλB. Applying
+(15) to ω and λ in B, we get
+B /greaterorequalslant1 + ˆλB
+1 + ˆω−1B−1,
+or, equivalently,
+B /greaterorequalslant1 − ˆω−1
+1 − ˆλ
+.
+Corollary 1. Suppose 1,θ 1,...,θ n are linearly independent over Q. Then
+ω
+ˆω /greaterorequalslant1 − ˆω−1
+1 − ˆλ
+, λ
+ˆλ
+/greaterorequalslant1 − ˆω−1
+1 − ˆλ
+. (17)
+Inequalities ( 17) coincide with Jarn ´ ık’s inequalities (8) for n = 2. Another generali-
+sation of ( 8) to arbitrary dimension is provided by ( 9). An important diﬀerence between
+(9) and ( 17) is that the lower bounds Glin(ˆω) and Gsim(ˆλ) in ( 9) are functions of only one
+exponent, whereas ( 17) requires both.
+It appears that if Glin(ˆω) = Gsim(ˆλ), then ( 9) is equivalent to ( 17), but if Glin(ˆω) ⁄=
+Gsim(ˆλ), then ( 17) is stronger than the weakest of ( 9) and weaker than the strongest.
+Proposition 2. Suppose 1,θ 1,...,θ n are linearly independent over Q. Then either
+Glin(ˆω) ⩽ (ˆωˆλ)
+1
+n−1 ⩽ 1 − ˆω−1
+1 − ˆλ
+⩽ Gsim(ˆλ), (18)
+or
+Gsim(ˆλ) ⩽ 1 − ˆω−1
+1 − ˆλ
+⩽ (ˆωˆλ)
+1
+n−1 ⩽ Glin(ˆω). (19)
+Moreover, if any two of the four quantities under comparison coincide, then so do all of
+them.
+Proof. Letf (x) and g(x) be the polynomials deﬁned by ( 10). Then, given t /greaterorequalslant1, we have
+t>G lin(ˆω) ⇐ ⇒f (t)> 0, t>G sim(ˆλ) ⇐ ⇒g(t)> 0.
+Since ˆω /greaterorequalslantn and ˆλ /greaterorequalslant1/n, both (ˆωˆλ)
+1
+n−1 /greaterorequalslant1 and (1 − ˆω−1)/(1 − ˆλ) /greaterorequalslant1. By simple
+substitution and regrouping it is easily veriﬁed that
+g
+( 1 − ˆω−1
+1 − ˆλ
+)
+/greaterorequalslant0 ⇐ ⇒ 1 − ˆω−1
+1 − ˆλ
+⩽ (ˆωˆλ)
+1
+n−1 ⇐ ⇒f
+(
+(ˆωˆλ)
+1
+n−1
+)
+⩽ 0
+and that the respective equalities are equivalent. This proves the s tatement.
+Corollary 2. Denote B(ω,λ ) = 1 +λ
+1 +ω−1 , A(ˆω, ˆλ) = 1 − ˆω−1
+1 − ˆλ
+. Then, assuming that
+1,θ 1,...,θ n are linearly independent over Q, we have
+ω
+ˆω /greaterorequalslantmax
+(
+B(ω,λ ),G lin(ˆω)
+)
+, λ
+ˆλ
+/greaterorequalslantmax
+(
+B(ω,λ ),G sim(ˆλ)
+)
+. (20)
+Moreover,B(ω,λ ) /greaterorequalslantA(ˆω, ˆλ) /greaterorequalslantmin
+(
+Glin(ˆω),G sim(ˆλ)
+)
+.
+6
+Remark 1. In case n = 2 all the four quantities in Proposition 2 coincide giving rise to
+the relation
+ˆωˆλ = 1 − ˆω−1
+1 − ˆλ
+,
+which is the very Jarn ´ ık’s identity (5). Thus, Proposition 2 provides a kind of generalisa-
+tion of this identity to arbitrary dimension in the following form:
+(ˆωˆλ)
+1
+n−1 = 1 − ˆω−1
+1 − ˆλ
+.
+However, this identity holds if and only if Glin(ˆω) = Gsim(ˆλ), which happens quite rarely.
+Nevertheless, if a strict inequality holds, then the sign of this inequa lity determines
+uniquely which of the quantities Glin(ˆω), Gsim(ˆλ) is larger.
+3.2 Inequalities by Bugeaud and Laurent
+Inequalities ( 4) obviously follow from ( 7) and ( 6):
+1 +ω
+1 +λ /greaterorequalslantˆω /greaterorequalslantn − 1
+1 − ˆλ
+, 1 +ω−1
+1 +λ−1 /greaterorequalslantˆλ /greaterorequalslant1 − ˆω−1
+n − 1 . (21)
+Bugeaud and Laurent proved ( 4) with the help of so called intermediate Diophantine
+exponents by splitting Khintchine’s inequalities ( 3) into “going up” and “going down”
+chains of inequalities between consecutive intermediate exponents and improving on the
+ﬁrst inequality in each chain with the respective uniform exponent. A n analogous splitting
+of German’s inequalities ( 6) can be found in [ 6]. It would be interesting to establish a
+suitable splitting of our inequalities ( 7). Such a splitting, combined with the existing
+splitting of ( 6), would provide a splitting of ( 4), alternative to the one of Bugeaud and
+Laurent.
+As for ( 21) itself, the way it splits ( 4) with the help of the respective fourth exponent
+gives additional information, for instance, in the case when one of r elations ( 4) is an
+equality. Then the respective pair of inequalities ( 21) becomes a pair of equalities and
+we get a whole range of equalities for the intermediate exponents me ntioned above. It is
+worth mentioning in this context an explicit description of triples of ex ponents, for which
+either the ﬁrst pair of inequalities ( 21), or the second one, is a pair of equalities, obtained
+recently by Schleischitz [ 14].
+3.3 Inequalities by Schleischitz
+Analysing the quantity (ˆωˆλ)
+1
+n−1 appearing in Proposition 2 provides the following obser-
+vation.
+Proposition 3. Suppose 1,θ 1,...,θ n are linearly independent over Q. Then
+ˆλ ⩽ ωn−1
+ˆωn , λ ⩽ ωn
+ˆωn+1. (22)
+Proof. Applying ( 20) and ( 16) in both cases ( 18) and ( 19), we get
+ω
+ˆω /greaterorequalslantmax
+( 1 +λ
+1 +ω−1, Glin(ˆω)
+)
+/greaterorequalslantmax
+( 1 − ˆω−1
+1 − ˆλ
+, Glin(ˆω)
+)
+/greaterorequalslant(ˆωˆλ)
+1
+n−1.
+7
+Hence the ﬁrst inequality ( 22) follows immediately.
+Furthermore1, by the ﬁrst inequality ( 7) we have
+λ ⩽ ω − ˆω + 1
+ˆω = ωn
+ˆωn+1 −f
+(
+ω/ ˆω
+)
+,
+wheref (x) is as in ( 10). Since f
+(
+ω/ ˆω
+)
+/greaterorequalslant0 by ( 9), we get the second inequality ( 22).
+In [ 15] Schleischitz proves two inequalities that very much resemble ( 22). They have
+the form
+ˆω ⩽ λn−1
+ˆλn
++ψ(λ, ˆλ), ω ⩽ λn
+ˆλn+1
++χ(λ, ˆλ) (23)
+with some nonnegative ψ(λ, ˆλ) and χ(λ, ˆλ) turning into zero only if λ/ˆλ =Gsim(ˆλ). One
+might wonder whether ( 23) can be relieved from ψ(λ, ˆλ) or χ(λ, ˆλ), so that it would
+become similar to ( 22). However, the answer is negative, for, as it follows from results o f
+Kleinbock, Moshchevitin, and Weiss [ 16] there exist many θθθ with small λ and inﬁnite ˆω.
+Their argument can be modiﬁed to show that, preserving λ small, we can make ˆω ﬁnite,
+but however large. Thus, it is impossible to substitute the extra sum mands with zero in
+the general case.
+4 Nesterenko’s linear independence criterion
+In 1985 Nesterenko published his famous linear independence criter ion. His original proof
+was rather involved. A simpler argument can be found in [ 17] and [ 18], see also [ 19]. It
+appears that our Lemma 1 provides an even simpler proof.
+As before, let us ﬁx θθθ = (θ1,...,θ n) ∈ Rn. Let ℓ, ℓ⊥, r( · ), h( · ) be deﬁned as in the
+beginning of Section 2.
+For each subspace L of Rn+1 let us denote by ϕ(L) the tangent of the angle between
+ℓ and L. If L is deﬁned over Q, we denote by H(L) its height, i.e. the covolume of the
+lattice L ∩ Zn+1.
+Theorem 1 (Nesterenko, 1985) . Let α,β,c 1,c 2,ε be positive real numbers, β /greaterorequalslantα. Let
+(tk)k∈N be an increasing sequence of positive real numbers such that
+lim
+k→∞
+tk = ∞, lim sup
+k→∞
+log(tk+1)
+log(tk) = 1. (24)
+Suppose that for every integer k large enough there exists x ∈ Zn+1 such that
+r(x) ⩽ tk, c 1t−β
+k ⩽ h(x) ⩽ c2t−α
+k . (25)
+Then, for every d-dimensional subspace L of Rn+1 deﬁned over Q, there is a positive
+c3 =c3(d,ε ) such that
+ϕ(L) /greaterorequalslantc3H(L)−δ−ε, δ =δ(d) = 1 +β
+1 +β −d(1 +β −α), (26)
+providedd< (1 +β)/(1 +β −α).
+1This part of the proof was proposed by Johannes Schleischitz
+8
+4.1 Simple proof of Nesterenko’s theorem
+Let us derive Theorem 1 from Lemma 1. We split our argument into three steps. Suppose
+that the hypothesis of Theorem 1 holds.
+Step 1: Adjusting the hypothesis. Let ε′ be a positive real number suﬃciently
+smaller than ε. Set α′ = (1 −ε′)α, β′ = (1 +ε′)β. Let us show that for every real t large
+enough there exists x ∈ Zn+1 such that
+r(x)<t, t −β ′
+<h (x)<t −α ′
+−t−β ′
+. (27)
+For every large t choosek so that tk <t ⩽ tk+1. It follows from ( 24) that tk+1 <t 1+ε′/ 2
+k if
+k is large enough. Hence for x ∈ Zn+1 satisfying ( 25) we have r(x) ⩽ tk <t and
+t−β ′
+<c 1t−β
+k ⩽ h(x) ⩽ c2t−α
+k <c 2t−α (1−ε′/ 2) <t −α ′
+−t−β ′
+,
+if k and t are large enough. Thus, ( 27) is valid.
+Step 2: Proof for d = 1 . Let L be a one-dimensional subspace generated by a
+primitive v ∈ Zn+1 (primitive means that the coordinates of v are coprime). Then
+ϕ(L) = r(v)/h(v) and H(L) =
+√
+r(v)2 +h(v)2. Let us suppose that h(v) is large and
+that
+r(v)<h (v)1−δ′
+, δ ′ = 1 +β′
+α′ .
+Set t =h(v)1/α ′
+. Then h(v) = tα ′
+and r(v) = tα ′−1−β ′′
+with some β′′ > β′. By Lemma 1
+there are no integer points x such that
+r(x)<t, t −β ′′
+⩽ h(x) ⩽ t−α ′
+−t−β ′′
+,
+which contradicts the existence of integer x satisfying ( 27) if t is large enough. Thus, if
+h(v) is large enough, we have
+r(v) /greaterorequalslanth(v)1−δ′
+, (28)
+which implies ( 26) for d = 1, as ε′ can be arbitrarily small.
+Step 3: Proof for d /greaterorequalslant2. Suppose 2 ⩽ d< (1 +β′)/(1 +β′ −α′). Then, particularly,
+β′>α ′ > 1, 1<δ ′ < d
+d − 1. (29)
+Given a d-dimensional subspace L deﬁned over Q, let ℓ′ be the one-dimensional subspace
+generated by the point in L closest to the point (1 ,θ 1,...,θ n). Then the angle between ℓ
+and L equals the angle between ℓ and ℓ′. Furthermore, for each x ∈ L let us denote by
+r′(x) and h′(x) the Euclidean distances from x to ℓ′ and to L ∩ℓ⊥ respectively.
+By Minkowski’s convex body theorem, for each positive t, there is a nonzero integer
+point x in L such that
+h′(x) ⩽ t, r ′(x) ⩽ cd
+(
+H(L)
+/
+t
+) 1/ (d−1)
+(30)
+with some positive cd depending only on d. Set
+t0 =
+(
+(4cd)d−1H(L)
+) 1/ (d−(d−1)δ′ )
+. (31)
+9
+Choose a nonzero integer point v in L (see Figure 2), so that, in accordance with ( 30),
+h′(v) ⩽ t0, r ′(v) ⩽ cd
+(
+H(L)
+/
+t0
+) 1/ (d−1)
+. (32)
+It follows from ( 29) that t0/H(L) → ∞ and r′(v) → 0 as H(L) → ∞ . We may also
+assume that ϕ(L) → 0 as H(L) → ∞, neglecting most of subspaces. Then h′(v) → ∞ as
+H(L) → ∞ and
+h(v) ⩽ h′(v)< 2h(v). (33)
+Having thus chosen v and assuming H(L) to be large enough, we apply ( 28), ( 29), ( 31),
+(32), ( 33) and estimate ϕ(L) as follows:
+ϕ(L) /greaterorequalslantr(v)
+h(v) − r′(v)
+h(v) >h (v)−δ′
+− 2r′(v)
+h′(v) /greaterorequalslanth′(v)−δ′
+− 2cd(H(L))1/ (d−1)
+t1/ (d−1)
+0 h′(v)
+/greaterorequalslant
+/greaterorequalslanth′(v)−δ′
+(
+1 − 2cd(H(L))1/ (d−1)
+t1/ (d−1)
+0 h′(v)1−δ′
+)
+/greaterorequalslant
+/greaterorequalslantt−δ′
+0
+(
+1 − 2cd(H(L))1/ (d−1)
+t−δ′+d/ (d−1)
+0
+)
+= t−δ′
+0
+2 = 1
+2
+(
+(4cd)d−1H(L)
+) −δ′/ (d−(d−1)δ′ )
+.
+Taking into account that δ′/(d − (d − 1)δ′) = (1 + β′)/(1 +β′ −d(1 +β′ −α′)), we get
+(26), as ε′ can be arbitrarily small.
+ℓℓ′
+v
+r′(v)
+r(v)
+h′(v)
+h(v) ℓ⊥
+L
+Figure 2: Step 3
+10
+4.2 Concerning the linear independence criterion itself
+Theorem 1 implies the estimate
+dimQ(Q + Qθ1 +... + Qθn) /greaterorequalslant1 +β
+1 +β −α. (34)
+However, this estimate easily follows from ( 26) with d = 1, i.e. we may actually avoid
+Step 3, if ( 34) is our aim. Indeed, if ℓ is contained in a d-dimensional subspace L deﬁned
+over Q, then Dirichlet’s approximation theorem guarantees that there ar e inﬁnitely many
+integer points x in L such that
+r(x) ⩽ c(d,H (L))h(x)−1/ (d−1)
+with some positive c(d,H (L)). But if d< (1 +β′)/(1 +β′ −α′), we have δ′ <d/ (d − 1),
+whereα′,β ′,δ ′ are as in Section 4.1, and Step 2 tells us that for every integer x withh(x)
+large enough we have the opposite:
+r(x) /greaterorequalslanth(x)1−δ′
+>c (d,H (L))h(x)−1/ (d−1).
+Thus, there is no such L, and we get ( 34).
+4.3 A slight reﬁnement in the case of linear independence
+Theorem 1 is mainly applied to prove linear independence of numbers 1 ,θ 1,...,θ n over Q.
+But if it is already known that they are linearly independent, estimate (26) of Theorem 1
+can be improved for d =n. In this case the restriction on α and β in Theorem 1 implies
+that α > n− 1. For α > nthe following statement provides a stronger inequality than
+(26). It also provides a lower bound for ω =ω(θθθ).
+Proposition 4. Within the hypothesis of Theorem 1, suppose additionally that 1,θ 1,...,θ n
+are linearly independent over Q and that
+(α − 1)(1 +β)
+α(1 +β −α) >n − 1. (35)
+Let L be an n-dimensional subspace of Rn+1 deﬁned over Q. Then
+ω ⩽ (n − 1)α(1 +β −α)
+(α − 1)(1 +β) − (n − 1)α(1 +β −α) (36)
+and
+ϕ(L) /greaterorequalslantcH(L)−δ−ε, δ = (α − 1)(1 +β)
+(α − 1)(1 +β) − (n − 1)α(1 +β −α), (37)
+with some positive c depending only on n and ε.
+Proof. It follows from ( 27) and ( 28) of Steps 1 and 2 that
+ˆω /greaterorequalslantα, λ ⩽ 1 +β
+α − 1.
+By ( 4) we also have
+1 +ω−1
+1 +λ−1 /greaterorequalslant1 − ˆω−1
+n − 1 .
+11
+Hence, taking into account that ( 35) implies positiveness of both denominators appearing
+further, we get
+ω ⩽ n − 1(
+1 − ˆω−1)(
+1 +λ−1)
+− (n − 1) ⩽ (n − 1)α(1 +β −α)
+(α − 1)(1 +β) − (n − 1)α(1 +β −α).
+This proves ( 36).
+Furthermore, let w be the integer normal of L, i.e. the unique (up to sign) nonzero
+primitive integer vector orthogonal to L. Bounds for ϕ(L) and ω are obviously related,
+asH(L) =
+√
+h(w)2 +r(w)2 and the angle between L andℓ is equal to the angle between
+w and ℓ⊥. Hence
+ϕ(L) = h(w)/r(w) /greaterorequalslantcH(L)−ω −1−ε /greaterorequalslantcH(L)−δ−ε
+with some positive c depending only on n and ε. Thus, ( 37) is also proved.
+Acknowledgements. The authors are grateful to Johannes Schleischitz for a series of
+useful comments, especially, for drawing the authors’ attention to Schmidt and Sum-
+merer’s paper [8] once again.
+The ﬁrst author is a winner of the “Junior Leader” contest conduc ted by Theoretical
+Physics and Mathematics Advancement Foundation “BASIS” and wo uld like to thank its
+sponsors and jury.
+References
+[1] Yu. V. Nesterenko On the linear independence of numbers. Mosc. Univ. Math.
+Bull., 40:1 (1985), 69–74.
+[2] A. Ya. Khintchine ¨Uber eine Klasse linearer Diophantischer Approximationen .
+Rend. Sirc. Mat. Palermo, 50 (1926), 170–195.
+[3] V. Jarn´ık Zum Khintchineschen “ ¨Ubertragungssatz”. Trav. Inst. Math. Tbilissi, 3
+(1938), 193–212.
+[4] Y. Bugeaud, M. Laurent Exponents of Diophantine approximation. In: Diophan-
+tine Geometry Proceedings, Scuola Normale Superiore Pisa, CRM Ser ies 4 (2007),
+101–121.
+[5] Y. Bugeaud, M. Laurent On transfer inequalities in Diophantine approximation
+II. Math. Z., 265:2 (2010), 249–262.
+[6] O. N. German Intermediate Diophantine exponents and parametric geomet ry of
+numbers, Acta Arithmetica, 154:1 (2012), 79–101.
+[7] O. N. German On Diophantine exponents and Khintchine’s transference pr inciple,
+Moscow Journal of Combinatorics and Number Theory, 2:2 (2012), 22–51.
+[8] W. M. Schmidt, L. Summerer Diophantine approximation and parametric geom-
+etry of numbers. Monatsh. Math., 169 (2013), 51–104.
+[9] O. N. German, N. G. Moshchevitin A simple proof of Schmidt–Summerer’s in-
+equality, Monatsh. Math., 170 (2013), 361–370.
+12
+[10] V. Jarn´ık Une remarque sur les approximations diophantiennes lin´ eaires. Acta Sci.
+Math., Szeged 12 B (1950), 82–86.
+[11] V. Jarn´ık Contribution ` a la th´ eorie des approximations diophantiennes lin´ eaires et
+homog` enes.Czech. Math. J., 4:79 (1954), 330–353.
+[12] A. Marnat, N. G. Moshchevitin An optimal bound for the ratio between ordinary
+and uniform exponents of diophantine approximation. Mathematika, 66:3 (2020),
+818–854.
+[13] N. A. V. Nguyen, A. Po ¨els, D. Roy A transference principle for simultaneous
+rational approximation. Journal de Th´ eorie des Nombres de Bordeaux, 32:2 (2020),
+387–402.
+[14] J. Schleischitz Optimality of two inequalities for exponents of diophantin e approx-
+imation. preprint available at arXiv:2102.03154
+[15] J. Schleischitz On geometry of numbers and uniform rational approximation
+to the veronese curve. Period. Math. Hung., to appear; preprint available at
+arXiv:1911.03215
+[16] D. Kleinbock, N. Moshchevitin, B. Weiss Singular vectors on manifolds and
+fractals. Israel J. Math, to appear; preprint available at arXiv:1912.13070
+[17] S. Fischler, W. Zudilin A reﬁnement of Nesterenko’s linear independence crite-
+rion with applications to zeta values. Math. Ann., 347:4 (2010), 739–763.
+[18] A. Chantanasiri On the criteria for linear independence of Nesterenko, Fisc hler
+and Zudilin. Chamchuri J. Math., 2:1 (2010), 31–46.
+[19] S. Fischler, T. Rivoal Irrationality exponent and rational approximations with
+prescribed growth. Proc. Amer. Math. Soc., 138:3 (2010), 799–808.
+13

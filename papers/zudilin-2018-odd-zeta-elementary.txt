@@ -1,0 +1,888 @@
+Symmetry, Integrability and Geometry: Methods and Applications SIGMA 14 (2018), 028, 8 pages
+One of the Odd Zeta Values
+from ζ(5) to ζ(25) Is Irrational.
+By Elementary Means
+Wadim ZUDILIN
+Department of Mathematics, IMAPP, Radboud University,
+PO Box 9010, 6500 GL Nijmegen, The Netherlands
+E-mail: w.zudilin@math.ru.nl
+URL: http://www.math.ru.nl/~wzudilin/
+Received January 31, 2018, in ﬁnal form March 26, 2018; Published online March 29, 2018
+https://doi.org/10.3842/SIGMA.2018.028
+Abstract. Available proofs of result of the type ‘at least one of the odd zeta values
+ζ(5),ζ (7),...,ζ (s) is irrational’ make use of the saddle-point method or of linear indepen-
+dence criteria, or both. These two remarkable techniques are however counted as highly non-
+elementary, therefore leaving the partial irrationality result inaccessible to general mathe-
+matics audience in all its glory. Here we modify the original construction of linear forms
+in odd zeta values to produce, for the ﬁrst time, an elementary proof of such a result —
+a proof whose technical ingredients are limited to the prime number theorem and Stirling’s
+approximation formula for the factorial.
+Key words: irrationality; zeta value; hypergeometric series
+2010 Mathematics Subject Classiﬁcation: 11J72; 11M06; 33C20
+1 Introduction
+Without touching deeply a history of the question (see [3] for an excellent account of this), we
+notice that the irrationality of the zeta values — values of Riemann’s zeta function
+ζ(s) =
+∞∑
+n=1
+1
+ns
+at integers s = 2, 3,... , is known for even s and also for s = 3, while there are only partial
+results in this direction for odd s≥ 5. A starting point here has been set in the work [1] with
+further development, particularly focusing on ζ(5), in [7] and [10].
+We ﬁx an odd integer s≥ 7. Our strategy is constructing two sequences of linear forms rn
+and ˆrn living in the Q-space Q + Qζ(3) +Qζ(5) +··· + Qζ(s), for which we have a control of the
+common denominators λn of rational coeﬃcients and an elementary access to their asymptotic
+behaviour as n→∞ ; more importantly, the two coeﬃcients of ζ(3) in these forms are propor-
+tional (with factor 7), so that 7 rn− ˆrn belongs to the space Q + Qζ(5) +··· + Qζ(s). Finally,
+using 7rn− ˆrn> 0 and the asymptotics λn(7rn− ˆrn)→ 0 as n→∞ of the linear forms
+λn(7rn− ˆrn)∈ Z + Zζ(5) + Zζ(7) +··· + Zζ(s)
+when s = 25, we conclude that it cannot happen that all the quantities ζ(5),ζ (7),...,ζ (25) are
+rational.
+This paper is a contribution to the Special Issue on Orthogonal Polynomials, Special Functions and Applica-
+tions (OPSFA14). The full collection is available at https://www.emis.de/journals/SIGMA/OPSFA2017.html
+arXiv:1801.09895v2  [math.NT]  29 Mar 2018
+2 W. Zudilin
+The original idea of using the so-called well-poised hypergeometric series to construct linear
+forms in zeta values of a given parity is due to Ball and Rivoal [1]; our new ingredient here
+is using simultaneously such series and their ‘twists by half’, for an appropriate choice of the
+parameters. More precisely, our hypergeometric series assume the form
+rn =
+∞∑
+ν=1
+Rn(ν) and ˆ rn =
+∞∑
+ν=1
+Rn
+(
+ν− 1
+2
+)
+, (1)
+where the rational-function summand Rn(t) is deﬁned as follows:
+R(t) =Rn(t) =
+n!s−5∏n
+j=1(t−j)·∏n
+j=1(t +n +j)· 26n∏3n
+j=1
+(
+t−n− 1
+2 +j
+)
+∏n
+j=0(t +j)s
+=
+26nn!s−5∏6n
+j=0
+(
+t−n + 1
+2j
+)
+∏n
+j=0(t +j)s+1 . (2)
+The following Sections 2 and 3 discuss, respectively, the arithmetic and analysis of the
+forms (1). In Section 4 we use this information to conclude with the proof of the claimed
+result and make some relevant comments.
+2 Arithmetic ingredients
+The notation dn will be used for the least common multiple of 1, 2,...,n . Recall that the prime
+number theorem is equivalent to the asymptotics
+lim
+n→∞
+d1/n
+n =e. (3)
+A rational function S(t) of the form
+S(t) = P (t)
+(t−t1)s1(t−t2)s2··· (t−tq)sq
+,
+whose denominator has degree larger than its numerator, possesses a unique partial-fraction
+decomposition
+S(t) =
+q∑
+j=1
+sj∑
+i=1
+bi,j
+(t−tj)i.
+The coeﬃcients here can be computed on the basis of explicit formula
+bi,j = 1
+(sj−i)!
+(
+S(t)(t−tj)sj
+)(sj−i)
+⏐⏐⏐
+t=tj
+for all i, j in question. This procedure can be illustrated on the following examples, in which
+all the exponents sj are equal to 1:
+n!∏n
+j=0(t +j) =
+n∑
+k=0
+(−1)k(n
+k
+)
+t +k ,
+∏n
+j=1(t−j)∏n
+j=0(t +j) =
+n∑
+k=0
+(−1)n+k(n+k
+n
+)(n
+k
+)
+t +k ,
+∏n
+j=1(t +n +j)∏n
+j=0(t +j) =
+n∑
+k=0
+(−1)k(2n−k
+n
+)(n
+k
+)
+t +k ,
+One of the Odd Zeta Values from ζ(5) to ζ(25) Is Irrational 3
+22n∏n
+j=1(t + 1
+2−j)∏n
+j=0(t +j) =
+n∑
+k=0
+(−1)n+k(2n+2k
+2n
+)( 2n
+n+k
+)
+t +k ,
+22n∏n
+j=1(t− 1
+2 +j)∏n
+j=0(t +j) =
+n∑
+k=0
+(2k
+k
+)(2n−2k
+n−k
+)
+t +k ,
+22n∏n
+j=1(t +n− 1
+2 +j)∏n
+j=0(t +j) =
+n∑
+k=0
+(−1)k(4n−2k
+2n
+)(2n
+k
+)
+t +k .
+It also means that the function R(t) in (2) can be written as
+R(t) =
+s∑
+i=1
+n∑
+k=0
+ai,k
+(t +k)i (4)
+with the recipe to compute the coeﬃcients ai,k in its partial-fraction decomposition. At the
+same time, the function R(t) is a product of ‘simpler’ rational functions given above, with all
+coeﬃcients of their partial fractions being integral.
+Lemma 1. Letk1,...,k q be pairwise distinct numbers from the set {0, 1,...,n } and s1,...,s q
+positive integers. Then the coeﬃcients in the expansion
+1∏q
+j=1(t +kj)sj
+=
+q∑
+j=1
+sj∑
+i=1
+bi,j
+(t +kj)i
+satisfy
+ds−i
+n bi,j∈ Z, where i = 1,...,s j and j = 1,...,q, (5)
+wheres =s1 +··· +sq.
+In particular,
+ds−i
+n ai,k∈ Z, where i = 1,...,s and k = 0, 1,...,n, (6)
+for the coeﬃcients in (4).
+Proof . Denote the rational function in question by S(t). The statement is trivially true when
+q = 1, therefore we assume that q≥ 2. In view of the symmetry of the data, it is suﬃcient
+to demonstrate the inclusions (5) for j = 1. Diﬀerentiating a related product m times, for any
+m≥ 0, we obtain
+1
+m!
+(
+S(t)(t +k1)s1
+)(m) = 1
+m!
+
+
+q∏
+j=2
+(t +kj)−sj
+
+
+(m)
+=
+∑
+𝓁2,...,𝓁q≥0
+𝓁2+···+𝓁q=m
+q∏
+j=2
+1
+𝓁j!
+(
+(t +kj)−sj
+)(𝓁j )
+=
+∑
+𝓁2,...,𝓁q≥0
+𝓁2+···+𝓁q=m
+q∏
+j=2
+(−1)𝓁j
+(sj +𝓁j− 1
+𝓁j
+)
+(t +kj)−(sj +𝓁j ).
+This implies that
+bi,1 =
+∑
+𝓁2,...,𝓁q≥0
+𝓁2+···+𝓁q=s1−i
+q∏
+j=2
+(−1)𝓁j
+(sj +𝓁j− 1
+𝓁j
+) 1
+(kj−k1)sj +𝓁j
+4 W. Zudilin
+for i = 1,...,s 1. Using dn/(kj−k1)∈ Z for j = 2,...,q and∑q
+j=2(sj +𝓁j) = s−i for each
+individual summand, we deduce the desired inclusion in (5) for j = 1, hence for any j.
+The second claim in the lemma follows from considering R(t) as a product of the ‘simpler’
+rational functions. ■
+Lemma 2. For the coeﬃcients ai,k in (4), we have
+ai,k = (−1)i−1ai,n−k for k = 0, 1,...,n and i = 1,...,s,
+so that
+n∑
+k=0
+ai,k = 0 for i even.
+Proof . Sinces is odd, the function (2) possesses the following (well-poised) symmetry: R(−t−
+n) =−R(t). Substitution of the relation into (4) results in
+−
+s∑
+i=1
+n∑
+k=0
+ai,k
+(t +k)i =
+s∑
+i=1
+n∑
+k=0
+ai,k
+(−t−n +k)i =
+s∑
+i=1
+(−1)i
+n∑
+k=0
+ai,k
+(t +n−k)i
+=
+s∑
+i=1
+(−1)i
+n∑
+k=0
+ai,n−k
+(t +k)i,
+and the identities in the lemma follow from the uniqueness of decomposition into partial fractions.
+The second statement follows from
+n∑
+k=0
+ai,k = (−1)i−1
+n∑
+k=0
+ai,n−k = (−1)i−1
+n∑
+k=0
+ai,k. ■
+Lemma 3. For each n,
+rn =
+s∑
+i=2
+i odd
+aiζ(i) +a0 and ˆrn =
+s∑
+i=2
+i odd
+ai
+(
+2i− 1
+)
+ζ(i) + ˆa0,
+with the following inclusions available :
+ds−i
+n ai∈ Z for i = 3, 5,...,s, and ds
+na0,ds
+nˆa0∈ Z.
+Notice that
+(
+2i− 1
+)
+ζ(i) =
+∞∑
+𝓁=1
+1
+(
+𝓁− 1
+2
+)i
+for i≥ 2.
+Proof . Our strategy here is to write the series in (1) using the partial-fraction decomposition (4)
+ofR(t). To treat the ﬁrst sum rn we additionally introduce an auxiliary parameter z >0, which
+we later specialise to z = 1:
+rn(z) =
+∞∑
+ν=1
+Rn(ν)zν =
+∞∑
+ν=1
+s∑
+i=1
+n∑
+k=0
+ai,kzν
+(ν +k)i
+=
+s∑
+i=1
+n∑
+k=0
+ai,kz−k
+∞∑
+ν=1
+zν+k
+(ν +k)i =
+s∑
+i=1
+n∑
+k=0
+ai,kz−k
+(
+Lii(z)−
+k∑
+𝓁=1
+z𝓁
+𝓁i
+)
+=
+s∑
+i=1
+Lii(z)
+n∑
+k=0
+ai,kz−k−
+s∑
+i=1
+n∑
+k=0
+k∑
+𝓁=1
+ai,kz−(k−𝓁)
+𝓁i ,
+One of the Odd Zeta Values from ζ(5) to ζ(25) Is Irrational 5
+where
+Lii(z) =
+∞∑
+𝓁=1
+z𝓁
+𝓁i
+fori = 1,...,s are the polylogarithmic functions. The latter are well deﬁned at z = 1 for i≥ 2,
+where Lii(1) =ζ(i), while Li 1(z) =− log(1−z) does not have a limit as z→ 1−. By taking the
+limit asz→ 1− in the above derivation and usingRn(ν) =O
+(
+ν−2)
+asν→∞ , we conclude that
+n∑
+k=0
+a1,k = lim
+z→1−
+n∑
+k=0
+a1,kz−k = 0,
+and
+rn =
+s∑
+i=2
+ζ(i)
+n∑
+k=0
+ai,k−
+s∑
+i=1
+n∑
+k=0
+ai,k
+k∑
+𝓁=1
+1
+𝓁i. (7)
+We proceed similarly for ˆrn, omitting introduction of the auxiliary parameter z. Since R(t)
+in (2) vanishes at t =− 1
+2,− 3
+2,..., −n + 1
+2, we can shift the starting point of summation for ˆrn
+to t =−m− 1
+2, where m =
+⌊n−1
+2
+⌋
+, so that
+ˆrn =
+∞∑
+ν=−m
+Rn
+(
+ν− 1
+2
+)
+=
+∞∑
+ν=−m
+s∑
+i=1
+n∑
+k=0
+ai,k
+(
+ν +k− 1
+2
+)i
+=
+s∑
+i=1
+n∑
+k=0
+ai,k
+∞∑
+ν=−m
+1
+(
+ν +k− 1
+2
+)i
+=
+s∑
+i=1
+m∑
+k=0
+ai,k
+∞∑
+ν=−m
+1
+(
+ν +k− 1
+2
+)i +
+s∑
+i=1
+n∑
+k=m+1
+ai,k
+∞∑
+ν=−m
+1
+(
+ν +k− 1
+2
+)i
+=
+s∑
+i=1
+m∑
+k=0
+ai,k
+( 0∑
+𝓁=k−m
+1
+(
+𝓁− 1
+2
+)i +
+∞∑
+𝓁=1
+1
+(
+𝓁− 1
+2
+)i
+)
++
+s∑
+i=1
+n∑
+k=m+1
+ai,k
+(∞∑
+𝓁=1
+1
+(
+𝓁− 1
+2
+)i−
+k−m−1∑
+𝓁=1
+1
+(
+𝓁− 1
+2
+)i
+)
+=
+s∑
+i=2
+(2i− 1)ζ(i)
+n∑
+k=0
+ai,k +
+s∑
+i=1
+m∑
+k=0
+ai,k
+m−k∑
+𝓁=0
+(−1)i
+(
+𝓁 + 1
+2
+)i
+−
+s∑
+i=1
+n∑
+k=m+1
+ai,k
+k−m−1∑
+𝓁=1
+1
+(
+𝓁− 1
+2
+)i. (8)
+Now the statement of the lemma follows from the representations in (7) and (8), Lemma 2, the
+inclusions (6) of Lemma 1 and
+di
+n
+k∑
+𝓁=1
+1
+𝓁i∈ Z for 0 ≤k≤n and i≥ 1,
+di
+n
+m−k∑
+𝓁=0
+(−1)i
+(𝓁 + 1
+2)i∈ Z for 0 ≤k≤m and i≥ 1,
+di
+n−1
+k−m−1∑
+𝓁=1
+1
+(
+𝓁− 1
+2
+)i∈ Z for m + 1≤k≤n and i≥ 1. ■
+6 W. Zudilin
+3 Asymptotic behaviour
+In this section we make frequent use of Stirling’s asymptotic formula
+n!∼
+√
+2πn
+(n
+e
+)n
+as n→∞,
+and its corollary
+(2n
+n
+)
+∼ 22n
+√πn as n→∞
+for the central binomial coeﬃcients. (One may also use somewhat weaker but ‘more elementary’
+lower and upper bounds
+∫ n
+1
+logx dx≤ log(n!)≤
+∫ n+1
+2
+logx dx
+for the factorial coming out from estimating integral sums of the logarithm function, with
+a nemesis of running into more sophisticated versions for the asymptotics and inequalities below.)
+Because the rational function Rn(t) in (2) vanishes at 1 , 2,...,n and at 1
+2, 3
+2,...,n − 1
+2, the
+hypergeometric series (1) can be alternatively written as
+rn =
+∞∑
+ν=n+1
+Rn(ν) =
+∞∑
+k=0
+ck and ˆ rn =
+∞∑
+ν=n+1
+Rn(ν− 1
+2) =
+∞∑
+k=0
+ˆck,
+with the involved summands
+ck =Rn(n + 1 +k) =
+26nn!s−5∏6n
+j=0
+(
+k + 1 + 1
+2j
+)
+∏n
+j=0(n +k + 1 +j)s+1 = n!s−5(6n + 2k + 2)!(n +k)!s+1
+2(2k + 1)!(2n +k + 1)!s+1 (9)
+and
+ˆck =Rn
+(
+n + 1
+2 +k
+)
+=
+26nn!s−5∏6n
+j=0
+(
+k + 1
+2 + 1
+2j
+)
+∏n
+j=0
+(
+n +k + 1
+2 +j
+)s+1
+strictly positive. Observe that
+ck
+ˆck
+=
+∏6n
+j=0(2k + 2 +j)
+∏6n
+j=0(2k + 1 +j)
+·
+
+
+n∏
+j=0
+n +k + 1
+2 +j
+n +k + 1 +j
+
+
+s+1
+= 6n + 2k + 2
+2k + 1 ·
+(
+2−2(n+1)
+(4n+2k+2
+2n+k+1
+)
+(2n+2k
+n+k
+)
+)s+1
+∼ 6n + 2k + 2
+2k + 1
+( n +k
+2n +k + 1
+)(s+1)/2
+as n +k→∞. (10)
+Lemma 4. Fors≥ 7 odd,
+lim
+n→∞
+r1/n
+n = lim
+n→∞
+ˆr1/n
+n =g(x0) and lim
+n→∞
+rn
+ˆrn
+= 1
+where
+g(x) = 26(x + 3)6(x + 1)s+1
+(x + 2)2(s+1)
+and x0 is the unique positive zero of the polynomial
+x(x + 2)(s+1)/2− (x + 3)(x + 1)(s+1)/2.
+One of the Odd Zeta Values from ζ(5) to ζ(25) Is Irrational 7
+Proof . We have
+ck+1
+ck
+=
+(
+k + 3n + 3
+2
+)
+(k + 3n + 2)
+(k + 1)
+(
+k + 3
+2
+)
+( k +n + 1
+k + 2n + 2
+)s+1
+∼f
+(k
+n
+)2
+as n +k→∞, (11)
+where
+f(x) = x + 3
+x
+(x + 1
+x + 2
+)(s+1)/2
+.
+For an ease of notation write q = (s + 1)/2≥ 4. Since
+f′(x)
+f(x) = 1
+x + 3− 1
+x +q
+( 1
+x + 1− 1
+x + 2
+)
+= (q− 3)x2 + 3(q− 3)x− 6
+x(x + 1)(x + 2)(x + 3)
+and the quadratic polynomial in the latter numerator has a unique positive zero x1, the func-
+tionf(x) monotone decreases from +∞ tof(x1) whenx ranges from 0 tox1 and then monotone
+increases from f(x1) to f(+∞) = 1 (not attaining the value!) when x ranges from x1 to +∞.
+In particular, there is exactly one positive solution x0 to f(x) = 1. Notice that 0 < x0 < 1,
+because f(1) = 4· (2/3)q < 1.
+The information gained and asymptotics in (11) imply that ck+1/ck > 1 for the indices
+k<x 0n−γ√n andck+1/ck < 1 for k>x 0n +γ√n for an appropriate choice of γ >0 dictated
+by application of Stirling’s formula to the factorials deﬁning ck in (9) (see [2, Section 3.4] as
+well as the second proof of Lemma 3 in [1]). This means that the asymptotic behaviour of
+the sum rn = ∑∞
+k=0ck is determined by the asymptotics of ck0 and its neighbours ck, where
+k0 =k0(n)∼x0n and|k−k0|≤ γ√n, so that
+lim
+n→∞
+r1/n
+n = lim
+n→∞
+c1/n
+k0(n)
+= lim
+n→∞
+((n
+e
+)(s−5)n(6n + 2k0 + 2
+e
+)6n+2k0+2( e
+2k0 + 1
+)2k0+1
+×
+(n +k0
+e
+)(s+1)(n+k0)( e
+2n +k0 + 1
+)(s+1)(2n+k0+1))1/n
+= (2x0 + 6)2x0+6(x0 + 1)(s+1)(x0+1)
+(2x0)2x0(x0 + 2)(s+1)(x0+2)
+= 26(x0 + 3)6(x0 + 1)s+1
+(x0 + 2)2(s+1) ·f(x0)2x0 =g(x0).
+It now follows from (10) that
+ˆck+1
+ˆck
+∼ ck+1
+ck
+as n +k→∞, (12)
+so that the above analysis applies to the sum ˆrn =∑∞
+k=0 ˆck as well, and its asymptotic behaviour
+is determined by the asymptotics of ˆck0 and its neighbours ˆck, where k0 = k0(n)∼ x0n and
+|k−k0|≤ ˆγ√n. From (12) we deduce that the limits of ˆ c1/n
+k0(n) and c1/n
+k0(n) as n→∞ coincide,
+hence ˆr1/n
+n →g(x0) as n→∞ . In addition to this, we also get
+lim
+n→∞
+rn
+ˆrn
+= lim
+n→∞
+ck0(n)
+ˆck0(n)
+= lim
+n→∞
+6n + 2k0 + 2
+2k0 + 1
+( n +k0
+2n +k0 + 1
+)(s+1)/2
+=f(x0),
+which leads to the remaining limiting relation. ■
+8 W. Zudilin
+4 Conclusion
+We chooses = 25 and apply Lemma 4 to ﬁnd out that 7 rn− ˆrn> 0 for n suﬃciently large, and
+lim
+n→∞
+(7rn− ˆrn)1/n =g(x0) = exp(−25.292363... ),
+wherex0 = 0.00036713... . Assuming that the odd zeta values fromζ(5) toζ(25) are all rational
+and denoting by a their common denominator, we use Lemma 3 and the asymptotics (3) to
+conclude that the sequence of positive integers
+ad25
+n (7rn− ˆrn)
+tends to 0 as n→∞ ; contradiction. Thus, at least one of the numbers ζ(5),ζ (7),...,ζ (25) is
+irrational.
+Those who count the prime number theorem as insuﬃciently elementary may use weaker
+versions of (3), for example, dn < 3n from [5] and the choice s = 33 instead, to arrive at the
+same conclusion (for the larger value of s, of course).
+Finally, we remark that the novelty of eliminating an ‘unwanted’ term of ζ(3) in linear forms
+in odd zeta values can be further used with the arithmetic method in [10] to signiﬁcantly reduce
+the size of s. Since this does not let s be down to s = 9, hence leaving the achievement ‘at
+least one of the four numbers ζ(5), ζ(7), ζ(9), ζ(11) is irrational’ unchanged, we do not discuss
+this generalisation in greater details. We point out, however, that there are other applications
+of the hypergeometric ‘twist-by-half’ idea, some discussed in the joint papers [6, 8], and that
+a far-going extension to general ‘twists’ introduced by J. Sprang in [9] leads to an elementary
+proof of a version of the Ball–Rivoal theorem from [1] as well as to a signiﬁcant improvement of
+the latter — see [4] for details.
+Acknowledgements
+I thank St´ ephane Fischler, Tanguy Rivoal, Johannes Sprang and the anonymous referees for
+their feedback on the manuscript.
+References
+[1] Ball K., Rivoal T., Irrationalit´ e d’une inﬁnit´ e de valeurs de la fonction zˆ eta aux entiers impairs, Invent.
+Math. 146 (2001), 193–207.
+[2] de Bruijn N.G., Asymptotic methods in analysis, Bibliotheca Mathematica, Vol. 4, North-Holland Publishing
+Co., Amsterdam, P. Noordhoﬀ Ltd., Groningen, Interscience Publishers Inc., New York, 1958.
+[3] Fischler S., Irrationalit´ e de valeurs de zˆ eta (d’apr` es Ap´ ery, Rivoal,... ), Ast´ erisque(2004), no. 294, 27–62,
+math.NT/0303066.
+[4] Fischler S., Sprang J., Zudilin W., Many odd zeta values are irrational, arXiv:1803.08905.
+[5] Hanson D., On the product of the primes, Canad. Math. Bull. 15 (1972), 33–37.
+[6] Krattenthaler C., Zudilin W., Hypergeometry inspired by irrationality questions, arXiv:1802.08856.
+[7] Rivoal T., Irrationalit´ e d’au moins un des neuf nombres ζ(5),ζ (7),...,ζ (21), Acta Arith. 103 (2002), 157–
+167, math.NT/0104221.
+[8] Rivoal T., Zudilin W., A note on odd zeta values, arXiv:1803.03160.
+[9] Sprang J., Inﬁnitely many odd zeta values are irrational. By elementary means, arXiv:1802.09410.
+[10] Zudilin W., Arithmetic of linear forms involving odd zeta values, J. Th´ eor. Nombres Bordeaux16 (2004),
+251–291, math.NT/0206176.

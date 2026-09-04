@@ -1,0 +1,2257 @@
+                                                   MIXED MOTIVES AND LINEAR FORMS IN THE CATALAN
+                                                                     CONSTANT
+
+                                                          PAYMAN ESKANDARI, V. KUMAR MURTY, AND YUSUKE NEMOTO
+
+
+                                                  Abstract. We first give a geometric construction of a 2-dimensional mixed motive over Q
+                                                  with the Catalan constant G = 1 − 1/32 + 1/52 − 1/72 + · · · as a period. We then use
+
+
+
+
+arXiv:2510.20648v3 [math.NT] 29 Aug 2026
+                                                  this motive to obtain a supply of linear forms in 1 and G. We also explicitly compute the
+                                                  coefficients of 1 and G in these linear forms.
+
+
+
+                                                                                        Contents
+                                             1. Introduction                                                                           1
+                                             2. The motivic setting and notation                                                       4
+                                             3. Construction of the motive M                                                           6
+                                             4. The weight filtration of M                                                            10
+                                             5. The de Rham and Betti realizations                                                    13
+                                             6. The motive of the Catalan constant                                                    17
+                                             7. Linear forms in 1 and G – I: A motivic proof of Theorem 1.1.1                         19
+                                             8. Linear forms in 1 and G – II: Calculation of the coefficients in the simple pole case 26
+                                             9. Linear forms in 1 and G – III: Calculation of the coefficients for non-simple poles 32
+                                             Acknowledgments                                                                          38
+                                             References                                                                               38
+
+
+
+                                                                                   1. Introduction
+                                           1.1. Motivation and context. This paper fits in a program initiated by Francis Brown [7],
+                                           which aims to use algebraic geometry to explain some of the known irrationality proofs and
+                                           perhaps discover new ones. One standard approach to irrationality proofs is as follows: In
+                                           order to prove that α ∈ R is irrational, one looks for a sequence of nonzero linear forms
+                                                                     λn := an + bn α          (an , bn ∈ Q , n ∈ Z>0 )
+                                           of sufficiently fast decay such that
+                                                                 λn · (the lowest common denominator of an and bn )
+                                           tends to zero as n tends to infinity. If such linear forms can be found, irrationality of α will
+                                           follow by an easy argument. A more sophisticated version of this approach due to Nesterenko
+                                           gives a line of attack for finding lower bounds on the dimension of the Q-span of a given set
+                                           of numbers α1 , . . . , αr . As far as the authors know, all the known irrationality and Q-linear
+                                           independence proofs about odd Riemann zeta values (in particular, [1], [4], [20], [2], [24]) are
+                                           based on variations of this approach.
+                                                When α, or more generally, when α1 , . . . , αr are periods of motives, Brown’s philosophy
+                                           proposes using algebraic geometry to produce linear forms in α1 , . . . , αr . This philosophy is
+                                             2020 Mathematics Subject Classification. 11G99, 11M06, 14F42.
+                                                                                             1
+2
+
+supported by the evidence that almost all linear forms that appear in the known irrationality
+and Q-linear independence proofs involving odd zeta values do indeed arise, although only in
+hindsight, from algebraic geometry. See [7, §1] and [12, §1] for more details.
+     A difficulty in proving irrationality of odd zeta values is the fact that the linear forms
+that one constructs often involve too many unwanted terms. For example, one might get a
+linear form in 1 and all the Riemann zeta values ζ(n) where n = 2, . . . , N . Since one already
+knows Q-linear independence of the numbers 1 and ζ(2m) ∈ π 2m Q× (m ∈ Z>0 ) thanks to
+Lindemann, it becomes extremely difficult to obtain sufficiently strong bounds on the linear
+forms and the height of the coefficients to deduce anything nontrivial about odd zeta values.
+To rectify this, one wants to obtain linear forms with no unwanted terms.
+     On the algebro-geometric side, the above challenge is related to finding a geometric
+construction of a motive as small as possible with the desired periods. Again, we refer to
+Brown’s paper [7] for more details. Here, the term geometric vaguely means to be built out of
+the relative cohomology groups of algebraic varieties using operations such as taking kernels
+and cokernels in an abelian category of motives.
+     For example, in order to prove irrationality of an odd zeta value ζ(2m + 1) (m ∈ Z>0 )
+using the above approach, one needs suitable linear forms in 1 and ζ(2m+1). It is known that
+there exists a mixed motive Z2m+1 over Q, unique up to isomorphism, that is an extension of
+Q(−(2m + 1)) by Q(0) and has a period matrix of the form
+                                                     
+                                         1 ζ(2m + 1)
+                                                        .
+                                         0 (2πi)2m+1
+The proof of this fact (which combines deep works of Beilinson [3], Borel [5] and others; see
+[10]) does not give a geometric construction of this motive. Brown’s philosophy proposes
+that a geometric construction of Z2m+1 could lead to useful linear forms in 1 and ζ(2m + 1).
+Interestingly, the only odd zeta value for which such a geometric construction is known is ζ(3).
+In that case, two different constructions are known, one due to Brown [7] and another due to
+Dupont [12]. In fact, Dupont’s work gives, for every integer m ≥ 1, a geometric construction
+of a mixed motive in
+                                                                          
+                     Ext1 Q(−3) ⊕ Q(−5) ⊕ · · · ⊕ Q(−(2m + 1)), Q(0)
+whose periods include ζ(3), ζ(5), . . . , ζ(2m+1). The Ball–Rivoal ([20], [2]) linear forms in odd
+zeta values arise, in hindsight, from this motive. A functional version of [12] due to Dupont
+and Fresán [13] gives a geometric construction of the polylogarithm motive.
+     In this paper we carry out an important part of Brown’s program for the Catalan constant
+                                     1     1    1
+                           G := 1 −   2
+                                        + 2 − 2 + · · · = L(2, χ−4 ),
+                                     3    5     7
+where L(s, χ−4 ) is the Dirichlet L-function for the nontrivial character mod 4. We give a
+geometric construction of a mixed motive C over Q with a period matrix
+                                                 
+                                           1 G
+(1.1)                                               .
+                                           0 π2i
+The motive is not a mixed Tate motive over Q, but over the field Q(i) it becomes an extension
+of Q(−2) by Q(0).1 We use the motive C to produce a large supply of linear forms in 1 and
+G:
+  1Recall that Ext1 (Q(−2), Q(0)) should vanish for mixed motives over Q, but not for mixed motives over
+Q(i).
+                                                                                                              3
+
+Theorem 1.1.1. Let t be an integer ≥ 0. Suppose F = F (x, y) ∈ Q[x, y] satisfies conditions
+(i) and (ii) below:
+      (i) F is fixed by the automorphism σ of Q[x, y] that sends (x, y) 7→ (−y, x).
+     (ii) x2⌈t/2⌉ y 2⌈t/2⌉ (where ⌈ ⌉ is the ceiling function) divides F in Q[x, y].
+                               F dxdy
+Then the integral of                         over the simplex
+                          (1 − x2 − y 2 )t+1
+                                ∆ := {(x, y) ∈ R2 : x, y, 1 − x − y ≥ 0}
+converges to a Q-linear combination of 1 and G.
+     With potential applications to rational approximations and irrationality in mind, we
+make the proof of this result completely constructive, in that given F and t as above, we
+compute both coefficients of 1 and G in the associated linear form explicitly. Denoting the
+least common multiple of 1, . . . , m by Lm , in the case t = 0, for every polynomial F as above
+and with coefficients in Z, one has an upper bound of
+                                        2deg(F )+2 Ldeg(F ) Ldeg(F )/2
+for the lowest common denominator of the coefficients of 1 and G in terms of the (total) degree
+of F . This does not seem to be good enough to prove irrationality of G (see Remark 8.3.4),
+as one might expect since this bound is uniform for all F ∈ Z[x, y] of a given degree, and also
+one typically makes use of poles of higher order to obtain good rational approximations. The
+question remains if clever choices of (F, t) can bring one any closer to an irrationality proof.
+We hope to pursue this line of inquiry in the future. It will also be interesting to compare the
+linear forms given by Theorem 1.1.1 with those obtained by Rivoal and Zudilin ([21, §9] and
+[22]) and Nesterenko [19].
+     Here are some examples of linear forms of Theorem 1.1.1:
+                             Z
+                                    x2 y 2               5     1
+                                      2     2
+                                              dxdy = −       + G
+                              ∆ 1−x −y                   48    8
+                             Z
+                                    x4 y 4                569      3
+                                      2     2
+                                              dxdy = −         +      G
+                              ∆ 1−x −y                   26880 128
+                             Z
+                                     x4 y 4                 49     9
+                                        2     2 3
+                                                  dxdy = −      +     G.
+                              ∆ (1 − x − y )                384 64
+The Z-linear form obtained by clearing the denominators of the coefficients in each form
+(which is the quantity that we need to make arbitrarily close to zero by appropriate choices
+of F and t to deduce irrationality of G) is roughly 0.5, 8.06 and 0.46, in that order. For
+F = x4 y 4 , the choice t = 2 (leading to the last form above) is the best possible choice between
+0 ≤ t ≤ 4 ( = the range allowed for t to assure convergence).
+1.2. Contents of the paper. Our departure point is the integral expression2
+                                        Z
+                                              dxdy
+                                   G =                  ,
+                                         ∆ 1 − x2 − y 2
+where ∆ is the simplex defined in Theorem 1.1.1. Using standard ideas, we use this integral
+expression to define a mixed motive3 over Q that has G as a period. Section 3 gives the
+  2For a reference for this expression, see [18], equation (20), where a variant of this formula is established.
+The variant used here is easily seen to be equivalent to the formula established in op. cit.
+   3Say, in the setting of mixed absolute Hodge motives (defined in terms of mixed realizations, see [17], for
+instance) or Nori motives. See §2 for more details.
+4
+
+construction of this motive, denoted by M , as a relative cohomology group. Section 4 studies
+the weight filtration on M . It turns out that M is 5-dimensional (i.e., its (say) Betti realization
+is 5-dimensional), and its associated graded with respect to the weight filtration is
+                          GrW M ≃ Q(0) ⊕ Q(−1)⊕3 ⊕ H 1 (A)(−1),
+where A is the circle x2 + y 2 = 1 inside the affine plane over Q. Over K = Q(i), A is
+isomorphic to Gm and hence the base change of M to a motive over K is a mixed Tate motive.
+In particular, M is a mixed Artin–Tate motive over Q (by definition of such motives).
+      Section 5 is devoted to the Betti and de Rham realizations of M . We give explicit bases
+for each of these and compute the periods of M , which turn out to be Q-linear combinations
+of 1, log 2, G, 2πi, and π 2 i.
+      Section 6 gives the definition of what we call the motive of the Catalan constant, denoted
+by C, which is a submotive of M (over Q) with period matrix (1.1) with respect to our bases.
+The key observation here is that one can use a particular symmetry (namely, σ of Theorem
+1.1.1) to precisely extract the desired submotive from M . The symmetry σ does not act on
+the motive M itself, but rather, acts on a quotient of M . A similar situation also occurs in
+[12].
+      Sections 7-9 are devoted to using the motive C to obtain linear forms in 1 and G. The
+goal is to prove Theorem 1.1.1, and compute the coefficients of 1 and G in the linear forms
+(given F and t). The idea is to find differential forms that give rise to elements of the de
+Rham realization of C. This is done in §7 (Proposition 7.3.1), leading to a non-constructive
+motivic proof of Theorem 1.1.1. In fact, we prove a more intrinsic version of Theorem 1.1.1
+(see Theorem 7.2.4). This second version seems at first to be stronger, but turns out to be
+equivalent to the version stated earlier, even for the purposes of calculation of the coefficients
+of 1 and G (see §7.2, in particular, the comments after Theorem 7.2.4, including Remark
+7.2.5). In §8 and §9 we make Theorem 1.1.1 (and Theorem 7.2.4) constructive by calculating
+the coefficients of 1 and G. Section 8 handles the logarithmic case (t = 0). The computation
+of the coefficient of G in this case amounts to an easy residue calculation (see Proposition
+8.1.1). The computation of the coefficient of 1 is considerably more involved. Nonetheless,
+we calculate this coefficient in §8.2. The approach is completely explicit. Combining formulas
+(8.3), (8.4), and Lemmas 8.2.1 and 8.2.3 one can easily compute the coefficient of 1 in the
+linear forms in the logarithmic case. One also obtains bounds on the size of the denominators
+(see Theorem 8.3.1). Finally, in §9 we make the case t > 0 of the theorem constructive, by
+using an elementary procedure to reduce the order of the pole first.
+
+                           2. The motivic setting and notation
+     Let F be a subfield of C. By a variety over F (or simply, a variety, when F is understood
+from the context) we mean a quasi-projective reduced scheme of finite type over F . Through-
+out the paper, we work in a suitable category MM(F ) of mixed motives over F (specifically,
+we shall need F = Q and occasionally F = Q(i)). To be concrete, the reader can take this
+to be the Tannakian category of (non-effective) Nori motives over F with rational coefficients
+[17], or the category of mixed absolute Hodge motives over F as in [17, §6.3] and [16] (note
+that these versions of the theory include motives of non-smooth varieties as well as motives
+for relative (co)homology). What we precisely require from MM(F ) is the following:
+    (1) MM(F ) is a rigid abelian tensor category in the sense of [11] with End(1) = Q,
+        where 1 is the unit object for the tensor product. (Note, importantly, that we work
+        with motives with coefficients in Q.)
+                                                                                                5
+
+     (2) There is a weight filtration W• on objects of MM(F ). This means that W• is in-
+         dexed by Z, increasing, finite on every object, functorial, exact, and compatible with
+         the tensor structure. (Functoriality and exactness amount to strict compatibility of
+         morphisms with the weight filtration.)
+     (3) There exist functorial dual objects H n (X) and Hn (X) in MM(F ) for the (co)homology
+         of varieties (over F ). There are also functorial dual objects H n (X, Z) and Hn (X, Z)
+         for the relative (co)homology of pairs (X, Z) of a variety X and a closed subvariety
+         Z ⊂ X. When the second entry of the pair is the empty subvariety, the relative
+         (co)homology recovers the absolute (co)homology. We have H0 (Spec F ) = 1.
+     (4) There exist Betti, de Rham and Hodge realization functors with values respectively
+         in the categories of vector spaces over Q and F , and the category of rational mixed
+         Hodge structures. These functors are exact, faithful, Q-linear, and compatible with
+         the tensor structures (in particular, they are conservative). Thus the Betti real-
+         ization makes MM(F ) a neutral Tannakian category over Q in the sense of [11].
+         The realizations of the (co)homology motives are exactly those expected: the Betti
+         realizations of H n (X, Z) and Hn (X, Z) are the (degree n) rational singular coho-
+         mology and homology of the analytification of (X, Z); the de Rham realization of
+         H n (X, Z) is the relative algebraic de Rham cohomology of (X, Z); and the Hodge
+         realization is Deligne’s mixed Hodge structure on the rational singular (co)homology.
+         The Hodge realization functor translates the motivic weight to the Hodge-theoretic
+         weight. In particular, the Lefschetz motive Q(−1) := H 2 (P1 ) is pure of weight 2 and
+         1-dimensional in each of its realizations.
+     (5) The following long exact sequences exist in MM(F ):
+            - the long exact sequences for the relative cohomology and homology of a pair
+              (X, Z) as above, related to each other by duality;
+            - the Mayer–Vietoris long exact sequence for an open covering X = U ∪ V of a
+              variety X;
+            - the Gysin long exact sequence for any triple (X, Z, A) of a smooth variety X,
+              a closed subvariety Z ⊂ X, and a smooth closed subvariety A ⊂ X of pure
+              codimension.
+         The Betti and de Rham realizations of these sequences are the corresponding se-
+         quences in the relevant theory.
+     (6) There is a distinguished isomorphism called the period isomorphism between the
+         complexifications of the Betti and de Rham realization functors, extending the usual
+         Betti–de Rham comparison isomorphism for the motives H n (X) of smooth varieties
+         to all objects of MM(F ). In the case of the motives of the form H n (X, Z), the
+         associated pairing (i.e., the period pairing) between the Betti realization of Hn (X, Z)
+         and the de Rham realization of H n (X, Z) is as in [17, §5.3 – §5.5].
+     An excellent reference for almost all of the above in the settings of absolute Hodge and
+Nori is [17]. In particular, see §3.2 and §3.3 therein for a detailed exposition of the relative
+algebraic de Rham cohomology. Existence of the long exact sequences of item (5) in the
+setting of Nori motives (which by Proposition 10.1.2 of [17] and its proof also implies the
+existence of these exact sequences in the absolute Hodge setting) is probably well-known to
+some experts. For a reference, we refer the reader to [14], where the statements are proved in
+the more general setting of the authors’ exponential motives (see op. cit., §4.2.4 for the relative
+(co)homology sequence, Corollary 4.6.5 for the Mayer–Vietoris sequence, and Theorem 4.8.3
+for the Gysin sequence). By §5.1 of [14], taking the potential function to be zero, one recovers
+the desired statements for Nori motives from those for exponential motives.
+6
+
+      We end this discussion with a few words about our notation. The complex analytic space
+corresponding to a variety X over a subfield of C is denoted by X an . The Betti (resp. de
+Rham) realization of a motive N is denoted by Nsing (resp. NdR ). Thus for example, the
+notation Hn,sing (X, Z) means the Betti realization of Hn (X, Z), which is the relative singular
+homology Hn (X an , Z an ; Q), and the notation HdR  n (X, Z) means the de Rham realization of
+               n
+the motive H (X, Z), which is the degree n algebraic de Rham cohomology of the pair (X, Z).
+Similarly, the Betti (resp. de Rham) realization of a morphism f of motives is denoted by fsing
+(resp. fdR ). Following the conventions of [9], the Betti (resp. de Rham) realization of Q(−1)
+over Q is (2πi)−1 Q (resp. Q), with the comparison isomorphism given by the inclusions in C.
+      Finally, we use the notation V ∨ (resp. f ∨ ) for the dual of an object V (resp. morphism
+f ) in a Tannakian category.
+
+                           3. Construction of the motive M
+      In this section, we define a motive M over Q that has G as a period. This will be our
+first approximation of the motive of the Catalan constant, which will later be defined as a
+2-dimensional subobject of M . The ideas used in the construction of M go back to Terasoma
+[23]. An excellent exposition of these ideas can be found in [8, §2.5.1], where Burgos Gil and
+Fresán discuss the construction of a motive with ζ(2) as a period in details. This section will
+closely follow Burgos Gil and Fresán.
+    Let us start by fixing some notation. From this point on in the paper, let X := A2 =
+Spec Q[x, y] be the affine plane over Q. Let A ⊂ X be the unit circle around the origin, i.e.,
+                               A := Spec Q[x, y]/(1 − x2 − y 2 ).
+Let ℓ1 , ℓ2 and ℓ3 be the lines in X defined by
+                      ℓ1 = {y = 0},    ℓ2 = {x = 0},    ℓ3 = {x + y = 1},
+and set B = ℓ1 ∪ ℓ2 ∪ ℓ3 . We denote the point (1, 0) (resp. (0, 1)) of X by P (resp. Q). We
+shall set (as we already did in the introduction)
+                        ∆ := {(x, y) ∈ R2 : x, y, 1 − x − y ≥ 0} ⊂ X an .
+This is a topological 2-chain in X an with boundary in B an . (See Figure 1.)
+
+                                                  Q
+
+
+                                                  ∆
+                               ℓ1                        P
+
+                                                         ℓ3
+
+
+                                            ℓ2
+                                           Figure 1
+
+    The starting point of the definition of M is the integral expression
+                                          Z
+                                                dxdy
+                                    G=            2    2
+                                                         .
+                                           ∆ 1−x −y
+                                                                                                                          7
+
+The differential form dxdy/(1 − x2 − y 2 ) is regular on X \ A. One may be tempted to
+immediately say that G is a period of the motive
+                                                    H 2 (X \ A, B \ A),
+but ∆ intersects A at P and Q. This is a standard issue (e.g., it is similar to the situation for
+multiple zeta values), and the remedy is straightforward: one considers the blow-up at the
+points P and Q, as follows.
+      Let
+                                                             e →X
+                                                          π: X
+                                                                                e to be the
+be the blow-up of X at P and Q. Explicitly, throughout the paper, we shall take X
+subvariety of
+(3.1)             X × P1 × P1 = A2 × P1 × P1 = {(x, y)} × {[α1 : β1 ]} × {[α2 : β2 ]}
+defined by
+                                                  
+                                                      α1 (x − 1) = β1 y
+                                                      α2 x = β2 (y − 1).
+The blow-up map π : Xe → X is the projection to the first component. We denote the special
+divisors above P and Q by EP and EQ :
+                        EP = π −1 (P ) = π −1 ((1, 0)) = {(1, 0)} × P1 × {[1 : −1]}
+                        EQ = π −1 (Q) = π −1 ((0, 1)) = {(0, 1)} × {[1 : −1]} × P1 .
+
+Set E = EP ∪ EQ . We write A   e (resp. B)
+                                        e for the strict transform of A (resp. B). A
+straightforward computation shows
+                                     e ∩ EP = {P } × {[1 : 0]} × {[1 : −1]}
+                                     A
+(3.2)
+                                     e ∩ EQ = {Q} × {[1 : −1]} × {[0 : 1]}.
+                                     A
+Definition 3.1. Let M be the motive
+                                                     e \ A,
+                                                H 2 (X   e (B
+                                                            e ∪ E) \ e
+                                                                    A)
+in MM(Q).
+
+Remark 3.2. The variety Xe \Ae is smooth and affine. Indeed, smoothness is clear and the
+                4
+reader can check that with f1 = x(x − 1), f2 = xy, f3 = (x − 1)(y − 1), f4 = y(y − 1), we
+have
+          e \Ae ≃ Spec Q[x, y,     f1          f2          f3           f4
+         X                                ,           ,            ,          ].
+                               1 − x − y 1 − x − y 1 − x − y 1 − x2 − y 2
+                                    2   2       2   2       2    2
+
+   4We include a proof sketch for convenience. The f generate the ideal of {P, Q} in Q[x, y]. The blow-up X
+                                                      j
+                                                                                                                       e
+has an affine open cover X = ∪4j=1 Vj where Vj = Spec Q[x, y, f1 /fj , . . . , f4 /fj ]. Setting g := 1 − x2 − y 2 , the
+                 e is defined in Vj by g/fj = 0 (note that g = −f1 − f2 + f3 − f4 so g/fj ∈ O(Vj )), so that
+strict transform A
+                 Vj \ A
+                      e = Spec Q[x, y, f1 /fj , . . . , f4 /fj , fj /g] = Spec Q[x, y, f1 /g, . . . , f4 /g, g/fj ]
+
+(recall g/fj ∈ O(Vj )). Thus Vj \ A e is simply the principal affine open set D(fj /g) of Spec Q[x, y, f1 /g, . . . , f4 /g]
+given by fj /g ̸= 0. One checks that the inclusions of the Vj \ A   e in Spec Q[x, y, f1 /g, . . . , f4 /g] glue together to
+give an isomorphism between X \ A and the union of the D(fj /g) in Spec Q[x, y, f1 /g, . . . , f4 /g], which is all
+                                 e       e
+of the latter because 1 ∈ (f1 /g, . . . , f4 /g).
+8
+
+                                             an ∩ !
+                                            EQ    ∆
+
+
+
+
+                                                !
+                                                ∆
+                                                                        !
+                                                                 EPan ∩ ∆
+
+
+
+
+                                                      e ⊂X
+                                  Figure 2. The cycle ∆  e an
+
+
+    In the remainder of this section we carefully check that G is a period of M . In the
+process, we will also fix some further notation.
+    First, we define an element of the Betti homology
+(3.3)                                    e \ A,
+                                H2,sing (X   e (B
+                                                e ∪ E) \ A)
+                                                         e = Msing
+                                                              ∨
+                                                                   .
+
+Let ∆e be the closure (in the analytic topology) of π −1 (∆ \ {P, Q}) in X
+                                                                         e an (see Figure 2). This
+is a topological 2-chain in Xe an with π(∆)
+                                         e = ∆.
+                                 e is contained in X
+Lemma 3.3. The topological chain ∆                 e an \A
+                                                         ean and has boundary in B
+                                                                                 e an ∪E an .
+
+Proof. It is clear that away from EPan and EQ                            e does not intersect A
+                                              an , the topological chain ∆                    ean .
+We have
+                     ∆e ∩ E an = {P } × {[m : 1] | −1 ≤ m ≤ 0} × {[1 : −1]}
+                            P
+                    e ∩ E an = {Q} × {[1 : −1]} × {[1 : m] | −1 ≤ m ≤ 0}.
+                    ∆    Q
+
+In particular, on recalling (3.2), ∆e does not intersect with A
+                                                              ean along the special divisors either,
+so that ∆e is contained in X e an \ A
+                                    ean . Moreover, we have
+
+(3.4)            e ⊂ ℓe1 an ∪ ℓe2 an ∪ ℓe3 an ∪ (∆
+                ∂∆                               e ∩ E an ) ∪ (∆
+                                                               e ∩ E an ) ⊂ B
+                                                                            e an ∪ E an ,
+                                                      P             Q
+
+where ∂ refers to the boundary and ℓei is the strict transform of ℓi in e
+                                                                        X.                        □
+     In view of the previous lemma, ∆e defines an element of the Betti homology (3.3), which
+with abuse of notation we also denote by ∆. e
+     Next, we check that the differential form
+                                                 
+                                   ∗      dxdy           dxdy
+(3.5)                      ω0 := π           2  2
+                                                    =
+                                       1−x −y         1 − x2 − y 2
+defines an element of the de Rham realization of M .
+Lemma 3.4. The differential form ω0 on X       e defined above is regular on X
+                                                                             e\ e
+                                                                               A, with a loga-
+                                                   e
+rithmic singularity (i.e., pole of order 1) along A.
+Proof. This is checked by a computation in charts. Consider the open covering
+                                                      4
+                                                      [
+                                             e=
+                                             X              Uj
+                                                      j=1
+                                                                                                                     9
+
+
+of e
+   X, where the Uj are coordinate charts as follows5:
+                      e \ ({α1 = 0} ∪ EQ ) with affine coordinates (y, v = β1 /α1 )
+                 U1 = X
+                      e \ ({β1 = 0} ∪ EQ ) with affine coordinates (x, u = α1 /β1 )
+                 U2 = X
+                      e \ (EP ∪ {α2 = 0}) with affine coordinates (y, u = β2 /α2 )
+                 U3 = X
+                      e \ (EP ∪ {β2 = 0}) with affine coordinates (x, v = α2 /β2 ).
+                 U4 = X
+On U1 , x = 1 + vy,
+                                      1 − x2 − y 2 = y(−v 2 y − 2v − y),
+    e is given by −v 2 y − 2v − y = 0. The differential form ω0 is written as
+and A
+                                   dxdy              dvdy
+                                      2    2
+                                             =    2
+                                                               ,
+                                1−x −y          −v y − 2v − y
+which has a logarithmic singularity along A  e and is regular outside A.
+                                                                      e On U2 , y = u(x − 1)
+and
+                          1 − x2 − y 2 = (1 − x)(1 + x − u2 (1 − x)).
+                     e is given by 1 + x − u2 (1 − x) = 0 and ω0 is written as
+The strict transform A
+                                        dxdy          −dxdu
+                                          2  2
+                                               =                    ,
+                                      1−x −y     1 + x − u2 (1 − x)
+hence the assertions are also true on U2 . On U3 (resp. U4 ) the computation is the same as in
+U2 (resp. U1 ), with x and y switched throughout.                                           □
+     The form ω0 is a regular differential form of top degree on the smooth affine variety
+ e   e In particular, ω0 is closed and its restrictions to the irreducible components of the
+X \ A.
+simple normal crossing divisor Be ∪ E vanish for dimension reasons. It follows that ω0 defines
+an element of the relative algebraic de Rham cohomology
+                              H 2 (Xe \ A,
+                                        e (B
+                                           e ∪ E) \ A)
+                                                     e = MdR .
+                                       dR
+(See for instance, Example 3.3.9 in [17] or Sections 2.2.7 and 2.2.8 of [8].) With abuse of
+notation, we denote the cohomology class of ω0 in MdR also by ω0 .
+    Combining with Lemma 3.3 and the integral representation of G we obtain the following:
+Proposition 3.5. The Catalan constant G is a period of the motive M .
+Proof. Pairing the element ω0 of the de Rham realization of M with the element ∆    e of the
+dual of the Betti realization of M via the period pairing of M , in view of π( e
+                                                                              ∆) = ∆ we get
+                        Z        Z                  Z
+                                        dxdy              dxdy
+                            ω0 =           2 − y2
+                                                  =                 = G.
+                         ∆e       ∆e 1 − x           ∆ 1 − x2 − y 2
+(See also Remark 3.6 below.)                                                                                        □
+Remark 3.6. Suppose ω is a meromorphic 2-form on X such that π ∗ ω is regular on X       e \Ae
+(where π is the blow-up map; note that the latter condition implies that ω is regular on
+X \ A). Since Xe \A e is a 2-dimensional smooth affine variety and (B  e ∪ E) \ Ae is a simple
+                                                    ∗
+normal crossing divisor, and the differential form π ω is a regular top-degree form on X e \Ae
+
+   5This covering of X
+                     e is more convenient for some of the later arguments in the paper than the covering of X
+                                                                                                            e
+by the open sets Spec Q[x, y, f1 /fj , . . . , f4 /fj ] (1 ≤ j ≤ 4), with the fj as in Remark 3.2 (forming a generating
+set of the ideal of {P, Q}).
+10
+
+
+and the topological chain ∆ e in X e an \ A
+                                          ean is differentiable with boundary in B
+                                                                                 e an ∪ E an , the
+period pairing of the class of π ∗ ω in MdR with ∆  e ∈ M ∨ is simply the integral of π ∗ ω over
+                                                            sing
+e (see [17, Theorem 5.5.6]). By functoriality, this integral is equal to the integral of ω over
+∆
+∆. (In particular, the latter integral converges.)
+
+                              4. The weight filtration of M
+                                                                                  e ∪ E is a closed
+       The goal of this section is to describe the weight filtration W• M . Since B
+subvariety of e X, and A e is a smooth closed subvariety of X  e of pure codimension 1, we have a
+                                    e  e       e
+Gysin long exact sequence for (X, B ∪ E, A) in MM(Q), which reads:
+(4.1)
+               e A
+ · · · −→ H 0 (A, e ∩ (Be ∪ E))(−1)
+
+                                                                  δ
+          −→ H 2 ( e e ∪ E)
+                  X, B                     e \ A,
+                                      H 2 (X   e (B
+                                                  e ∪ E) \ e
+                                                          A)               e A
+                                                                      H 1 (A, e ∩ (B
+                                                                                   e ∪ E))(−1) →
+
+
+                                                  M                           e B
+                                                                         H 3 (X, e ∪ E) → · · ·
+
+(See §4.8 of [14] and in particular, Theorem 4.8.3 therein, for the Gysin sequence in the setting
+of exponential motives, which implies the existence of the sequence in the settings of Nori and
+absolute Hodge motives.) The map δ is the connecting morphism. We will be using the
+sequence above to compute W• M .
+Lemma 4.1. For any integer n ≥ 0, the map π : X e → X induces isomorphisms
+                                      ≃      e Be ∪ E)
+(4.2)                π ∗ : H n (X, B) −
+                                      → H n (X,
+                                               ≃      e Ae ∩ (B
+                                                              e ∪ E)).
+(4.3)                     π ∗ : H n (A, A ∩ B) −
+                                               → H n (A,
+Proof. The fact that these maps exist in MM(Q) is by functoriality. The map π gives an
+isomorphism between the pairs (A,e A e ∩ (Be ∪ E)) and (A, A ∩ B), so the fact that (4.3) is an
+isomorphism is clear. We need to prove that the map (4.2) is an isomorphism. It suffices to
+show that this map is an isomorphism after passing to the Betti realization, or equivalently,
+that the map
+                                         e B
+                           π∗ : Hn,sing (X, e ∪ E) → Hn,sing (X, B)
+is an isomorphism. There is a commutative diagram
+                                            ≃
+                      Hn,sing ( e e ∪ E)
+                               X, B              Hn,sing ( e e ∪ E), {pt})
+                                                          X/(B
+                                π∗
+                                             ≃
+                         Hn,sing (X, B)             Hn,sing (X/B, {pt}),
+where pt stands for a singleton, and the notation Hn,sing (X/B, {pt}) means the relative ra-
+tional singular homology of the pair (X an /B an , B an /B an ), even though X/B is not a variety.
+                        e B
+The notation Hn,sing (X/(  e ∪ E), {pt}) is to be interpreted similarly. The horizontal maps are
+induced by quotient maps and are isomorphisms by a consequence of the classical excision
+theorem (see e.g., [15, Proposition 2.22]), and the vertical maps are induced by π. The desired
+conclusion thus follows.                                                                        □
+     Throughout the paper, we will use the isomorphisms of Lemma 4.1 to identify H n (X, B)
+(resp. H n (A, A ∩ B)) with H n ( e e ∪ E) (resp. H n (A,
+                                 X, B                  e Ae ∩ (B
+                                                               e ∪ E))).
+                                                                                                    11
+
+    The topological chain ∆ in X an defines an element of H2,sing (X, B), which we also denote
+by ∆.
+Lemma 4.2.
+   (a) We have an isomorphism
+                                           H 2 (X, B) ≃ Q(0).
+          Moreover, H2,sing (X, B) is spanned by ∆.
+     (b) H3 (X, B) = 0.
+Proof.        (a) In view of the long exact sequence for the pair (X, B) for the relative ho-
+mology in our category of motives and the fact that H2 (X) and H1 (X) vanish because X an
+is contractible, it follows that the connecting morphism H2 (X, B) → H1 (B), which is the
+boundary map in Betti realization, is an isomorphism. Thus to establish part (a) it suffices
+to show that H1 (B) is isomorphic to Q(0), and the Betti realization H1,sing (B) is generated
+by ∂∆.
+     Set ℓjc := B \ ℓj for j = 1, 2, 3 (see Figure 1). It is not difficult to see that the map
+(4.4)                       H1 (ℓ1c ∩ (ℓ2c ∪ ℓ3c )) → H1 (ℓ1c ) ⊕ H1 (ℓ2c ∪ ℓ3c )
+induced by the obvious inclusions is an isomorphism: indeed, after passing to the Betti real-
+izations, the domain and codomain of (4.4) are both 4-dimensional spanned by the classes of a
+small loop around P in ℓan                                    an                               an
+                           3 , a small loop around (0, 0) in ℓ2 , and small loops around Q in ℓ3
+and ℓan
+      2 ; the Betti realization of the map (4.4) sends each generator to its counterpart. Thus
+the Mayer–Vietoris sequence for the open cover B = ℓ1c ∪ (ℓ2c ∪ ℓ3c ) gives an exact sequence
+(4.5)       0 → H1 (B) → H0 (ℓ1c ∩ (ℓ2c ∪ ℓ3c )) → H0 (ℓ1c ) ⊕ H0 (ℓ2c ∪ ℓ3c ) → H0 (B) → 0.
+On noting that (ℓ1c ∩ (ℓ2c ∪ ℓ3c ))an has two connected components both of which have Q-rational
+points, and that (ℓ1c )an , B an and (ℓ2c ∪ ℓ3c )an are all connected and have Q-rational points, the
+sequence reads
+                           0 → H1 (B) → Q(0)⊕2 → Q(0)⊕2 → Q(0) → 0.
+It follows that H1 (B) is isomorphic to Q(0). The element ∂∆ gives a nonzero element of the
+Betti realization H1,sing (B), completing the argument.
+    (b) We have
+                                     H3 (X, B) ≃ H2 (B) ≃ 0,
+where the first isomorphism is by the long exact sequence of the relative homology for the pair
+(X, B). The second isomorphism can be seen from the Mayer–Vietoris long exact sequence
+for the same open cover of B as in the argument for part (a), in view of injectivity of (4.4)
+and the fact, easily verified in the Betti realization, that H2 (ℓ1c ) and H2 (ℓ2c ∪ ℓ3c ) vanish. □
+    By (4.1) and Lemmas 4.1 and 4.2, the motive M fits in the following exact sequence:
+                                                                 δ
+           H 0 (A, A ∩ B)(−1)           H 2 (X, B)        M             H 1 (A, A ∩ B)(−1)      0
+                                            ≃
+             e A
+        H 0 (A, e ∩ (B
+                     e ∪ E))(−1)           Q(0)                           e A
+                                                                     H 1 (A, e ∩ (B
+                                                                                  e ∪ E))(−1)
+
+We now turn our focus to H 1 (A, A ∩ B)(−1) and H 0 (A, A ∩ B)(−1). The long exact sequence
+for the relative homology of the pair (A, A ∩ B) gives an exact sequence
+(4.6)
+                                                                       (∗)
+ 0 = H1 (A ∩ B) → H1 (A) → H1 (A, A ∩ B) → H0 (A ∩ B) −−→ H0 (A) → H0 (A, A ∩ B) → 0.
+12
+
+Note that Aan is connected and A ∩ B consists of 4 points defined over Q, so that
+                          H0 (A ∩ B) ≃ Q(0)⊕4        and    H0 (A) ≃ Q(0),
+with Betti realizations given by
+           H0,sing (A ∩ B) = ⟨[P ], [Q], [−P ], [−Q]⟩Q     and     H0,sing (A) = ⟨[ pt ]⟩Q ,
+where [ pt ] refers to the class of a singleton; here and elsewhere in the paper, we use the
+notation ⟨ ⟩Q for the Q-span. The map
+                               (∗)sing : H0,sing (A ∩ B) → H0,sing (A)
+sends each of [±P ], [±Q] to [ pt ]. It follows that (∗) is surjective with kernel Q(0)⊕3 , generated
+in the Betti realization by [Q] − [P ], [−P ] − [P ] and [−Q] − [P ]. Thus H 0 (A, A ∩ B) is zero,
+and moreover, we have a short exact sequence
+                           0 → H1 (A) → H1 (A, A ∩ B) → Q(0)⊕3 → 0.
+Taking duals, we get a short exact sequence
+(4.7)                      0 → Q(0)⊕3 → H 1 (A, A ∩ B) → H 1 (A) → 0.
+For future referencing, we record our conclusions:
+Lemma 4.3.
+   (a) The sequence (4.1) gives a short exact sequence
+                                                 δ
+                      0      H 2 (X, B)     M        H 1 (A, A ∩ B)(−1)      0.
+(4.8)                           ≃
+                               Q(0)
+
+      (b) H 1 (A, A ∩ B)(−1) is an extension of H 1 (A)(−1) by Q(−1)⊕3 in MM(Q).
+      Let K = Q(i) ⊂ C. After base change to K, we have an isomorphism
+                                             ≃
+(4.9)    AK = Spec K[x, y]/(1 − x2 − y 2 ) −
+                                           → Gm,K = Spec K[z, z −1 ];        (x, y) 7→ z = x + yi
+over K, so that
+                                 H 1 (AK ) ≃ H 1 (Gm,K ) ≃ Q(−1)
+in MM(K). Since the weight filtration behaves well under base change from Q to K (as the
+weight filtration is determined by the Hodge realization), it follows that the motive H 1 (A) (in
+MM(Q)) is pure of weight 2. In view of Lemma 4.3 and the fact that morphisms of motives
+are strictly compatible with the weight filtration, we obtain that
+             W0 M = H 2 ( e
+                         X, Be ∪ E) = H 2 (X, B) ≃ Q(0)
+                                                
+             W2 M = δ −1 W2 H 1 (A, A ∩ B)(−1)
+(4.10)                                                                 
+                      −1
+                                 1                 1
+                                                                    ⊕3
+                  =δ        ker H (A, A ∩ B) → H (A) ⊗ Q(−1) ≃ Q(−1)
+
+             W4 M = M
+and
+                            GrW (M ) ≃ Q(0) ⊕ Q(−1)⊕3 ⊕ H 1 (A)(−1)
+(with weights 0,2,4). In particular, M is 5-dimensional.
+                                                                                                13
+
+Remark 4.4. The motive H 1 (A) is not isomorphic to Q(−1) in MM(Q), as the periods of
+H 1 (A) are in πQ rather than in πiQ (see the period computations of the next section). Thus
+M is not a mixed Tate motive over Q. (By a mixed Tate motive over Q here, we simply mean
+an object of MM(Q) that is an iterated extension of the Q(n).)
+
+                        5. The de Rham and Betti realizations
+     In this section, we explicitly describe the de Rham realization of the motive M defined
+in §3 and the Betti realization of its dual M ∨ , starting with the latter. We then use these to
+compute the periods of M .
+
+5.1. The Betti realization. Dualizing (4.8) and taking the Betti realization, we obtain a
+short exact sequence
+                                              ∨
+                                             δsing
+(5.1)      0        H1,sing (A, A ∩ B)(1)             ∨
+                                                     Msing        H2,sing (X, B)    0.
+
+    First, we determine a basis of H1,sing (A, A ∩ B). By (4.6), we have a short exact sequence
+                                                                                    
+                                           ∂                       (∗)sing
+    0 → H1,sing (A) → H1,sing (A, A ∩ B) −→ ker H0,sing (A ∩ B) −−−−→ H0,sing (A) → 0,
+
+where the connecting homomorphism ∂ is given by the boundary map. Since Aan ≃ C× via
+(x, y) 7→ x+iy, we have H1,sing (A) ≃ Q·γ, where γ is the unit circle in R2 around (x, y) = (0, 0)
+oriented positively. For a point R ∈ {−P, Q, −Q}, let αP,R be the counter-clockwise arc from
+P to R on the unit circle γ. On recalling the description of the kernel of (∗)sing from §4 (see
+the paragraph before Lemma 4.3), γ together with the αP,R with R ∈ {−P, Q, −Q} form a
+basis of H1,sing (A, A ∩ B). It will be slightly more convenient to adjust this basis to the basis
+{γ, α1 , α2 , α3 }, where
+(5.2)
+                                               1
+ α1 := −αP,Q + αP,−Q − γ ,      α2 := −αP,−P +   γ , α3 := −2αP,Q + 2αP,−P − 2αP,−Q + γ.
+                                               2
+                                     ∨
+      On the other hand, the map Msing   → H2,sing (X, B) in (5.1) is induced by the blow-up
+map. By Lemma 4.2, H2,sing (X, B) is 1-dimensional generated by the simplex ∆, which has a
+     e in M ∨ (see Lemma 3.3 and the comments before and after it). In view of the sequence
+lift ∆     sing
+(5.1), we obtain the statement in part (a) below.
+Lemma 5.1.1.
+                   ∨
+   (a) A basis of Msing is formed by
+
+(5.3)                       e γ ⊗ 2πi, αj ⊗ 2πi
+                            ∆,                           for j = 1, 2, 3,
+                                                                                    ∨
+        where we have considered γ ⊗ 2πi and αj ⊗ 2πi (j = 1, 2, 3) as elements of Msing via
+                       ∨
+        the injection δsing in (5.1).
+    (b) The weight filtration on Msing∨ is given in terms of the basis (5.3) by
+                         ∨
+                   W−4 (Msing ) = ⟨γ ⊗ 2πi⟩Q
+                         ∨
+                   W−2 (Msing ) = ⟨γ ⊗ 2πi, α1 ⊗ 2πi, α2 ⊗ 2πi, α3 ⊗ 2πi⟩Q
+                          ∨         ∨
+                     W0 (Msing ) = Msing .
+14
+
+Proof. We have already established part (a). Dualizing (4.8), the weight filtration on M ∨ is
+given by W−4 (M ∨ ) = W−4 [H1 (A, A ∩ B)(1)] = H1 (A)(1), W−2 (M ∨ ) = H1 (A, A ∩ B)(1), and
+W0 (M ∨ ) = M ∨ . The assertion in part (b) follows.                                       □
+
+5.2. The de Rham realization. We now compute an explicit basis of MdR . Taking the de
+Rham realization of (4.8), we have a short exact sequence
+                                                        ResAe
+                0            2 (X, B)
+                            HdR                  MdR             1 (A, A ∩ B)(−1)
+                                                                HdR                           0,
+(5.4)                          ≃
+                            Q(0)dR = Q                             1 (A, A ∩ B)
+                                                                  HdR
+
+                                               e (Recall that we have identified H 1 (A,
+where ResAe is the Poincaré residue map along A.                                     e Ae∩
+ e ∪ E)) and H 1 (A, A ∩ B) via the isomorphism (4.3).)
+(B
+                                       1 (A, A ∩ B).
+       We start by finding a basis of HdR
+                                                                                 e
+Notation 5.2.1. Let ω j (0 ≤ j ≤ 3) be the following differential forms on A and A:
+                                      dx     −dy                         1
+                                ω0 =       =     ,       ω 1 = x ω 0 = − dy,
+                                      2y     2x                          2
+                                              1                         1
+                                ω 2 = y ω 0 = dx,        ω 3 = xy ω 0 = xdx.
+                                              2                         2
+     Note that since x2 + y 2 = 1 on A, we may write ω 0 also as 12 (y dx − x dy). For each
+j, the differential form ω j is a top-degree regular form on A, so that it defines an element
+     1 (A, A ∩ B). With abuse of notation, we denote the elements of H 1 (A, A ∩ B) and
+of HdR                                                                      dR
+  1
+HdR (A) defined by ω j also by ω j .
+     Under the isomorphism (4.9), the differential forms ω j are given by
+                    idz            i                       1                1
+(5.5)        ω0 =       ,  ω 1 = (1 + z −2 )dz , ω 2 = (1 − z −2 )dz , ω 3 = z(1 − z −4 )dz
+                     2z            4                       4                8
+        1                    1
+(as z + = 2x and z − = 2iy). The period matrix of ω j (j = 0, . . . , 3) with respect to the
+        z                    z
+basis α1 , α2 , α3 , γ of H1,sing (A, A ∩ B) (see (5.2)) is computed to be6
+                                             ω1 ω2 ω3 ω0
+                                                        
+                                         α1   1 0  0  0
+                                         α2  0 1  0  0 .
+                                         α3  0 0  1  0 
+                                          γ   0 0  0 −π
+
+The entries are calculated using computations such as
+                             Z          Z i
+                                            i dz  i πi    π
+                                   ω0 =          = ·    =− .
+                              αP,Q       1   2z   2   2   4
+
+Since the period matrix above is invertible, it follows that the ω j (j = 0, 1, 2, 3) form a basis
+    1 (A, A ∩ B). We record the conclusion:
+of HdR
+
+     6The reason for the change of basis (5.2) was to obtain a diagonal period matrix here.
+                                                                                                   15
+
+Lemma 5.2.2. The elements ω 1 , ω 2 , ω 3 , ω 0 form a basis of HdR  1 (A, A∩B). The period matrix
+
+of H 1 (A, A ∩ B) with respect to the ordered basis (ω 1 , ω 2 , ω 3 , ω 0 ) of HdR
+                                                                                 1 (A, A ∩ B) and the
+
+ordered basis (α1 , α2 , α3 , γ) of H1,sing (A, A∩B) (see (5.2)) is the diagonal matrix with diagonal
+entries 1, 1, 1, −π, in that order.
+Remark 5.2.3. The de Rham realization of (4.7) is given by
+                                                            (†)
+                        0 → Q(0)⊕3    1                 1
+                                dR → HdR (A, A ∩ B) −→ HdR (A) → 0.
+In view of (5.5) it is clear that ω 1 , ω 2 and ω 3 generate the kernel of (†) and ω 0 maps to a
+               1 (A) (also denoted by ω ). Thus
+generator of HdR                            0
+                                  1
+                                                 
+                              W0 H (A, A ∩ B) dR = ⟨ω 1 , ω 2 , ω 3 ⟩Q .
+Remark 5.2.4. The period matrix of H 1 (A, A ∩ B) suggests in view of Grothendieck’s period
+conjecture that the extension H 1 (A, A ∩ B) of H 1 (A) by Q(0)⊕3 should be split in MM(Q).
+Note that the fact that H 1 (A, A ∩ B) splits in MM(K) (with K = Q(i) as before) is clear to
+the expert reader, at least assuming that Ext1MM(K) (Q(0), Q(1)) is given by Kummer motives
+(as it is expected), since A ∩ B translates under (4.9) to the torsion subgroup µ4 of Gm,K
+(recall that throughout, we are working with motives with rational coefficients). We will see
+shortly that H 1 (A, A ∩ B) is indeed also split in MM(Q). See Lemma 6.1.
+                                                    1 (A, A ∩ B) to elements of M , as follows.
+     We now lift the elements ω 0 , . . . , ω 3 of HdR                           dR
+
+Notation 5.2.5. From now on, for simplicity we set
+                                         g := 1 − x2 − y 2 .
+                                                                e (recall the concrete
+Let ωj (1 ≤ j ≤ 3) be the following differential forms on X and X
+               e in §3):
+description of X
+                             xdxdy                    ydxdy                      xydxdy
+               ω1 := xω0 =         ,   ω2 := yω0 =          ,     ω3 := xyω0 =          ,
+                               g                        g                           g
+where
+                                                     dxdy
+                                              ω0 =
+                                                       g
+as in (3.5).
+     By Lemma 3.4, the ωj are regular on X    e \Ae with logarithmic singularities along A.
+                                                                                         e In
+                                                   e
+particular, the Poincaré residue of each ωj along A is well-defined.
+Lemma 5.2.6. For j = 0, . . . , 3, we have
+                                          ResAe(ωj ) = ω j ,
+where ω j is the 1-form defined in Notation 5.2.1 and ResAe is the Poincaré residue map along
+e (The equality above is an equality of differential forms on A,
+A.                                                             e or on A via the isomorphism
+e ∼
+A = A given by the blow-up map.)
+                                                                   e is then defined by g = 0.
+Proof. We verify the equality outside xy = 0. The strict transform A
+Since dg = −2xdx − 2ydy, we have
+                                              dxdy   dg dx
+                                       ω0 =        =   ∧    .
+                                                g    g   2y
+16
+
+
+Thus ResAe(ω0 ) and ω 0 coincide on A e \ {xy = 0}. Since both Res e(ω0 ) and ω 0 are regular
+                                                                      A
+    e it follows that Res e(ω0 ) = ω 0 on e
+on A,                                     A. The  assertions for ω1 , ω2 and ω3 are checked by
+                          A
+inserting x, y and xy in appropriate places of the computation.                              □
+
+      Being a regular differential form of X   e \A e of top degree, each ωj defines an element of
+MdR . With abuse of notation, we denote this element also by ωj . The equation of Lemma
+5.2.6 descends to the same equation with ωj and ω j respectively interpreted as elements of
+MdR and HdR   1 (A, A ∩ B). Combining with Lemma 5.2.2 and in view of the sequence (5.4),
+
+it follows that to complete {ω0 , ω1 , ω2 , ω3 } to a basis of MdR it suffices to add a generator of
+the line HdR2 (X, B) ⊂ M .
+                          dR
+      Set
+(5.6)                                       η := 2dxdy,
+                                                                 e as well as on X. It defines
+which (with abuse of notation) is a regular differential form on X
+an element of MdR , also denoted by η, whose Poincaré residue along A e vanishes. Hence η is
+     2
+in HdR (X, B) ⊂ MdR . Finally, its period pairing with the element ∆e of M ∨ is given by
+                                                                           sing
+                                       Z      Z
+                                          η=      η = 1.
+                                          ∆
+                                          e          ∆
+                                                            2 (X, B).
+It follows that η is nonzero in MdR and hence it generates HdR
+     Combining with (4.10) and Remark 5.2.3, we have proved the following result:
+Lemma 5.2.7. A basis of MdR is given by
+(5.7)                                     {η, ω0 , . . . , ω3 }
+
+(where the ωj and η are defined in Notation 5.2.5 and equation (5.6)). Moreover,
+               W0 MdR = ⟨η⟩Q ,     W2 MdR = ⟨η, ω1 , ω2 , ω3 ⟩Q ,   W4 MdR = MdR .
+                                                                                 ∨
+5.3. The period matrix of M . In the previous two subsections we found bases of Msing
+and MdR . We now compute the period matrix of M with respect to these bases.
+                                                                        ∨ given in Lemma
+Proposition 5.3.1. The period matrix of M with respect to the basis of Msing
+5.1.1 and the basis of MdR given in Lemma 5.2.7 is
+                            η     ω1        ω2          ω3          ω0
+                   e                                                      
+                   ∆         1 (log 2)/2 (log 2)/2 (1 − log 2)/4    G
+               α1 ⊗ 2πi    0     2πi        0           0           0     
+(5.8)                                                                     .
+               α2 ⊗ 2πi    0      0        2πi          0           0     
+                                                                          
+               α3 ⊗ 2πi      0     0         0          2πi          0
+                γ ⊗ 2πi      0     0         0           0       −π · (2πi)
+
+Proof. That the (1,5) entry is G is by the integral representation of G (see Proposition 3.5).
+The bottom right 4 × 4 submatrix comes from the computation of periods of H 1 (A, A ∩ B)
+(Lemma 5.2.2). That the (1,1) entry is 1 is clear. The fact that the remaining entries of the
+first column are zero can be seen, for instance, by weight considerations: the elements αj ⊗2πi
+and γ ⊗ 2πi are in W−1 (Msing∨ ), and hence they send W M
+                                                            0 dR to zero. Thus the only new
+                                                                                                 17
+
+
+claims are about how ωj for j = 1, 2, 3 pairs with e∆. These are done by direct computations.
+For example,
+               Z        Z                  Z 1 Z 1−y              
+                             x dxdy                       x dx            log 2
+                   ω1 =         2      2
+                                         =                  2    2
+                                                                     dy =
+                ∆e       ∆ 1−x −y           0     0    1−x −y               2
+(see also Remark 3.6). The other integrals are similarly calculated.                             □
+Remark 5.3.2. The top left 4 × 4 submatrix of (5.8) is a period matrix of W2 M , which is an
+extension of Q(−1)⊕3 by Q(0). The existence of log 2 among the periods and its irrationality
+show that this extension is nonsplit in MM(Q), as its Betti–de Rham realization is nonsplit.
+The existence of log 2 among the periods suggests that W2 M (and hence M ) is ramified at 2.
+
+                        6. The motive of the Catalan constant
+     In this section, we define (what we will call) the motive of the Catalan constant as a
+particular 2-dimensional submotive of M . Recall that we have a diagram
+                                                                                 0
+
+
+                                                                             Q(−1)⊕3
+
+
+(6.1)                                                       δ
+            0     H 2 (X, B)                    M                       H 1 (A, A ∩ B)(−1)   0
+                       ≃
+
+                     Q(0)                e \ A,
+                                    H 2 (X   e (B
+                                                e ∪ E) \ e
+                                                        A)                 H 1 (A)(−1)
+
+
+                                                                                 0
+in MM(Q), with exact horizontal and vertical sequences.
+     The pair (A, A ∩ B) = (A, {±P, ±Q}) has a natural action of the dihedral group D4 . In
+particular, the automorphism σ of X = Spec Q[x, y] defined by
+                                         σ : (x, y) 7→ (−y, x)
+gives an automorphism of order 4 of the pair (A, A ∩ B), and hence an automorphism of the
+motive H 1 (A, A ∩ B), which we also denote by σ. There is thus a motive
+                                                                          
+                 H 1 (A, A ∩ B)σ := ker Id −σ ∈ EndMM(Q) (H 1 (A, A ∩ B))
+in MM(Q). The action of σ on the de Rham realization of H 1 (A, A ∩ B) is given in terms of
+                                         1 (A, A ∩ B) (see Notation 5.2.1) by
+the explicit basis {ω j : 0 ≤ j ≤ 3} of HdR
+                 σ(ω 0 ) = ω 0 ,   σ(ω 1 ) = −ω 2 ,   σ(ω 2 ) = ω 1 ,    σ(ω 3 ) = −ω 3 .
+It follows that H 1 (A, A ∩ B)σ is 1-dimensional with de Rham realization
+                                     1
+(6.2)                               HdR (A, A ∩ B)σ = ⟨ω 0 ⟩Q .
+Lemma 6.1. The sequence
+                          0 → Q(0)⊕3 → H 1 (A, A ∩ B) → H 1 (A) → 0
+(or equivalently, the vertical sequence in (6.1)) splits in MM(Q).
+18
+
+Proof. Consider the diagram
+
+                                        H 1 (A, A ∩ B)σ
+                                                          (‡)
+
+
+                  0     Q(0)⊕3          H 1 (A, A ∩ B)           H 1 (A)   0.
+
+
+The map (‡) (defined by the commutativity of the diagram) is an isomorphism since it is an
+                                                                        1 (A, A ∩ B)σ to its
+isomorphism after passing to the de Rham realizations (it sends ω 0 in HdR
+              1 (A)). This gives the desired conclusion.
+namesake in HdR                                                                           □
+Definition 6.2. The motive of the Catalan constant, denoted by C, is the pullback of M
+under the inclusion H 1 (A, A ∩ B)σ (−1) ⊂ H 1 (A, A ∩ B)(−1). That is, C is the subobject of
+M fitting in the commutative diagram
+
+              0       H 2 (X, B)         C         H 1 (A, A ∩ B)σ (−1)         0
+
+
+              0       H 2 (X, B)         M          H 1 (A, A ∩ B)(−1)       0.
+
+     Note that C is a 2-dimensional object of MM(Q) with
+           GrW (C) = H 2 (X, B) ⊕ H 1 (A, A ∩ B)σ (−1) ≃ Q(0) ⊕ H 1 (A)(−1).
+The motive C is not a mixed Tate motive over Q, however, its extension of scalars to K = Q(i)
+is mixed Tate with
+                       GrW (CK ) ≃ Q(0) ⊕ Q(−2) in MM(K).
+
+
+    In view of (6.2) and §5.2 (particularly, Lemmas 5.2.7 and 5.2.6), the de Rham realization
+of C has a basis given by η and ω0 . There is a natural surjection
+                                         ∨       ∨
+                                        Msing → Csing .
+
+With abuse of notation, we denote the images of γ ⊗ 2πi and ∆     e under this map by the
+same symbols. By functoriality of the period pairing, the elements η, ω0 of CdR pair with the
+                     e of C ∨ to give the period matrix
+elements γ ⊗ 2πi and ∆      sing
+
+                                             η    ω0      
+                                      e
+                                      ∆       1    G
+(6.3)                                                        .
+                                   γ ⊗ 2πi    0 −π · (2πi)
+
+                            e give a basis of C ∨ .
+It follows that γ ⊗ 2πi and ∆                  sing
+
+Remark 6.3. We do not expect σ to extend to an automorphism of the motive M , as even
+though σ acts on X \ A, it does not keep B invariant.
+Remark 6.4. The only nontrivial element of D4 that acts on the pair (X \ A, B \ A) is the
+reflection
+                                   τ : (x, y) 7→ (y, x).
+                                                                                                         19
+
+(Note that σ and τ are the ‘standard’ generators of D4 .) The automorphism τ extends to an
+automorphism of the pair (X e \ A,
+                                e (B
+                                   e ∪ E) \ A)
+                                            e given by
+                     ((x, y), [α1 : β1 ], [α2 : β2 ]) 7→ ((y, x), [β2 : α2 ], [β1 : α1 ]) ,
+and hence gives an automorphism of the motive M , which we also denote by τ . We cannot fully
+extract the motive C from M using τ . Indeed, the motive M has an eigenspace decomposition
+                                               M = M τ ⊕ M τ =−1 ,
+where M τ =−1 (resp. M τ ) denotes the eigenspace on which τ acts as −1 (resp. as identity).
+Direct computations in the de Rham realization give
+          τ (η) = −η,        τ (ω0 ) = −ω0 ,    τ (ω1 ) = −ω2 ,      τ (ω2 ) = −ω1 ,   τ (ω3 ) = −ω3 ,
+so that
+                          τ =−1                                    τ
+                         MdR    = ⟨η, ω0 , ω3 , ω1 + ω2 ⟩Q ,      MdR = ⟨ω1 − ω2 ⟩Q .
+Thus, dim M τ =−1 = 4 and dim M τ = 1. On recalling the description of CdR , we have
+C ⊂ M τ =−1 .
+
+          7. Linear forms in 1 and G – I: A motivic proof of Theorem 1.1.1
+7.1. Overview. The main objective of this section is to give a motivic proof of Theorem
+1.1.1 using our earlier considerations. The proof we give here will be non-constructive, in that
+it will not give us the coefficients of 1 and G in the linear forms.
+    We recall the basic idea here, which follows Brown’s ideas [7] (further investigated by
+Dupont [12] and Dupont–Fresán [13]; a very nice exposition of these ideas can also be found
+in Burgos Gil–Fresán’s [8]). Recall that C is a 2-dimensional motive over Q with
+                               CdR = ⟨η, ω0 ⟩Q       and    ∨
+                                                           Csing    e γ ⊗ 2πi⟩Q
+                                                                 = ⟨∆,
+and period matrix as in (6.3). If ω is an element of CdR , then
+                                                ω = a ω η + b ω ω0
+                                             e via the period pairing, we obtain
+in CdR for some aω and bω in Q. Pairing with ∆
+                                    Z
+                                       ω = a ω + bω G
+                                                 ˜
+                                                 ∆
+(where with abuse of notation, ω on the left hand side of the last equation denotes a regular
+2-form on X e \Ae that represents its namesake in CdR ). The ultimate hope is that this approach
+may lead to linear forms in 1 and G of sufficiently good quality that might be useful in proving
+irrationality of G. More explicitly, the ultimate hope would be to try to choose a sequence of
+cohomology classes {ωn }n∈Z such that
+                                            Z
+                                               ωn ̸= 0
+                                                      ˜
+                                                      ∆
+and          Z          
+                    ωn       · (the lowest common denominator of aωn and bωn ) −→ 0
+                ˜
+                ∆
+as n → ∞. By a standard elementary argument this would imply irrationality of G. Of
+course, to carry out this approach, one likely needs to have an explicit way of computing the
+coefficients of 1 and G in the linear forms. We shall address this problem in §8 and §9.
+20
+
+     In §7.2 and §7.3 below we discuss how one can naturally produce elements of CdR repre-
+sented by differential forms on X \ A. Throughout the rest of the paper, given any F ∈ Q[x, y]
+and integer t ≥ 0, we set
+                                                  F dxdy
+(7.1)                                    ωF,t := t+1
+                                                   g
+(with g = 1 − x2 − y 2 , as before), which can be considered as a meromorphic 2-form on X e or
+X (the form on X  e is the pullback of its counterpart on X under the blow-up map). In §7.2
+below we study when the meromorphic differential form ωF,t on X    e is regular on X
+                                                                                   e \ A.
+                                                                                        e We
+will see that this is guaranteed by a weaker version of condition (ii) of Theorem 1.1.1. Once
+this regularity condition is imposed, ωF,t represents a cohomology class in MdR and by our
+earlier calculation of the periods of M , it follows that
+                                     Z
+                                       ωF,t ∈ ⟨1, log 2, G⟩Q .
+                                    ∆
+In §7.3 (Proposition 7.3.1), we will show that the regularity condition on ωF,t together with
+its σ-invariance will guarantee that ωF,t represents an element of CdR and hence the integral
+above will belong to ⟨1, G⟩Q . This will establish a more natural and (only seemingly, see
+Remark 7.2.5) more general version of Theorem 1.1.1, in which condition (ii) is replaced by a
+regularity condition (see Theorem 7.2.4). The final subsection will start our preparations for
+the last objective of the paper, which will be to explicitly compute the coefficients of 1 and
+G in our linear forms.
+7.2. Regularity. Let F ∈ Q[x, y] be a nonzero polynomial. Then F can be considered as
+                       e Recall that EP (resp. EQ ) denotes the special divisor of X
+a regular function on X.                                                             e above
+the point P = (1, 0) (resp. Q = (0, 1)) of X. Denote the coefficient of EP (resp. EQ ) in
+the Weil divisor of F by ordEP (F ) (resp. ordEQ (F )). We refer to these as the orders (of
+vanishing) of F along EP and EQ . For referencing purposes, we record the following explicit
+characterization of these orders, which is easily seen through computations in charts:
+Lemma 7.2.1. The order of F along EP is the largest integer s such that (x − 1)s divides
+F (x, u(x − 1)) in the polynomial ring Q[x, u]. The order of F along EQ is the largest integer
+s such that (y − 1)s divides F (u(y − 1), y) in the polynomial ring Q[u, y].
+     The following definition is inspired by Definition 3.5 of [12].
+Definition 7.2.2. We say a meromorphic 2-form on X is integrable if it is of the form
+                                             F dxdy
+                                      ωF,t = t+1
+                                               g
+for some F ∈ Q[x, y] and t ∈ Z≥0 with ordEP (F ) ≥ t and ordEQ (F ) ≥ t.
+     Note that since the order of g along both EP and EQ is 1, the definition above indeed
+depends on the differential form, and not on the choice of F and t. The set of all integrable
+2-forms on X is a subspace of the rational vector space of meromorphic 2-forms on X, and
+it contains the space of regular 2-forms on X. The terminology integrable here refers to
+integrability over the simplex ∆, in that the integral of an integrable differential form (in the
+above sense) converges over ∆. Indeed, one has the following:
+Lemma 7.2.3. The differential form ωF,t is integrable if and only if, considered as a mero-
+morphic differential form on X, e it is regular on X
+                                                   e \ A.
+                                                       e (In particular, the integral of an
+integrable differential form over ∆ converges.)
+                                                                                                 21
+
+     The proof of this lemma is done by calculations in charts similar to the proof of Lemma
+3.4 and is omitted.
+     We can now formulate a more natural version of Theorem 1.1.1:
+Theorem 7.2.4. Let t be an integer ≥ 0, and F a σ-invariant element of Q[x, y] such that
+ωF,t is integrable. Then the integral of ωF,t over ∆ converges to a Q-linear combination of 1
+and G.
+     This statement is (seemingly, see Remark 7.2.5) more general than Theorem 1.1.1. In-
+deed, in view of Lemma 7.2.1, ωF,t is integrable if xt y t | F , so that condition (ii) of Theorem
+1.1.1 implies integrability. On the other hand, the condition xt y t | F is not necessary for
+integrability of ωF,t . For instance, the differential form
+                       (1 − x − y)(1 − x + y)(1 + x − y)(1 + x + y)
+                                                                    dxdy
+                                            g3
+is integrable and hence Theorem 7.2.4 asserts that its integral over ∆ is in ⟨1, G⟩Q .
+Remark 7.2.5. Despite its more general appearance, Theorem 7.2.4 can be deduced from
+Theorem 1.1.1. This can be seen easily using the considerations of §9.5.
+7.3. Symmetric differential forms and the motivic proof of Theorem 7.2.4. Let
+                                                                                   e \A
+F ∈ Q[x, y] and t ∈ Z be such that ωF,t is integrable. Thanks to its regularity on X  e (see
+Lemma 7.2.3), ωF,t defines an element of MdR , which we also denote by ωF,t .
+    Recall from §6 that we have an automorphism σ of X defined by the formula (x, y) 7→
+(−y, x) at the level of points, which induces the automorphism σ of H 1 (A, A ∩ B) that we
+used to define the motive C of the Catalan constant. More generally, we will use the notation
+σ to refer to any automorphism of any object (when applicable) that is induced by the
+automorphism
+                         σ : Q[x, y] → Q[x, y]      (x, y) 7→ (−y, x).
+Thus for example, we have automorphisms σ of X, A, A ∩ B (hence X \ A and the pair
+             e \ A,
+(A, A ∩ B)), X   e and the motives and the spaces of differential forms on said objects.
+    Let Q[x, y]σ be the subring of Q[x, y] consisting of all the σ-invariant elements:
+                              Q[x, y]σ := {F ∈ Q[x, y] : σF = F }.
+Note that for any t, the polynomial F ∈ Q[x, y] is σ-invariant if and only if ωF,t is a σ-invariant
+differential form.
+     The first assertion of the following proposition might seem obvious at first glance. How-
+ever, this is not the case, as the action of σ on H 1 (A, A ∩ B) does not seem to extend to an
+action on the motive M (as importantly, σ does not act on B).
+Proposition 7.3.1. Let t ∈ Z. Suppose F is a polynomial in Q[x, y]σ such that ωF,t is
+integrable. Then the element ωF,t ∈ MdR belongs to CdR . In particular, the statement of
+Theorem 7.2.4 (and hence Theorem 1.1.1) holds.
+Proof. First, note that if the element ωF,t ∈ MdR belongs to CdR = ⟨η, ω0 ⟩Q , then pairing
+ωF,t with the element ∆ e of the Betti homology M ∨ , in view of Remark 3.6 and the period
+                                                     sing
+matrix of M in Proposition 5.3.1 we obtain Theorem 7.2.4. It thus remains to prove that ωF,t
+is in CdR . By definition of C, to show this it suffices to show that the element ResAe(ωF,t ) of
+HdR1 (A, A ∩ B) is fixed by σ.
+22
+
+                                                                                e → X is the
+      We will abbreviate ωF,t by ω in the rest of the argument. Recall that π : X
+                                                       ≈
+blow-up map at P and Q with special divisor E. Let X be the blow-up of X   e at π −1 (−P ) and
+                                                                                          ≈
+π −1 (−Q), which is the same as the blow-up of X at ±P and ±Q. Concretely, we take X to
+be the subvariety of X × (P1 )4 defined by the appropriate equations (similar to our concrete
+                                                                                        ≈
+                e see equation (3.1) and the equations immediately after it). Let π ′ : X → X
+description of X,                                                                            e
+                                             ≈
+                                                               −1          −1
+be the blow-up map. Denote the divisor in X above P, Q (or π (P ) and π (Q)) by E+ and
+               ≈
+the divisor in X above −P, −Q by E− . The map π ′ maps E+ isomorphically to E1 := E. Set
+E2 = E+ ∪ E− .
+      Let B ′ ⊂ X be the σ-orbit of B (i.e., the union of the two lines given by x = 0 and
+y = 0, with the four lines given by 1 ± x ± y = 0). Then σ acts on the triple (X, A, B ′ ).
+                   ≈   ≈      ≈                                                                              ≈
+We denote by A, B, and B ′ respectively the strict transforms of A, B, and B ′ in X. The
+                                                       ≈ ≈ ≈
+action of σ on (X, A, B ′ ) extends to an action on (X, A, B ′ ∪ E2 ) and hence on the motive
+     ≈   ≈   ≈            ≈                         ≈
+H 2 (X \ A, (B ′ ∪ E2 ) \ A). (Note that σ acts on X, but not on e
+                                                                 X.)
+                                             e    e
+     The differential form ω is regular on X \ A, and hence ω (or rather, its pullback under
+                                                                                         ≈
+π ′ , which is given by the same formula as ω in our model of X and is σ-invariant) is regular
+      ≈    ≈                                                  ≈        ≈           ≈    ≈
+on X \ (A ∪ E− ). Thanks to its σ-invariance, ω is regular on X \ σ 2 (A ∪ E− ) = X \ (A ∪ E+ ),
+                              ≈   ≈
+and hence it is regular on X \ A. Just in this argument, let cω , c̃ω , and c̃′ω be respectively
+                              ≈       ≈    ≈                 ≈                       ≈   ≈   ≈           ≈
+                       2 (X \ A, (B ∪ E ) \ A), and H 2 (X \ A, (B ′ ∪ E ) \ A) defined by ω.
+the elements of MdR , HdR              2             dR                 2
+                                                         ≈       ≈                                   ≈
+(One can see similarly to Remark 3.2 that X \ A is affine. Also, note that B ′ ∪ E2 is a simple
+                           ≈
+normal crossing divisor in X.)
+    The argument now proceeds in two steps.
+    Step one: We have a commutative diagram
+
+
+              ≈    ≈   ≈          ≈       Res ≈              ≈       ≈       ≈
+          2 (X \ A, (B ′ ∪ E ) \ A)
+         HdR                                 A      1 (A, A ∩ (B ′ ∪ E ))
+                                                   HdR
+                            2                                         2
+
+
+                                                                                                  1 (A, A ∩ B),
+                                                                                                 HdR
+
+               ≈   ≈   ≈          ≈       Res ≈                  ≈       ≈       ≈
+          2 (X \ A, (B ∪ E ) \ A)
+         HdR                                   A     1 (A, A ∩ (B ∪ E ))
+                                                    HdR
+                          2                                          2
+
+
+                                                                                                 ≈   ≈
+where the vertical map on the left is induced by the identity map on X \ A, and the slanted
+                                                                                       ≈
+identifications with H 1 (A, A ∩ B) are induced by π ◦ π ′ (which gives an isomorphism A → A).
+                                                                                           ≈
+There is a natural action of σ on every cohomology group in the diagram except HdR      2 (X \
+ ≈  ≈           ≈
+A, (B ∪ E2 ) \ A), and the identifications in the diagram as well as the top residue map are
+                                                             ≈    ≈                        ≈
+σ-equivariant. Since ω is a σ-invariant regular form on X \ A, the element c̃′ω of HdR  2 (X \
+≈    ≈             ≈
+A, (B ′ ∪ E2 ) \ A) is σ-invariant. By the σ-equivariance of the top residue map, Res ≈(c̃′ω ) is
+                                                                                     A
+σ-invariant. The vertical map on the left sends c̃′ω to c̃ω , so by the commutativity of the
+diagram we get
+
+
+(7.2)                        Res ≈(c̃ω ) = Res ≈(c̃′ω ) ∈ HdR
+                                                           1
+                                                              (A, A ∩ B)σ .
+                                  A                  A
+                                                                                              23
+
+                                                            1 (A, A ∩ B). This is done via the
+     Step two: We now relate Res ≈(c̃ω ) and ResAe(cω ) in HdR
+                                A
+following diagram:
+
+                                ≈   ≈        ≈   ≈      Res ≈
+                          2 (X \ A, (B ∪ E ) \ A)
+                         HdR                               A         1 (A, A ∩ B)
+                                                                    HdR
+                                          2
+
+                                        ι∗
+                     ≈      ≈                ≈   ≈
+(7.3)           2 (X \ (A ∪ E ), (B ∪ E ) \ (A ∪ E ))
+               HdR           −         2          −
+
+                                    π ′∗
+                                                          ResAe
+                             e \ A,
+                          2 (X
+                   MdR = HdR     e (B
+                                    e ∪ E) \ A)
+                                             e                       1 (A, A ∩ B)
+                                                                    HdR
+
+                                                                        π≈   ′
+The identification marked as π ′∗ is induced by the blow-up map X −→ X,     e which gives an
+                                                                  ∗
+isomorphism of the relevant two pairs. The map marked as ι , which is induced by the
+                ≈     ≈        ι ≈     ≈
+inclusion map X \ (A ∪ E− ) − → X \ A, is also an isomorphism. Indeed, this can be checked
+in the Betti realization (note that all the maps above and in particular, ι∗ are motivic) as a
+consequence of excision, by a similar argument to the one given in the proof of Lemma 4.1.
+                      ≈   ≈  ≈          ≈
+                  2 (X \ A, (B ∪ E ) \ A) has a basis given by the classes of differential forms
+It follows that HdR                2
+                                                                                  ≈
+η and ωj (0 ≤ j ≤ 3) defined earlier, now considered as differential forms on X, regular on
+ ≈    ≈                                                    ≈
+X \ A and with at most logarithmic singularities along A. We can now check by a direct
+computation of the Poincaré residues (similar to the proof of Lemma 5.2.6) that the images
+                                                            1 (A, A ∩ B). It follows that (7.3)
+of η and ωj (0 ≤ j ≤ 3) under Res ≈ and ResAe coincide in HdR
+                                   A
+is commutative.
+     We can now finish the proof. Since ι∗ maps c̃ω to cω , we have ResAe(cω ) = Res ≈(c̃ω ).
+                                                                                          A
+Combining with (7.2) we get σ-invariance of ResAe(cω ).                                        □
+
+Remark 7.3.2. The case t = 0 of Proposition 7.3.1 (where the differential form ωF,t has
+at most a logarithmic singularity along A)e can be checked by an explicit computation of
+                  1
+ResAe(ωF,0 ) ∈ H (A, A ∩ B) using the Poincaré residue of the differential form ωF,0 along
+e In the case t > 0 however, an explicit computation of Res e(ωF,t ) ∈ H 1 (A, A ∩ B) is
+A.                                                               A
+not straightforward, as the Poincaré residue map for differential forms is only defined for
+differential forms with at most logarithmic singularity. The proof of Proposition 7.3.1 given
+above, which avoids residue calculations in the non-logarithmic case, was suggested to us by
+an anonymous referee. We sincerely thank the referee for this.
+
+Remark 7.3.3. One may like to try to deduce the commutativity of (7.3) using naturality of
+the Gysin long exact sequence, by adding a natural residue map out of
+
+                                    ≈        ≈   ≈              ≈
+                             2
+(7.4)                       HdR (X \ (A ∪ E− ), (B ∪ E2 ) \ (A ∪ E− ))
+
+to the second row of the diagram. However, one needs to be careful as the target of the natural
+                                                                 ≈         ≈             ≈
+                                 1 (A, A∩B). Indeed, the triple (X \E , (B∪E )\E , A\E )
+residue map out of (7.4) is not HdR                                    −       2     −      −
+                        ≈                              ≈
+of the smooth variety X \ E− , the closed subvariety (B ∪ E2 ) \ E− , and the smooth closed
+            ≈
+subvariety A \ E− of pure codimension 1 gives a Gysin long exact sequence with a connecting
+24
+
+morphism
+                                                       Res ≈
+              ≈      ≈              ≈        ≈            A\E−          ≈      ≈
+         2 (X \ (A ∪ E ), (B ∪ E ) \ (A ∪ E ))
+        HdR                                                        1 (A \ E , (A ∩ E ) \ E )
+                                                                  HdR
+                      −         2          −                               −        2     −
+
+
+                                                                   1 (A \ {−P, −Q}, {P, Q})
+                                                                  HdR
+                                                ≈                   ≈
+in the de Rham realization (note that A does not meet B). Notice that the codomain is
+different from the codomains of Res ≈ and ResAe in (7.3). One could try to proceed by adding
+                                   A
+this map to the diagram (7.3). We also have an obvious map from HdR  1 (A, A ∩ B) to H 1 (A \
+                                                                                      dR
+{−P, −Q}, {P, Q}). We obtain a new diagram
+                         ≈   ≈      ≈       ≈           Res ≈
+                   2 (X \ A, (B ∪ E ) \ A)
+                  HdR                                      A             1 (A, A ∩ B)
+                                                                        HdR
+                                   2
+
+                              ι∗
+                                                       Res ≈
+              ≈      ≈              ≈        ≈            A\E−
+         2 (X \ (A ∪ E ), (B ∪ E ) \ (A ∪ E ))
+        HdR                                                        1 (A \ {−P, −Q}, {P, Q}),
+                                                                  HdR
+                      −         2          −
+
+                             π ′∗
+                                                          ResAe
+                      e \ A,
+                   2 (X
+            MdR = HdR     e (B
+                             e ∪ E) \ A)
+                                      e                                  1 (A, A ∩ B)
+                                                                        HdR
+which commutes for functoriality reasons. However, this does not imply commutativity of the
+original diagram as the map HdR    1 (A, A ∩ B) → H 1 (A \ {−P, −Q}, {P, Q}) has a nontrivial
+                                                       dR
+kernel. (In fact, it is not difficult to compute this kernel: it is generated by ω 1 − ω 2 and
+4ω 3 − (ω 1 + ω 2 ); notice that the kernel is not contained in the σ-invariant subspace.)
+7.4. Further comments on symmetric differential forms. In this subsection we make
+some preliminary observations that will prepare us for §8 and §9.
+     For every integers m, n, consider the following elements of Q(x, y):
+                                        ϕm,n := xm y n + xn y m
+(7.5)
+                                        ψm,n := xm y n − xn y m .
+The proof of the following lemma is clear and is omitted.
+Lemma 7.4.1.
+               P
+   (a) Let F =   cm,n xm y n ∈ Q[x, y]. Then σF = F if and only if for every nonnegative
+                   m,n
+         integers m, n, we have cn,m = (−1)m cm,n . In particular, if F is σ-invariant and
+         cm,n ̸= 0, then m ≡ n (mod 2).
+     (b) The collection of polynomials
+               {ϕm,n : m ≥ n ≥ 0; 2 | m; 2 | n} ∪ {ψm,n : m > n > 0; 2 ∤ mn}
+        forms a basis of Q[x, y]σ .
+     Recall from Remark 6.4 that the involution τ of X defined by (x, y) 7→ (y, x) extends to
+                  e which then restricts to an automorphism of the pair (X
+an involution on X,                                                       e \ A,
+                                                                              e (Be ∪ E) \ A)
+                                                                                           e
+and hence induces an automorphism of the motive M . With abuse of notation, we denote all
+of these, as well as the corresponding maps at the level of coordinate rings and differential
+forms on X and X, e by τ . In particular, the map
+                                         τ : Q[x, y] → Q[x, y]
+                                                                                                  25
+
+is given by
+                                     (x, y) 7→ (y, x).
+We have a decomposition into eigenspaces
+                                        M = M τ ⊕ M τ =−1 ,
+and C ⊂ M τ =−1 (see Remark 6.4). There is also a decomposition
+(7.6)                            Q[x, y] = Q[x, y]τ ⊕ Q[x, y]τ =−1
+into eigenspaces. For every F ∈ Q[x, y] and every integer t ≥ 0, we have
+                                                  dydx
+(7.7)                              τ ωF,t = (τ F ) t+1 = ω−τ F,t
+                                                   g
+(see (7.1) to recall the definition of ωF,t ). These equalities are equalities of differential forms
+on Xe (and on X). Since τ acts on the pair (X   e \ A,
+                                                     e (B
+                                                        e ∪ E) \ A),
+                                                                 e assuming ωF,t is integrable (or
+equivalently, regular on Xe \ A,
+                               e see Lemma 7.2.3; note that this condition holds automatically
+when t = 0), the equalities descend to equalities in MdR . From this we immediately have:
+Lemma 7.4.2. Suppose F ∈ Q[x, y]τ =−1 and ωF,t is integrable. Then ωF,t ∈ MdR
+                                                                           τ .
+
+Remark 7.4.3. Lemma 7.4.2 is a geometric upgrading of the fact, observable through a trivial
+elementary computation, that if F ∈ Q[x, y]τ =−1 , then the integral of ωF,t over ∆ vanishes
+provided that it convergences. Indeed, recall from Remark 6.4 that MdR    τ is generated by
+
+ω1 − ω2 . From the period matrix of M given in Proposition 5.3.1, the integral of ω1 − ω2 over
+∆ is zero.
+       Note that
+                               Q[x, y]τ = ⟨ϕm,n : m ≥ n ≥ 0⟩Q
+                               Q[x, y]τ =−1 = ⟨ψm,n : m > n ≥ 0⟩Q
+(where ϕm,n and ψm,n are as in (7.5)). Combining with Lemma 7.4.1, we obtain a decompo-
+sition
+                                                               σ=1
+(7.8)                          Q[x, y]σ = Q[x, y]σ,τ ⊕ Q[x, y]τ =−1
+with
+(7.9)       Q[x, y]σ,τ := {F ∈ Q[x, y] : σF = F = τ F } = ⟨ϕm,n : m ≥ n ≥ 0; 2 | m; 2 | n⟩Q
+and
+                   σ=1
+         Q[x, y]τ =−1 := {F ∈ Q[x, y] : σF = F = −τ F } = ⟨ψm,n : m > n > 0; 2 ∤ mn⟩Q .
+The following result will be useful in §8 and §9.
+                                  σ=1
+Lemma 7.4.4. Let F ∈ Q[x, y]τ =−1 . Suppose ωF,t is integrable. Then ωF,t vanishes in MdR .
+Proof. By Proposition 7.3.1, ωF,t is in CdR . On the other hand, by Lemma 7.4.2, ωF,t is in
+  τ . The intersection of C
+MdR                                   τ
+                           dR and MdR is zero (see Remark 6.4).                          □
+     We finish this discussion with one last preparation for the explicit computations of the
+next sections. As before, let K = Q(i). The actions of σ and τ on Q[x, y] extend K-linearly
+to automorphisms of K[x, y].
+     We will identify
+(7.10)         K[x, y] ∼
+                       = K[z, w]     via     z = x + iy and w = x − iy, fixing K.
+26
+
+This identification induces the earlier identification of AK = Spec K[x, y]/(g) with Gm,K =
+Spec K[z, w]/(1 − zw). The actions of σ and τ on x, y translate under (7.10) to actions on
+z, w given by
+                                    σ:    (z, w) 7→ (iz, −iw)
+                                    τ:    (z, w) 7→ (iw, −iz).
+Moreover, the action of complex conjugation on K[x, y] translates to an action on K[z, w]
+which conjugates the coefficients and interchanges z and w. From these we obtain the following
+characterization of {σ, τ }-invariance in terms of the variables z and w.
+                           P
+Lemma 7.4.5. Let F =          λk,l z k wl ∈ K[z, w]. Then we have:
+                          k,l
+     (a) F is fixed by σ ⇐⇒ If λk,l ̸= 0, then k ≡ l (mod 4).
+     (b) F is fixed by τ ⇐⇒ λl,k = ik−l λk,l for all k, l.
+     (c) τ F = −F ⇐⇒ −λl,k = ik−l λk,l for all k, l.
+     (d) F ∈ Q[x, y] ⇐⇒ λl,k = λk,l for all k, l.
+
+8. Linear forms in 1 and G – II: Calculation of the coefficients in the simple
+                                    pole case
+     The objective of the rest of the paper is to make Theorem 7.2.4 constructive; that is, to
+explicitly calculate the coefficients of 1 and G in the linear forms of Theorem 7.2.4. In this
+section, we will deal with the case t = 0, which will turn out to be the core case. The case of
+the theorem for higher order poles will be handled in §9.
+     Given any F ∈ Q[x, y], for simplicity, we shall write ωF for ωF,0 = F dxdy/g. Recall from
+Proposition 7.3.1 that if F ∈ Q[x, y] is σ-invariant, then ωF represents an element of CdR (as
+the integrability condition holds for every F when t = 0). In this section, we shall explicitly
+calculate the rational numbers aF , bF such that
+                                         ωF = aF η + bF ω0
+in CdR . In particular, this will make the case t = 0 of Theorem 7.2.4 constructive.
+     We will deal with the computation of bF and aF separately. The computation of bF is
+easier and will be handled first.
+8.1. Calculation of the coefficient of ω0 . This amounts to a Poincaré residue calculation.
+We will do this for any polynomial F ∈ Q[x, y], with no σ-invariance assumption. Throughout,
+we fix an arbitrary F ∈ Q[x, y]. Then ωF defines an element of MdR and hence it can uniquely
+be written as
+                ωF = aF η + (a Q-linear combination of ω1 , ω2 , ω3 ) + bF ω0
+for some aF and bF in Q.
+     There is a commutative diagram
+                                            ResAe
+                                   MdR                   1 (A, A ∩ B)
+                                                        HdR
+
+
+                                                ResAe
+                                    e \ A)
+                                 2 (X
+                                HdR     e                  1 (A),
+                                                          HdR
+where the vertical maps are the natural maps for relative cohomology, and we have used the
+                              A) ∼
+                           1 (e
+identifications (4.3) and HdR       1 (A) given by the blow-up. The top residue map sends
+                                 = HdR
+                                                                                               27
+
+η to zero and ωj to ω j for 0 ≤ j ≤ 3 (see Lemma 5.2.6). The vertical map on the right sends
+ω j to zero for 1 ≤ j ≤ 3 and sends ω 0 = dx/(2y) to its namesake in HdR       e (see Remark
+                                                                           1 (A)
+                                                                                2 (X
+5.2.3). Passing ωF along the left vertical map to consider it as an element of HdR  e \ A),
+                                                                                        e we
+thus have
+                                                     1
+(8.1)                      ResAe(ωF ) = bF ω 0   in HdR (A) = ⟨ω 0 ⟩Q .
+                                        1 (A). As a differential form on X
+To find bF , we compute ResAe(ωF ) in HdR                                  e with at most a
+                              e
+logarithmic singularity along A,
+                                      F dxdy     dg F dx
+                                 ωF =         =      ∧     ,
+                                         g        g     2y
+so that
+                                                   F dx
+                                     ResAe(ωF ) =
+                                                    2y
+                 ∼  e
+as 1-forms on A (= A). To compute its cohomology class in HdR1 (A), we first extend the base
+
+field to K = Q(i). Then
+                            AK ∼= Gm,K = Spec K[z, w]/(1 − zw),
+the isomorphism given by (7.10). The differential form F dx/(2y) on A becomes
+                                      z+w z−w            idz
+                                 F(      ,    )        ·
+                                       2   2i   w=z −1    2z
+                               1 (A ) (and hence in H 1 (A)),
+on Gm,K . It follows that in HdR    K                  dR
+                                                                               
+                      the constant term of                 the constant term of
+   ResAe(ωF ) =       z+w z−w                 · idz =     z+w z−w               · ω0.
+                    F(       ,       )             2z     F(      ,      )
+                          2      2i    w=z −1                 2      2i    w=z −1
+Combining with (8.1), we obtain the following:
+Proposition 8.1.1. Let F ∈ Q[x, y]. Writing
+                ωF = aF η + (a Q-linear combination of ω1 , ω2 , ω3 ) + bF ω0
+in MdR , we have
+                                                      z+w z−w
+                    bF = the constant term of F (        ,    )        .
+                                                       2   2i   w=z −1
+8.2. Calculation of the coefficient of η. We now assume F ∈ Q[x, y] is σ-invariant, so
+that we have ωF = aF η + bF ω0 in CdR for some unique aF , bF ∈ Q. Our goal is to compute
+aF .
+     Since we have already computed bF in the previous subsection, we can try to compute
+aF by pairing ωF ∈ CdR with the element ∆e of C ∨ , which amounts to integration on ∆. We
+                                               sing
+obtain
+                             Z                     Z
+(8.2)                          (ωF − bF ω0 ) = aF    η = aF .
+                                ∆                       ∆
+However, the task is far from over since we need to evaluate the integral on the left explicitly.
+This calculation is done in this subsection.
+     Thanks to the decomposition (7.8) and Lemma 7.4.4, we may, and indeed shall, assume
+that
+                                        F ∈ Q[x, y]σ,τ .
+28
+
+Start by writing
+                                     z+w z−w     X
+(8.3)                           F(      ,    ) =   λk,l z k wl ∈ K[z, w]
+                                      2   2i
+                                                      k,l
+
+(as before, K = Q(i)). By Lemma 7.4.5, we have
+                        (
+                           If λk,l ̸= 0, then k ≡ l (mod 4), and
+                           λk,l = λl,k ∈ Q for all k and l.
+By Proposition 8.1.1,                                 X
+                                               bF =         λk,k .
+                                                      k
+Putting these together, we have
+                        X                               X
+         F − bF =             λk,l (z k wl + z l wk ) +   λk,k (z k wk − 1) ∈ Q[z, w].
+                               k>l≥0                             k>0
+                         k≡l     (mod 4)
+
+Multiplying with dxdy/g and integrating over ∆, in view of (8.2) we get
+                   X           Z k l                   X        Z k k
+                                  z w + z l wk                    z w −1
+(8.4)    aF =             λk,l                 dxdy +      λk,k           dxdy.
+                                ∆   1 − zw                       ∆ 1 − zw
+                         k>l≥0                                         k>0
+                   k≡l     (mod 4)
+
+       Before proceeding any further, we note that the integrals in (8.4) all converge to rational
+numbers. This is obvious for the integrals in the second sum, but the following argument
+applies to all the integrals: Every 2-form in these integrals is regular on X  e \Ae and gives an
+element of MdR . The polynomials z w + z w for k, l as in the first sum and z k wk − 1 are
+                                        k  l    l k
+
+in Q[x, y]σ,τ (see Lemma 7.4.5). In particular, by Proposition 7.3.1, the elements (z k wl +
+z l wk )dxdy/g for k, l as above and (z k wk − 1)dxdy/g of MdR live in CdR . Moreover, it follows
+from Proposition 8.1.1 that in fact, all these elements belong to ⟨η⟩Q ⊂ CdR .
+       We now proceed to compute the integrals on the right-hand side of (8.4). Once this is
+done, aF can be computed explicitly from F .
+8.2.1. Computation of the integrals of the first type. Fix integers k, l with k > l and k ≡ l
+(mod 4). Our goal is to compute
+                                   Z k l
+                                       z w + z l wk
+                                                    dxdy.
+                                     ∆    1 − zw
+A direct computation shows
+                    z k wl + z l wk               1        z k wl − z l wk               
+                                    dzdw =            d                     · (zdw + wdz) .
+                        1 − zw                  k−l            1 − zw
+                            ′
+Thus for any 2-chain ∆ ⊂ ∆ which avoids {P, Q}, we can write
+  Z                                    Z
+      z k wl + z l wk               i      z k wl + z l wk
+                      dxdy =                               dzdw
+   ∆′     1 − zw                   2 ∆′ 1 − zw
+                                                Z
+                            Stokes       i           z k wl − z l wk
+                              =                                        · (zdw + wdz)
+                                     2(k − l) ∂∆′ 1 − zw
+                                         Z
+                                      i         (x + iy)k (x − iy)l − (x + iy)l (x − iy)k
+(8.5)                         =                                                             · (xdx + ydy) .
+                                  k − l ∂∆′                       1 − x2 − y 2
+                                                                                               29
+
+
+                                          an ∩ !
+                                         EQ    ∆
+
+
+
+
+                                             !
+                                             ∆
+                                                                  !
+                                                           EPan ∩ ∆
+
+
+
+                                                          e
+                                Figure 3. The boundary of ∆
+
+
+The differential forms on the two sides are both regular on X   e \ A;
+                                                                    e we already know this for
+the 2-form on the left, and it is easily checked in charts (e.g., using the charts of the proof
+of Lemma 3.4) for the 1-form on the right, using the fact that k and l have the same parity.
+Letting ∆′ → ∆, we get
+(8.6)
+   Z k l                         Z
+      z w + z l wk          i                                                     xdx + ydy
+                   dxdy =              (x + iy)k (x − iy)l − (x + iy)l (x − iy)k                .
+    ∆    1 − zw           k − l ∂∆ e |                     {z                    } 1 − x2 − y 2
+                                                          f
+
+(Explanation for the integral on the right: use functoriality to write the integral on the right
+hand side of (8.5) as an integral on π −1 (∂∆′ ) (where π = the blow-up map), which then
+tends to the integral on ∂ ∆e as ∆′ → ∆.) The integral on the right hand side of (8.6) now
+breaks into the sum of the integrals of f · (xdx + ydy)/g (where f is the polynomial marked
+in the previous equation) over EPan ∩ ∆,e E an ∩ ∆e (where EP and EQ are the special divisors,
+                                            Q
+                              e all oriented appropriately (see Figure 3). By functoriality, the
+as before), and the rest of ∂ ∆,
+latter integral is the integral over ∂∆. On the other hand, a computation in charts shows
+that f · (xdx + ydy)/g vanishes on EP \ A  e and EQ \ A.
+                                                       e In conclusion, we get
+                       Z k l                         Z
+                           z w + z l wk           i           xdx + ydy
+                                        dxdy =           f·               ,
+                         ∆    1 − zw            k − l ∂∆     1 − x2 − y 2
+where the integral on the right converges absolutely on each line segment in ∂∆. Now note
+that the differential form on the right vanishes on the vertical and horizontal line segments
+in ∂∆. Parametrizing the straight line segment from P to Q by (1 − y, y) as y goes from 0 to
+1, we have g = 2y(1 − y) on this line segment, so that the last equation reads
+                    Z k l                        Z 1
+                        z w + z l wk         i                    (2y − 1)dy
+                                     dxdy =          f (1 − y, y)            .
+                     ∆    1 − zw            k−l 0                  2y(1 − y)
+The polynomial f (x, y) has coefficients in 2i Z. We observe that f (1 − y, y) vanishes at y = 0
+and y = 1 (as k and l have the same parity). It follows that i · f (1 − y, y)/(2y(1 − y)) is a
+polynomial in y of degree k + l − 2 and with coefficients in Z. This completes our computation
+of the integral on the left. It also gives us an upper bound for its denominator. For referencing
+purposes, we summarize our conclusions:
+Lemma 8.2.1. Let k, l be integers with k > l ≥ 0 and k ≡ l (mod 4). Then
+             Z k l                            Z 1
+                z w + z l wk              1                        (2y − 1)dy
+(8.7)                         dxdy =              i · f (1 − y, y)            ,
+              ∆     1 − zw              k−l 0                       2y(1 − y)
+30
+
+where
+                         f (x, y) = (x + iy)k (x − iy)l − (x + iy)l (x − iy)k .
+The integrand function i · f (1 − y, y) · (2y − 1)/(2y(1 − y)) is a polynomial of degree k + l − 1
+with coefficients in Z. In particular, the integral (8.7) is a rational number whose lowest
+denominator divides
+                                             (k − l) Lk+l ,
+where (here and in what follows) for any positive integer m, the notation Lm means the least
+common multiple of 1, . . . , m.
+Remark 8.2.2. As the reader may have noticed, the argument in this subsection only needs
+k, l to have the same parity. However, note that the case k − l ≡ 2 (mod 4) of the integrals
+                                                                                    k l +z l w k
+of the first type is trivial, as z k wl + z l wk is then in Q[x, y]τ =−1 and hence z w1−zw       dxdy is
+in MdRτ , so its integral over ∆ is zero (see Lemma 7.4.2 and Remark 7.4.3).
+
+
+8.2.2. Computation of the integrals of the second type. We now discuss the second type of
+integral appearing in (8.4), i.e., an integral of the form
+                                        Z k k
+                                            z w −1
+(8.8)                                                 dxdy
+                                          ∆ 1 − zw
+
+where k is a positive integer. The integrand function is now a polynomial so the situation is
+easy. By trivial algebraic manipulations and Stokes’ theorem, the integral above is equal to
+                                                                       
+           Z      k−1 j+1 j
+                  X                      Z    k−1
+                                              X             j+1 (x + iy)j
+         i           w    z   dz =   i         (x −  iy)                (dx + idy).
+         2 ∂∆          j+1             2 ∂∆               j+1
+                   j=0                               j=0
+
+From this we see easily that the sum of the integrals along the vertical and the horizontal line
+segments in ∂∆ is zero. Denoting the line segment from P to Q by [P, Q], the last integral
+reads
+                                                                            
+     Z       k−1
+             X     2    2 j                            Z       k−1
+                                                               X      2    2 j
+   i            (x + y )                           1            (x + y ) 
+                              (x − iy)(dx + idy) =                               (ydx − xdy),
+   2 [P,Q]         j+1                               2 [P,Q]          j+1
+             j=0                                                     j=0
+
+since the value of the integral (8.8) is real. Parametrizing [P, Q] by (1 − y, y) as before, we
+obtain the following:
+Lemma 8.2.3. Let k be a positive integer. Then
+                   Z                            Z 1 X
+                                                    k−1
+                     z k wk − 1        −1                    1
+                                dxdy =                          (2y 2 − 2y + 1)j dy.
+                    ∆ 1 − zw           2         0    j=0
+                                                            j+1
+
+In particular, this integral is a rational number whose lowest denominator divides
+                                             2 Lk L2k−1 .
+8.3. Summary: Explicit version of Theorem 1.1.1 in the simple pole case. For
+future referencing and to help the reader navigate through the arguments, we combine the
+results of the paper up to this point to record a more explicit version of Theorem 1.1.1 in the
+case t = 0.
+                                                                                             31
+
+Theorem 8.3.1. Let F ∈ Z[x, y] be σ-invariant and of (total) degree N . Then
+                           Z
+                                  F dxdy
+                                     2    2
+                                            = aF + bF G,
+                             ∆ 1−x −y
+where aF and bF are rational numbers such that 2N bF and 2N +2 LN LN/2 aF are integers.
+(Recall that Lm refers to the least common multiple of 1, . . . , m. Note that N is even by
+σ-invariance.)
+Proof. By Proposition 7.3.1, the integral converges to a Q-linear combination of 1 and G. To
+compute aF and bF , by Lemma 7.4.4 we may replace F by the {σ, τ }-invariant component
+of it, i.e., the part consisting of the monomials xm y n where m and n are even (see (7.8) and
+(7.9), and (7.5)). The coefficients aF and bF can now be computed explicitly by Proposition
+8.1.1, Lemma 8.2.1 and Lemma 8.2.3 (see also equations (8.3) and (8.4)). The assertion that
+2N bF is an integer follows immediately from Proposition 8.1.1, in view of the fact that the
+polynomial
+                                            z+w z−w
+                                         F(      ,       )
+                                             2      2i
+in z, w has coefficients in 2−N Z. The assertion that 2N +2 LN LN/2 aF is an integer follows
+from the results about the lowest denominators of the integrals in Lemmas 8.2.1 and 8.2.3.
+Indeed, 2LN LN/2 is a common denominator for the integrals in Lemma 8.2.3 for the range
+of k that may appear in the expansion (8.4). On the other hand, 22 LN L⌊N/4⌋ is a common
+denominator for the integrals in Lemma 8.2.1 for the values of k, l that may appear. Note
+that we used the fact that 4 | k − l if the integral of Lemma 8.2.1 appears in the expansion
+(8.4).
+                                                                                             □
+
+Example 8.3.2. Let F = x2 y 2 . Then F is σ-invariant, so that ωF = aF η + bF ω0 in CdR . We
+have
+                            z+w z−w          −1 4
+                         F(       ,      )=      (z − 2z 2 w2 + w4 ).
+                               2     2i       16
+Thus bF = 1/8 by Proposition 8.1.1. Note that F is also fixed by τ . Calculating aF as
+described above, we get aF = −5/48.
+Remark 8.3.3. We have proved a stronger statement than the one stated in Theorem 8.3.1,
+in that our proof gives the formula ωF = aF η + bF ω0 at the level of CdR .
+Remark 8.3.4. The explicit bounds on the denominators of aF and bF in Theorem 8.3.1
+would allow us to establish the irrationality of G if there exist polynomials with integer
+coefficients and sufficiently small sup norms ∥ ∥S on the square S = ∪3i=0 σ i ∆ (with vertices
+±P, ±Q). More precisely, suppose there exists a sequence of polynomials (Gj )j∈Z>0 in Z[x, y]
+with deg(Gj ) → ∞ as j → ∞ such that
+                               (2(e + ϵ)3/2 )deg(Gj ) ∥Gj ∥S → 0
+                                                                   P3      i  2
+as j → ∞ for some fixed ϵ > 0. Then the polynomials Fj =              i=0 σ (Gj ) ∈ Z[x, y] are
+non-negative on ∆, σ-invariant, and satisfy
+(8.9)                          (2(e + ϵ)3/2 )deg(Fj ) ∥Fj ∥S → 0
+as j → ∞. Thanks to Theorem 8.3.1 we will then have
+                              Z
+                                   Fj dxdy
+                          0 <          2     2
+                                               = aj + bj G,
+                                ∆ 1−x −y
+32
+
+where aj , bj are rational numbers with a common denominator at most
+                      2deg(Fj )+2 Ldeg(Fj ) Ldeg(Fj )/2 ≪ (2(e + ϵ)3/2 )deg(Fj )
+by the Prime Number Theorem. Together with (8.9) this would imply irrationality of G.
+    The question of whether or not a sequence of polynomials Gj as above exists amounts
+to whether the bivariate integer Chebyshev constant of S in the sense of [6, Definition 1.1] is
+smaller than 1/(2e3/2 ). The bivariate integer Chebyshev constant of S does not seem to be
+known, but it appears highly unlikely that this constant is as small as needed for the above
+argument.
+
+      9. Linear forms in 1 and G – III: Calculation of the coefficients for
+                                 non-simple poles
+9.1. Overview. The goal of this section is to make Theorem 7.2.4 constructive in the case
+t > 0, that is, when our differential form
+                                                   F dxdy
+                                          ωF,t =
+                                                    g t+1
+may have a non-simple pole along A. The motivation for this is the hope that it may be easier
+to find better-behaved linear forms by allowing the order of the pole to grow.
+     In §9.2-§9.4 below we handle the computation of the coefficients of 1 and G in the
+linear form associated with ωF,t under the hypotheses of Theorem 1.1.1, i.e., assuming (i)
+F ∈ Q[x, y]σ and (ii) if t is even (resp. odd), xt y t (resp. xt+1 y t+1 ) divides F . Our approach
+to compute the coefficients of 1 and G under these hypotheses is to reduce the order of the pole
+to 1, the case for which we already know how to compute the coefficients. The process for the
+reduction of the order of the pole is elementary, but we will need to be careful about preserving
+σ-invariance and regularity in the process. Condition (ii) of Theorem 1.1.1 will allow us to
+maintain nice regularity properties throughout the process. The pole order reduction process
+will be explicit, in that combined with the explicit calculations of the coefficients of 1 and G
+in the simple pole case, we can explicitly compute the coefficients of 1 and G in the linear
+form coming from every F and t as in Theorem 1.1.1.
+     Finally, in §9.5 we will see that the computation of the coefficients of 1 and G in the
+linear form associated with an arbitrary ωF,t as in Theorem 7.2.4 can be reduced to the case
+considered in Theorem 1.1.1.
+
+9.2. Formulas for lowering the order of the pole. In this subsection we gather the basic
+formulas needed for the pole order reduction process. We start by introducing a convenient
+notation.
+Notation 9.2.1. For any F ∈ Q(x, y), set
+                                      D1 F := (∂/∂x)(F/x)
+and
+                                      D2 F := (∂/∂y)(F/y).
+      For referencing, we record some useful properties of the operators D1 and D2 .
+Lemma 9.2.2.
+   (a) The operators D1 and D2 commute.
+                                                                                                   33
+
+     (b) If f ∈ Q(x, y) and t is a non-negative integer, then
+                                D1 (xt y t f ) = ((t − 1)xt−2 f + xt−1 fx ) y t
+                                D2 (xt y t f ) = ((t − 1)y t−2 f + y t−1 fy ) xt
+         and
+                                                                                        
+               D2 D1 (xt y t f ) = xt−2 y t−2   (t − 1)2 f + (t − 1)(xfx + yfy ) + xyfxy ,
+         where fx , fy , fxy = (fx )y refer to the partial derivatives. In particular, if F ∈ Q[x, y]
+         and xt y t | F (in Q[x, y]) for an integer t ≥ 1 (resp. t ≥ 2), then (D1 + D2 )F and
+         D2 D1 F are polynomials (resp. polynomials divisible by xt−2 y t−2 ).
+     (c) We have
+                              D2 D1 ϕm,n = (m − 1)(n − 1) ϕm−2,n−2
+                              D2 D1 ψm,n = (m − 1)(n − 1) ψm−2,n−2
+                        (D1 + D2 ) ϕm,n = (m − 1) ϕm−2,n + (n − 1) ϕm,n−2
+                        (D1 + D2 ) ψm,n = (m − 1) ψm−2,n + (n − 1) ψm,n−2 ,
+        where as before, ϕm,n = xm y n + xn y m and ψm,n = xm y n − xn y m for m, n ∈ Z.
+    (d) If F ∈ Q[x, y] is fixed by σ and divisible by xy, then D2 D1 F and (D1 + D2 )F are
+        polynomials fixed by σ.
+Proof. Parts (a)-(c) are obtained by trivial computations. Part (d) follows from (c) in view
+of Lemma 7.4.1.                                                                            □
+
+    Next, we record the formulas for pole reduction.
+Lemma 9.2.3. Let t be an integer ≥ 1 and F ∈ Q(x, y). One has the following equalities of
+meromorphic differential forms on X   e and X.
+                                   
+           F         1       F           1 D1 F
+    (a) t+1 dxdy =      d       t
+                                  dy −           dxdy
+        g           2t     xg         2t   gt
+           F        −1         F          1 D2 F
+    (b) t+1 dxdy =       d         dx −           dxdy
+        g            2t       yg t       2t g t
+    (c) Let t ≥ 2. Then
+                                                           
+          F         1       F              1         D1 F            1    D2 D1 F
+              dxdy = d          dy +             d          dx +                  dxdy.
+        g t+1       2t     xg t        4t(t − 1)     yg t−1      4t(t − 1) g t−1
+Proof. Part (a) and (b) are verified by direct computations. Part (c) is obtained by successive
+use of the first two parts.                                                                  □
+9.3. Calculation of the coefficients of 1, G in Theorem 1.1.1 – the case of even t.
+Suppose t is an integer ≥ 2. Let F ∈ Q[x, y] be fixed by σ and divisible by xt y t . Our goal is
+to compute the coefficients of 1 and G in the integral of ωF,t over ∆. We use the formula of
+Lemma 9.2.3 (c). By Lemma 9.2.2 (d, b), D2 D1 F is a σ-invariant element of Q[x, y] divisible
+by xt−2 y t−2 , hence ωD2 D1 F,t−2 is integrable and its integral over ∆ is in ⟨1, G⟩Q . Consider the
+first two terms on the right-hand side of the formula of Lemma 9.2.3 (c), that is, the following
+sum:
+(9.1)                                                                                        
+   1     F              1          D1 F              1         2(t − 1)x−1 F dy + y −1 (D1 F )gdx
+     d       dy +              d          dx =             d                                        .
+  2t    xg t        4t(t − 1)      yg t−1        4t(t − 1)                     gt
+34
+
+It is worth noting that each of the two summands on the left individually may have a pole
+along EQ \ A e (this can be seen in coordinate charts). However, their sum is regular on X
+                                                                                         e \A e
+as the other two terms in the formula of Lemma 9.2.3 (c) are such. In view of the formula
+of Lemma 9.2.3 (c), the following lemma (see also its proof) reduces the computation of the
+coefficients of 1 and G in the integral of ωF,t over ∆ to the computation of these coefficients
+in the integral of ωD2 D1 F,t−2 over ∆. When t is even, we may iterate this process until the
+calculation of the coefficients of 1 and G is reduced to the simple pole case. In view of our
+computations in §8, this makes Theorem 1.1.1 constructive for all even t.
+Lemma 9.3.1. Let t be an integer ≥ 2 and F ∈ Q[x, y] be divisible by xt y t . Then the integral
+of (9.1) over ∆ is a rational number.
+Proof. We shall compute the integral in question. For simplicity, set
+                                    2(t − 1)x−1 F dy + y −1 (D1 F )gdx
+                             θ :=
+                                                    gt
+and write F = xt y t f (note that both F/x and (D1 F )/y are polynomials). A computation in
+charts shows that θ is regular on X e \ A.
+                                         e For instance, on the chart U3 = {(y, u = β2 /α2 )} of
+the proof of Lemma 3.4 (also recall the coordinates (3.1)), a direct computation shows
+                                                                     
+                           (−1)t−1 ut−2 y t−1 (t − 1)f + u(y − 1)fx
+                      θ =                                              du
+                                              get−1
+(9.2)                                                                  
+                           (−1)t−1 ut−1 y t−1 (t − 1)(u2 − 1)f + fx ue
+                                                                     g
+                        +                                                dy,
+                                                 get
+                                                            e (and f = f (x, y) = f (u(y − 1), y)).
+where ge = 1 + y − u2 (1 − y) is the defining polynomial of A
+                                   e an   ean      e
+     Since θ is holomorphic in (X \ A ) ⊃ ∆, we have
+                 Z          Z          Z          Z      Z           Z
+                                              (∗)
+(9.3)               dθ =        dθ =       θ =       θ +         θ +           θ,
+                  ∆         ∆
+                            e          ∂∆
+                                        e          ∂∆                an ∩ ∆
+                                                                    EP    e    an ∩ ∆
+                                                                              EQ    e
+
+where in (∗) we divided the boundary of ∆    e into three pieces, namely, the part in E an , the
+                                                                                         P
+         an
+part in EQ , and the rest, and used functoriality to replace the latter by the integral over ∂∆
+                  e and E an ∩ ∆
+(the parts EPan ∩ ∆               e are to be oriented appropriately as in Figure 3 in §8.2.1).
+                           Q
+     We start by calculating the integral of θ over ∂∆, which is absolutely convergent on every
+                                          e Thanks to the hypotheses that xt y t | F and t ≥ 2,
+line segment in ∂∆ by regularity of θ on ∆.
+we have x | x F and y | y (D1 F ), so that the 1-forms x−1 F dy and y −1 (D1 F )gdx both
+               −1             −1
+
+vanish on the horizontal and vertical parts of ∂∆. Denoting the straight line segment from P
+to Q by [P, Q], thus                   Z         Z
+                                                 θ =           θ.
+                                            ∂∆         [P,Q]
+Parametrizing [P, Q] by (1 − y, y) for y from 0 to 1, on [P, Q] we have
+                                                             
+                y −1 (D1 F )gdx = −2 (t − 1)f + (1 − y)fx y t (1 − y)t−1 dy
+and
+                          2(t − 1)x−1 F dy = 2(t − 1)(1 − y)t−1 y t f dy,
+so that
+                 2(t − 1)x−1 F dy + y −1 (D1 F )gdx   −2fx y t (1 − y)t dy   −fx dy
+            θ=                     t
+                                                    =    t  t        t
+                                                                           =
+                                 g                      2 y (1 − y)           2t−1
+                                                                                                35
+
+on [P, Q]. Thus
+                                  Z                Z1
+                                           −1
+(9.4)                                  θ = t−1          fx (1 − y, y) dy.
+                                    ∂∆    2
+                                                   0
+
+                                                     an ∩ e
+We now turn our attention to the integral of θ over EQ    ∆. Recall from the proof of Lemma
+3.3 that in our coordinates (3.1), we have
+                       an
+                      EQ   e = {Q} × {[1 : −1]} × {[1 : m] | −1 ≤ m ≤ 0}.
+                          ∩∆
+This is contained in the chart U3 = {(y, u = β2 /α2 )} of the proof of Lemma 3.4, on which θ
+is given by (9.2) above. Since y = 1 on EQ , we get
+                                             (−1)t−1 (t − 1) f (Q) t−2
+                              θ U3 ∩ E Q =                        u du.
+                                                     2t−1
+We thus get
+                  Z                 Z 0
+                                         (−1)t−1 (t − 1) f (Q) t−2    f (Q)
+(9.5)                         θ =                 t−1
+                                                              u du = − t−1 .
+                     an ∩ ∆
+                    EQ    e           −1         2                    2
+
+On the other hand, a computation in chart U2 of the proof of Lemma 3.4 shows that θ
+                 e Putting this together with (9.3), (9.4) and (9.5), the claim follows since
+vanishes on EP \ A.
+f ∈ Q[x, y].                                                                               □
+Remark 9.3.2. Suppose the polynomial F = xt y t f of the last lemma has coefficients in Z.
+Setting N = deg(F ), then fx (1 − y, y) ∈ Q[y] has coefficients in Z and degree at most
+N − 2t − 1. It follows from the above argument that the lowest denominator of the integral
+of (9.1) over ∆ divides
+                                          2t+1 t(t − 1)LN −2t ,
+where as before, Lm means the least common multiple of 1, 2, . . . , m.
+9.4. Calculation of the coefficients of 1, G in Theorem 1.1.1 – the case of odd t.
+In this subsection we will make the remaining case of Theorem 1.1.1 constructive. Suppose
+t ≥ 1 is an odd integer and F ∈ Q[x, y] is σ-invariant and divisible by xt+1 y t+1 . Averaging
+the first two formulas of Lemma 9.2.3, we have
+                                                                      
+                  F          1      F dy        F dx      (D1 + D2 )F
+(9.6)                 dxdy =     d         −d           −             dxdy .
+                g t+1        4t     xg t         yg t         gt
+By Lemma 9.2.2, (D1 + D2 )F is a σ-invariant polynomial divisible by xt−1 y t−1 . Thus the
+integral of ω(D1 +D2 )F,t−1 over ∆ is in ⟨1, G⟩Q , and this integral can be written as an explicit
+linear combination of 1 and G using §8 and the procedure of §9.3. Hence, the following lemma
+(see also its proof) will complete the task of making Theorem 1.1.1 constructive for all t.
+Lemma 9.4.1. Let t be an integer ≥ 1 and F ∈ Q[x, y] be divisible by xt+1 y t+1 . Then each
+of the integrals
+                        Z                   Z            
+                                F dy                  F dx
+                            d           and       d
+                          ∆     xg t            ∆      yg t
+is convergent and its value is a rational number.
+36
+
+Proof. We only compute the first integral as the other integral is computed similarly. A
+computation in charts shows that since xt+1 y t+1 divides F , the differential 1-form Fxgdyt is
+regular on Xe \ A.
+                e (Note that this form may have a pole along EQ \ Ae if we only assume that
+                                     F dy
+xt divides F .) One easily sees that t vanishes on EP \ A e and EQ \ A. e It follows that we
+                                         xg
+have an equality of absolutely convergent integrals
+                                 Z           Z
+                                        F dy           F dy
+                                    d      t
+                                               =          t
+                                                            .
+                                  ∆     xg          ∂∆ xg
+
+The condition xt+1 | F guarantees that F/x is a multiple of x and hence the 1-form Fxgdyt
+vanishes on the vertical line segment in ∂∆. Of course, it also vanishes on the horizontal line
+segment, hence                     Z            Z
+                                        F dy           F dy
+                                            t
+                                              =           t
+                                    ∂∆   xg      [P,Q] xg
+(where [P, Q] is again the straight line segment from P to Q). Writing F = xt+1 y t+1 f and
+parametrizing [P, Q] by (1 − y, y) for y between 0 and 1, the last integral reads
+                  Z 1                                      Z
+                      (1 − y)t+1 y t+1 f (1 − y, y) dy   1 1
+                                                       =      yf (1 − y, y) dy,
+                    0        2t (1 − y)t+1 y t           2t 0
+which is a rational number.                                                                     □
+9.5. Calculation of the coefficients for arbitrary integrable differential forms. In
+this final subsection, we show that the computation of the coefficients of 1 and G for an
+arbitrary ωF,t as in Theorem 7.2.4 can be simplified to the computations of these coefficients
+for differential forms satisfying the hypotheses of Theorem 1.1.1. The new ingredient is the
+following lemma.
+Lemma 9.5.1. Let F ∈ Q[x, y] and t ∈ Z≥0 . Suppose that F is fixed by both σ and τ , and
+that ωF,t is integrable. Then, modulo the space of regular 2-forms on X, the differential form
+ωF,t on X is in the Q-span of the differential forms ωxm ym ,s , where m, s are non-negative
+integers, m is even, and s ≤ m. (Note that by Lemma 7.2.1, for a differential form ωxm ym ,s
+with m, s ∈ Z≥0 , the condition s ≤ m is equivalent to integrability.)
+Proof. The space Q[x, y]σ,τ is equal to the space of all symmetric polynomials in x2 and y 2 . It
+follows that F is a polynomial in x2 y 2 and x2 + y 2 with rational coefficients, or equivalently,
+F is a polynomial in x2 y 2 and g with rational coefficients. Start by writing
+                                          X
+(9.7)                             F =          em,r (xy)m g r ,
+                                            m,r≥0
+                                           m = even
+where each em,r is in Q. Then
+                          X
+                ωF,t =                 em,r ωxm ym , t−r + a regular 2-form on X.
+                           t≥r≥0
+                         m = even ≥0
+
+It thus suffices to show that whenever em,r is nonzero, we have m ≥ t − r. Suppose F is not
+zero and ν is the smallest value of m + r such that em,r ̸= 0 for some m, r. To compute the
+order of F along EP , we write
+                                      X
+                   F (x, u(x − 1)) =          (−1)r em,r xm um (x − 1)m+r ger ,
+                                           r≥0
+                                        m = even ≥0
+                                                                                                     37
+
+                              g with ge = 1 + x − u2 (1 − x). Separating the pairs (m, r) with
+where g(x, u(x − 1)) = (1 − x)e
+m + r = ν from the rest, we can write
+                                            X
+             F (x, u(x − 1)) = (x − 1)ν             (−1)ν−m em,ν−m xm um geν−m
+                                           ν≥ m = even ≥0
+                                            ν+1
+                                  + (x − 1)     H(x, u)
+for some H(x, u) ∈ Q[x, u]. In view of Lemma 7.2.1, from the last equation it follows that
+ordEP F = ν, as the polynomial
+                         X
+                                 (−1)ν−m em,ν−m xm um geν−m ∈ Q[x, u]
+                       ν≥ m = even ≥0
+
+does not vanish in Q[u] at x = 1. Since ωF,t is integrable, it follows that ν ≥ t, as desired.       □
+
+     Now suppose F ∈ Q[x, y] is fixed by σ and ωF,t is integrable. Our goal is to find the
+coefficients of 1 and G in the integral of ωF,t over ∆. We first argue that we may replace
+F by its (σ, τ )-invariant component: Write F = F+ + F− according to the decomposition
+                                                   σ=1
+(7.8), where F+ ∈ Q[x, y]σ,τ and F− ∈ Q[x, y]τ =−1 . We claim that ωF+ ,t and ωF− ,t are both
+integrable. Indeed, the involution τ acts on X and hence on the space of meromorphic 2-forms
+on X, and the decomposition ωF,t = ωF+ ,t +ωF− ,t is the decomposition of ωF,t according to the
+eigenspaces of τ , with τ acting on ωF− ,t as 1. Our claim follows from the fact that the space
+of integrable 2-forms on X is invariant under τ . (The τ -invariance of this space follows from
+Lemma 7.2.3, since τ extends to an automorphism of X         e that stabilizes X
+                                                                               e \ A,
+                                                                                   e see Remark
+6.4.) Since the integral of ωF− ,t over ∆ is zero (see Lemma 7.4.4 or Remark 7.4.3), we have
+                                        Z         Z
+                                          ωF,t =     ωF+ ,t .
+                                          ∆          ∆
+Thus to compute the coefficients of 1 and G, we may replace F by F+ .
+     Next, by Lemma 9.5.1 and its proof, we can write ωF+ ,t explicitly as the sum of a regular
+form ω ′ on X and a Q-linear combination of differentials of the form ωxm ym ,s with m, s ∈ Z≥0 ,
+m even, and s ≤ m. The integral of ω ′ (which is a polynomial in Q[x, y] times dxdy) on ∆ is
+a rational number. Each of the forms ωxm ym ,s with m, s ∈ Z≥0 , m even, and s ≤ m satisfies
+the hypotheses of Theorem 1.1.1. Hence we know how to compute the coefficients of 1 and G
+in the integral of each of these forms over ∆.
+Remark 9.5.2. For the sake of completeness, here we record another version of Theorem 7.2.4:
+for every t ∈ Z≥0 and F ∈ Q[x2 , y 2 ], if ωF,t is integrable, then the integral of ωF,t over ∆ is
+in ⟨1, G⟩Q . The equivalence of this statement with Theorem 7.2.4 follows from the following
+three facts: (i) For any F ∈ Q[x, y] with integrable ωF,t , writing F = F+ + F− according to
+the decomposition (7.6), both ωF+ ,t and ωF− ,t are integrable; (ii) the integral of ωF− ,t over
+∆ is zero; and (iii) both Q[x2 , y 2 ] and Q[x, y]σ contain Q[x, y]σ,τ , and the images of Q[x2 , y 2 ]
+and Q[x, y]σ under the eigenspace projection map Q[x, y] → Q[x, y]τ are both Q[x, y]σ,τ .
+Remark 9.5.3. While we arrived at the statement and proof of Theorem 7.2.4 through motivic
+considerations, the computations of §8 and §9 can also be used to give a constructive and
+elementary (albeit perhaps unmotivated and seemingly out of nowhere, especially in the simple
+pole case) proof of Theorem 7.2.4, with no reference to the underlying motivic context. Indeed,
+the computations of §9 reduce the problem to the simple pole case. In the simple pole case,
+given F ∈ Q[x, y]σ one first defines bF by the formula of Proposition 8.1.1, and then defines
+38
+
+aF by the formula                                    Z
+                                              aF =         ωF − bF ω0 ,
+                                                       ∆
+        R
+so that ∆ ωF = aF + bF G (where ωF = ωF,0 , as before). Then one proceeds to show that
+aF is rational and explicitly computable through the computations of §8.2.
+
+                                             Acknowledgments
+     We are grateful to Michel Waldschmidt, Francis Brown, and Daniel Bertrand for insightful
+discussions and correspondences. We are also grateful to the anonymous referees for their
+careful reading of the paper and many comments and suggestions, which helped us improve
+the exposition of the paper.
+     This article was written while Nemoto was visiting the University of Winnipeg. He would
+like to thank the Department of Mathematics and Statistics for their hospitality. Nemoto
+was supported by Waseda University Grant for Early Career Researchers (Project number:
+2025E-041). Eskandari and Nemoto were partially supported by the NSERC Discovery Grant
+“Arithmetic and Geometry of Mixed Motives” (RGPIN-2024-04076).
+
+                                                  References
+ [1] R. Apéry, Irrationalité de ζ(2) et ζ(3), Astérisque 61 (1979), 11–13.
+ [2] K. Ball and T. Rivoal, Irrationalité d’une infinité de valeurs de la fonction zêta aux entiers impairs, Invent.
+     Math. 146 (2001), no. 1, 193–207.
+ [3] A. A. Beilinson, Higher regulators and values of L-functions, J. Soviet Math. 30 (1985), 2036–2070.
+ [4] F. Beukers, A note on the irrationality of ζ(2) and ζ(3), Bull. London Math. Soc. 11 (1979), 268–272.
+ [5] A. Borel, Cohomologie de SLn et valeurs de fonctions zêta aux points entiers, Ann. Scuola Norm. Sup.
+     Pisa Cl. Sci. (4) 4 (1977), no. 4, 613–636.
+ [6] P. B. Borwein and I. E. Pritsker, The multivariate integer Chebyshev problem, Constructive Approximation
+     30 (2009), 299–310.
+ [7] F. Brown, Irrationality proofs for zeta values, moduli spaces and dinner parties, Mosc. J. Comb. Number
+     Theory 6 (2016), 102–165.
+ [8] J. I. Burgos Gil and J. Fresán, Multiple zeta values: from numbers to motives, Clay Mathematics Pro-
+     ceedings, to appear.
+ [9] P. Deligne, Le groupe fondamental de la droite projective moins trois points, Galois Groups over Q, MSRI
+     Publ. 16, pp. 79–313, Springer-Verlag (1989).
+[10] P. Deligne and A. B. Goncharov, Groupes fondamentaux motiviques de Tate mixte, Ann. Sci. École Norm.
+     Sup. (4) 38 (2005), no. 1, 1–56.
+[11] P. Deligne and J.S. Milne, Tannakian Categories, Hodge Cycles, Motives, and Shimura Varieties, Lecture
+     Notes in Mathematics 900, Springer-Verlog, Berlin (1982).
+[12] C. Dupont, Odd zeta motive and linear forms in odd zeta values (with a joint appendix with Don Zagier),
+     Compositio Math. 154 (2018), no. 2, 342–379.
+[13] C. Dupont and J. Fresán, A construction of the polylogarithm motive, Épijournal de Géométrie Algébrique
+     9 (2025), article no. 3.
+[14] J. Fresán and P. Jossen, Exponential motives, preprint available at J. Fresán’s webpage.
+[15] A. Hatcher, Algebraic Topology, Cambridge University Press, 2001.
+[16] A. Huber, Mixed motives and their realization in derived categories, Lecture Notes in Mathematics 1604,
+     Springer-Verlag, Berlin, 1995.
+[17] A. Huber and S. Müller-Stach, Periods and Nori Motives, Springer, 2017.
+[18] G. Jameson and N. Lord, Integrals evaluated in terms of Catalan’s constant, The Mathematical Gazette
+     101 (2017), no. 550, 38–49.
+[19] Y. Nesterenko, On Catalan’s constant, Proceedings of the Steklov Institute of Mathematics 292 (2016),
+     153–170.
+[20] T. Rivoal, La fonction zêta de Riemann prend une infinité de valeurs irrationnelles aux entiers impairs,
+     C. R. Acad. Sci. Paris, t. 331, Sér. I Math., 331 (2000), 267–270.
+                                                                                                       39
+
+[21] T. Rivoal and W. Zudilin, Diophantine properties of numbers related to Catalan’s constant, Math. Ann.
+     326 (2003), no. 4, 705–721.
+[22] T. Rivoal, Nombres d’Euler, approximants de Padé et constante de Catalan, Ramanujan J. 11 (2006),
+     199–214.
+[23] T. Terasoma, Mixed Tate motives and multiple zeta values, Invent. Math. 149 (2002), 339–369.
+[24] W. Zudilin, Arithmetic of linear forms involving odd zeta values, Journal Théor. Nombres Bordeaux 16
+     (2004), 251–291.
+
+     Department of Mathematics and Statistics, University of Winnipeg, Winnipeg MB, Canada
+     Email address: p.eskandari@uwinnipeg.ca
+
+     Department of Mathematics, University of Toronto, Toronto ON, Canada
+     Email address: murty@math.toronto.edu
+
+     Graduate School of Science, Chiba University, Yayoicho 1-33, Inage, Chiba, 263-8522 Japan
+     Email address: y-nemoto@waseda.jp
+

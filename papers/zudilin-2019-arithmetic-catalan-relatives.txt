@@ -1,0 +1,942 @@
+arXiv:1804.09922v2  [math.NT]  31 May 2019
+ARITHMETIC OF CATALAN’S CONSTANT
+AND ITS RELATIVES
+W ADIM ZUDILIN
+To Peter Bundschuh, with many irrational wishes, on the occa sion of his 80th birthday
+Abstract. We prove that at least one of the six numbers β (2i) for i = 1 , . . . , 6
+is irrational. Here β (s) = ∑ ∞
+k=0(−1)k(2k + 1)− s denotes Dirichlet’s beta function,
+so that β (2) is Catalan’s constant.
+1. Introduction
+In this note we discuss arithmetic properties of the values of Dirichle t’s beta
+function
+β(s) =
+∞∑
+n=1
+( − 4
+n
+)
+ns =
+∞∑
+k=0
+(−1)k
+(2k + 1)s
+at positive even integers s. The very ﬁrst such beta value β(2) is famously known
+as Catalan’s constant; its irrationality remains an open problem, tho ugh we expect
+the number to be irrational and transcendental. The best known r esults in this
+direction were given by T. Rivoal and this author in [4]. Namely, we show ed that at
+least one of the seven numbers β(2),β (4),...,β (14) is irrational, and that there are
+inﬁnitely many irrational numbers among the even beta values β(2),β (4),β (6),... .
+Here we use a variant of the method from [3, 8] to improve slightly on t he former
+achievement; a signiﬁcant strengthening towards the inﬁnitude re sult, based on a
+further development of the ideas in [2, 6], is a subject of the recent preprint [1] of
+S. Fischler.
+Theorem 1. At least one of the six numbers
+β(2), β(4), β(6), β(8), β(10), β(12)
+is irrational.
+In Section 2 we illustrate principal ingredients of the method in a part icularly
+simple situation; this leads to a weaker version of Theorem 1, namely, to the irra-
+tionality of at least one number β(2i) for i = 1,..., 8. The details about the general
+construction of approximating forms to even beta values and our p roof of Theorem 1
+are given in Section 3.
+Date: 18 April 2018. Revised: 4 May 2019.
+2010 Mathematics Subject Classiﬁcation. 11J72, 11Y60, 33C20.
+Key words and phrases. Irrationality; Catalan’s constant; Dirichlet’s beta function; hyper geo-
+metric series.
+1
+2 W ADIM ZUDILIN
+2. Outline of the construction
+For an odd integer s ≥ 3 (which we eventually set to be 17) and even n > 0,
+deﬁne the rational function
+Rn(t) =
+26nn!s− 3 (2t +n) ∏ 3n
+j=1(t −n +j − 1
+2 )∏ n
+j=0(t +j)s (1)
+and assign to it the related sequence of quantities
+rn =
+∞∑
+ν=1
+Rn(ν − 1
+2)(−1)ν =
+∞∑
+ν=n+1
+Rn(ν − 1
+2)(−1)ν. (2)
+The sums rn are instances of generalized hypergeometric functions, for which we can
+use some standard integral representations to write
+rn = 26n(3n + 1)!
+n!3
+∫
+· · ·
+∫
+[0,1]s
+(1 −t1t2 · · ·ts) ∏ s
+j=1tn− 1/2
+j (1 −tj)n dtj
+(1 +t1t2 · · ·ts)3n+2
+(details are given in Lemma 2 below). This form clearly implies that rn > 0 and
+also gives access to the asymptotics
+lim
+n→∞
+r1/n
+n = 2 633 max
+t∈ [0,1]s
+∏ s
+j=1tj(1 −tj)
+(1 +t1t2 · · ·ts)3 = 12 3 max
+0<t<1
+ts(1 −t)s
+(1 +ts)3. (3)
+An important ingredient of the construction is the following decompo sition of the
+quantitiesrn.
+Lemma 1. For odd s and even n as above,
+rn =
+s∑
+i=1
+i even
+aiβ(i) +a0,
+whereai =ai,n satisfy the inclusions Φ − 1
+n ds− i
+n ai ∈ Z fori = 0, 1,...,s even. Here dn
+denotes the least common multiple of the numbers 1, 2,...,n , and
+Φ n =
+∏
+2√ n<p≤ n
+pϕ0(n/p) with ϕ0(x) =
+
+
+
+0 if 0 ≤ {x}< 1
+3,
+1 if 1
+3 ≤ {x}< 1
+2,
+2 if 1
+2 ≤ {x}< 1,
+the product taken over primes.
+Note that from the prime number theorem we deduce the asymptot ics
+lim
+n→∞
+d1/n
+n =e and lim
+n→∞
+Φ 1/n
+n =eκ,
+where
+κ =
+(
+ψ( 1
+2) −ψ( 1
+3) − 1
+)
++ 2 ·
+(
+ψ(1) −ψ( 1
+2 ) − 1
+)
+= 0.9411124762...,
+the function ψ(x) denotes the logarithmic derivative of the gamma function.
+ARITHMETIC OF CATALAN’S CONSTANT AND ITS RELATIVES 3
+Remark 1. The analogous construction in [4] makes use of a slightly diﬀerent
+rational function than (1), namely, of
+~Rn(t) =
+24nn!s− 2 (2t +n) ∏ n
+j=1(t −n +j − 1
+2) ∏ n
+j=1(t +n +j − 1
+2)∏ n
+j=0(t +j)s ,
+so that
+Rn(t) = ~Rn(t) ·
+22n ∏ n
+j=1(t +j − 1
+2)
+n! .
+The analogous decomposition of a related quantity ~rn assumes the form
+~rn =
+s∑
+i=1
+i even
+~aiβ(i) + ~a0,
+in which the rational coeﬃcients ~ai = ~ai,n satisfy Φ − 1
+n ds− i
+n ~ai ∈ Z fori = 1,...,s even,
+but Φ − 1
+n ds
+2n~a0 ∈ Z. The appearance of ds
+2n as the common denominator in place of
+ds
+n changes the scene drastically and leads to weaker arithmetic applica tions.
+Proof of Lemma 1. Following the strategy in [5, 8] we can write the function (1) as
+sum of partial fractions,
+Rn(t) =
+s∑
+i=1
+n∑
+k=0
+ai,k
+(t +k)i,
+in which Φ − 1
+n ds− i
+n ai,k ∈ Z for all i and k. Indeed, the rational function (1) is a
+product of simpler ones
+n!∏ n
+j=0(t +j) =
+n∑
+k=0
+(−1)k( n
+k
+)
+t +k ,
+22n ∏ n
+j=1(t −n +j − 1
+2 )∏ n
+j=0(t +j) =
+n∑
+k=0
+(−1)n+k( 2n+2k
+2n
+)( 2n
+n+k
+)
+t +k ,
+22n ∏ n
+j=1(t +j − 1
+2 )∏ n
+j=0(t +j) =
+n∑
+k=0
+( 2k
+k
+)( 2n− 2k
+n− k
+)
+t +k ,
+22n ∏ n
+j=1(t +n +j − 1
+2 )∏ n
+j=0(t +j) =
+n∑
+k=0
+(−1)k( 4n− 2k
+2n
+)( 2n
+k
+)
+t +k
+and 2t +n; the inclusions ds− i
+n ai,k ∈ Z then follow from [8, Lemma 1]. The cancel-
+lation by the factor Φ n originates from the p-adic analysis of the binomial factors
+entering
+as,k = (2n + 2k)! (4n − 2k)!
+(n +k)! (2n −k)!k!3(n −k)!3 · (n − 2k)
+( n
+k
+) s− 3
+fork = 0, 1,...,n,
+and the estimate ord pai,k ≥ −(s −i) + ordpas,k ≥ −(s −i) +ϕ(n/p,k/p ) for primes
+in the range 2 √n<p ≤n, where
+ϕ(x,y ) = ⌊2x + 2y⌋ + ⌊4x − 2y⌋ − ⌊x +y⌋ − ⌊2x −y⌋ − 3⌊y⌋ − 3⌊x −y⌋
+4 W ADIM ZUDILIN
+is a periodic function of period 1 in both x and y, and from the inequality
+ϕ(x,y ) ≥ min
+y∈ R
+ϕ(x,y ) = min
+0≤ y<1
+ϕ(x,y ) = ϕ0(x);
+the details can be borrowed from [4, Section 7]. Furthermore, the p ropertyRn(−t−n) =
+Rn(t) derived from (1) implies ai,k = (−1)iai,n− k fori = 1,...,s andk = 0, 1,...,n .
+Recall that n is even, so that n/2 = m is a positive integer. The summation over
+ν in (2) can also start from −m − 1 (rather than 1 or n + 1), because the function
+Rn(t) vanishes at all half-integers between −2n and n. Therefore,
+rn =
+∞∑
+ν=− m− 1
+Rn(ν − 1
+2)(−1)ν =
+s∑
+i=1
+n∑
+k=0
+ai,k
+∞∑
+ν=− m− 1
+(−1)ν
+(ν +k − 1
+2)i
+=
+s∑
+i=1
+n∑
+k=0
+(−1)k− 1ai,k
+∞∑
+ℓ=k− m
+(−1)ℓ
+(ℓ + 1
+2)i
+=
+s∑
+i=1
+2iβ(i)
+n∑
+k=0
+(−1)k− 1ai,k +
+s∑
+i=1
+m− 1∑
+k=0
+(−1)k− 1ai,k
+− 1∑
+ℓ=k− m
+(−1)ℓ
+(ℓ + 1
+2)i
+−
+s∑
+i=1
+n∑
+k=m+1
+(−1)k− 1ai,k
+k− m− 1∑
+ℓ=0
+(−1)ℓ
+(ℓ + 1
+2)i,
+where the rules
+∞∑
+ℓ=k− m
+=
+∞∑
+ℓ=0
+−
+k− m− 1∑
+ℓ=0
+ifk >m and
+∞∑
+ℓ=k− m
+=
+∞∑
+ℓ=0
++
+− 1∑
+ℓ=k− m
+ifk <m
+were applied. Thus, the rational numbers
+ai = 2 i
+n∑
+k=0
+(−1)k− 1ai,k fori = 1,...,s
+satisfy Φ − 1
+n ds− i
+n ai ∈ Z, while for the quantity
+a0 =
+s∑
+i=1
+m− 1∑
+k=0
+(−1)k− 1ai,k
+− 1∑
+ℓ=k− m
+(−1)ℓ
+(ℓ + 1
+2 )i −
+s∑
+i=1
+n∑
+k=m+1
+(−1)k− 1ai,k
+k− m− 1∑
+ℓ=0
+(−1)ℓ
+(ℓ + 1
+2)i
+the inclusion Φ − 1
+n ds
+na0 ∈ Z follows from noticing that
+di
+n− 1
+− 1∑
+ℓ=k− m
+(−1)ℓ
+(ℓ + 1
+2 )i ∈ Z if 0 ≤k <m,
+di
+n− 1
+k− m− 1∑
+ℓ=0
+(−1)ℓ
+(ℓ + 1
+2 )i ∈ Z ifm<k ≤n.
+ARITHMETIC OF CATALAN’S CONSTANT AND ITS RELATIVES 5
+Finally,
+ai = 2 i
+n∑
+k=0
+(−1)k− 1ai,k = (−1)i2i
+n∑
+k=0
+(−1)k− 1ai,n− k
+= (−1)i2i
+n∑
+k=0
+(−1)n− k− 1ai,n− k = (−1)iai,
+so that ai vanish for odd i. □
+Set now s = 17, in which case we compute from (3) that
+lim
+n→∞
+r1/n
+n =e− 16.1123070755...,
+hence the linear forms
+Φ − 1
+n d17
+nrn ∈ Zβ(2) + Zβ(4) + · · · + Zβ(16) + Z
+are positive and tend to 0 as n → ∞ . This implies that the eight numbers
+β(2),β (4),...,β (16) cannot be all rational.
+3. General settings
+A natural way to generalize the construction in Section 2 follows the recipe of [4]
+and [7].
+For an odd integer s ≥ 5, consider a collection η = (η0,η 1,...,η s) of integral
+parameters satisfying the conditions
+0<η j < 1
+2η0 forj = 1,...,s and η1 +η2 + · · · +ηs ≤ s − 1
+2 η0,
+to which we assign, for each positive integer n, the collection
+h0 =η0n + 1, h j =ηjn + 1
+2 forj = 1,...,s.
+In what follows, we assume that h0 − 1 = η0n is even — the condition that is auto-
+matically achieved when η0 ∈ 2Z, otherwise by restricting to even n.
+Deﬁne the rational function
+Rn(t) = Rn,η (t) = γn · (2t +h0) (t + 1)h0− 1∏ s
+j=1(t +hj)1+h0− 2hj
+=Rn(−t −h0), (4)
+where
+γn = 4 h0− 1
+∏ s
+j=2(h0 − 2hj)!
+(h1 − 1
+2)!2 ,
+and the (very-well-poised) hypergeometric sum
+rn =rn,η =
+∞∑
+ν=0
+Rn(ν)(−1)ν
+=γn ·
+Γ(1 + h0) ∏ q
+j=1 Γ(hj)∏ q
+j=1 Γ(1 + h0 −hj)
+s+2Fs+1
+( h0, 1 + 1
+2h0, h1, ..., h s
+1
+2h0, 1 +h0 −h1, ..., 1 +h0 −hs
+⏐⏐⏐⏐ −1
+)
+.
+(5)
+6 W ADIM ZUDILIN
+Then [4, Lemma 1] implies the following Euler-type integral represent ation of rn
+(see also [4, Lemma 3]).
+Lemma 2. The formula
+rn = 4h0− 1Γ(1 + h0)
+Γ(h1 + 1
+2)2 Γ(1 + h0 − 2h1)
+×
+∫
+· · ·
+∫
+[0,1]s
+∏ s
+j=1t
+hj − 1
+j (1 −tj)h0− 2hj
+(1 +t1t2 · · ·ts)h0
+1 −t1t2 · · ·ts
+1 +t1t2 · · ·ts
+dt1 dt2 · · · dts
+is valid. In particular, rn> 0 and
+lim
+n→∞
+r1/n
+n = (4η0)η0
+η2η1
+1 (η0 − 2η1)η0− 2η1
+· max
+t∈ [0,1]s
+∏ s
+j=1t
+ηj
+j (1 −tj)η0− 2ηj
+(1 +t1t2 · · ·ts)η0
+.
+Computation of the latter maximum is performed in [4, Sect. 4, Remar k], and the
+result is as follows.
+Lemma 3. Assume that x0 is a unique zero of the polynomial
+x
+s∏
+j=1
+(
+(η0 −ηj) −ηjx
+)
+−
+s∏
+j=1
+(
+ηj − (η0 −ηj)x
+)
+in the interval 0<x< 1, and set
+xj = ηj − (η0 −ηj)x0
+(η0 −ηj) −ηjx0
+forj = 1, 2,...,s.
+Then
+max
+t∈ [0,1]s
+∏ s
+j=1t
+ηj
+j (1 −tj)η0− 2ηj
+(1 +t1t2 · · ·ts)η0
+=
+∏ s
+j=1x
+ηj
+j (1 −xj)η0− 2ηj
+(1 +x1x2 · · ·xs)η0
+.
+Arithmetic ingredients of the construction are in line with the strate gy used in
+the proof of Lemma 1. For simplicity we split the corresponding state ment into two
+parts. Deﬁne
+N = min
+1≤ j≤ s
+{hj − 1
+2 } and M = max{h0 − 2N − 1, h1 − 1
+2},
+and notice that the poles of the rational function (4) are located a t the points
+t = −k − 1
+2 for integers k in the range N ≤k ≤h0 −N − 1.
+Lemma 4. The coeﬃcients in the partial-fraction decomposition
+Rn(t) =
+s∑
+i=1
+h0− N − 1∑
+k=N
+ai,k
+(t +k + 1
+2)i
+of (4) satisfy
+ai,k = (−1)iai,h0− 1− k (6)
+and
+Φ − 1
+n ds− i
+M ai,k ∈ Z (7)
+ARITHMETIC OF CATALAN’S CONSTANT AND ITS RELATIVES 7
+for i = 1,...,s and N ≤k ≤h0 −N − 1, where the product over primes
+Φ n =
+∏
+√ 2h0<p≤ M
+pϕ0(n/p)
+is deﬁned through the 1-periodic functions
+ϕ0(x) = min
+0≤ y<1
+ϕ(x,y )
+and
+ϕ(x,y ) = ⌊2(η0x −y)⌋ + ⌊2y⌋ − ⌊η0x −y⌋ − ⌊y⌋ − 2⌊η1x⌋ − ⌊(η0 − 2η1)x⌋
++
+s∑
+j=1
+(
+⌊(η0 − 2ηj)x⌋ − ⌊y −ηjx⌋ − ⌊(η0 −ηj)x −y⌋
+)
+.
+Proof. For this, we write the function Rn(t − 1
+2) as the product of 2 t +h0 − 1, the
+three integer-valued polynomials
+4h∗
+1(t + 1
+2 )h∗
+1
+h∗
+1! , 4h0− 2h1(t +h∗
+1 + 1
+2)h0− 2h1
+(h0 − 2h1)! , 4h∗
+1(t +h0 −h∗
+1 − 1
+2)h∗
+1
+h∗
+1! ,
+where h∗
+1 =h1 − 1
+2 =η1n, and the rational functions
+(h0 − 2hj)!
+(t +hj − 1
+2)1+h0− 2hj
+forj = 1,...,s.
+Then [4, Lemmas 4, 5, 10, 11] and the Leibniz rule for diﬀerentiating a product
+imply the inclusions ds− i
+M ai,k ∈ Z and estimates
+ordpai,k ≥ −(s −i) +ϕ
+( n
+p,k
+p
+)
+for the p-adic order of the coeﬃcients. These are combined to conclude with (7).
+The property (6) follows from the symmetry of the rational funct ion (4). □
+Lemma 5. The decomposition
+rn =
+s∑
+i=1
+i even
+aiβ(i) +a0 ∈ Qβ(2) + Qβ(4) + · · · + Qβ(s − 1) + Q (8)
+takes place, where Φ − 1
+n ds− i
+M ai ∈ Z for i = 0, 1,...,s even, and Φ n is deﬁned in
+Lemma 4.
+Proof. Since the function (4) vanishes at t = −1, −2,..., −h0 + 2, we can shift the
+summation in (5):
+rn =
+∞∑
+ν=− (h0− 1)/2
+Rn(ν)(−1)ν =
+s∑
+i=1
+h0− N − 1∑
+k=N
+(−1)kai,k
+∞∑
+ν=− (h0− 1)/2
+(−1)ν+k
+(ν +k + 1
+2)i.
+8 W ADIM ZUDILIN
+Now proceeding as in the proof of Lemma 1 we arrive at the desired de composition
+(8) with
+a0 =
+s∑
+i=1
+(h0− 3)/2∑
+k=N
+(−1)kai,k
+− 1∑
+ℓ=k− (h0− 1)/2
+(−1)ℓ
+(ℓ + 1
+2)i
+−
+s∑
+i=1
+h0− N − 1∑
+k=(h0+1)/2
+(−1)kai,k
+k− (h0+1)/2∑
+ℓ=0
+(−1)ℓ
+(ℓ + 1
+2)i
+and
+ai = 2 i
+h0− N − 1∑
+k=N
+(−1)kai,k,
+with ai vanishing for i odd in view of the property (6). The inclusions for the
+coeﬃcients in (8) therefore follow from Lemma 4 and
+di
+h0− 2N − 2
+− 1∑
+ℓ=k− (h0− 1)/2
+(−1)ℓ
+(ℓ + 1
+2)i ∈ Z if N ≤k ≤ h0 − 3
+2 ,
+di
+h0− 2N − 2
+k− (h0+1)/2∑
+ℓ=0
+(−1)ℓ
+(ℓ + 1
+2)i ∈ Z if h0 + 1
+2 ≤k ≤h0 −N − 1. □
+Proof of Theorem 1. Takes = 13 and
+(η0,η 1,...,η 13) = (31, 10, 10, 10, 10, 10, 11, 11, 11, 11, 12, 12, 12, 12),
+hence M = 11n. Then
+lim
+n→∞
+r1/n
+n = exp(−100.73966317 · · ·)
+and
+ϕ0(x) =
+
+
+
+8 if {x} ∈
+[ 7
+24, 3
+10
+)
+,
+7 if {x} ∈
+[ 3
+31, 1
+10
+)
+∪
+[ 6
+31, 1
+5
+)
+∪
+[ 9
+31, 7
+24
+)
+∪
+[ 19
+24, 4
+5
+)
+∪
+[ 8
+9, 9
+10
+)
+,
+6 if {x} ∈
+[ 1
+11, 3
+31
+)
+∪
+[ 2
+11, 6
+31
+)
+∪
+[ 3
+11, 9
+31
+)
+∪
+[ 7
+20, 2
+5
+)
+∪
+[ 9
+20, 1
+2
+)
+∪
+[ 11
+20, 3
+5
+)
+∪
+[ 13
+20, 7
+10
+)
+∪
+[ 3
+4, 19
+24
+)
+∪
+[ 6
+7, 8
+9
+)
+,
+5 if {x} ∈
+[ 7
+31, 1
+4
+)
+∪
+[ 7
+22, 7
+20
+)
+∪
+[ 3
+7, 9
+20
+)
+∪
+[ 17
+31, 11
+20
+)
+∪
+[ 19
+31, 5
+8
+)
+∪
+[ 20
+31, 13
+20
+)
+∪
+[ 5
+7, 8
+11
+)
+∪
+[ 23
+31, 3
+4
+)
+,
+4 if {x} ∈
+[ 1
+10, 1
+8
+)
+∪
+[ 1
+5, 7
+31
+)
+∪
+[ 3
+10, 7
+22
+)
+∪
+[ 6
+11, 17
+31
+)
+∪
+[ 3
+5, 19
+31
+)
+∪
+[ 7
+11, 20
+31
+)
+∪
+[ 8
+11, 23
+31
+)
+,
+2 if {x} ∈
+[ 1
+24, 1
+11
+)
+∪
+[ 3
+22, 2
+11
+)
+∪
+[ 1
+4, 3
+11
+)
+∪
+[ 13
+24, 6
+11
+)
+∪
+[ 5
+8, 7
+11
+)
+∪
+[ 17
+20, 6
+7
+)
+∪
+[ 19
+20, 1
+)
+,
+1 if {x} ∈
+[ 1
+31, 1
+24
+)
+∪
+[ 1
+8, 3
+22
+)
+∪
+[ 9
+22, 3
+7
+)
+∪
+[ 1
+2, 13
+24
+)
+∪
+[ 7
+10, 5
+7
+)
+∪
+[ 4
+5, 9
+11
+)
+∪
+[ 26
+31, 17
+20
+)
+∪
+[ 9
+10, 10
+11
+)
+∪
+[ 29
+31, 19
+20
+)
+,
+0 otherwise ,
+ARITHMETIC OF CATALAN’S CONSTANT AND ITS RELATIVES 9
+so that
+lim
+n→∞
+(Φ − 1
+n d13
+M )1/n = exp(100.23354349... ).
+This means that the positive linear forms
+Φ − 1
+n d13
+Mrn ∈ Zβ(2) + Zβ(4) + · · · + Zβ(12) + Z
+tend to 0 as n → ∞ . Thus, at least one of the even beta values in consideration
+must be irrational. □
+References
+[1] S. Fischler , Irrationality of values of L-functions of Dirichlet characters, Preprint
+arXiv: 1904.02402 [math.NT] (2019).
+[2] S. Fischler , J. Sprang and W. Zudilin , Many odd zeta values are irrational, Compositio
+Math. 155:5 (2019), 938–952.
+[3] C. Krattenthaler and W. Zudilin , Hypergeometry inspired by irrationality questions,
+Kyushu J. Math. 73:1 (2019), 189–203.
+[4] T. Rivoal and W. Zudilin , Diophantine properties of numbers related to Catalan’s constant ,
+Math. Ann. 326:4 (2003), 705–721.
+[5] T. Rivoal and W. Zudilin , A note on odd zeta values, Preprint
+arXiv: 1803.03160 [math.NT] (2018).
+[6] J. Sprang , Inﬁnitely many odd zeta values are irrational. By elementary means , Preprint
+arXiv: 1802.09410 [math.NT] (2018).
+[7] W. Zudilin , Arithmetic of linear forms involving odd zeta values, J. Th´ eor. Nombres Bordeaux
+16:1 (2004), 251–291.
+[8] W. Zudilin , One of the odd zeta values from ζ(5) to ζ(25) is irrational. By elementary means,
+SIGMA 14 (2018), no. 028, 8 pages.
+Department of Mathematics, IMAPP, Radboud University, PO B ox 9010, 6500 GL
+Nijmegen, Netherlands
+URL: http://www.math.ru.nl/~wzudilin

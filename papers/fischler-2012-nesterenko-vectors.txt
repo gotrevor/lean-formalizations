@@ -1,0 +1,1267 @@
+arXiv:1202.2279v2  [math.NT]  1 Oct 2013
+Nesterenko’s linear independence criterion for vectors
+St´ ephane Fischler
+November 24, 2018
+Abstract
+In this paper we deduce a lower bound for the rank of a family of p vectors in
+Rk (considered as a vector space over the rationals) from the ex istence of a sequence
+of linear forms on Rp, with integer coeﬃcients, which are small at k points. This
+is a generalization to vectors of Nesterenko’s linear indep endence criterion (which
+corresponds to k = 1), used by Ball-Rivoal to prove that inﬁnitely many values of
+Riemann zeta function at odd integers are irrational. The pr oof is based on geometry
+of numbers, namely Minkowski’s theorem on convex bodies.
+1 Introduction
+The motivation for this paper comes from irrationality results on valu es of Riemann zeta
+function ζ(s) = ∑ ∞
+n=1
+1
+ns at odd integers s ≥ 3. The ﬁrst result is due to Ap´ ery [1]:
+ζ(3) ⁄∈Q. The next breakthrough in this topic is due to Rivoal [20] and Ball-Rivo al [2]:
+dimQ SpanQ(1,ζ (3),ζ (5),ζ (7),...,ζ (a)) ≥ loga
+1 + log 2 (1 +o(1)) (1.1)
+as a → ∞ , where a is an odd integer; notice this is a lower bound on the rank of this
+family of real numbers, in R considered as a vector space over the rationals. Conjecturally
+the left handside is equal to a+1
+2 , but even the constant 1
+1+log 2 in Eq. (1.1) has never
+been improved. Actually, known reﬁnements of Ball-Rivoal’s proof pr ovide sharper lower
+bounds only for ﬁxed values of a: the improvement always lies inside the error term o(1)
+as a → ∞.
+However, the following improvement of (1.1) is proved in [8]:
+Theorem 1. Letε> 0, and a be an odd integer suﬃciently large with respect to ε. Then
+letting N denote the integer part of 1−ε
+1+log 2 loga, there exist odd integers σ1,...,σ N between
+3 and a such that:
+• 1, ζ(σ1), . . . , ζ(σN ) are linearly independent over the rationals;
+• For any i ⁄=j, |σi −σj|>a ε.
+1
+In particular, if there are only N odd integers σ between 3 and a such that ζ(σ) is
+irrational, then they have to be evenly distributed (see [8]).
+The strategy for proving Theorem 1 is based on the following classica l construction.
+For non-negative integers β, b, n, r with β and b odd, 1 ≤β ≤b, and 2br<a , let
+Jβ,n = da+b−1
+2n (2n)!a−2br
+(β − 1)!
+∞∑
+k=1
+dβ−1
+dkβ−1
+( (k − 2rn)b
+2rn(k + 2n + 1)b
+2rn
+(k)a
+2n+1
+)
+, (1.2)
+where the derivative is taken at k, Pochhammer’s symbol is deﬁned by ( α)p = α(α +
+1)... (α +p − 1), and d2n is the least common multiple of 1, 2, 3, . . . , 2 n. It is not diﬃcult
+to prove that
+Jβ,n = ~ℓβ,n+ℓ3,n
+(
+β + 1
+β − 1
+)
+ζ(β+2)+ℓ5,n
+(
+β + 3
+β − 1
+)
+ζ(β+4)+... +ℓa,n
+(
+β +a − 2
+β − 1
+)
+ζ(β+a−1)
+with integers ~ℓβ,n andℓi,n; moreover Jβ,n tends to 0 as n → ∞, for any β, provided the pa-
+rameters satisfy suitable relations (and up to technicalities, see [8] for precise statements).
+This can be seen as a sequence ( Ln) of linear forms on R(a+b)/2, with integer coeﬃcients,
+that take small values Ln(ej) = J2j−1,n at k = b+1
+2 points e1,...,e k ∈ R(a+b)/2. The key
+point in the proof of Theorem 1 is then to apply the following result, to which the present
+paper is devoted.
+We let Rp be endowed with its canonical scalar product and the correspondin g norm.
+Theorem 2. Let 1 ≤k ≤p − 1, and e1,...,e k ∈ Rp.
+Letτ1,...,τ k > 0 be pairwise distinct real numbers.
+Let (Qn)n≥1 be an increasing sequence of positive integers, such that Qn+1 =Q1+o(1)
+n .
+For any n ≥ 1, let Ln = ℓ1,nX1 +... +ℓp,nXp be a linear form on Rp, with integer
+coeﬃcients ℓi,n such that, as n → ∞:
+|Ln(ej)| =Q−τj +o(1)
+n for any j ∈ {1,...,k } and max
+1≤i≤p
+|ℓi,n| ≤ Q1+o(1)
+n .
+Then:
+(i) If F is a subspace of Rp deﬁned over Q which contains e1, . . . , ek then
+dimF ≥k +τ1 +... +τk.
+In other words, letting C1,...,C p ∈ Rk denote the columns of the matrix whose rows
+aree1,...,e k ∈ Rp, we have
+rkQ(C1,...,C p) ≥k +τ1 +... +τk
+in Rk seen as a Q-vector space.
+2
+(ii) The vectors e1,...,e k are R-linearly independent in Rp, and the R-subspace they span
+does not intersect Qp \ {(0,..., 0)}.
+(iii) Let ε >0, and Q be suﬃciently large (in terms of ε). Let C(ε,Q ) denote the set of
+all vectors that can be written as λ1e1 +... +λkek +u with:
+{ λ1,...,λ k ∈ R such that |λj| ≤ Qτj −ε for any j ∈ {1,...,k }
+u ∈ (SpanR(e1,...,e k))⊥ such that ‖u‖ ≤ Q−1−ε
+Then C(ε,Q ) ∩ Zp = {(0,..., 0)}.
+Ifk = 1 this is exactly Nesterenko’s linear independence criterion [19] use d in the proof
+of Ball-Rivoal’s result (1.1).
+In the conclusions, ( ii) is an easy result, and ( iii) is the main part (it is a quantitative
+version of (ii)). We deduce ( i) from (iii) using Minkowski’s convex body theorem, thereby
+generalizing the proof given in [11] and [10] of Nesterenko’s linear inde pendence criterion.
+The equivalence between both statements of ( i) comes from linear algebra; it is proved in
+§3.1.
+A result analogous to Theorem 2, but in which p linearly independent linear forms like
+Ln appear in the assumption, is proved in §4.3. This linear independence criterion (in the
+style of Siegel’s) is much easier to prove than Theorem 2. Both result s can be thought of
+as transference principles. In this respect it is worth pointing out t hat in Theorem 2 we
+assume essentially that for any positive integer Q there is a linear form : indeed this is
+Ln, where n is such that Qn ≤ Q < Qn+1 so that Q = Q1+o(1)
+n because Qn+1 = Q1+o(1)
+n .
+The assumptions imply that this linear form belongs to some convex bo dy, and conclusion
+(iii) asserts that (up to Qε) the dual convex body does not contain any non-zero integer
+point. Therefore it is reasonable to imagine that ( iii) is an optimal conclusion up to Qε.
+In general the lower bound k +τ1 +... +τk in (i) is optimal too (see [9] for a converse
+statement, valid almost everywhere). In the special case p = 2, k = 1, and e1 = (1,ξ ),
+Theorem 2 ( iii) yields an upper bound µ(ξ) ≤ 1 + 1
+τ1
+on the irrationality exponent of ξ,
+and reduces essentially to Lemma 1 of [10]. A converse statement in t his case is proved in
+[10] (Theorem 1).
+The assumption that τ1, . . . , τk are pairwise distinct is very important in Theorem 2,
+and it cannot be omitted. For instance, if τ1 =τ2 thenLn(e1 −e2) could be very small: up
+to replacing (e1,e 2) with (e1 +e2,e 1 −e2), this amounts to dropping the assumption that
+the linear forms Ln are not too small at the points ej. Now this assumption is known to be
+essential, already in the classical case of Nesterenko’s linear indepe ndence criterion (except
+for proving the linear independence of three numbers, see Theore m 2 of [11]). Actually,
+if τ1 = τ2 then Ln(e1 −e2) could even vanish, so the possibility that e1 = e2 cannot be
+eliminated: even assertion ( ii) may fail to hold.
+3
+We shall prove Theorem 2 in a more general form, stated in §2, which allows the
+sequences ( |Ln(ej)|)n≥1 to oscillate (as in [7]), and takes into account divisors of the coef-
+ﬁcients ℓi,n (as in [11]); the former is used in [8] to prove Theorem 1. We also include a
+reﬁnement useful when Ln is not too large at some other point, which is new even in the
+classical case of Nesterenko’s linear independence (with k = 1).
+We hope that our results will have Diophantine applications besides th ose of [8]; we
+mention some directions in §4.4, connected to polylogarithms or zeta values. Our criterion
+could be used also for q-analogues, as in [11].
+The structure of this text is as follows. In §2 we state our result in a very general form,
+of which Theorem 2 is a special case. Section 3 is devoted to the proo f; then we deduce
+some corollaries in §§4.1 and 4.2. We prove an analogous result in the style of Siegel’s
+linear independence criterion in §4.3, and conclude in §4.4 with Diophantine applications.
+2 Statement of the criterion
+The following generalization of Theorem 2 is our main result.
+Theorem 3. Let 1 ≤ k ≤ p − 1, and e1,...,e k ∈ Rp. Let (v1,...,v p) denote a basis of
+Rp. Let τ1,...,τ k > 0, σ1 ≥ ... ≥ σp > 0, ω1,...,ω k, ϕ1,...,ϕ k be real numbers, with
+τ1,...,τ k pairwise distinct. Assume that there exist inﬁnitely many i ntegers n with the
+following property: for any j ∈ {1,...,k }, nωj +ϕj ⁄≡π
+2 modπ.
+Let (Qn)n≥1 be an increasing sequence of positive integers, such that Qn+1 =Q1+O(1/n)
+n ;
+if ω1 =... =ωk = 0, this assumption can be weakened to Qn+1 =Q1+o(1)
+n .
+For any n ≥ 1, let Ln = ℓ1,nX1 +... +ℓp,nXp be a linear form on Rp, with integer
+coeﬃcients ℓi,n such that, as n → ∞:
+|Ln(ej)| =Q−τj +o(1)
+n | cos(nωj +ϕj) +o(1)| for any j ∈ {1,...,k }, (2.1)
+and
+|Ln(vi)| ≤ Qσi+o(1)
+n for any i ∈ {1,...,p }.
+For all n ≥ 1 and i ∈ {1,...,p }, let δi,n be a positive divisor of ℓi,n such that:
+(i) δi,n divides δi+1,n for any n ≥ 1 and any i ∈ {1,...,p − 1},
+(ii) δj,n
+δi,n
+divides δj,n+1
+δi,n+1
+for any n ≥ 1 and any 0 ≤i<j ≤p, with δ0,n = 1,
+(iii) δi,n = Qdi+o(1)
+n as n → ∞ for any i ∈ { 1,...,p }, with real numbers di such that
+0 ≤d1 ≤... ≤dp ≤σp.
+Then:
+4
+(i) If F is a subspace of Rp deﬁned over Q which contains e1, . . . , ek then s = dim F
+satisﬁes s ≥k + 1 and
+σ1 +... +σs−k ≥τ1 +... +τk +d1 +... +ds. (2.2)
+In other words, letting C1,...,C p ∈ Rk denote the columns of the matrix whose rows
+are e1,...,e k ∈ Rp, the rank s of the family (C1,...,C p) in Rk seen as a Q-vector
+space satisﬁes s ≥k + 1 and Eq. (2.2).
+(ii) The vectors e1,...,e k are R-linearly independent in Rp, and the R-subspace they span
+does not intersect Qp \ {(0,..., 0)}.
+(iii) Let ε >0, and Q be suﬃciently large (in terms of ε). Let C(ε,Q ) denote the set of
+all vectors that can be written as λ1e1 +... +λkek +u with:
+
+
+
+λ1,...,λ k ∈ R such that |λj| ≤ Qτj −ε for any j ∈ {1,...,k }
+u ∈ (SpanR(e1,...,e k))⊥ such that u =µ1v1 +... +µpvp with |µi| ≤ Q−σi−ε
+for any i ∈ {1,...,p }.
+Let Λ(Q) denote the set of all (x1,...,x p) ∈ Qp such that δi,Ψ(Q)xi ∈ Z for any
+i ∈ {1,...,p }, where Ψ(Q) is the largest integer n such that Qn ≤Q.
+Then C(ε,Q ) ∩ Λ(Q) = {(0,..., 0)}.
+In the special case where σi = δi,n = 1 and di = ωj = ϕj = 0 for any i, j, n, and
+(v1,...,v p) is the canonical basis of Rp, this is exactly Theorem 2 stated in the introduction.
+Indeed Eq. (2.1) reads |Ln(ej)| =Q
+−τj +o(1)
+n in this case, and we haveLn(vi) = ℓi,n; moreover
+Eq. (2.2) reads
+dimF ≥k +τ1 +... +τk.
+There is only a minor diﬀerence in ( iii), where the norm of u is the Euclidean one in
+Theorem 2, and the inﬁnite one in Theorem 3; of course this is not sign iﬁcant.
+The real numbers ωj and ϕj allow oscillating behaviors of the sequences ( |Ln(ej)|)n≥1.
+This is used in [8], where the saddle point method is applied. In the specia l case of Theorem
+2 withk = 1, the corresponding generalization of Nesterenko’s linear independence criterion
+has been proved in [7] when Qn =βn for some β >1 (which is the most interesting case).
+We generalize it here to any sequence ( Qn) such that Qn+1 = Q1+O(1/n)
+n ; eventhough this
+assumption is slightly more restrictive than the usual one Qn+1 =Q1+o(1)
+n , it is still general
+enough to include sequences Qn =βnd
+with β >1 and d> 0.
+The divisors δi,n allow one to make use of divisibility properties of the coeﬃcients ℓi,n:
+for instance, in most constructions of linear forms in zeta values, ℓi,n is a multiple of
+δi,n = dei
+n for some ei ≥ 1, where dn = lcm(1, 2,...,n ). These divisors are used in [8] to
+prove a variant of Theorem 1. The ﬁrst reﬁnement of Nesterenko ’s linear independence
+criterion involving such divisors δi,n is Theorem 1 of [11], which is essentially the special
+5
+case of Theorem 3 ( i) where k = 1, σi = 1, ωj =ϕj = 0, and ( v1,...,v p) is the canonical
+basis of Rp; it is the main ingredient in the proof [11] that 1, ζ(3) and ζ(j) are Q-linearly
+independent for some odd integer j between 5 and 139.
+The real numbers σi allow one to take advantage of the fact that the linear forms Ln
+might be smaller than ‖Ln‖ at some given points vi (eventhoughLn(vi) does not tend to
+0 as n → ∞ ). For instance, if ( v1,...,v p) is the canonical basis, this is useful when one
+has a sharper upper bound on |ℓi,n| for some values of i than for others. This feature is
+new even in the case of Nesterenko’s linear independence criterion ( namely, with k = 1,
+σi = δi,n = 1, and di = ωj = ϕj = 0). It would be interesting to deduce from this
+reﬁnement a Diophantine consequence. Actually it happens for linea r forms in zeta values
+that limn→∞ |ℓi,n|1/n exists for any i and does depend on i. For instance, F. Amoroso and
+T. Rivoal have noticed that in the expansion of
+n!a−1
+∞∑
+k=1
+(k −n)n
+(k)a
+n+1
+as a linear combination of zeta values, the coeﬃcients of odd and eve n zeta values don’t
+have the same size (provided a is even).
+It is very important in Theorem 3 that τ1,...,τ k are pairwise distinct; however it is not
+always necessary to compute their exact values. For instance, if m in(τ1,...,τ k) is greater
+than or equal to some τ >0, then Eq. (2.2) implies
+σ1 +... +σs−k ≥kτ +d1 +... +ds;
+in the special case of Theorem 2 this lower bound reads dim F ≥k(1 +τ ). This remark is
+already used (with k = 1) in [2], and also in the proof [8] of Theorem 1. We refer to §4.2
+below for a related result.
+At last, notice that if the assumptions of Theorem 3 hold with e1,...,e k, then they
+hold also if we forget one of the ej’s (sayek, with k ≥ 2). The same implication holds also
+for parts ( ii) and ( iii) of the conclusion, since the convex body C(ε,Q ) becomes smaller
+when ek is omitted. However this implication does not hold for part ( i); to ﬁx this we
+reﬁne part (i) as follows.
+Corollary 1. In the situation of Theorem 3, assume also that τ1 >...>τ k. Then for any
+subspaceF of Rp deﬁned over Q we have
+s ≥t + 1 and σ1 +... +σs−t ≥τk+1−t +... +τk +d1 +... +ds, (2.3)
+provided that s = dimF and t = dim(F ∩ SpanR(e1,...,e k)) are positive.
+In other words, for any surjective R-linear map π : Rk → Rt witht ≥ 1, Eq. (2.3) holds
+with
+s = rk Q(π(C1),...,π (Cp))
+where the rank is computed in Rt seen as a Q-vector space.
+6
+Proof of Corollary 1: Let F be a subspace of Rp deﬁned over Q; assume that s = dimF
+and t = dim(F ∩ SpanR(e1,...,e k)) are positive. For any j ∈ { 1,...,k } we let Dj =
+dim(F ∩ SpanR(e1,...,e j)), so that 0 ≤ D1 ≤ ... ≤ Dk = t and Dj ∈ {Dj−1,Dj−1 + 1}
+for any j (with D0 = 0). Then there exist t integers 1 ≤ j1 < ... < jt ≤ k such
+that Dj = Dj−1 + 1 if, and only if, j is among the ji’s. For any i ∈ { 1,...,t }, there
+exists e′
+i ∈ F ∩ SpanR(e1,...,e ji) such that e′
+i ⁄∈SpanR(e1,...,e ji−1). Then we have
+e′
+i = ∑ ji
+j=1λi,jej for real numbers λi,j such that λi,ji ⁄= 0. Since τ1 > ... > τji, Eq. (2.1)
+yields
+|Ln(e′
+i)| =Q
+−τji +o(1)
+n | cos(nωji +ϕji) +o(1)|.
+Therefore Theorem 3 applies to e′
+1,...,e ′
+t withτj1,...,τ jt. Since τ1 >...>τ k, the inequal-
+ity (2.2) obtained in this way implies Eq. (2.3). This concludes the proof of Corollary 1,
+except for the second part of the conclusion which will be proved at the end of §3.1 below.
+3 Proof of the criterion
+This section is devoted to proving Theorem 3, of which Theorem 2 sta ted in the intro-
+duction is a special case (see §2). Reindexing e1, . . . , ek is necessary, we assume that
+τ1 >...>τ k > 0. This assumption will be used in §§3.3 and 3.6.
+3.1 Rational rank of vectors
+In this section, we give some details about the conclusions of our crit erion, which allow us
+to prove the equivalence of both conclusions of ( i) in Theorems 2 and 3, and to conclude
+the proof of Corollary 1.
+In Nesterenko’s linear independence criterion, a lower bound is derived for the dimension
+of the Q-subspace of R spanned by ξ0,...,ξ r ∈ R, that is, for the Q-rank of ξ0,...,ξ r in R
+considered as a vector space over Q. This rank is equal to the dimension of the smallest
+subspace of Rr+1, deﬁned over the rationals, which contains the point ( ξ0,...,ξ r). We
+generalize in Lemma 1 below this equality to our setting.
+Recall that a subspace F of Rp is said to be deﬁned over Q if it is the zero locus of
+a family of linear forms with rational coeﬃcients. This is equivalent to t he existence of a
+basis (or a generating family) of F , as a vector space over R, consisting in vectors of Qp
+(see for instance §8 of [3]). Since the intersection of a family of subspaces of Rp deﬁned
+over Q is again deﬁned over Q, there exists for any subset S ⊂ Rp a minimal subspace of
+Rp, deﬁned over Q, which contains S: this is the intersection of all subspaces of Rp, deﬁned
+over Q, which contain S.
+LetM be a matrix withk ≥ 1 rows,p ≥ 1 columns, and real entries. Letting e1,...,e k ∈
+Rp denote the rows of M, we can consider as above the smallest subspace of Rp, deﬁned
+over Q, which contains e1,...,e k. On the other hand, we denote by C1,...,C p ∈ Rk
+the columns of M and consider Rk as an inﬁnite-dimensional vector space over Q. Then
+SpanQ(C1,...,C p) is the smallest Q-vector subspace of Rk containingC1,...,C p; it consists
+7
+in all linear combinations r1C1+... +rpCp withr1,...,r p ∈ Q. Its dimension (as a Q-vector
+space) is the rank (over Q) of C1,...,C p, denoted by rk Q(C1,...,C p).
+Lemma 1. Let M ∈ Matk,p(R) with k,p ≥ 1. Denote by e1,...,e k ∈ Rp denote the rows
+of M, and by C1,...,C p ∈ Rk its columns. Then rkQ(C1,...,C p) is the dimension of the
+smallest subspace of Rp, deﬁned over Q, which contains e1,...,e k.
+When k = 1, this lemma means that the Q-rank of ξ0,...,ξ r is equal to the dimension
+of the smallest subspace of Rr+1, deﬁned over the rationals, which contains the point
+(ξ0,...,ξ r).
+Proof of Lemma 1: Let G = (Span R(e1,...,e k))⊥, where Rp is equipped with the usual
+scalar product. Let F denote the minimal subspace of Rp, deﬁned over Q, which contains
+e1,...,e k. Then F ⊥ is the maximal subspace of Rp, deﬁned over Q, which is contained in
+G = {e1,...,e k}⊥. Therefore F ⊥ = Span R(G ∩ Qp) = ( G ∩ Qp) ⊗Q R: any basis of the
+Q-vector space G ∩ Qp is an R-basis of F ⊥. Since G ∩ Qp = kerψ where ψ : Qp → Rk is
+deﬁned by ψ(r1,...,r p) = r1C1 +... +rpCp, we have:
+dimRF =p − dimRF ⊥ =p − dimQ(G ∩ Qp) = rk Qψ = rk Q(C1,...,C p).
+This concludes the proof of Lemma 1.
+Let us deduce from Lemma 1 the following generalization, and use it to prove the second
+assertion of Corollary 1.
+Lemma 2. LetM, e1,...,e k,C1,...,C p be as in Lemma 1. Let π : Rk → Rt be a R-linear
+map, with t ≥ 1. Then the rank of (π(C1),...,π (Cp)) in Rt (seen as a Q-vector space) is
+equal to the dimension of the minimal subspace F of Rp, deﬁned over Q, which contains
+the image of ψ ◦tπ; here ψ is the R-linear map of the dual of Rk to Rp which maps the
+canonical basis to (e1,...,e k).
+Proof of Lemma 2: Let P be the matrix of π with respect to canonical bases, and M ′ =
+PM . Applying Lemma 1 to M ′ gives directly the result.
+Proof of the second assertion of Corollary 1: Let F denote the minimal subspace of Rp,
+deﬁned over Q, which contains the image of ψ ◦tπ; then Lemma 2 yields dim F =s. Now
+rk(tπ) = rk(π) = t and ψ is injective because e1,...,e k are R-linearly independent (using
+conclusion (ii) of Theorem 3), so that Im( ψ ◦tπ) has dimension t. Since this subspace is
+contained in both F and SpanR(e1,...,e k) = Imψ, we have dim(F ∩SpanR(e1,...,e k)) ≥t.
+Now the ﬁrst part of Corollary 1 (deduced in §2 from Theorem 3) shows that Eq. (2.3)
+holds when t is replaced with this (possibly larger) dimension; therefore it holds wit h t.
+This concludes the proof of the second assertion of Corollary 1.
+8
+3.2 Reduction to the non-oscillatory case
+In this subsection, we deduce the general case of Theorem 3 from the special case where
+ω1 =... =ωk = 0; notice that in this case we have φj ⁄≡π
+2 modπ for any j ∈ { 1,...,k },
+so that Eq. (2.1) reads |Ln(ej)| = Q
+−τj +o(1)
+n . This special case will be proved in the
+following subsections, under the assumption that Qn+1 = Q1+o(1)
+n (which is weaker than
+the assumption Qn+1 =Q1+O(1/n)
+n we make when ω1, . . . , ωk may be non-zero).
+Let ω1, . . . , ωk, ϕ1, . . . , ϕk, and ( Qn) be as in Theorem 3, with Qn+1 = Q1+O(1/n)
+n .
+Since there are inﬁnitely many integers n such that, for any j ∈ { 1,...,k }, nωj +ϕj ⁄≡
+π
+2 modπ, Proposition 1 of [7] provides ε,λ > 0 and an increasing function ψ : N → N
+such that lim n→∞
+ψ(n)
+n =λ and, for any n and any j ∈ {1,...,k }, | cos(ψ(n)ωj +ϕj)| ≥ ε.
+Let L′
+n = Lψ(n) and Q′
+n = Qψ(n) for any n ≥ 1. Then we have |L′
+n(ej)| = Q′
+n
+−τj +o(1)
+because | cos(ψ(n)ωj +ϕj)| = Qo(1)
+ψ(n). Let us check that Q′
+n+1 = Q′1+o(1)
+n ; then the special
+case of Theorem 3 will apply to the sequences ( L′
+n)n≥1 and (Q′
+n)n≥1, with the same other
+parameters: this will conclude the proof.
+Since Qn+1 =Q1+O(1/n)
+n there exists M >0 such that, for any n ≥ 1, Qn+1 ≤Q1+M/n
+n ;
+this implies
+logQn+ℓ ≤ (1 +M/n)ℓ logQn
+for any ℓ ≥ 0. Letting δn =ψ(n + 1) −ψ(n) ≥ 1, we have:
+logQ′
+n+1 = logQψ(n)+δn ≤ (1 +M/ψ(n))δn logQψ(n) ≤ exp(Mδn/ψ(n)) logQψ(n)
+= (1 + o(1)) logQ′
+n
+since 1 + x ≤ ex and δn = o(n) since ψ(n) = λn +o(n). This concludes the reduction to
+the case where ω1 =... =ωk = 0 and Qn+1 =Q1+o(1)
+n .
+3.3 Proof of (ii)
+Let us come now to the easiest part of Theorem 3, namely ( ii). We shall prove simul-
+taneously that e1,...,e k are linearly independent in Rp, and that F ∩ Qp = {(0,..., 0)}
+where F = Span R(e1,...,e k). With this aim in mind, we assume (by contradiction) that
+there exist real numbers λ1,...,λ k, not all zero, such that ∑ k
+j=1λjej ∈ Qp; multiplying all
+λj by a common denominator of the coordinates, we may assume ∑ k
+j=1λjej ∈ Zp. Then
+κn =Ln(∑ k
+j=1λjej) = ∑ k
+j=1λjLn(ej) is an integer for any n ≥ 1. Now if n is suﬃciently
+large then |κn| ≤ ∑ k
+j=1 |λj| |Ln(ej)| < 1, so that κn = 0. Let j0 denote the largest inte-
+ger j such that λj ⁄= 0. Then for any n suﬃciently large, the fact that κn = 0 implies
+|λj0Ln(ej0)| = | ∑ j0−1
+j=1 λjLn(ej)| so that
+|λj0| ≤
+j0−1∑
+j=1
+|λj| |Ln(ej)|
+|Ln(ej0)| ≤
+j0−1∑
+j=1
+|λj|Q
+τj0 −τj+o(1)
+n
+9
+as n → ∞ . Now the right handside tends to 0 as n → ∞ because we have assumed that
+τ1 >...>τ k, so that λj0 = 0: this contradicts the deﬁnition of λj0.
+Therefore such real numbersλ1,...,λ k cannot exist, and this concludes the proof of ( ii).
+3.4 Proof that (ii) and (iii) imply (i)
+Before proceeding in §§3.5 and 3.6 to the proof of ( iii), which is the main part, we deduce
+(i) from (ii) and (iii). Recall that the second statement of ( i) is equivalent to the ﬁrst one
+(which we shall prove now) thanks to Lemma 1 proved in §3.1.
+LetF be a subspace of Rp, deﬁned over Q, which containse1, . . . ,ek. Letting s = dimF ,
+we have s>k using (ii). Assertion ( iii) yields, for any ε> 0 and any Q suﬃciently large
+(in terms of ε), a subset C(ε,Q ) and a lattice Λ( Q) such that C(ε,Q )∩Λ(Q) = {(0,..., 0)}.
+Now C(ε,Q ) ∩F is a convex body, compact and symmetric with respect to the origin, in
+the Euclidean space F . On the other hand, Λ( Q) ∩F is a lattice in F becauseF is deﬁned
+over Q. Therefore Minkowski’s convex body theorem (see for instance Ch apter III of [5])
+implies that C(ε,Q ) ∩F has volume less than 2 s det(Λ(Q) ∩F ). Letting
+α =τ1 +... +τk −σ1 −... −σs−k −sε,
+this volume is greater than or equal to Qα, up to a multiplicative constant which depends
+only on F , e1,...,e k, v1, . . . , vp (using the inequalities σ1 ≥ ... ≥ σp). On the other
+hand, since d1 ≤ ... ≤ dp we have det(Λ( Q) ∩F ) ≤ cQβ+o(1) where β = −d1 −... −ds
+and c is a constant depending only on F . Since Q can be chosen arbitrarily large, the
+above-mentioned consequence of Minkowski’s theorem yields α ≤ β. Now ε can be any
+positive real number, so that we obtain
+τ1 +... +τk +d1 +... +ds ≤σ1 +... +σs−k,
+thereby concluding the proof of ( i).
+3.5 A matrix lemma
+We state and prove in this section the main tool in the proof of Theor em 2, namely
+Lemma 3. This result might be of independent interest; its proof relie s on estimating the
+determinant and cofactors.
+Lemma 3. LetA be a k ×k matrix with real positive entries ai,j, 1 ≤i,j ≤k, such that
+ai′,jai,j′ ≤ 1
+(k + 1)!ai,jai′,j′ for any i,j,i ′,j ′ such that i<i ′ and j <j′. (3.1)
+Then A is an invertible matrix, and letting A−1 = [bi,j]1≤i,j≤k we have
+|bj,i| ≤
+(
+1 + 1
+k + 1
+k2
+)
+a−1
+i,j for any i,j ∈ {1,...,k }.
+10
+Lemma 3 is optimal up to the value of the constant 1 + 1
+k + 1
+k2 : it would be false with a
+constant less than 1/k instead (this is immediately seen by computing a diagonal coeﬃcient
+of AA−1, which is equal to 1). We did not try to improve on the constant 1 + 1
+k + 1
+k2 , but
+anyway it could easily be made smaller by replacing 1
+(k+1)! in (3.1) with a smaller constant.
+In the proof of Lemma 3 we shall use the following lemma.
+Lemma 4. Under the assumptions of Lemma 3, for any σ ∈ Sk we have
+k∏
+j=1
+aσ(j),j ≤ησ
+k∏
+j=1
+aj,j (3.2)
+whereησ = 1
+(k+1)! for σ ⁄= Id, and ηId = 1.
+Proof of Lemma 4: For σ ⁄= Id let κσ denote the largest integer j ∈ { 1,...,k } such that
+σ(j) ⁄= j; put also κId = 0. We are going to prove Eq. (3.2) by induction on κσ. If
+κσ ≤ 1 then σ = Id, so that Eq. (3.2) holds trivially. Let σ ∈ Sk be such that κσ ≥ 2,
+and assume that Eq. (3.2) holds for any σ′ such that κσ′ < κσ. We have σ(j) = j
+for any j ∈ {κσ + 1,...,k }, and σ(κσ) < κσ. Let j0 = σ−1(κσ); then j0 < κσ. Let
+σ′ = σ ◦τj0,κσ where τj0,κσ is the transposition that exchanges j0 and κσ. Then σ′(j) = j
+for any j ∈ {κσ,...,k } so that κσ′ <κ σ and Eq. (3.2) holds for σ′. Since σ′(j) = σ(j) for
+j ⁄∈ {j0,κσ}, σ′(j0) = σ(κσ) and σ′(κσ) = κσ, this implies (using the fact that ησ′ ≤ 1)
+aσ(κσ),j0aκσ,κσ
+∏
+1≤j≤k
+j⁄∈{j0,κσ }
+aσ(j),j ≤
+k∏
+j=1
+aj,j.
+On the other hand, Eq. (3.1) implies
+aκσ,j0aσ(κσ ),κσ ≤ 1
+(k + 1)!aσ(κσ ),j0aκσ,κσ
+because σ(κσ) < κσ and j0 < κσ. Multiplying out the previous two inequalities yields
+Eq. (3.2) for σ, since σ(j0) = κσ. This concludes the proof of Lemma 4.
+Proof of Lemma 3: Letting ∆ = | detA | we have, using Lemma 4:
+∆ ≥
+k∏
+j=1
+aj,j −
+∑
+σ∈Sk
+σ⁄=Id
+k∏
+j=1
+aσ(j),j ≥
+(
+1 − 1
+k + 1
+) k∏
+j=1
+aj,j > 0 (3.3)
+so thatA is invertible. Given i,j ∈ {1,...,k } we have |bj,i| = ∆ i,j
+∆ where ∆ i,j is the absolute
+value of the determinant of the matrix obtained from A by deleting the i-th row and the
+j-th column. Using Lemma 4 again we have
+∆ i,j ≤
+∑
+σ∈Sk
+σ(j)=i
+∏
+1≤j′ ≤k
+j′⁄=j
+aσ(j′),j′ ≤
+( ∑
+σ∈Sk
+σ(j)=i
+ησ
+)
+a−1
+i,j
+k∏
+j′=1
+aj′,j′. (3.4)
+11
+Now we have ησ = 1 for at most one σ, and ησ = 1
+(k+1)! for all other permutations σ among
+the (k − 1)! such that σ(j) = i, so that
+∑
+σ∈Sk
+σ(j)=i
+ησ ≤ 1 + (k − 1)!
+(k + 1)! = k + 1 + 1
+k
+k + 1 .
+Combining this upper bound with Eqns. (3.3) and (3.4) yields
+|bj,i| = ∆ i,j
+∆ ≤ k + 1 + 1
+k
+k a−1
+i,j,
+thereby completing the proof of Lemma 3.
+3.6 Proof of (iii)
+We are now in position to prove the remaining part of Theorem 2, name ly (iii). We assume
+τ1 >...>τ k > 0 and ω1 =... =ωk = 0 (see §3.2), so that |Ln(ej)| =Q
+−τj +o(1)
+n .
+Before giving details, let us make a few comments on our strategy.
+Recall that Nesterenko’s linear independence criterion is much easie r to prove if the
+linear formsLn,Ln+1, . . . ,Ln+p−1 are linearly independent (see §2.3 of [11] or the references
+to Siegel’s criterion in §4.3 below). Of course this is not always the case, but Lemma 3
+enables us to make a step in this direction. Actually letting F = Span R(e1,...,e k), we
+consider the restrictions Ln|F of the linear forms to F ; recall that dim F = k thanks to
+(ii) proved in §3.3. It is not true in general that Ln|F , Ln+1|F , . . . , Ln+k−1|F are linearly
+independent linear forms on F : for instance, the equality Ln = Ln+1 might hold for any
+even integern (because of the error terms o(1) in the assumptions of Theorem 3). To make
+this statement correct, we introduce a function ϕ : N∗ → N∗ such that ϕ(n) ≥ n + 1 for
+any n ≥ 1. The integer ϕ(n) plays the role of n + 1, that is: applying ϕ corresponds to
+“taking the next integer”. The idea is that ϕ(n) will be large enough (in comparison to
+n) to avoid obvious counter-examples as above coming from error te rms. In more precise
+terms, ϕ(n) will be deﬁned by the property Qϕ(n)−1 ≤Q1+ε1
+n <Q ϕ(n) (where ε1 is a small
+positive real number); in this way, the error terms o(1) in the assumptions of Theorem 3
+will not be a problem any more.
+With this deﬁnition, we shall prove that for any n suﬃciently large, the linear forms
+Ln|F ,Lϕ(n)|F ,Lϕ2(n)|F , . . . ,Lϕk−1(n)|F onF are linearly independent (where ϕi =ϕ◦... ◦ϕ),
+so that they make up a basis of the dual vector space F⋆. In the proof of Theorem 3 we
+shall need the following quantitative version of this property: in writ ing the linear form e⋆
+j
+(deﬁned by e⋆
+j (λ1e1 +... +λkek) = λj) as a linear combination of 1
+Ln(ej )Ln|F , 1
+Lϕ(n)(ej)Lϕ(n)|F ,
+. . . , 1
+Lϕk−1(n)(ej )Lϕk−1(n)|F , the coeﬃcients that appear are bounded independently from n
+(actually they are between −3 and 3): see Eq. (3.8) below. This will follow from Lemma 3
+applied to the matrix An = [|Lϕi−1(n)(ej)|]1≤i,j≤k. The point in applying this lemma is that
+12
+sharp upper and lower bounds on |Lϕi−1(n)(ej)| are available; the assumption τ1 >...>τ k
+plays also a central role here.
+Now let us prove ( iii).
+Let ε> 0. We choose ε1> 0 suﬃciently small, so that
+((1 +ε1)k−1 − 1) max(1,τ 1,σ 1)<ε/ 4. (3.5)
+If k = 1 there is no assumption on ε1, because it does not really appear in the proof:
+Lemma 3 is a triviality in this case, and the proof of ( iii) reduces essentially to that of
+[11].
+For any n ≥ 1, we deﬁne ϕ(n) by Qϕ(n)−1 ≤Q1+ε1
+n <Q ϕ(n), because the sequence ( Qn)
+is increasing and we may assume Qn ≥ 1 for any n. Then we have ϕ(n) ≥ n + 1. This
+implies limn→+∞ϕ(n) = + ∞, so that Qϕ(n) =Q1+o(1)
+ϕ(n)−1 (because we assume Qn+1 =Q1+o(1)
+n )
+and
+Qϕ(n) =Q1+ε1+o(1)
+n ; (3.6)
+here o(1) denotes any sequence that tends to 0 as n → ∞ . Moreover the assumption
+|Ln(ej)| = Q
+−τj +o(1)
+n implies |Ln(ej)| > 0 for any j, n with n suﬃciently large. We have
+also for any n suﬃciently large and any j ∈ {1,...,k }:
+|Lϕ(n)(ej)| =Q
+−τj +o(1)
+ϕ(n) =Q−τj (1+ε1)+o(1)
+n < |Ln(ej)|. (3.7)
+Fori ∈ {0,...,k − 1} letϕi =ϕ ◦... ◦ϕ denote the map ϕ composed i times with itself
+(so that ϕ0(n) = n and ϕ1(n) = ϕ(n)). Put
+An =
+[
+|Lϕi−1(n)(ej)|
+]
+1≤i,j≤k
+and denote by ai,j the entries of An (omitting for simplicity the dependence on n). Let
+us check the assumption (3.1) of Lemma 3, provided n is suﬃciently large. Let i,j,i ′,j ′ ∈
+{1,...,k } be such that i<i ′ and j <j′ ; we put n′ =ϕi−1(n) and n′′ =ϕi′−1(n), so that
+n′′ ≥ϕ(n′). Using Eq. (3.6) and the assumption τj >τ j′ we obtain
+ai′,jai,j′
+ai,jai′,j′
+=
+⏐⏐⏐Ln′′(ej)Ln′(ej′)
+Ln′(ej)Ln′′(ej′)
+⏐⏐⏐ = Q
+τj′ −τj +o(1)
+n′′
+Q
+τj′ −τj +o(1)
+n′
+≤
+( Qϕ(n′)
+Qn′
+) τj′ −τj +o(1)
+=Q
+ε1(τj′ −τj)+o(1)
+n′ ≤ 1
+(k + 1)!
+ifn is suﬃciently large, so that Lemma 3 applies. Given M = ∑ k
+j=1λjej withλ1,...,λ k ∈
+R, we have Lϕi−1(n)(M) = ∑ k
+j=1ai,jλ′
+j where we let λ′
+j = λj if Lϕi−1(n)(ej) > 0, and λ′
+j =
+−λj otherwise. Therefore Lemma 3 yields, for any j ∈ { 1,...,k } and any n suﬃciently
+large:
+|λj| = |λ′
+j| =
+⏐⏐⏐
+k∑
+i=1
+bj,iLϕi−1(n)(M)
+⏐⏐⏐ ≤
+(
+1 + 1
+k + 1
+k2
+) k∑
+i=1
+|Lϕi−1(n)(M)|
+|Lϕi−1(n)(ej)|. (3.8)
+13
+This upper bound on |λj| in terms of the |Lϕi−1(n)(M)| is the main tool we shall use now
+in the proof.
+Let Q be suﬃciently large in terms of ε, and assume that C(ε,Q ) ∩ Λ(Q) contains a
+non-zero point P . Then we have
+P =λ1e1 +... +λkek +u = (x1,...,x p) ⁄= (0,..., 0)
+with λ1,...,λ k ∈ R, u = µ1v1 +... +µpvp ∈ (SpanR(e1,...,e k))⊥, |λj| ≤ Qτj −ε for any
+j ∈ { 1,...,k }, |µi| ≤ Q−σi−ε for any i ∈ { 1,...,p }, and δi,nxi ∈ Z for any i, where
+n = Ψ( Q) is the largest integer such that Qn ≤Q. In particular we have Qn ≤Q<Q n+1
+so that Q =Q1+o(1)
+n , and n tends to ∞ asQ → ∞: if un =o(1), that is un → 0 as n → ∞,
+then un tends also to 0 as Q → ∞.
+Let ℓ denote the least integer such that
+for any j ∈ {1,...,k }, we have |λjLℓ(ej)| ≤ δp,ℓ
+3kδp,n
+. (3.9)
+Since |λj| ≤ Qτj −ε and n is suﬃciently large, this upper bound holds for n so that this
+integer exists and we have ℓ ≤n.
+The integer ℓ depends on Q and on the choice of a non-zero point P ∈ C (ε,Q ) ∩ Λ(Q).
+Let us prove that ℓ → ∞ asQ → ∞, uniformly with respect to the choice of P . Let ℓ0 ≥ 1,
+and denote by Kℓ0 the set of all points P ′ =λ′
+1e1 +... +λ′
+kek +u′ with
+|λ′
+j| min
+1≤ℓ′≤ℓ0
+|Lℓ′(ej)| ≤ 1
+3k for any j ∈ {1,...,k },
+whereu′ ∈ (Span(e1,...,e k))⊥ can be written as u′ =µ′
+1v1 +... +µ′
+pvp with |µ′
+i| ≤ Q−σi−ε
+for any i ∈ { 1,...,p }. By deﬁnition of ℓ and Kℓ0, if ℓ ≤ ℓ0 then δp,n
+δp,ℓ
+P ∈ Kℓ0. Moreover
+the point δp,n
+δp,ℓ
+P belongs also to Λ( Qℓ0) since
+δi,ℓ0
+( δp,n
+δp,ℓ
+xi
+)
+=
+( δi,ℓ0
+δi,ℓ
+)( δp,n/δi,n
+δp,ℓ/δi,ℓ
+)(
+δi,nxi
+)
+∈ Z
+for any i ∈ { 1,...,p }, by assumption on the divisors δt,n. Therefore (assuming ℓ ≤ ℓ0)
+the point δp,n
+δp,ℓ
+P belongs to Kℓ0 ∩ Λ(Qℓ0), which is a ﬁnite set because Kℓ0 is compact and
+Λ(Qℓ0) is discrete. Now the function χ :Kℓ0 ∩ Λ(Qℓ0) → R deﬁned by χ(P ′) = ‖π⊥(P ′)‖,
+whereπ⊥ is the orthogonal projection on (Span( e1,...,e k))⊥, has a least positive value χ0.
+We have χ(δp,n
+δp,ℓ
+P ) ⁄= 0 because P ⁄∈Qp ∩ Span(e1,...,e k) = {(0,..., 0)} (using assertion
+(ii) proved in §3.3), so that
+χ0 ≤χ
+( δp,n
+δp,ℓ
+P
+)
+= δp,n
+δp,ℓ
+‖u‖ ≤ Qdp+o(1)
+n Q−σp−ε =Qdp−σp−ε+o(1)
+14
+sinceδp,ℓ ≥ 1 and σp ≤... ≤σ1. This inequality implies that Q is not too large in terms of
+ℓ0 andε (because we assume dp ≤σp). This concludes the proof that ℓ → ∞ asQ → ∞. In
+what follows, a sequence denoted by o(1) will tend to 0 as n, ℓ orQ tends to ∞; therefore
+in any case, it tends to 0 as Q → ∞. Moreover, we may assume ℓ to be arbitrarily large.
+We come back now to the point P ∈ C (ε,Q ) ∩ Λ(Q) chosen above. Since u = µ1v1 +
+... +µpvp with |µh| ≤ Q−σh−ε for any h, we have for any i ∈ {1,...,k }:
+|Lϕi−1(ℓ)(u)| ≤
+p∑
+h=1
+|µh||Lϕi−1(ℓ)(vh)| ≤
+p∑
+h=1
+Q−σh−εQσh+o(1)
+ϕi−1(ℓ)
+≤
+p∑
+h=1
+Q−σh−ε+o(1)
+n Qσh(1+ε1)i−1+o(1)
+ℓ using Eq. (3.6)
+≤
+p∑
+h=1
+( Qℓ
+Qn
+) σh
+Q−ε+o(1)
+n Qε/4+o(1)
+ℓ using Eq. (3.5) and the inequality σh ≤σ1
+≤
+( Qℓ
+Qn
+) dp
+Q−ε/2 < 1
+3
+δp,ℓ
+δp,n
+since σh ≥σp ≥dp and ℓ ≤n. (3.10)
+On the other hand, Eqns. (3.9) and (3.7) yield for any i ∈ {1,...,k }:
+|Lϕi−1(ℓ)(
+k∑
+j=1
+λjej)| ≤
+k∑
+j=1
+|Lϕi−1(ℓ)(ej)|
+|Lℓ(ej)|
+δp,ℓ
+3kδp,n
+≤ δp,ℓ
+3δp,n
+,
+since ℓ is suﬃciently large. Combining this inequality with Eq. (3.10) we obtain fo r the
+point P =λ1e1 +... +λkek +u:
+|Lϕi−1(ℓ)(P )| ≤ δp,ℓ
+3δp,n
++ δp,ℓ
+3δp,n
+< δp,ℓ
+δp,n
+. (3.11)
+Now we haveLϕi−1(ℓ) =ℓ1,ϕi−1(ℓ)X1+... +ℓp,ϕi−1(ℓ)Xp whereℓj,ϕi−1(ℓ) is a multiple ofδj,ϕi−1(ℓ),
+and therefore of δj,ℓ since ϕi−1(ℓ) ≥ℓ. Moreover δj,nxj ∈ Z so that
+δp,n
+δp,ℓ
+ℓj,ϕi−1(ℓ)xj =
+( δp,n/δj,n
+δp,ℓ/δj,ℓ
+)( ℓj,ϕi−1(ℓ)
+δj,ℓ
+)
+(δj,nxj) ∈ Z
+sinceℓ ≤n, by assumption on the divisors δt,n. Therefore we have Lϕi−1(ℓ)(P ) ∈ δp,ℓ
+δp,n
+Z, and
+the upper bound (3.11) implies that this rational number is zero for a ny i ∈ { 1,...,k }.
+Using Eq. (3.10) this yields the following upper bound on |Lϕi−1(ℓ)(M)| (where we let
+M = ∑ k
+j=1λjej):
+|Lϕi−1(ℓ)(M)| = |Lϕi−1(ℓ)(u)| ≤
+( Qℓ
+Qn
+) dp
+Q−ε/2.
+15
+Combining this upper bound with Eq. (3.8) yields, for any j ∈ {1,...,k }:
+|λjLℓ−1(ej)| ≤
+(
+1 + 1
+k + 1
+k2
+) k∑
+i=1
+( Qℓ
+Qn
+) dp
+Q−ε/2Q
+τj +o(1)
+ϕi−1(ℓ)Q
+−τj +o(1)
+ℓ−1
+≤ Q
+dp+τj ((1+ε1)i−1−1)+o(1)
+ℓ Q−dp
+n Q−ε/2 using Eq. (3.6)
+≤ Qdp+ε/4+o(1)
+ℓ Q−dp
+n Q−ε/2 using the assumption τj ≤τ1 and Eq. (3.5)
+≤
+( Qℓ
+Qn
+) dp
+Q−ε/4+o(1) ≤ δp,ℓ
+3kδp,n
+since Qℓ ≤Qn =Q1+o(1) and δp,ℓ
+δp,n
+= Qdp+o(1)
+ℓ
+Qdp+o(1)
+n
+.
+This contradicts the minimality of ℓ in Eq. (3.9), thereby concluding the proof of ( iii).
+4 Consequences and related results
+In this section we state and prove consequences of our main result (§§4.1 and 4.2), and
+mention Diophantine applications ( §4.4). We also prove in §4.3 an analogous result, in the
+spirit of Siegel’s linear independence criterion.
+Throughout this section we restrict to the setting of Theorem 2, o mitting for simplicity
+the reﬁnements of Theorem 3 (eventhough they could have been a dapted here).
+4.1 Distance to integers
+In this section we state corollaries of our criterion dealing with linear f orms which are close
+to integers (rather than close to 0), as in Khintchine-Groshev’s th eorem for instance. In
+particular we deduce from Theorem 3 a result (namely Corollary 3 belo w) analogous to
+Nesterenko’s linear independence criterion but which applies to sequ ences of simultaneous
+approximations of real numbers with the same denominator. This re sult is related to type
+II Pad´ e approximation problems, in the same way as Nesterenko’s c riterion is related to
+type I problems. In this respect, Theorem 3 makes a bridge betwee n the latter and the
+former: it is related to Pad´ e approximation problems intermediate b etween type I and
+type II (see for instance [22]).
+To begin with, let us state Theorem 2 in a dual way, namely in terms of C1,...,C p ∈ Rk
+rather than e1,...,e k ∈ Rp.
+Theorem 4. LetC1,...,C p ∈ Rk, with k,p ≥ 1.
+Letτ1,...,τ k and (Qn)n≥1 be as in Theorem 2.
+For any n ≥ 1, let ℓ1,n,...,ℓ p,n ∈ Z be such that, as n → ∞:
+max
+1≤i≤p
+|ℓi,n| ≤ Q1+o(1)
+n and ℓ1,nC1 +... +ℓp,nCp =
+
+
+±Q−τ1+o(1)
+n
+...
+±Q−τk+o(1)
+n
+
+ (4.1)
+where the ± signs can be independent from one another. Then:
+16
+(i) The rank of the family of vectors C1,...,C p in Rk, considered as a Q-vector space,
+is greater than or equal to k +τ1 +... +τk.
+(ii) For any non-zero linear form χ : Rk → R there exists i ∈ { 1,...,p } such that
+χ(Ci) ⁄∈Q.
+(iii) Letε> 0, and Q be suﬃciently large in terms of ε. Let λ1,...,λ k ∈ R, not all zero,
+be such that |λj| ≤ Qτj −ε for any j ∈ {1,...,k }. Then denoting by χ the linear map
+Rk → R deﬁned by χ(x1,...,x k) = λ1x1 +... +λkxk, we have
+dist
+(
+(χ(C1),...,χ (Cp)), Zp \ {(0,..., 0)}
+)
+≥Q−1−ε
+where dist(y, Zp \{(0,..., 0)}) is the minimal distance of y ∈ Rp to a non-zero integer
+point.
+This result is just a translation of Theorem 2. Indeed let us consider the matrix
+M ∈ Matk,p(R) of which C1,...,C p are the columns. We denote by e1,...,e k ∈ Rp the
+rows ofM. Then assumption (4.1) means that the linear form Ln =ℓ1,nX1 +... +ℓp,nXp on
+Rp is small at the points e1,...,e k. It is not diﬃcult to see that ( ii) and (iii) in Theorem
+4 are respectively equivalent to ( ii) and (iii) in Theorem 2, because ( χ(C1),...,χ (Cp)) =
+λ1e1 +... +λkek. We remark also that assuming k ≤p − 1 in Theorem 2 is not necessary;
+it has not been used in the proof. This upper bound follows from ( ii), so that it is actually
+a consequence of the other assumptions.
+Let us focus now on an important special case of Theorem 4, relate d to Pad´ e approx-
+imation: when C1, . . . , Ck is the canonical basis of Rk. This happens in all practical
+situations mentioned in §4.4 below: indeed Pad´ e approximation provides linear combina-
+tions of Ck+1,...,C p which are very close to Zk. In this case, in ( ii) the interesting point
+is when the linear form χ(x1,...,x k) = λ1x1 +... +λkxk has rational coeﬃcients λj; then
+we have χ(Ci) ⁄∈Q for some i ∈ {k + 1,...,p }. An analogous remark holds for ( iii); both
+are more easily stated as follows, in terms of e1,. . . ,ek. We denote by ‖·‖ any ﬁxed norm
+on Rp−k.
+Corollary 2. Under the assumptions of Theorem 2, suppose that for any j ∈ { 1,...,k }
+we have ej = (0,..., 0, 1, 0,..., 0,e ′
+j) with e′
+j ∈ Rp−k, where the 1 is in j-th position.
+Then no non-trivial Q-linear combination of e′
+1,...,e ′
+k belongs to Qp−k. In addition, let
+ε >0, and Q be suﬃciently large in terms of ε. Let λ1,...,λ k ∈ Z, not all zero, be such
+that |λj| ≤ Qτj −ε for any j ∈ {1,...,k }. Then for any S ∈ Zp−k we have
+‖λ1e′
+1 +... +λke′
+k −S‖ ≥ Q−1−ε.
+This corollary is a measure of linear independence of the vectors e′
+1,...,e ′
+k and those
+of the canonical basis of Zp−k. It can be weakened by assuming |λj| ≤ Qτ −ε for any
+j ∈ { 1,...,k }, where τ = min(τ1,...,τ k) (as in Theorem 5 below). Then a measure of
+non-discreteness (in the sense of [13]) is obtained for the lattice Ze′
+1 +... + Ze′
+k + Zp−k,
+17
+which has rank p. In the examples (4.2), (4.3) and (4.4) considered in §4.4 below, the
+matrix with columns Ck+1, . . . , Cp is symmetric (with p = 2k), so that this lattice is
+exactly ZC1 +... + ZCp (using the fact that C1, . . . , Ck is the canonical basis of Rk).
+This case k = p/2 lies “in the middle” between k = 1, which corresponds to type I
+Pad´ e approximation and Nesterenko’s original criterion, andk =p − 1, which corresponds
+to type II Pad´ e approximation. In the latter case, Corollary 2 yield s the following result
+by letting ξj = −e′
+j.
+Corollary 3. Letk ≥ 1, and ξ1,...,ξ k ∈ R.
+Letτ1,...,τ k > 0 be pairwise distinct real numbers.
+Let (Qn)n≥1 be an increasing sequence of positive integers, such that Qn+1 =Q1+o(1)
+n .
+For any n ≥ 1, let ℓ1,n,...,ℓ k,n,ℓk+1,n ∈ Z be such that
+max
+1≤i≤k+1
+|ℓi,n| ≤ Q1+o(1)
+n
+and
+|ℓk+1,nξj −ℓj,n| =Q−τj +o(1)
+n for any j ∈ {1,...,k }.
+Then:
+(i) The numbers 1, ξ1,...,ξ k are Q-linearly independent.
+(ii) Letε> 0, and Q be suﬃciently large (in terms of ε). Then for any (a0,a 1,...,a k) ∈
+Zk+1 \ {(0,..., 0)} with |aj| ≤ Qτj −ε for any j ∈ {1,...,k }, we have:
+|a0 +a1ξ1 +... +akξk| ≥ Q−1−ε.
+We have not found this statement in the literature; see however [6] (p. 98), [14] (Lemma
+2.1) or [15] (Lemma 6.1) for related results, which are probably close r to Siegel’s criterion
+than to Nesterenko’s (see §4.3 below).
+4.2 Upper bound on a Diophantine exponent
+Given a subspace F of Rp, and a non-zero point P ∈ Rp, we denote by Dist( P,F ) the
+projective distance of P toF , seen in Pp(R). Several deﬁnitions may be given, all of them
+equivalent up to multiplicative constants (see for instance [21]); we c hoose Dist(P,F ) = ‖u‖
+‖P ‖
+where u is the orthogonal projection of P on F ⊥ (that is, P can be written as u +f with
+u ∈F ⊥ and f ∈F ), and ‖·‖ is the Euclidean norm on Rp.
+The following result is a consequence of Theorem 2.
+Theorem 5. Under the assumptions of Theorem 2, let τ = min( τ1,...,τ k) and F =
+SpanR(e1,...,e k). Then for any ε> 0 and any P ∈ Zp \ {(0,..., 0)} we have:
+Dist(P,F ) ≥ ‖P ‖−1− 1
+τ −ε
+provided ‖P ‖ is suﬃciently large in terms of ε.
+18
+It is important to notice that Theorem 5 is not optimal, since it involves only min(τ1,...,τ k).
+It is specially interesting when τ1,...,τ k are close to one another.
+The interest of Theorem 5 is that it can be written as an upper bound on a Diophantine
+exponent which measures the approximation of F by points of Zp (see [21], [17], [4]).
+Proof of Theorem 5: Using assertion ( ii) of Theorem 2, we see that ( e1,...,e k) is a basis
+ofF . Since F is ﬁnite-dimensional, all norms on F are equivalent: there exists κ> 0 such
+that, for any f =λ1e1 +... +λkek ∈F (with λj ∈ R), we have max |λj| ≤ κ‖f ‖.
+Letε> 0 be such that ε<τ . Let Q0 be such that assertion (iii) of Theorem 2 holds for
+anyQ ≥Q0; we assume that ‖P ‖ ≥ Qτ −ε
+0 /κ. Letting Q = (κ‖P ‖)1/(τ −ε) we have Q ≥Q0.
+SinceP ∈ Zp \ {(0,..., 0)},P does not belong to the set C(ε,Q ) deﬁned in assertion ( iii).
+Now writing P =λ1e1 +... +λkek +u with λj ∈ R and u ∈F ⊥, we have
+max
+1≤j≤k
+|λj| ≤ κ‖λ1e1 +... +λkek‖ ≤ κ‖P ‖ =Qτ −ε
+so that ‖u‖>Q −1−ε. Using the deﬁnition of Q and that of Dist( P,F ), this concludes the
+proof of Theorem 5.
+4.3 Connection with a Siegel-type criterion
+The following result is analogous to Theorem 2, but its proof is much ea sier. It relies on
+Siegel’s ideas for linear independence (see for instance [6], p. 81–82 a nd 215–216, or [18],
+Proposition 4.1). Special cases of this result have already been use d in Diophantine results
+(see §4.4 below).
+Proposition 1. Let 1 ≤k ≤p − 1, and e1,...,e k ∈ Rp be R-linearly independent vectors.
+Let (Qn)n≥1 be an increasing sequence of positive integers, and for any n ≥ 1, let
+L(t)
+n =ℓ(t)
+1,nX1 +... +ℓ(t)
+p,nXp bep linearly independent linear forms on Rp (for 1 ≤t ≤p),
+with integer coeﬃcients ℓ(t)
+i,n such that, as n → ∞:
+|L(t)
+n (ej)| ≤ Q−τj +o(1)
+n for any j ∈ {1,...,k } and any t ∈ {1,...,p },
+whereτ1,...,τ k > 0 are real numbers, and
+max
+1≤i≤p
+1≤t≤p
+|ℓ(t)
+i,n| ≤ Q1+o(1)
+n .
+Then:
+(a) Conclusions (i) and (ii) of Theorem 2 hold.
+(b) Let ε > 0, and n be suﬃciently large (in terms of ε). Let Cn denote the set of all
+vectors that can be written as λ1e1 +... +λkek +u with:
+{
+λ1,...,λ k ∈ R such that |λj| ≤ Q
+τj −ε
+n for any j ∈ {1,...,k }
+u ∈ (SpanR(e1,...,e k))⊥ such that ‖u‖ ≤ Q−1−ε
+n
+Then Cn ∩ Zp = {(0,..., 0)}.
+19
+The main diﬀerence with Theorem 2 is that we require here p linearly independent
+linear forms for any n (and we also assume e1,...,e k to be R-linearly independent). This
+makes the proof much easier, and enables one to get rid of several important assumptions
+of Theorem 2 (namely Qn+1 = Q1+o(1)
+n , τ1,...,τ k pairwise distinct, and |Ln(ej)| not too
+small).
+IfQn+1 =Q1+o(1)
+n in Proposition 1 then in ( b) we may replace Qn with anyQ, by letting
+n be such that Qn ≤Q<Q n+1.
+Proof of Proposition 1: To prove conclusion ( i) of Theorem 2, let F be a subspace of Rp
+deﬁned over Q, of dimension d, which contains e1, . . . , ek. Let n be suﬃciently large. Up
+to reordering L(1)
+n , . . . , L(p)
+n , we may assume the restrictions of L(1)
+n , . . . , L(d)
+n to F to be
+linearly independent linear forms on F . Denoting by ( u1,...,u d) a basis of F consisting in
+vectors of Zp, the matrix [ L(t)
+n (uj)]1≤t,j≤d has a non-zero integer determinant. By making
+suitable linear combinations of the columns, the values L(t)
+n (e1), . . . , L(t)
+n (ek) appear and
+lead to the upper bound Qd−k−τ1−...−τk+o(1)
+n on the absolute value of this determinant. This
+concludes the proof of ( i) of Theorem 2.
+To prove part ( b) of Proposition 1 (which implies conclusion ( ii) of Theorem 2), we
+let P = λ1e1 +... +λkek +u ∈ Cn ∩ Zp be non-zero; then L(t)
+n (P ) ⁄= 0 for some t, but
+L(t)
+n (P ) ∈ Z and |L(t)
+n (P )|< 1. This concludes the proof of Proposition 1.
+4.4 Diophantine applications
+The main interest of Theorems 2 and 3 is that they provide (in conclus ion (i)) a lower
+bound for the rank of ( C1,...,C p). Such a lower bound (with k essentially equal to aε)
+implies Theorem 1, using a general lemma of linear algebra (see [8] for d etails). This kind
+of lower bounds (with k ≥ 2) exists in the literature: for instance Gutnik proved [12] that
+the vectors (
+1
+0
+)
+,
+(
+0
+1
+)
+,
+(
+−2 log 2
+ζ(2)
+)
+,
+(
+ζ(2)
+−3ζ(3)
+)
+(4.2)
+are Q-linearly independent in R2 (so that, for any r ∈ Q⋆, at least one number among
+ζ(2) − 2r log 2 and 3 ζ(3) −rζ (2) is irrational). More recently he obtained also [13] the
+Q-linear independence of
+(
+1
+0
+)
+,
+(
+0
+1
+)
+,
+(
+2ζ(3)
+3ζ(4)
+)
+,
+(
+3ζ(4)
+6ζ(5)
+)
+. (4.3)
+In the same spirit, T. Hessami-Pilehrood has proved [16] that if q is greater than some
+explicit function of k then the following 2 k vectors are Q-linearly independent in Rk:
+
+
+1
+0
+...
+0
+
+,
+
+
+0
+1
+...
+0
+
+, ...,
+
+
+0
+0
+...
+1
+
+, (4.4)
+20
+
+
+Li1( −1
+q )
+Li2( −1
+q )
+...
+Lik( −1
+q )
+
+, ...,
+
+
+( j − 1
+j − 1
+)
+Lij( −1
+q )( j
+j − 1
+)
+Lij+1( −1
+q )
+...( j + k − 2
+j − 1
+)
+Lij+k−1( −1
+q )
+
+, ...,
+
+
+( k − 1
+k − 1
+)
+Lik( −1
+q )( k
+k − 1
+)
+Lik+1( −1
+q )
+...( 2k − 2
+k − 1
+)
+Li2k−1( −1
+q )
+
+.
+The same result holds with 1 /q instead of −1/q; see also Gutnik’s preprints cited in [16].
+These results share two common features: they rely on a special c ase of Proposition 1,
+and they prove the linear independence of the full set of p vectors involved. Using Theo-
+rem 3 it should not be diﬃcult to produce alternative proofs of these results, in which only
+one sequence of small linear forms is constructed (instead of p linearly independent ones);
+this may lead to further generalizations: for instance no proof of B all-Rivoal’s lower bound
+(1.1) is known without using Nesterenko’s criterion. Moreover, it sh ould be possible also
+to obtain lower bounds for the rank of a family of vectors (like (4.2) o r (4.3) up to ζ(a),
+or (4.4) with smaller values of q) eventhough the present methods fail to prove the linear
+independence of the full set.
+References
+[1] R. Ap ´ery – “Irrationalit´ e de ζ(2) et ζ(3)”, in Journ´ ees Arithm´ etiques (Luminy,
+1978), Ast´ erisque, no. 61, 1979, p. 11–13.
+[2] K. Ball & T. Rivoal – “Irrationalit´ e d’une inﬁnit´ e de valeurs de la fonction zˆ eta
+aux entiers impairs”, Invent. Math. 146 (2001), no. 1, p. 193–207.
+[3] N. Bourbaki – “Alg` ebre”, ch. II, Hermann, third. ´ ed., 1962.
+[4] Y. Bugeaud & M. Laurent – “On transfer inequalities in Diophantine approxi-
+mation, II ”, Math. Z. 265 (2010), p. 249–262.
+[5] J. Cassels – An introduction to the geometry of numbers , Grundlehren der Math.
+Wiss., no. 99, Springer, 1959.
+[6] N. Fel’dman & Y. Nesterenko – Number theory IV, transcendental numbers ,
+Encyclopaedia of Mathematical Sciences, no. 44, Springer, 1998, A.N. Parshin and
+I.R. Shafarevich, eds.
+[7] S. Fischler – “Nesterenko’s criterion when the small linear forms oscillate”, Archiv
+der Math. 98 (2012), no. 2, p. 143–151.
+[8] — , “Distribution of irrational zeta values”, manuscript, Octobe r 2013; will be posted
+soon on arxiv.
+[9] S. Fischler, M. Hussain, S. Kristensen & J. Levesley – “A converse to linear
+independence criteria, valid almost everywhere”, preprint arxiv 13 02.1952 [math.NT],
+submitted, 2013.
+21
+[10] S. Fischler & T. Rivoal – “Irrationality exponent and rational approximations
+with prescribed growth”, Proc. Amer. Math. Soc. 138 (2010), no. 8, p. 799–808.
+[11] S. Fischler & W. Zudilin – “A reﬁnement of Nesterenko’s linear independence
+criterion with applications to zeta values”, Math. Ann. 347 (2010), p. 739–763.
+[12] L. Gutnik – “On the irrationality of some quantities containing ζ(3)”, Acta Arith.
+42 (1983), no. 3, p. 255–264, (in Russian) ; translation in Amer. Math . Soc. Transl.
+140 (1988), p. 45–55.
+[13] — , “On linear forms with coeﬃcients in Nζ(1 + N)”, in Proceedings of the Session in
+analytic number theory and Diophantine equations (Bonn, 20 02) (D. Heath-Brown &
+B. Moroz, ´ eds.), Bonner Mathematische Schriften, no. 360, 200 3, p. 1–45.
+[14] M. Hata – “Rational approximations to π and some other numbers”, Acta Arith. 63
+(1993), no. 4, p. 335–349.
+[15] — , “The irrationality of log(1 + 1 /q) log(1 − 1/q)”, Trans. Amer. Math. Soc. 350
+(1998), no. 6, p. 2311–2327.
+[16] T. Hessami Pilehrood – “Linear independence of vectors with polylogarithmic
+coordinates”, Vestnik Moskov. Univ. Ser. I Mat. Mekh. [Moscow Univ. Math. B ull.]
+54 (1999), no. 6, p. 54–56 [40–42].
+[17] M. Laurent – “On transfer inequalities in Diophantine approximation”, in Analytic
+Number Theory, Essays in Honour of Klaus Roth (W. Chen, W. Gowers, H. Halber-
+stam, W. Schmidt & R. Vaughan, ´ eds.), Cambridge Univ. Press, 200 9, p. 306–314.
+[18] R. Marcovecchio – “Linear independence of linear forms in polylogarithms”, An-
+nali Scuola Norm. Sup. Pisa V (2006), no. 1, p. 1–11.
+[19] Y. Nesterenko – “On the linear independence of numbers”, Vestnik Moskov. Univ.
+Ser. I Mat. Mekh. [Moscow Univ. Math. Bull.] 40 (1985), no. 1, p. 46–49 [69–74].
+[20] T. Rivoal – “La fonction zˆ eta de Riemann prend une inﬁnit´ e de valeurs irrationnelles
+aux entiers impairs”, C. R. Acad. Sci. Paris, Ser. I 331 (2000), no. 4, p. 267–270.
+[21] W. Schmidt – “On heights of algebraic subspaces and Diophantine approximation s”,
+Annals of Math. 85 (1967), p. 430–472.
+[22] V. Sorokin – “A transcendence measure for π2”, Mat. Sbornik [Sb. Math.] 187
+(1996), no. 12, p. 87–120 [1819–1852].
+22
