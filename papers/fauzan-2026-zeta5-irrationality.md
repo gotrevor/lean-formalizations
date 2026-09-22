@@ -43,12 +43,12 @@ The race, per K²: real decay `U = −1.36700` (Lemma 6.1, potential theory with
 `Δ_K(X) ∈ ℚ[X]` by evaluation at h+1 integer points + Newton interpolation, and tests the paper's
 own propositions wherever their hypotheses hold at that K.
 
-| Claim | K=40 (h=37) | K=80 (h=74) | K=120 | K=160 | K=200 |
+| Claim | K=40 (h=37) | K=80 (h=74) | K=120 (h=111) | K=160 (h=148) | K=200 (h=185) |
 |---|---|---|---|---|---|
 | (2.9) leading coefficient | ✅ exact | ✅ exact | ✅ | ✅ | ✅ |
 | Δ_K(ζ(5)) > 0 | ✅ | ✅ | ✅ | ✅ | ✅ |
 | (3.12) small-prime bound, all p | ✅ (large slack) | ✅ | ✅ | ✅ | ✅ |
-| Prop 4.3 outer range (4.14), p ∈ (K/3, K] | ✅ **equality at 4/6 primes**, slack 1 at the other two | ✅ equality at 11/13, slack 15 and 39 | see §2.1 | | |
+| Prop 4.3 outer range (4.14), p ∈ (K/3, K] | ✅ **equality at 4/6 primes**, slack 1 at the other two | ✅ equality at 11/13 | ✅ 14/18 | ✅ 15/21 | ✅ 21/28 |
 | p > K ⇒ Δ_K p-integral | ✅ all primes to 2K | ✅ | ✅ | ✅ | ✅ |
 | residual denominator beyond 2K | 1 | 1 | 1 | 1 | 1 |
 
@@ -79,7 +79,7 @@ agree to 1e-27 on [3,20], so the paper's algebra there is right.
 | 80 | 13 | 11 | 39 | p=23: +14 | −1.329 | 1.199 | −0.130 |
 | 120 | 18 | 14 | 78 | p=29,31,37: +18, +25, +21 | −1.348 | 1.223 | −0.125 |
 | 160 | 21 | 15 | 59 | p=29…53: +16 to +37, all positive | −1.357 | 1.230 | −0.127 |
-| 200 | _(pending, `probe-n5.log`)_ | | | | | | |
+| 200 | 28 | 21 | 138 | p=37…61: +18 to +32, all positive | −1.363 | 1.251 | −0.112 |
 
 Reading: the outer bound (4.14) is a valid lower bound at every tested prime and is *sharp* at
 most of them (the slack sits at the smallest primes of the range, p just above K/3, where the
@@ -142,4 +142,4 @@ lower-order terms and proves nothing about the K² race.
 - 2026-09-22: `fauzan-zeta5-hankel-probe.py` n=1..4 (K=40..160; 8 s, 1 min, ~6 min, ~25 min);
   `fauzan-zeta5-constants.py` (2 min); `fauzan-zeta5-distribution-check.py` 7 and 11;
   `fauzan-zeta5-inner-heuristic.py` 40, 80.  Logs in the session scratchpad; the tables above are
-  the record.  n=5 (K=200, h=185) running.
+  the record.  n=5 (K=200, h=185, ~50 min) clean: 28 outer primes, 21 with equality.
