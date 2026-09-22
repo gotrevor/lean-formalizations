@@ -71,9 +71,24 @@ own propositions wherever their hypotheses hold at that K.
 R(x) computed two ways — from (5.4)-(5.6) directly and from the expansion (5.12)-(5.13)+(B.1) —
 agree to 1e-27 on [3,20], so the paper's algebra there is right.
 
-### 2.1 Larger K
+### 2.1 Larger K — the same picture
 
-_(filled from `probe-n3/4/5.log`; see §5 below once the runs land)_
+| K | outer primes with (4.9) | equality | max slack | inner window p²>5K: true − predicted | log F_K(ξ)/K² (→ ≤ −1.367) | −log cont(F_K)/K² (→ ≤ 1.3496) | log P_K(ξ)/K² |
+|---|---|---|---|---|---|---|---|
+| 40 | 6 | 4 | 1 | (empty) | −1.276 | 1.110 | −0.166 |
+| 80 | 13 | 11 | 39 | p=23: +14 | −1.329 | 1.199 | −0.130 |
+| 120 | 18 | 14 | 78 | p=29,31,37: +18, +25, +21 | −1.348 | 1.223 | −0.125 |
+| 160 | 21 | 15 | 59 | p=29…53: +16 to +37, all positive | −1.357 | 1.230 | −0.127 |
+| 200 | _(pending, `probe-n5.log`)_ | | | | | | |
+
+Reading: the outer bound (4.14) is a valid lower bound at every tested prime and is *sharp* at
+most of them (the slack sits at the smallest primes of the range, p just above K/3, where the
+rank correction `min(r_p, ·)` is coarse).  In the only window where Prop 4.1's hypothesis on p
+holds (`p² > 5K`), the true valuation exceeds its asymptotic prediction `pΓ(K/p)` every time.
+The real side climbs monotonically toward the paper's U from above, as the `24K log K` term in
+(6.16) predicts; the arithmetic side climbs toward A from below.  Neither has crossed its limit.
+The primitive-polynomial ledger is negative at every K, but the sign at K ≤ 200 is dominated by
+lower-order terms and proves nothing about the K² race.
 
 ## 3. What is NOT checkable, and where a specialist should look
 
@@ -124,4 +139,7 @@ _(filled from `probe-n3/4/5.log`; see §5 below once the runs land)_
 
 ## 5. Run log
 
-_(appended by the probe runs)_
+- 2026-09-22: `fauzan-zeta5-hankel-probe.py` n=1..4 (K=40..160; 8 s, 1 min, ~6 min, ~25 min);
+  `fauzan-zeta5-constants.py` (2 min); `fauzan-zeta5-distribution-check.py` 7 and 11;
+  `fauzan-zeta5-inner-heuristic.py` 40, 80.  Logs in the session scratchpad; the tables above are
+  the record.  n=5 (K=200, h=185) running.
