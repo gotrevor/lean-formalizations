@@ -1,0 +1,1864 @@
+                            ζ(5) IS IRRATIONAL
+
+                                          Aabir Fauzan
+                                      aabir.fauzan@aalto.fi
+
+                                       17 September 2026
+
+
+                                              Abstract
+         We prove that ζ(5) is irrational. The proof constructs integer polynomials Qn of degree
+     37n with 0 < Qn (ζ(5)) < exp(−139n2 /5) for all sufficiently large n. These polynomials are
+     rationally normalized Hankel determinants. A positive moment representation gives nonvan-
+     ishing and, through a logarithmic-energy estimate, bounds their real values. Local estimates
+     for the entire rational functional control the coefficients and show that the normalization
+     preserves the required decay. A perturbation estimate also gives |ζ(5) − a/b| > b−260 for
+     every integer a and all sufficiently large positive integers b.
+
+      Keywords. Riemann zeta function, irrationality, Hankel determinant, Bernoulli numbers,
+      logarithmic energy.
+
+
+1    Introduction
+Apéry proved in 1978 that ζ(3) is irrational [1]. For higher odd arguments, much of the
+subsequent progress has concerned families of values. Rivoal [10] and Ball and Rivoal [2] proved
+that infinitely many odd zeta values are irrational. Zudilin [12, 13] showed that at least one of
+ζ(5), ζ(7), ζ(9), ζ(11) is irrational. Later work has strengthened the lower bounds for the number
+of irrational values [6] and for the dimension of their rational span [5]. These theorems give
+information about the family as a whole, but do not determine the irrationality of a specified
+odd zeta value beyond ζ(3).
+    For ζ(5) itself, Brown and Zudilin [4, Theorem 1] constructed an effective infinite sequence
+of rational approximations satisfying
+                                          ⃓           ⃓
+                                                 p⃓
+                                     0 < ⃓⃓ζ(5) − ⃓⃓ < q −0.86 .
+                                          ⃓
+                                                 q
+Their construction uses cellular integrals and the arithmetic of the associated linear forms. The
+exponent 0.86 does not by itself imply irrationality. To obtain irrationality from approximations
+of this kind, one needs a decay estimate that remains sufficient after the denominators have
+been cleared. The same comparison between real decay and denominator growth also governs
+the polynomial construction used below.
+    The difficulty of the individual problem is reflected in recent accounts. Lai, Lupu, and Sprang
+[8, §1] described the irrationality of ζ(5) as a problem that “seems beyond reach”. Fischler [5,
+§1] likewise records the absence of an individual result beyond ζ(3). The present paper proves
+the next case.
+
+                                                  1
+Theorem 1.1. The number ζ(5) is irrational.
+    The proof uses integer polynomials of growing degree, rather than linear forms in 1 and ζ(5).
+They are obtained from Hankel determinants whose entries are affine in the polynomial variable.
+At ζ(5), a positive moment representation makes the determinants nonzero. The main estimates
+show that their values remain small enough to exclude rationality after every coefficient has
+been made integral. In this way, nonvanishing and the comparison between real decay and
+denominator growth are established for the same sequence of polynomials.
+    The construction also gives a bound for rational approximation. This requires a further
+estimate ensuring that the determinants remain positive at rational arguments sufficiently close
+to ζ(5).
+Corollary 1.2. There is a positive integer b0 such that
+                         ⃓         ⃓
+                         ⃓ζ(5) − a ⃓ > b−260
+                         ⃓         ⃓
+                                                (a ∈ Z, b ∈ Z, b ≥ b0 ).                    (1.1)
+                         ⃓       b⃓
+   Thus the irrationality exponent of ζ(5) is at most 260. The threshold b0 is not specified.
+The additional estimates and the proof of this corollary are given in Appendix C. They are not
+needed for Theorem 1.1.
+
+1.1   The construction and the proof
+The polynomial estimates needed for irrationality are stated in Theorem 2.1. For all sufficiently
+large n, they give
+                                                                              139 2
+                                                                            (︃        )︃
+       Qn := Q40n,200 ∈ Z[X],       deg Qn = 37n,       0 < Qn (ζ(5)) < exp −    n .
+                                                                               5
+These estimates imply Theorem 1.1 directly. Indeed, suppose that ζ(5) = a/b, where a ∈ Z and
+b ∈ Z>0 . Then
+                                                                 139 2
+                                                   (︃                  )︃
+                          0 < b37n Qn (a/b) < exp 37n log b −       n .
+                                                                  5
+The middle term is an integer and the right-hand side tends to zero. The quadratic decay
+therefore suffices, without an estimate for the heights of the polynomials. The rest of the proof
+is devoted to constructing polynomials with these properties.
+    We begin with an h × h Hankel matrix GK (X), where h = 37K/40, whose entries are
+values of a rational functional. Each entry is affine in X. At X = ζ(5), the functional becomes
+integration against a positive weight, and GK (ζ(5)) is a positive moment matrix. Its determinant
+is consequently positive. A multiple-integral representation expresses that determinant in terms
+of a squared Vandermonde factor and the weight. After scaling, the logarithm of the integrand
+is estimated by a logarithmic-energy inequality. This gives the required real bound on the K 2
+scale.
+    The arithmetic estimates must hold for every coefficient of the determinant, not only for its
+value at ζ(5). They must also account for the whole rational functional. Polynomial division
+produces both polynomial quotients and simple-pole terms, and an estimate based only on
+favorable residues would leave the former uncontrolled. We therefore retain both contributions
+in the local estimates over Qp [X].
+    The main determinant estimates take two forms. For the intermediate primes, a basis with
+prescribed vanishing at the pole classes gives a determinant valuation. For the larger primes,
+
+                                               2
+another basis isolates the possible negative valuations of the residue terms. The remaining
+polynomial contribution is handled by a rank bound. Together with a coarse bound for the
+smaller primes, these estimates give a positive rational normalization that turns the determinant
+into the integer polynomial QK,M . The cutoff M is kept fixed when the local estimates are
+summed. The cost of this normalization is smaller than the real decay. Choosing M = 200 and
+K = 40n gives the polynomials Qn above.
+    For Corollary 1.2, smallness at ζ(5) alone is not enough, since the polynomial could vanish
+at a nearby rational argument. We bound the coefficient matrix of X relative to the positive
+matrix GK (ζ(5)). This preserves positivity under the required perturbation and allows the
+integer argument to be applied at the rational point. The larger fixed cutoff used in the appendix
+provides the additional decay for that argument.
+
+1.2    Organization
+Section 2 defines the matrix and proves its degree and positivity. Sections 3 and 4 establish
+the local estimates, which are summed in Section 5. The real bound is proved in Section 6,
+and the two bounds are combined in Section 7. Appendices A and B contain the rational data
+and elementary estimates for the constants. Appendix C proves the approximation bound and
+records a coefficient height estimate.
+
+
+2     The determinant construction
+We first define a rational functional whose value at X = ζ(5) is integration against a positive
+weight. Applying it to rational functions with a common denominator gives the Hankel matrix.
+The residues determine the degree of its determinant, while the integral representation proves
+positivity.
+
+2.1    The functional and the matrix
+Throughout the paper,
+                                                      3          37                        23
+      K = 40n,      N = 3n,          h = 37n,   α=      ,   λ=      ,    H = 1 + 2α =         .   (2.1)
+                                                     40          40                        20
+Set D0 = 1 and
+                               m                      j
+                               ∏︂
+                                          2      (5) ∑︂  1               (5)
+                    Dm (t) =        (t + j ),   Hj =       5
+                                                             ,          H0     = 0.
+                               j=1                   v=1
+                                                         v
+
+We use the convention B1 = −1/2 for the Bernoulli numbers. Define a Q-linear functional with
+values in Q[X] by
+
+                              (−1)e B2e+2 (2e + 3)(2e + 4)(2e + 5)
+                  µX (te ) =                                       ,                  e ≥ 0,      (2.2)
+                                                   24
+                     1                             1  1
+               (︃        )︃
+                                4 (︁       (5) )︁
+            µX              = j      X − Hj       − + ,                               j ≥ 1.      (2.3)
+                  t + j2                           4 2j
+Polynomial division and simple partial fractions extend µX to rational functions with simple
+poles among the negative integer squares. We write µ for its restriction to polynomials. Only
+the simple-pole values depend on X, and that dependence is affine.
+
+                                                 3
+   Define
+                        [︄     (︄                    )︄]︄
+                                    DN (t)6 ti+j
+              GK (X) = µX                                             ,        ∆K (X) = det GK (X),   (2.4)
+                                     DK (t)                 0≤i,j<h
+
+and
+                                        (K!)2h 4h−1
+                         SK =                  h−1
+                                                                 ,         FK = SK ∆K .               (2.5)
+                                               ∏︂
+                                    (N !)12h         ((2i)!)2
+                                               i=1
+For a fixed integer M ≥ 40, Section 5 defines a positive rational number mK,M whenever
+K ≥ 200M 2 . The polynomial used below is
+
+                                       QK,M (X) = mK,M FK (X).                                        (2.6)
+
+The factor mK,M will be specified by prime exponents, without computing the content of ∆K .
+
+2.2   The polynomial estimates
+The estimates required in the introduction are collected below. The cutoff M is always fixed
+before n tends to infinity.
+
+Theorem 2.1. For each integer M ≥ 40 and each K ∈ 40Z>0 with K ≥ 200M 2 , the polynomial
+QK,M belongs to Z[X], has degree h, and satisfies QK,M (ζ(5)) > 0. For all sufficiently large
+positive integers n,
+                                                            139 2
+                                                                          (︃         )︃
+                               0 < Q40n,200 (ζ(5)) < exp −      n ,                                   (2.7)
+                                                             5
+                                                            7907 2
+                                                         (︃        )︃
+                             0 < Q40n,100000 (ζ(5)) < exp −      n .                                  (2.8)
+                                                             100
+   The choice M = 200 suffices for irrationality. The larger cutoff gives the additional decay
+used in Appendix C. Neither eventual threshold is specified. We prove degree and positivity
+here, integrality in Section 5, and decay in Section 7.
+
+2.3   Degree
+Let Dtail = DK /DN and W = DN      5 . After cancellation, the rational functions in (2.4) have
+
+exactly the possible poles −j 2 with N < j ≤ K. If Vij = (−j 2 )i , then
+                                                       (︄                      )︄
+                                                            j 4 DN (−j 2 )5
+                       [X]GK (X) = V diag                       ′ (−j 2 )                 V T.
+                                                              Dtail             N <j≤K
+
+The Vandermonde identity therefore gives
+                                                                     K
+                                                                     ∏︂
+                     [X h ]∆K (X) = (−1)h(h−1)/2                           j 4 DN (−j 2 )5 ̸= 0.      (2.9)
+                                                                 j=N +1
+
+In particular, all the polynomials in (2.6) have degree h once their normalizations have been
+defined.
+
+                                                             4
+2.4   The positive integral representation
+To prove nonvanishing at ζ(5), we realize the matrix as a positive Gram matrix. The use of
+positive integrals in irrationality arguments is familiar from Beukers’ proofs for ζ(2) and ζ(3)
+[3]. The representation below will also give the real bound in Section 6.
+Proposition 2.2. For every rational function R in the domain of µX ,
+                                                                                (2π)4 y 5 ∑︂ 4 −2πℓy
+                               ∫︂ ∞
+                 µζ(5) (R) =             R(y 2 )w(y) dy,            w(y) =                  ℓ e      .   (2.10)
+                                0                                                 12 ℓ≥1
+
+Hence GK (ζ(5)) is positive definite.
+Proof. The weight is positive. It tends to 1/π as y ↓ 0 and is O((1 + y)5 e−2πy ) at infinity. Euler’s
+formula for the even zeta values [9, (25.6.2)] gives
+                         ∫︂ ∞
+                                                            (2e + 5)!
+                                y 2e w(y) dy =                        ζ(2e + 2) = µ(te ).
+                          0                                12(2π)2e+2
+
+For a pole, put f (y) = (e2πy − 1)−1 . Then w(y) = y 5 f (4) (y)/12, and direct differentiation gives
+                                              )︃4
+                                         d              y5
+                                    (︃
+                                                             = 24a4 Im(a − iy)−5 .
+                                         dy         y 2 + a2
+Four integrations by parts have vanishing boundary terms. At zero each boundary product is
+O(y), and at infinity it decays exponentially. Hermite’s integral formula [9, (25.11.29)], with
+a > 0, yields                ∫︂ ∞
+                                   w(y)                      1  1
+                                   2    2
+                                          dy = a4 ζ(5, a) −    − .
+                               0  y +a                      2a 4
+                                               (5)
+At a = j ∈ Z>0 this is j 4 (ζ(5) − Hj ) − 1/4 + 1/(2j). Linearity proves (2.10).
+   If q ̸= 0 is a real polynomial of degree less than h, then
+                                                    DN (y 2 )6 q(y 2 )2
+                                         ∫︂ ∞
+                                                                        w(y) dy > 0.
+                                          0            DK (y 2 )
+This is the quadratic form of GK (ζ(5)) at the coefficient vector of q.
+
+
+3     The local rational functional
+The arithmetic estimates are made with X indeterminate, so that they apply to every coefficient
+of the determinant. Under t = −x2 , the poles become integers and Bernoulli multiplication can
+be applied by residue class. We extend the resulting functional to convergent p-adic expansions,
+prove its distribution formula, and obtain a separate bound for the small primes.
+    For a polynomial A ∈ Qp [X], let vpG (A) be the minimum of the p-adic valuations of its
+coefficients, with vpG (0) = +∞. In particular, a lower bound for vpG (A) applies to the constant
+coefficient as well as to the coefficients of positive degree.
+    Let L(xk ) = Bk and τ (P ) = L(P ′′′ )/24. For an integer r, put
+                               {︄
+                                r,                    r ≥ 0,                   1
+                                                                         (︃         )︃
+                                                                                             (5)
+                     d(r) =                                         τX                   = Hd(r) − X.
+                                −r − 1,               r < 0,                  x−r
+
+                                                                5
+Extend τX by polynomial division and simple partial fractions. The pullback identity is
+
+                                          µX (R) = τX x5 R(−x2 ) .
+                                                          (︁                  )︁
+                                                                                                      (3.1)
+
+For monomials this follows from three differentiations. For a pole, use
+
+                              x5                   j4                   1   1
+                                                                  (︃                             )︃
+                                       3     2
+                                   = −x  − j   x −                        +
+                          j 2 − x2                 2                   x−j x+j
+       (5)    (5)
+and Hj − Hj−1 = j −5 . The reflection and difference identities for Bernoulli polynomials [9,
+(24.4.1), (24.4.3)] give
+
+                                          τX (g(−1 − x)) = −τX (g(x)),                                (3.2)
+                                                                       g (4) (0)
+                                 τX (g(x + 1) − g(x)) =                          ,                    (3.3)
+                                                                          24
+where (3.3) requires g to be regular at zero. The same identities for simple poles follow from the
+harmonic increments.
+
+3.1   Completion at a prime
+After a residue-class substitution, poles outside Zp are represented by convergent power series.
+We therefore need a functional on both analytic functions and principal parts. Its analytic part
+can lose one power of p. In the next lemma, the degree restriction prevents this loss in the initial
+term, and the factors pj absorb it in the remaining terms.
+   Fix p ≥ 7. For d ≥ 3, write
+
+                              d(d − 1)(d − 2)Bd−3
+                       κd =                       ,                     κ0 = κ1 = κ2 = 0.
+                                       24
+The von Staudt–Clausen theorem [9, §24.10(i)] implies vp (κd ) ≥ −1. Moreover κd ∈ Zp for
+d ≤ p + 1. Thus τ extends continuously to the Tate algebra A = Qp ⟨z⟩ by
+                                 ⎛              ⎞
+                                     ∑︂                ∑︂
+                              τ⎝          fd z d ⎠ =         fd κd ,         ∥τ ∥ ≤ p.
+                                  d≥0                  d≥0
+
+The norm on A is the coefficient supremum norm.
+
+Lemma 3.1. Let T (z) = tν=1 (z − rν ), where the rν are distinct integers, rν − rη ∈ Z×
+                            ∏︁
+                                                                                         p for
+ν ̸= η, and d(rν ) < p. Let Y ∈ Zp [X]. For polynomials Uj ∈ Zp [z] with deg U0 ≤ p + 1,
+                                            ⎛                   ⎞
+                                                ∑︂ pj Uj (z)
+                                     τYext ⎝                    ⎠ ∈ Zp [X].                           (3.4)
+                                              j≥0
+                                                       T (z)
+
+Proof. Polynomial division and partial fractions give
+                                     t
+                              U     ∑︂    cν                                       U (rν )
+                                =P+            ,                       cν =                  .
+                              T     ν=1
+                                        z − rν                                     T ′ (rν )
+
+
+                                                         6
+This map has norm at most one from Zp [z] to the direct sum of the polynomial coefficient space
+and the residue spaces. It therefore extends to
+                                                                       t
+                                                                      ⨁︂               1
+                                                   BT = A ⊕                    Qp
+                                                                      ν=1
+                                                                                     z − rν
+
+with the maximum norm. The resulting decomposition is unique, since an analytic function
+cannot cancel a nonzero principal part.
+   On BT , define
+                            (︄                                 )︄
+                                       ∑︂            cν                               ∑︂         (5)
+                       τYext f +                                    = τ (f ) +             cν (Hd(rν ) − Y ).
+                                           ν       z − rν                              ν
+
+The principal-part values are integral and the analytic part loses at most one power of p. In the
+j = 0 term the polynomial quotient has degree at most p + 1, so it too has integral value. For
+j ≥ 1, the factor pj absorbs the possible loss. The series converges in BT , which proves (3.4).
+
+   If vp (s) < 0, expansion in A gives
+                                                                               (︄          )︄
+                                            1                   1 ∑︂ k + 3
+                                      (︃                )︃
+                             τ   an
+                                                             =−            Bk s−k−4 .                                (3.5)
+                                           z−s                  4 k≥0  3
+
+A rational function with the fixed near poles rν and any far poles has the same value whether
+its far factors are expanded first or global partial fractions are taken first. This follows from the
+uniqueness of the decomposition in BT and (3.5).
+
+3.2   Distribution
+We choose the new parameter to make the distribution formula hold at 1/x. Translation and
+reflection will then determine it at every integer pole. Set
+                                      p−1
+                                                                1
+                                      ∑︂                (︃                )︃
+                                                   an
+                          Cp =                 τ                     ,                 Y = p5 X + Cp .               (3.6)
+                                      a=1
+                                                             x + a/p
+
+The constant Cp belongs to p5 Zp . In fact, the k = 0 term of (3.5) contains p4 p−1  −4                         ∑︁
+                                                                                a=1 a , which
+                 5
+is divisible by p . The k = 1 term has valuation at least 5, and the terms with k ≥ 2 have
+valuation at least k + 3.
+
+Lemma 3.2. For every rational function g with polynomial part and simple integer poles,
+                                                                    p−1
+                                                              −4
+                                                                    ∑︂
+                                                                          τYext g(a + px) .
+                                                                                (︁              )︁
+                                      τX (g) = p                                                                     (3.7)
+                                                                    a=0
+
+Integer poles on the right use τY , and far poles use (3.5).
+
+Proof. For polynomials, (3.7) follows from Bernoulli multiplication [9, (24.4.18)] after three
+differentiations. At g(x) = 1/x, its right-hand side is p−5 (−Y + Cp ) = −X.
+
+
+
+                                                                      7
+   Let T (g) denote the right-hand side. The substitutions a ↦→ p − 1 − a and x ↦→ −1 − x show
+that T satisfies (3.2). For g regular at zero, its translation difference telescopes to
+
+                                                                                             g (4) (0)
+                   T (g(x + 1) − g(x)) = p−4 τYext g(p(x + 1)) − g(px) =
+                                                   (︁                                )︁
+                                                                                                       .
+                                                                                                24
+The reflection and difference identities extend to analytic far-pole terms by continuity. Starting
+at 1/x, the difference identity determines the values at every positive integer pole. Reflection
+gives the negative integer poles. This proves the lemma.
+
+3.3    Small primes
+For small primes, a bound independent of the pole classes is sufficient. We use the binomial
+basis for integer-valued
+                     (︁x)︁
+                           polynomials. If A(Zp ) ⊂ Zp and deg A ≤ d, then the coefficients
+in its expansion in k are integral. Indeed, they are the forward differences of A at zero.
+Vandermonde’s identity then gives
+                                                    ⌊︂                         ⌋︂
+                  vp (A(x) − A(y)) ≥ vp (x − y) − logp max(1, d)                          (x, y ∈ Zp ).          (3.8)
+                                                                                     ⌊︂                    ⌋︂
+More generally, its rth derivative is integer-valued up to a loss of r logp max(1, d) . To see this,
+expand x+z    by Vandermonde’s identity. A coefficient of degree r in zj is a sum of products of
+        (︁   )︁                                                                           (︁ )︁
+           k
+r reciprocals of integers at most j.
+    The generating identity
+                                                    log(1 + z)
+                                     L((1 + z)x ) =
+                                                        z
+        (︁x)︁
+gives L( k ) = (−1) /(k + 1). Consequently, if P (Zp ) ⊂ p−A Zp and deg P ≤ d, then
+                     k
+
+                                                   ⌊︂                ⌋︂
+                             vp (τ (P )) ≥ −A − 4 logp (d + 1) − vp (24).                                        (3.9)
+
+Lemma 3.3. Let A be integer-valued on Zp , with deg A ≤ d, and put
+
+                                                   (K!)2 A(x)
+                                       g(x) = ∏︁                 .
+                                                  −K≤r≤K (x − r)
+                                                    r̸=0
+
+Then                                         ⌊︂                           ⌋︂
+                         vpG (τX (g)) ≥ −6 logp max(2K, d + 1) − vp (24).                                       (3.10)
+                                                              ⌊︂                ⌋︂
+                          r̸=0 cr /(x − r) and let L0 = logp (2K) . The residues satisfy
+                        ∑︁
+Proof. Write g = P +
+
+                                        (K!)2 rA(r)
+                             cr = ±                    ,           vp (cr ) ≥ −L0 .
+                                      (K + r)!(K − r)!
+At each prime-power level, the difference between the two factorial floor sums is at most one.
+    Outside the balls r + pL0 +1 Zp , counting roots modulo each pj shows that vp (g(x)) ≥ −2L0 .
+The same bound holds for all the pole terms. Within such a ball, its center is the only root at
+distance of valuation greater than L0 . Put
+                                                          (K!)2
+                                         Fr (x) = ∏︁                 ,
+                                                        s̸=r (x − s)
+
+
+                                                    8
+where the product is over the nonzero roots. The inverse-product expansion gives
+
+                    vp (Fr (x)) ≥ −L0 ,            vp (Fr (x) − Fr (r)) ≥ vp (x − r) − 2L0 .
+
+Subtracting the principal part of A(x)Fr (x)/(x − r) and using (3.8) yields
+                                                                                      ⌊︂                        ⌋︂)︁
+                    P (Zp ) ⊂ p−L0 −M0 Zp ,
+                                                                               (︁
+                                                          M0 = max L0 , logp max(1, d) .
+
+                                                                                                                                       (5)
+Continuity includes the centers of the balls. Apply (3.9) to P . For the pole terms use vp (Hd(r) ) ≥
+    ⌊︂      ⌋︂
+−5 logp K . Both bounds imply (3.10).
+
+    We apply Lemma 3.3 in a basis that becomes integer-valued under t = −x2 . Define
+                                                                                                                       )︃3
+                                    (−1)i 2tDi−1 (t)                                                         DN (t)
+                                                                                                        (︃
+           q0 (t) = 1,     qi (t) =                                (i ≥ 1),                fi (t) =                          qi (t).
+                                         (2i)!                                                               (N !)2
+
+For i ≥ 1, the identity                             (︄         )︄         (︄                  )︄
+                                          2              x+i   x+i−1
+                                  qi (−x ) =                 +
+                                                          2i     2i
+shows that qi (−x2 ) is integer-valued. The same is true of q0 = 1. Together with
+                                                          (︄              )︄(︄             )︄
+                                   DN (−x2 )                  N −x              N +x
+                                             =                                       ,
+                                    (N !)2                     N                 N
+
+this proves that fi (−x2 ) is integer-valued for every i ≥ 0. The triangular change of basis gives
+
+                                                                        fi (t)fj (t)
+                                              [︃                   (︃                  )︃]︃
+                            FK (X) = det (K!)2 µX                                                       .                               (3.11)
+                                                                          DK (t)              0≤i,j<h
+
+The pullback numerator has degree at most 12N + 4h + 1. Thus max(2K, d + 1) ≤ 5K, and
+Lemma 3.3 proves
+                                     ⌊︂                  ⌋︂
+                    vpG (FK ) ≥ −6h logp (5K) − hvp (24)                              for every prime p.                                (3.12)
+
+
+4        Local estimates for the determinant
+Applying (3.12) at every prime would give too large a normalizing factor. We fix M ≥ 40
+and improve the estimate for p > K/M . Two choices of basis are needed. In the inner range
+K/M < p ≤ K/3, the basis distributes vanishing among the pole classes. In the outer range
+p > K/3, it separates the residue terms from a polynomial correction of bounded rank.
+
+4.1      The inner range
+Fix M ≥ 40 and assume
+
+                         K ∈ 40Z>0 ,          K ≥ 200M 2 ,                          K/M < p ≤ K/3.                                       (4.1)
+
+
+
+                                                               9
+Then p > 200M and p2 > 5K. For 1 ≤ a ≤ (p − 1)/2, let
+              ℓA (a) = # {1 ≤ j ≤ A | j ≡ a or − a             (mod p)} ,         mA = ⌊A/p⌋ .
+If a row polynomial has a zero of order νi (a) at t = −a2 , substitution x = c + pz in (3.1), for
+c = a, p − a, gives
+                             νi (a) + νj (a) + 6ℓN (a) − ℓK (a) − 4                         (4.2)
+as a lower valuation for that summand of (3.7). At c = 0 the corresponding bound is
+                                  2νi (0) + 2νj (0) + 12mN − 2mK + 1.                             (4.3)
+We justify these bounds with their degree restrictions below.
+   The bounds depend on the vanishing at each class. We assign La basis elements to the class
+t = −a2 , with total dimension h, and choose the La so that no residue class gives a smaller
+bound than the assigned row weights.
+   Put L0 = 4M + 10, m = (p − 1)/2, and ba = 3ℓN (a). Define integers T, E by
+                        mT + E = h − L0 + 3(N − mN ),                     0 ≤ E < m.              (4.4)
+Give ϵa = 1 to the first E classes in decreasing order of ℓK (a) and give it the value zero elsewhere.
+Ties may be ordered arbitrarily. Set
+                          La = T − ba + ϵa ,            Za = La + ba = T + ϵa .
+                                                     ∑︁
+The dimensions La are nonnegative and L0 + a La = h. To prove nonnegativity, put x = K/p.
+From (4.4),
+                                21
+                         2Hx −      < T < 2Hx,       ba ≤ 6αx + 3.
+                                20
+Here (2L0 + 6mN )/(p − 1) < 1/20 follows from (4.1). Hence
+                                                              81  3
+                                       T − ba > 2λx −            ≥ .
+                                                              20  2
+For a = 0, 1, . . . , m and 0 ≤ i < La , take the row polynomial
+                                                ∏︂
+                                  Ea,i (t) =           (t + c2 )Lc (t + a2 )i .                   (4.5)
+                                               0≤c≤m
+                                                c̸=a
+
+The factors t + c2 are pairwise coprime modulo p. In the Chinese remainder decomposition by
+their powers, the polynomials in (4.5) give triangular local bases whose diagonal entries are
+units. They therefore form a Zp -unimodular basis of the polynomials of degree less than h.
+   Assign the row weights
+                                    ℓK (a) + 4
+                 wa,i = i + ba −               ,          a > 0,                                  (4.6)
+                                         2
+                                           1           ℓK (c) + 4
+                             (︃                                      (︃                )︃)︃
+                 w0,i = min 2i + 6mN − mK + , min Zc −                                        .   (4.7)
+                                           2 1≤c≤m          2
+Define
+                                                     m La
+                                                     ∑︂ ∑︂−1
+                                         γpin = 2               wa,i .                            (4.8)
+                                                     a=0 i=0
+This is an integer.
+
+                                                       10
+Proposition 4.1. Under (4.1), vpG (∆K ) ≥ γpin .
+Proof. At x = c + pz, every near denominator factor supplies a factor p and a simple integer
+pole in z. The near poles have absolute sizes at most M + 1, and distinct near poles differ by a
+p-adic unit. Their harmonic indices are less than p. Far factors are units times convergent series
+in pz.
+    After the indicated power of p is extracted, the ordinary summand has the form in Lemma 3.1.
+Its leading numerator has degree at most
+                                                                  23
+                         νi (c) + νj (c) + 6ℓN (c) ≤ 2(T + 1) <      M + 2.
+                                                                  5
+For the zero summand this degree is at most
+                                                                        169
+                 5 + 2νi (0) + 2νj (0) + 12mN ≤ 5 + 4L0 + 12mN ≤            M + 45.
+                                                                        10
+Both degrees are at most p + 1. Lemmas 3.1 and 3.2 therefore prove (4.2) and (4.3) for the
+entire summands.
+    It remains to check each assigned weight against every source in the distribution formula. At
+an ordinary source c, a row from another ordinary block a has half-weight Zc − (ℓK (c) + 4)/2.
+This is at least the assigned weight because
+                                                 ℓK (a) − ℓK (c)
+                                Zc − Z a + 1 +                   ≥ 0.
+                                                        2
+The counts ℓK take two consecutive values. In the only case Za = T + 1, Zc = T that needs an
+ordering, the definition of the extras gives ℓK (a) ≥ ℓK (c). Formula (4.7) treats the zero-block
+rows at every ordinary source.
+    At the zero source, the half-weight of any ordinary row is 2L0 + 6mN − mK + 1/2 ≥ 7M + 41  2 ,
+larger than every ordinary assigned weight. The remaining comparisons follow directly from
+(4.7). Thus each entry in the new basis has valuation at least the sum of its two row weights.
+                                                   ∑︁
+Every determinant term has valuation at least 2 wa,i . The basis change is unimodular, which
+proves the proposition.
+
+4.2    The outer range
+For p > K/3, the small number of poles in each class permits a more direct estimate. We first
+remove the nonintegral polynomial moments, recording an explicit bound for the rank of their
+contribution. Suppose that
+
+              p ≥ 7,     p ≤ K < 3p,       p2 > 2K,        2N < p,       5N ≤ 2p − 2.          (4.9)
+
+These conditions hold when K ≥ 200M 2 and K/3 < p ≤ K. The polynomial moments satisfy
+vp (µ(te )) ≥ −1. They are integral for e < 2p − 3. Indeed, if p − 1 divides 2e + 2, the first three
+possible multiples of p − 1 are canceled respectively by the factors 2e + 3, 2e + 4, and 2e + 5 in
+(2.2).
+    Choose ce ∈ Zp with ce ≡ pµ(te ) (mod p), taking ce = 0 for e < 2p − 3. Replace each
+polynomial moment by µ0 (te ) = µ(te ) − ce /p and leave the simple-pole values unchanged. The
+matrix then has the form
+
+               GK = A + p−1 L,         rankQp L ≤ rp = max(0, K + 4N − 2p + 2),               (4.10)
+
+                                                 11
+where L is integral. To see the rank bound, the polynomial quotient of W ti+j /Dtail has degree
+at most i + j + 6N − K. Hence Lij = 0 if i + j < K − 6N + 2p − 3. Its first h − rp rows and
+columns vanish. Thus the rank bound holds over Qp , not merely modulo p.
+    For an ordinary square class a, let ℓ = ℓK (a) and δ = 1a≤N . There are ℓ − δ remaining poles
+in the class and exactly ℓ − 2 of the original poles have j > p. Let Qa be the product of the
+remaining factors in the class, put Pa = Dtail /Qa , and let Ea be the product of the factors with
+j > p. Use the rows Pa qa,i , where
+                                    {︄
+                                     (t + a2 )i ,                     0 ≤ i < ℓ − 2,
+                       qa,i (t) =                                                              (4.11)
+                                     Ea (t)(t + a2 )i−(ℓ−2) ,         ℓ − 2 ≤ i < ℓ − δ.
+
+Together with the zero-class rows, these form a unimodular basis. Indeed, the local polynomials
+are monic of successive degrees, and the resultants of distinct class factors are units.
+    Cross-class entries for A are integral, since their quotients are polynomials with integral
+coefficients. Within a class, if either row index is at least ℓ − 2, all poles with j > p cancel. The
+two possible remaining pole values at a and p − a are integral and congruent modulo p. For
+                                     (5)     (5)
+their constant coefficients, use Hp−a ≡ Ha−1 (mod p) in (2.3). Their coefficients of X are also
+congruent. The divided difference at the two nodes is therefore integral. Polynomial numerators
+preserve this congruence.
+    For two indices i, j < ℓ − 2, the residue part has valuation at least i + j + 6δ − ℓ − 4. The row
+factors supply i + j, the factor W supplies 5δ, the node derivative loses ℓ − δ − 1, and a harmonic
+value loses at most 5. The polynomial part is integral. Thus valid nonpositive half-integer
+weights are                       {︄     (︁                   )︁
+                                    min 0, i + 3δ − (ℓ + 4)/2 , i < ℓ − 2,
+                          wa,i =                                                                (4.12)
+                                    0,                            i ≥ ℓ − 2.
+A single zero-class pole has weight −1/2. For two zero-class poles p, 2p, the rows 1, t + p2 give
+entry bounds −3, −1, 0, so the weights −2, 0 are valid.
+   To restore the correction p−1 L, we use its rank together with the number of zero row weights.
+The restriction to nonpositive weights is essential in the following lemma.
+
+Lemma 4.2. Let A and L be h × h matrices. Suppose that v(Aij ) ≥ wi + wj , where the wi are
+nonpositive half-integers. Let r be a nonnegative integer and assume that L is integral with rank
+at most r. If exactly z weights are zero, then
+
+                              v det(A + p−1 L) ≥ 2
+                                                           ∑︂
+                                                                   wi − min(r, z).             (4.13)
+                                                               i
+
+The same assertion holds for the Gauss valuation of polynomial entries.
+
+Proof. Expand the determinant by complementary minors. A term using a k by k minor of L,
+with row set I and column set J, has valuation at least
+                                         ∑︂              ∑︂           ∑︂
+                                     2        wi − k −         wi −         wj .
+                                         i               i∈I          j∈J
+
+Terms with k > r vanish. If w(1) ≥ · · · ≥ w(h) , the possible loss is at most max0≤k≤min(r,h) (k +
+2 ki=1 w(i) ). This expression increases by one at each zero weight and has nonpositive increments
+ ∑︁
+
+after the zero weights. Its maximum is min(r, z).
+
+                                                     12
+    Let v = K − p ⌊K/p⌋ and set
+
+                        u = max(0, N + v − p + 1),                tp = min(N, v) + u.
+
+Summing (4.12) and applying Lemma 4.2 gives the integer
+                        {︄
+                             −7(K − p) + 6tp − 1 − min(rp , p − 1 − N + u), K < 2p,
+              γpout =                                                                          (4.14)
+                             −7(K − p) + 3 + 12N + 5tp − min(rp , p + u),   K ≥ 2p.
+
+For a class containing a removed pole, the counts used in this sum are
+                                  ℓ in a removed class 2 3 4 5 6
+                                       −2 i wa,i
+                                           ∑︁
+                                                       0 1 2 4 6
+                                     #{i | wa,i = 0}   1 1 2 2 3
+
+An unremoved class has cost 7(ℓ − 2) and two zero weights. The conditions a ≤ v and a ≥ p − v
+among a ≤ N give tp , with overlap u. The zero-class costs are 1 and 4. These counts prove
+(4.14).
+Proposition 4.3. Under (4.9), vpG (∆K ) ≥ γpout . For p > K, one has vpG (∆K ) ≥ 0.
+Proof. The first assertion follows from (4.10) and Lemma 4.2. If p > K, every pole is less than
+p. Each square class contains at most two poles, and the same divided- difference argument
+makes its contribution integral. The polynomial correction vanishes because K + 4N + 1 < 2p.
+Thus the whole matrix is integral in a unimodular local basis.
+
+
+5    Normalization and the prime sum
+We combine the local bounds into a positive rational factor mK,M for which mK,M FK is
+integral. The exponents must retain their signs. A negative valuation bound requires clearing a
+denominator, but a positive bound allows division by a power of p. Both contributions enter the
+growth estimate for mK,M .
+    For p > K, put γpout = 0. For a fixed integer M ≥ 40 and K ≥ 200M 2 , define
+                                  ⎧    ⌊︂          ⌋︂
+                                  ⎪
+                                  ⎪
+                                  ⎨−6h   log p (5K)   − hvp (24),            pM ≤ K,
+                Lp (K, M ) = vp (SK ) + γpin ,                               pM > K, 3p ≤ K,    (5.1)
+                            ⎪
+                             vp (SK ) + γpout ,
+                            ⎪
+                            ⎩
+                                                                             3p > K.
+
+Only the primes p ≤ 2h enter the normalization
+
+                                                             p−Lp (K,M ) .
+                                                       ∏︂
+                                        mK,M =                                                  (5.2)
+                                                      p≤2h
+
+This is a positive rational number. Its exponents are determined by (4.8), (4.14), and Legendre’s
+formula
+                                              ∑︂                     ∑︂
+                              vp (SK ) = 2h         ⌊K/pa ⌋ − 12h          ⌊N/pa ⌋
+                                              a≥1                    a≥1
+                                               h−1
+                                               ∑︂ ∑︂
+                                         −2              ⌊2i/pa ⌋ + (h − 1)vp (4).              (5.3)
+                                               i=1 a≥1
+
+
+                                                        13
+Proposition 5.1. The polynomial QK,M = mK,M FK belongs to Z[X].
+
+Proof. At every prime p ≤ 2h, the assertion follows from (3.12) and Propositions 4.1 and 4.3.
+At p > 2h, all factorials in SK are units, and ∆K is integral by Proposition 4.3. Thus every
+coefficient of QK,M is integral at every prime.
+
+5.1      The inner limiting function
+To estimate mK,M , we first express the inner exponents in the variable x = K/p. The discrete
+pole counts become floor functions, and the weighted allocation has the following limiting form.
+   For x ≥ 3 and 0 < z < 1/2, set
+
+                    ℓ(x, z) = ⌊x − z⌋ + ⌊x + z⌋ + 1,            b(x, z) = 3ℓ(αx, z).
+
+In the following formulas,
+
+                 T = ⌊2Hx⌋ ,       s = Hx − T /2,        q = ⌊2x⌋ ,   n+ = (2x − q)/2.
+
+Define
+                              ∫︂ 1/2
+                     Γ(x) =            (T − b(x, z))(T + b(x, z) − ℓ(x, z) − 5) dz
+                               0
+                              + s(2T − q − 5) + (s − n+ )+ .                                 (5.4)
+
+The last two terms allocate the extra rows first to the classes with the larger value of ℓ(x, z).
+Put
+                                           m(m + 1)
+                              J(u) = mu −            ,    m = ⌊2u⌋ ,
+                                               4
+                             N (x) = 2λx ⌊x⌋ − 12λx ⌊αx⌋ − 2J(λx),                           (5.5)
+                             R(x) = −Γ(x) − N (x).                                           (5.6)
+
+These functions are bounded and piecewise polynomial on each compact subinterval of [3, ∞).
+   For fixed M , uniformly in the inner range,
+
+                  γpin = pΓ(K/p) + OM (1),           vp (SK ) = pN (K/p) + OM (1).           (5.7)
+
+Here and below M remains fixed as K tends to infinity. For the first formula, note that
+ℓA (a) = ℓ(A/p, a/p). Each interval on which these counts are constant has its number of grid
+points equal to its length times p, up to an error bounded by two. There are O(M ) such intervals,
+and all dimensions and weights are O(M ). The reserved zero block and the change from p/2 to
+(p − 1)/2 alter the number of allocated rows by OM (1). Altering that number by one changes the
+weight sum by OM (1). If 2Hx crosses an integer, allocating one extra row to every ordinary class
+gives exactly the next base allocation. The estimate is therefore uniform at these transitions as
+well. The second formula follows from (5.3), since p2 > 5K and
+                                   h−1
+                                   ∑︂
+                                         ⌊2i/p⌋ = pJ(h/p) + OM (1).
+                                   i=1
+
+
+
+
+                                                    14
+5.2     The outer limiting function
+In the outer range we use y = p/K, so that the interval of integration is fixed. We write the
+residue contribution and the rank correction separately. Define R0 (y) by
+      ⎧
+      ⎨8 − 9y − 8α − 5 min(α, 1 − 2y) − 5 (1 + α − 3y)+ ,              1/3 < y < 1/2,
+      ⎪
+      ⎪
+       7(1 − y) − 6 min(α, 1 − y) − 6 (1 + α − 2y)+ + (1 + 4α − 2y)+ , 1/2 < y < 1,                           (5.8)
+      ⎪
+      ⎪
+      ⎩0,                                                              y > 1,
+
+and put                             (︂                              )︂
+                        d(y) = 1 + 4α − 3y − (1 + α − 3y)+                   1(1/3,1/2) (y).                  (5.9)
+                                                                         +
+
+Formula (4.14) gives
+                                   −γpout = K R0 (p/K) − d(p/K) + O(1).
+                                             (︁                     )︁
+
+The subtraction of d records the zero-weight restriction in Lemma 4.2.                               In particular,
+∫︁ 1/2
+  1/3 d(y) dy = 9/640. The scalar contribution in this range is
+                                         ⎛                                      ⎞
+                                                         5
+                                                        ∑︂
+                        −vp (SK ) = K ⎝−2λ ⌊1/y⌋ +            (2λ − jy)+ ⎠ + O(1).
+                                                        j=1
+
+The relevant integral is
+                              ⎛                                                     ⎞
+                      ∫︂ 2λ                                  5
+                              ⎝R0 (y) − d(y) − 2λ ⌊1/y⌋ +
+                                                            ∑︂                                 127751
+             Iout =                                               (2λ − jy)+ ⎠ dy =                   .      (5.10)
+                       1/3                                  j=1
+                                                                                               96000
+
+An exact evaluation is given in Appendix B.
+   The prime number theorem now converts the local bounds into integrals. We use only its
+asymptotic form [9, §27.12].
+
+Proposition 5.2. For each fixed integer M ≥ 40,
+                                                                   ∫︂ M
+                                      log mK,M          6λ                   R(x)
+                              lim sup      2
+                                               ≤ Iout +    +                      dx.                        (5.11)
+                               K→∞       K              M           3         x3
+                                  40|K
+                √                                                       √
+Proof. For p ≤ 5K, (3.12) contributes O(K 3/2 log K) = o(K 2 ). For 5K < p ≤ K/M , its
+logarithmic factor is one. The prime number theorem gives the contribution 6λK 2 /M + o(K 2 ).
+    For a bounded piecewise continuous function f on [3, M ], partial summation and the prime
+number theorem give
+                                                                    ∫︂ M
+                               1     ∑︂                                       f (x)
+                                             pf (K/p) log p −→                      dx.
+                              K 2 K/M <p≤K/3                         3         x3
+
+Use (5.7) with f = R. The OM (1) errors contribute OM (K) = o(K 2 ). The same argument in
+the variable y = p/K gives (5.10) for the outer range. This proves (5.11).
+
+
+
+
+                                                   15
+5.3    The tail integral
+We split the inner integral at 20. Its bounded part is evaluated in Appendix B. For the tail,
+write R(x) as a linear term with periodic coefficient plus a bounded remainder. This gives
+explicit bounds at both 20 and the cutoff M .
+   Let f = {x}, g = {αx}, τ = {2Hx}, σ = {2x}, and η = {2λx}. Set
+
+                         A(z) = ℓ(x, z) − 2x,         B(z) = ℓ(αx, z) − 2αx.
+
+Expanding (5.4) and (5.5) gives
+
+      R(x) = xF (x) + Q(x),         F (x) = 4λ + 2λf − 12λg,                                          (5.12)
+               τ (τ − σ) − (τ − σ)+ + η(1 − η)
+                                                      ∫︂ 1/2                  ∫︂ 1/2
+      Q(x) =                                   +9              B(z)2 dz − 3            A(z)B(z) dz.   (5.13)
+                               2                  0                            0
+
+Both A and B have mean zero. Each squared integral is at most 1/8, and Cauchy–Schwarz
+bounds the absolute value of the mixed integral by 1/8. The first numerator in (5.13) lies
+between −1/4 and 1/4. Consequently
+                                              1        13
+                                             − ≤ Q(x) ≤ .                                             (5.14)
+                                              2        8
+   Define the continuous periodic functions
+                                                                       2923
+               P(x) = 74g(1 − g) − λf (1 − f ),                    P=       ,
+                                                                        240
+                       v(1 − v)(2v − 1)                                74
+            G0 (v) =                    ,                        C(x) = G0 (g) − λG0 (f ).
+                              6                                        α
+Away from their finitely many breakpoints in a period,
+
+                                  P ′ = F + λ,           C ′ = P − P.
+                                   √
+The identity max[0,1] |G0 | = 1/(36 3) implies
+                                                  118511
+                                       |C(x)| ≤       √ < 16.
+                                                  4320 3
+Two integrations by parts now give
+                         ∫︂ ∞
+                                R(x)       λ     P(T )    P     2C(T )
+                                  3
+                                     dx = − −       2
+                                                       + 2−
+                          T      x         T      T      T       T3
+                                             ∫︂ ∞           ∫︂ ∞
+                                                  C(x)           Q(x)
+                                          +6         4
+                                                       dx +            dx.                            (5.15)
+                                               T   x          T   x3
+At T = 20, one has P(T ) = 37/2 and C(T ) = 0. Using (5.14) gives
+                                       ∫︂ ∞
+                                              R(x)        2689
+                                                   dx ≤ −       .                                     (5.16)
+                                        20     x3         48000
+If 40 | M , then P(M ) = C(M ) = 0, so
+                          ∫︂ ∞
+                                 R(x)        λ   2923/240 − 1/4  32
+                                      dx ≥ −   +                − 3.                                  (5.17)
+                           M      x3         M        M2         M
+
+                                                    16
+Appendix B proves                ∫︂ 20
+                                         R(x)       322437603634266857629
+                                            3
+                                              dx =                        .                        (5.18)
+                                  3       x        7535670527041937280000
+Put
+                                      9928298118277006344769
+                                  A∗ =                       ,                                     (5.19)
+                                      7535670527041937280000
+                                           7λ 2923/240 − 1/4    32
+                                 AM = A∗ +    −                + 3.                                (5.20)
+                                           M         M2         M
+Combining (5.11) with (5.16)–(5.18) proves
+
+                           lim sup K −2 log mK,M ≤ AM                  (M ∈ 40Z>0 ).               (5.21)
+                                K→∞
+                                40|K
+
+
+6      The real determinant
+We next bound FK (ζ(5)). The positive moment representation expresses ∆K (ζ(5)) as a multiple
+                                                              √
+integral with a squared Vandermonde factor. On scaling yi = K ti , the exponent is a discrete
+logarithmic energy in the field V below. We bound it for every configuration by comparison
+with an explicit measure of mass h/K = λ.
+    Define the external field on [0, ∞) by
+                              √    ∫︂ 1                     ∫︂ α
+                    V (t) = 2π t +      log(t + u2 ) du − 6      log(t + u2 ) du.                   (6.1)
+                                              0                         0
+
+For a measure ρ, write
+                           ∫︂                                   ∫︂∫︂
+               U ρ (t) =        log |t − u| dρ(u),     I(ρ) =           log |t − u| dρ(t) dρ(u).
+
+We use the same notation for measures on C whenever the integrals are absolutely convergent.
+
+Lemma 6.1. There is a positive measure ρ of mass λ, supported in (0, 2), such that
+                                                             1329
+                                 2U ρ (t) − V (t) ≤ M0 = −                  (t ≥ 0).                (6.2)
+                                                              200
+It is a sum of sixteen arcsine measures on nested intervals, each of length greater than 1/225.
+Moreover, if
+                       C∗ = −2λ + 12αλ(1 − log α) + 3λ2 − 2λ2 log(2λ),                    (6.3)
+then
+                                                           2733991    136699
+                           λM0 − I(ρ) + C∗ ≤ U = −                 <−        .                      (6.4)
+                                                           2000000    100000
+    Appendix A gives the measure and proves these bounds. The argument needs a comparison
+measure, not an explicit solution of the equilibrium problem. The lower bound for the interval
+lengths controls the error in the regularization below.
+
+
+
+
+                                                      17
+6.1   A bound for every configuration
+The comparison rests on negativity of logarithmic energy for a measure of mass zero. We include
+a proof with the integrability hypothesis needed for the circle and arcsine measures in our
+application.
+
+Lemma 6.2 (Zero-mass logarithmic energy). Let ν be a finite real signed Borel measure on C
+with compact support. Suppose that ν(C) = 0 and
+                                 ∫︂∫︂
+                                              ⃓           ⃓
+                                              ⃓log |z − w|⃓ d|ν|(z) d|ν|(w) < ∞,
+                                        C×C
+
+where |ν| is the total variation measure. Then
+
+                                                               I(ν) ≤ 0.                                                      (6.5)
+
+Proof. For s > 0, completing the square gives
+                                                     4s
+                                                          ∫︂
+                                          2                                    2                2
+                               e−s|z−w| =                      e−2s|z−u| e−2s|w−u| dA(u),
+                                                     π     C
+
+where A is planar Lebesgue measure. Fubini’s theorem therefore yields
+                                                                                                           )︃2
+                                                      4s
+                    ∫︂∫︂                                                  ∫︂ (︃∫︂
+                           −s|z−w|2                                                        −2s|z−u|2
+          J(s) :=          e            dν(z) dν(w) =                                  e               dν(z)     dA(u) ≥ 0.
+                                                      π                    C
+
+These interchanges are justified by the bounded Gaussian kernel and the finiteness of |ν|.
+   For 0 < a < b < ∞ and r > 0, put
+                                                                ∫︂ b −s      2
+                                                    1               e − e−sr
+                                         La,b (r) =                                           ds.
+                                                    2            a                 s
+The identity
+                                                ∫︂ ∞ −s      2
+                                          1         e − e−sr
+                                                                               ds = log r
+                                          2      0               s
+                                 2       ∫︁ 2
+follows by writing e−s − e−sr = 1r se−sv dv and integrating first in s. The integrand has a fixed
+sign for each r, so |La,b (r)| ≤ | log r|. Also, La,b (r) → log r as a ↓ 0 and b ↑ ∞. The mass-zero
+condition gives
+                                                             1 b J(s)
+                       ∫︂∫︂                                    ∫︂
+                            La,b (|z − w|) dν(z) dν(w) = −               ds ≤ 0.
+                                                             2 a s
+The logarithmic integrability assumption implies that the diagonal has zero |ν| ⊗ |ν| measure.
+Dominated convergence now proves (6.5).
+
+    We apply the lemma after regularizing a configuration t1 , . . . , th in [0, ∞). Let ωi be
+normalized arclength on the circle of radius ε > 0 centered at ti in C, and set σ = K −1 hi=1 ωi .
+                                                                                             ∑︁
+
+Since h/K = λ, the signed measure σ − ρ has mass zero.
+    The circle and arcsine measures have continuous finite logarithmic potentials. Hence the
+potential of the positive measure η = σ + ρ is bounded on∫︁∫︁its compact support. The positive part
+of the logarithmic kernel is bounded there as well, so         | log |z − w|| dη(z) dη(w) < ∞. Since
+|σ − ρ| ≤ η, Lemma 6.2 applies.
+
+                                                                     18
+                                                                               √      √
+     A unit arcsine measure on an interval of length L assigns at most 4 2r/(π L) to the
+intersection
+∫︁
+               with any interval of radius r. The circle-average identity [11, Example 1.10] gives
+   log |z − u| dωi (z) = log max(|ti − u|, ε). Integrating the preceding mass bound in r therefore
+gives                                                       √
+                             ∫︂
+                                 ρ          ρ
+                                                    ∑︂ 8cj 2ε          √
+                                U dωi − U (ti ) ≤        √︁       ≤ 60 ε.
+                                                     j
+                                                       π bj − aj
+
+The same circle-average identity gives I(ωi ) = log ε. For the mutual energy, applying it
+successively to the two circles gives
+   ∫︂∫︂                                         ∫︂
+          log |z − w| dωi (z) dωj (w) ≥              log |ti − w| dωj (w) = log max(|ti − tj |, ε) ≥ log |ti − tj |.
+
+Expanding I(σ − ρ) ≤ 0 now yields
+                            ∑︂                          ∑︂
+                        2         log |ti − tj | − K          V (ti ) ≤ (λM0 − I(ρ))K 2
+                            i<j                           i
+                                                                                   √
+                                                                          + 120λK 2 ε − h log ε.                    (6.6)
+
+The inequality includes coincident points by interpreting their left-hand side as −∞.
+    A uniform bound  √ on the exponent is not enough on an unbounded √   domain. We retain the
+integrable factor e−  t by changing the field from V (t) to V (t) − t/K. For K ≥ 2,
+                                                 √            √
+                                  ρ                t             2
+                                2U (t) − V (t) +     ≤ M0 +        .                      (6.7)
+                                                 K             K
+For t ≤ 2, this follows from (6.2). For t ≥ 2, use the support of ρ and log(1 + u) ≤ u to obtain
+
+                                                               13         6α3     √
+                                     2U ρ (t) − V (t) ≤           log t +     − 2π t.                               (6.8)
+                                                               10          t
+              √
+After adding t/K, the right-hand side is decreasing on [2, ∞) and     √ its value at 2 is less than
+M0 . These statements already follow from log 2 < 7/10, π > 3, and 2 > 7/5. Apply (6.6) with
+(6.7) and ε = K −2 . The result is
+               ∑︂                    ∑︂           ∑︂ √
+             2    log |ti − tj | − K    V (ti ) +      ti ≤ (λM0 − I(ρ))K 2
+                  i<j                           i                 i
+                                                                                             √
+                                                                                + (120 +         2)h + 2h log K.    (6.9)
+
+6.2       The Gram integral and scaling
+Andréief’s integration identity [7, (1.7)], applied to the moment matrix in (2.4), gives
+                                                                                h
+                                          1                                       DN (y 2 )6
+                                               ∫︂        ∏︂                    ∏︂
+                                                                                         i
+                        ∆K (ζ(5)) =                            (yi2 − yj2 )2                   w(yi ) dyi .        (6.10)
+                                          h!    (0,∞)h   i<j                   i=1
+                                                                                   DK (yi2 )
+
+The identity also follows by expanding the two Vandermonde determinants and integrating term
+by term. Absolute convergence follows from the exponential decay of w. The elementary bound
+
+                                      w(y) ≤ 8192(1 + y)5 e−2πy                     (y > 0)                        (6.11)
+
+                                                                 19
+follows from ℓ≥1 ℓ4 q ℓ = q(1 + 11q + 11q 2 + q 3 )/(1 − q)5 and 1 − e−u ≥ u/(1 + u).
+             ∑︁
+
+    For 1 ≤ m ≤ K and t ≥ 0, monotonicity gives
+                       m
+                       ∑︂                                    ∫︂ m/K
+                                                 2 )︁
+                                                                       log(t + u2 ) du ≤ 2 log K + 2.
+                               (︁
+                  0≤         log t + (j/K)              −K                                                                    (6.12)
+                       j=1                                    0
+
+
+The difference decreases with t, since u ↦→ (t + u2 )−1 is decreasing. At t = 0 the bound is the
+elementary factorial estimate log(m!) ≤ m log m − m + log m + 1.
+                         √
+   In (6.10), put yi = K ti . Combining (6.11) and (6.12) gives
+
+                                    K 2h(h+6N −K)+16h (4096e12 )h
+               ∆K (ζ(5)) ≤
+                                                 h!
+                                      ∫︂
+                                                                                       −1/2          √
+                                                                           e−KV (ti ) ti
+                                                  ∏︂                  ∏︂
+                                    ×                   (ti − tj )2                           (1 +       ti )5 dti .          (6.13)
+                                        (0,∞)h    i<j                 i
+
+Since                                   ∫︂ ∞                 √            √
+                                               t−1/2 (1 +         t)5 e− t dt = 652,
+                                         0
+                                                                                                     ∏︁ −1/2           √        √
+the remaining integral is bounded by applying (6.9) and then integrating                                  i ti     (1 + ti )5 e− ti .
+Taking logarithms and enlarging the linear term gives
+
+                   log ∆K (ζ(5)) ≤ 2h(h + 6N − K) log K + (λM0 − I(ρ))K 2
+                                               + 18h log K + 160h.                                                            (6.14)
+
+   The factorial inequalities
+
+                       m log m − m + 1 ≤ log(m!) ≤ m log m − m + log m + 2
+
+and summation of log((2i)!) give
+                              h−1
+                              ∑︂
+                        −2          log((2i)!) ≤ −2h2 log(2h) + 3h2 + 4h log(2h).
+                              i=1
+
+It follows from (2.5) that
+
+                              log SK ≤ (2λ − 12αλ − 2λ2 )K 2 log K + C∗ K 2
+                                             + 6h log K + 6h.                                                                 (6.15)
+
+The K 2 log K terms in (6.14) and (6.15) cancel. The remaining quadratic coefficient is λM0 −
+I(ρ) + C∗ , bounded by U in Lemma 6.1. We have proved the following estimate.
+
+Proposition 6.3. For every K ∈ 40Z>0 ,
+
+                  0 < FK (ζ(5)),               log FK (ζ(5)) ≤ U K 2 + 24K log K + 200K.                                      (6.16)
+
+
+
+
+                                                               20
+7     Completion of the irrationality proof
+It remains to compare the normalizing factor with the real determinant. Both estimates have
+been obtained on the K 2 scale, with M fixed.
+
+Proof of Theorem 2.1. Proposition 5.1 gives QK,M ∈ Z[X]. Its degree is h by (2.9), and its value
+at ζ(5) is positive by Proposition 2.2 and the positivity of the normalizing factors. Moreover,
+(5.21) and Proposition 6.3 give
+
+                     lim sup K −2 log QK,M (ζ(5)) ≤ AM + U                       (M ∈ 40Z>0 ).           (7.1)
+                        K→∞
+                        40|K
+
+The rational constants satisfy
+                                             139                                               7907
+                    −1600(A200 + U ) >           ,          −1600(A100000 + U ) >                   .    (7.2)
+                                              5                                                100
+Their exact positive margins are given in Appendix B. Substituting K = 40n proves (2.7) and
+(2.8).
+
+Proof of Theorem 1.1. Apply Theorem 2.1 with M = 200. If ζ(5) = a/b with a ∈ Z and b ∈ Z>0 ,
+then b37n Q40n,200 (a/b) is a positive integer that tends to zero, by (2.7). This is impossible.
+
+
+A     The measure and its elementary bounds
+This appendix proves Lemma 6.1. We specify the sixteen arcsine components, bound their
+potential on a rational partition, and evaluate the energy using the nesting of the intervals. The
+same elementary enclosures give the constant needed in Proposition C.1.
+
+A.1      The sixteen intervals
+Let ω[a,b] be the probability measure on (a, b) with density
+                                                   1
+                                               √︁             .
+                                             π (t − a)(b − t)
+Define
+                                                     16
+                                                     ∑︂
+                                              ρ=           cj ω[aj ,bj ] ,
+                                                     j=1
+
+where Table 1 gives 1012 aj , 1012 bj , and 1012 cj .All entries in that table are integers. Direct
+                   ∑︁
+summation gives         cj = 37/40. The intervals satisfy
+
+                  0 < a16 < · · · < a1 < b1 < · · · < b16 < 2,                   bj − aj > 1/225.
+
+
+   The potential of a unit arcsine measure is given by the classical interval formula [11,
+Example 1.11], with our sign convention,
+                                   ⎧
+                                   ⎨log((b − a)/4),
+                                   ⎪                                                        a ≤ t ≤ b,
+                  U ω[a,b] (t) =                                                                         (A.1)
+                                                                  √︁
+                                        |t − (a + b)/2| +              (t − a)(t − b)
+                                   ⎩log
+                                   ⎪                                                    ,   t∈
+                                                                                             / [a, b].
+                                                              2
+
+                                                       21
+                               Table 1: The rational arcsine measure.
+                           j         1012 aj              1012 bj           1012 cj
+                           1    3906748086         8992695531        10515596180
+                           2    2312248264        15340997855        29471737793
+                           3    1402286665        25730180724        42934365099
+                           4     881725356        41909578246        58204231966
+                           5     578197906        65851089563        69037621310
+                           6     396324613        99481037884        78873099189
+                           7     283911191       144325727458        84856120711
+                           8     212206188       201105762729        88396082127
+                           9     165097686       269345996903        88303382125
+                          10     133347132       347089554156        85472321255
+                          11     111522114       430806704415        78899184238
+                          12      96349355       515561896511        70353471918
+                          13      85815639       595448778546        58838976615
+                          14      78667711       664241383483        44421321106
+                          15      74129565       716160577112        30462865791
+                          16      71741310       746637295669         5959622577
+
+
+For completeness, write m = (a + b)/2 and r = (b − a)/2 and substitute u = m + r cos θ in
+the defining integral. For t > b, differentiation gives ((t − a)(t − b))−1/2 . Integration, with
+the normalization U (t) − log t → 0 as t → ∞, gives the second branch. Reflection treats
+t < a. On the interval, the substitution t = m + r cos φ and the identity cos φ − cos θ =
+−2 sin((φ + θ)/2) sin((φ − θ)/2) give the constant log(r/2). Continuity includes the endpoints.
+               ∑︁
+   Put Sj = i≤j ci and S0 = 0. Nesting makes the potential of the jth interval constant on
+every earlier interval. Therefore
+                                          16
+                                          ∑︂                        bj − aj
+                                 I(ρ) =        (Sj2 − Sj−1
+                                                       2
+                                                           ) log            .                         (A.2)
+                                          j=1
+                                                                       4
+
+A.2    Elementary enclosures
+We use rational enclosures for logarithms, arctangents, and square roots. The formulas and
+truncation orders are fixed here so that each subsequent inequality is determined by the displayed
+rational data. For 1 ≤ x ≤ 2, put z = (x − 1)/(x + 1). Then
+                                          m−1
+                                          ∑︂  z 2k+1       2z 2m+1
+                         0 ≤ log x − 2               ≤                    .                           (A.3)
+                                          k=0
+                                              2k + 1   (2m + 1)(1 − z 2 )
+
+For a general positive argument, use x = 2e r with 1 ≤ r < 2 and log x = e log 2 + log r. For
+0 ≤ z ≤ 1/2,
+                                       m−1
+                           ⃓                             ⃓
+                           ⃓           ∑︂  (−1)k z 2k+1 ⃓⃓  z 2m+1
+                           ⃓arctan z −                   ⃓≤        .                    (A.4)
+                           ⃓
+                           ⃓
+                                       k=0
+                                             2k + 1 ⃓ 2m + 1
+Larger arguments are reduced by
+               π                                                                    x
+  arctan x =     − arctan(1/x)     (x > 1),         arctan x = 2 arctan            √         (0 ≤ x ≤ 1),
+               2                                                                1 + 1 + x2
+
+                                                     22
+and π = 16 arctan(1/5) − 4 arctan(1/239). A rational square root is enclosed by two adjacent
+multiples of 2−144 , whose squares bracket its argument. In (A.3) take m = 64, and in (A.4) take
+m = 80. The remainder bounds on the reduced ranges are less than 2−144 . These prescriptions
+give rational upper and lower bounds for every expression below.
+
+A.3    The potential inequality on the half-line
+For t > 0, integration in (6.1) gives
+
+                         V (t) = log(1 + t) − 6α log(t + α2 ) − 2 + 12α
+                                     √ (︃             1              α
+                                                                        )︃
+                                 + 2 t π + arctan √ − 6 arctan √ .                                 (A.5)
+                                                       t              t
+At zero, V (0) = −12α log α − 2 + 12α. Writing Φ(y) = V (y 2 ) gives
+                                                                                  2      12α
+        Φ′ (y) = 2 (π + arctan(1/y) − 6 arctan(α/y)) ,             Φ′′ (y) = −       2
+                                                                                       + 2     .
+                                                                                 1+y    α + y2
+The second derivative changes sign once, at y 2 = 711/880. Also Φ′ (0+) = −3π and Φ′ (+∞) = 2π.
+It follows that V has exactly one minimum. Put
+                                     59205077                 59205079
+                              q− =            ,        q+ =            .
+                                       1010                     1010
+                                √               √
+The inequalities (A.4) give Φ′ ( q− ) < 0 < Φ′ ( q+ ). Thus the minimum lies between q− and
+q+ .
+     Because the intervals are nested, U ρ is nonincreasing on [0, a1 ], constant on [a1 , b1 ], and
+nondecreasing on [b1 , ∞). Its maximum on any interval is attained at an endpoint. For
+q− ≤ t ≤ q+ , a lower bound for (A.5) is
+
+                       V∗ = log(1 + q− ) − 6α log(q+ + α2 ) − 2 + 12α
+                                        (︄                                        )︄
+                                 √                   1            α
+                             + 2 q+      π + arctan √ − 6 arctan √                     .           (A.6)
+                                                     q+            q−
+
+The parenthesis is negative. Each factor in (A.5) is bounded in the direction shown, which
+proves this lower bound. For an interval [l, r] ⊂ [0, 2], set
+                                                           ⎧
+                                                           ⎨V (r),
+                                                           ⎪
+                                                           ⎪            r ≤ q− ,
+                      B(l, r) = 2 max U ρ (l), U ρ (r) −
+                                     (︁               )︁
+                                                              V (l),    l ≥ q+ ,                   (A.7)
+                                                           ⎪
+                                                           ⎪
+                                                           ⎩V ,         otherwise.
+                                                               ∗
+
+The preceding monotonicity bounds give 2U ρ (t) − V (t) ≤ B(l, r) for l ≤ t ≤ r.
+   The following partition supplies the intervals in (A.7). Define
+
+                  A0 = 0,    Aj = a17−j (1 ≤ j ≤ 16),         A17 = q− ,      A18 = q+ ,
+
+                             A18+j = bj (1 ≤ j ≤ 16),              A35 = 2.
+A row (j, d, k) in Table 2 denotes
+                                           k                    k+1
+                        [︃                                                       ]︃
+                         Aj + (Aj+1 − Aj ) d , Aj + (Aj+1 − Aj ) d .                               (A.8)
+                                          2                      2
+
+                                                  23
+A range of integers in the last column includes both endpoints. These intervals partition [0, 2].
+Substitution of (A.1) and (A.5) into (A.7), with (A.3) and (A.4), gives the single rational bound
+                                                6645002    1329
+                                  B(l, r) < −       6
+                                                        <−                                    (A.9)
+                                                  10       200
+for every interval in the table. All arguments and endpoints needed in this inequality are specified
+by Table 1 and (A.8).
+
+                             Table 2: Intervals for the potential bound.
+
+                                 j       d       k
+                                 0       1       0
+                                 0       2       2, 3
+                                 1       0       0
+                                 2       0       0
+                                 3       0       0
+                                 4       0       0
+                                 5       0       0
+                                 6       0       0
+                                 7       0       0
+                                 8       0       0
+                                 9       1       0, 1
+                                10       1       0, 1
+                                11       1       0, 1
+                                12       1       0
+                                12       2       2, 3
+                                13       2       0, . . . , 3
+                                14       2       0, . . . , 3
+                                15       1       0
+                                15       2       2, 3
+                                16       0       0
+                                17       0       0
+                                18       0       0
+                                19       1       1
+                                19       3       0 2, 3
+                                19       4       2, 3
+                                20       2       3
+                                20       3       4, 5
+                                20       4       0, 1 6, 7
+                                20       5       4, . . . , 11
+                                21       2       3
+                                21       3       5
+                                21       4       0 7, . . . , 9
+                                21       5       2, . . . , 4 10, . . . , 13
+                                21       6       10, . . . , 19
+                                22       3       5, . . . , 7
+                                22       4       0 8, 9
+                                22       5       2, 3 12, . . . , 15
+                                22       6       8, . . . , 23
+                                23       3       6, 7
+                                23       4       9, . . . , 11
+                                23       5       0, . . . , 2 14, . . . , 17
+                                23       6       6, . . . , 13 19, . . . , 27
+                                        Continued on the next page
+
+
+                                                     24
+                                       Table 2 continued
+                                j      d     k
+                               23      7      28, . . . , 37
+                               24      3      6, 7
+                               24      4      10, 11
+                               24      5      0, . . . , 2 15, . . . , 19
+                               24      6      6, . . . , 11 22, . . . , 29
+                               24      7      24, . . . , 43
+                               25      3      7
+                               25      4      10, . . . , 13
+                               25      5      0, . . . , 2 16, . . . , 19
+                               25      6      6, . . . , 11 24, . . . , 31
+                               25      7      24, . . . , 47
+                               26      3      7
+                               26      4      11, . . . , 13
+                               26      5      0, . . . , 2 17, . . . , 21
+                               26      6      6, . . . , 11 25, . . . , 33
+                               26      7      24, . . . , 49
+                               27      4      11, . . . , 15
+                               27      5      0, . . . , 2 17, . . . , 21
+                               27      6      6, . . . , 11 26, . . . , 33
+                               27      7      24, . . . , 51
+                               28      4      12, . . . , 15
+                               28      5      0, . . . , 2 18, . . . , 23
+                               28      6      6, . . . , 11 27, . . . , 35
+                               28      7      24, . . . , 53
+                               29      4      13, . . . , 15
+                               29      5      0, . . . , 2 19, . . . , 25
+                               29      6      6, . . . , 12 27, . . . , 37
+                               29      7      26, . . . , 53
+                               30      4      13, . . . , 15
+                               30      5      0, . . . , 2 20, . . . , 25
+                               30      6      6, . . . , 14 26, . . . , 39
+                               30      7      30, . . . , 51
+                               31      4      14, 15
+                               31      5      0, . . . , 2 20, . . . , 27
+                               31      6      6, . . . , 39
+                               32      4      15
+                               32      5      0, . . . , 4 19, . . . , 29
+                               32      6      10, . . . , 37
+                               33      4      0 15
+                               33      5      2, . . . , 29
+                               34      2      2, 3
+                               34      3      3
+                               34      4      3, . . . , 5
+                               34      5      4, 5
+                               34      6      5, . . . , 7
+                               34      7      6, . . . , 9
+                               34      8      7, . . . , 11
+                               34      9      5, . . . , 13
+                               34     10      0, . . . , 9
+
+
+   For t ≥ 2, (6.8) is decreasing and its value at 2 is less than −1329/200. This proves (6.2) on
+the whole half-line.
+
+
+
+                                               25
+A.4    Energy and the norm constant
+Applying (A.3) to (A.2) and (6.3) gives
+                                   2126593445148            2126593445147
+                               −          12
+                                                 < I(ρ) < −               ,
+                                        10                       1012
+                                   2653035990340         2653035990341
+                                          12
+                                                 < C∗ <                .                   (A.10)
+                                        10                    1012
+Since λM0 = −49173/8000, these bounds imply
+                                                     1366995564511    2733991
+                             λM0 − I(ρ) + C∗ < −                   <−         .
+                                                          1012        2000000
+This completes the proof of Lemma 6.1. The same elementary bounds in (C.6) give
+                               2773171335773     6932928339433   6933
+                                             <κ<               <      .                    (A.11)
+                               200000000000      500000000000    500
+
+B     Exact arithmetic integrals
+We evaluate the two bounded integrals in the prime sum and give the exact margins in (7.2). The
+inner numerator R(x) and the outer integrand are affine on their respective rational intervals.
+
+B.1    Evaluation of the inner integral
+The functions in (5.6) admit a formula using only fractional parts and minima. For 0 ≤ u < 1,
+set                                                     {︄
+                                                          1,    u ≤ 1/2,
+                      d0 (u) = min(u, 1 − u),   e(u) =
+                                                          −1, u > 1/2.
+The floor-function formula for ℓ makes sense for every real x. For such x, put f = {x}. Then,
+for almost every z ∈ (0, 1/2),
+                                                           (︁                 )︁
+                                    ℓ(x, z) − 2x = e(f ) 1z<d0 (f ) − 2d0 (f ) .
+
+The only possible exception is z = d0 (f ), which does not affect integration. Applying the same
+identity to αx, with g = {αx}, gives
+                     ∫︂ 1/2
+                               B(z)2 dz = d0 (g)(1 − 2d0 (g)),
+                         0
+                ∫︂ 1/2
+                                                      (︁                              )︁
+                         A(z)B(z) dz = e(f )e(g) min(d0 (f ), d0 (g)) − 2d0 (f )d0 (g) .    (B.1)
+                 0
+
+Equations (5.12), (5.13), and (B.1) are an explicit rational formula for R(x).
+   Let 3 = t0 < t1 < · · · < ts = 20 be the ordered set consisting of the endpoints and all
+x ∈ (3, 20) for which cx is an integer for some
+
+                               c ∈ {2, 2α, 2λ, 2H, 4α, 2(1 − α), 2(1 + α)}.                 (B.2)
+
+
+
+
+                                                           26
+There are s = 143 intervals. On each open interval (ti , ti+1 ), all fractional-part choices and all
+branches of the minima in (B.1) are fixed. The possible extra changes occur when d0 (f ) = d0 (g)
+or τ = σ. They are included in (B.2). The quadratic coefficient in R cancels, since
+                            2λ − 12λα + 2(H 2 − H − λ2 ) − 18α2 + 6α = 0.
+Thus R is affine on every such interval.
+   For l = ti , r = ti+1 , put
+                                                              R(yi ) − R(xi )
+      xi = (2l + r)/3,        yi = (l + 2r)/3,        ai =                    ,            bi = R(xi ) − ai xi .
+                                                                 yi − x i
+The exact integral is therefore the rational sum
+                                      142
+                    ∫︂ 20                  [︄                              (︄              )︄]︄
+                            R(x)             1    1                   bi        1     1
+                                      ∑︂         (︃            )︃
+                               3
+                                 dx =     ai   −                    +            2 − 2            .                (B.3)
+                      3      x        i=0
+                                             ti ti+1                  2         ti  ti+1
+Grouping its terms into unit intervals gives Table 3. Their sum is (5.18).
+
+                            Table 3: The inner integral on unit intervals.
+                                                 ∫︂ j+1
+                                          j               R(x)x−3 dx
+                                                  j
+                                                 26807
+                                          3      161280
+                                                 37383
+                                          4      704000
+                                                  37523
+                                          5      8236800
+                                                   120923
+                                          6      − 6552000
+                                                   10025233
+                                          7      − 356428800
+                                                   110029309
+                                          8      − 3348864000
+                                                   2278419487
+                                          9      − 64465632000
+                                                   282415081
+                                         10      − 7724640000
+                                                   3236921227
+                                         11      − 87524236800
+                                                   3350220001
+                                         12      − 90899827200
+                                                  7424224373
+                                         13      2217983040000
+                                                 16775764609
+                                         14      955086612480
+                                                  369043847
+                                         15      30810528000
+                                                  651380108633
+                                         16      86461373856000
+                                                  472851276229
+                                         17      119820121344000
+                                                  4930060867
+                                         18      4724197793280
+                                                    15199801
+                                         19      − 11563552000
+
+
+
+B.2    Evaluation of the outer integral
+Recall the rank correction d(y) from (5.9), which is distinct from d0 . The outer integrand is
+                                                                      5
+                                                                     ∑︂
+                          T (y) = R0 (y) − d(y) − 2λ ⌊1/y⌋ +               (2λ − jy)+ .
+                                                                     j=1
+
+
+                                                      27
+On the intervals in Table 4, write T (y) = b + cy. The displayed coefficients follow by resolving
+the positive parts in (5.8). Integrating b + cy over these intervals gives Iout = 127751/96000.
+
+                       Table 4: The affine pieces of the outer integrand.
+
+                                       l      r          b      c
+                                       1       43        279
+                                       3      120        40    −9
+                                      43       37        451
+                                      120     100        40    −21
+                                      37       13        377
+                                      100      30        40    −16
+                                      13       37        429
+                                      30       80        40    −19
+                                      37       1         17
+                                      80       2          4    −5
+                                       1       43        51
+                                       2       80        10    −3
+                                      43       37        231
+                                      80       60        20    −15
+                                      37       13        97
+                                      60       20        10    −12
+                                      13       37        42
+                                      20       40         5    −10
+                                      37
+                                      40      1          1     −2
+                                              37         37
+                                       1      20         20    −1
+
+
+
+B.3    The final rational margins
+The values of (5.20) at the two cutoffs are
+             127125602969131786927559                          7756864096839411316755964319057
+    A200 =                            ,        A100000 =                                       .
+             94195881588024216000000                           5887242599251513500000000000000
+With U = −2733991/2000000, the exact positive differences in (7.2) are
+                                       139    3089837638249482469
+                    −1600(A200 + U ) −     =                      ,
+                                        5    58872425992515135000
+                                      7907    29873543950273155160680943
+                −1600(A100000 + U ) −      =                              .
+                                      100    3679526624532195937500000000
+In particular A100000 + U < −79/1600, as required in (C.7).
+
+
+C     Rational approximation and coefficient height
+We prove Corollary 1.2 by controlling the determinant near ζ(5). The additional input is a
+relative matrix norm estimate, combined with the stronger decay in (2.8). We then record a
+coefficient height bound. None of these additional estimates is needed for Theorem 1.1.
+
+C.1    The relative matrix norm
+A polynomial that is small and nonzero at ζ(5) may vanish at a nearby rational number. To
+exclude this possibility, we use the affine dependence of GK (X) on X and measure its change
+relative to the positive matrix GK (ζ(5)).
+
+
+                                                    28
+   Put ξ = ζ(5), G = GK (ξ), and MK = [X]GK (X). Since G is positive definite, the real
+symmetric matrix
+                                BK = G−1/2 MK G−1/2
+is defined. Its norm is the Euclidean operator norm.
+
+Proposition C.1. For all sufficiently large K ∈ 40Z>0 ,
+                                                                      6933
+                                       ∥BK ∥ ≤ eϱK ,           ϱ=          .                              (C.1)
+                                                                      500
+Proof. Let q be a real polynomial of degree less than h, and write p(t) = q(K 2 t) and AK =
+K 12N −2K+6
+       √    . Fix 0 < a < b. Keeping only the term ℓ = 1 in (2.10), restricting the integral to
+y = K t with a ≤ t ≤ b, and bounding every factor separately gives
+                                                                 ∫︂ b
+                                 q T Gq ≥ AK ca e−F (a,b)K              p(t)2 dt,                         (C.2)
+                                                                  a
+
+where q on the left denotes its coefficient vector and
+
+                          (2π)4 a2                        √
+                   ca =            ,          F(a, b) = 2π b + log(1 + b) − 6α log a.
+                            24
+Indeed, the scaled numerator is at least
+                                      √
+                                           a6N , the denominator is at most (1 + b)K , and the
+remaining density is at least ca e−2πK b .
+   Set uj = j/K. The residue expression for MK gives
+                                       K                                        ∏︁N   2    2 5
+                   T
+                                       ∑︂                                 u4j   ℓ=1 (uℓ − uj )
+                 q MK q = A K                 rj p(−u2j )2 ,     rj = ∏︁                2    2 .          (C.3)
+                                   j=N +1                                   N <k≤K (uk − uj )
+                                                                              k̸=j
+
+The numerator has absolute value at most one. Since uk + uj ≥ 2α,
+
+                                        (K/(2α))h−1        (K/α)h−1
+                             |rj | ≤                     ≤
+                                    (j − N − 1)!(K − j)!    (h − 1)!
+                                  ≤ exp{λK(1 − log(αλ))}.                                                 (C.4)
+
+For the last inequality, use m! ≥ (m/e)m and the fact that x ↦→ x log(eK/(αx)) increases for
+0 < x ≤ h.
+   The Legendre expansion of p on [a, b] gives
+
+                             h2 R2h
+                                       ∫︂ b
+                                                                 2+a+b                        √︁
+           max |p(t)|2 ≤                      p(t)2 dt,    Y =         ,              R=Y +    Y 2 − 1.   (C.5)
+          −1≤t≤0             b−a        a                         b−a
+For completeness, the transformed argument has absolute value at most Y . The Laplace integral
+for Pj gives |Pj (s)| ≤ Rj there [9, (18.10.5)]. Cauchy–Schwarz in the orthogonal expansion,
+followed by h−1                2
+            ∑︁
+               j=0 (2j + 1) = h , proves (C.5).
+    Combining (C.2)–(C.5) yields
+
+                       h3
+         ∥BK ∥ ≤              eκ(a,b)K ,         κ(a, b) = F(a, b) + λ(1 − log(αλ)) + 2λ log R.
+                   ca (b − a)
+
+                                                          29
+Take a = 1/18 and b = 1/3. Then Y = 43/5 and
+
+                           2π        4    9           37           1600
+                                                                     (︃                )︃
+                       κ = √ + log +        log 18 +       1 + log
+                            3        3 20             40           111
+                                           √
+                              37     43 + 4 114     6933
+                           +     log             <       .                                  (C.6)
+                              20          5          500
+The strict inequality is established in Appendix A. Its positive margin absorbs the polynomial
+factor in h, proving (C.1).
+
+C.2    Proof of Corollary 1.2
+Choose K proportional to log b. The relative norm bound will preserve positivity, while the
+quadratic decay will outweigh the factor bh . Use M = 100000 and write QK = QK,100000 .
+Equation (7.1) implies, for all sufficiently large allowed K,
+                                                           2               79
+                               0 < QK (ξ) ≤ e−ϵK ,                  ϵ=         .            (C.7)
+                                                                          1600
+Let c = 75/4. For a positive integer b, choose
+
+                                      c log b
+                                 ⌈︃         ⌉︃
+                        K = 40                ,          c log b ≤ K < c log b + 40.
+                                         40
+
+Suppose that a ∈ Z and |a/b − ξ| ≤ b−260 . Set δ = a/b − ξ. The choice of constants gives
+
+                                                  1                 λ     1
+                             ϱc − 260 = −            ,         ϵ−     =       .
+                                                  80                c   24000
+Hence, by Proposition C.1,
+
+                                 |δ| ∥BK ∥ ≤ e40ϱ b−1/80 = o(K −1 ).
+
+Thus all eigenvalues of I + δBK are positive for sufficiently large b. Also det(I + δBK ) ≤
+(1 + |δ| ∥BK ∥)h ≤ exp(h|δ| ∥BK ∥) → 1, so the determinant is at most two. The affine dependence
+of GK on X gives
+                                QK (a/b) = QK (ξ) det(I + δBK ).
+Since QK ∈ Z[X] has degree h, it follows that
+                                                                                   2
+                  0 < bh QK (a/b) ≤ 2 exp(λK log b − ϵK 2 ) ≤ 2e−K /24000 < 1
+
+for all sufficiently large b. This contradicts integrality and proves Corollary 1.2. The threshold
+is uniform in a.
+
+C.3    Coefficient height and primitive normalization
+The relative matrix estimate also controls the coefficients, without any further local argument.
+We retain M = 100000 in the height bound and then compare the explicit normalization with
+the primitive one.
+
+
+
+                                                         30
+    Let H(Q) be the largest absolute value of a coefficient of Q. If β1 , . . . , βh are the eigenvalues
+of BK , then
+                                                    h
+                                                   ∏︂
+                               QK (X) = QK (ξ)          (1 + (X − ξ)βj ).
+                                                  j=1
+
+The elementary bound ξ < 2 and Proposition C.1 imply
+                                                          511067 2
+                log H(QK ) ≤ (λϱ − ϵ)K 2 + o(K 2 ) =            K + o(K 2 ) < 13K 2               (C.8)
+                                                          40000
+for all sufficiently large allowed K.
+    The cutoff enters the explicit normalizing factor, but it can be removed by passing to the
+primitive polynomial. For 0 ̸= A ∈ Q[X], let contQ (A) > 0 be the rational number such that
+A/ contQ (A) has integral coefficients with greatest common divisor one. Put
+
+                                       PK = ∆K / contQ (∆K ).
+
+For every admissible K, M , there is a positive integer aK,M with QK,M = aK,M PK . Indeed,
+a rational multiple of a primitive integer polynomial has integer coefficients only when the
+multiplier is an integer. Thus PK (ξ) > 0, and the upper bounds proved above for QK,M (ξ) hold
+for PK (ξ) as well. This is a consequence of the explicit normalization, rather than a second
+irrationality argument.
+
+
+Author’s note on further work
+The author is working on extensions to higher odd zeta values and has made several advances
+in this direction. Some of the local functional estimates and determinant arguments appear to
+extend beyond the present case. The construction for ζ(5) also relies on special features of its
+positive moment representation and arithmetic cancellations. Obtaining compatible positivity
+and denominator estimates for higher odd values remains a central part of this work.
+    These investigations also concern linear independence among specified odd zeta values. The
+author is exploring related questions about the transcendence of ζ(5) and selected families
+of odd zeta values, as well as algebraic independence involving ζ(5). Developments outside
+the argument presented here suggest possible approaches to some of these questions, although
+their scope remains unsettled. No such conclusion follows from the irrationality theorem or the
+approximation bound in this paper. A general transcendence result for odd zeta values would
+require further ideas.
+    The author is also actively developing alternative approaches to the irrationality of ζ(5) and
+has made substantial progress in this work. These include variants of the present construction
+and approaches based on different proof methods. These investigations suggest that the present
+construction may not be the only route to the result. The proof given here arose from simplifying
+and strengthening earlier approaches developed by the author, and further simplifications or
+sharper estimates may be possible. A related aim is to isolate general principles linking local
+determinant divisibility, positivity, and real decay.
+    These remarks describe the author’s ongoing investigations. The advances mentioned above
+are not developed in this paper, and no extension or alternative proof is claimed here.
+
+
+
+
+                                                  31
+Use of generative AI
+A generative AI tool was used in a supporting role for editing the exposition, proofreading,
+LATEX preparation, and consistency checks of the arguments, calculations, and references. The
+author takes full responsibility for the content and correctness of this work.
+
+
+References
+ [1] R. Apéry, Irrationalité de ζ2 et ζ3, Journées Arithmétiques de Luminy, Astérisque, vol. 61, Société
+     mathématique de France, 1979, Numdam, pp. 11–13.
+ [2] K. Ball and T. Rivoal, Irrationalité d’une infinité de valeurs de la fonction zêta aux entiers impairs,
+     Invent. Math. 146 (2001), no. 1, 193–207, doi:10.1007/s002220100168.
+ [3] F. Beukers, A note on the irrationality of ζ(2) and ζ(3), Bull. London Math. Soc. 11 (1979), no. 3,
+     268–272, doi:10.1112/blms/11.3.268.
+ [4] F. Brown and W. Zudilin, On cellular rational approximations to ζ(5), arXiv:2210.03391v3, 2026.
+ [5] S. Fischler, Linear independence of odd zeta values using Siegel’s lemma, J. London Math. Soc. 113
+     (2026), no. 4, e70535, arXiv:2109.10136. doi:10.1112/jlms.70535.
+ [6] S. Fischler, J. Sprang, and W. Zudilin, Many odd zeta values are irrational, Compos. Math. 155
+     (2019), no. 5, 938–952, arXiv:1803.08905. doi:10.1112/S0010437X1900722X.
+ [7] P. J. Forrester, Meet Andréief, Bordeaux 1886, and Andreev, Kharkov 1882–1883, Random Matrices
+     Theory Appl. 8 (2019), no. 2, 1930001, arXiv:1806.10411. doi:10.1142/S2010326319300018.
+ [8] L. Lai, C. Lupu, and J. Sprang, On the irrationality of certain p-adic zeta values, Res. Math. Sci. 12
+     (2025), 77, arXiv:2505.23088. doi:10.1007/s40687-025-00559-x.
+ [9] National Institute of Standards and Technology, NIST Digital Library of Mathematical Functions,
+     https://dlmf.nist.gov/, Release 1.2.8 of 15 September 2026. Chapters 18, 24, 25, and 27. Accessed
+     17 September 2026.
+[10] T. Rivoal, La fonction zêta de Riemann prend une infinité de valeurs irrationnelles aux entiers
+     impairs, C. R. Acad. Sci. Paris Sér. I Math. 331 (2000), no. 4, 267–270, arXiv:math/0008051.
+     doi:10.1016/S0764-4442(00)01624-4.
+[11] E. B. Saff, Logarithmic potential theory with applications to approximation theory, Surv. Approx.
+     Theory 5 (2010), 165–200, arXiv:1010.3760.
+[12] W. Zudilin, One of the numbers ζ(5), ζ(7), ζ(9), ζ(11) is irrational, Russian Math. Surveys 56 (2001),
+     no. 4, 774–776, doi:10.1070/RM2001v056n04ABEH000427.
+[13] W. Zudilin, Arithmetic of linear forms involving odd zeta values, J. Théor. Nombres Bordeaux 16
+     (2004), no. 1, 251–291, arXiv:math/0206176. doi:10.5802/jtnb.447.
+
+
+
+
+                                                    32
+
