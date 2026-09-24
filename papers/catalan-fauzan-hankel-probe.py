@@ -18,7 +18,7 @@ weight, and whose pole values are affine in X.  Work in u = 4t so poles sit at -
 Ledger: P_K = Δ_K / content(Δ_K) is the primitive integer polynomial; the construction proves
 G ∉ ℚ iff log P_K(G) ≤ -ε K² eventually.  We print log P_K(G)/K² and its two halves.
 
-Usage: catalan-fauzan-hankel-probe.py K N c [--quad] [--zeta5]
+Usage: catalan-fauzan-hankel-probe.py K N c [--quad] [--zeta5 | --zeta S]
   --zeta5 positive control: the same engine on Fauzan's ζ(5) functional.  K=40 N=3 c=6 must
           reproduce the 2026-09-22 audit (fauzan-zeta5-hankel-probe.py 1): logP/K² = -0.166.
   --quad  (h ≤ 6) known-answer control: recompute Δ_K(G) as a Gram determinant by quadrature
@@ -32,7 +32,11 @@ import mpmath as mp
 
 K, N, c = (int(a) for a in sys.argv[1:4])
 QUAD = "--quad" in sys.argv
-ZETA5 = "--zeta5" in sys.argv   # positive control: Fauzan's own ζ(5) functional (2.2)/(2.3)
+# --zeta S: the Hermite family for ζ(S), S odd; weight w_S = 2 y^S f^{(S-1)}/(S-1)!, f = 1/(e^{2πy}-1).
+#   μ(t^e) = (-1)^e B_{2e+2} (2e+S)! / ((S-1)! (2e+2)!),   μ_X(1/(t+j²)) = j^{S-1}(X - H_j^{(S)}) + 1/(2j) - 1/(S-1).
+# S = 5 is exactly Fauzan's (2.2)/(2.3); --zeta5 is an alias for --zeta 5.
+ZS = 5 if "--zeta5" in sys.argv else (int(sys.argv[sys.argv.index("--zeta") + 1]) if "--zeta" in sys.argv else 0)
+ZETA5 = ZS > 0
 h = K - N
 assert c >= 1 and h >= 1
 if ZETA5:
@@ -42,15 +46,15 @@ if ZETA5:
     small_nodes = [j * j for j in range(1, N + 1)]
     def mu_mono_u(e):
         B = bernoulli(2 * e + 2)
-        return fmpq(int(B.p), int(B.q)) * ((-1) ** e) * (2 * e + 3) * (2 * e + 4) * (2 * e + 5) / 24
-    H5 = fmpq(0)
+        return fmpq(int(B.p), int(B.q)) * ((-1) ** e) * fmpq(math.factorial(2 * e + ZS), math.factorial(ZS - 1) * math.factorial(2 * e + 2))
+    Hs = fmpq(0)
     pX, p0 = {}, {}
     for j in range(1, K + 1):
-        H5 += fmpq(1, j ** 5)
+        Hs += fmpq(1, j ** ZS)
         if j in bnode:
-            pX[j] = fmpq(j ** 4)
-            p0[j] = -fmpq(j ** 4) * H5 - fmpq(1, 4) + fmpq(1, 2 * j)
-    XI = lambda: mp.zeta(5)
+            pX[j] = fmpq(j ** (ZS - 1))
+            p0[j] = -fmpq(j ** (ZS - 1)) * Hs - fmpq(1, ZS - 1) + fmpq(1, 2 * j)
+    XI = lambda: mp.zeta(ZS)
 else:
     poles = list(range(N, K))
     bnode = {j: (2 * j + 1) ** 2 for j in poles}
@@ -130,7 +134,7 @@ logD = mp.log(v2)
 logcont = mp.log(int(num_g)) - mp.log(int(den_l))
 logP = logD - logcont
 K2 = K * K
-print(f"K={K} N={N} c={c} h={h}  logΔ(G)/K²={mp.nstr(logD / K2, 6)}  "
+print(f"{('zeta'+str(ZS)) if ZS else 'catalan'} K={K} N={N} c={c} h={h}  logΔ(G)/K²={mp.nstr(logD / K2, 6)}  "
       f"-log content/K²={mp.nstr(-logcont / K2, 6)}  logP(G)/K²={mp.nstr(logP / K2, 6)}  "
       f"logP(G)/h²={mp.nstr(logP / (h * h), 6)}")
 
