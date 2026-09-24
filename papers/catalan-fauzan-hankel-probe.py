@@ -18,7 +18,9 @@ weight, and whose pole values are affine in X.  Work in u = 4t so poles sit at -
 Ledger: P_K = Δ_K / content(Δ_K) is the primitive integer polynomial; the construction proves
 G ∉ ℚ iff log P_K(G) ≤ -ε K² eventually.  We print log P_K(G)/K² and its two halves.
 
-Usage: catalan-fauzan-hankel-probe.py K N c [--quad] [--zeta5 | --zeta S]
+Usage: catalan-fauzan-hankel-probe.py K N c [--quad] [--zeta5 | --zeta S] [--ranges]
+  --ranges  split log content(Δ_K)/K² by prime range: p ≤ K/3, K/3 < p ≤ K, p > K
+            (negative = net denominator; the paper-level "I_out" lives in the middle range).
   --zeta5 positive control: the same engine on Fauzan's ζ(5) functional.  K=40 N=3 c=6 must
           reproduce the 2026-09-22 audit (fauzan-zeta5-hankel-probe.py 1): logP/K² = -0.166.
   --quad  (h ≤ 6) known-answer control: recompute Δ_K(G) as a Gram determinant by quadrature
@@ -152,3 +154,19 @@ if QUAD:
     rel = abs(Gq - v2) / v2
     print(f"--quad control: quadrature det = {mp.nstr(Gq, 15)}  exact Δ(G) = {mp.nstr(v2, 15)}  rel err {mp.nstr(rel, 3)}")
     assert rel < mp.mpf(10)**-15, "CONTROL FAILED"
+
+if "--ranges" in sys.argv:
+    from sympy import primerange
+    def vpq(q, p):
+        v = 0; n = int(q.p); d = int(q.q)
+        while n % p == 0: n //= p; v += 1
+        while d % p == 0: d //= p; v -= 1
+        return v
+    nz = [q for q in cs if q != 0]
+    rng = {"p<=K/3": 0.0, "K/3<p<=K": 0.0, "p>K": 0.0}
+    for p in primerange(2, 4 * K * K + 2):
+        vG = min(vpq(q, p) for q in nz)
+        if vG:
+            key = "p<=K/3" if 3 * p <= K else ("K/3<p<=K" if p <= K else "p>K")
+            rng[key] += vG * math.log(p) / K2
+    print("log content by range /K²: " + "  ".join(f"{k}: {v:+.4f}" for k, v in rng.items()))
