@@ -143,3 +143,8 @@ lower-order terms and proves nothing about the K² race.
   `fauzan-zeta5-constants.py` (2 min); `fauzan-zeta5-distribution-check.py` 7 and 11;
   `fauzan-zeta5-inner-heuristic.py` 40, 80.  Logs in the session scratchpad; the tables above are
   the record.  n=5 (K=200, h=185, ~50 min) clean: 28 outer primes, 21 with equality.
+
+
+## 2026-09-23: formalized upstream
+
+`github.com/domino14/zeta5` (César Del Solar + Claude) proves `Irrational (riemannZeta 5).re` against Mathlib definitions; rebuilt locally 2026-09-23, axioms `[propext, Classical.choice, Quot.sound]`.  The audit above ("~40%", Prop 4.1 unverifiable) is superseded: Prop 4.1 and 4.3 are proved there.
