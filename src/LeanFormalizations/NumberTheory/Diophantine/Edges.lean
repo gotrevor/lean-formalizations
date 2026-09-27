@@ -294,8 +294,152 @@ theorem ridoutSUnitDen_of_ridout1957 (h : Ridout1957) : Ridout1957SUnitDen := by
   · exact Or.inl (Or.inl ⟨hn, hSr, hlt⟩)
 
 
-/-- Roth's theorem is the `t = 0` case of Ridout's `p`-adic theorem. -/
+private lemma rat_inj : Function.Injective (fun r : ℚ => (r.num, r.den)) := by
+  intro a b hab
+  exact Rat.ext (congrArg Prod.fst hab) (congrArg Prod.snd hab)
+
+private lemma abs_num_eq (r : ℚ) : |(r : ℝ)| * (r.den : ℝ) = |(r.num : ℝ)| := by
+  have hd : (0:ℝ) < (r.den : ℝ) := by exact_mod_cast r.pos
+  rw [Rat.cast_def, abs_div, abs_of_pos hd]
+  field_simp
+
+/-- Rationals of bounded denominator in a bounded interval form a finite set. -/
+private lemma finite_den_le (D : ℕ) (B : ℝ) :
+    {r : ℚ | r.den ≤ D ∧ |(r : ℝ)| ≤ B}.Finite := by
+  refine Set.Finite.subset
+    (Set.Finite.preimage (f := fun r : ℚ => (r.num, r.den)) rat_inj.injOn
+      ((Set.finite_Icc (-⌈B * D⌉) ⌈B * D⌉).prod (Set.finite_Iic D))) ?_
+  intro r hr
+  obtain ⟨hd, hb⟩ := hr
+  have hd0 : (0:ℝ) < (r.den : ℝ) := by exact_mod_cast r.pos
+  have hdD : (r.den : ℝ) ≤ (D : ℝ) := by exact_mod_cast hd
+  have hB0 : 0 ≤ B := le_trans (abs_nonneg _) hb
+  have h1 : |(r.num : ℝ)| ≤ B * D := by
+    rw [← abs_num_eq r]
+    exact mul_le_mul hb hdD hd0.le hB0
+  have h2 : |r.num| ≤ ⌈B * D⌉ := by
+    have : (|r.num| : ℝ) ≤ B * D := by exact_mod_cast h1
+    exact_mod_cast le_trans this (Int.le_ceil _)
+  exact ⟨⟨(abs_le.mp h2).1, (abs_le.mp h2).2⟩, hd⟩
+
+/-- Roth's theorem is the `t = 0` case of Ridout's `p`-adic theorem.
+
+Ridout needs an integer polynomial of degree `≥ 2` vanishing at `α`; rather than argue that the
+minimal polynomial of an irrational has degree `≥ 2`, clear the denominators of *any* witness
+(`IsLocalization.integerNormalization`) and multiply by `X² + 1`, which has no real root and so
+costs nothing.  With `t = 0` the `p`-adic product is empty and Ridout's condition reads
+`min(1, |α − h/q|) ≤ max(|h|, q)^(−κ)`; take `κ = 2 + δ/2`.
+
+For a Roth solution `|α − r| < q^(−(2+δ)) ≤ 1`, so `|r| ≤ |α| + 1` and hence
+`max(|h|, q) ≤ (|α|+1)q`; the needed `((|α|+1)q)^κ ≤ q^(2+δ)` is then `C ≤ q^(δ/2)` with
+`C = (|α|+1)^κ`, which holds once `q ≥ C^(2/δ)`.  The finitely many smaller denominators are
+absorbed by `finite_den_le`. -/
 theorem roth_of_ridout1958 (h : Ridout1958) : Roth1955 := by
-  sorry
+  intro α halg hirr δ hδ
+  -- an integer polynomial of degree ≥ 2 with `α` as a root
+  obtain ⟨p, hp0, hpα⟩ := halg
+  have hf₀0 : IsLocalization.integerNormalization (nonZeroDivisors ℤ) p ≠ 0 := by
+    rw [ne_eq, IsFractionRing.integerNormalization_eq_zero_iff]; exact hp0
+  have hf₀α : Polynomial.aeval α (IsLocalization.integerNormalization (nonZeroDivisors ℤ) p) = 0 :=
+    IsLocalization.integerNormalization_aeval_eq_zero _ p hpα
+  obtain ⟨f₀, hfd⟩ : ∃ g : Polynomial ℤ,
+      g = IsLocalization.integerNormalization (nonZeroDivisors ℤ) p := ⟨_, rfl⟩
+  rw [← hfd] at hf₀0 hf₀α
+  have hg2 : (Polynomial.X ^ 2 + 1 : Polynomial ℤ).natDegree = 2 := by
+    compute_degree!
+  have hg0 : (Polynomial.X ^ 2 + 1 : Polynomial ℤ) ≠ 0 := by
+    intro hc
+    rw [hc] at hg2
+    simp at hg2
+  have hdeg : 2 ≤ (f₀ * (Polynomial.X ^ 2 + 1)).natDegree := by
+    rw [Polynomial.natDegree_mul hf₀0 hg0, hg2]
+    omega
+  have hfα : Polynomial.aeval α (f₀ * (Polynomial.X ^ 2 + 1)) = 0 := by
+    simp [hf₀α]
+  -- Ridout at `t = 0`
+  obtain ⟨κ, hκ_def⟩ : ∃ x : ℝ, x = 2 + δ / 2 := ⟨_, rfl⟩
+  have hκ2 : (2:ℝ) < κ := by rw [hκ_def]; linarith
+  have hκ0 : (0:ℝ) < κ := by linarith
+  have hfin := h (f₀ * (Polynomial.X ^ 2 + 1)) hdeg α hfα 0 (fun r => r.elim0)
+    (fun a _ _ => a.elim0) (fun r => r.elim0) (fun r => r.elim0) κ hκ2
+  -- the constant `C` and the denominator threshold `D`
+  obtain ⟨C, hC_def⟩ : ∃ x : ℝ, x = (|α| + 1) ^ κ := ⟨_, rfl⟩
+  have hα1 : (0:ℝ) < |α| + 1 := by positivity
+  have hC0 : 0 < C := by rw [hC_def]; positivity
+  obtain ⟨D, hD_def⟩ : ∃ n : ℕ, n = ⌈C ^ (2 / δ)⌉₊ := ⟨_, rfl⟩
+  refine Set.Finite.subset ((finite_den_le D (|α| + 1)).union
+    (Set.Finite.preimage (f := fun r : ℚ => (r.num, (r.den : ℤ))) ?_ hfin)) ?_
+  · -- injectivity on the preimage
+    intro a _ b _ hab
+    refine Rat.ext (congrArg Prod.fst hab) ?_
+    exact Nat.cast_injective (congrArg Prod.snd hab)
+  · intro r hr
+    have hlt : |α - (r:ℝ)| < 1 / (r.den : ℝ) ^ (2 + δ) := hr
+    have hd1 : (1:ℝ) ≤ (r.den : ℝ) := by exact_mod_cast r.pos
+    have hd0 : (0:ℝ) < (r.den : ℝ) := by linarith
+    have hpow1 : (1:ℝ) ≤ (r.den : ℝ) ^ (2 + δ) :=
+      Real.one_le_rpow hd1 (by linarith)
+    have hlt1 : |α - (r:ℝ)| < 1 := by
+      refine lt_of_lt_of_le hlt ?_
+      rw [div_le_one (by linarith)]
+      exact hpow1
+    have hrB : |(r:ℝ)| ≤ |α| + 1 := by
+      have := abs_sub_abs_le_abs_sub (r:ℝ) α
+      rw [abs_sub_comm (r:ℝ) α] at this
+      linarith [abs_nonneg ((r:ℝ) - α)]
+    rcases le_or_gt r.den D with hsmall | hbig
+    · exact Or.inl ⟨hsmall, hrB⟩
+    · refine Or.inr ?_
+      -- `C ≤ den ^ (δ/2)`
+      have hDle : (C : ℝ) ^ (2 / δ) ≤ (D : ℝ) := by
+        rw [hD_def]; exact Nat.le_ceil _
+      have hdD : (D : ℝ) ≤ (r.den : ℝ) := by exact_mod_cast hbig.le
+      have hCq : C ≤ (r.den : ℝ) ^ (δ / 2) := by
+        have h1 : (C ^ (2 / δ)) ^ (δ / 2) ≤ ((r.den : ℝ)) ^ (δ / 2) :=
+          Real.rpow_le_rpow (by positivity) (le_trans hDle hdD) (by positivity)
+        have hexp : (2 / δ) * (δ / 2) = 1 := by field_simp
+        rwa [← Real.rpow_mul hC0.le, hexp, Real.rpow_one] at h1
+      -- the two Ridout side conditions
+      have hnum : ((r.num : ℝ)) / ((r.den : ℤ) : ℝ) = (r:ℝ) := by
+        push_cast; rw [Rat.cast_def]
+      have hmax : ((max |r.num| |(r.den : ℤ)| : ℤ) : ℝ) ≤ (|α| + 1) * (r.den : ℝ) := by
+        rw [Int.cast_max]
+        refine max_le ?_ ?_
+        · have : |((r.num : ℤ) : ℝ)| ≤ (|α| + 1) * (r.den : ℝ) := by
+            rw [← abs_num_eq r]
+            exact mul_le_mul_of_nonneg_right hrB hd0.le
+          simpa using this
+        · have : (1:ℝ) ≤ |α| + 1 := by linarith [abs_nonneg α]
+          calc ((|(r.den : ℤ)| : ℤ) : ℝ) = (r.den : ℝ) := by
+                simp
+            _ ≤ (|α| + 1) * (r.den : ℝ) := by nlinarith
+      have hmax0 : (0:ℝ) < ((max |r.num| |(r.den : ℤ)| : ℤ) : ℝ) := by
+        have : (r.den : ℤ) ≤ max |r.num| |(r.den : ℤ)| :=
+          le_trans (le_abs_self _) (le_max_right _ _)
+        have h2 : (0:ℤ) < (r.den : ℤ) := by exact_mod_cast r.pos
+        have : (0:ℤ) < max |r.num| |(r.den : ℤ)| := lt_of_lt_of_le h2 this
+        exact_mod_cast this
+      have hkey : ((|α| + 1) * (r.den : ℝ)) ^ κ ≤ (r.den : ℝ) ^ (2 + δ) := by
+        rw [Real.mul_rpow hα1.le hd0.le, ← hC_def]
+        have hsp : (r.den : ℝ) ^ (2 + δ) = (r.den : ℝ) ^ (δ / 2) * (r.den : ℝ) ^ κ := by
+          rw [← Real.rpow_add hd0, hκ_def]; ring_nf
+        rw [hsp]
+        exact mul_le_mul_of_nonneg_right hCq
+          (show (0:ℝ) ≤ (r.den : ℝ) ^ κ by positivity)
+      have hpos : (0:ℤ) < (r.den : ℤ) := by exact_mod_cast r.pos
+      have hcop : IsCoprime r.num ((r.den : ℤ)) := by
+        rw [Int.isCoprime_iff_gcd_eq_one]
+        simpa [Int.gcd] using r.reduced
+      have hineq : min 1 |α - (r.num : ℝ) / ((r.den : ℤ) : ℝ)|
+          ≤ ((max |r.num| |(r.den : ℤ)| : ℤ) : ℝ) ^ (-κ) := by
+        refine le_trans (min_le_right _ _) ?_
+        rw [hnum, Real.rpow_neg hmax0.le]
+        refine le_trans hlt.le ?_
+        rw [one_div]
+        refine inv_anti₀ (by positivity) ?_
+        exact le_trans (Real.rpow_le_rpow hmax0.le hmax hκ0.le) hkey
+      refine ⟨hpos, hcop, ?_⟩
+      simpa using hineq
+
 
 end LeanFormalizations.Diophantine
