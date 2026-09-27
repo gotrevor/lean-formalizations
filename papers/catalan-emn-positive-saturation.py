@@ -113,6 +113,7 @@ def probe(
     mb %= modulus
     rng = np.random.default_rng(seed)
     counts = np.zeros(delta + 1, dtype=np.int64)
+    best_by_level = np.full(delta + 1, float("inf"), dtype=np.float64)
     best_all = float("inf")
     best_full = float("inf")
     best_all_vector = None
@@ -134,12 +135,17 @@ def probe(
             best_all = float(values[batch_best])
             best_all_vector = coefficients[batch_best].copy()
         counts[0] += len(coefficients)
+        best_by_level[0] = min(best_by_level[0], float(values.min()))
         local_modulus = 1
         full_mask = None
         for level in range(1, delta + 1):
             local_modulus *= prime
             mask = (qa % local_modulus == 0) & (qb % local_modulus == 0)
             counts[level] += int(mask.sum())
+            if np.any(mask):
+                best_by_level[level] = min(
+                    best_by_level[level], float(values[mask].min())
+                )
             if level == delta:
                 full_mask = mask
         assert full_mask is not None
@@ -156,11 +162,20 @@ def probe(
         f"N={max_degree} t={t} p={prime} dim={len(basis)} trials={trials} "
         f"delta={delta} log10D={log10(denominator):.6f}"
     )
-    print("k hits empirical_exponent expected_two_random_quadrics")
+    print("k hits empirical_exponent expected_two_random_quadrics best_real penalty")
     for level in range(1, delta + 1):
         hits = int(counts[level])
         exponent = float("inf") if hits == 0 else -log(hits / counts[0], prime)
-        print(f"{level:2d} {hits:8d} {exponent:10.4f} {2*level:10d}")
+        if hits:
+            best_text = f"{best_by_level[level]:.6g}"
+            penalty_text = f"{best_by_level[level]/best_by_level[0]:.6g}"
+        else:
+            best_text = "-"
+            penalty_text = "-"
+        print(
+            f"{level:2d} {hits:8d} {exponent:10.4f} {2*level:10d} "
+            f"{best_text:>12s} {penalty_text:>12s}"
+        )
     print(f"best_all={best_all:.12g}")
     assert best_all_vector is not None
     print(f"best_all_vector={best_all_vector.tolist()}")
