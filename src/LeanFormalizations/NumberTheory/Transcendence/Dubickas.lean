@@ -35,6 +35,7 @@ Corvaja–Zannier) and `Dubickas2022PisotGap` (his Lemma 8, from Smyth/Mignotte/
 Only `d = 2` is needed for Theorem 1; general-degree Theorem 2 is a stretch, not a target.
 -/
 import LeanFormalizations.Literature.Pisot
+import LeanFormalizations.NumberTheory.Transcendence.DubickasPisot
 
 namespace LeanFormalizations.Transcendence.Dubickas
 
@@ -49,7 +50,52 @@ theorem transcendental_growth_of_monic_quadratic (hD : Dubickas2022)
     (h17 : a₁ ^ 2 - 2 * a₁ - 4 * a₂ ≠ 0) (h18 : a₁ ^ 2 - 2 * a₁ - 4 * a₂ ≠ 8) :
     ∃ α : ℝ, Tendsto (fun n ↦ (x n : ℝ) ^ ((1 : ℝ) / 2 ^ n)) atTop (𝓝 α) ∧
       Transcendental ℚ α := by
-  sorry
+  -- Dubickas's substitution (4): `y n = x n + a₁/2` makes the recursion exact.
+  set y : ℕ → ℝ := fun n ↦ (x n : ℝ) + (a₁ : ℝ) / 2 with hy
+  set c : ℝ := ((a₁ ^ 2 - 2 * a₁ - 4 * a₂ : ℤ) : ℝ) / 4 with hc
+  have hrec : ∀ n, y (n + 1) = y n ^ 2 - c := by
+    intro n
+    have h := hx n
+    rw [hy, hc]
+    simp only
+    rw [h]
+    push_cast
+    ring
+  have hxtop : Tendsto (fun n ↦ ((x n : ℝ))) atTop atTop :=
+    tendsto_intCast_atTop_atTop.comp hinf
+  have htop : Tendsto y atTop atTop := by
+    rw [hy]; exact tendsto_atTop_add_const_right _ _ hxtop
+  obtain ⟨α, hα, C, hC, n₀, hy2, hbnd⟩ := exists_growth_const hrec htop
+  have hα0 : (0 : ℝ) < α := by linarith
+  have hyint : ∀ n, ∃ k : ℤ, 2 * y n = (k : ℝ) := by
+    intro n; exact ⟨2 * x n + a₁, by rw [hy]; push_cast; ring⟩
+  refine ⟨α, ?_, ?_⟩
+  · -- `x n` stays within a bounded distance of `α ^ 2ⁿ`
+    refine tendsto_rpow_growth (C := C + |(a₁ : ℝ)| / 2) hα (n₀ := n₀) ?_
+    intro n hn
+    have h1 := hbnd n hn
+    have hp1 : (1 : ℝ) ≤ α ^ 2 ^ n := one_le_pow₀ hα.le
+    have hp0 : (0 : ℝ) < α ^ 2 ^ n := by positivity
+    have hdiv : C / α ^ 2 ^ n ≤ C := by
+      rw [div_le_iff₀ hp0]; nlinarith
+    have hsplit : (x n : ℝ) - α ^ 2 ^ n = (y n - α ^ 2 ^ n) - (a₁ : ℝ) / 2 := by
+      rw [hy]; ring
+    rw [hsplit]
+    calc |y n - α ^ 2 ^ n - (a₁ : ℝ) / 2| ≤ |y n - α ^ 2 ^ n| + |(a₁ : ℝ) / 2| := abs_sub _ _
+      _ ≤ C + |(a₁ : ℝ)| / 2 := by
+          rw [abs_div, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 2)]
+          linarith [h1, hdiv]
+  · -- transcendence: an algebraic `α` would force `c ∈ {0, 2}`, i.e. (17) or (18)
+    intro halg
+    rcases c_eq_zero_or_two hD hG hrec halg hα hC hyint hbnd with h | h
+    · refine h17 ?_
+      rw [hc] at h
+      have h' : ((a₁ ^ 2 - 2 * a₁ - 4 * a₂ : ℤ) : ℝ) = ((0 : ℤ) : ℝ) := by push_cast at h ⊢; linarith
+      exact_mod_cast h'
+    · refine h18 ?_
+      rw [hc] at h
+      have h' : ((a₁ ^ 2 - 2 * a₁ - 4 * a₂ : ℤ) : ℝ) = ((8 : ℤ) : ℝ) := by push_cast at h ⊢; linarith
+      exact_mod_cast h'
 
 /-- A003095 shifted: `1, 2, 5, 26, 677, …` (`x_{n+1} = x_n² + 1`, `x₀ = 1`). -/
 def kappaSeq : ℕ → ℤ
