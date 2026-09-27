@@ -234,9 +234,65 @@ theorem mahler_of_ridout1957 (h : Ridout1957) : Mahler1957 := by
   omega
 
 
-/-- The `S`-unit-denominator corollary from Ridout's 1957 theorem. -/
+/-- Ridout (1957) at `P = ∅`, `μ = 1`, `ν = 0`, `c = 1`, `κ = 1 + δ`, restricted to rationals
+with positive numerator (Ridout's solutions are pairs of positive naturals).
+
+`P = ∅` forces the numerator's restricted part to be `1`, so the numerator is unrestricted with
+`p* = p ≤ 1 · p¹`; the denominator is an `S`-unit with `q* = 1 ≤ 1 · q⁰`.  `0 < |β − p/q|` is
+irrationality of `β`. -/
+private lemma sunit_pos (h : Ridout1957) (β : ℝ) (hb : IsAlgebraic ℚ β) (hirr : Irrational β)
+    (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (δ : ℝ) (hδ : 0 < δ) :
+    {r : ℚ | 0 < r.num ∧ (∀ p ∈ r.den.primeFactors, p ∈ S) ∧
+      |β - (r:ℝ)| < 1 / (r.den : ℝ) ^ (1 + δ)}.Finite := by
+  have hβ0 : β ≠ 0 := fun h0 => hirr ⟨0, by simp [h0]⟩
+  have hfin := h β hb hβ0 ∅ S (by simp) hS (Finset.disjoint_empty_left _)
+    1 0 1 (1 + δ) zero_le_one le_rfl le_rfl zero_le_one one_pos (by linarith)
+  refine Set.Finite.subset
+    (Set.Finite.preimage (f := fun r : ℚ => (r.num.toNat, r.den)) ?_ hfin) ?_
+  · intro r hr r' hr' hgg
+    have h1 : 0 < r.num.toNat := hr.1
+    have h2 : 0 < r'.num.toNat := hr'.1
+    have hn : r.num.toNat = r'.num.toNat := congrArg Prod.fst hgg
+    have hd : r.den = r'.den := congrArg Prod.snd hgg
+    exact Rat.ext (by omega) hd
+  · intro r hr
+    obtain ⟨hpos, hSr, hlt⟩ := hr
+    have hden0 : 0 < r.den := r.pos
+    have hnum : (r.num.toNat : ℤ) = r.num := Int.toNat_of_nonneg hpos.le
+    have hcast : (r : ℝ) = (r.num.toNat : ℝ) / (r.den : ℝ) := by
+      rw [Rat.cast_def]; congr 1; exact_mod_cast hnum.symm
+    refine ⟨Int.pos_iff_toNat_pos.mp hpos, hden0, ⟨r.num.toNat, 1, (mul_one _).symm, by simp,
+        Int.pos_iff_toNat_pos.mp hpos, ?_⟩,
+      ⟨1, r.den, (one_mul _).symm, hSr, one_pos, ?_⟩, ?_, ?_⟩
+    · rw [Real.rpow_one]; linarith
+    · rw [Real.rpow_zero]; norm_num
+    · rw [abs_pos, sub_ne_zero, ← hcast]
+      exact fun he => hirr ⟨r, he.symm⟩
+    · rw [← hcast]; exact hlt
+
+/-- The `S`-unit-denominator corollary from Ridout's 1957 theorem.  A rational with negative
+numerator is handled by negating both `α` and `r` (`(-r).den = r.den`), and `r = 0` separately. -/
 theorem ridoutSUnitDen_of_ridout1957 (h : Ridout1957) : Ridout1957SUnitDen := by
-  sorry
+  intro α hα hirr S hS δ hδ
+  have h1 := sunit_pos h α hα hirr S hS δ hδ
+  have h2 := sunit_pos h (-α) hα.neg hirr.neg S hS δ hδ
+  refine Set.Finite.subset ((h1.union (h2.image (fun r : ℚ => -r))).union
+    (Set.finite_singleton (0 : ℚ))) ?_
+  intro r hr
+  obtain ⟨hSr, hlt⟩ := hr
+  rcases lt_trichotomy r.num 0 with hn | hn | hn
+  · refine Or.inl (Or.inr ⟨-r, ⟨?_, ?_, ?_⟩, by ring⟩)
+    · rw [Rat.neg_num]; omega
+    · exact hSr
+    · have hrw : |(-α) - ((-r : ℚ) : ℝ)| = |α - (r : ℝ)| := by
+        push_cast
+        rw [← abs_neg]
+        ring_nf
+      rw [hrw]
+      exact hlt
+  · exact Or.inr (by simp [Rat.zero_iff_num_zero.mpr hn])
+  · exact Or.inl (Or.inl ⟨hn, hSr, hlt⟩)
+
 
 /-- Roth's theorem is the `t = 0` case of Ridout's `p`-adic theorem. -/
 theorem roth_of_ridout1958 (h : Ridout1958) : Roth1955 := by
