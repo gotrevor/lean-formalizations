@@ -92,3 +92,4 @@ import LeanFormalizations.NumberTheory.Mills.RH
 import LeanFormalizations.NumberTheory.Mills.Irrational
 import LeanFormalizations.NumberTheory.Mills.LowerBound
 import LeanFormalizations.NumberTheory.Mills.UpperBound
+import LeanFormalizations.Literature.Diophantine
