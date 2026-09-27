@@ -111,28 +111,34 @@ a = -12962/4725,  b = 3,  a+bG = 0.00461635925123... .
 
 It pays a sampled real factor `113.9` for a local clearance gain `2^19`, a net improvement of about
 `4600`.  At the odd primes `3,5,7`, the observed full-saturation densities are approximately
-`p^(-delta)`, rather than `p^(-2 delta)`, with sampled real penalties only `2.60,2.41,1.91`.
+`p^(-delta)`, rather than `p^(-2 delta)`.
 
-The last denominator prime at `(24,6)`, `p=11`, has observed exponent `1.17` for `delta=1` and a
-sampled real penalty `2.19`.  Multiplying the five separately measured local penalties gives the
-screening estimate
+To compare real penalties correctly, every prime was then rerun on the same deterministic
+20-million-vector pool.  Multiplying the separately measured marginal penalties gives this cheap
+pre-CRT screen:
 
 ```text
-log10(D*I_baseline)                  =  6.043
-- total available denominator gain  = -10.435
-+ sum log10(local real penalties)    =  3.476
-screening ledger                     = -0.916
+(N,t)   log10(D*I)   log10(D)   sum log10(penalties)   screen
+(16,4)      1.900       6.412             6.922          +2.410
+(20,4)      5.887       9.532             2.338          -1.308
+(24,6)      6.043      10.435             3.691          -0.701
 ```
 
-This clears the cheap pre-CRT screen by just under one decimal order.  It is not a construction:
-local minimizing vectors differ, so multiplying marginal penalties assumes compatibility that must
-be tested by the simultaneous solver.
+The screen clears at the last two points, but the sequence does not trend toward `-infinity`: the
+third point is worse than the second.  It therefore does not yet justify building the simultaneous
+solver.  More ray data or a structural compatibility bound must establish a negative asymptotic
+slope first.  In every case this remains only a screen: local minimizing vectors differ, so
+multiplying marginal penalties assumes compatibility.
+
+At `(28,6)`, the Smith saving still grows, but brute-force screening reaches its evidentiary limit.
+In 20 million samples the positive search reaches `2^21` saturation with real penalty `331`, but
+produces no `2^22` hit; full clearance needs `2^24`.  A one-hit-scale extension would not establish
+a density or cost slope.  The arithmetic opportunity remains visible, while real compatibility is
+the unresolved frontier.
 
 This resolves the first objection: the saturation conditions do intersect the positive
 orbit-square cone cheaply at each tested prime.  It does not yet produce a globally integral small
-form.  The next exact problem is simultaneous modular quadratic optimization across all primes of
-`D`; independent random sampling would be wasteful, so it needs Hensel/CRT construction followed by
-a small-representative or lattice reduction step.
+form or an asymptotically favorable ledger.
 
 ## Jump 2: modular-unit Padé basis on `X_1(4)`
 
