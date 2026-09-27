@@ -70,4 +70,13 @@ def Schoenfeld1976 : Prop :=
     |(Nat.primeCounting ⌊x⌋₊ : ℝ) - (C + ∫ t in (2 : ℝ)..x, 1 / Real.log t)| <
       Real.sqrt x * Real.log x / (8 * Real.pi)
 
+/-- **Dudek (2016)**: there is a prime between `n³` and `(n+1)³` for every `n ≥ exp(exp(33.3))`.
+
+A. W. Dudek, *An explicit result for primes between cubes*, arXiv:1401.4233.  The arXiv v1
+abstract states the threshold `exp(exp(33.217))`; `exp(exp(33.3))` is the value commonly
+cited for the published version (not re-checked against it here).  Either way `33.3` is the
+larger threshold, hence the weaker statement, so it is the one used. -/
+def Dudek2016 : Prop :=
+  ∀ n : ℕ, Real.exp (Real.exp 33.3) ≤ n → ∃ p : ℕ, p.Prime ∧ n ^ 3 < p ∧ p < (n + 1) ^ 3
+
 end LeanFormalizations.Literature

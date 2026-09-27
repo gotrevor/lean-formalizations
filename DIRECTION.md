@@ -1,5 +1,17 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 4, 2026-09-27): explicit upper bound without RH
+
+Phases 1–3 are GREEN and merged.  Phase 4 is one file, `Mills/UpperBound.lean`:
+`exists_minMills_lt_of_dudek` — from `Literature.Dudek2016` (new, frozen), the least Mills
+number exists and is `< 2 · exp(exp(33.3)/3)`.  Plan in the file header.  Generalise the
+`Basic.lean`/`Chain.lean` construction to start at a chosen prime if needed (new lemmas; do not
+change existing statements).  Frozen by name: `Dudek2016`, `exists_minMills_lt_of_dudek`,
+`minMills_lt_of_dudek`, plus every earlier name.  Stop condition: `Mills/` sorry-free.
+
+---
+
+
 ## 🎯 THE OBJECTIVE (phase 3, 2026-09-27): the unconditional lower bound
 
 Phases 1–2 are GREEN and merged.  Phase 3 is one small file, `Mills/LowerBound.lean`:

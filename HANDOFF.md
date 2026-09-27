@@ -1,5 +1,5 @@
 # HANDOFF (thin pointer)
 
-Phase 3 (2026-09-27): prove `lower_bound_of_isMills` in `Mills/LowerBound.lean` - plan in its header.  Phase 2 baton: [`HANDOFF-2026-09-27-mills-phase2-kickoff.md`](HANDOFF-2026-09-27-mills-phase2-kickoff.md) and the newest phase-2 handoff.
+Phase 4 (2026-09-27): prove `exists_minMills_lt_of_dudek` in `Mills/UpperBound.lean` - plan in its header.
 
-Direction: [`DIRECTION.md`](DIRECTION.md) - phase 3 at the top.
+Direction: [`DIRECTION.md`](DIRECTION.md) - phase 4 at the top.
