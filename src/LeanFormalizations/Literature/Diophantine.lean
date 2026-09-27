@@ -7,11 +7,11 @@ repo does not prove them.
 
 * `Roth1955` — Thue–Siegel–Roth, exactly as in the Encyclopedia of Mathematics entry.
 * `Ridout1958` — Ridout's Theorem 1, the `p`-adic Roth theorem, stated from the paper.
-* `Ridout1958SUnitDen` — the classical corollary (denominators built from a fixed finite set of
-  primes, exponent `1 + δ`).  Kept as its own statement; `Ridout1958 → Ridout1958SUnitDen` is an
-  open wiring edge.
+* `Ridout1957SUnitDen` — the classical corollary of Ridout's *1957* paper (denominators built
+  from a fixed finite set of primes, exponent `1 + δ`).  The full 1957 two-sided form is not
+  stated yet (paper: doi:10.1112/s0025579300001182, not yet read).
 
-Open wiring edges: `Ridout1958 → Roth1955` (take `t = 0`), `Ridout1958 → Ridout1958SUnitDen`.
+Open wiring edge: `Ridout1958 → Roth1955` (take `t = 0`).
 ⚠️ `Mahler1957` does NOT come from `Ridout1958`: Mahler (1957, §3) derives it from Ridout's
 *other* paper, *Rational approximations to algebraic numbers*, Mathematika **4** (1957),
 125–131 (doi:10.1112/s0025579300001182) — the two-sided `S`-unit form with exponent
@@ -31,16 +31,15 @@ def Roth1955 : Prop :=
   ∀ α : ℝ, IsAlgebraic ℚ α → Irrational α → ∀ δ > (0 : ℝ),
     {r : ℚ | |α - r| < 1 / (r.den : ℝ) ^ (2 + δ)}.Finite
 
-/-- **Ridout (1958), special case: `S`-unit denominators.**  For an irrational algebraic real
+/-- **Ridout (1957), special case: `S`-unit denominators.**  For an irrational algebraic real
 `α`, a finite set `S` of primes and `δ > 0`, only finitely many rationals whose (lowest-terms)
 denominator has all prime factors in `S` satisfy `|α − p/q| < 1/q^(1+δ)`.
 
-This is the case "numerator unrestricted, denominator an `S`-unit" (`μ = 1`, `ν = 0` in
-Ridout's two-sided form), so it is implied by the full theorem.
+The case "numerator unrestricted, denominator an `S`-unit" (`α = 1`, `β = 0`, `q* = 1` in the
+two-sided form Mahler (1957, Theorem 3) quotes), so it is implied by Ridout's theorem.
 
-D. Ridout, *The `p`-adic generalization of the Thue–Siegel–Roth theorem*, Mathematika **5**
-(1958), 40–48. -/
-def Ridout1958SUnitDen : Prop :=
+D. Ridout, *Rational approximations to algebraic numbers*, Mathematika **4** (1957), 125–131. -/
+def Ridout1957SUnitDen : Prop :=
   ∀ α : ℝ, IsAlgebraic ℚ α → Irrational α → ∀ S : Finset ℕ, (∀ p ∈ S, p.Prime) →
     ∀ δ > (0 : ℝ),
       {r : ℚ | (∀ p ∈ r.den.primeFactors, p ∈ S) ∧ |α - r| < 1 / (r.den : ℝ) ^ (1 + δ)}.Finite
