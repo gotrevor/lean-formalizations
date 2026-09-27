@@ -97,6 +97,22 @@ theorem nine_log_sq_lt_sqrt {m : ℝ} (hm : 1 ≤ m) : 9 * Real.log m ^ 2 < 32 *
   rw [hsqrt]
   nlinarith [hser, hu0, mul_nonneg hu0 (sq_nonneg (u - 5)), sq_nonneg u]
 
+/-- `log m < 2 m^(1/4)`: the same series bound, repackaged for Saito's Lemma 3.8. -/
+theorem log_lt_two_rpow {m : ℝ} (hm : 1 ≤ m) : Real.log m < 2 * m ^ ((1:ℝ)/4) := by
+  have hmpos : (0:ℝ) < m := by linarith
+  have h9 := nine_log_sq_lt_sqrt hm
+  set v : ℝ := m ^ ((1:ℝ)/4) with hv
+  have hvpos : 0 < v := Real.rpow_pos_of_pos hmpos _
+  have hsq : v ^ (2:ℕ) = Real.sqrt m := by
+    rw [hv, ← Real.rpow_natCast (m ^ ((1:ℝ)/4)) 2, ← Real.rpow_mul hmpos.le,
+      Real.sqrt_eq_rpow]
+    norm_num
+  have hlog0 : 0 ≤ Real.log m := Real.log_nonneg hm
+  have hlt : Real.log m ^ (2:ℕ) < (2 * v) ^ (2:ℕ) := by
+    rw [← hsq] at h9
+    nlinarith [h9, hvpos]
+  exact lt_of_pow_lt_pow_left₀ 2 (by positivity) hlt
+
 /-! ### Lemma 5 for `n ≥ 14` -/
 
 theorem primeBetweenCubes_large (hS : Schoenfeld1976) (hRH : RiemannHypothesis)

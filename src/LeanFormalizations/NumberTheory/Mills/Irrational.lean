@@ -29,6 +29,7 @@ Saito's theorem is stated for general exponent sequences `(c_k)`; here `c_k = 3`
 -/
 import LeanFormalizations.NumberTheory.Mills.Basic
 import LeanFormalizations.Literature.Primes
+import LeanFormalizations.NumberTheory.Mills.Schoenfeld
 
 namespace LeanFormalizations.Mills
 
@@ -207,12 +208,150 @@ would be more than the `D (X³)^(2/3 − 2/3) = D X^(1 − 3/3)` that Matomäki'
 inside `[X³, 2X³]`, because `d₂ X^η / log X − D X^(1 − 3/3) > 0` for large `X` (Saito (3.7)).
 
 **OPEN.**  Needs the `Finset`-level disjointness bookkeeping to instantiate `Matomaki2007`. -/
+theorem cube_rpow_two_thirds {q : ℝ} (hq : 0 < q) :
+    (q ^ (3:ℕ)) ^ ((2:ℝ)/3) = q ^ (2:ℕ) := by
+  rw [← Real.rpow_natCast q 3, ← Real.rpow_mul hq.le, ← Real.rpow_natCast q 2]
+  norm_num
+
 theorem saito_lemma38 (hM : Matomaki2007) :
     ∃ d₁ : ℝ, 0 < d₁ ∧ d₁ < 1 ∧ ∀ d₂ > (0:ℝ), ∃ X₀ : ℝ, ∀ X ≥ X₀,
       ∀ η ∈ Set.Icc (1/2 : ℝ) (3/4),
         d₂ * X ^ η / Real.log X ≤ (primesIn X (X + X ^ η) : ℝ) →
         ∃ q : ℕ, q.Prime ∧ X ≤ (q:ℝ) ∧ (q:ℝ) ≤ X + X ^ η ∧ Rich d₁ q := by
-  sorry
+  obtain ⟨d₁, D, hd₁0, hd₁1, hD, Xm, hmat⟩ := hM
+  refine ⟨d₁, hd₁0, hd₁1, fun d₂ hd₂ => ?_⟩
+  refine ⟨max ((10:ℝ) ^ (4:ℕ)) (max Xm ((2 * D / d₂) ^ (4:ℕ) + 1)), fun X hX η hη hcount => ?_⟩
+  have hX4 : (10:ℝ) ^ (4:ℕ) ≤ X := le_trans (le_max_left _ _) hX
+  have hX10000 : (10000:ℝ) ≤ X := by norm_num at hX4; linarith
+  have hX1 : (1:ℝ) ≤ X := by linarith
+  have hXpos : (0:ℝ) < X := by linarith
+  have hXm : Xm ≤ X := le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) hX
+  have hXc : (2 * D / d₂) ^ (4:ℕ) < X := by
+    have := le_trans (le_trans (le_max_right _ _) (le_max_right _ _)) hX
+    linarith
+  by_contra hcon
+  push Not at hcon
+  -- the window sits inside `[X, (11/10) X]`
+  have hX14 : (10:ℝ) ≤ X ^ ((1:ℝ)/4) := by
+    have h1 : ((10:ℝ) ^ (4:ℕ)) ^ ((1:ℝ)/4) = 10 := by
+      rw [← Real.rpow_natCast (10:ℝ) 4, ← Real.rpow_mul (by norm_num)]
+      norm_num
+    calc (10:ℝ) = ((10:ℝ) ^ (4:ℕ)) ^ ((1:ℝ)/4) := h1.symm
+      _ ≤ X ^ ((1:ℝ)/4) := Real.rpow_le_rpow (by positivity) hX4 (by norm_num)
+  have hsplit : X ^ ((3:ℝ)/4) * X ^ ((1:ℝ)/4) = X := by
+    rw [← Real.rpow_add hXpos]; norm_num
+  have hp34 : (0:ℝ) < X ^ ((3:ℝ)/4) := Real.rpow_pos_of_pos hXpos _
+  have hX34 : X ^ ((3:ℝ)/4) ≤ X / 10 := by nlinarith [hsplit, hX14, hp34]
+  have hηle : X ^ η ≤ X ^ ((3:ℝ)/4) :=
+    Real.rpow_le_rpow_of_exponent_le hX1 (by exact_mod_cast hη.2)
+  have hwin : X + X ^ η ≤ 11/10 * X := by linarith
+  have hXX : (2:ℝ) * X ^ (2:ℕ) ≤ X ^ (3:ℕ) := by nlinarith [hX10000, sq_nonneg X]
+  -- the primes in the window
+  set R : Finset ℕ := (Finset.Icc ⌈X⌉₊ ⌊X + X ^ η⌋₊).filter Nat.Prime with hR
+  have hRcard : (R.card : ℝ) = (primesIn X (X + X ^ η) : ℝ) := by rw [hR, primesIn]
+  have hmem : ∀ q ∈ R, q.Prime ∧ X ≤ (q:ℝ) ∧ (q:ℝ) ≤ X + X ^ η := by
+    intro q hq
+    rw [hR, Finset.mem_filter, Finset.mem_Icc] at hq
+    obtain ⟨⟨h1, h2⟩, hp⟩ := hq
+    refine ⟨hp, le_trans (Nat.le_ceil X) (by exact_mod_cast h1),
+      le_trans (by exact_mod_cast h2) (Nat.floor_le (by positivity))⟩
+  -- transport to `Finset ℝ` of cubes
+  set S : Finset ℝ := R.image (fun q : ℕ => (q:ℝ) ^ (3:ℕ)) with hS
+  have hinj : Set.InjOn (fun q : ℕ => (q:ℝ) ^ (3:ℕ)) R := by
+    intro q _ q' _ h
+    simp only at h
+    have hn : q ^ 3 = q' ^ 3 := by
+      have : ((q ^ 3 : ℕ) : ℝ) = ((q' ^ 3 : ℕ) : ℝ) := by push_cast; linarith
+      exact_mod_cast this
+    exact Nat.pow_left_injective (by norm_num) hn
+  have hScard : S.card = R.card := Finset.card_image_of_injOn hinj
+  have hSmem : ∀ n ∈ S, ∃ q ∈ R, (q:ℝ) ^ (3:ℕ) = n := by
+    intro n hn
+    rw [hS, Finset.mem_image] at hn
+    obtain ⟨q, hqR, hqn⟩ := hn
+    exact ⟨q, hqR, hqn⟩
+  -- Matomäki's three hypotheses
+  have hbound : ∀ n ∈ S, X ^ (3:ℕ) ≤ n ∧ n + n ^ ((2:ℝ)/3) ≤ 2 * X ^ (3:ℕ) := by
+    intro n hn
+    obtain ⟨q, hqR, rfl⟩ := hSmem n hn
+    obtain ⟨hp, hXq, hqX⟩ := hmem q hqR
+    have hq0 : (0:ℝ) < (q:ℝ) := by linarith
+    rw [cube_rpow_two_thirds hq0]
+    refine ⟨pow_le_pow_left₀ (by linarith) hXq 3, ?_⟩
+    have hq11 : (q:ℝ) ≤ 11/10 * X := le_trans hqX hwin
+    have h3 : (q:ℝ) ^ (3:ℕ) ≤ (11/10 * X) ^ (3:ℕ) := pow_le_pow_left₀ hq0.le hq11 3
+    have h2 : (q:ℝ) ^ (2:ℕ) ≤ (11/10 * X) ^ (2:ℕ) := pow_le_pow_left₀ hq0.le hq11 2
+    have e3 : (11/10 * X) ^ (3:ℕ) = 1331/1000 * X ^ (3:ℕ) := by ring
+    have e2 : (11/10 * X) ^ (2:ℕ) = 121/100 * X ^ (2:ℕ) := by ring
+    rw [e3] at h3; rw [e2] at h2
+    have hX3pos : (0:ℝ) < X ^ (3:ℕ) := by positivity
+    linarith
+  have hdisj : (S : Set ℝ).PairwiseDisjoint (fun n => Set.Icc n (n + n ^ ((2:ℝ)/3))) := by
+    have key : ∀ u v : ℕ, u ∈ R → v ∈ R → u < v →
+        Disjoint (Set.Icc ((u:ℝ) ^ (3:ℕ)) ((u:ℝ) ^ (3:ℕ) + ((u:ℝ) ^ (3:ℕ)) ^ ((2:ℝ)/3)))
+          (Set.Icc ((v:ℝ) ^ (3:ℕ)) ((v:ℝ) ^ (3:ℕ) + ((v:ℝ) ^ (3:ℕ)) ^ ((2:ℝ)/3))) := by
+      intro u v huR hvR huv
+      obtain ⟨hup, hXu, _⟩ := hmem u huR
+      obtain ⟨hvp, hXv, _⟩ := hmem v hvR
+      have hu0 : (0:ℝ) < (u:ℝ) := by linarith
+      have hv0 : (0:ℝ) < (v:ℝ) := by linarith
+      rw [cube_rpow_two_thirds hu0, cube_rpow_two_thirds hv0, Set.disjoint_left]
+      intro x hx hx'
+      have huv1 : (u:ℝ) + 1 ≤ (v:ℝ) := by exact_mod_cast (by omega : u + 1 ≤ v)
+      have hgap : (u:ℝ) ^ (3:ℕ) + (u:ℝ) ^ (2:ℕ) < (v:ℝ) ^ (3:ℕ) := by
+        have : ((u:ℝ) + 1) ^ (3:ℕ) ≤ (v:ℝ) ^ (3:ℕ) := pow_le_pow_left₀ (by linarith) huv1 3
+        nlinarith [this, hu0]
+      linarith [hx.2, hx'.1]
+    intro a ha b hb hab
+    rw [hS] at ha hb
+    simp only [Finset.coe_image, Set.mem_image, Finset.mem_coe] at ha hb
+    obtain ⟨u, huR, rfl⟩ := ha
+    obtain ⟨v, hvR, rfl⟩ := hb
+    have hne : u ≠ v := by
+      intro h; rw [h] at hab; exact hab rfl
+    rcases lt_or_gt_of_ne hne with h | h
+    · exact key u v huR hvR h
+    · exact (key v u hvR huR h).symm
+  have hpoorS : ∀ n ∈ S,
+      (primesIn n (n + n ^ ((2:ℝ)/3)) : ℝ) ≤ d₁ * n ^ ((2:ℝ)/3) / Real.log n := by
+    intro n hn
+    obtain ⟨q, hqR, rfl⟩ := hSmem n hn
+    obtain ⟨hp, hXq, hqX⟩ := hmem q hqR
+    have hq0 : (0:ℝ) < (q:ℝ) := by linarith
+    rw [cube_rpow_two_thirds hq0]
+    have hnr := hcon q hp hXq hqX
+    unfold Rich at hnr
+    exact le_of_lt (not_le.1 hnr)
+  -- Matomäki caps the count by `D`
+  have hXcube : Xm ≤ X ^ (3:ℕ) := by nlinarith [hX1, hXm]
+  have hfin := hmat (X ^ (3:ℕ)) hXcube ((2:ℝ)/3) (by constructor <;> norm_num) S hbound hdisj
+    hpoorS
+  rw [show (2:ℝ)/3 - (2:ℝ)/3 = 0 by norm_num, Real.rpow_zero, mul_one, hScard] at hfin
+  -- but the hypothesis forces it above `D`
+  have hlogpos : 0 < Real.log X := Real.log_pos (by linarith)
+  have hlog : Real.log X < 2 * X ^ ((1:ℝ)/4) := log_lt_two_rpow hX1
+  have hηge : X ^ ((1:ℝ)/2) ≤ X ^ η :=
+    Real.rpow_le_rpow_of_exponent_le hX1 (by exact_mod_cast hη.1)
+  have hsplit2 : X ^ ((1:ℝ)/2) = X ^ ((1:ℝ)/4) * X ^ ((1:ℝ)/4) := by
+    rw [← Real.rpow_add hXpos]; norm_num
+  have hc0 : (0:ℝ) < 2 * D / d₂ := by positivity
+  have hc4 : 2 * D / d₂ < X ^ ((1:ℝ)/4) := by
+    have h1 : ((2 * D / d₂) ^ (4:ℕ)) ^ ((1:ℝ)/4) = 2 * D / d₂ := by
+      rw [← Real.rpow_natCast (2 * D / d₂) 4, ← Real.rpow_mul hc0.le]
+      norm_num
+    calc 2 * D / d₂ = ((2 * D / d₂) ^ (4:ℕ)) ^ ((1:ℝ)/4) := h1.symm
+      _ < X ^ ((1:ℝ)/4) := Real.rpow_lt_rpow (by positivity) hXc (by norm_num)
+  have h14pos : (0:ℝ) < X ^ ((1:ℝ)/4) := Real.rpow_pos_of_pos hXpos _
+  have h2D : 2 * D ≤ d₂ * X ^ ((1:ℝ)/4) := by
+    rw [div_lt_iff₀ hd₂] at hc4
+    linarith
+  have hbig : D < d₂ * X ^ η / Real.log X := by
+    rw [lt_div_iff₀ hlogpos]
+    calc D * Real.log X < D * (2 * X ^ ((1:ℝ)/4)) := mul_lt_mul_of_pos_left hlog hD
+      _ ≤ d₂ * X ^ ((1:ℝ)/2) := by rw [hsplit2]; nlinarith [h2D, h14pos]
+      _ ≤ d₂ * X ^ η := mul_le_mul_of_nonneg_left hηge hd₂.le
+  rw [← hRcard] at hcount
+  linarith [hcount, hfin, hbig]
 
 /-- **Saito Lemma 3.6** (specialised to `c ≡ 3`) — THE CRUX.  See the section docstring.
 

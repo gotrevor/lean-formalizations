@@ -788,14 +788,9 @@ items 1–4 are all elementary and do NOT need Aristotle.
 (Saito 2024, `c ≡ 3`) is now proved **modulo two named sorries** in
 `src/LeanFormalizations/NumberTheory/Mills/Irrational.lean`:
 
-1. **`saito_lemma38`** (Saito Lemma 3.8, `c = 3`, `E = 3`, `ε = 1/4`) — a prime-rich interval
-   `[X, X + X^η]` (`η ∈ [1/2, 3/4]`) holds a prime `q` with `[q³, q³ + q²]` again prime-rich
-   (`Rich d₁ q`).  **Next attack:** contrapositive — if every prime `q ∈ [X, X+X^η]` is poor,
-   the intervals `[q³, q³+q²]` are pairwise disjoint (`q' ≥ q+1 ⟹ q'³ ≥ q³+3q²+3q+1 > q³+q²`)
-   and all sit inside `[X³, 2X³]`, so `Matomaki2007` with `x := X³`, `γ := 2/3` caps their count
-   by `D X^(3(2/3 − 2/3)) = D`, while the hypothesis gives `≥ d₂X^η/log X` of them — Saito (3.7).
-   The Lean work is the `Finset ℝ` bookkeeping for `PairwiseDisjoint` + the count transfer
-   `primesIn X (X+X^η) ≤ (number of primes q) `.
+1. **`saito_lemma38`** — ✅ **PROVED** 2026-09-27 (axiom-clean).  `X₀ = max (10^4, Xm,
+   (2D/d₂)^4 + 1)`; the window sits in `[X, (11/10)X]`, cubes land in `[X³, 2X³]`, and
+   `log X < 2 X^(1/4)` (from `Schoenfeld.nine_log_sq_lt_sqrt`) makes `d₂X^η/log X > D`.
 
 2. **`saito_lemma36`** (Saito Lemma 3.6) — the chain.  Assume `p_{k+1} > p_k³ + p_k^(63/40)` for
    arbitrarily large `k`.  BHP at `x := p_k³` gives (3.5) with `η = 21/40`; `saito_lemma38`
