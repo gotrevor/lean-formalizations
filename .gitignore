@@ -7,3 +7,4 @@ papers/**/*.pdf
 
 # Local-only Claude memory pointer (also in the global ignore; was tracked before that rule)
 CLAUDE.local.md
+papers/**/*.txt

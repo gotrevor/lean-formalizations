@@ -1,5 +1,5 @@
 # HANDOFF (thin pointer)
 
-Current lap baton: [`HANDOFF-2026-09-27-mills-kickoff.md`](HANDOFF-2026-09-27-mills-kickoff.md)
+Current lap baton: [`HANDOFF-2026-09-27-mills-phase2-kickoff.md`](HANDOFF-2026-09-27-mills-phase2-kickoff.md)
 
-Direction and doctrine: [`DIRECTION.md`](DIRECTION.md) — the Mills sections at the top.
+Direction and doctrine: [`DIRECTION.md`](DIRECTION.md) — phase 2 at the top.

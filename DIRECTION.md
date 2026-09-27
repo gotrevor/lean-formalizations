@@ -1,5 +1,42 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 2, 2026-09-27): Mills digits under RH + Saito irrationality
+
+Phase 1 (Wright, conditional Mills, least Mills) is GREEN and merged — see below.  Phase 2
+closes the last two formal-conjectures Mills statements, each from **named literature
+inputs** in `src/LeanFormalizations/Literature/Primes.lean`:
+
+- 🎯 **`lower_bound_of_RH`** (`Mills/RH.lean`, Caldwell–Cheng 2005): the leaf work is
+  `primeBetweenCubes_of_schoenfeld` (Schoenfeld ⇒ prime in every cube gap; n ≤ 13 by
+  computation) and `minMills_mem_Ioo_of_primeBetweenCubes` (greedy chain 2, 11, 1361,
+  2521008887 is the least Mills number; 81st-power `norm_num` for the digits).  **Do this first.**
+- 🎯 **`irrational`** (`Mills/Irrational.lean`, Saito 2024, specialised to `c_k = 3`): from
+  `BakerHarmanPintz2001`, `Matomaki2007`, `Mahler1957`.  Route in the file header, lemma numbers
+  are Saito's.  Leaves first: `primeBetweenCubes_of_BHP`, then Lemmas 3.5, 3.8, 3.6, 3.9, then
+  the Mahler contradiction.  Decompose into named leaves freely.
+
+**Sources (local, gitignored):** `papers/saito-2024-mills-irrational.txt`,
+`papers/caldwell-cheng-2005-mills-constant.txt`.  Read the relevant section before a leaf.
+
+**🔒 Literature statements are FROZEN and must never be strengthened.**  `Literature/Primes.lean`
+holds published theorems as `Prop`s (hypotheses, not axioms).  A stronger-than-published
+hypothesis could be false and would make every theorem using it vacuous — the worst failure
+this repo can have.  Do not edit them.  If one looks WRONG against its source (too strong, or
+too weak to be usable), stop that leaf, write the finding into the HANDOFF loudly, and move to
+another leaf.  Adding a NEW literature `Prop` (with page/theorem citation, faithful or weaker)
+is allowed when a proof genuinely needs one; say so in the commit message.
+
+**Frozen by name (host-enforced):** everything in phase 1's list, plus `primesIn`,
+`BakerHarmanPintz2001`, `Matomaki2007`, `Mahler1957`, `Schoenfeld1976`, `lower_bound_of_RH`,
+`minMills_mem_Ioo_of_primeBetweenCubes`, `primeBetweenCubes_of_schoenfeld`,
+`primeBetweenCubes_of_BHP`, `exists_mills_of_BHP`, `irrational`.
+
+**Lane:** `src/LeanFormalizations/NumberTheory/Mills/` (+ reading `Literature/`, + import lines,
++ README row).  Stop condition: `Mills/` sorry-free (host-checked).  Branch `mills`.
+
+---
+
+
 ## 🎯 THE OBJECTIVE: Mills + Wright — `src/LeanFormalizations/NumberTheory/Mills/`
 
 Branch **`mills`** (cut from `main` 2026-09-27).  Two prime-representing-function theorems, both
