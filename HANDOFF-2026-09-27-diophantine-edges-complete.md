@@ -1,6 +1,12 @@
 # Handoff: DIRECTION phase 5 COMPLETE — all three Diophantine wiring edges proved
 
-**Date**: 2026-09-27 · **Branch**: `mills` · **Objective**: `sorry-free:src/.../NumberTheory/Diophantine` — **MET**
+**Date**: 2026-09-27 · **Branch**: `mills` · **HEAD**: `ab2d1d0` · **Objective**:
+`sorry-free:src/LeanFormalizations/NumberTheory/Diophantine` — **MET** (run self-stopped with
+`box done --green`; the treadmill will not relaunch).
+
+**Repo state at handoff**: working tree clean, nothing pushed (no egress — the host pushes).
+`lake build` → `Build completed successfully (8684 jobs)`.
+`grep -rn "sorry\|admit" src/LeanFormalizations/NumberTheory/Diophantine/` → no matches.
 
 ## ✅ What landed (all observed, not assumed)
 `src/LeanFormalizations/NumberTheory/Diophantine/Edges.lean` is **sorry-free**; every edge is
