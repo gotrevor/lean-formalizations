@@ -108,10 +108,298 @@ theorem exists_mills_of_BHP (h : BakerHarmanPintz2001) : ∃ A > 1, IsMills A :=
   let ⟨_, hN⟩ := primeBetweenCubes_of_BHP h
   exists_mills_of_primeBetweenCubes hN
 
+/-! ### The digit sequence of a Mills number (Saito §3, `c ≡ 3`)
+
+`mdigit A k = ⌊A^(3^(k+1))⌋₊` is Saito's `p_{k+1}` (his index starts at 1).  With `c_k = 3`
+throughout, `C_k = 3^k`, `b = 3`, `I_b = ℕ`, `θ = 21/40` and `θ_b = 1 − θ − 1/3 = 17/120 > 0`.
+-/
+
+/-- The digits of a Mills number: `mdigit A k = ⌊A^(3^(k+1))⌋₊`, so `mdigit A 0 = ⌊A³⌋₊`. -/
+noncomputable def mdigit (A : ℝ) (k : ℕ) : ℕ := ⌊A ^ ((3:ℕ) ^ (k + 1))⌋₊
+
+theorem mdigit_prime {A : ℝ} (hA : IsMills A) (k : ℕ) : (mdigit A k).Prime := by
+  have := hA ⟨k + 1, by omega⟩
+  simpa [mdigit] using Nat.prime_iff.2 this
+
+theorem mdigit_two_le {A : ℝ} (hA : IsMills A) (k : ℕ) : 2 ≤ mdigit A k :=
+  (mdigit_prime hA k).two_le
+
+theorem mdigit_le_pow {A : ℝ} (hA0 : 0 ≤ A) (k : ℕ) :
+    (mdigit A k : ℝ) ≤ A ^ ((3:ℕ) ^ (k + 1)) := Nat.floor_le (by positivity)
+
+theorem pow_lt_mdigit_add_one (A : ℝ) (k : ℕ) :
+    A ^ ((3:ℕ) ^ (k + 1)) < (mdigit A k : ℝ) + 1 := Nat.lt_floor_add_one _
+
+theorem pow_succ_eq_cube (A : ℝ) (k : ℕ) :
+    A ^ ((3:ℕ) ^ (k + 1 + 1)) = (A ^ ((3:ℕ) ^ (k + 1))) ^ (3:ℕ) := by
+  rw [show (3:ℕ) ^ (k + 1 + 1) = (3:ℕ) ^ (k + 1) * 3 by ring, pow_mul]
+
+/-- **Saito Lemma 3.5**, lower half: `p_k³ < p_{k+1}` (equality is impossible, a cube of a
+prime `≥ 2` is not prime). -/
+theorem mdigit_cube_lt {A : ℝ} (hA1 : 1 < A) (hA : IsMills A) (k : ℕ) :
+    (mdigit A k) ^ 3 < mdigit A (k + 1) := by
+  have hA0 : (0:ℝ) ≤ A := by linarith
+  have hcube : ((mdigit A k ^ 3 : ℕ) : ℝ) ≤ A ^ ((3:ℕ) ^ (k + 1 + 1)) := by
+    rw [pow_succ_eq_cube]
+    push_cast
+    exact pow_le_pow_left₀ (by positivity) (mdigit_le_pow hA0 k) 3
+  have hfloor : mdigit A k ^ 3 ≤ mdigit A (k + 1) := Nat.le_floor hcube
+  refine lt_of_le_of_ne hfloor ?_
+  intro hEq
+  have hp := mdigit_prime hA (k + 1)
+  rw [← hEq] at hp
+  have h2c := mdigit_two_le hA k
+  rcases hp.eq_one_or_self_of_dvd (mdigit A k) (dvd_pow_self _ (by norm_num)) with h | h
+  · omega
+  · have hlt : (mdigit A k) ^ 1 < (mdigit A k) ^ 3 := Nat.pow_lt_pow_right h2c (by norm_num)
+    rw [pow_one, ← h] at hlt
+    exact absurd hlt (lt_irrefl _)
+
+/-- **Saito Lemma 3.5**, upper half: `p_{k+1} < (p_k + 1)³ − 1`. -/
+theorem mdigit_succ_lt {A : ℝ} (hA1 : 1 < A) (hA : IsMills A) (k : ℕ) :
+    mdigit A (k + 1) + 1 < (mdigit A k + 1) ^ 3 := by
+  have hA0 : (0:ℝ) ≤ A := by linarith
+  have hup : A ^ ((3:ℕ) ^ (k + 1 + 1)) < (((mdigit A k + 1) ^ 3 : ℕ) : ℝ) := by
+    rw [pow_succ_eq_cube]
+    push_cast
+    exact pow_lt_pow_left₀ (pow_lt_mdigit_add_one A k) (by positivity) (by norm_num)
+  exact prime_add_one_lt_cube (mdigit_two_le hA k) (mdigit_prime hA (k + 1))
+    ((Nat.floor_lt (by positivity)).2 hup)
+
+/-- The digits grow at least like a tower: `p_1^(3^k) ≤ p_{k+1}`.  This is Saito (3.20). -/
+theorem mdigit_pow_le {A : ℝ} (hA1 : 1 < A) (hA : IsMills A) (k : ℕ) :
+    (mdigit A 0) ^ ((3:ℕ) ^ k) ≤ mdigit A k := by
+  induction k with
+  | zero => simp
+  | succ k ih =>
+      have h1 : (mdigit A 0) ^ ((3:ℕ) ^ (k + 1)) = ((mdigit A 0) ^ ((3:ℕ) ^ k)) ^ 3 := by
+        rw [← pow_mul, show (3:ℕ) ^ k * 3 = (3:ℕ) ^ (k + 1) by ring]
+      rw [h1]
+      exact le_trans (Nat.pow_le_pow_left ih 3) (mdigit_cube_lt hA1 hA k).le
+
+/-! ### The crux: Saito Lemma 3.6
+
+The one genuinely deep obligation left.  Minimality of `ξ` plus Matomäki's Theorem 3.7 forbid
+the gap `p_{k+1} − p_k³` from exceeding `p_k^(3θ) = p_k^(63/40)` for large `k`.
+
+Saito's proof (§3, after Theorem 3.7): suppose `p_{k+1} > p_k³ + p_k^(63/40)` for arbitrarily
+large `k`.  Fix such a `k`.  Baker–Harman–Pintz at `x = p_k³` says `[p_k³, p_k³ + p_k^(63/40)]`
+has `≥ d₀ p_k^(63/40) / log p_k³` primes, so **Lemma 3.8** (below) hands us a prime `q_{k+1}` in
+that interval whose own interval `[q³, q³ + q²]` is again prime-rich; iterating gives an
+infinite chain `q_m` with `q_m³ ≤ q_{m+1} ≤ q_m³ + q_m²`, hence (glued to `p_1, …, p_k`) a Mills
+number `w` whose `(k+1)`-st digit is `q_{k+1} ≤ p_k³ + p_k^(63/40) < p_{k+1}`, so `w < ξ` —
+contradicting minimality.
+
+The two named pieces this splits into are `Rich`/`saito_lemma38` and `rich_chain`. -/
+
+/-- Matomäki's richness condition at a prime `q` (Saito (3.14) with `c ≡ 3`): the interval
+`[q³, q³ + q²]` contains at least `d₁ q² / log q³` primes. -/
+def Rich (d₁ : ℝ) (q : ℕ) : Prop :=
+  d₁ * (q:ℝ) ^ 2 / Real.log ((q:ℝ) ^ 3) ≤ (primesIn ((q:ℝ) ^ 3) ((q:ℝ) ^ 3 + (q:ℝ) ^ 2) : ℝ)
+
+/-- **Saito Lemma 3.8**, specialised to `c = 3`, `E = 3`, `ε = 1/4`.  A prime-rich interval
+`[X, X + X^η]` (`η ∈ [1/2, 3/4]`) contains a prime `q` whose cube-interval `[q³, q³ + q²]` is
+itself prime-rich.
+
+Proof (Saito §3): if every prime `q ∈ [X, X + X^η]` had few primes in `[q³, q³ + q²]`, those
+intervals — pairwise disjoint, since `q' ≥ q + 1` forces `q'³ ≥ q³ + 3q² + 3q + 1 > q³ + q²` —
+would be more than the `D (X³)^(2/3 − 2/3) = D X^(1 − 3/3)` that Matomäki's Theorem 3.7 allows
+inside `[X³, 2X³]`, because `d₂ X^η / log X − D X^(1 − 3/3) > 0` for large `X` (Saito (3.7)).
+
+**OPEN.**  Needs the `Finset`-level disjointness bookkeeping to instantiate `Matomaki2007`. -/
+theorem saito_lemma38 (hM : Matomaki2007) :
+    ∃ d₁ : ℝ, 0 < d₁ ∧ d₁ < 1 ∧ ∀ d₂ > (0:ℝ), ∃ X₀ : ℝ, ∀ X ≥ X₀,
+      ∀ η ∈ Set.Icc (1/2 : ℝ) (3/4),
+        d₂ * X ^ η / Real.log X ≤ (primesIn X (X + X ^ η) : ℝ) →
+        ∃ q : ℕ, q.Prime ∧ X ≤ (q:ℝ) ∧ (q:ℝ) ≤ X + X ^ η ∧ Rich d₁ q := by
+  sorry
+
+/-- **Saito Lemma 3.6** (specialised to `c ≡ 3`) — THE CRUX.  See the section docstring.
+
+**OPEN.**  Route: `saito_lemma38` + the `rich_chain` induction + `Chain.exists_shifted_of_chain`
+glued to `p_1, …, p_k`, then minimality of `A`. -/
+theorem saito_lemma36 (hB : BakerHarmanPintz2001) (hM : Matomaki2007) {A : ℝ}
+    (hA : IsMinMills A) :
+    ∃ k₀ : ℕ, ∀ k ≥ k₀,
+      (mdigit A (k + 1) : ℝ) ≤ (mdigit A k : ℝ) ^ (3:ℕ) + (mdigit A k : ℝ) ^ ((63:ℝ)/40) := by
+  sorry
+
+/-! ### Saito Lemma 3.9 and the Mahler contradiction -/
+
+/-- **Saito (3.19)**, one step: from `p_{k+1} ≤ p_k³ + p_k^(63/40)` the real `A^(3^(k+1))` sits
+within `2 / p_k^(17/40)` of `p_k`.  The cube-root expansion is replaced by the elementary
+`(1 + t)³ ≥ 1 + 3t`, with the slack `6 > 2` absorbing the `+1` from the floor. -/
+theorem mdigit_dist_le {A : ℝ} (hA1 : 1 < A) (hA : IsMills A) {k : ℕ}
+    (h : (mdigit A (k + 1) : ℝ) ≤ (mdigit A k : ℝ) ^ (3:ℕ) + (mdigit A k : ℝ) ^ ((63:ℝ)/40)) :
+    A ^ ((3:ℕ) ^ (k + 1)) - (mdigit A k : ℝ) ≤ 2 / (mdigit A k : ℝ) ^ ((17:ℝ)/40) := by
+  have hA0 : (0:ℝ) ≤ A := by linarith
+  set u : ℝ := (mdigit A k : ℝ) with hu
+  have hu2 : (2:ℝ) ≤ u := by rw [hu]; exact_mod_cast mdigit_two_le hA k
+  have hup : (0:ℝ) < u := by linarith
+  set y : ℝ := A ^ ((3:ℕ) ^ (k + 1)) with hy
+  have hone : (1:ℝ) ≤ u ^ ((63:ℝ)/40) := Real.one_le_rpow (by linarith) (by norm_num)
+  have hcube : y ^ (3:ℕ) ≤ u ^ (3:ℕ) + 2 * u ^ ((63:ℝ)/40) := by
+    have h1 : y ^ (3:ℕ) < (mdigit A (k + 1) : ℝ) + 1 := by
+      rw [hy, ← pow_succ_eq_cube]
+      exact pow_lt_mdigit_add_one A (k + 1)
+    linarith
+  -- the elementary expansion
+  have hpos57 : (0:ℝ) < u ^ ((57:ℝ)/40) := Real.rpow_pos_of_pos hup _
+  have hpos17 : (0:ℝ) < u ^ ((17:ℝ)/40) := Real.rpow_pos_of_pos hup _
+  have keyA : u ^ ((57:ℝ)/40) = u * u ^ ((17:ℝ)/40) := by
+    rw [show ((57:ℝ)/40) = 1 + (17:ℝ)/40 by norm_num, Real.rpow_add hup, Real.rpow_one]
+  have keyB : u ^ (3:ℕ) = u ^ ((63:ℝ)/40) * u ^ ((57:ℝ)/40) := by
+    rw [← Real.rpow_add hup, show (63:ℝ)/40 + (57:ℝ)/40 = ((3:ℕ):ℝ) by norm_num,
+      Real.rpow_natCast]
+  set t : ℝ := 2 / u ^ ((57:ℝ)/40) with ht
+  have ht0 : (0:ℝ) < t := by rw [ht]; positivity
+  have e1 : u * (1 + t) = u + 2 / u ^ ((17:ℝ)/40) := by
+    rw [ht, keyA]
+    field_simp
+  have e2 : u ^ (3:ℕ) * (3 * t) = 6 * u ^ ((63:ℝ)/40) := by
+    rw [ht]
+    nth_rewrite 1 [keyB]
+    field_simp
+    ring
+  by_contra hcon
+  push Not at hcon
+  have hylt : u * (1 + t) < y := by rw [e1]; linarith
+  have hu3 : (0:ℝ) ≤ u * (1 + t) := by positivity
+  have hcubelt : (u * (1 + t)) ^ (3:ℕ) < y ^ (3:ℕ) := pow_lt_pow_left₀ hylt hu3 (by norm_num)
+  have hexp : u ^ (3:ℕ) * (1 + 3 * t) ≤ (u * (1 + t)) ^ (3:ℕ) := by
+    have h13 : (1:ℝ) + 3 * t ≤ (1 + t) ^ (3:ℕ) := by nlinarith [ht0, sq_nonneg t]
+    have : u ^ (3:ℕ) * (1 + 3 * t) ≤ u ^ (3:ℕ) * (1 + t) ^ (3:ℕ) := by
+      exact mul_le_mul_of_nonneg_left h13 (by positivity)
+    calc u ^ (3:ℕ) * (1 + 3 * t) ≤ u ^ (3:ℕ) * (1 + t) ^ (3:ℕ) := this
+      _ = (u * (1 + t)) ^ (3:ℕ) := by ring
+  have : u ^ (3:ℕ) + 6 * u ^ ((63:ℝ)/40) ≤ u ^ (3:ℕ) + 2 * u ^ ((63:ℝ)/40) := by
+    calc u ^ (3:ℕ) + 6 * u ^ ((63:ℝ)/40) = u ^ (3:ℕ) * (1 + 3 * t) := by rw [← e2]; ring
+      _ ≤ (u * (1 + t)) ^ (3:ℕ) := hexp
+      _ ≤ y ^ (3:ℕ) := hcubelt.le
+      _ ≤ u ^ (3:ℕ) + 2 * u ^ ((63:ℝ)/40) := hcube
+  have hpos63 : (0:ℝ) < u ^ ((63:ℝ)/40) := Real.rpow_pos_of_pos hup _
+  linarith
+
+/-- **Saito Lemma 3.9**: the digits approximate `A^(3^(k+1))` exponentially well. -/
+theorem saito_lemma39 {A : ℝ} (hA1 : 1 < A) (hA : IsMills A)
+    (h36 : ∃ k₀ : ℕ, ∀ k ≥ k₀,
+      (mdigit A (k + 1) : ℝ) ≤ (mdigit A k : ℝ) ^ (3:ℕ) + (mdigit A k : ℝ) ^ ((63:ℝ)/40)) :
+    ∃ γ > (0:ℝ), ∃ k₁ : ℕ, ∀ k ≥ k₁,
+      |A ^ ((3:ℕ) ^ (k + 1)) - (mdigit A k : ℝ)| ≤ Real.exp (-(γ * ((3:ℕ) ^ (k + 1) : ℕ))) := by
+  obtain ⟨k₀, h36⟩ := h36
+  have hA0 : (0:ℝ) ≤ A := by linarith
+  set p : ℕ := mdigit A 0 with hp
+  have hp2 : 2 ≤ p := mdigit_two_le hA 0
+  have hp2r : (2:ℝ) ≤ (p:ℝ) := by exact_mod_cast hp2
+  set L : ℝ := Real.log (p:ℝ) with hL
+  have hL2 : Real.log 2 ≤ L := Real.log_le_log (by norm_num) hp2r
+  have hLpos : 0 < L := lt_of_lt_of_le (Real.log_pos (by norm_num)) hL2
+  refine ⟨(17/240) * L, by positivity, max k₀ 2, fun k hk => ?_⟩
+  have hk0 : k₀ ≤ k := le_trans (le_max_left _ _) hk
+  have hk2 : 2 ≤ k := le_trans (le_max_right _ _) hk
+  set u : ℝ := (mdigit A k : ℝ) with hu
+  have hu2 : (2:ℝ) ≤ u := by rw [hu]; exact_mod_cast mdigit_two_le hA k
+  have hupos : (0:ℝ) < u := by linarith
+  -- the two-sided bound
+  have hlo : (0:ℝ) ≤ A ^ ((3:ℕ) ^ (k + 1)) - u := by
+    rw [hu]; linarith [mdigit_le_pow hA0 k]
+  have hhi : A ^ ((3:ℕ) ^ (k + 1)) - u ≤ 2 / u ^ ((17:ℝ)/40) := mdigit_dist_le hA1 hA (h36 k hk0)
+  rw [abs_of_nonneg hlo]
+  -- tower growth turns `u^(17/40)` into `exp((17/40) 3^k L)`
+  have htow : ((p ^ ((3:ℕ) ^ k) : ℕ) : ℝ) ≤ u := by
+    rw [hu]; exact_mod_cast mdigit_pow_le hA1 hA k
+  have hpow : ((p ^ ((3:ℕ) ^ k) : ℕ) : ℝ) ^ ((17:ℝ)/40)
+      = Real.exp ((17/40) * ((3:ℕ) ^ k : ℕ) * L) := by
+    push_cast
+    rw [← Real.rpow_natCast (p:ℝ) ((3:ℕ) ^ k), ← Real.rpow_mul (by linarith),
+      Real.rpow_def_of_pos (by linarith), hL]
+    congr 1
+    push_cast
+    ring
+  have hmono : ((p ^ ((3:ℕ) ^ k) : ℕ) : ℝ) ^ ((17:ℝ)/40) ≤ u ^ ((17:ℝ)/40) :=
+    Real.rpow_le_rpow (by positivity) htow (by norm_num)
+  have hdiv : 2 / u ^ ((17:ℝ)/40) ≤ 2 / Real.exp ((17/40) * ((3:ℕ) ^ k : ℕ) * L) := by
+    rw [← hpow]
+    exact div_le_div_of_nonneg_left (by norm_num) (by positivity) hmono
+  -- and `2 ≤ exp((17/80) 3^k L)` once `k ≥ 2`
+  have h3k : (9:ℝ) ≤ ((3:ℕ) ^ k : ℕ) := by
+    have : (3:ℕ) ^ 2 ≤ (3:ℕ) ^ k := Nat.pow_le_pow_right (by norm_num) hk2
+    calc (9:ℝ) = (((3:ℕ) ^ 2 : ℕ) : ℝ) := by norm_num
+      _ ≤ _ := by exact_mod_cast this
+  have hslack : Real.log 2 ≤ (17/80) * ((3:ℕ) ^ k : ℕ) * L := by
+    have h1 : Real.log 2 ≤ 1 := by
+      have := Real.log_le_sub_one_of_pos (show (0:ℝ) < 2 by norm_num); linarith
+    nlinarith [hL2, hLpos, h3k, Real.log_pos (show (1:ℝ) < 2 by norm_num)]
+  have h2le : (2:ℝ) ≤ Real.exp ((17/80) * ((3:ℕ) ^ k : ℕ) * L) := by
+    calc (2:ℝ) = Real.exp (Real.log 2) := (Real.exp_log (by norm_num)).symm
+      _ ≤ _ := Real.exp_le_exp.2 hslack
+  have hgoal : 2 / Real.exp ((17/40) * ((3:ℕ) ^ k : ℕ) * L)
+      ≤ Real.exp (-((17/240) * L * ((3:ℕ) ^ (k + 1) : ℕ))) := by
+    rw [div_le_iff₀ (Real.exp_pos _), ← Real.exp_add]
+    have harg : -((17/240) * L * ((3:ℕ) ^ (k + 1) : ℕ)) + (17/40) * ((3:ℕ) ^ k : ℕ) * L
+        = (17/80) * ((3:ℕ) ^ k : ℕ) * L := by
+      have h3 : (((3:ℕ) ^ (k + 1) : ℕ) : ℝ) = 3 * (((3:ℕ) ^ k : ℕ) : ℝ) := by
+        push_cast; ring
+      rw [h3]; ring
+    rw [harg]
+    exact h2le
+  linarith [hdiv, hhi, hgoal]
+
+/-- A Mills number is never an integer: `⌊A^(3^(k+2))⌋₊` would be the cube of `⌊A^(3^(k+1))⌋₊`,
+which is not prime. -/
+theorem mills_not_intCast {A : ℝ} (hA1 : 1 < A) (hA : IsMills A) (m : ℤ) : A ≠ (m : ℝ) := by
+  intro hAm
+  have hA0 : (0:ℝ) ≤ A := by linarith
+  have hm1 : (1:ℤ) < m := by exact_mod_cast hAm ▸ hA1
+  have hm0 : (0:ℤ) ≤ m := by omega
+  set n : ℕ := m.toNat with hn
+  have hmn : (m : ℝ) = (n : ℝ) := by rw [hn]; exact_mod_cast (Int.toNat_of_nonneg hm0).symm
+  have hAn : A = (n : ℝ) := by rw [hAm, hmn]
+  -- every `A^(3^j)` is the natural number `n^(3^j)`, so the floor is exact
+  have hfl : ∀ j : ℕ, mdigit A j = n ^ ((3:ℕ) ^ (j + 1)) := by
+    intro j
+    rw [mdigit, hAn, show ((n:ℝ)) ^ ((3:ℕ) ^ (j + 1)) = ((n ^ ((3:ℕ) ^ (j + 1)) : ℕ) : ℝ) by
+      push_cast; ring, Nat.floor_natCast]
+  have hc := mdigit_cube_lt hA1 hA 0
+  rw [hfl 0, hfl 1, ← pow_mul, show (3:ℕ) ^ (0 + 1) * 3 = (3:ℕ) ^ (1 + 1) by norm_num] at hc
+  exact absurd hc (lt_irrefl _)
+
 /-- **Saito (2024)**: the least Mills number is irrational, from Baker–Harman–Pintz,
 Matomäki and Mahler.  Matches formal-conjectures `Mills.irrational` plus the three inputs. -/
 theorem irrational (hB : BakerHarmanPintz2001) (hM : Matomaki2007) (hMa : Mahler1957)
     {A : ℝ} (hA : IsMinMills A) : Irrational A := by
-  sorry
+  obtain ⟨⟨hA1, hAm⟩, hAmin⟩ := hA
+  rintro ⟨r, hr⟩
+  have hA0 : (0:ℝ) ≤ A := by linarith
+  -- `A` is a rational `> 1` which is not an integer
+  have hr1 : 1 < r := by
+    have : ((1:ℚ) : ℝ) < ((r : ℚ) : ℝ) := by rw [hr]; exact_mod_cast hA1
+    exact_mod_cast this
+  have hden : r.den ≠ 1 := by
+    intro h1
+    have hnum : ((r.num : ℚ) : ℝ) = A := by rw [(Rat.den_eq_one_iff r).1 h1, hr]
+    exact mills_not_intCast hA1 hAm r.num (by rw [← hnum]; push_cast; ring)
+  -- Saito Lemma 3.9 and Mahler collide
+  obtain ⟨γ, hγ, k₁, h39⟩ := saito_lemma39 hA1 hAm (saito_lemma36 hB hM ⟨⟨hA1, hAm⟩, hAmin⟩)
+  obtain ⟨n₀, hMah⟩ := hMa r hr1 hden γ hγ
+  -- pick `k` with `3^(k+1) ≥ n₀` and `k ≥ k₁`
+  obtain ⟨k, hk1, hkn⟩ : ∃ k : ℕ, k₁ ≤ k ∧ n₀ ≤ (3:ℕ) ^ (k + 1) := by
+    refine ⟨max k₁ n₀, le_max_left _ _, ?_⟩
+    exact le_trans (le_trans (le_max_right k₁ n₀) (Nat.le_succ _)) (Nat.lt_pow_self (by norm_num)).le
+  set N : ℕ := (3:ℕ) ^ (k + 1) with hN
+  have hsmall := h39 k hk1
+  have hbig := hMah N hkn
+  rw [hr] at hbig
+  have hround : |A ^ N - ((round (A ^ N) : ℤ) : ℝ)| ≤ |A ^ N - ((mdigit A k : ℤ) : ℝ)| :=
+    round_le _ _
+  have hcast : (((mdigit A k : ℤ)) : ℝ) = (mdigit A k : ℝ) := by push_cast; ring
+  rw [hcast] at hround
+  have : Real.exp (-(γ * N)) < Real.exp (-(γ * N)) := by
+    calc Real.exp (-(γ * N)) < |A ^ N - ((round (A ^ N) : ℤ) : ℝ)| := by
+          simpa [hN] using hbig
+      _ ≤ |A ^ N - (mdigit A k : ℝ)| := hround
+      _ ≤ Real.exp (-(γ * ((3:ℕ) ^ (k + 1) : ℕ))) := hsmall
+      _ = Real.exp (-(γ * N)) := by rw [hN]
+  exact absurd this (lt_irrefl _)
 
 end LeanFormalizations.Mills

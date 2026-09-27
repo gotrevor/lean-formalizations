@@ -781,3 +781,32 @@ are inside Aristotle-verified tactic blocks — not worth the regression risk to
 Nothing genuinely open → Aristotle correctly idle. The old Lemma-1 job (`80d9166c`) is
 OBSOLETE (the proof needs no Lemma 1). Do not feed redundant cross-confirms. The verification
 items 1–4 are all elementary and do NOT need Aristotle.
+
+## Mills lane, phase 2 — remaining crux (2026-09-27)
+
+`lower_bound_of_RH` and `primeBetweenCubes_of_BHP` are PROVED and axiom-clean.  `irrational`
+(Saito 2024, `c ≡ 3`) is now proved **modulo two named sorries** in
+`src/LeanFormalizations/NumberTheory/Mills/Irrational.lean`:
+
+1. **`saito_lemma38`** (Saito Lemma 3.8, `c = 3`, `E = 3`, `ε = 1/4`) — a prime-rich interval
+   `[X, X + X^η]` (`η ∈ [1/2, 3/4]`) holds a prime `q` with `[q³, q³ + q²]` again prime-rich
+   (`Rich d₁ q`).  **Next attack:** contrapositive — if every prime `q ∈ [X, X+X^η]` is poor,
+   the intervals `[q³, q³+q²]` are pairwise disjoint (`q' ≥ q+1 ⟹ q'³ ≥ q³+3q²+3q+1 > q³+q²`)
+   and all sit inside `[X³, 2X³]`, so `Matomaki2007` with `x := X³`, `γ := 2/3` caps their count
+   by `D X^(3(2/3 − 2/3)) = D`, while the hypothesis gives `≥ d₂X^η/log X` of them — Saito (3.7).
+   The Lean work is the `Finset ℝ` bookkeeping for `PairwiseDisjoint` + the count transfer
+   `primesIn X (X+X^η) ≤ (number of primes q) `.
+
+2. **`saito_lemma36`** (Saito Lemma 3.6) — the chain.  Assume `p_{k+1} > p_k³ + p_k^(63/40)` for
+   arbitrarily large `k`.  BHP at `x := p_k³` gives (3.5) with `η = 21/40`; `saito_lemma38`
+   gives `q_{k+1}`; then `rich_step` (Lemma 3.8 at `X := q³`, `η := 2/3`, `d₂ := d₁`, which is
+   *exactly* `Rich d₁ q`) iterates to an infinite chain `q_m³ ≤ q_{m+1} ≤ q_m³ + q_m²`.  Glue
+   `p_1 … p_k` in front and feed `Chain.exists_shifted_of_chain` (the strictness
+   `q_m³ < q_{m+1}` is free: `q_{m+1}` is prime, `q_m³` is not; the upper bound
+   `q_m³ + q_m² + 1 < (q_m+1)³` is arithmetic).  The resulting `w` is Mills with
+   `⌊w^(3^(k+1))⌋₊ = q_{k+1} < p_{k+1}`, so `w < A`, contradicting `IsMinMills A`.
+
+Everything else in Saito's route is machine-checked: `mdigit_cube_lt`/`mdigit_succ_lt`
+(Lemma 3.5), `mdigit_pow_le` ((3.20)), `mdigit_dist_le` ((3.19), via `(1+t)³ ≥ 1+3t` with the
+slack `6 > 2` absorbing the floor's `+1`), `saito_lemma39` ((3.17), `γ = (17/240) log p_1`),
+`mills_not_intCast`, and the `Mahler1957` collision (`round_le`).
