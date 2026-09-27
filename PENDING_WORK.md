@@ -873,3 +873,31 @@ Lemmas 4.2/4.3, since there `μ = 19c/40 − 1 = 9/10 < 1` and the Claim only fo
 
 **Next attack**: item 2's Lemma 4.2/4.3 machinery (short, and shared by items 2 and 3), then
 item 1 (long but mechanical).
+
+### Same lap: THEOREM 1.1 IS COMPLETE (modulo `saito_lemma36C`)
+
+`transcendental_of_four_le` is proved for **all** `c ≥ 4`. `#print axioms` shows `sorryAx`
+solely from `saito_lemma36C`; every other ingredient is clean.
+
+* `c ≥ 5`: `μ = 19c/40 − 1 > 1`, Lemma 4.1's Claim closes outright.
+* `c = 4`: `μ = 9/10`, so the Claim forces `card (otherConj) = 1`, i.e. degree exactly 2 —
+  killed by `not_pisot_two_of_even` (`Mills/SaitoDegreeTwo.lean`), axiom-clean.
+
+The `c = 4` argument came out shorter than Saito's: **Lemma 4.2 is not needed as a separate
+step.** With `n = cʲ` even, `wⁿ > 0`, so the integer `t = βⁿ + wⁿ` exceeds `βⁿ`, hence
+`t ≥ ⌊βⁿ⌋ + 1` and `wⁿ = t − βⁿ > 1/2` as soon as `frac(βⁿ) < 1/2` — contradicting `|w| < 1`
+directly. No `t_k = p_k` identification is required.
+Also new and reusable: `exists_real_conj_of_natDegree_two` — a degree-2 Pisot number's other
+conjugate is the *real* number `t₁ − β`, with no field theory (the `n = 1` trace over a
+singleton multiset IS the conjugate), and `eventually_rpow_neg_lt`.
+
+**Two obligations remain in `Mills/`:**
+1. `saito_lemma36C` (`SaitoDigits.lean:114`) — general-`c` Matomäki minimality. Gates BOTH
+   remaining items. The `c = 3` case is proved in `Irrational.lean`; this is `3 → c`.
+2. `transcendental_or_pisot` (`Transcendental.lean:79`) — Theorem 1.2. At `c = 3`, `μ = 17/40`,
+   so the Claim gives `card ≤ 40/17`, i.e. `card ∈ {1,2}` (degree 2 or 3). Degree 2 needs
+   Lemma 4.3's `b = 3` case: `t_{3n} = t_n³ − 3(βw)ⁿ t_n` with `βw ∈ ℤ` gives `p_k ∣ p_{k+1}`,
+   impossible for distinct primes. Degree 3 is Saito's open Remark 4.4 — it is the *disjunct*,
+   so Theorem 1.2 needs only the degree-2 kill plus `IsPisot` + `natDegree = 3` extraction.
+   **Prerequisite to add: `βw = (minpoly ℤ β).coeff 0 ∈ ℤ`** (extract from the proof of
+   `pisot_one_le_prod_norm`, which already computes `Q.eval 0` both ways).

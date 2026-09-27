@@ -29,6 +29,7 @@ Matomäki.  It is the only `sorry` here, and the only genuinely deep obligation 
 -/
 import LeanFormalizations.NumberTheory.Mills.BasicC
 import LeanFormalizations.NumberTheory.Mills.SaitoLemma41
+import LeanFormalizations.NumberTheory.Mills.SaitoDegreeTwo
 import LeanFormalizations.Literature.Primes
 
 namespace LeanFormalizations.Mills
@@ -173,7 +174,8 @@ theorem decay_of_lemma36C (hc : 3 ≤ c) (hA1 : 1 < A)
       (mdigitC c A (k + 1) : ℝ)
         ≤ (mdigitC c A k : ℝ) ^ c + (mdigitC c A k : ℝ) ^ ((21 * (c:ℝ))/40)) :
     ∀ᶠ k : ℕ in Filter.atTop,
-      |A ^ (c ^ k) - (round (A ^ (c ^ k)) : ℝ)|
+      0 ≤ A ^ (c ^ k) - (⌊A ^ (c ^ k)⌋₊ : ℝ) ∧
+      A ^ (c ^ k) - (⌊A ^ (c ^ k)⌋₊ : ℝ)
         ≤ (2 : ℝ) ^ ((19 * (c:ℝ))/40) * (A ^ (-(((19 * (c:ℝ))/40 - 1) * (c ^ k : ℕ))) : ℝ) := by
   obtain ⟨k₀, h36⟩ := h36
   have hA0 : (0:ℝ) < A := by linarith
@@ -222,16 +224,6 @@ theorem decay_of_lemma36C (hc : 3 ≤ c) (hA1 : 1 < A)
     refine le_trans habs ?_
     rw [← hsplit]
     linarith [hmono]
-  -- the round is at least as close as the floor
-  have hrd : |y - (round y : ℝ)| ≤ |y - u| := by
-    have hfl : ((⌊y⌋ : ℤ) : ℝ) = u := by
-      rw [← Int.natCast_floor_eq_floor hy0.le, hu, mdigitC, ← hy]
-      push_cast
-      ring
-    have habsu : |y - u| = y - u := abs_of_nonneg (by linarith)
-    rw [abs_sub_round_eq_min, habsu, ← hfl, Int.self_sub_floor]
-    exact min_le_left _ _
-  -- rewrite `2 * 2^μ` and `y^(−μ)`
   have hyrw : (y ^ (-μ) : ℝ) = A ^ (-(μ * ((c ^ (j + 1) : ℕ) : ℝ))) := by
     rw [hy, ← Real.rpow_natCast A (c ^ (j + 1)), ← Real.rpow_mul hA0.le]
     congr 1
@@ -239,13 +231,38 @@ theorem decay_of_lemma36C (hc : 3 ≤ c) (hA1 : 1 < A)
   have hconst : (2:ℝ) * (2:ℝ) ^ μ = (2:ℝ) ^ ((19 * (c:ℝ))/40) := by
     rw [hμdef, Real.rpow_sub (by norm_num), Real.rpow_one]
     field_simp
-  calc |A ^ (c ^ (j + 1)) - (round (A ^ (c ^ (j + 1))) : ℝ)| = |y - (round y : ℝ)| := by rw [hy]
-    _ ≤ |y - u| := hrd
+  have hufl : ((⌊A ^ (c ^ (j + 1))⌋₊ : ℕ) : ℝ) = u := by rw [hu, mdigitC]
+  refine ⟨by rw [hufl]; linarith, ?_⟩
+  rw [hufl]
+  calc A ^ (c ^ (j + 1)) - u = |y - u| :=
+        (abs_of_nonneg (show (0:ℝ) ≤ y - u by linarith)).symm
     _ ≤ 2 * ((2:ℝ) ^ μ * y ^ (-μ)) := hfinal
     _ = ((2:ℝ) * (2:ℝ) ^ μ) * y ^ (-μ) := by ring
     _ = (2 : ℝ) ^ ((19 * (c:ℝ))/40) * (A ^ (-(μ * ((c ^ (j + 1) : ℕ) : ℝ))) : ℝ) := by
         rw [hconst, hyrw]
 
+/-- The `round` form of `decay_of_lemma36C`: the nearest integer is at least as close as the
+floor. -/
+theorem decay_round_of_lemma36C (hc : 3 ≤ c) (hA1 : 1 < A)
+    (hA : ∀ n : ℕ+, Prime ⌊A ^ (c ^ (n : ℕ))⌋₊)
+    (h36 : ∃ k₀ : ℕ, ∀ k ≥ k₀,
+      (mdigitC c A (k + 1) : ℝ)
+        ≤ (mdigitC c A k : ℝ) ^ c + (mdigitC c A k : ℝ) ^ ((21 * (c:ℝ))/40)) :
+    ∀ᶠ k : ℕ in Filter.atTop,
+      |A ^ (c ^ k) - (round (A ^ (c ^ k)) : ℝ)|
+        ≤ (2 : ℝ) ^ ((19 * (c:ℝ))/40) * (A ^ (-(((19 * (c:ℝ))/40 - 1) * (c ^ k : ℕ))) : ℝ) := by
+  have hA0 : (0:ℝ) < A := by linarith
+  filter_upwards [decay_of_lemma36C hc hA1 hA h36] with k hk
+  obtain ⟨hlo, hhi⟩ := hk
+  set y : ℝ := A ^ (c ^ k) with hy
+  have hy0 : (0:ℝ) ≤ y := by rw [hy]; positivity
+  have hfl : ((⌊y⌋ : ℤ) : ℝ) = ((⌊y⌋₊ : ℕ) : ℝ) := by
+    rw [← Int.natCast_floor_eq_floor hy0]
+    push_cast
+    ring
+  refine le_trans ?_ hhi
+  rw [abs_sub_round_eq_min, ← Int.self_sub_floor, hfl]
+  exact min_le_left _ _
 
 /-- No power `A^(cᵐ)` (`m ≥ 1`) of a Mills number is an integer: it would make the next digit
 `p^c`, which is composite.  (This is Saito's `ℓ = 1` exclusion in Lemma 4.1.) -/
@@ -278,8 +295,74 @@ theorem transcendentalC_of_five_le (hB : BakerHarmanPintz2001) (hM : Matomaki200
   have hcR : (5:ℝ) ≤ (c:ℝ) := by exact_mod_cast hc
   refine transcendental_of_decay hD hG hA1 (c := c) (by omega) (μ := (19 * (c:ℝ))/40 - 1)
     (K := (2:ℝ) ^ ((19 * (c:ℝ))/40)) (by linarith) (Real.rpow_pos_of_pos (by norm_num) _) ?_ ?_
-  · exact decay_of_lemma36C (by omega) hA1 hAm
+  · exact decay_round_of_lemma36C (by omega) hA1 hAm
       (saito_lemma36C hB hM (by omega) ⟨⟨hA1, hAm⟩, hmin⟩)
   · exact fun m hm t => millsC_not_intCast (by omega) hA1 hAm m hm t
+
+
+/-- `K·A^(−μcᵏ) → 0`: the decay bound eventually beats any positive `ε`. -/
+theorem eventually_rpow_neg_lt {A : ℝ} (hA1 : 1 < A) {c : ℕ} (hc : 2 ≤ c) {μ K ε : ℝ}
+    (hμ : 0 < μ) (hK : 0 < K) (hε : 0 < ε) :
+    ∀ᶠ k : ℕ in Filter.atTop, K * (A ^ (-(μ * ((c ^ k : ℕ) : ℝ))) : ℝ) < ε := by
+  have hA0 : (0:ℝ) < A := by linarith
+  have hlog : 0 < Real.log A := Real.log_pos hA1
+  have hxpos : 0 < μ * Real.log A := by positivity
+  rw [Filter.eventually_atTop]
+  refine ⟨⌈K / ε / (μ * Real.log A)⌉₊ + 1, fun k hk => ?_⟩
+  have hNk : (k:ℝ) ≤ ((c ^ k : ℕ) : ℝ) := by
+    have : k ≤ c ^ k := (Nat.lt_pow_self (by omega)).le
+    exact_mod_cast this
+  have hkbig : K / ε / (μ * Real.log A) < (k:ℝ) := by
+    have h1 : K / ε / (μ * Real.log A) ≤ (⌈K / ε / (μ * Real.log A)⌉₊ : ℝ) := Nat.le_ceil _
+    have h2 : ((⌈K / ε / (μ * Real.log A)⌉₊ : ℕ) : ℝ) + 1 ≤ (k:ℝ) := by exact_mod_cast hk
+    linarith
+  have hgt : K / ε < μ * ((c ^ k : ℕ) : ℝ) * Real.log A := by
+    have h3 := (div_lt_iff₀ hxpos).1 hkbig
+    nlinarith [hNk, hxpos, h3]
+  have hexp : K / ε < Real.exp (μ * ((c ^ k : ℕ) : ℝ) * Real.log A) :=
+    lt_of_lt_of_le hgt (by linarith [Real.add_one_le_exp (μ * ((c ^ k : ℕ) : ℝ) * Real.log A)])
+  have hrw : (A ^ (-(μ * ((c ^ k : ℕ) : ℝ))) : ℝ)
+      = (Real.exp (μ * ((c ^ k : ℕ) : ℝ) * Real.log A))⁻¹ := by
+    rw [Real.rpow_def_of_pos hA0, ← Real.exp_neg]
+    congr 1
+    ring
+  rw [hrw, ← div_eq_mul_inv, div_lt_iff₀ (Real.exp_pos _), mul_comm]
+  exact (div_lt_iff₀ hε).1 hexp
+
+/-- **Saito (2024), Theorem 1.1 for `c = 4`**, modulo `saito_lemma36C`.  Here `μ = 9/10 < 1`,
+so Lemma 4.1's Claim only forces degree exactly 2, and `not_pisot_two_of_even` finishes. -/
+theorem transcendentalC_of_four (hB : BakerHarmanPintz2001) (hM : Matomaki2007)
+    (hD : Dubickas2022) (hG : Dubickas2022PisotGap)
+    (hA : IsLeast {x : ℝ | x > 1 ∧ ∀ n : ℕ+, Prime ⌊x ^ ((4:ℕ) ^ (n : ℕ))⌋₊} A) :
+    Transcendental ℚ A := by
+  obtain ⟨⟨hA1, hAm⟩, hmin⟩ := hA
+  intro halg
+  have h36 := saito_lemma36C (c := 4) hB hM (by norm_num) ⟨⟨hA1, hAm⟩, hmin⟩
+  have hμ0 : (0:ℝ) < (19 * ((4:ℕ):ℝ))/40 - 1 := by norm_num
+  have hK0 : (0:ℝ) < (2:ℝ) ^ ((19 * ((4:ℕ):ℝ))/40) := Real.rpow_pos_of_pos (by norm_num) _
+  obtain ⟨m, hβ, hnd, hclaim⟩ :=
+    exists_pisot_of_decay hD hG hA1 (c := 4) (by norm_num) hμ0 hK0
+      (decay_round_of_lemma36C (by norm_num) hA1 hAm h36)
+      (fun m hm t => millsC_not_intCast (by norm_num) hA1 hAm m hm t) halg
+  -- `μ = 9/10`, so the Claim forces `card = 1`, i.e. degree exactly 2
+  have hcard1 : 1 ≤ Multiset.card (otherConj (A ^ ((4:ℕ) ^ (m + 1)))) := by
+    have := card_otherConj_add_one (β := A ^ ((4:ℕ) ^ (m + 1))) (hβ.2.1.tower_top)
+    omega
+  have hcard2 : Multiset.card (otherConj (A ^ ((4:ℕ) ^ (m + 1)))) ≤ 1 := by
+    by_contra hcon
+    push Not at hcon
+    have h2 : (2:ℝ) ≤ (Multiset.card (otherConj (A ^ ((4:ℕ) ^ (m + 1)))) : ℝ) := by
+      exact_mod_cast hcon
+    norm_num at hclaim
+    nlinarith [hclaim, h2]
+  -- the fractional parts are eventually `< 1/2`
+  have hfrac : ∀ᶠ k : ℕ in Filter.atTop,
+      A ^ ((4:ℕ) ^ k) - (⌊A ^ ((4:ℕ) ^ k)⌋₊ : ℝ) < 1 / 2 := by
+    filter_upwards [decay_of_lemma36C (c := 4) (by norm_num) hA1 hAm h36,
+      eventually_rpow_neg_lt (c := 4) hA1 (by norm_num) hμ0 hK0 (by norm_num : (0:ℝ) < 1/2)]
+      with k hk hk2
+    exact lt_of_le_of_lt hk.2 hk2
+  exact not_pisot_two_of_even hA1 (c := 4) (by norm_num) (by norm_num) hβ
+    (le_antisymm hcard2 hcard1) hfrac
 
 end LeanFormalizations.Mills

@@ -64,4 +64,76 @@ theorem pow_add_pow_mem_int {β w : ℝ} (hβ : IsPisot β) (hw : otherConj β =
     linear_combination ht
   exact_mod_cast h
 
+
+/-- **Saito (2024), Lemma 4.3, case `b = 4`** (here: `c` even).  No power `A^(c^(m+1))` of a
+Mills-like number can be a Pisot number of degree 2 when `c` is even.
+
+Saito's argument, sharpened so that Lemma 4.2 is not needed as a separate step: take `n = cʲ`,
+which is even.  Then `w ⁿ > 0`, so the rational integer `t = βⁿ + wⁿ` strictly exceeds `βⁿ`,
+hence `t ≥ ⌊βⁿ⌋ + 1` and `wⁿ = t − βⁿ > 1 − 1/2 = 1/2` once the fractional part of `βⁿ` is
+`< 1/2` — contradicting `|w| < 1`. -/
+theorem not_pisot_two_of_even {A : ℝ} (hA1 : 1 < A) {c : ℕ} (hc : 2 ≤ c) (hceven : 2 ∣ c)
+    {m : ℕ} (hβ : IsPisot (A ^ (c ^ (m + 1))))
+    (hcard : Multiset.card (otherConj (A ^ (c ^ (m + 1)))) = 1)
+    (hfrac : ∀ᶠ k : ℕ in atTop, A ^ (c ^ k) - (⌊A ^ (c ^ k)⌋₊ : ℝ) < 1 / 2) :
+    False := by
+  have hA0 : (0:ℝ) < A := by linarith
+  set β : ℝ := A ^ (c ^ (m + 1)) with hβdef
+  have halg : IsIntegral ℚ β := hβ.2.1.tower_top
+  have hdeg : (minpoly ℚ β).natDegree = 2 := by
+    have := card_otherConj_add_one halg
+    omega
+  obtain ⟨w, hw, hw1, -⟩ := exists_real_conj_of_natDegree_two hβ hdeg
+  -- `w ≠ 0`, because `|N(β)| ≥ 1`
+  have hprod : 1 ≤ β * |w| := by
+    have h := pisot_one_le_prod_norm hβ
+    rwa [hw, Multiset.map_singleton, Multiset.prod_singleton, Complex.norm_real,
+      Real.norm_eq_abs] at h
+  have hβ0 : (0:ℝ) < β := by linarith [hβ.1]
+  have hw0 : w ≠ 0 := by
+    intro h
+    rw [h] at hprod
+    simp at hprod
+    linarith
+  -- choose `j` large
+  have htend : Filter.Tendsto (fun n : ℕ => |w| ^ n) atTop (nhds 0) :=
+    tendsto_pow_atTop_nhds_zero_of_lt_one (abs_nonneg w) hw1
+  obtain ⟨N, hN⟩ :=
+    eventually_atTop.1 (htend.eventually (gt_mem_nhds (by norm_num : (0:ℝ) < 1 / 2)))
+  obtain ⟨k₀, hk₀⟩ := eventually_atTop.1 hfrac
+  set j : ℕ := max 1 (max N k₀) with hj
+  have hjpow : j ≤ c ^ j := (Nat.lt_pow_self (by omega)).le
+  set n : ℕ := c ^ j with hn
+  have hnN : N ≤ n :=
+    le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) hjpow
+  have hjk₀ : k₀ ≤ j := le_trans (le_max_right _ _) (le_max_right _ _)
+  have hj1 : 1 ≤ j := le_max_left _ _
+  -- `n` is even
+  have hneven : Even n := by
+    rw [hn]
+    exact (even_iff_two_dvd).2 (dvd_pow hceven (by omega))
+  -- `βⁿ = A^(c^(m+1+j))`
+  have hβpow : β ^ n = A ^ (c ^ (m + 1 + j)) := by
+    rw [hβdef, hn, ← pow_mul, ← pow_add]
+  -- the integer `t = βⁿ + wⁿ`
+  obtain ⟨t, ht⟩ := pow_add_pow_mem_int hβ hw n
+  have hwpos : 0 < w ^ n := hneven.pow_pos hw0
+  -- fractional part of `βⁿ` is `< 1/2`
+  have hfr := hk₀ (m + 1 + j) (by omega)
+  rw [← hβpow] at hfr
+  have hfl : ((⌊β ^ n⌋₊ : ℕ) : ℝ) ≤ β ^ n := Nat.floor_le (by positivity)
+  -- `t > βⁿ ≥ ⌊βⁿ⌋`, so `t ≥ ⌊βⁿ⌋ + 1`
+  have htgt : (⌊β ^ n⌋₊ : ℝ) < (t : ℝ) := by linarith
+  have htge : ((⌊β ^ n⌋₊ : ℕ) : ℤ) < t := by exact_mod_cast htgt
+  have htge' : ((⌊β ^ n⌋₊ : ℕ) : ℝ) + 1 ≤ (t : ℝ) := by
+    have : ((⌊β ^ n⌋₊ : ℕ) : ℤ) + 1 ≤ t := by omega
+    exact_mod_cast this
+  -- so `wⁿ > 1/2`, contradicting `|w|ⁿ < 1/2`
+  have hbig : (1:ℝ) / 2 < w ^ n := by linarith
+  have hsmall : |w| ^ n < 1 / 2 := hN n hnN
+  have : w ^ n ≤ |w| ^ n := by
+    rw [← abs_pow]
+    exact le_abs_self _
+  linarith
+
 end LeanFormalizations.Mills

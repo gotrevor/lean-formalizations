@@ -65,9 +65,9 @@ theorem transcendental_of_four_le (hB : BakerHarmanPintz2001) (hM : Matomaki2007
     (hD : Dubickas2022) (hG : Dubickas2022PisotGap) {c : ℕ} (hc : 4 ≤ c) {A : ℝ}
     (hA : IsMinMillsC c A) : Transcendental ℚ A := by
   rcases eq_or_lt_of_le hc with h4 | h5
-  · -- `c = 4`: here `μ = 19·4/40 − 1 = 9/10 < 1`, so Lemma 4.1's Claim only gives `ℓ = 2`, and
-    -- Saito's Lemmas 4.2/4.3 are needed to rule that out.  **OPEN.**
-    sorry
+  · -- `c = 4`: `μ = 9/10 < 1`, so the Claim only gives degree 2, killed by `not_pisot_two_of_even`
+    subst h4
+    exact transcendentalC_of_four hB hM hD hG hA
   · exact transcendentalC_of_five_le hB hM hD hG (by omega) hA
 
 /-- **Saito (2024), Theorem 1.2: Mills' constant is transcendental, or some `ξ^(3^m)`
