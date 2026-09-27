@@ -815,3 +815,18 @@ Open leaves (both standard ANT, neither Mills-specific):
 (`μ = bθ_b ≥ 11/8 > 1`, `ℓ ≥ 2` ⇒ contradiction ⇒ Thm 1.1 modulo the §3 `c`-generalisation).
 The §3 `c`-general Lemmas 3.5/3.6/3.8/3.9 (a known-shape generalisation of `Irrational.lean`)
 are deliberately *later*: effort, not uncertainty.
+
+### Same lap, later: the `c`-general §3 existence chain is DONE
+
+* `Mills/BasicC.lean` — nested-interval construction for any `c ≥ 2`, sorry-free.
+* `Mills/SaitoGeneral.lean` — `pow_succ_ge_add_mul` (binomial gap bound),
+  `primeBetweenPows_of_BHP` (BHP ⇒ a prime in `(nᶜ,(n+1)ᶜ)` for `c ≥ 3`; the window fits because
+  `21c/40 ≤ c−1` for `c ≥ 40/19`), `exists_millsC_of_BHP`, `exists_leastC_of_exists`
+  (lower bound `2^(1/c)` replaces the hand-computed `5/4`), `exists_leastMillsC_of_BHP`.
+* **`exists_minMillsC_of_BHP` is PROVED and axiom-clean** — the first of the three phase-6
+  sorries is closed.
+
+Remaining in `Mills/Transcendental.lean`: `transcendental_of_four_le`, `transcendental_or_pisot`.
+Next attack: the `c`-general Saito Lemmas 3.5/3.6/3.8/3.9 supplying `pisot_degree_bound`'s
+`hdecay` hypothesis (generalise `Irrational.lean`'s `mdigit`/`saito_lemma36/38/39`), then the
+`b ≥ 5` arithmetic (`μ = bθ_b = 19c/40 − 1 ≥ 11/8 > 1` with `ℓ ≥ 2` contradicts the Claim).

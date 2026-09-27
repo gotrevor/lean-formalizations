@@ -38,6 +38,8 @@ Read §4 of the paper (`papers/…txt` lines ~429–560; render pages 9–12 wit
 `pdftoppm -f N -l N -r 150 -png` when a displayed formula matters — text extraction drops them).
 -/
 import LeanFormalizations.NumberTheory.Mills.Irrational
+import LeanFormalizations.NumberTheory.Mills.SaitoGeneral
+import LeanFormalizations.NumberTheory.Mills.SaitoPisot
 import LeanFormalizations.Literature.Pisot
 
 namespace LeanFormalizations.Mills
@@ -54,8 +56,8 @@ example (A : ℝ) : IsMinMillsC 3 A ↔ IsMinMills A := Iff.rfl
 
 /-- **`ξ_c` exists for every integer `c ≥ 3`** (Saito Cor 3.4, here from Baker–Harman–Pintz). -/
 theorem exists_minMillsC_of_BHP (hB : BakerHarmanPintz2001) {c : ℕ} (hc : 3 ≤ c) :
-    ∃ A, IsMinMillsC c A := by
-  sorry
+    ∃ A, IsMinMillsC c A :=
+  exists_leastMillsC_of_BHP hB hc
 
 /-- **Saito (2024), Theorem 1.1: `ξ_c` is transcendental for every integer `c ≥ 4`.** -/
 theorem transcendental_of_four_le (hB : BakerHarmanPintz2001) (hM : Matomaki2007)
