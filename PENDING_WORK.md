@@ -792,3 +792,25 @@ targets landed: `lower_bound_of_RH` (Caldwell–Cheng 2005 + `Schoenfeld1976`) a
 Nothing is parked.  The literature `Prop`s in `Literature/Primes.lean` are the only remaining
 debt, and discharging one (Schoenfeld under RH, BHP, Matomäki) is a research project in its own
 right — a legitimate future lane, not a hole in this one.
+
+## 2026-09-27 — Mills phase 6, lap 1: Saito Lemma 4.1 crux decomposed
+
+`Mills/SaitoPisot.lean` (new). Attacked the route-decisive half of Saito Thm 1.5 first,
+decoupled from the §3 `c`-generalisation grind: **`pisot_degree_bound`** is Saito's Claim
+`(ℓ−1)·μ ≤ 1` for a Pisot `β` whose other-conjugate power sums decay like `β^(−μn)`.
+It is PROVED from two named algebraic-number leaves. Proved along the way:
+`le_of_pow_le_const_mul_pow` (Saito's "take k → ∞": `Mⁿ n^(−λ) ≤ K ρⁿ` ⇒ `M ≤ ρ`, via
+`isLittleO_pow_const_const_pow_of_one_lt` after `n^λ ≤ n^⌈λ⌉₊`), `conjMax_pow_card_le`,
+`Multiset.prod_le_pow_card_of_le`.
+
+Open leaves (both standard ANT, neither Mills-specific):
+1. `pisot_conjPowSum_add_mem_int` : `βⁿ + Σ_{j≥2} β_jⁿ ∈ ℤ` (trace of an algebraic integer).
+   Route: `Algebra.trace_eq_sum_embeddings` over `ℚ⟮β⟯` + `Algebra.isIntegral_trace`.
+2. `pisot_one_le_prod_norm` : `1 ≤ β·∏_{j≥2}|β_j|` = `|minpoly.coeff 0|` ≥ 1, via
+   `minpoly.isIntegrallyClosed_eq_field_fractions` (ℚ-minpoly is the ℤ-minpoly mapped) and
+   `prod_roots_eq_coeff_zero_of_monic_of_splits`.
+
+**Next attack**: leaf 2 (shorter), then leaf 1, then the `b ≥ 5` arithmetic
+(`μ = bθ_b ≥ 11/8 > 1`, `ℓ ≥ 2` ⇒ contradiction ⇒ Thm 1.1 modulo the §3 `c`-generalisation).
+The §3 `c`-general Lemmas 3.5/3.6/3.8/3.9 (a known-shape generalisation of `Irrational.lean`)
+are deliberately *later*: effort, not uncertainty.
