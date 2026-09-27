@@ -94,3 +94,5 @@ import LeanFormalizations.NumberTheory.Mills.LowerBound
 import LeanFormalizations.NumberTheory.Mills.UpperBound
 import LeanFormalizations.Literature.Diophantine
 import LeanFormalizations.NumberTheory.Diophantine.Edges
+import LeanFormalizations.Literature.Pisot
+import LeanFormalizations.NumberTheory.Mills.Transcendental

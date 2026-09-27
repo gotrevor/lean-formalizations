@@ -1,5 +1,25 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 6, 2026-09-27): Saito's transcendence theorems (Thm 1.1, 1.2)
+
+Phases 1–5 are GREEN and merged.  Phase 6 is `Mills/Transcendental.lean` (plan in its header):
+`exists_minMillsC_of_BHP`, then **`transcendental_of_four_le`** (ξ_c transcendental, c ≥ 4), then
+`transcendental_or_pisot` (ξ₃ transcendental or ξ₃^(3^m) Pisot of degree 3).  New literature
+inputs `Dubickas2022`, `Dubickas2022PisotGap`, `IsPisot` in `Literature/Pisot.lean` — frozen.
+Generalise the c = 3 machinery of `Irrational.lean` (Lemmas 3.5–3.9) to exponent `c` as NEW
+lemmas (a new file `Mills/SaitoGeneral.lean` is fine); never change existing statements.
+Decompose into named `sorry` leaves freely — more sorries with a clearer crux is progress.
+
+⚠️ If a frozen literature `Prop` turns out mis-stated (too weak to carry Saito's step, or
+suspected false), STOP and write it up in HANDOFF — do not edit it.
+
+Source: `papers/saito-2024-mills-irrational.{pdf,txt}` §3–§4 (render pages for formulas).
+Frozen by name: `IsPisot`, `Dubickas2022`, `Dubickas2022PisotGap`, `IsMillsC`, `IsMinMillsC`,
+the three phase-6 theorems, plus every earlier name.  Stop condition: `Mills/` sorry-free.
+
+---
+
+
 ## 🎯 THE OBJECTIVE (phase 5, 2026-09-27): Diophantine wiring edges — make Mahler a theorem
 
 Prove the three edges in `src/LeanFormalizations/NumberTheory/Diophantine/Edges.lean`
