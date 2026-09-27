@@ -30,6 +30,7 @@ Saito's theorem is stated for general exponent sequences `(c_k)`; here `c_k = 3`
 import LeanFormalizations.NumberTheory.Mills.Basic
 import LeanFormalizations.Literature.Primes
 import LeanFormalizations.NumberTheory.Mills.Schoenfeld
+import LeanFormalizations.NumberTheory.Mills.Chain
 
 namespace LeanFormalizations.Mills
 
@@ -357,11 +358,217 @@ theorem saito_lemma38 (hM : Matomaki2007) :
 
 **OPEN.**  Route: `saito_lemma38` + the `rich_chain` induction + `Chain.exists_shifted_of_chain`
 glued to `p_1, …, p_k`, then minimality of `A`. -/
+theorem cube_rpow_21_40 {p : ℝ} (hp : 0 < p) :
+    (p ^ (3:ℕ)) ^ ((21:ℝ)/40) = p ^ ((63:ℝ)/40) := by
+  rw [← Real.rpow_natCast p 3, ← Real.rpow_mul hp.le]
+  norm_num
+
+/-- A prime above the cube of a prime `≥ 2` is *strictly* above it: the cube is composite. -/
+theorem cube_lt_of_prime {u v : ℕ} (hu : 2 ≤ u) (hv : v.Prime) (hle : u ^ 3 ≤ v) :
+    u ^ 3 < v := by
+  refine lt_of_le_of_ne hle ?_
+  intro hEq
+  rw [← hEq] at hv
+  rcases hv.eq_one_or_self_of_dvd u (dvd_pow_self u (by norm_num)) with h | h
+  · omega
+  · have hlt : u ^ 1 < u ^ 3 := Nat.pow_lt_pow_right hu (by norm_num)
+    rw [pow_one, ← h] at hlt
+    exact absurd hlt (lt_irrefl _)
+
+/-- `p^(63/40) ≤ p²` for `p ≥ 2`, the slack that keeps the greedy window inside the cube gap. -/
+theorem rpow_63_40_le_sq {p : ℝ} (hp : 2 ≤ p) : p ^ ((63:ℝ)/40) ≤ p ^ (2:ℕ) := by
+  have h1 : p ^ ((63:ℝ)/40) ≤ p ^ ((2:ℝ)) :=
+    Real.rpow_le_rpow_of_exponent_le (by linarith) (by norm_num)
+  rwa [show ((2:ℝ)) = ((2:ℕ):ℝ) by norm_num, Real.rpow_natCast] at h1
+
 theorem saito_lemma36 (hB : BakerHarmanPintz2001) (hM : Matomaki2007) {A : ℝ}
     (hA : IsMinMills A) :
     ∃ k₀ : ℕ, ∀ k ≥ k₀,
       (mdigit A (k + 1) : ℝ) ≤ (mdigit A k : ℝ) ^ (3:ℕ) + (mdigit A k : ℝ) ^ ((63:ℝ)/40) := by
-  sorry
+  obtain ⟨⟨hA1, hAm⟩, hAmin⟩ := hA
+  have hA0 : (0:ℝ) ≤ A := by linarith
+  obtain ⟨d₁, hd₁0, hd₁1, h38⟩ := saito_lemma38 hM
+  obtain ⟨d₀, hd₀, Xb, hbhp⟩ := hB
+  set d₂ : ℝ := min d₀ d₁ with hd₂def
+  have hd₂ : (0:ℝ) < d₂ := lt_min hd₀ hd₁0
+  obtain ⟨X₀, h38'⟩ := h38 d₂ hd₂
+  set M : ℝ := max X₀ Xb with hMdef
+  /- **The rich-prime step.**  `Rich d₁ q` is literally the hypothesis of Lemma 3.8 at
+  `X = q³`, `η = 2/3`, `d₂ ≤ d₁` — so one application iterates the chain. -/
+  have hstep : ∀ q : ℕ, q.Prime → X₀ ≤ (q:ℝ) → Rich d₁ q →
+      ∃ q' : ℕ, q'.Prime ∧ X₀ ≤ (q':ℝ) ∧ Rich d₁ q' ∧ q ^ 3 ≤ q' ∧
+        (q':ℝ) ≤ (q:ℝ) ^ (3:ℕ) + (q:ℝ) ^ (2:ℕ) := by
+    intro q hq hX₀q hrich
+    have hq2r : (2:ℝ) ≤ (q:ℝ) := by exact_mod_cast hq.two_le
+    have hq0 : (0:ℝ) < (q:ℝ) := by linarith
+    have hqq : (q:ℝ) ≤ (q:ℝ) ^ (3:ℕ) := by
+      have h := pow_le_pow_right₀ (show (1:ℝ) ≤ (q:ℝ) by linarith) (show 1 ≤ 3 by norm_num)
+      rwa [pow_one] at h
+    have hXq3 : X₀ ≤ (q:ℝ) ^ (3:ℕ) := le_trans hX₀q hqq
+    have hLpos : 0 < Real.log ((q:ℝ) ^ (3:ℕ)) := Real.log_pos (by nlinarith)
+    have hfeed : d₂ * ((q:ℝ) ^ (3:ℕ)) ^ ((2:ℝ)/3) / Real.log ((q:ℝ) ^ (3:ℕ))
+        ≤ (primesIn ((q:ℝ) ^ (3:ℕ)) ((q:ℝ) ^ (3:ℕ) + ((q:ℝ) ^ (3:ℕ)) ^ ((2:ℝ)/3)) : ℝ) := by
+      rw [cube_rpow_two_thirds hq0]
+      unfold Rich at hrich
+      refine le_trans ?_ hrich
+      gcongr
+      exact min_le_right _ _
+    obtain ⟨q', hq'p, hlo, hhi, hrich'⟩ :=
+      h38' ((q:ℝ) ^ (3:ℕ)) hXq3 ((2:ℝ)/3) (by constructor <;> norm_num) hfeed
+    rw [cube_rpow_two_thirds hq0] at hhi
+    have hle : q ^ 3 ≤ q' := by
+      have hcast : ((q ^ 3 : ℕ) : ℝ) ≤ ((q' : ℕ) : ℝ) := by push_cast; exact hlo
+      exact_mod_cast hcast
+    exact ⟨q', hq'p, le_trans hX₀q (le_trans hqq hlo), hrich', hle, hhi⟩
+  -- totalise for `choose`
+  have hstep' : ∀ q : ℕ, ∃ q' : ℕ, q.Prime → X₀ ≤ (q:ℝ) → Rich d₁ q →
+      q'.Prime ∧ X₀ ≤ (q':ℝ) ∧ Rich d₁ q' ∧ q ^ 3 ≤ q' ∧
+        (q':ℝ) ≤ (q:ℝ) ^ (3:ℕ) + (q:ℝ) ^ (2:ℕ) := by
+    intro q
+    by_cases h : q.Prime ∧ X₀ ≤ (q:ℝ) ∧ Rich d₁ q
+    · obtain ⟨q', h'⟩ := hstep q h.1 h.2.1 h.2.2
+      exact ⟨q', fun _ _ _ => h'⟩
+    · exact ⟨0, fun h1 h2 h3 => absurd ⟨h1, h2, h3⟩ h⟩
+  choose F hF using hstep'
+  -- the digits grow past any bound
+  have hgrow : ∀ k : ℕ, k < mdigit A k := by
+    intro k
+    have h1 : k < 2 ^ k := Nat.lt_pow_self (by norm_num)
+    have h2 : (2:ℕ) ^ k ≤ 2 ^ ((3:ℕ) ^ k) :=
+      Nat.pow_le_pow_right (by norm_num) (Nat.lt_pow_self (by norm_num)).le
+    have h3 : (2:ℕ) ^ ((3:ℕ) ^ k) ≤ (mdigit A 0) ^ ((3:ℕ) ^ k) :=
+      Nat.pow_le_pow_left (mdigit_two_le hAm 0) _
+    exact lt_of_lt_of_le h1 (le_trans h2 (le_trans h3 (mdigit_pow_le hA1 hAm k)))
+  refine ⟨⌈M⌉₊, fun k hk => ?_⟩
+  by_contra hcon
+  push Not at hcon
+  -- `p = p_{k+1}` in Saito's indexing
+  set p : ℕ := mdigit A k with hpdef
+  have hp2 : 2 ≤ p := mdigit_two_le hAm k
+  have hp2r : (2:ℝ) ≤ (p:ℝ) := by exact_mod_cast hp2
+  have hp0 : (0:ℝ) < (p:ℝ) := by linarith
+  have hpM : M ≤ (p:ℝ) := by
+    have h1 : (⌈M⌉₊ : ℝ) ≤ (p:ℝ) := by
+      exact_mod_cast le_trans hk (hgrow k).le
+    exact le_trans (Nat.le_ceil M) h1
+  have hpp : (p:ℝ) ≤ (p:ℝ) ^ (3:ℕ) := by
+    have h := pow_le_pow_right₀ (show (1:ℝ) ≤ (p:ℝ) by linarith) (show 1 ≤ 3 by norm_num)
+    rwa [pow_one] at h
+  have hX₀p : X₀ ≤ (p:ℝ) ^ (3:ℕ) :=
+    le_trans (le_trans (le_max_left _ _) hpM) hpp
+  have hXbp : Xb ≤ (p:ℝ) ^ (3:ℕ) :=
+    le_trans (le_trans (le_max_right _ _) hpM) hpp
+  -- Baker–Harman–Pintz at `x = p³` feeds Lemma 3.8 with `η = 21/40`
+  have hbhp' := hbhp ((p:ℝ) ^ (3:ℕ)) hXbp
+  have hLp : 0 < Real.log ((p:ℝ) ^ (3:ℕ)) := Real.log_pos (by nlinarith)
+  have hfeed1 : d₂ * ((p:ℝ) ^ (3:ℕ)) ^ ((21:ℝ)/40) / Real.log ((p:ℝ) ^ (3:ℕ))
+      ≤ (primesIn ((p:ℝ) ^ (3:ℕ)) ((p:ℝ) ^ (3:ℕ) + ((p:ℝ) ^ (3:ℕ)) ^ ((21:ℝ)/40)) : ℝ) := by
+    refine le_trans ?_ hbhp'
+    gcongr
+    exact min_le_left _ _
+  obtain ⟨q₁, hq₁p, hq₁lo, hq₁hi, hq₁r⟩ :=
+    h38' ((p:ℝ) ^ (3:ℕ)) hX₀p ((21:ℝ)/40) (by constructor <;> norm_num) hfeed1
+  rw [cube_rpow_21_40 hp0] at hq₁hi
+  have hq₁X₀ : X₀ ≤ (q₁:ℝ) := le_trans hX₀p hq₁lo
+  have hq₁ge : p ^ 3 ≤ q₁ := by
+    have hcast : ((p ^ 3 : ℕ) : ℝ) ≤ ((q₁ : ℕ) : ℝ) := by push_cast; exact hq₁lo
+    exact_mod_cast hcast
+  -- the chain
+  set c : ℕ → ℕ := fun n => Nat.rec q₁ (fun _ prev => F prev) n with hcdef
+  have hcsucc : ∀ n, c (n + 1) = F (c n) := fun _ => rfl
+  have hcgood : ∀ n, (c n).Prime ∧ X₀ ≤ (c n : ℝ) ∧ Rich d₁ (c n) := by
+    intro n
+    induction n with
+    | zero => exact ⟨hq₁p, hq₁X₀, hq₁r⟩
+    | succ n ih =>
+        have := hF (c n) ih.1 ih.2.1 ih.2.2
+        rw [hcsucc n]
+        exact ⟨this.1, this.2.1, this.2.2.1⟩
+  have hcbound : ∀ n, (c n) ^ 3 ≤ c (n + 1) ∧
+      (c (n + 1) : ℝ) ≤ (c n : ℝ) ^ (3:ℕ) + (c n : ℝ) ^ (2:ℕ) := by
+    intro n
+    have ih := hcgood n
+    have := hF (c n) ih.1 ih.2.1 ih.2.2
+    rw [hcsucc n]
+    exact ⟨this.2.2.2.1, this.2.2.2.2⟩
+  -- glue `p_1, …, p_{k+1}` in front of the chain
+  set b : ℕ → ℕ := fun m => if m ≤ k then mdigit A m else c (m - k - 1) with hbdef
+  have hb_le : ∀ m, m ≤ k → b m = mdigit A m := by
+    intro m h; rw [hbdef]; simp only [if_pos h]
+  have hb_gt : ∀ j, b (k + 1 + j) = c j := by
+    intro j
+    rw [hbdef]
+    simp only [if_neg (by omega : ¬ (k + 1 + j ≤ k))]
+    congr 1
+    omega
+  have hb_k1 : b (k + 1) = q₁ := by
+    have h0 : k + 1 - k - 1 = 0 := by omega
+    rw [hbdef]
+    simp only [if_neg (by omega : ¬ (k + 1 ≤ k)), h0]
+    try rfl
+  have hb_gt' : ∀ j, b (k + 1 + j + 1) = c (j + 1) := by
+    intro j
+    have h := hb_gt (j + 1)
+    rwa [show k + 1 + (j + 1) = k + 1 + j + 1 by omega] at h
+  have hbprime : ∀ m, (b m).Prime := by
+    intro m
+    rcases le_or_gt m k with h | h
+    · rw [hb_le m h]; exact mdigit_prime hAm m
+    · obtain ⟨j, rfl⟩ : ∃ j, m = k + 1 + j := ⟨m - k - 1, by omega⟩
+      rw [hb_gt j]; exact (hcgood j).1
+  have hb2 : ∀ m, 2 ≤ b m := fun m => (hbprime m).two_le
+  have hchain_lo : ∀ m, (b m) ^ 3 < b (m + 1) := by
+    intro m
+    rcases lt_trichotomy m k with h | h | h
+    · rw [hb_le m h.le, hb_le (m + 1) (by omega)]
+      exact mdigit_cube_lt hA1 hAm m
+    · rw [h, hb_le k le_rfl, hb_k1]
+      exact cube_lt_of_prime hp2 hq₁p hq₁ge
+    · obtain ⟨j, rfl⟩ : ∃ j, m = k + 1 + j := ⟨m - k - 1, by omega⟩
+      rw [hb_gt j, hb_gt' j]
+      exact cube_lt_of_prime (hcgood j).1.two_le (hcgood (j + 1)).1 (hcbound j).1
+  have hchain_hi : ∀ m, b (m + 1) + 1 < (b m + 1) ^ 3 := by
+    intro m
+    rcases lt_trichotomy m k with h | h | h
+    · rw [hb_le m h.le, hb_le (m + 1) (by omega)]
+      exact mdigit_succ_lt hA1 hAm m
+    · rw [h, hb_le k le_rfl, hb_k1, ← hpdef]
+      -- `q₁ ≤ p³ + p^(63/40) ≤ p³ + p²  <  (p+1)³ − 1`
+      have hqle : (q₁:ℝ) ≤ (p:ℝ) ^ (3:ℕ) + (p:ℝ) ^ (2:ℕ) :=
+        le_trans hq₁hi (by linarith [rpow_63_40_le_sq hp2r])
+      have hqn : q₁ ≤ p ^ 3 + p ^ 2 := by
+        have : ((q₁:ℕ):ℝ) ≤ ((p ^ 3 + p ^ 2 : ℕ) : ℝ) := by push_cast; linarith
+        exact_mod_cast this
+      have : (p + 1) ^ 3 = p ^ 3 + 3 * p ^ 2 + 3 * p + 1 := by ring
+      omega
+    · obtain ⟨j, rfl⟩ : ∃ j, m = k + 1 + j := ⟨m - k - 1, by omega⟩
+      rw [hb_gt j, hb_gt' j]
+      have hqn : c (j + 1) ≤ (c j) ^ 3 + (c j) ^ 2 := by
+        have : ((c (j + 1) : ℕ) : ℝ) ≤ (((c j) ^ 3 + (c j) ^ 2 : ℕ) : ℝ) := by
+          push_cast; linarith [(hcbound j).2]
+        exact_mod_cast this
+      have hcj2 : 2 ≤ c j := (hcgood j).1.two_le
+      have : (c j + 1) ^ 3 = (c j) ^ 3 + 3 * (c j) ^ 2 + 3 * (c j) + 1 := by ring
+      omega
+  -- the resulting Mills number undercuts `A`
+  obtain ⟨w, hw1, hwfl⟩ := exists_shifted_of_chain (b := b) (hb2 0) hchain_lo hchain_hi
+  have hwmills : IsMills w := by
+    intro n
+    obtain ⟨m, hm⟩ : ∃ m, (n:ℕ) = m + 1 :=
+      ⟨(n:ℕ).pred, (Nat.succ_pred_eq_of_pos n.pos).symm⟩
+    rw [hm, hwfl m]
+    exact (hbprime m).prime
+  have hAw : A ≤ w := hAmin ⟨hw1, hwmills⟩
+  have hdig : mdigit A (k + 1) ≤ b (k + 1) := by
+    have hpow : A ^ ((3:ℕ) ^ (k + 1 + 1)) ≤ w ^ ((3:ℕ) ^ (k + 1 + 1)) :=
+      pow_le_pow_left₀ hA0 hAw _
+    calc mdigit A (k + 1) = ⌊A ^ ((3:ℕ) ^ (k + 1 + 1))⌋₊ := rfl
+      _ ≤ ⌊w ^ ((3:ℕ) ^ (k + 1 + 1))⌋₊ := Nat.floor_le_floor hpow
+      _ = b (k + 1) := hwfl (k + 1)
+  rw [hb_k1] at hdig
+  have hq₁lt : (q₁:ℝ) < (mdigit A (k + 1) : ℝ) := lt_of_le_of_lt hq₁hi hcon
+  have : (q₁:ℕ) < mdigit A (k + 1) := by exact_mod_cast hq₁lt
+  omega
 
 /-! ### Saito Lemma 3.9 and the Mahler contradiction -/
 
