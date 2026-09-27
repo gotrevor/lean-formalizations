@@ -104,3 +104,4 @@ import LeanFormalizations.NumberTheory.Mills.SaitoLemma41
 import LeanFormalizations.NumberTheory.Mills.SaitoGeneral
 import LeanFormalizations.NumberTheory.Mills.SaitoPisot
 import LeanFormalizations.NumberTheory.Mills.Transcendental
+import LeanFormalizations.Literature.Lindemann

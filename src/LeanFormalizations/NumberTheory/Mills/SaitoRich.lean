@@ -47,6 +47,30 @@ theorem pow_add_two_ge_nat (u d : ℕ) :
     exact pow_add_two_ge_real (by positivity) d
   exact_mod_cast h
 
+/-- A prime at or above `uᶜ` (`u ≥ 2`, `c ≥ 2`) is *strictly* above it: `uᶜ` is composite. -/
+theorem pow_lt_of_prime {u v c : ℕ} (hu : 2 ≤ u) (hc : 2 ≤ c) (hv : v.Prime) (hle : u ^ c ≤ v) :
+    u ^ c < v := by
+  refine lt_of_le_of_ne hle ?_
+  intro hEq
+  rw [← hEq] at hv
+  rcases hv.eq_one_or_self_of_dvd u (dvd_pow_self u (by omega)) with h | h
+  · omega
+  · have hlt : u ^ 1 < u ^ c := Nat.pow_lt_pow_right hu (by omega)
+    rw [pow_one, ← h] at hlt
+    exact absurd hlt (lt_irrefl _)
+
+/-- The upper half of the chain condition: a term bounded by `uᶜ + u^(c−1)` leaves room below
+`(u+1)ᶜ − 1`, because `(u+1)ᶜ ≥ uᶜ + 2u^(c−1) + u^(c−2)`. -/
+theorem succ_lt_add_one_pow {u v c : ℕ} (hu : 2 ≤ u) (hc : 3 ≤ c)
+    (h : v ≤ u ^ c + u ^ (c - 1)) : v + 1 < (u + 1) ^ c := by
+  obtain ⟨d, hd⟩ : ∃ d, c = d + 2 := ⟨c - 2, by omega⟩
+  subst hd
+  have hc1 : d + 2 - 1 = d + 1 := by omega
+  rw [hc1] at h
+  have hbin := pow_add_two_ge_nat u d
+  have hu1 : 2 ≤ u ^ (d + 1) := le_trans hu (Nat.le_self_pow (by omega) u)
+  omega
+
 /-! ### The inner exponent -/
 
 /-- Saito's inner exponent `γ = 1 − 1/c`. -/
