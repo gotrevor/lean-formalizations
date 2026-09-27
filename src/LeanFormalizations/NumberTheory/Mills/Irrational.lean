@@ -37,7 +37,71 @@ open LeanFormalizations.Literature
 /-- Baker–Harman–Pintz puts a prime in every large cube gap (any `θ < 2/3` would do). -/
 theorem primeBetweenCubes_of_BHP (h : BakerHarmanPintz2001) :
     ∃ N, PrimeBetweenCubesFrom N := by
-  sorry
+  obtain ⟨d₀, hd₀, X, hX⟩ := h
+  refine ⟨max 2 (⌈X⌉₊ + 1), fun n hn => ?_⟩
+  have hn2 : 2 ≤ n := le_trans (le_max_left _ _) hn
+  have hn2r : (2:ℝ) ≤ (n:ℝ) := by exact_mod_cast hn2
+  have hnX : X ≤ (n:ℝ) := by
+    have h1 : ⌈X⌉₊ + 1 ≤ n := le_trans (le_max_right _ _) hn
+    have hc : X ≤ (⌈X⌉₊ : ℝ) := Nat.le_ceil X
+    have h2 : ((⌈X⌉₊ : ℕ) : ℝ) ≤ (n:ℝ) := by exact_mod_cast (show ⌈X⌉₊ ≤ n by omega)
+    linarith
+  set x : ℝ := (n:ℝ) ^ (3:ℕ) with hx
+  have hx8 : (8:ℝ) ≤ x := by
+    have h := pow_le_pow_left₀ (show (0:ℝ) ≤ 2 by norm_num) hn2r 3
+    rw [hx]; norm_num at h; linarith
+  have hxn : (n:ℝ) ≤ x := by
+    have h : (n:ℝ) ^ (1:ℕ) ≤ (n:ℝ) ^ (3:ℕ) := pow_le_pow_right₀ (by linarith) (by norm_num)
+    rw [pow_one] at h; rw [hx]; linarith
+  have hx1 : (1:ℝ) < x := by linarith
+  have hcount := hX x (le_trans hnX hxn)
+  have hlogx : 0 < Real.log x := Real.log_pos hx1
+  -- the interval `[x, x + x^(21/40)]` sits inside `(n³, (n+1)³)`
+  have hsmall : x ^ ((21:ℝ) / 40) ≤ (n:ℝ) ^ (2:ℕ) := by
+    have h1 : x ^ ((21:ℝ) / 40) ≤ x ^ ((2:ℝ) / 3) :=
+      Real.rpow_le_rpow_of_exponent_le hx1.le (by norm_num)
+    have h2 : x ^ ((2:ℝ) / 3) = (n:ℝ) ^ (2:ℕ) := by
+      rw [hx, ← Real.rpow_natCast (n:ℝ) 3, ← Real.rpow_mul (by positivity),
+        ← Real.rpow_natCast (n:ℝ) 2]
+      norm_num
+    linarith
+  -- a prime in the interval
+  have hcpos : 0 < primesIn x (x + x ^ ((21:ℝ) / 40)) := by
+    rcases Nat.eq_zero_or_pos (primesIn x (x + x ^ ((21:ℝ) / 40))) with h0 | h0
+    · rw [h0] at hcount
+      have : (0:ℝ) < d₀ * x ^ ((21:ℝ) / 40) / Real.log x :=
+        div_pos (mul_pos hd₀ (Real.rpow_pos_of_pos (by linarith) _)) hlogx
+      norm_num at hcount
+      linarith
+    · exact h0
+  unfold primesIn at hcpos
+  obtain ⟨p, hpmem⟩ := Finset.card_pos.1 hcpos
+  simp only [Finset.mem_filter, Finset.mem_Icc] at hpmem
+  obtain ⟨⟨hplo, hphi⟩, hp⟩ := hpmem
+  -- `⌈n³⌉₊ = n³`
+  have hceil : ⌈x⌉₊ = n ^ 3 := by
+    rw [hx, show ((n:ℝ)) ^ (3:ℕ) = ((n ^ 3 : ℕ) : ℝ) by push_cast; ring, Nat.ceil_natCast]
+  rw [hceil] at hplo
+  refine ⟨p, hp, ?_, ?_⟩
+  · -- `n³` itself is not prime
+    refine lt_of_le_of_ne hplo ?_
+    intro hEq
+    rw [← hEq] at hp
+    have hdvd : n ∣ n ^ 3 := dvd_pow_self n (by norm_num)
+    rcases hp.eq_one_or_self_of_dvd n hdvd with h1 | h1
+    · omega
+    · have hlt3 : n ^ 1 < n ^ 3 := Nat.pow_lt_pow_right hn2 (by norm_num)
+      rw [pow_one, ← h1] at hlt3
+      exact absurd hlt3 (lt_irrefl _)
+  · -- `p ≤ n³ + n² < (n+1)³`
+    have hpr : (p : ℝ) ≤ x + x ^ ((21:ℝ) / 40) := by
+      refine le_trans ?_ (Nat.floor_le (by positivity))
+      exact_mod_cast hphi
+    have hlt : (p : ℝ) < (((n + 1) ^ 3 : ℕ) : ℝ) := by
+      push_cast
+      rw [hx] at hpr
+      nlinarith [hsmall, hn2r]
+    exact_mod_cast hlt
 
 /-- Mills' theorem from Baker–Harman–Pintz. -/
 theorem exists_mills_of_BHP (h : BakerHarmanPintz2001) : ∃ A > 1, IsMills A :=
