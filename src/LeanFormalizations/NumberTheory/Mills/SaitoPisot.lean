@@ -253,6 +253,75 @@ theorem pisot_one_le_prod_norm {β : ℝ} (hβ : IsPisot β) :
   rw [hprodnorm, hcons] at hone
   simpa [Complex.norm_real, abs_of_pos hβ0] using hone
 
+/-! ### Structural facts about the conjugate multiset -/
+
+/-- `β` is a root of its own minimal polynomial, over `ℂ`. -/
+theorem beta_mem_aroots {β : ℝ} (halg : IsIntegral ℚ β) : (β : ℂ) ∈ (minpoly ℚ β).aroots ℂ := by
+  rw [mem_aroots]
+  refine ⟨minpoly.ne_zero halg, ?_⟩
+  have h1 : (aeval ((algebraMap ℝ ℂ) β)) (minpoly ℚ β)
+      = algebraMap ℝ ℂ ((aeval β) (minpoly ℚ β)) := aeval_algebraMap_apply ℂ β _
+  simpa [minpoly.aeval] using h1
+
+/-- The number of *other* conjugates is `deg β − 1`. -/
+theorem card_otherConj_add_one {β : ℝ} (halg : IsIntegral ℚ β) :
+    Multiset.card (otherConj β) + 1 = (minpoly ℚ β).natDegree := by
+  have hmonic : (minpoly ℚ β).Monic := minpoly.monic halg
+  have hQm : ((minpoly ℚ β).map (algebraMap ℚ ℂ)).Monic := hmonic.map _
+  have hsplit : ((minpoly ℚ β).map (algebraMap ℚ ℂ)).Splits := IsAlgClosed.splits _
+  have hcard : Multiset.card ((minpoly ℚ β).aroots ℂ) = (minpoly ℚ β).natDegree := by
+    rw [aroots_def, splits_iff_card_roots.1 hsplit, hmonic.natDegree_map]
+  have hcons : (minpoly ℚ β).aroots ℂ = (β : ℂ) ::ₘ otherConj β :=
+    (Multiset.cons_erase (beta_mem_aroots halg)).symm
+  rw [hcons, Multiset.card_cons] at hcard
+  exact hcard
+
+/-- All other conjugates of a Pisot number have modulus `< 1`, so `|β₂| < 1`. -/
+theorem conjMax_lt_one {β : ℝ} (hβ : IsPisot β) : conjMax β < 1 := by
+  obtain ⟨-, -, hsmall⟩ := hβ
+  unfold conjMax otherConj at *
+  revert hsmall
+  induction (((minpoly ℚ β).aroots ℂ).erase (β : ℂ)) using Multiset.induction with
+  | empty => intro _; simp
+  | cons a t ih =>
+      intro h
+      rw [Multiset.map_cons, Multiset.fold_cons_left, max_lt_iff]
+      exact ⟨h a (Multiset.mem_cons_self a t), ih fun z hz => h z (Multiset.mem_cons_of_mem hz)⟩
+
+/-- `‖Σ_{j≥2} β_jⁿ‖ ≤ (ℓ−1)·|β₂|ⁿ`, which tends to `0` for a Pisot number. -/
+theorem norm_conjPowSum_le (β : ℝ) (n : ℕ) :
+    ‖conjPowSum β n‖ ≤ (Multiset.card (otherConj β) : ℝ) * conjMax β ^ n := by
+  unfold conjPowSum
+  have hM := conjMax_nonneg β
+  have key : ∀ t : Multiset ℂ, (∀ z ∈ t, ‖z‖ ≤ conjMax β) →
+      ‖(t.map (· ^ n)).sum‖ ≤ (Multiset.card t : ℝ) * conjMax β ^ n := by
+    intro t
+    induction t using Multiset.induction with
+    | empty => intro _; simp
+    | cons a u ih =>
+        intro h
+        have ha : ‖a‖ ≤ conjMax β := h a (Multiset.mem_cons_self a u)
+        have hu := ih fun z hz => h z (Multiset.mem_cons_of_mem hz)
+        rw [Multiset.map_cons, Multiset.sum_cons, Multiset.card_cons]
+        refine le_trans (norm_add_le _ _) ?_
+        have h1 : ‖a ^ n‖ ≤ conjMax β ^ n := by
+          rw [norm_pow]; exact pow_le_pow_left₀ (norm_nonneg _) ha n
+        push_cast
+        nlinarith [hu, h1, pow_nonneg hM n]
+  exact key _ fun z hz => norm_le_conjMax hz
+
+/-- A Pisot number that is not a rational integer has degree `≥ 2`. -/
+theorem pisot_two_le_natDegree {β : ℝ} (hβ : IsPisot β) (hnotint : ∀ t : ℤ, β ≠ (t : ℝ)) :
+    2 ≤ (minpoly ℚ β).natDegree := by
+  obtain ⟨-, hint, -⟩ := hβ
+  have halg : IsIntegral ℚ β := hint.tower_top
+  rw [minpoly.two_le_natDegree_iff halg]
+  rintro ⟨q, rfl⟩
+  have hqint : IsIntegral ℤ q := by
+    rwa [isIntegral_algebraMap_iff (R := ℤ) (algebraMap ℚ ℝ).injective] at hint
+  obtain ⟨t, ht⟩ := IsIntegrallyClosed.isIntegral_iff.1 hqint
+  exact hnotint t (by rw [← ht]; simp)
+
 /-! ### Saito's Claim (Lemma 4.1) -/
 
 /-- **Saito (2024), Lemma 4.1, Claim.**  Let `β` be a Pisot number of degree `ℓ ≥ 2` whose
