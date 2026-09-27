@@ -96,6 +96,8 @@ import LeanFormalizations.Literature.Diophantine
 import LeanFormalizations.NumberTheory.Diophantine.Edges
 import LeanFormalizations.Literature.Pisot
 import LeanFormalizations.NumberTheory.Mills.BasicC
+import LeanFormalizations.NumberTheory.Mills.ChainC
+import LeanFormalizations.NumberTheory.Mills.SaitoRich
 import LeanFormalizations.NumberTheory.Mills.SaitoDegreeTwo
 import LeanFormalizations.NumberTheory.Mills.SaitoDigits
 import LeanFormalizations.NumberTheory.Mills.SaitoLemma41

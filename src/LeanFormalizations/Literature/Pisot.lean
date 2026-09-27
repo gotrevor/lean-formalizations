@@ -5,10 +5,13 @@ Statements only (rules in `Literature/Primes.lean`: faithful or weaker, cited, n
 These are the two inputs Saito (2024) adds, beyond the prime-distribution ones, to get
 *transcendence* of `ξ_c` (`c ≥ 4`) and the Pisot alternative for `ξ₃`.
 
-Both are quoted as Saito states them (Theorem 2.6, Lemma 2.7); the primary source,
-A. Dubickas, *Transcendency of some constants related to integer sequences of polynomial
-iterations*, Ramanujan J. **57** (2022), 569–581 (Lemmas 6 and 8), is not on arXiv and has not
-been checked here.  Dubickas's Lemma 6 rests on Corvaja–Zannier, *On the rational
+Both are Saito's quotations (Theorem 2.6, Lemma 2.7), checked 2026-09-27 against the primary
+source, A. Dubickas, *Transcendency of some constants related to integer sequences of polynomial
+iterations*, Ramanujan J. **57** (2022), 569–581, doi:10.1007/s11139-021-00428-5, Lemmas 6 and 8
+(p. 575–576).  Local-only full text (gitignored):
+`papers/dubickas-2022-transcendency-polynomial-iterations.{pdf,txt}`.  Dubickas writes Lemma 6's
+bound as `‖q α^(s_n)‖ > (1 − ε)^(s_n)` for `0 < ε < 1`; with `1 − ε = e^(−ε')` that is exactly
+the `e^(−ε' s_n)` form below, for every `ε' > 0`.  Dubickas's Lemma 6 rests on Corvaja–Zannier, *On the rational
 approximations to the powers of an algebraic number*, Acta Math. **193** (2004), 175–191
 (`p`-adic Schmidt subspace theorem).
 -/
