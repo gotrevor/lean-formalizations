@@ -92,41 +92,55 @@ private lemma cubeStep_spec {m : ℕ} (hm : N ≤ m) (hm2 : 2 ≤ m) :
   rw [he]
   exact ⟨hs.1, hs.2.1, prime_add_one_lt_cube hm2 hs.1 hs.2.2⟩
 
-/-- The prime chain `p 0 < p 1 < …`, each strictly between the cubes of the previous. -/
-private noncomputable def cubeSeq : ℕ → ℕ
-  | 0 => (Nat.exists_infinite_primes (max N 2)).choose
-  | k + 1 => cubeStep h (cubeSeq k)
+/-- The chain started at a *chosen* `m₀`: `m₀`, then a prime strictly between the cubes of the
+previous term, forever.  Only the terms of index `≥ 1` are prime; `m₀` itself need only satisfy
+`max N 2 ≤ m₀`.  Letting `m₀` be chosen is exactly what makes the resulting Mills number
+bounded *above* (by `m₀ + 1`), which the original `Nat.exists_infinite_primes` start did not. -/
+private noncomputable def cubeSeq (m₀ : ℕ) : ℕ → ℕ
+  | 0 => m₀
+  | k + 1 => cubeStep h (cubeSeq m₀ k)
 
-include h in
-private lemma cubeSeq_spec (k : ℕ) : (cubeSeq h k).Prime ∧ max N 2 ≤ cubeSeq h k := by
+variable {m₀ : ℕ} (hm₀ : max N 2 ≤ m₀)
+
+include h hm₀ in
+private lemma cubeSeq_ge (k : ℕ) : max N 2 ≤ cubeSeq h m₀ k := by
   induction k with
-  | zero =>
-      have := (Nat.exists_infinite_primes (max N 2)).choose_spec
-      exact ⟨this.2, this.1⟩
+  | zero => exact hm₀
   | succ k ih =>
-      obtain ⟨hp, hge⟩ := ih
-      have hN : N ≤ cubeSeq h k := le_trans (le_max_left _ _) hge
-      have h2 : 2 ≤ cubeSeq h k := le_trans (le_max_right _ _) hge
+      have hN : N ≤ cubeSeq h m₀ k := le_trans (le_max_left _ _) ih
+      have h2 : 2 ≤ cubeSeq h m₀ k := le_trans (le_max_right _ _) ih
       obtain ⟨hq, hlo, _⟩ := cubeStep_spec h hN h2
-      refine ⟨hq, ?_⟩
-      have : cubeSeq h k ≤ (cubeSeq h k) ^ 3 := Nat.le_self_pow (by norm_num) _
-      show max N 2 ≤ cubeStep h (cubeSeq h k)
+      have : cubeSeq h m₀ k ≤ (cubeSeq h m₀ k) ^ 3 := Nat.le_self_pow (by norm_num) _
+      show max N 2 ≤ cubeStep h (cubeSeq h m₀ k)
       omega
 
-include h in
-private lemma cubeSeq_lower (k : ℕ) : (cubeSeq h k) ^ 3 < cubeSeq h (k + 1) := by
-  obtain ⟨_, hge⟩ := cubeSeq_spec h k
+include h hm₀ in
+private lemma cubeSeq_prime_succ (k : ℕ) : (cubeSeq h m₀ (k + 1)).Prime := by
+  have ih := cubeSeq_ge h hm₀ k
+  exact (cubeStep_spec h (le_trans (le_max_left _ _) ih) (le_trans (le_max_right _ _) ih)).1
+
+include h hm₀ in
+private lemma cubeSeq_prime (hp : m₀.Prime) (k : ℕ) : (cubeSeq h m₀ k).Prime := by
+  cases k with
+  | zero => exact hp
+  | succ k => exact cubeSeq_prime_succ h hm₀ k
+
+include h hm₀ in
+private lemma cubeSeq_lower (k : ℕ) : (cubeSeq h m₀ k) ^ 3 < cubeSeq h m₀ (k + 1) := by
+  have hge := cubeSeq_ge h hm₀ k
   exact (cubeStep_spec h (le_trans (le_max_left _ _) hge) (le_trans (le_max_right _ _) hge)).2.1
 
-include h in
-private lemma cubeSeq_upper (k : ℕ) : cubeSeq h (k + 1) + 1 < (cubeSeq h k + 1) ^ 3 := by
-  obtain ⟨_, hge⟩ := cubeSeq_spec h k
+include h hm₀ in
+private lemma cubeSeq_upper (k : ℕ) : cubeSeq h m₀ (k + 1) + 1 < (cubeSeq h m₀ k + 1) ^ 3 := by
+  have hge := cubeSeq_ge h hm₀ k
   exact (cubeStep_spec h (le_trans (le_max_left _ _) hge) (le_trans (le_max_right _ _) hge)).2.2
 
 /-- Left endpoints of the nested intervals in `A`-space. -/
-private noncomputable def mu (k : ℕ) : ℝ := (cubeSeq h k : ℝ) ^ ((((3:ℕ) ^ k : ℕ) : ℝ))⁻¹
+private noncomputable def mu (m₀ k : ℕ) : ℝ :=
+  (cubeSeq h m₀ k : ℝ) ^ ((((3:ℕ) ^ k : ℕ) : ℝ))⁻¹
 /-- Right endpoints of the nested intervals in `A`-space. -/
-private noncomputable def nu (k : ℕ) : ℝ := ((cubeSeq h k : ℝ) + 1) ^ ((((3:ℕ) ^ k : ℕ) : ℝ))⁻¹
+private noncomputable def nu (m₀ k : ℕ) : ℝ :=
+  ((cubeSeq h m₀ k : ℝ) + 1) ^ ((((3:ℕ) ^ k : ℕ) : ℝ))⁻¹
 
 private lemma exp_pos (k : ℕ) : (0:ℝ) < ((((3:ℕ) ^ k : ℕ) : ℝ))⁻¹ := by positivity
 
@@ -141,80 +155,100 @@ private lemma cube_root_step {x : ℝ} (hx : 0 ≤ x) (k : ℕ) :
   field_simp
   ring
 
-include h in
-private lemma mu_lt_succ (k : ℕ) : mu h k < mu h (k + 1) := by
-  have hbase : (0:ℝ) ≤ ((cubeSeq h k : ℝ)) ^ (3:ℕ) := by positivity
-  have hlt : ((cubeSeq h k : ℝ)) ^ (3:ℕ) < (cubeSeq h (k+1) : ℝ) := by
-    have := cubeSeq_lower h k; exact_mod_cast this
+include h hm₀ in
+private lemma mu_lt_succ (k : ℕ) : mu h m₀ k < mu h m₀ (k + 1) := by
+  have hbase : (0:ℝ) ≤ ((cubeSeq h m₀ k : ℝ)) ^ (3:ℕ) := by positivity
+  have hlt : ((cubeSeq h m₀ k : ℝ)) ^ (3:ℕ) < (cubeSeq h m₀ (k+1) : ℝ) := by
+    have := cubeSeq_lower h hm₀ k; exact_mod_cast this
   have := Real.rpow_lt_rpow hbase hlt (exp_pos (k+1))
   rwa [cube_root_step (by positivity) k] at this
 
-include h in
-private lemma nu_succ_lt (k : ℕ) : nu h (k + 1) < nu h k := by
-  have hbase : (0:ℝ) ≤ (cubeSeq h (k+1) : ℝ) + 1 := by positivity
-  have hlt : (cubeSeq h (k+1) : ℝ) + 1 < ((cubeSeq h k : ℝ) + 1) ^ (3:ℕ) := by
-    have := cubeSeq_upper h k
-    have hc : ((cubeSeq h (k+1) + 1 : ℕ) : ℝ) < (((cubeSeq h k + 1) ^ 3 : ℕ) : ℝ) := by
+include h hm₀ in
+private lemma nu_succ_lt (k : ℕ) : nu h m₀ (k + 1) < nu h m₀ k := by
+  have hbase : (0:ℝ) ≤ (cubeSeq h m₀ (k+1) : ℝ) + 1 := by positivity
+  have hlt : (cubeSeq h m₀ (k+1) : ℝ) + 1 < ((cubeSeq h m₀ k : ℝ) + 1) ^ (3:ℕ) := by
+    have := cubeSeq_upper h hm₀ k
+    have hc : ((cubeSeq h m₀ (k+1) + 1 : ℕ) : ℝ) < (((cubeSeq h m₀ k + 1) ^ 3 : ℕ) : ℝ) := by
       exact_mod_cast this
     push_cast at hc; linarith
   have := Real.rpow_lt_rpow hbase hlt (exp_pos (k+1))
   rwa [cube_root_step (by positivity) k] at this
 
 include h in
-private lemma mu_lt_nu (k : ℕ) : mu h k < nu h k :=
+private lemma mu_lt_nu (k : ℕ) : mu h m₀ k < nu h m₀ k :=
   Real.rpow_lt_rpow (by positivity) (by linarith) (exp_pos k)
 
-include h in
-private lemma mu_le_nu (m k : ℕ) : mu h m ≤ nu h k := by
-  have hmono : Monotone (mu h) := monotone_nat_of_le_succ fun n => (mu_lt_succ h n).le
-  have hanti : Antitone (nu h) := antitone_nat_of_succ_le fun n => (nu_succ_lt h n).le
+include h hm₀ in
+private lemma mu_le_nu (m k : ℕ) : mu h m₀ m ≤ nu h m₀ k := by
+  have hmono : Monotone (mu h m₀) := monotone_nat_of_le_succ fun n => (mu_lt_succ h hm₀ n).le
+  have hanti : Antitone (nu h m₀) := antitone_nat_of_succ_le fun n => (nu_succ_lt h hm₀ n).le
   rcases le_total m k with hmk | hmk
   · exact le_trans (hmono hmk) (mu_lt_nu h k).le
   · exact le_trans (mu_lt_nu h m).le (hanti hmk)
 
-include h in
-private lemma mu_bddAbove : BddAbove (Set.range (mu h)) :=
-  ⟨nu h 0, by rintro _ ⟨m, rfl⟩; exact mu_le_nu h m 0⟩
+include h hm₀ in
+private lemma mu_bddAbove : BddAbove (Set.range (mu h m₀)) :=
+  ⟨nu h m₀ 0, by rintro _ ⟨m, rfl⟩; exact mu_le_nu h hm₀ m 0⟩
 
 include h in
-private lemma pow_mu (k : ℕ) : (mu h k) ^ ((3:ℕ) ^ k) = (cubeSeq h k : ℝ) :=
+private lemma pow_mu (k : ℕ) : (mu h m₀ k) ^ ((3:ℕ) ^ k) = (cubeSeq h m₀ k : ℝ) :=
   Real.rpow_inv_natCast_pow (by positivity) (by positivity)
 
 include h in
-private lemma pow_nu (k : ℕ) : (nu h k) ^ ((3:ℕ) ^ k) = (cubeSeq h k : ℝ) + 1 :=
+private lemma pow_nu (k : ℕ) : (nu h m₀ k) ^ ((3:ℕ) ^ k) = (cubeSeq h m₀ k : ℝ) + 1 :=
   Real.rpow_inv_natCast_pow (by positivity) (by positivity)
 
-include h in
+include h hm₀ in
 private lemma floor_pow_iSup (k : ℕ) :
-    ⌊(⨆ n, mu h n) ^ ((3:ℕ) ^ k)⌋₊ = cubeSeq h k := by
-  set A : ℝ := ⨆ n, mu h n with hA
-  have hlo : mu h k < A := lt_of_lt_of_le (mu_lt_succ h k) (le_ciSup (mu_bddAbove h) (k+1))
-  have hhi : A < nu h k :=
-    lt_of_le_of_lt (ciSup_le fun m => mu_le_nu h m (k+1)) (nu_succ_lt h k)
-  have hmupos : (0:ℝ) ≤ mu h k := by unfold mu; positivity
-  have h1 : (cubeSeq h k : ℝ) < A ^ ((3:ℕ) ^ k) := by
+    ⌊(⨆ n, mu h m₀ n) ^ ((3:ℕ) ^ k)⌋₊ = cubeSeq h m₀ k := by
+  set A : ℝ := ⨆ n, mu h m₀ n with hA
+  have hlo : mu h m₀ k < A :=
+    lt_of_lt_of_le (mu_lt_succ h hm₀ k) (le_ciSup (mu_bddAbove h hm₀) (k+1))
+  have hhi : A < nu h m₀ k :=
+    lt_of_le_of_lt (ciSup_le fun m => mu_le_nu h hm₀ m (k+1)) (nu_succ_lt h hm₀ k)
+  have hmupos : (0:ℝ) ≤ mu h m₀ k := by unfold mu; positivity
+  have h1 : (cubeSeq h m₀ k : ℝ) < A ^ ((3:ℕ) ^ k) := by
     rw [← pow_mu h k]; exact pow_lt_pow_left₀ hlo hmupos (by positivity)
-  have h2 : A ^ ((3:ℕ) ^ k) < (cubeSeq h k : ℝ) + 1 := by
-    rw [← pow_nu h k]; exact pow_lt_pow_left₀ hhi (le_of_lt (lt_of_le_of_lt hmupos hlo)) (by positivity)
+  have h2 : A ^ ((3:ℕ) ^ k) < (cubeSeq h m₀ k : ℝ) + 1 := by
+    rw [← pow_nu h k]
+    exact pow_lt_pow_left₀ hhi (le_of_lt (lt_of_le_of_lt hmupos hlo)) (by positivity)
   have hnn : (0:ℝ) ≤ A ^ ((3:ℕ) ^ k) := le_trans (Nat.cast_nonneg _) h1.le
   rw [Nat.floor_eq_iff hnn]
   exact ⟨h1.le, h2⟩
 
+include h hm₀ in
+/-- The built Mills number lies below `m₀ + 1`: the `k = 0` interval is `[m₀, m₀ + 1)`. -/
+private lemma iSup_mu_lt : (⨆ n, mu h m₀ n) < (m₀ : ℝ) + 1 := by
+  have h0 : nu h m₀ 0 = (m₀ : ℝ) + 1 := by
+    simp [nu, cubeSeq]
+  have := lt_of_le_of_lt (ciSup_le fun m => mu_le_nu h hm₀ m 1) (nu_succ_lt h hm₀ 0)
+  rwa [h0] at this
+
+include h hm₀ in
+private lemma le_iSup_mu : (m₀ : ℝ) ≤ ⨆ n, mu h m₀ n := by
+  have h0 : mu h m₀ 0 = (m₀ : ℝ) := by simp [mu, cubeSeq]
+  have := le_ciSup (mu_bddAbove h hm₀) 0
+  rwa [h0] at this
+
 end Construction
+
+/-- **Mills' theorem with an explicit upper bound**, conditional on primes between consecutive
+cubes: starting the chain at any `m₀ ≥ max N 2` gives a Mills number in `[m₀, m₀ + 1)`. -/
+theorem exists_mills_lt_of_primeBetweenCubes {N m₀ : ℕ} (h : PrimeBetweenCubesFrom N)
+    (hm₀ : max N 2 ≤ m₀) : ∃ A, 1 < A ∧ IsMills A ∧ A < (m₀ : ℝ) + 1 := by
+  have h2 : (2:ℝ) ≤ (m₀ : ℝ) := by
+    exact_mod_cast le_trans (le_max_right N 2) hm₀
+  refine ⟨⨆ n, mu h m₀ n, ?_, fun n => ?_, iSup_mu_lt h hm₀⟩
+  · have := le_iSup_mu h hm₀; linarith
+  · obtain ⟨k, hk⟩ : ∃ k, ((n : ℕ)) = k + 1 := ⟨(n : ℕ) - 1, by have h : 0 < (n : ℕ) := n.2; omega⟩
+    rw [hk, floor_pow_iSup h hm₀ (k + 1)]
+    exact (cubeSeq_prime_succ h hm₀ k).prime
 
 /-- **Mills' theorem, conditional on primes between consecutive cubes.** -/
 theorem exists_mills_of_primeBetweenCubes {N : ℕ} (h : PrimeBetweenCubesFrom N) :
     ∃ A > 1, IsMills A := by
-  refine ⟨⨆ n, mu h n, ?_, fun n => ?_⟩
-  · have h0 : mu h 0 = (cubeSeq h 0 : ℝ) := by
-      simp [mu]
-    have hge : (2:ℝ) ≤ mu h 0 := by
-      rw [h0]
-      exact_mod_cast le_trans (le_max_right N 2) (cubeSeq_spec h 0).2
-    have := le_ciSup (mu_bddAbove h) 0
-    linarith
-  · rw [floor_pow_iSup h (n : ℕ)]
-    exact (cubeSeq_spec h (n : ℕ)).1.prime
+  obtain ⟨A, hA1, hA, -⟩ := exists_mills_lt_of_primeBetweenCubes h (le_refl (max N 2))
+  exact ⟨A, hA1, hA⟩
 
 /-- **The least Mills number exists** as soon as one Mills number does.  Unconditional. -/
 theorem exists_least_of_exists (h : ∃ A > 1, IsMills A) : ∃ A, IsMinMills A := by
@@ -270,5 +304,42 @@ theorem exists_least_of_exists (h : ∃ A > 1, IsMills A) : ∃ A, IsMinMills A 
 theorem exists_least_of_primeBetweenCubes {N : ℕ} (h : PrimeBetweenCubesFrom N) :
     ∃ A, IsMinMills A :=
   exists_least_of_exists (exists_mills_of_primeBetweenCubes h)
+
+
+/-- **Mills' theorem with a cube-root-scale upper bound.**  Starting the chain at a chosen
+*prime* `m₀ ≥ max N 2` and taking the cube root of the resulting number shifts the indexing by
+one: the digit at `n = 1` is `m₀` itself, so `A³ < m₀ + 1`.  This is the form that gives an
+explicit bound of the right order of magnitude (`A ≈ m₀^(1/3)`). -/
+theorem exists_mills_cube_lt_of_primeBetweenCubes {N m₀ : ℕ} (h : PrimeBetweenCubesFrom N)
+    (hp : m₀.Prime) (hm₀ : max N 2 ≤ m₀) :
+    ∃ A, 1 < A ∧ IsMills A ∧ A ^ 3 < (m₀ : ℝ) + 1 := by
+  have h2 : (2:ℝ) ≤ (m₀ : ℝ) := by exact_mod_cast le_trans (le_max_right N 2) hm₀
+  set B : ℝ := ⨆ n, mu h m₀ n with hB
+  have hBlo : (m₀ : ℝ) ≤ B := le_iSup_mu h hm₀
+  have hBhi : B < (m₀ : ℝ) + 1 := iSup_mu_lt h hm₀
+  have hB0 : (0:ℝ) ≤ B := by linarith
+  refine ⟨B ^ ((((3:ℕ)) : ℝ))⁻¹, ?_, ?_, ?_⟩
+  · -- `A > 1` because `A³ = B ≥ 2`
+    have hcube : (B ^ ((((3:ℕ)) : ℝ))⁻¹) ^ (3:ℕ) = B :=
+      Real.rpow_inv_natCast_pow hB0 (by norm_num)
+    have hA0 : (0:ℝ) ≤ B ^ ((((3:ℕ)) : ℝ))⁻¹ := Real.rpow_nonneg hB0 _
+    by_contra hcon
+    push Not at hcon
+    have : (B ^ ((((3:ℕ)) : ℝ))⁻¹) ^ (3:ℕ) ≤ 1 := pow_le_one₀ hA0 hcon
+    rw [hcube] at this
+    linarith
+  · intro n
+    obtain ⟨k, hk⟩ : ∃ k, ((n : ℕ)) = k + 1 := ⟨(n : ℕ) - 1, by have h : 0 < (n : ℕ) := n.2; omega⟩
+    have hcube : (B ^ ((((3:ℕ)) : ℝ))⁻¹) ^ (3:ℕ) = B :=
+      Real.rpow_inv_natCast_pow hB0 (by norm_num)
+    have hstep : (B ^ ((((3:ℕ)) : ℝ))⁻¹) ^ ((3:ℕ) ^ ((n : ℕ))) = B ^ ((3:ℕ) ^ k) := by
+      rw [hk, pow_succ, mul_comm, pow_mul, hcube]
+    rw [hstep, floor_pow_iSup h hm₀ k]
+    exact (cubeSeq_prime h hm₀ hp k).prime
+  · have hcube : (B ^ ((((3:ℕ)) : ℝ))⁻¹) ^ (3:ℕ) = B :=
+      Real.rpow_inv_natCast_pow hB0 (by norm_num)
+    rw [show (3:ℕ) = ((3:ℕ)) from rfl] at hcube
+    calc (B ^ ((((3:ℕ)) : ℝ))⁻¹) ^ 3 = B := hcube
+      _ < (m₀ : ℝ) + 1 := hBhi
 
 end LeanFormalizations.Mills
