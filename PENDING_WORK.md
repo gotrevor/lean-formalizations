@@ -810,7 +810,8 @@ Open leaves (both standard ANT, neither Mills-specific):
    `minpoly.isIntegrallyClosed_eq_field_fractions` (ℚ-minpoly is the ℤ-minpoly mapped) and
    `prod_roots_eq_coeff_zero_of_monic_of_splits`.
 
-**Next attack**: leaf 2 (shorter), then leaf 1, then the `b ≥ 5` arithmetic
+**UPDATE (same lap): BOTH LEAVES PROVED.** `SaitoPisot.lean` is sorry-free and axiom-clean.
+**Next attack**: the `b ≥ 5` arithmetic
 (`μ = bθ_b ≥ 11/8 > 1`, `ℓ ≥ 2` ⇒ contradiction ⇒ Thm 1.1 modulo the §3 `c`-generalisation).
 The §3 `c`-general Lemmas 3.5/3.6/3.8/3.9 (a known-shape generalisation of `Irrational.lean`)
 are deliberately *later*: effort, not uncertainty.

@@ -11,30 +11,34 @@ which is exactly (4.1)+(4.2) after `β := ξ^(C_m)` and `μ := b θ_b`.  Saito's
 `(ℓ − 1) μ ≤ 1` where `ℓ = deg β` — `pisot_degree_bound` below.  Everything downstream
 (`b ≥ 5 ⇒ ℓ ≤ 1`, contradicting `ℓ ≥ 2`; `b = 4 ⇒ ℓ = 2`; `b = 3 ⇒ ℓ ∈ {2,3}`) is arithmetic.
 
-## What is proved here and what is open
+## Status: this file is SORRY-FREE and axiom-clean
 
-Proved, axiom-clean:
-* `le_of_pow_le_const_mul_pow` — the limiting step "`Mⁿ n^(−λ) ≤ K ρⁿ` eventually ⇒ `M ≤ ρ`",
-  which is Saito's "By taking `k → ∞`".  Polynomial-vs-exponential via
-  `isLittleO_pow_const_const_pow_of_one_lt`, after `n^λ ≤ n^⌈λ⌉₊`.
-* `conjMax_pow_card_le` — `∏_{j≥2} |β_j| ≤ |β₂|^(ℓ−1)`.
-* `pisot_degree_bound` — the Claim, from those two plus the two algebraic-number facts below.
+* `le_of_pow_le_const_mul_pow` — Saito's "take `k → ∞`": `Mⁿ n^(−λ) ≤ K ρⁿ` eventually ⇒
+  `M ≤ ρ`, via `isLittleO_pow_const_const_pow_of_one_lt` after `n^λ ≤ n^⌈λ⌉₊`.
+* `conjMax_pow_card_le` / `Multiset.prod_le_pow_card_of_le` — `∏_{j≥2}|β_j| ≤ |β₂|^(ℓ−1)`.
+* `pisot_one_le_prod_norm` — `1 ≤ β·∏_{j≥2}|β_j|`.  Proof: the product of ALL conjugate moduli
+  is `‖Q.eval 0‖` for `Q` the monic ℂ-split minimal polynomial, `Q.eval 0` is the constant
+  coefficient of the *integer* minimal polynomial (`minpoly.isIntegrallyClosed_eq_field_fractions'`),
+  and that integer is nonzero (`minpoly.coeff_zero_ne_zero`, `β ≠ 0`).
+* `rootPowSum_mem_int` / `pisot_conjPowSum_add_mem_int` — `βⁿ + Σ_{j≥2} β_jⁿ ∈ ℤ`.  Proof:
+  it is `algebraMap ℚ ℂ (Algebra.trace ℚ ℚ⟮β⟯ (gⁿ))` via `trace_eq_sum_embeddings` plus
+  `PowerBasis.liftEquiv'` (embeddings ↔ roots, `nodup_roots` for the dedup), and the trace of the
+  algebraic integer `gⁿ` is a rational integer by `Algebra.isIntegral_trace` +
+  `IsIntegrallyClosed.isIntegral_iff`.
+* `pisot_degree_bound` — the Claim `(ℓ−1)μ ≤ 1`, from the three previous items.
 
-Open (two named leaves, both standard algebraic number theory, neither Mills-specific):
-* `pisot_conjPowSum_add_mem_int` — `βⁿ + Σ_{j≥2} β_jⁿ ∈ ℤ` (the trace of an algebraic integer).
-* `pisot_one_le_prod_norm` — `1 ≤ |N(β)| = β · ∏_{j≥2}|β_j|` (a nonzero algebraic integer has
-  norm of absolute value `≥ 1`).
+## What this leaves for `Transcendental.lean`
 
-`pisot_conjPowSum_add_mem_int` is not used by `pisot_degree_bound` itself — it is the bridge
-that turns Saito's `‖ξ^{C_k}‖` estimate into the `‖Σ_{j≥2} β_jⁿ‖` hypothesis, i.e. it is needed
-one level up, in `Transcendental.lean`.  It is stated here because it is about the same objects.
+Everything downstream of the Claim is arithmetic (`b ≥ 5 ⇒ (ℓ−1)μ ≥ 11/8 > 1`, contradicting
+`ℓ ≥ 2`; `b = 4 ⇒ ℓ = 2`; `b = 3 ⇒ ℓ ∈ {2,3}`), plus the `c`-general §3 estimates that supply
+the `hdecay` hypothesis (a known-shape generalisation of `Mills/Irrational.lean`).
 -/
 import Mathlib
 import LeanFormalizations.Literature.Pisot
 
 namespace LeanFormalizations.Mills
 
-open LeanFormalizations.Literature Filter Polynomial
+open LeanFormalizations.Literature Filter Polynomial IntermediateField
 
 /-! ### The conjugates of a real algebraic number, other than itself -/
 
@@ -126,6 +130,16 @@ theorem le_of_pow_le_const_mul_pow {M ρ K : ℝ} (d : ℕ) (hM : 0 ≤ M) (hρ 
 
 /-! ### The two algebraic-number leaves -/
 
+/-- `‖∏ (−aᵢ)‖ = ∏ ‖aᵢ‖`. -/
+theorem norm_multiset_prod_neg (t : Multiset ℂ) :
+    ‖(t.map fun a => -a).prod‖ = (t.map (‖·‖)).prod := by
+  induction t using Multiset.induction with
+  | empty => simp
+  | cons a u ih =>
+      rw [Multiset.map_cons, Multiset.prod_cons, norm_mul, norm_neg, Multiset.map_cons,
+        Multiset.prod_cons, ih]
+
+
 /-- **`βⁿ + Σ_{j≥2} β_jⁿ ∈ ℤ`** for `β` a Pisot number: the left side is the trace of the
 algebraic integer `βⁿ` from `ℚ(β)` to `ℚ`, hence a rational integer.
 
@@ -133,16 +147,111 @@ Route: `Algebra.trace_eq_sum_embeddings` over `ℚ⟮β⟯` identifies the trace
 `IntermediateField.AdjoinSimple.trace_gen_eq_sum_roots` identifies the embeddings' images of
 `β` with the roots of `minpoly ℚ β`, and `Algebra.isIntegral_trace` + `IsIntegrallyClosed`
 puts the trace in `ℤ`. -/
+theorem rootPowSum_mem_int {β : ℝ} (hint : IsIntegral ℤ β) (n : ℕ) :
+    ∃ t : ℤ, ((((minpoly ℚ β).aroots ℂ).map (· ^ n)).sum) = (t : ℂ) := by
+  have halg : IsIntegral ℚ β := hint.tower_top
+  haveI : FiniteDimensional ℚ ℚ⟮β⟯ := IntermediateField.adjoin.finiteDimensional halg
+  set g : ℚ⟮β⟯ := IntermediateField.AdjoinSimple.gen ℚ β with hg
+  have hinj : Function.Injective (algebraMap ℚ⟮β⟯ ℝ) := (algebraMap ℚ⟮β⟯ ℝ).injective
+  have hgmap : algebraMap ℚ⟮β⟯ ℝ g = β := IntermediateField.AdjoinSimple.algebraMap_gen ℚ β
+  -- `gⁿ` is an algebraic integer, so its trace is a rational integer
+  have hgint : IsIntegral ℤ g := by
+    rw [← isIntegral_algebraMap_iff (R := ℤ) hinj, hgmap]; exact hint
+  have htr : IsIntegral ℤ (Algebra.trace ℚ ℚ⟮β⟯ (g ^ n)) :=
+    Algebra.isIntegral_trace (hgint.pow n)
+  obtain ⟨t, ht⟩ := IsIntegrallyClosed.isIntegral_iff.1 htr
+  refine ⟨t, ?_⟩
+  -- the trace is the power sum over the roots
+  have hsum : algebraMap ℚ ℂ (Algebra.trace ℚ ℚ⟮β⟯ (g ^ n)) = ∑ σ : ℚ⟮β⟯ →ₐ[ℚ] ℂ, σ (g ^ n) :=
+    _root_.trace_eq_sum_embeddings ℂ
+  have hmin : minpoly ℚ g = minpoly ℚ β := by
+    have h := minpoly.algebraMap_eq (A := ℚ) hinj g
+    rw [hgmap] at h
+    exact h.symm
+  classical
+  set pb : PowerBasis ℚ ℚ⟮β⟯ := IntermediateField.adjoin.powerBasis halg with hpb
+  have hpbgen : pb.gen = g := IntermediateField.adjoin.powerBasis_gen halg
+  have hsep : IsSeparable ℚ pb.gen := Algebra.IsSeparable.isSeparable ℚ _
+  have hnodup : ((minpoly ℚ pb.gen).aroots ℂ).Nodup :=
+    nodup_roots ((separable_map _).mpr hsep)
+  have hfin : (∑ σ : ℚ⟮β⟯ →ₐ[ℚ] ℂ, σ (g ^ n))
+      = (((minpoly ℚ pb.gen).aroots ℂ).map (· ^ n)).sum := by
+    rw [Fintype.sum_equiv pb.liftEquiv' (fun σ : ℚ⟮β⟯ →ₐ[ℚ] ℂ => σ (g ^ n))
+        (fun x : {x : ℂ // x ∈ (minpoly ℚ pb.gen).aroots ℂ} => ((x : ℂ)) ^ n)
+        (by intro σ; rw [PowerBasis.liftEquiv'_apply_coe, hpbgen, ← map_pow]),
+      Finset.sum_mem_multiset _ _ (fun x : ℂ => x ^ n) (fun x => rfl),
+      Finset.sum_eq_multiset_sum, Multiset.toFinset_val, Multiset.dedup_eq_self.mpr hnodup]
+  rw [hpbgen, hmin] at hfin
+  rw [← hfin, ← hsum, ← ht]
+  simp
+
+/-- **`βⁿ + Σ_{j≥2} β_jⁿ ∈ ℤ`** for `β` a Pisot number (Saito §4, the `t_k ∈ ℤ` step). -/
 theorem pisot_conjPowSum_add_mem_int {β : ℝ} (hβ : IsPisot β) (n : ℕ) :
     ∃ t : ℤ, ((β : ℂ)) ^ n + conjPowSum β n = (t : ℂ) := by
-  sorry
+  obtain ⟨hβ1, hint, -⟩ := hβ
+  obtain ⟨t, ht⟩ := rootPowSum_mem_int hint n
+  refine ⟨t, ?_⟩
+  have halg : IsIntegral ℚ β := hint.tower_top
+  have hmem : (β : ℂ) ∈ (minpoly ℚ β).aroots ℂ := by
+    rw [mem_aroots]
+    refine ⟨minpoly.ne_zero halg, ?_⟩
+    have h1 : (aeval ((algebraMap ℝ ℂ) β)) (minpoly ℚ β)
+        = algebraMap ℝ ℂ ((aeval β) (minpoly ℚ β)) := aeval_algebraMap_apply ℂ β _
+    simpa [minpoly.aeval] using h1
+  have hcons : (minpoly ℚ β).aroots ℂ = (β : ℂ) ::ₘ otherConj β :=
+    (Multiset.cons_erase hmem).symm
+  rw [hcons, Multiset.map_cons, Multiset.sum_cons] at ht
+  exact ht
 
 /-- **`1 ≤ β · ∏_{j≥2} |β_j|`**: the field norm of the nonzero algebraic integer `β` is a
 nonzero rational integer, and its absolute value is the product of the moduli of all
 conjugates. -/
 theorem pisot_one_le_prod_norm {β : ℝ} (hβ : IsPisot β) :
     1 ≤ β * ((otherConj β).map (‖·‖)).prod := by
-  sorry
+  obtain ⟨hβ1, hint, -⟩ := hβ
+  have hβ0 : (0 : ℝ) < β := by linarith
+  have hβne : β ≠ 0 := ne_of_gt hβ0
+  have halg : IsIntegral ℚ β := hint.tower_top
+  set p : ℚ[X] := minpoly ℚ β with hp
+  have hmonic : p.Monic := minpoly.monic halg
+  set Q : ℂ[X] := p.map (algebraMap ℚ ℂ) with hQ
+  have hQm : Q.Monic := hmonic.map _
+  have hsplit : Q.Splits := IsAlgClosed.splits Q
+  -- `Q = ∏ (X - r)` over its roots
+  have hfac : Q = (Q.roots.map fun a => X - C a).prod := hsplit.eq_prod_roots_of_monic hQm
+  -- evaluate at `0`
+  have heval : Q.eval 0 = (Q.roots.map fun a => -a).prod := by
+    conv_lhs => rw [hfac]
+    rw [eval_multiset_prod, Multiset.map_map]
+    simp
+  -- the evaluation is the integer `coeff 0` of the ℤ-minimal polynomial
+  have hmapZ : p = (minpoly ℤ β).map (algebraMap ℤ ℚ) :=
+    minpoly.isIntegrallyClosed_eq_field_fractions' ℚ hint
+  have hc0 : Q.eval 0 = (((minpoly ℤ β).coeff 0 : ℤ) : ℂ) := by
+    rw [hQ, eval_map, eval₂_at_zero, hmapZ, coeff_map]
+    simp
+  have hne : ((minpoly ℤ β).coeff 0 : ℤ) ≠ 0 := by
+    intro h
+    have hQ0 : p.coeff 0 = 0 := by rw [hmapZ, coeff_map, h]; simp
+    exact minpoly.coeff_zero_ne_zero halg hβne hQ0
+  -- so `1 ≤ ‖Q.eval 0‖ = ∏ over all roots of ‖·‖`
+  have hone : (1 : ℝ) ≤ ‖Q.eval 0‖ := by
+    rw [hc0, Complex.norm_intCast]
+    exact_mod_cast Int.one_le_abs hne
+  have hprodnorm : ‖Q.eval 0‖ = (Q.roots.map (‖·‖)).prod := by
+    rw [heval, norm_multiset_prod_neg]
+  -- split off the root `β`
+  have hmem : (β : ℂ) ∈ Q.roots := by
+    rw [hQ, ← aroots_def, mem_aroots]
+    refine ⟨minpoly.ne_zero halg, ?_⟩
+    have h1 : (aeval ((algebraMap ℝ ℂ) β)) p = algebraMap ℝ ℂ ((aeval β) p) :=
+      aeval_algebraMap_apply ℂ β p
+    simpa [hp, minpoly.aeval] using h1
+  have hcons : Q.roots = (β : ℂ) ::ₘ otherConj β := by
+    rw [otherConj, ← hp, aroots_def, ← hQ]
+    exact (Multiset.cons_erase hmem).symm
+  rw [hprodnorm, hcons] at hone
+  simpa [Complex.norm_real, abs_of_pos hβ0] using hone
 
 /-! ### Saito's Claim (Lemma 4.1) -/
 
