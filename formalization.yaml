@@ -27,7 +27,7 @@ status:
   scope: >-
     This repository is an umbrella for several independent formalizations of solved-but-unformalized
     results (see the README's contents table). The comparator harness covers the TRANSCENDENCE
-    chain -- the results publicly pointed at from mathlib's docs/100.yaml entry 53: transcendence
+    chain (plus, since 2026-09-27, Dubickas 2022 Theorem 1 -- conditional, see Comparator/Dubickas) -- the results publicly pointed at from mathlib's docs/100.yaml entry 53: transcendence
     of π (`LeanFormalizations.Transcendence.transcendental_pi_axiomClean`, Lindemann 1882) and of e
     (`LeanFormalizations.Transcendence.e_transcendental`, Hermite 1873), both sorry-free and
     kernel-verified axiom-clean against mathlib v4.31.0 (re-verified 2026-08-26). The harnessed
@@ -51,6 +51,10 @@ status:
       file: "src/LeanFormalizations/NumberTheory/Transcendence/ETranscendental.lean"
       status: "proved (kernel-verified axiom-clean, re-verified 2026-08-26)"
       note: "Hermite 1873: e is transcendental over ℚ. In the comparator harness."
+    - declaration: "LeanFormalizations.Transcendence.Dubickas.theorem1"
+      file: "src/LeanFormalizations/NumberTheory/Transcendence/Dubickas.lean"
+      status: "proved CONDITIONALLY on two literature hypotheses (Dubickas 2022 Lemmas 6 and 8, stated as Props, not axioms)"
+      note: "Dubickas 2022 Thm 1: growth constants of x²+1, x²−1, Sylvester x²−x+1, x²+x+1, x²+2x+1 are transcendental. In the comparator harness (Comparator/Dubickas), which also covers the monic-quadratic Thm 2 and the OEIS-normalised constants."
 
   harness_results:
     - declaration: "LeanFormalizations.Transcendence.transcendental_pi_axiomClean"
@@ -58,6 +62,15 @@ status:
       axioms: ["propext", "Quot.sound", "Classical.choice"]
     - declaration: "LeanFormalizations.Transcendence.e_transcendental"
       comparator_config: "Comparator/Transcendence/config.json"
+      axioms: ["propext", "Quot.sound", "Classical.choice"]
+    - declaration: "LeanFormalizations.Transcendence.Dubickas.transcendental_growth_of_monic_quadratic"
+      comparator_config: "Comparator/Dubickas/config.json"
+      axioms: ["propext", "Quot.sound", "Classical.choice"]
+    - declaration: "LeanFormalizations.Transcendence.Dubickas.theorem1"
+      comparator_config: "Comparator/Dubickas/config.json"
+      axioms: ["propext", "Quot.sound", "Classical.choice"]
+    - declaration: "LeanFormalizations.Transcendence.Dubickas.oeis_constants"
+      comparator_config: "Comparator/Dubickas/config.json"
       axioms: ["propext", "Quot.sound", "Classical.choice"]
 
 automation:

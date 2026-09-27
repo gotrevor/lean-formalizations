@@ -1,0 +1,11 @@
+{
+  "challenge_module": "Comparator.Dubickas.Challenge",
+  "solution_module": "Comparator.Dubickas.Solution",
+  "theorem_names": [
+    "LeanFormalizations.Transcendence.Dubickas.transcendental_growth_of_monic_quadratic",
+    "LeanFormalizations.Transcendence.Dubickas.theorem1",
+    "LeanFormalizations.Transcendence.Dubickas.oeis_constants"
+  ],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "enable_nanoda": true
+}
