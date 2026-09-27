@@ -33,16 +33,17 @@ open LeanFormalizations.Literature Filter Polynomial
 /-- **Saito (2024), Lemma 4.1, case `μ > 1`.**  A real `A > 1` whose `c`-power digits
 approximate it at rate `A^(−μ cᵏ)` with `μ > 1`, and none of whose powers `A^(cᵐ)` (`m ≥ 1`) is
 an integer, is transcendental. -/
-theorem transcendental_of_decay (hD : Dubickas2022) (hG : Dubickas2022PisotGap)
-    {A : ℝ} (hA1 : 1 < A) {c : ℕ} (hc : 2 ≤ c) {μ K : ℝ} (hμ : 1 < μ) (hK : 0 < K)
+theorem exists_pisot_of_decay (hD : Dubickas2022) (hG : Dubickas2022PisotGap)
+    {A : ℝ} (hA1 : 1 < A) {c : ℕ} (hc : 2 ≤ c) {μ K : ℝ} (hμ0 : 0 < μ) (hK : 0 < K)
     (hdecay : ∀ᶠ k : ℕ in atTop,
       |A ^ (c ^ k) - (round (A ^ (c ^ k)) : ℝ)| ≤ K * (A ^ (-(μ * (c ^ k : ℕ))) : ℝ))
-    (hnotint : ∀ m : ℕ, 1 ≤ m → ∀ t : ℤ, A ^ (c ^ m) ≠ (t : ℝ)) :
-    Transcendental ℚ A := by
+    (hnotint : ∀ m : ℕ, 1 ≤ m → ∀ t : ℤ, A ^ (c ^ m) ≠ (t : ℝ))
+    (halg : IsAlgebraic ℚ A) :
+    ∃ m : ℕ, IsPisot (A ^ (c ^ (m + 1))) ∧
+      2 ≤ (minpoly ℚ (A ^ (c ^ (m + 1)))).natDegree ∧
+      ((Multiset.card (otherConj (A ^ (c ^ (m + 1)))) : ℝ)) * μ ≤ 1 := by
   have hA0 : (0 : ℝ) < A := by linarith
   have hlogA : 0 < Real.log A := Real.log_pos hA1
-  have hμ0 : (0 : ℝ) < μ := by linarith
-  intro halg
   -- the exponent sequence Dubickas is applied at
   set s : ℕ → ℕ := fun k => c ^ (k + 1) with hs
   have hsmono : StrictMono s := by
@@ -117,12 +118,9 @@ theorem transcendental_of_decay (hD : Dubickas2022) (hG : Dubickas2022PisotGap)
       rw [hnorm, hbeta]
       exact hA
     have hclaim := pisot_degree_bound hG hβ hnd hμ0 hK hfreq
-    have hcard : 1 ≤ Multiset.card (otherConj β) := by
-      have := card_otherConj_add_one (β := β) (hβ.2.1.tower_top)
-      omega
-    have hcardR : (1 : ℝ) ≤ (Multiset.card (otherConj β) : ℝ) := by exact_mod_cast hcard
-    nlinarith [hclaim, hcardR, hμ0]
+    exact ⟨m, hβ, hnd, hclaim⟩
   · -- ### the separation branch: contradicted by the decay hypothesis
+    exfalso
     set ε : ℝ := μ * Real.log A / 2 with hε
     have hε0 : 0 < ε := by positivity
     obtain ⟨k₀, hk₀⟩ := hsep ε hε0
@@ -166,5 +164,24 @@ theorem transcendental_of_decay (hD : Dubickas2022) (hG : Dubickas2022PisotGap)
         _ < ε * N := by exact mul_lt_mul_of_pos_left h5 hε0
     have := Real.add_one_le_exp (ε * (N : ℝ))
     linarith
+
+/-- **Saito (2024), Lemma 4.1, case `μ > 1`.**  A real `A > 1` whose `c`-power digits
+approximate it at rate `A^(−μ cᵏ)` with `μ > 1`, and none of whose powers `A^(cᵐ)` (`m ≥ 1`) is
+an integer, is transcendental: the Claim forces `(ℓ−1)μ ≤ 1` while `ℓ ≥ 2` and `μ > 1`. -/
+theorem transcendental_of_decay (hD : Dubickas2022) (hG : Dubickas2022PisotGap)
+    {A : ℝ} (hA1 : 1 < A) {c : ℕ} (hc : 2 ≤ c) {μ K : ℝ} (hμ : 1 < μ) (hK : 0 < K)
+    (hdecay : ∀ᶠ k : ℕ in atTop,
+      |A ^ (c ^ k) - (round (A ^ (c ^ k)) : ℝ)| ≤ K * (A ^ (-(μ * (c ^ k : ℕ))) : ℝ))
+    (hnotint : ∀ m : ℕ, 1 ≤ m → ∀ t : ℤ, A ^ (c ^ m) ≠ (t : ℝ)) :
+    Transcendental ℚ A := by
+  intro halg
+  obtain ⟨m, hβ, hnd, hclaim⟩ :=
+    exists_pisot_of_decay hD hG hA1 hc (by linarith) hK hdecay hnotint halg
+  have hcard : 1 ≤ Multiset.card (otherConj (A ^ (c ^ (m + 1)))) := by
+    have := card_otherConj_add_one (β := A ^ (c ^ (m + 1))) (hβ.2.1.tower_top)
+    omega
+  have hcardR : (1 : ℝ) ≤ (Multiset.card (otherConj (A ^ (c ^ (m + 1)))) : ℝ) := by
+    exact_mod_cast hcard
+  nlinarith [hclaim, hcardR]
 
 end LeanFormalizations.Mills
