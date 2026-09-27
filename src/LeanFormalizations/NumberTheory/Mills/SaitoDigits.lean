@@ -161,4 +161,125 @@ theorem le_add_rpow_of_pow_le {u y : ℝ} (hc : 3 ≤ c) (hu : 2 ≤ u) (hy : 0 
       _ ≤ u ^ c + 2 * u ^ ((21 * (c:ℝ))/40) := h
   linarith
 
+
+/-! ### The decay hypothesis Dubickas needs -/
+
+/-- **From Saito's Lemma 3.6 to Dubickas's input.**  With `μ = 19c/40 − 1 > 0`, the digits
+approximate `A^(cᵏ)` to within `2^(μ+1)·A^(−μcᵏ)`.  This is the single §3 hypothesis of
+`transcendental_of_decay`. -/
+theorem decay_of_lemma36C (hc : 3 ≤ c) (hA1 : 1 < A)
+    (hA : ∀ n : ℕ+, Prime ⌊A ^ (c ^ (n : ℕ))⌋₊)
+    (h36 : ∃ k₀ : ℕ, ∀ k ≥ k₀,
+      (mdigitC c A (k + 1) : ℝ)
+        ≤ (mdigitC c A k : ℝ) ^ c + (mdigitC c A k : ℝ) ^ ((21 * (c:ℝ))/40)) :
+    ∀ᶠ k : ℕ in Filter.atTop,
+      |A ^ (c ^ k) - (round (A ^ (c ^ k)) : ℝ)|
+        ≤ (2 : ℝ) ^ ((19 * (c:ℝ))/40) * (A ^ (-(((19 * (c:ℝ))/40 - 1) * (c ^ k : ℕ))) : ℝ) := by
+  obtain ⟨k₀, h36⟩ := h36
+  have hA0 : (0:ℝ) < A := by linarith
+  set μ : ℝ := (19 * (c:ℝ))/40 - 1 with hμdef
+  have hcR : (3:ℝ) ≤ (c:ℝ) := by exact_mod_cast hc
+  have hμ0 : 0 < μ := by rw [hμdef]; linarith
+  rw [Filter.eventually_atTop]
+  refine ⟨k₀ + 1, fun k hk => ?_⟩
+  obtain ⟨j, rfl⟩ : ∃ j, k = j + 1 := ⟨k - 1, by omega⟩
+  have hj : k₀ ≤ j := by omega
+  set u : ℝ := (mdigitC c A j : ℝ) with hu
+  have hu2 : (2:ℝ) ≤ u := by rw [hu]; exact_mod_cast mdigitC_two_le hA j
+  have hu0 : (0:ℝ) < u := by linarith
+  set y : ℝ := A ^ (c ^ (j + 1)) with hy
+  have hy0 : (0:ℝ) < y := by rw [hy]; positivity
+  have huy : u ≤ y := by rw [hu, hy]; exact mdigitC_le_pow hA0.le j
+  have hyu : y < u + 1 := by rw [hu, hy]; exact pow_lt_mdigitC_add_one A j
+  -- `yᶜ ≤ uᶜ + 2u^(21c/40)`
+  have hone : (1:ℝ) ≤ u ^ ((21 * (c:ℝ))/40) := Real.one_le_rpow (by linarith) (by linarith)
+  have hyc : y ^ c ≤ u ^ c + 2 * u ^ ((21 * (c:ℝ))/40) := by
+    have h1 : y ^ c < (mdigitC c A (j + 1) : ℝ) + 1 := by
+      rw [hy, ← pow_succ_eq_powC]
+      exact pow_lt_mdigitC_add_one A (j + 1)
+    have h2 := h36 j hj
+    rw [← hu] at h2
+    linarith
+  -- (3.19)
+  have hstep := le_add_rpow_of_pow_le hc hu2 hy0 hyc
+  have hμneg : (1:ℝ) - (19 * (c:ℝ))/40 = -μ := by rw [hμdef]; ring
+  rw [hμneg] at hstep
+  -- `|y − u| ≤ 2 u^(−μ)`
+  have habs : |y - u| ≤ 2 * u ^ (-μ) := by
+    rw [abs_of_nonneg (by linarith)]
+    linarith
+  -- `u > y/2`, so `u^(−μ) < 2^μ y^(−μ)`
+  have hhalf : y / 2 ≤ u := by linarith
+  have hyhalf : (0:ℝ) < y / 2 := by linarith
+  have hmono : u ^ (-μ) ≤ (y / 2) ^ (-μ) :=
+    Real.rpow_le_rpow_of_nonpos hyhalf hhalf (by linarith)
+  have hsplit : (y / 2) ^ (-μ) = (2:ℝ) ^ μ * y ^ (-μ) := by
+    rw [Real.div_rpow hy0.le (by norm_num),
+      show ((2:ℝ) ^ (-μ)) = ((2:ℝ) ^ μ)⁻¹ from Real.rpow_neg (by norm_num) μ]
+    field_simp
+  -- assemble
+  have hfinal : |y - u| ≤ 2 * ((2:ℝ) ^ μ * y ^ (-μ)) := by
+    refine le_trans habs ?_
+    rw [← hsplit]
+    linarith [hmono]
+  -- the round is at least as close as the floor
+  have hrd : |y - (round y : ℝ)| ≤ |y - u| := by
+    have hfl : ((⌊y⌋ : ℤ) : ℝ) = u := by
+      rw [← Int.natCast_floor_eq_floor hy0.le, hu, mdigitC, ← hy]
+      push_cast
+      ring
+    have habsu : |y - u| = y - u := abs_of_nonneg (by linarith)
+    rw [abs_sub_round_eq_min, habsu, ← hfl, Int.self_sub_floor]
+    exact min_le_left _ _
+  -- rewrite `2 * 2^μ` and `y^(−μ)`
+  have hyrw : (y ^ (-μ) : ℝ) = A ^ (-(μ * ((c ^ (j + 1) : ℕ) : ℝ))) := by
+    rw [hy, ← Real.rpow_natCast A (c ^ (j + 1)), ← Real.rpow_mul hA0.le]
+    congr 1
+    ring
+  have hconst : (2:ℝ) * (2:ℝ) ^ μ = (2:ℝ) ^ ((19 * (c:ℝ))/40) := by
+    rw [hμdef, Real.rpow_sub (by norm_num), Real.rpow_one]
+    field_simp
+  calc |A ^ (c ^ (j + 1)) - (round (A ^ (c ^ (j + 1))) : ℝ)| = |y - (round y : ℝ)| := by rw [hy]
+    _ ≤ |y - u| := hrd
+    _ ≤ 2 * ((2:ℝ) ^ μ * y ^ (-μ)) := hfinal
+    _ = ((2:ℝ) * (2:ℝ) ^ μ) * y ^ (-μ) := by ring
+    _ = (2 : ℝ) ^ ((19 * (c:ℝ))/40) * (A ^ (-(μ * ((c ^ (j + 1) : ℕ) : ℝ))) : ℝ) := by
+        rw [hconst, hyrw]
+
+
+/-- No power `A^(cᵐ)` (`m ≥ 1`) of a Mills number is an integer: it would make the next digit
+`p^c`, which is composite.  (This is Saito's `ℓ = 1` exclusion in Lemma 4.1.) -/
+theorem millsC_not_intCast (hc : 2 ≤ c) (hA1 : 1 < A)
+    (hA : ∀ n : ℕ+, Prime ⌊A ^ (c ^ (n : ℕ))⌋₊) (m : ℕ) (hm : 1 ≤ m) (t : ℤ) :
+    A ^ (c ^ m) ≠ (t : ℝ) := by
+  intro hAm
+  obtain ⟨j, rfl⟩ : ∃ j, m = j + 1 := ⟨m - 1, by omega⟩
+  have hA0 : (0:ℝ) < A := by linarith
+  have ht0 : (0:ℝ) ≤ (t : ℝ) := by rw [← hAm]; positivity
+  have ht0' : 0 ≤ t := by exact_mod_cast ht0
+  have hcast : ((t.toNat : ℕ) : ℝ) = (t : ℝ) := by
+    exact_mod_cast Int.toNat_of_nonneg ht0'
+  have hdig : mdigitC c A j = t.toNat := by
+    rw [mdigitC, hAm, ← hcast, Nat.floor_natCast]
+  have hdig' : mdigitC c A (j + 1) = t.toNat ^ c := by
+    rw [mdigitC, pow_succ_eq_powC, hAm, ← hcast, ← Nat.cast_pow, Nat.floor_natCast]
+  have := mdigitC_pow_lt hc hA1 hA j
+  rw [hdig, hdig'] at this
+  exact absurd this (lt_irrefl _)
+
+/-- **Saito (2024), Theorem 1.1 for `c ≥ 5`**, modulo `saito_lemma36C`.  Here
+`μ = 19c/40 − 1 ≥ 11/8 > 1`, so the Claim of Lemma 4.1 closes outright and no degree-2
+analysis (Lemmas 4.2/4.3) is needed. -/
+theorem transcendentalC_of_five_le (hB : BakerHarmanPintz2001) (hM : Matomaki2007)
+    (hD : Dubickas2022) (hG : Dubickas2022PisotGap) (hc : 5 ≤ c)
+    (hA : IsLeast {x : ℝ | x > 1 ∧ ∀ n : ℕ+, Prime ⌊x ^ (c ^ (n : ℕ))⌋₊} A) :
+    Transcendental ℚ A := by
+  obtain ⟨⟨hA1, hAm⟩, hmin⟩ := hA
+  have hcR : (5:ℝ) ≤ (c:ℝ) := by exact_mod_cast hc
+  refine transcendental_of_decay hD hG hA1 (c := c) (by omega) (μ := (19 * (c:ℝ))/40 - 1)
+    (K := (2:ℝ) ^ ((19 * (c:ℝ))/40)) (by linarith) (Real.rpow_pos_of_pos (by norm_num) _) ?_ ?_
+  · exact decay_of_lemma36C (by omega) hA1 hAm
+      (saito_lemma36C hB hM (by omega) ⟨⟨hA1, hAm⟩, hmin⟩)
+  · exact fun m hm t => millsC_not_intCast (by omega) hA1 hAm m hm t
+
 end LeanFormalizations.Mills

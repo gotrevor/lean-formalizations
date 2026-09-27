@@ -40,6 +40,7 @@ Read §4 of the paper (`papers/…txt` lines ~429–560; render pages 9–12 wit
 import LeanFormalizations.NumberTheory.Mills.Irrational
 import LeanFormalizations.NumberTheory.Mills.SaitoGeneral
 import LeanFormalizations.NumberTheory.Mills.SaitoPisot
+import LeanFormalizations.NumberTheory.Mills.SaitoDigits
 import LeanFormalizations.Literature.Pisot
 
 namespace LeanFormalizations.Mills
@@ -63,7 +64,11 @@ theorem exists_minMillsC_of_BHP (hB : BakerHarmanPintz2001) {c : ℕ} (hc : 3 �
 theorem transcendental_of_four_le (hB : BakerHarmanPintz2001) (hM : Matomaki2007)
     (hD : Dubickas2022) (hG : Dubickas2022PisotGap) {c : ℕ} (hc : 4 ≤ c) {A : ℝ}
     (hA : IsMinMillsC c A) : Transcendental ℚ A := by
-  sorry
+  rcases eq_or_lt_of_le hc with h4 | h5
+  · -- `c = 4`: here `μ = 19·4/40 − 1 = 9/10 < 1`, so Lemma 4.1's Claim only gives `ℓ = 2`, and
+    -- Saito's Lemmas 4.2/4.3 are needed to rule that out.  **OPEN.**
+    sorry
+  · exact transcendentalC_of_five_le hB hM hD hG (by omega) hA
 
 /-- **Saito (2024), Theorem 1.2: Mills' constant is transcendental, or some `ξ^(3^m)`
 (`m ≥ 1`) is a Pisot number of degree 3.** -/

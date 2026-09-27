@@ -849,3 +849,27 @@ Lemmas 4.2/4.3, since there `μ = 19c/40 − 1 = 9/10 < 1` and the Claim only fo
 
 **Next attack**: `c`-general Lemma 3.5 (`p_k^c < p_{k+1} < (p_k+1)^c − 1`) and Lemma 3.6
 (minimality via Matomäki), generalising `Irrational.lean`. Lemma 3.6 is the long one.
+
+### Same lap, final state: Theorem 1.1 for `c ≥ 5` reduced to ONE deep lemma
+
+`Mills/SaitoDigits.lean` (new): `mdigitC`, Lemma 3.5 both halves, `le_add_rpow_of_pow_le`
+(the (3.19) Bernoulli expansion), `decay_of_lemma36C`, `millsC_not_intCast`,
+`transcendentalC_of_five_le`. All axiom-clean except for the one named `sorry`.
+
+**The three remaining open obligations in `Mills/` are now exactly:**
+
+1. `saito_lemma36C` (`SaitoDigits.lean:113`) — Saito Lemma 3.6 for general `c`, the Matomäki
+   minimality step. The `c = 3` case IS proved (`saito_lemma36` in `Irrational.lean`, ~200
+   lines); this is that argument with `3 → c` (`Rich`, `saito_lemma38`, `rich_chain`,
+   `Chain.exists_shifted_of_chain` all generalise; Lemma 3.8's exponent `2/3` becomes `(c−1)/c`).
+   **This is the whole remaining content of Theorem 1.1 for `c ≥ 5`.**
+2. `transcendental_of_four_le`, the `c = 4` branch (`Transcendental.lean:70`) — needs Saito
+   Lemmas 4.2 (`t_k = p_k`) and 4.3 (no degree-2 Pisot power), because there `μ = 9/10 < 1`
+   and `pisot_degree_bound` only yields `ℓ = 2`. Lemma 4.3's `b = 4` case is the short one:
+   `d_k` even ⇒ `β₂^(d_k) > 0` ⇒ `p_k = β₁^d + β₂^d > β₁^d = ξ^(C_k) ≥ p_k`.
+3. `transcendental_or_pisot` (`Transcendental.lean:79`) — Theorem 1.2; same machinery at
+   `c = 3` (`μ = 17/40`), where the Claim leaves `ℓ ∈ {2,3}` and Lemma 4.3's `b = 3` case
+   (`p_k³ = p_{k+1} + 3x₁x₂p_k` ⇒ `p_k ∣ p_{k+1}`) kills `ℓ = 2`.
+
+**Next attack**: item 2's Lemma 4.2/4.3 machinery (short, and shared by items 2 and 3), then
+item 1 (long but mechanical).
