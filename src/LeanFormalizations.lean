@@ -85,6 +85,8 @@ import LeanFormalizations.NumberTheory.DirichletBeta.Lcm
 import LeanFormalizations.NumberTheory.DirichletBeta.Statement
 import LeanFormalizations.NumberTheory.Mills.Basic
 import LeanFormalizations.NumberTheory.Mills.Wright
+import LeanFormalizations.NumberTheory.Mills.Chain
 import LeanFormalizations.Literature.Primes
+import LeanFormalizations.NumberTheory.Mills.Schoenfeld
 import LeanFormalizations.NumberTheory.Mills.RH
 import LeanFormalizations.NumberTheory.Mills.Irrational
