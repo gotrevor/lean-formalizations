@@ -218,7 +218,53 @@ theorem exists_mills_of_primeBetweenCubes {N : ℕ} (h : PrimeBetweenCubesFrom N
 
 /-- **The least Mills number exists** as soon as one Mills number does.  Unconditional. -/
 theorem exists_least_of_exists (h : ∃ A > 1, IsMills A) : ∃ A, IsMinMills A := by
-  sorry
+  set S : Set ℝ := {x | x > 1 ∧ IsMills x} with hS
+  obtain ⟨A₀, hA₀1, hA₀⟩ := h
+  have hne : S.Nonempty := ⟨A₀, hA₀1, hA₀⟩
+  -- every Mills number is at least `5/4`, since `⌊A³⌋₊` is prime, hence `A³ ≥ 2`
+  have hlb : ∀ x ∈ S, (5/4 : ℝ) ≤ x := by
+    rintro x ⟨hx1, hx⟩
+    have hp := hx 1
+    have hcube : ((2:ℕ) : ℝ) ≤ x ^ (3 ^ ((1 : ℕ+) : ℕ)) := by
+      refine le_trans ?_ (Nat.floor_le (by positivity))
+      exact_mod_cast (Nat.prime_iff.mpr hp).two_le
+    norm_num at hcube
+    by_contra hcon
+    push Not at hcon
+    have hc3 : x ^ 3 < (5/4 : ℝ) ^ 3 := pow_lt_pow_left₀ hcon (by linarith) (by norm_num)
+    norm_num at hc3
+    linarith
+  have hbdd : BddBelow S := ⟨5/4, hlb⟩
+  set m : ℝ := sInf S with hm
+  have hmlb : (5/4 : ℝ) ≤ m := le_csInf hne hlb
+  have hm1 : m > 1 := by linarith
+  have hmpos : (0:ℝ) ≤ m := by linarith
+  refine ⟨m, ⟨hm1, fun n => ?_⟩, fun x hx => csInf_le hbdd hx⟩
+  -- fix `n`; the floor of `m ^ (3^n)` is already the prime attached to any `A ∈ S`
+  -- close enough to `m` from above
+  set k : ℕ := 3 ^ ((n : ℕ)) with hk
+  set q : ℕ := ⌊m ^ k⌋₊ with hq
+  have hqle : (q : ℝ) ≤ m ^ k := Nat.floor_le (by positivity)
+  have hqlt : m ^ k < (q : ℝ) + 1 := Nat.lt_floor_add_one _
+  -- `{x | x ^ k < q + 1}` is open and contains `m`
+  have hopen : IsOpen {x : ℝ | x ^ k < (q : ℝ) + 1} :=
+    isOpen_lt (continuous_pow k) continuous_const
+  obtain ⟨δ, hδ, hball⟩ := Metric.isOpen_iff.1 hopen m hqlt
+  obtain ⟨A, hAS, hAlt⟩ := exists_lt_of_csInf_lt hne (show m < m + δ by linarith)
+  have hmA : m ≤ A := csInf_le hbdd hAS
+  have hAmem : A ∈ {x : ℝ | x ^ k < (q : ℝ) + 1} := by
+    apply hball
+    rw [Metric.mem_ball, Real.dist_eq, abs_of_nonneg (by linarith)]
+    linarith
+  have hAup : A ^ k < (q : ℝ) + 1 := hAmem
+  have hAlo : (q : ℝ) ≤ A ^ k :=
+    le_trans hqle (pow_le_pow_left₀ hmpos hmA k)
+  have hfl : ⌊A ^ k⌋₊ = q := by
+    rw [Nat.floor_eq_iff (le_trans (Nat.cast_nonneg q) hAlo)]
+    exact ⟨hAlo, hAup⟩
+  have := hAS.2 n
+  rw [← hk, hfl] at this
+  exact this
 
 /-- **Mills' constant exists, conditional on primes between consecutive cubes.** -/
 theorem exists_least_of_primeBetweenCubes {N : ℕ} (h : PrimeBetweenCubesFrom N) :
