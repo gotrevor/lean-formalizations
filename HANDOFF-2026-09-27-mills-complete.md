@@ -1,5 +1,12 @@
 # HANDOFF 2026-09-27 — Mills + Wright COMPLETE (sorry-free, axiom-clean)
 
+
+**Branch:** `mills` (cut from `main` 2026-09-27) · **HEAD at handoff:** `d915591` ·
+**Build:** green, `lake build` 8675 jobs · **Not pushed** (host pushes).
+
+Commits this run: `d8930ea` (Wright) → `4dc420f` (conditional Mills) → `d915591` (least Mills,
+lane sorry-free).
+
 `src/LeanFormalizations/NumberTheory/Mills/` is sorry-free.  All four frozen headlines are
 `[propext, Classical.choice, Quot.sound]`:
 
@@ -40,3 +47,16 @@ Strictness at *both* ends of `ω`/`A` comes from stepping one index further:
 
 Ingham's theorem; `PrimeBetweenCubesFrom` at any concrete `N`; irrationality/digits of Mills'
 constant.  No lap may headline an unconditional Mills theorem.
+
+## Exact next steps (if this lane is ever reopened)
+
+Nothing is open in the lane; DIRECTION's stop condition is met.  Anyone resuming should pick a
+NEW objective, not this one.  If the operator wants Mills strengthened, the only honest next
+move is the red-listed one and needs an explicit directive: prove `PrimeBetweenCubesFrom N` for
+some `N` (Ingham 1937 / Dudek 2016).  PNT+ upstream as of `55270df` cannot supply it — its
+short-interval machinery bottoms out in `sorry`ed explicit-formula and zero-density inputs — so
+that is a multi-lap analytic build, not a wiring job.
+
+Merge note: branch `mills` is ready to merge to `main`; the only files it touches outside the
+lane are `src/LeanFormalizations.lean` (import lines) and the `NumberTheory/Mills` row in
+`README.md`.
