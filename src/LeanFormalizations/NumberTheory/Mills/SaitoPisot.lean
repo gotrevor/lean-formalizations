@@ -102,7 +102,7 @@ theorem conjMax_pow_card_le (β : ℝ) :
 then `M ≤ ρ`.  (The `n^(−λ)` of Lemma 2.7 is absorbed into the polynomial factor via
 `n^λ ≤ n^⌈λ⌉₊`.) -/
 theorem le_of_pow_le_const_mul_pow {M ρ K : ℝ} (d : ℕ) (hM : 0 ≤ M) (hρ : 0 < ρ) (hK : 0 < K)
-    (h : ∀ᶠ n : ℕ in atTop, M ^ n ≤ K * (n : ℝ) ^ d * ρ ^ n) : M ≤ ρ := by
+    (h : ∃ᶠ n : ℕ in atTop, M ^ n ≤ K * (n : ℝ) ^ d * ρ ^ n) : M ≤ ρ := by
   by_contra hlt
   push_neg at hlt
   set r : ℝ := M / ρ with hr
@@ -111,7 +111,7 @@ theorem le_of_pow_le_const_mul_pow {M ρ K : ℝ} (d : ℕ) (hM : 0 ≤ M) (hρ 
   have hpoly : (fun n : ℕ => ((n : ℝ) ^ d)) =o[atTop] fun n : ℕ => r ^ n :=
     isLittleO_pow_const_const_pow_of_one_lt d hr1
   have hb := hpoly.bound (c := (2 * K)⁻¹) (by positivity)
-  obtain ⟨n, hn, hbn⟩ := (h.and hb).exists
+  obtain ⟨n, hn, hbn⟩ := (h.and_eventually hb).exists
   have hρn : (0 : ℝ) < ρ ^ n := pow_pos hρ n
   have hrn : r ^ n = M ^ n / ρ ^ n := by rw [hr, div_pow]
   have h1 : r ^ n ≤ K * (n : ℝ) ^ d := by
@@ -331,7 +331,7 @@ This is exactly Saito's `ℓ ≤ (bθ_b)^(−1) + 1` with `μ = bθ_b`.  Note th
 needed along a subsequence in Saito (`k ∈ I_b`); here `I_b = ℕ`, matching `c_k ≡ c`. -/
 theorem pisot_degree_bound (hG : Dubickas2022PisotGap) {β : ℝ} (hβ : IsPisot β)
     (hdeg : 2 ≤ (minpoly ℚ β).natDegree) {μ K : ℝ} (hμ : 0 < μ) (hK : 0 < K)
-    (hdecay : ∀ᶠ n : ℕ in atTop, ‖conjPowSum β n‖ ≤ K * (β ^ (-(μ * n)) : ℝ)) :
+    (hdecay : ∃ᶠ n : ℕ in atTop, ‖conjPowSum β n‖ ≤ K * (β ^ (-(μ * n)) : ℝ)) :
     ((Multiset.card (otherConj β) : ℝ)) * μ ≤ 1 := by
   obtain ⟨lam, hlam, n₀, hgap⟩ := hG β hβ hdeg
   have hβ1 : 1 < β := hβ.1
@@ -341,7 +341,8 @@ theorem pisot_degree_bound (hG : Dubickas2022PisotGap) {β : ℝ} (hβ : IsPisot
   -- Step 1: `conjMax β ≤ ρ`.
   have hmax : conjMax β ≤ ρ := by
     refine le_of_pow_le_const_mul_pow ⌈lam⌉₊ (conjMax_nonneg β) hρ0 hK ?_
-    filter_upwards [hdecay, eventually_ge_atTop n₀, eventually_ge_atTop 1] with n hn hn0 hn1
+    refine (hdecay.and_eventually ((eventually_ge_atTop n₀).and (eventually_ge_atTop 1))).mono ?_
+    rintro n ⟨hn, hn0, hn1⟩
     have hnR : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn1
     have hnpos : (0 : ℝ) < (n : ℝ) := by linarith
     have hg : conjMax β ^ n * (n : ℝ) ^ (-lam) ≤ ‖conjPowSum β n‖ := hgap n hn0
