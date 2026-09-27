@@ -830,3 +830,22 @@ Remaining in `Mills/Transcendental.lean`: `transcendental_of_four_le`, `transcen
 Next attack: the `c`-general Saito Lemmas 3.5/3.6/3.8/3.9 supplying `pisot_degree_bound`'s
 `hdecay` hypothesis (generalise `Irrational.lean`'s `mdigit`/`saito_lemma36/38/39`), then the
 `b ≥ 5` arithmetic (`μ = bθ_b = 19c/40 − 1 ≥ 11/8 > 1` with `ℓ ≥ 2` contradicts the Claim).
+
+### Same lap, later still: Saito Lemma 4.1 (case `μ > 1`) is COMPLETE
+
+`Mills/SaitoLemma41.lean` — `transcendental_of_decay`, sorry-free and axiom-clean:
+
+> If `A > 1`, `c ≥ 2`, `μ > 1`, `K > 0`, `|A^(cᵏ) − round(A^(cᵏ))| ≤ K·A^(−μcᵏ)` for all large
+> `k`, and no `A^(cᵐ)` (`m ≥ 1`) is an integer, then `A` is transcendental.
+
+Both branches of `Dubickas2022` are discharged: the separation branch by `ε := μ log A / 2`, the
+Pisot branch by `pisot_degree_bound` + `card_otherConj_add_one` + `pisot_two_le_natDegree`.
+Key design note: `le_of_pow_le_const_mul_pow` and `pisot_degree_bound` take `∃ᶠ`, not `∀ᶠ`,
+because the decay for `β = A^(c^(m+1))` is only available along `n = c^j`.
+
+**All that now separates Theorem 1.1 (`c ≥ 5`) from a proof is the §3 decay hypothesis**, i.e.
+the `c`-general Saito Lemmas 3.5/3.6/3.8/3.9. For `c = 4` (and `c = 3`) one additionally needs
+Lemmas 4.2/4.3, since there `μ = 19c/40 − 1 = 9/10 < 1` and the Claim only forces `ℓ = 2`.
+
+**Next attack**: `c`-general Lemma 3.5 (`p_k^c < p_{k+1} < (p_k+1)^c − 1`) and Lemma 3.6
+(minimality via Matomäki), generalising `Irrational.lean`. Lemma 3.6 is the long one.

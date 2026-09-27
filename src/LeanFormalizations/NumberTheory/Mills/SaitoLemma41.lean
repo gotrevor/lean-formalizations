@@ -77,9 +77,45 @@ theorem transcendental_of_decay (hD : Dubickas2022) (hG : Dubickas2022PisotGap)
     have hfreq : ∃ᶠ n : ℕ in atTop, ‖conjPowSum β n‖ ≤ K * (β ^ (-(μ * n)) : ℝ) := by
       rw [frequently_atTop]
       intro a
-      refine ⟨c ^ (max a (max N₁ k₀)), ?_, ?_⟩
-      · exact le_trans (le_max_left _ _) (Nat.lt_pow_self (by omega)).le
-      · sorry
+      set J : ℕ := max a (max N₁ k₀) with hJ
+      have hJpow : J ≤ c ^ J := (Nat.lt_pow_self (by omega)).le
+      refine ⟨c ^ J, le_trans (le_max_left _ _) hJpow, ?_⟩
+      set n : ℕ := c ^ J with hn
+      have hnN₁ : N₁ ≤ n :=
+        le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) hJpow
+      have hJk₀ : k₀ ≤ J := le_trans (le_max_right _ _) (le_max_right _ _)
+      -- `βⁿ + Σ_{j≥2} β_jⁿ` is an integer `t`
+      obtain ⟨t, ht⟩ := pisot_conjPowSum_add_mem_int hβ n
+      have hcps : conjPowSum β n = ((((t : ℝ) - β ^ n : ℝ)) : ℂ) := by
+        push_cast
+        push_cast at ht
+        linear_combination ht
+      have hnorm : ‖conjPowSum β n‖ = |β ^ n - (t : ℝ)| := by
+        rw [hcps, Complex.norm_real, Real.norm_eq_abs, abs_sub_comm]
+      -- it is `< 1/2`, so `t` is the nearest integer to `βⁿ`
+      have hhalf : |β ^ n - (t : ℝ)| < 1 / 2 := by
+        rw [← hnorm]
+        exact lt_of_le_of_lt (norm_conjPowSum_le β n) (hN₁ n hnN₁)
+      have hround : round (β ^ n) = t := by
+        have hz : round (β ^ n - (t : ℝ)) = 0 := by
+          rw [round_eq_zero_iff]
+          constructor <;> [skip; skip] <;>
+            [exact (abs_lt.1 hhalf).1.le; exact (abs_lt.1 hhalf).2]
+        have := round_add_intCast (β ^ n - (t : ℝ)) t
+        rw [hz, sub_add_cancel] at this
+        simpa using this
+      -- the §3 decay at index `m + 1 + J`
+      have hA := hk₀ (m + 1 + J) (by omega)
+      rw [← hβpow J, ← hn, hround] at hA
+      -- rewrite the bound in terms of `β`
+      have hbeta : (β ^ (-(μ * (n : ℝ))) : ℝ) = A ^ (-(μ * ((c ^ (m + 1 + J) : ℕ) : ℝ))) := by
+        rw [hβdef, hsm, ← Real.rpow_natCast A (c ^ (m + 1)), ← Real.rpow_mul hA0.le]
+        congr 1
+        rw [hn]
+        push_cast [pow_add]
+        ring
+      rw [hnorm, hbeta]
+      exact hA
     have hclaim := pisot_degree_bound hG hβ hnd hμ0 hK hfreq
     have hcard : 1 ≤ Multiset.card (otherConj β) := by
       have := card_otherConj_add_one (β := β) (hβ.2.1.tower_top)
