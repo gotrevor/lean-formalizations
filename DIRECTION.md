@@ -1,5 +1,26 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 7, 2026-09-27): Dubickas 2022 Theorem 1 — κ, ζ, Sylvester γ, η, τ transcendental
+
+Phases 1–6 are GREEN and merged.  Phase 7 is `NumberTheory/Transcendence/Dubickas.lean` (route in
+its header): **`transcendental_growth_of_monic_quadratic`** (Theorem 2 for `d = 2`, `a₀ = 1`), then
+`theorem1` (the five constants — check (17)/(18) by `decide`/`norm_num`), then `oeis_constants`
+(half-rate limits = `√α`).  Inputs: the frozen `Dubickas2022`, `Dubickas2022PisotGap`, `IsPisot`
+(`Literature/Pisot.lean`) — reuse the Pisot conjugate-multiset lemmas phase 6 built in
+`Mills/SaitoPisot.lean` etc. rather than re-deriving (move shared lemmas to a common file if
+needed, without changing their statements).  Formula (6) (limit exists, `x_n = α^(2ⁿ) − a₁/2 +
+O(α^(−2ⁿ))`) is elementary and is the likely long pole.  Decompose into named `sorry` leaves freely.
+
+⚠️ If a frozen `Prop` is too weak for Dubickas's step, STOP and write it up in HANDOFF.
+Source: `papers/dubickas-2022-transcendency-polynomial-iterations.{pdf,txt}` §1, §4–5.
+Frozen by name: the phase-7 defs (`kappaSeq`, `zetaSeq`, `sylvester`, `etaSeq`, `tauSeq`,
+`HasTranscendentalGrowth`, `HasTranscendentalHalfGrowth`) and three theorems, plus every earlier
+name.  `Literature/Lindemann.lean` is a pending-mathlib-PR stub: never prove it.
+Stop condition: `NumberTheory/Transcendence/` sorry-free.
+
+---
+
+
 ## 🎯 THE OBJECTIVE (phase 6, 2026-09-27): Saito's transcendence theorems (Thm 1.1, 1.2)
 
 Phases 1–5 are GREEN and merged.  Phase 6 is `Mills/Transcendental.lean` (plan in its header):
