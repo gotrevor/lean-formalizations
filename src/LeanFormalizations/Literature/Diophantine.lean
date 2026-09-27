@@ -11,7 +11,12 @@ repo does not prove them.
   primes, exponent `1 + δ`).  Kept as its own statement; `Ridout1958 → Ridout1958SUnitDen` is an
   open wiring edge.
 
-Open wiring edges: `Ridout1958 → Mahler1957` (Mahler 1957 derives it from Ridout), `Ridout1958 → Ridout1958SUnitDen`, `Ridout1958 → Roth1955` (take `t = 0`).
+Open wiring edges: `Ridout1958 → Roth1955` (take `t = 0`), `Ridout1958 → Ridout1958SUnitDen`.
+⚠️ `Mahler1957` does NOT come from `Ridout1958`: Mahler (1957, §3) derives it from Ridout's
+*other* paper, *Rational approximations to algebraic numbers*, Mathematika **4** (1957),
+125–131 (doi:10.1112/s0025579300001182) — the two-sided `S`-unit form with exponent
+`γ > α + β` (Mahler's Theorem 3).  The 1958 theorem only reaches exponent `> 2`, too weak for
+Mahler's application.
 -/
 import Mathlib
 
