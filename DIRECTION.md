@@ -1,4 +1,60 @@
-# DIRECTION — read FIRST (operator directive, 2026-09-04, Trevor via Ren)
+# DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
+
+## 🎯 THE OBJECTIVE: Mills + Wright — `src/LeanFormalizations/NumberTheory/Mills/`
+
+Branch **`mills`** (cut from `main` 2026-09-27).  Two prime-representing-function theorems, both
+formalized nowhere as of 2026-09-27 (formal-conjectures has `Mills.exists'` etc. as `sorry`
+statements; mathlib has nothing):
+
+- 🟢 **Wright (1951)** — `wright` in `Wright.lean`: some `ω` makes `⌊2^2^…^2^ω⌋` prime for every
+  tower height `n ≥ 1`.  **Unconditional** (Bertrand is in mathlib).  Proof plan in the header.
+- 🟡 **Mills (1947), conditional** — `exists_mills_of_primeBetweenCubes` in `Basic.lean`: a prime
+  strictly between consecutive cubes from `N` on (`PrimeBetweenCubesFrom N`, Ingham's theorem)
+  implies `∃ A > 1, IsMills A`.  Proof plan in the header.
+- 🟢 **Least Mills number** — `exists_least_of_exists`: one Mills number ⇒ a least one.
+  Unconditional given its hypothesis.
+- 🔴 **NOT targets:** Ingham's theorem itself, `PrimeBetweenCubesFrom` for any concrete `N`,
+  irrationality of Mills' constant, its digits.  The hypothesis stays a hypothesis; no lap may
+  claim or headline an unconditional Mills theorem.
+
+**Frozen statements, guarded BY NAME** (host `--require-decls` enforces; do not rename, weaken,
+or delete): `IsMills`, `IsMinMills`, `PrimeBetweenCubesFrom`, `exists_mills_of_primeBetweenCubes`,
+`exists_least_of_exists`, `exists_least_of_primeBetweenCubes` (Basic.lean) · `tower`, `wright`
+(Wright.lean).  `IsMills`/`IsMinMills` are **verbatim copies** of formal-conjectures'
+`FormalConjectures/Wikipedia/Mills.lean` — that faithfulness is the point, never edit them.  If a
+frozen statement is *wrong* (the scaffold was compiled, not proved), FIX it and say so loudly in
+the commit message and HANDOFF; never route around it silently.
+
+**Order** (each is a green checkpoint — commit each):
+1. `wright` — decompose into named leaves (Bertrand step with strict upper bound, inverse-tower
+   monotonicity, nested intervals, floor identification).  Easiest; land it first.
+2. `prime_add_one_lt_cube` → `exists_mills_of_primeBetweenCubes` (same nested-interval shape
+   with `x ↦ x^(1/3)`; mind the `ℕ+` re-indexing in `IsMills`).
+3. `exists_least_of_exists` (closure of left-closed intervals under antitone limits).
+Share the nested-interval engine between 1 and 2 if it falls out naturally; do not force it.
+
+**Before the hard part of any lap: commit a compiling skeleton with named `sorry` leaves.**
+Raising the `sorry` count by splitting a leaf into named leaves is progress.
+
+## Lane discipline (Mills run)
+- Work ONLY in `src/LeanFormalizations/NumberTheory/Mills/` (+ its import lines in
+  `src/LeanFormalizations.lean`, + a Mills row in `README.md` once something is green).
+- DO NOT TOUCH any other thread.  Read them for technique.
+- Mathlib-only imports.  **Do not import PrimeNumberTheoremAnd** in this thread.
+- No `axiom`, ever.  Goal end-state per headline: `#print axioms` = `[propext, Classical.choice,
+  Quot.sound]`; run it when a headline closes, mention it only if it fails.
+- Rules below ("Rules (same as every autonomous run here)") apply, except: work on the **`mills`**
+  branch, not `catalan`.
+
+## Stop condition (Mills run)
+Done when `src/LeanFormalizations/NumberTheory/Mills/` is `sorry`-free (the host checks this).
+Do NOT stop because one headline landed.
+
+---
+
+# 📚 ARCHIVE — earlier objectives (Catalan / Dirichlet β, both finished).  Historical: the Mills sections above supersede every objective, lane and stop rule below.
+
+## (was) DIRECTION of 2026-09-04
 
 ## 🎯 THE OBJECTIVE: the Catalan salvage — `src/LeanFormalizations/NumberTheory/Catalan/`
 
