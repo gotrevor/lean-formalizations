@@ -9,9 +9,12 @@ repo does not prove them.
 * `Ridout1958` — Ridout's Theorem 1, the `p`-adic Roth theorem, stated from the paper.
 * `Ridout1957SUnitDen` — the classical corollary of Ridout's *1957* paper (denominators built
   from a fixed finite set of primes, exponent `1 + δ`).  The full 1957 two-sided form is not
-  stated yet (paper: doi:10.1112/s0025579300001182, not yet read).
+  stated as its own `Prop`; `Ridout1957 → Ridout1957SUnitDen` is an edge.
+* `Ridout1957` — Ridout's 1957 Theorem, stated from the paper.  Mahler derives `Mahler1957`
+  from it (Mahler 1957, §3).
 
-Open wiring edge: `Ridout1958 → Roth1955` (take `t = 0`).
+Wiring edges (proved in `NumberTheory/Diophantine/Edges.lean`): `Ridout1957 → Mahler1957`,
+`Ridout1957 → Ridout1957SUnitDen`, `Ridout1958 → Roth1955`.
 ⚠️ `Mahler1957` does NOT come from `Ridout1958`: Mahler (1957, §3) derives it from Ridout's
 *other* paper, *Rational approximations to algebraic numbers*, Mathematika **4** (1957),
 125–131 (doi:10.1112/s0025579300001182) — the two-sided `S`-unit form with exponent
@@ -67,5 +70,28 @@ def Ridout1958 : Prop :=
       min 1 |ξ - (x.1 : ℝ) / x.2| *
           ∏ r, min 1 ‖((x.2 : ℚ_[(P r : ℕ)]) * ξp r - x.1)‖ ≤
         (max |x.1| |x.2| : ℝ) ^ (-κ)}.Finite
+
+/-- **Ridout (1957), Theorem** — Roth with `S`-unit restrictions, the exponent `2` lowered to
+`μ + ν`.  Let `α ≠ 0` be algebraic, `P₁…P_s, Q₁…Q_t` distinct primes, `0 ≤ μ, ν ≤ 1`, `c > 0`.
+Restrict to `p = p* · (product of powers of the Pᵢ)`, `q = q* · (product of powers of the Qⱼ)`
+with `0 < |p*| ≤ c p^μ`, `0 < q* ≤ c q^ν`.  If `κ > μ + ν`, then `0 < |α − p/q| < q^(−κ)` has
+only finitely many solutions `(p, q)`.
+
+Stated for `p, q > 0` (Ridout writes `p^μ`, so `p > 0` is implicit); restricting the solution
+set only weakens the statement.  "Distinct primes" is `Disjoint P Q` plus primality.
+
+D. Ridout, *Rational approximations to algebraic numbers*, Mathematika **4** (1957), 125–131,
+the Theorem on p. 125.  Local-only full text (gitignored):
+`papers/ridout-1957-rational-approximations.{pdf,txt}`. -/
+def Ridout1957 : Prop :=
+  ∀ α : ℝ, IsAlgebraic ℚ α → α ≠ 0 →
+  ∀ P Q : Finset ℕ, (∀ r ∈ P, r.Prime) → (∀ r ∈ Q, r.Prime) → Disjoint P Q →
+  ∀ μ ν c κ : ℝ, 0 ≤ μ → μ ≤ 1 → 0 ≤ ν → ν ≤ 1 → 0 < c → μ + ν < κ →
+    {x : ℕ × ℕ | 0 < x.1 ∧ 0 < x.2 ∧
+      (∃ ps a : ℕ, x.1 = ps * a ∧ (∀ r ∈ a.primeFactors, r ∈ P) ∧
+        0 < ps ∧ (ps : ℝ) ≤ c * (x.1 : ℝ) ^ μ) ∧
+      (∃ qs b : ℕ, x.2 = qs * b ∧ (∀ r ∈ b.primeFactors, r ∈ Q) ∧
+        0 < qs ∧ (qs : ℝ) ≤ c * (x.2 : ℝ) ^ ν) ∧
+      0 < |α - (x.1 : ℝ) / x.2| ∧ |α - (x.1 : ℝ) / x.2| < 1 / (x.2 : ℝ) ^ κ}.Finite
 
 end LeanFormalizations.Literature

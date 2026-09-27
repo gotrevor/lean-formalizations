@@ -1,5 +1,26 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 5, 2026-09-27): Diophantine wiring edges — make Mahler a theorem
+
+Prove the three edges in `src/LeanFormalizations/NumberTheory/Diophantine/Edges.lean`
+(plans in its header): **`mahler_of_ridout1957` first** (it turns the `Mahler1957` hypothesis of
+Saito's `irrational` into a consequence of Ridout), then `ridoutSUnitDen_of_ridout1957`, then
+`roth_of_ridout1958`.  Then add, in `Mills/Irrational.lean`, a corollary
+`irrational_of_ridout (hB : BakerHarmanPintz2001) (hM : Matomaki2007) (hR : Ridout1957)`.
+
+Sources (gitignored, local): `papers/mahler-1957-fractional-parts-ii.{pdf,txt}`,
+`papers/ridout-1957-rational-approximations.{pdf,txt}`, `papers/ridout-1958-p-adic-roth.{pdf,txt}`.
+Text extraction drops displayed formulas — render a page (`pdftoppm -f N -l N -r 150 -png`) and
+read the image when a formula matters.
+
+**All `Literature/` statements are frozen** (never edit; never strengthen).  Frozen by name:
+`Roth1955`, `Ridout1958`, `Ridout1957`, `Ridout1957SUnitDen`, `Mahler1957`, the three edge
+theorems, plus every earlier name.  Lane: `NumberTheory/Diophantine/` + the one corollary in
+`Mills/Irrational.lean`.  Stop condition: `NumberTheory/Diophantine/` sorry-free.
+
+---
+
+
 ## 🎯 THE OBJECTIVE (phase 4, 2026-09-27): explicit upper bound without RH
 
 Phases 1–3 are GREEN and merged.  Phase 4 is one file, `Mills/UpperBound.lean`:

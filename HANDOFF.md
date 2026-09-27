@@ -1,5 +1,5 @@
 # HANDOFF (thin pointer)
 
-Phase 4 (2026-09-27): prove `exists_minMills_lt_of_dudek` in `Mills/UpperBound.lean` - plan in its header.
+Phase 5 (2026-09-27): prove the wiring edges in `NumberTheory/Diophantine/Edges.lean` - plans in its header.
 
-Direction: [`DIRECTION.md`](DIRECTION.md) - phase 4 at the top.
+Direction: [`DIRECTION.md`](DIRECTION.md) - phase 5 at the top.
