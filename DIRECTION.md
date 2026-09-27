@@ -1,5 +1,16 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 3, 2026-09-27): the unconditional lower bound
+
+Phases 1–2 are GREEN and merged.  Phase 3 is one small file, `Mills/LowerBound.lean`:
+`lower_bound_of_isMills` — every Mills number exceeds `1.3063778838`, **no hypothesis** (RH is
+only needed for the upper end).  Proof plan in the file header: case-split along the greedy chain
+2, 11, 1361, 2521008887.  Frozen by name: `lower_bound_of_isMills`, `lower_bound`, plus every
+phase 1–2 name.  Do not add hypotheses.  Stop condition: `Mills/` sorry-free.
+
+---
+
+
 ## 🎯 THE OBJECTIVE (phase 2, 2026-09-27): Mills digits under RH + Saito irrationality
 
 Phase 1 (Wright, conditional Mills, least Mills) is GREEN and merged — see below.  Phase 2
