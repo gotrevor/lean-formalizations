@@ -31,6 +31,7 @@ import LeanFormalizations.NumberTheory.Mills.Basic
 import LeanFormalizations.Literature.Primes
 import LeanFormalizations.NumberTheory.Mills.Schoenfeld
 import LeanFormalizations.NumberTheory.Mills.Chain
+import LeanFormalizations.NumberTheory.Diophantine.Edges
 
 namespace LeanFormalizations.Mills
 
@@ -747,5 +748,13 @@ theorem irrational (hB : BakerHarmanPintz2001) (hM : Matomaki2007) (hMa : Mahler
       _ ≤ Real.exp (-(γ * ((3:ℕ) ^ (k + 1) : ℕ))) := hsmall
       _ = Real.exp (-(γ * N)) := by rw [hN]
   exact absurd this (lt_irrefl _)
+
+/-- **Mills' constant is irrational, with Mahler discharged into Ridout.**  Same statement as
+`irrational`, but the `Mahler1957` hypothesis is replaced by Ridout's 1957 theorem, from which
+Mahler (1957, §3) derives it — see `Diophantine.mahler_of_ridout1957`.  The literature bedrock
+under Mills irrationality is thus Baker–Harman–Pintz, Matomäki and Ridout. -/
+theorem irrational_of_ridout (hB : BakerHarmanPintz2001) (hM : Matomaki2007) (hR : Ridout1957)
+    {A : ℝ} (hA : IsMinMills A) : Irrational A :=
+  irrational hB hM (Diophantine.mahler_of_ridout1957 hR) hA
 
 end LeanFormalizations.Mills
