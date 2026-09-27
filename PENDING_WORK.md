@@ -901,3 +901,54 @@ singleton multiset IS the conjugate), and `eventually_rpow_neg_lt`.
    so Theorem 1.2 needs only the degree-2 kill plus `IsPisot` + `natDegree = 3` extraction.
    **Prerequisite to add: `βw = (minpoly ℤ β).coeff 0 ∈ ℤ`** (extract from the proof of
    `pisot_one_le_prod_norm`, which already computes `Q.eval 0` both ways).
+
+### 2026-09-27 — Mills phase 6 COMPLETE: Saito Theorems 1.1 and 1.2 are axiom-clean
+
+`src/LeanFormalizations/NumberTheory/Mills/` is **sorry-free** again, and all three phase-6
+headline theorems in `Mills/Transcendental.lean` report only
+`[propext, Classical.choice, Quot.sound]`:
+
+| theorem | content |
+|---|---|
+| `exists_minMillsC_of_BHP` | `ξ_c` exists for every integer `c ≥ 3` (Saito Cor 3.4) |
+| `transcendental_of_four_le` | **Theorem 1.1**: `ξ_c` transcendental for every `c ≥ 4` |
+| `transcendental_or_pisot` | **Theorem 1.2**: `ξ₃` transcendental, or some `ξ₃^(3^m)` is Pisot of degree 3 |
+
+Two laps' worth of work, both landed here:
+
+**`saito_lemma36C`** (Lemma 3.6 for general `c`) is proved, via two new sorry-free files:
+
+* `ChainC.lean` — `exists_shifted_of_chainC`, `Chain.lean`'s shifted nested-interval engine for
+  any `c ≥ 2`.
+* `SaitoRich.lean` — `RichC`, the inner exponent `γ = 1 − 1/c` (`etaC`), and `saito_lemma38C`
+  (Lemma 3.8 for general `c`).
+
+The design point: at `c = 3` the inner Matomäki exponent and the outer window exponent coincide
+(both `2/3`), so `Irrational.lean` could use one symbol.  Separating them is exactly what makes
+the `c`-general lemma instantiable twice — at `η = 21/40` (window from Baker–Harman–Pintz) and at
+`η = 1 − 1/c` (window from the previous chain step).  Since `2/3 − γ ≤ 0` for `c ≥ 3`, Matomäki's
+count `D x^(2/3−γ)` collapses to the bare constant `D`.
+
+Two elementary ingredients replaced the analytic estimates Saito leaves implicit:
+`(1 + 1/(2c))^c ≤ 17/10` (from `1+t ≤ exp t` and `exp(1/2)² = e < 2.89`), which keeps the
+window's `c`-th powers inside `[Xᶜ, 2Xᶜ]`; and `(u+1)ᶜ ≥ uᶜ + 2u^(c−1) + u^(c−2)` (split off
+`(u+1)²` — no binomial theorem), which gives both the disjointness of the Matomäki windows and
+the upper half of the chain condition.
+
+**Theorem 1.2** then needed only Lemma 4.3 at `b = 3`, now `not_pisot_two_of_cube` in
+`SaitoDegreeTwo.lean`.  The mechanism is the Dickson/Newton identity
+
+    t_{3n} = t_n³ − 3 Pⁿ t_n,     t_n = βⁿ + wⁿ ∈ ℤ,  P = βw ∈ ℤ,
+
+so `t_n ∣ t_{3n}`; along `n = 3ʲ` both are **digits of `A`**, hence primes, and
+`t_{3n} > t_n³ > t_n` — a prime properly dividing a prime.  The missing prerequisite `βw ∈ ℤ` is
+`pisot_two_prod_mem_int` (`βw = ∏(−root) = Q(0) = (minpoly ℤ β).coeff 0`, the same computation as
+`pisot_one_le_prod_norm` but keeping the value instead of its modulus).  With `μ = 17/40` the
+Claim gives `card ≤ 40/17 < 3`, so degree is 2 or 3; degree 2 dies, degree 3 *is* the disjunct
+(Saito's open Remark 4.4).
+
+Gotchas this lap: `gcongr` cannot discharge the `0 ≤ log(pᶜ)` side goal of a div-monotonicity
+step — use `div_le_div_of_nonneg_right` with an explicit `Real.log_nonneg`.  `Nat.cast_sub` takes
+`(R := ℝ)`, not `(α := ℝ)`.  A `set ... with h` does **not** fold occurrences created later by
+`refine`, so re-`rw [← h]` before `omega`.  A transient `failed to open file ... .ir: Bad file
+descriptor` from the mathlib build tree is spurious; rerun `lake build`.

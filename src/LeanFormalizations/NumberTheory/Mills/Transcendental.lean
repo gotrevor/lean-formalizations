@@ -76,6 +76,48 @@ theorem transcendental_or_pisot (hB : BakerHarmanPintz2001) (hM : Matomaki2007)
     (hD : Dubickas2022) (hG : Dubickas2022PisotGap) {A : ℝ} (hA : IsMinMills A) :
     Transcendental ℚ A ∨
       ∃ m : ℕ, 1 ≤ m ∧ IsPisot (A ^ (3 ^ m)) ∧ (minpoly ℚ (A ^ (3 ^ m))).natDegree = 3 := by
-  sorry
+  obtain ⟨⟨hA1, hAm⟩, hmin⟩ := hA
+  by_cases halg : Transcendental ℚ A
+  · exact Or.inl halg
+  refine Or.inr ?_
+  rw [Transcendental, not_not] at halg
+  have h36 := saito_lemma36C (c := 3) hB hM (by norm_num) ⟨⟨hA1, hAm⟩, hmin⟩
+  have hμ0 : (0:ℝ) < (19 * ((3:ℕ):ℝ))/40 - 1 := by norm_num
+  have hK0 : (0:ℝ) < (2:ℝ) ^ ((19 * ((3:ℕ):ℝ))/40) := Real.rpow_pos_of_pos (by norm_num) _
+  obtain ⟨m, hβ, hnd, hclaim⟩ :=
+    exists_pisot_of_decay hD hG hA1 (c := 3) (by norm_num) hμ0 hK0
+      (decay_round_of_lemma36C (by norm_num) hA1 hAm h36)
+      (fun m hm t => millsC_not_intCast (by norm_num) hA1 hAm m hm t) halg
+  set β : ℝ := A ^ ((3:ℕ) ^ (m + 1)) with hβdef
+  have hcard1 : 1 ≤ Multiset.card (otherConj β) := by
+    have := card_otherConj_add_one (β := β) (hβ.2.1.tower_top)
+    omega
+  -- `μ = 17/40`, so the Claim gives `card ≤ 40/17 < 3`
+  have hcard2 : Multiset.card (otherConj β) ≤ 2 := by
+    by_contra hcon
+    push Not at hcon
+    have h3 : (3:ℝ) ≤ (Multiset.card (otherConj β) : ℝ) := by exact_mod_cast hcon
+    norm_num at hclaim
+    nlinarith [hclaim, h3]
+  -- the fractional parts are eventually `< 1/2`
+  have hfrac : ∀ᶠ k : ℕ in Filter.atTop,
+      A ^ ((3:ℕ) ^ k) - (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℝ) < 1 / 2 := by
+    filter_upwards [decay_of_lemma36C (c := 3) (by norm_num) hA1 hAm h36,
+      eventually_rpow_neg_lt (c := 3) hA1 (by norm_num) hμ0 hK0 (by norm_num : (0:ℝ) < 1/2)]
+      with k hk hk2
+    exact lt_of_le_of_lt hk.2 hk2
+  rcases (by omega : Multiset.card (otherConj β) = 1 ∨ Multiset.card (otherConj β) = 2)
+    with hc1 | hc2
+  · -- degree 2: killed by Lemma 4.3 at `b = 3`
+    exfalso
+    refine not_pisot_two_of_cube hA1 hβ hc1 (fun k hk => ?_) (fun k hk => ?_) hfrac
+    · exact Nat.prime_iff.2 (hAm ⟨k, by omega⟩)
+    · obtain ⟨j, rfl⟩ : ∃ j, k = j + 1 := ⟨k - 1, by omega⟩
+      exact mdigitC_pow_lt (c := 3) (by norm_num) hA1 hAm j
+  · -- degree 3: the disjunct of Theorem 1.2
+    refine ⟨m + 1, by omega, hβ, ?_⟩
+    rw [← hβdef]
+    have := card_otherConj_add_one (β := β) (hβ.2.1.tower_top)
+    omega
 
 end LeanFormalizations.Mills
