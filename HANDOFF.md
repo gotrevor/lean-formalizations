@@ -1,11 +1,14 @@
 # HANDOFF (thin pointer)
 
-Phase 6 (2026-09-27): **Saito Theorem 1.1 (`transcendental_of_four_le`) is PROVED for all
-`c ≥ 4`**, resting on the single open lemma `saito_lemma36C`.
+Phase 7 (2026-09-27): **Dubickas 2022 Theorem 1 is DONE.**  κ, ζ, Sylvester γ, η, τ and the
+OEIS half-rate constants (A076949, A077124, A076393 = Vardi) are proved transcendental, and
+`NumberTheory/Transcendence/` is **sorry-free and axiom-clean** (trust base only), resting on the
+two frozen literature inputs `Dubickas2022` / `Dubickas2022PisotGap`.
 
-Newest full handoff: `HANDOFF-2026-09-27-mills-phase6-thm11.md`.
+Key insight: at `d = 2`, `a₀ = 1` the substitution `y_n = x_n + a₁/2` makes the recursion *exact*
+(`y_{n+1} = y_n² − c`), which deletes Dubickas's Lemmas 7 and 10 and turns (17)/(18) into
+`c ∈ {0, 2}`.
 
-Two obligations left in `Mills/`: `saito_lemma36C` (`SaitoDigits.lean:114`, gates everything)
-and `transcendental_or_pisot` (`Transcendental.lean:79`, Theorem 1.2).
+Newest full handoff: `HANDOFF-2026-09-27-dubickas-phase7-complete.md`.
 
-Direction: [`DIRECTION.md`](DIRECTION.md) — phase 6 at the top.
+Direction: [`DIRECTION.md`](DIRECTION.md) — phase 7 at the top.

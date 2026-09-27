@@ -1,5 +1,12 @@
 # PENDING_WORK — lean-formalizations
 
+## ✅ Dubickas 2022 phase 7 COMPLETE (2026-09-27) — `NumberTheory/Transcendence/` sorry-free, axiom-clean
+`transcendental_growth_of_monic_quadratic`, `theorem1`, `oeis_constants` all
+`[propext, Classical.choice, Quot.sound]`.  See `HANDOFF-2026-09-27-dubickas-phase7-complete.md`.
+Nothing to reopen.  The crux that made it tractable: for `d = 2, a₀ = 1` the recursion is EXACT
+(`y_{n+1} = y_n² − c`), so Lemmas 7/10 are unnecessary and (17)/(18) reduce to `c ∈ {0, 2}`; the
+degree collapse is `Mills.pisot_degree_bound` at `μ = 1`.
+
 ## 🔢 Catalan salvage (branch `catalan`, 2026-09-04) — Phase 3 GREEN (all of Catalan/ sorry-free)
 - **Done (lap 2, 2026-09-04):** `Frame.lean` 14/14 leaves, axiom-clean; sink edge
   `catalan_irrational_of_smallForms` kernel-checked.  E1/E2 statements corrected (`S ≤ B` added;

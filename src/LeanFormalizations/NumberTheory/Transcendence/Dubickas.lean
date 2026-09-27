@@ -126,12 +126,80 @@ def tauSeq : ℕ → ℤ
 def HasTranscendentalGrowth (x : ℕ → ℤ) : Prop :=
   ∃ α : ℝ, Tendsto (fun n ↦ (x n : ℝ) ^ ((1 : ℝ) / 2 ^ n)) atTop (𝓝 α) ∧ Transcendental ℚ α
 
-/-- **Dubickas (2022), Theorem 1: κ, ζ, γ, η, τ are all transcendental.** -/
+/-- A quadratic iteration that starts at `b ≥ 1` and strictly climbs from `b` on tends to `∞`. -/
+theorem tendsto_of_quadratic {a₁ a₂ b : ℤ} {x : ℕ → ℤ}
+    (hx : ∀ n, x (n + 1) = x n ^ 2 + a₁ * x n + a₂) (hb : b ≤ x 0)
+    (hinv : ∀ t : ℤ, b ≤ t → b ≤ t ^ 2 + a₁ * t + a₂)
+    (hgrow : ∀ t : ℤ, b ≤ t → t + 1 ≤ t ^ 2 + a₁ * t + a₂) : Tendsto x atTop atTop := by
+  have hble : ∀ n, b ≤ x n := by
+    intro n
+    induction n with
+    | zero => exact hb
+    | succ n ih => rw [hx n]; exact hinv _ ih
+  have hlin : ∀ n : ℕ, x 0 + (n : ℤ) ≤ x n := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ n ih =>
+        have h := hgrow (x n) (hble n)
+        rw [hx n]
+        push_cast
+        omega
+  refine tendsto_atTop_mono hlin ?_
+  exact tendsto_atTop_add_const_left _ _ tendsto_natCast_atTop_atTop
+
+theorem kappaSeq_rec : ∀ n, kappaSeq (n + 1) = kappaSeq n ^ 2 + 0 * kappaSeq n + 1 := by
+  intro n; simp only [kappaSeq]; ring
+
+theorem zetaSeq_rec : ∀ n, zetaSeq (n + 1) = zetaSeq n ^ 2 + 0 * zetaSeq n + (-1) := by
+  intro n; simp only [zetaSeq]; ring
+
+theorem sylvester_rec : ∀ n, sylvester (n + 1) = sylvester n ^ 2 + (-1) * sylvester n + 1 := by
+  intro n; simp only [sylvester]; ring
+
+theorem etaSeq_rec : ∀ n, etaSeq (n + 1) = etaSeq n ^ 2 + 1 * etaSeq n + 1 := by
+  intro n; simp only [etaSeq]; ring
+
+theorem tauSeq_rec : ∀ n, tauSeq (n + 1) = tauSeq n ^ 2 + 2 * tauSeq n + 1 := by
+  intro n; simp only [tauSeq]; try ring
+
+theorem kappaSeq_tendsto : Tendsto kappaSeq atTop atTop :=
+  tendsto_of_quadratic (b := 1) kappaSeq_rec (by norm_num [kappaSeq])
+    (fun t ht ↦ by nlinarith) (fun t ht ↦ by nlinarith)
+
+theorem zetaSeq_tendsto : Tendsto zetaSeq atTop atTop :=
+  tendsto_of_quadratic (b := 2) zetaSeq_rec (by norm_num [zetaSeq])
+    (fun t ht ↦ by nlinarith) (fun t ht ↦ by nlinarith)
+
+theorem sylvester_tendsto : Tendsto sylvester atTop atTop :=
+  tendsto_of_quadratic (b := 2) sylvester_rec (by norm_num [sylvester])
+    (fun t ht ↦ by nlinarith) (fun t ht ↦ by nlinarith)
+
+theorem etaSeq_tendsto : Tendsto etaSeq atTop atTop :=
+  tendsto_of_quadratic (b := 1) etaSeq_rec (by norm_num [etaSeq])
+    (fun t ht ↦ by nlinarith) (fun t ht ↦ by nlinarith)
+
+theorem tauSeq_tendsto : Tendsto tauSeq atTop atTop :=
+  tendsto_of_quadratic (b := 1) tauSeq_rec (by norm_num [tauSeq])
+    (fun t ht ↦ by nlinarith) (fun t ht ↦ by nlinarith)
+
+/-- **Dubickas (2022), Theorem 1: κ, ζ, γ, η, τ are all transcendental.**  For each of the five
+polynomials `a₁² − 2a₁ − 4a₂` is `−4, 4, −1, −5, −4` respectively, so neither (17) nor (18)
+holds and `transcendental_growth_of_monic_quadratic` applies. -/
 theorem theorem1 (hD : Dubickas2022) (hG : Dubickas2022PisotGap) :
     HasTranscendentalGrowth kappaSeq ∧ HasTranscendentalGrowth zetaSeq ∧
       HasTranscendentalGrowth sylvester ∧ HasTranscendentalGrowth etaSeq ∧
-      HasTranscendentalGrowth tauSeq := by
-  sorry
+      HasTranscendentalGrowth tauSeq :=
+  ⟨transcendental_growth_of_monic_quadratic hD hG 0 1 kappaSeq kappaSeq_rec
+      kappaSeq_tendsto (by decide) (by decide),
+   transcendental_growth_of_monic_quadratic hD hG 0 (-1) zetaSeq zetaSeq_rec
+      zetaSeq_tendsto (by decide) (by decide),
+   transcendental_growth_of_monic_quadratic hD hG (-1) 1 sylvester sylvester_rec
+      sylvester_tendsto (by decide) (by decide),
+   transcendental_growth_of_monic_quadratic hD hG 1 1 etaSeq etaSeq_rec
+      etaSeq_tendsto (by decide) (by decide),
+   transcendental_growth_of_monic_quadratic hD hG 2 1 tauSeq tauSeq_rec
+      tauSeq_tendsto (by decide) (by decide)⟩
 
 /-! ## The OEIS-normalised constants
 
@@ -144,10 +212,45 @@ def HasTranscendentalHalfGrowth (x : ℕ → ℤ) : Prop :=
   ∃ c : ℝ, Tendsto (fun n ↦ (x n : ℝ) ^ ((1 : ℝ) / 2 ^ (n + 1))) atTop (𝓝 c) ∧
     Transcendental ℚ c
 
+/-- Halving the exponent rate takes the growth constant to its square root, and a square root of
+a transcendental number is transcendental. -/
+theorem halfGrowth_of_growth {x : ℕ → ℤ} (hinf : Tendsto x atTop atTop)
+    (h : HasTranscendentalGrowth x) : HasTranscendentalHalfGrowth x := by
+  obtain ⟨α, hlim, htr⟩ := h
+  have hev1 : ∀ᶠ n : ℕ in atTop, (1 : ℝ) ≤ (x n : ℝ) ^ ((1 : ℝ) / 2 ^ n) := by
+    filter_upwards [hinf.eventually_ge_atTop 1] with n hn
+    have hx1 : (1 : ℝ) ≤ (x n : ℝ) := by exact_mod_cast hn
+    calc (1 : ℝ) = (1 : ℝ) ^ ((1 : ℝ) / 2 ^ n) := (Real.one_rpow _).symm
+      _ ≤ (x n : ℝ) ^ ((1 : ℝ) / 2 ^ n) := Real.rpow_le_rpow (by norm_num) hx1 (by positivity)
+  have hα1 : (1 : ℝ) ≤ α := ge_of_tendsto hlim hev1
+  have hα0 : (0 : ℝ) < α := by linarith
+  refine ⟨α ^ ((1 : ℝ) / 2), ?_, ?_⟩
+  · have hcont : Tendsto (fun u : ℝ ↦ u ^ ((1 : ℝ) / 2)) (𝓝 α) (𝓝 (α ^ ((1 : ℝ) / 2))) :=
+      (Real.continuousAt_rpow_const α ((1 : ℝ) / 2) (Or.inl (ne_of_gt hα0))).tendsto
+    refine (hcont.comp hlim).congr' ?_
+    filter_upwards [hinf.eventually_ge_atTop 1] with n hn
+    have hx0 : (0 : ℝ) ≤ (x n : ℝ) := by
+      have : (1 : ℤ) ≤ x n := hn
+      exact_mod_cast le_trans zero_le_one this
+    simp only [Function.comp_apply]
+    rw [← Real.rpow_mul hx0]
+    congr 1
+    rw [pow_succ]
+    ring
+  · intro halgs
+    refine htr ?_
+    have h2 : (α ^ ((1 : ℝ) / 2)) ^ (2 : ℕ) = α := by
+      rw [← Real.rpow_natCast (α ^ ((1 : ℝ) / 2)) 2, ← Real.rpow_mul hα0.le]
+      norm_num
+    have h3 := halgs.pow (n := 2)
+    rwa [h2] at h3
+
 /-- **OEIS A076949, A077124, A076393 (Vardi's constant) are transcendental.** -/
 theorem oeis_constants (hD : Dubickas2022) (hG : Dubickas2022PisotGap) :
     HasTranscendentalHalfGrowth kappaSeq ∧ HasTranscendentalHalfGrowth zetaSeq ∧
       HasTranscendentalHalfGrowth sylvester := by
-  sorry
+  obtain ⟨h1, h2, h3, -, -⟩ := theorem1 hD hG
+  exact ⟨halfGrowth_of_growth kappaSeq_tendsto h1, halfGrowth_of_growth zetaSeq_tendsto h2,
+    halfGrowth_of_growth sylvester_tendsto h3⟩
 
 end LeanFormalizations.Transcendence.Dubickas
