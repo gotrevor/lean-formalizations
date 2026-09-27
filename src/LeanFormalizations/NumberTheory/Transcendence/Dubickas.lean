@@ -1,6 +1,9 @@
 /-
 # Growth constants of quadratic iterations are transcendental (Dubickas 2022, Theorem 1)
 
+⚓ **Linked from OEIS by path on `main`** (A003095, A003096, A000058, A002065, A004019,
+A076949, A077124, A076393).  Do not move or rename this file.
+
 A. Dubickas, *Transcendency of some constants related to integer sequences of polynomial
 iterations*, Ramanujan J. **57** (2022), 569–581, doi:10.1007/s11139-021-00428-5.
 Local-only full text (gitignored): `papers/dubickas-2022-transcendency-polynomial-iterations.{pdf,txt}`.
