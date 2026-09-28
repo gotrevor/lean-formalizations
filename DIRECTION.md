@@ -1,5 +1,19 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 10, 2026-09-28): A003095's elementary facts — low-hanging fruit
+
+Phases 1–9 are merged (phase 9's two Corvaja–Zannier `sorry`s in `DubickasNoSubspace.lean` are
+DISCLOSED OPEN - leave them).  Phase 10 is `NumberTheory/PolyIteration/`: Sylvester's theorem and
+Bala's generalization (`Sylvester.lean`), then every elementary fact on OEIS A003095
+(`A003095.lean`: strong divisibility, Bala's identities, the Bala conjectures as proved by Harden,
+Somos's relation, the digit cycles).  Proof sketches in both headers; sources
+`papers/bala-2026-sylvester-strong-divisibility.txt`, `papers/harden-2026-bala-conjectures.txt`.
+All statements were checked numerically on small `n` before freezing.  `decide`/`native_decide`
+for small cases is fine.  Frozen by name: every phase-10 theorem and `IsStrongDivSeq`, `a003095`,
+plus every earlier name.  Stop condition: `NumberTheory/PolyIteration/` sorry-free.
+
+---
+
 ## 🎯 THE OBJECTIVE (phase 9, 2026-09-28): drop Lemma 6 from Dubickas Theorem 1 — a 3-lap PROBE
 
 Phase 8 removed Lemma 8.  Theorem 1 now rests on `Dubickas2022` (Lemma 6, Corvaja–Zannier,
