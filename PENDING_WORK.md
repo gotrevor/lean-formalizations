@@ -1,5 +1,43 @@
 # PENDING_WORK — lean-formalizations
 
+## 🎯 PHASE 9 — ATTACK PATH SET BY THE REVIEW LAP (2026-09-28, lap #8)
+
+`DIRECTION.md` → CURRENT DIRECTIVE is binding.  Summary: **Lemma 3 stays a disclosed leaf** (it is
+the `p`-adic Subspace Theorem; the review lap re-confirmed independently that the one-dimensional
+route is vacuous — `∏_σ(σ(α)^N − k_N)` is a linear form in the `d` monomials `σ(α)^N`, and the
+archimedean Liouville bound only re-derives `M(α) ≥ α`).  The objective is now **three leaves → one**.
+
+**The new handle the earlier laps were missing: an UPPER bound on `den(U_N)`.**
+`D α` is an algebraic integer for some positive integer `D` (`D ∣ a₀`), hence
+`D^N · U_N = Tr((Dα)^N) ∈ ℤ`, i.e. `den(U_N) ∣ D^N`.  The sixth lap only had the *lower* bound
+(`den ≍ D_v^N` in the unique-max case).  Pairing the upper bound with the already-proved
+`tracePowSum_near_int` (for **all** large `n`, `2 U_(2^n)` is within `C r^(2^n)` of an integer,
+`r = max(α⁻¹, ρ) < 1`) and `one_div_den_le_dist_int` gives
+
+> **Cofiniteness dichotomy.**  For all large `n`, either `2 U_(2^n) ∈ ℤ`, or `(D r)^(2^n) ≥ 1/(2C)`.
+> Hence **if `D · max(α⁻¹, ρ) < 1` then `2 U_(2^n) ∈ ℤ` for every large `n`** — the exact-integrality
+> exponent set is COFINITE, which is precisely what the seventh lap identified as the missing input.
+
+With a cofinite exponent set: (i) the Newton/Graeffe collapse applies at every tie size (item 1
+below), so the local leaf closes; (ii) the degenerate descent iterates, because `{N | l N ∈ S}` is
+cofinite too.  So **the whole sparsity obstruction upgrades to the single inequality
+`D ≥ min(α, ρ⁻¹)`** — an assertion about the Mahler measure of a growth constant, which is a named,
+attackable statement rather than "the index set might be a tower".
+
+**Ordered work items**
+1. `valuation_sum_unit_pow_mulClosed` — general-`k` Newton collapse.  For `v`-units `u_1..u_k` and an
+   exponent set closed under multiplication by `1..k`: set `x_i = u_i^N`; `multiset_mul_esymm_eq_sum`
+   (in `MultisetNewton.lean`) gives `j e_j = (−1)^(j+1) Σ_{i<j} (−1)^i e_i p_(j−i)`; since
+   `i! ∣ (j−1)!` one gets `v(j! e_j) ≤ max_{1 ≤ l ≤ k} v(p_l)` by induction (using `v(e_i) ≤ 1`, all
+   terms being sums of products of units), and `e_k = ∏ u_i` is a unit, so
+   `v(k!) = v(k! e_k) ≤ max_l v(p_l) → 0` — contradiction.  **No nondegeneracy hypothesis.**
+   Generalizes `valuation_sum_unit_pow_card_two`; also covers `k = 1`.
+2. `tracePowSum_den_dvd` — `∃ D > 0, ∀ N, (D^N * U_N).den = 1`, from `IsIntegral ℤ (D • α)`.
+3. `tracePowSum_exact_int_of_lt` — the cofiniteness dichotomy above.
+4. Re-route `corvajaZannier_lemma4` / `isIntegral_of_bounded_den_of_nondegenerate` through 1–3, and
+   do the degenerate descent on the now-cofinite set.  What is left over is the recorded inequality
+   `D ≥ min(α, ρ⁻¹)`.
+
 ## 🔭 PHASE 9 IN PROGRESS (2026-09-28) — `Dubickas2022` (Lemma 6) narrowed to the CZ dichotomy
 The open `sorry`s in `src/` are deliberate and are the active crux, both in
 `NumberTheory/Transcendence/DubickasNoSubspace.lean`:

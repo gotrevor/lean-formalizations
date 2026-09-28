@@ -20,41 +20,48 @@ Stop condition: `NumberTheory/Transcendence/` sorry-free.
 
 ---
 
-## ⚡ CURRENT DIRECTIVE (set 2026-09-28, review lap; OUTRANKS every HANDOFF)
+## ⚡ CURRENT DIRECTIVE (set 2026-09-28, review lap #2 of phase 9; OUTRANKS every HANDOFF)
 
-**Phase 8 is COMPLETE and CLOSED.**  `c_eq_zero_or_two_noGap` is proved for every degree from
-`Dubickas2022` alone; `hG : Dubickas2022PisotGap` is gone from
-`transcendental_growth_of_monic_quadratic`, `theorem1`, `oeis_constants` and from
-`Comparator/Dubickas/Challenge.lean` (`scripts/comparator-probe Dubickas` = identical).  All of
-`src/` is sorry-free, `grep '^axiom' src/` is empty, and every headline (Dubickas, Mills, Catalan,
-DirichletBeta, Diophantine, Goodstein, Kakeya, no-three-in-line, transcendence) is
-`[propext, Classical.choice, Quot.sound]`.  **Do not re-open phase 8**; do not re-derive the
-`deg β ≤ 5` case analysis (deleted on purpose — the degree-uniform `E₂`-constancy route replaces it).
+**Phase 9's PROBE objective is MET.**  `PROBE-DUBICKAS-NOSUBSPACE.md` now carries a precise,
+multiply-confirmed obstruction: Dubickas's Lemma 6 = (his Lemma 3 = **Corvaja–Zannier 2004's main
+theorem**) ∨ (his Lemma 5, fully formalized).  Lemma 3 is the `p`-adic Subspace Theorem and **stays a
+disclosed leaf**: the reason is structural, not a gap in effort — the object to bound is
+`∏_σ(σ(α)^N − k_N)`, i.e. a *linear form in the `d` monomials* `σ(α)^N`, which is exactly what forces
+Subspace over Roth/Ridout, and the one-dimensional (archimedean-Liouville / Ridout) route provably
+only re-derives `M(α) ≥ α` (vacuous).  `hD` therefore stays on the three `Dubickas.lean` headlines.
 
-**Objective of the NEXT phase (phase 9) — pick ONE, hardest-first, and say which in the handoff:**
+**THE SINGLE OBJECTIVE now: collapse `DubickasNoSubspace.lean` from THREE disclosed leaves to ONE**
+— `corvajaZannier_dichotomy` (a named published theorem) — by proving `corvajaZannier_lemma4` and
+its local leaf `valuation_sum_unit_pow_nondegenerate` in the forms the call site can actually supply.
 
-1. 🟠 **`Dubickas2022` (his Lemma 6) itself** — now the *only* hypothesis under the OEIS-linked
-   headlines.  It is Corvaja–Zannier 2004 ⇒ the `p`-adic Subspace Theorem (Schlickewei), which
-   mathlib does not have in any form.  Genuinely generational; the right chip is a *prerequisite*
-   (heights / absolute values on number fields / a Roth-type statement in the shape
-   `Literature/Diophantine` already uses), not the theorem.
-2. 🟡 **Saito Remark 4.4** (degree-3 Pisot refinement of `transcendental_or_pisot`) —
-   `NumberTheory/Mills/`, the registered next step of the phase-6 thread.
-3. 🟡 **Catalan phase 2** (probe-first per `DIRECTION.md`; never claim `G ∉ ℚ`).
-4. 🟡 **`PrimeBetweenCubesFrom` / `BakerHarmanPintz2001` / `Matomaki2007`** — the primes-in-short-
-   intervals bedrock under Mills.  `Ridout1957` is the one already-discharged edge (phase 5).
+**Mandated next moves, in order** (detail + the new handle in `PENDING_WORK.md` §PHASE 9):
+1. **General-`k` Newton collapse.**  Extend the `k = 2` Graeffe closure to any tie size via
+   `multiset_mul_esymm_eq_sum` (already in `MultisetNewton.lean`): `v(j! e_j) ≤ max_{l ≤ k} v(p_l)`
+   by induction, and `e_k = ∏ u_i` is a unit.  Closes the local leaf for every exponent set closed
+   under multiplication by `1, …, k` — **no nondegeneracy hypothesis**.
+2. **`den(U_N) ∣ D^N`** — `D α` is an algebraic integer for some `D`, so `D^N U_N = Tr((Dα)^N) ∈ ℤ`.
+   This is the *upper* bound on the denominator that the sixth lap was missing.
+3. **The cofiniteness dichotomy.**  Pair 2 with the already-proved `tracePowSum_near_int` +
+   `one_div_den_le_dist_int`: if `D · max(α⁻¹, ρ) < 1` then `2 U_(2^n) ∈ ℤ` for **all** large `n`,
+   so the exponent set is cofinite, so 1 applies *and* the degenerate descent iterates.  The
+   residual "sparsity" obstruction thereby upgrades to the single concrete inequality
+   `D ≥ min(α, ρ⁻¹)` — a statement about the Mahler measure, recordable and attackable.
 
-**Forbidden drift:** no new side quests outside those four; no edits to `Literature/` statements
-(frozen); `Literature/Lindemann.lean` stays a stub (pending mathlib PR — never prove it);
-`NumberTheory/Transcendence/Dubickas.lean` keeps its path and every public name (⚓ OEIS-linked).
+**Forbidden drift:** do NOT attempt Lemma 3 / the Subspace Theorem itself; do NOT add any `Prop` to
+`Literature/` (frozen — propose it in the PROBE write-up instead); do NOT route a `Dubickas.lean`
+headline through a `sorry`; do NOT move the three active-crux `sorry`s to `wip/` (that games the
+gate).  `Dubickas.lean` keeps its path and every public name (⚓ OEIS-linked).
 
-**Why:** the repo has no `sorry` and no declared axiom anywhere, so the only remaining fidelity
-debt is the *hypotheses* on conditional headlines.  Chipping those is the whole frontier; closing
-more leaves would be theatre.
+**Why:** the headline crux is a confirmed literature wall, so the remaining *decidable* value is
+fidelity bookkeeping of the sharpest kind — reducing three vaguely-strong leaves to one citable
+published theorem, and turning "the index set might be sparse" into a named inequality.
 
 **Directive history**
 - 2026-09-28 (review lap): phase 8 CLOSED — Lemma 8 dropped from the Dubickas headlines; next
   phase must attack a literature *hypothesis*, not a leaf.
+- 2026-09-28 (review lap #2): phase 9's probe goal MET; Lemma 3 is the Subspace Theorem and stays a
+  disclosed leaf.  New objective = THREE leaves → ONE, via the general-`k` Newton collapse + the
+  `den(U_N) ∣ D^N` upper bound + the cofiniteness dichotomy.
 
 ---
 

@@ -1,12 +1,16 @@
 # STATUS — lean-formalizations 📊
 
 **Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized
-in Lean 4 + mathlib.** · **Build**: 🟢 green (**8707 jobs**) · `src/` **sorry-free** ·
-**MATH AXIOMS: 0** · **Updated**: review lap · 2026-09-28 · phase 8 close · `1827ad9`
+in Lean 4 + mathlib.** · **Build**: 🟢 green (**8708 jobs**) · `src/`: **3 disclosed crux `sorry`s**
+(all in `DubickasNoSubspace.lean`, the phase-9 probe; every *headline* is clean) ·
+**MATH AXIOMS: 0** · **Updated**: review lap #2 · 2026-09-28 · phase 9 probe · `6577c47`
 
-> 🏁 **2026-09-28 — the frontier is now HYPOTHESES ONLY.** `src/` contains no `sorry`, no `admit`
-> and no declared `axiom`; every headline in the ledger below is `[propext, Classical.choice,
-> Quot.sound]`.  The remaining fidelity debt is entirely the *literature hypotheses* carried by the
+> 🏁 **2026-09-28 — the frontier is HYPOTHESES + one named literature wall.** `src/` contains no
+> `admit` and no declared `axiom`; every headline in the ledger below is `[propext, Classical.choice,
+> Quot.sound]`.  It does carry **three disclosed `sorry`s**, all in the phase-9 probe file
+> `NumberTheory/Transcendence/DubickasNoSubspace.lean` — the deliberate decomposition of the
+> Corvaja–Zannier crux (`corvajaZannier_dichotomy` = the `p`-adic Subspace Theorem,
+> `corvajaZannier_lemma4`, `valuation_sum_unit_pow_nondegenerate`).  No headline routes through them.  The remaining fidelity debt is entirely the *literature hypotheses* carried by the
 > conditional headlines (`Dubickas2022`, `BakerHarmanPintz2001`, `Matomaki2007`,
 > `PrimeBetweenCubesFrom`, `Ridout1957/58`) — see `PENDING_WORK.md` for the ranked table and
 > `DIRECTION.md` → CURRENT DIRECTIVE for which one the next phase attacks.
@@ -98,6 +102,17 @@ _(historical header of the goodstein expedition: lap 14 review, 2026-06-19, `cd5
 > resolved (`norm_seqONote_le`: budget is free on the descent). The five threads below are frozen.
 
 ## Where it stands
+**As of 2026-09-28 (phase 9 probe, review lap #2).**  Phase 9's *probe* objective is MET: Dubickas's
+Lemma 6 is dissected in `PROBE-DUBICKAS-NOSUBSPACE.md` into (a) fully-formalized elementary steps,
+(b) `Ridout1957` for the rational-power case, (c) Corvaja–Zannier's Lemma 4 — reduced to one local
+statement about power sums of `v`-units — and (d) **Corvaja–Zannier's main theorem, which IS the
+`p`-adic Subspace Theorem and stays a disclosed leaf**.  The review lap re-confirmed (d)
+independently: the object to bound is a linear form in the `d` monomials `σ(α)^N`, so the
+one-dimensional Roth/Ridout route only re-derives the vacuous `M(α) ≥ α`.  The live objective is now
+*three disclosed leaves → one citable published theorem*; the new handle is the **upper** bound
+`den(Tr α^N) ∣ D^N` (from `Dα` integral), which pairs with the proved `tracePowSum_near_int` to make
+the exact-integrality exponent set cofinite whenever `D · max(α⁻¹, ρ) < 1`.
+
 **As of 2026-09-28 (phase 8 close).** `src/` is sorry-free with zero declared axioms, so *every*
 theorem in `src/` is on the bare trust base; the ledger below samples the headlines.  What is left
 is not proof work but **hypothesis discharge**: five conditional headline families still carry a
@@ -112,6 +127,16 @@ finite-support `b`-recursion.  Nine threads are complete and axiom-clean (see th
 The repo declares **no custom axioms** (`grep '^axiom' src/` is empty), and every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]` - with one disclosed exception: the Goodstein growth closures additionally carry `Lean.ofReduceBool` from their finite base-case `native_decide` (`DominationBaseCases.lean`). Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-09-28 review lap #2 (phase 9 probe: the wall is NAMED, and the residual sparsity becomes an
+  inequality):** seven grind laps dissected Dubickas's Lemma 6.  Verdict recorded in `DIRECTION.md` →
+  CURRENT DIRECTIVE: `corvajaZannier_dichotomy` = Corvaja–Zannier 2004's main theorem = the `p`-adic
+  Subspace Theorem, and it stays a **disclosed leaf** (structural reason, not effort: the quantity to
+  bound is a linear form in the `d` monomials `σ(α)^N`).  Everything else in Lemma 6 is either proved
+  (`isPisot_of_pseudoPisotMul`, Lemma 5 both branches, `exists_tie_of_bounded_den`,
+  `false_of_bounded_den_of_nondegenerate`, `tracePowSum_near_int`, the `k = 2` Graeffe collapse) or
+  routed through `Ridout1957` (`exists_pisot_pow_of_pow_rat`).  **New this lap:** the missing *upper*
+  bound `den(Tr α^N) ∣ D^N`, which converts the seventh lap's vague "the exponent set may be sparse"
+  into the concrete inequality `D ≥ min(α, ρ⁻¹)`.  Objective reset to *three leaves → one*.
 - **2026-09-28 review lap (🎉 Dubickas Theorem 1 loses Lemma 8; `src/` fully sorry-free):**
   `c_eq_zero_or_two_noGap` is PROVED for **every** degree from `Dubickas2022` alone, and
   `hG : Dubickas2022PisotGap` is dropped from `transcendental_growth_of_monic_quadratic`,
@@ -372,9 +397,12 @@ genuine Cichoń growth content, the 8-lap-then-3-lap crux — is now complete:
 `native_decide` artifacts (excluded from the math-axiom count per the doctrine; the engines are
 trust-base-clean).
 ### Short-term (mirror PENDING_WORK top — the live frontier)
-**2026-09-28: there is no leaf work left.** `src/` is sorry-free with 0 declared axioms, so the live
-frontier is hypothesis discharge, ranked in `PENDING_WORK.md` and bound by `DIRECTION.md` → CURRENT
-DIRECTIVE.  In order: (1) 🟠 `Dubickas2022` = his Lemma 6 ⇒ Corvaja–Zannier ⇒ the `p`-adic Subspace
+**2026-09-28 (review lap #2): the live frontier is the phase-9 Dubickas probe**, whose three
+disclosed `sorry`s are the only open obligations anywhere in `src/`.  Ordered work items (mirroring
+`PENDING_WORK.md` top, binding via `DIRECTION.md` → CURRENT DIRECTIVE): (0a) the general-`k` Newton
+collapse `valuation_sum_unit_pow_mulClosed`; (0b) `tracePowSum_den_dvd` (`den(U_N) ∣ D^N`);
+(0c) the cofiniteness dichotomy; (0d) re-route `corvajaZannier_lemma4` + the degenerate descent.
+Then, as before: (1) 🟠 `Dubickas2022` = his Lemma 6 ⇒ Corvaja–Zannier ⇒ the `p`-adic Subspace
 Theorem — the ONLY hypothesis under the OEIS-linked Dubickas headlines; mathlib has nothing, so the
 chip is a *prerequisite* (heights / places of a number field), not the theorem. (2) 🟡 Saito
 Remark 4.4 (degree-3 Pisot, `Mills/`). (3) 🟡 Catalan phase 2 (probe-first; never claim `G ∉ ℚ`).
@@ -425,6 +453,7 @@ For the Goodstein thread, the charter ladder is COMPLETE (A1–A4, B1–B4-finit
 | `Transcendence.Dubickas.oeis_constants` | **OEIS A076949, A077124, A076393 (Vardi's constant) are transcendental**; same single hypothesis | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — ⚓ OEIS-linked file; comparator challenge matches (`comparator-probe Dubickas` identical) |
 | `Transcendence.Dubickas.transcendental_growth_of_monic_quadratic` | **Theorem 2 for monic quadratics**: `α = lim x_n^(1/2ⁿ)` transcendental unless `a₁²−2a₁−4a₂ ∈ {0,8}` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — `hG` dropped 2026-09-28 |
 | `Transcendence.Dubickas.c_eq_zero_or_two_noGap` | the Lemma-8-free core: Dubickas's (17)/(18) for **every** `deg β`, from Lemma 6 alone | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **the phase-8 result**; route in `PROBE-DUBICKAS-NOGAP.md` |
+| `Transcendence.Dubickas.exists_pisot_pow_noD` | the **phase-9 probe** target: Dubickas's Lemma 6 without `Dubickas2022`, from `Ridout1957` | `[propext, sorryAx, Classical.choice, Quot.sound]` | 🚧 **NOT a headline and no headline depends on it.** 3 disclosed `sorry`s: `corvajaZannier_dichotomy` (🟠 = the `p`-adic Subspace Theorem — the named wall), `corvajaZannier_lemma4` (🟡 degenerate branch), `valuation_sum_unit_pow_nondegenerate` (🟡 local leaf, proved for `card U = 2`) |
 | `Mills.wright` | **Wright 1951**: `∃ ω, ⌊tower ω n⌋ prime ∀ n ≥ 1`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **unconditional** |
 | `Mills.exists_least_of_primeBetweenCubes` | **Mills 1947** (least Mills constant), **cond.** on `PrimeBetweenCubesFrom` (Ingham) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms; 1 hypothesis (🟡 `PrimeBetweenCubesFrom`) |
 | `Mills.transcendental_of_four_le` | **Saito, Thm 1.1**: `ξ_c` transcendental for `c ≥ 4`, **cond.** on `BakerHarmanPintz2001` + `Matomaki2007` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms; 2 hypotheses (🟡 primes in short intervals) |
