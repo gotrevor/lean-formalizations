@@ -93,15 +93,19 @@ theorem exists_pisot_pow (hD : Dubickas2022) {α : ℝ} (halg : IsAlgebraic ℚ 
 theorem tendsto_two_pow_atTop : Tendsto (fun j : ℕ ↦ 2 ^ j) atTop atTop :=
   tendsto_atTop_mono (fun j ↦ (Nat.lt_two_pow_self (n := j)).le) tendsto_id
 
-/-- **Steps 2–4 of Dubickas's §5 for `d = 2`, `a₀ = 1`.**  If the growth constant `α` of the
-exact recursion `y_{n+1} = y_n² − c` is algebraic (and `2 y_n ∈ ℤ`), then `c ∈ {0, 2}` —
-Dubickas's conditions (17) and (18). -/
-theorem c_eq_zero_or_two (hD : Dubickas2022) (hG : Dubickas2022PisotGap)
+/-- **Steps 1–3 of Dubickas's §5 for `d = 2`, `a₀ = 1`.**  The growth constant `α` has a Pisot
+power `β = α^(2^m)` whose trace along `N = 2^j` *is* `y_(m+j)`, and squaring the trace turns the
+recursion into the exact identity `c = 2 βᴺ S_N + S_N² − S_(2N)`.  This is the whole elementary
+content of §5; the arithmetic conclusion `c ∈ {0, 2}` is drawn from it in
+`c_eq_zero_or_two` (via Lemma 8) and `c_eq_zero_or_two_noGap` (without). -/
+theorem exists_pisot_trace_ident (hD : Dubickas2022)
     {c α : ℝ} {y : ℕ → ℝ} (hrec : ∀ n, y (n + 1) = y n ^ 2 - c)
     (halg : IsAlgebraic ℚ α) (hα : 1 < α) {C : ℝ} (hC : 0 < C) {n₀ : ℕ}
     (hyint : ∀ n, ∃ k : ℤ, 2 * y n = (k : ℝ))
     (hbnd : ∀ n ≥ n₀, |y n - α ^ 2 ^ n| ≤ C / α ^ 2 ^ n) :
-    c = 0 ∨ c = 2 := by
+    ∃ (β : ℝ) (j₀ : ℕ), IsPisot β ∧ ∀ j ≥ j₀, (c : ℂ) =
+      2 * (β : ℂ) ^ 2 ^ j * conjPowSum β (2 ^ j) + conjPowSum β (2 ^ j) ^ 2
+        - conjPowSum β (2 ^ (j + 1)) := by
   classical
   obtain ⟨m, hβ⟩ := exists_pisot_pow hD halg hα hC hyint hbnd
   set β : ℝ := α ^ 2 ^ m with hβdef
@@ -184,6 +188,29 @@ theorem c_eq_zero_or_two (hD : Dubickas2022) (hG : Dubickas2022PisotGap)
       ring
     rw [h1, h2, hpowB j] at h3
     linear_combination h3
+  exact ⟨β, j₀, hβ, hident⟩
+
+/-- **Steps 2–4 of Dubickas's §5 for `d = 2`, `a₀ = 1`.**  If the growth constant `α` of the
+exact recursion `y_{n+1} = y_n² − c` is algebraic (and `2 y_n ∈ ℤ`), then `c ∈ {0, 2}` —
+Dubickas's conditions (17) and (18). -/
+theorem c_eq_zero_or_two (hD : Dubickas2022) (hG : Dubickas2022PisotGap)
+    {c α : ℝ} {y : ℕ → ℝ} (hrec : ∀ n, y (n + 1) = y n ^ 2 - c)
+    (halg : IsAlgebraic ℚ α) (hα : 1 < α) {C : ℝ} (hC : 0 < C) {n₀ : ℕ}
+    (hyint : ∀ n, ∃ k : ℤ, 2 * y n = (k : ℝ))
+    (hbnd : ∀ n ≥ n₀, |y n - α ^ 2 ^ n| ≤ C / α ^ 2 ^ n) :
+    c = 0 ∨ c = 2 := by
+  classical
+  obtain ⟨β, j₀, hβ, hident⟩ := exists_pisot_trace_ident hD hrec halg hα hC hyint hbnd
+  have hβ1 : 1 < β := hβ.1
+  have hβ0 : (0 : ℝ) < β := by linarith
+  have halgβ : IsIntegral ℚ β := hβ.2.1.tower_top
+  set ρ : ℝ := conjMax β with hρdef
+  have hρ0 : 0 ≤ ρ := conjMax_nonneg β
+  have hρ1 : ρ < 1 := conjMax_lt_one hβ
+  set L : ℕ := Multiset.card (otherConj β) with hLdef
+  have hSbnd : ∀ N : ℕ, ‖conjPowSum β N‖ ≤ (L : ℝ) * ρ ^ N := fun N ↦ norm_conjPowSum_le β N
+  have hBnorm : ∀ N : ℕ, ‖(β : ℂ) ^ N‖ = β ^ N := by
+    intro N; rw [norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hβ0]
   -- **Step 4**: the decay bound, hence `deg β ≤ 2`.
   set K : ℝ := |c| + (L : ℝ) ^ 2 + (L : ℝ) + 1 with hKdef
   have hK0 : 0 < K := by rw [hKdef]; positivity
