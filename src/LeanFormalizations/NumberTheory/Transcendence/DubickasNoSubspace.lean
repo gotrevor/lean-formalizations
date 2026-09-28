@@ -726,9 +726,13 @@ progression `N = r + h t` with every `u_i^h ∈ 1 + π^m`, the map `t ↦ Σ_i u
 by a convergent power series on `ℤ_p`, not identically zero by nondegeneracy, so Strassmann's
 theorem gives finitely many zeros `t_1, …, t_s ∈ ℤ_p` and
 `ord_v (Σ_i u_i^N) ≤ C + Σ_j ord_p (t − t_j)`; geometric decay forces `p^{c t} ∣ t' − t` for
-consecutive exponents, so the exponent set must grow at least like a tower — impossible for
-`N = 2^n`, which is all the headline needs.  mathlib has no Strassmann theorem and no `p`-adic
-Weierstrass preparation, so this is the next real prerequisite.  See
+consecutive exponents of the index set, so that set must grow at least like a **tower**.
+
+⚠ That is *not* by itself a contradiction here: the index set is only known to be an infinite
+subset of `{2^n}`, and e.g. `{2^(2^j)}` does grow like a tower.  So Strassmann closes this leaf only
+for index sets of at most exponential growth — in particular for a *cofinite* one.  Supplying that
+is exactly what `tracePowSum_den_grows` below does, in near-integer form.  mathlib has no
+Strassmann theorem and no `p`-adic Weierstrass preparation either way.  See
 `PROBE-DUBICKAS-NOSUBSPACE.md`. -/
 theorem valuation_sum_unit_pow_nondegenerate {L : Type*} [Field L] [NumberField L]
     (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers L))
@@ -899,6 +903,202 @@ theorem isIntegral_of_bounded_den_of_nondegenerate {α : ℝ} (halg : IsIntegral
     (w' : ℂ) (coe_mem_aroots_of_mem_conjMultiset hw') (fun h ↦ hne (by exact_mod_cast h)) l hl ?_
   have := congrArg (algebraMap (conjField α) ℂ) heq
   simpa using this
+
+/-! ### The archimedean half: near-integrality for ALL large `n`, and denominator growth
+
+A separate, unconditional constraint, and the one place where the *archimedean* hypotheses of
+Dubickas's Theorem 1 bite on the arithmetic of the conjugates.  Along the pseudo-Pisot index set the
+trace power sums are *exactly* integers; the observation here is that once **one** pseudo-Pisot
+exponent `n₁` is available, every conjugate either collapses onto `α^(2^n₁)` (and then onto
+`α^(2^n)` for every `n ≥ n₁`) or lies in the open unit disc, so for **all** large `n`
+
+    2 U_(2^n) = k · (2 α^(2^n)) + o(1) = k · (2 y_n) + o(1),   k = #collapsing conjugates,
+
+a near-integer with a *geometrically* small error.  Hence `tracePowSum_den_grows`: for every large
+`n`, either `2 U_(2^n) ∈ ℤ` or its denominator exceeds `(C₂ r^(2^n))⁻¹`, which grows like
+`α^(2^n)`.  This replaces the sparse index set by a cofinite one at the price of "near-integer"
+instead of "integer" — see `PROBE-DUBICKAS-NOSUBSPACE.md` for why that trade matters (the `p`-adic
+leaf is *false* for arbitrarily sparse exponent sets). -/
+
+
+/-- A rational number that is *not* an integer stays away from `ℤ` by `1 / den`. -/
+theorem one_div_den_le_dist_int {u : ℚ} (hu : u.den ≠ 1) (m : ℤ) :
+    1 / (u.den : ℝ) ≤ |(u : ℝ) - (m : ℝ)| := by
+  have hd0 : 0 < u.den := u.pos
+  have hne : u - (m : ℚ) ≠ 0 := by
+    intro h
+    have : u = (m : ℚ) := by linarith [sub_eq_zero.1 h]
+    rw [this] at hu
+    simp at hu
+  have hden : (u - (m : ℚ)).den = u.den := by
+    simpa using Rat.sub_intCast_den u m
+  have h1 : 1 / ((u - (m : ℚ)).den : ℝ) ≤ |((u - (m : ℚ) : ℚ) : ℝ)| := by
+    have h2 : 1 ≤ |(u - (m : ℚ)).num| := by
+      exact Int.one_le_abs (Rat.num_ne_zero.2 hne)
+    rw [Rat.cast_def, abs_div, abs_of_pos (by positivity : (0:ℝ) < ((u - (m:ℚ)).den : ℝ))]
+    rw [div_le_div_iff_of_pos_right (by positivity)]
+    calc (1:ℝ) ≤ (|(u - (m : ℚ)).num| : ℝ) := by exact_mod_cast h2
+      _ = |((u - (m : ℚ)).num : ℝ)| := rfl
+  rw [hden] at h1
+  refine le_trans h1 (le_of_eq ?_)
+  push_cast
+  ring_nf
+
+
+
+private theorem multiset_sum_const {M : Type*} [AddCommMonoid M] {s : Multiset M} {b : M}
+    (h : ∀ x ∈ s, x = b) : s.sum = s.card • b := by
+  induction s using Multiset.induction with
+  | empty => simp
+  | cons a t ih =>
+      rw [Multiset.sum_cons, Multiset.card_cons, succ_nsmul,
+        h a (Multiset.mem_cons_self _ _), ih (fun x hx ↦ h x (Multiset.mem_cons_of_mem hx)),
+        add_comm]
+
+/-- **The trace power sums are near-integers for ALL large `n`** — not merely along the sparse
+pseudo-Pisot index set.  Hypothesis `hsplit` (available at the call site, in the same way `hsmall`
+is: each conjugate either collapses onto `α^(2^n₁)` at one pseudo-Pisot exponent, or lies inside
+the open unit disc) makes `2 U_(2^n) = k · (2 α^(2^n)) + o(1)` with `k` the number of collapsing
+conjugates, and `2 α^(2^n)` is within `2C α^(−2^n)` of the integer `2 y_n`. -/
+theorem tracePowSum_near_int {α : ℝ} (halg : IsIntegral ℚ α) (hα : 1 < α) {C : ℝ} (hC : 0 < C)
+    {y : ℕ → ℝ} {n₀ : ℕ} (hyint : ∀ n, ∃ k : ℤ, 2 * y n = (k : ℝ))
+    (hbnd : ∀ n ≥ n₀, |y n - α ^ 2 ^ n| ≤ C / α ^ 2 ^ n)
+    {n₁ : ℕ} (hsplit : ∀ w ∈ (minpoly ℚ α).aroots ℂ,
+      w ^ 2 ^ n₁ = ((α ^ 2 ^ n₁ : ℝ) : ℂ) ∨ ‖w‖ < 1) :
+    ∃ C₂ r : ℝ, 0 < C₂ ∧ 0 ≤ r ∧ r < 1 ∧ ∀ n ≥ max n₀ n₁, ∃ m : ℤ,
+      ‖2 * tracePowSum α (2 ^ n) - (m : ℂ)‖ ≤ C₂ * r ^ 2 ^ n := by
+  classical
+  have hα0 : (0 : ℝ) < α := by linarith
+  set R : Multiset ℂ := (minpoly ℚ α).aroots ℂ with hR
+  set Kf : Multiset ℂ := R.filter (fun w ↦ w ^ 2 ^ n₁ = ((α ^ 2 ^ n₁ : ℝ) : ℂ)) with hKf
+  set Sm : Multiset ℂ := R.filter (fun w ↦ ¬ (w ^ 2 ^ n₁ = ((α ^ 2 ^ n₁ : ℝ) : ℂ))) with hSm
+  have hadd : Kf + Sm = R := Multiset.filter_add_not _ _
+  have hSmnorm : ∀ w ∈ Sm, ‖w‖ < 1 := by
+    intro w hw
+    obtain ⟨h1, h2⟩ := Multiset.mem_filter.1
+      (show w ∈ R.filter (fun w ↦ ¬ (w ^ 2 ^ n₁ = ((α ^ 2 ^ n₁ : ℝ) : ℂ))) from hw)
+    exact (hsplit w h1).resolve_left h2
+  obtain ⟨ρ, hρ0, hρ1, hρ⟩ : ∃ ρ : ℝ, 0 ≤ ρ ∧ ρ < 1 ∧ ∀ w ∈ Sm, ‖w‖ ≤ ρ := by
+    by_cases hSe : Sm = 0
+    · exact ⟨0, le_rfl, by norm_num, fun w hw ↦ by simp [hSe] at hw⟩
+    · obtain ⟨w₀, hw₀, hmax⟩ := exists_max_image_multiset Sm (fun w ↦ ‖w‖) hSe
+      exact ⟨‖w₀‖, norm_nonneg _, hSmnorm w₀ hw₀, hmax⟩
+  set k : ℕ := Kf.card with hk
+  refine ⟨2 * (k : ℝ) * C + 2 * (Sm.card : ℝ) + 1, max α⁻¹ ρ, by positivity,
+    le_trans (by positivity) (le_max_right _ _), max_lt ?_ hρ1, ?_⟩
+  · rw [inv_lt_one₀ hα0]; exact hα
+  intro n hn
+  have hn₀ : n₀ ≤ n := le_trans (le_max_left _ _) hn
+  have hn₁ : n₁ ≤ n := le_trans (le_max_right _ _) hn
+  obtain ⟨kn, hkn⟩ := hyint n
+  refine ⟨k * kn, ?_⟩
+  -- the collapsing conjugates all contribute `α^(2^n)`
+  have hcol : ∀ w ∈ Kf, w ^ 2 ^ n = ((α ^ 2 ^ n : ℝ) : ℂ) := by
+    intro w hw
+    obtain ⟨-, h2⟩ := Multiset.mem_filter.1
+      (show w ∈ R.filter (fun w ↦ w ^ 2 ^ n₁ = ((α ^ 2 ^ n₁ : ℝ) : ℂ)) from hw)
+    have hsp : (2 : ℕ) ^ n = 2 ^ n₁ * 2 ^ (n - n₁) := by
+      rw [← pow_add]; congr 1; omega
+    rw [hsp, pow_mul, h2]
+    push_cast
+    ring
+  have hKsum : (Kf.map (· ^ 2 ^ n)).sum = (k : ℂ) * ((α ^ 2 ^ n : ℝ) : ℂ) := by
+    rw [multiset_sum_const (s := Kf.map (· ^ 2 ^ n)) (b := ((α ^ 2 ^ n : ℝ) : ℂ))
+      (fun x hx ↦ by
+        obtain ⟨w, hw, hxw⟩ := Multiset.mem_map.1 hx
+        rw [← hxw]; exact hcol w hw)]
+    rw [Multiset.card_map, hk, nsmul_eq_mul]
+  have hTsplit : tracePowSum α (2 ^ n)
+      = (k : ℂ) * ((α ^ 2 ^ n : ℝ) : ℂ) + (Sm.map (· ^ 2 ^ n)).sum := by
+    rw [tracePowSum, ← hR, ← hadd, Multiset.map_add, Multiset.sum_add, hKsum]
+  -- bound the two error terms
+  have hSbnd : ‖(Sm.map (· ^ 2 ^ n)).sum‖ ≤ (Sm.card : ℝ) * ρ ^ 2 ^ n := by
+    refine le_trans (norm_multiset_sum_le _) ?_
+    have := Multiset.sum_le_card_nsmul ((Sm.map (· ^ 2 ^ n)).map (‖·‖)) (ρ ^ 2 ^ n)
+      (by
+        intro x hx
+        obtain ⟨z, hz, hxz⟩ := Multiset.mem_map.1 hx
+        obtain ⟨w, hw, hwz⟩ := Multiset.mem_map.1 hz
+        rw [← hxz, ← hwz, norm_pow]
+        exact pow_le_pow_left₀ (norm_nonneg _) (hρ w hw) _)
+    simpa [nsmul_eq_mul, mul_comm] using this
+  have hApprox : |2 * α ^ 2 ^ n - (kn : ℝ)| ≤ 2 * C / α ^ 2 ^ n := by
+    have h := hbnd n hn₀
+    rw [show 2 * α ^ 2 ^ n - (kn : ℝ) = -(2 * (y n - α ^ 2 ^ n)) from by rw [← hkn]; ring,
+      abs_neg, abs_mul, abs_of_nonneg (by norm_num : (0:ℝ) ≤ 2),
+      show 2 * C / α ^ 2 ^ n = 2 * (C / α ^ 2 ^ n) from by ring]
+    exact mul_le_mul_of_nonneg_left h (by norm_num)
+  -- assemble
+  have hdiff : 2 * tracePowSum α (2 ^ n) - ((k * kn : ℤ) : ℂ)
+      = (k : ℂ) * ((2 * α ^ 2 ^ n - (kn : ℝ) : ℝ) : ℂ) + 2 * (Sm.map (· ^ 2 ^ n)).sum := by
+    rw [hTsplit]
+    push_cast
+    ring
+  rw [hdiff]
+  have h1 : ‖(k : ℂ) * ((2 * α ^ 2 ^ n - (kn : ℝ) : ℝ) : ℂ)‖ ≤ (k : ℝ) * (2 * C / α ^ 2 ^ n) := by
+    rw [norm_mul, Complex.norm_natCast, Complex.norm_real, Real.norm_eq_abs]
+    exact mul_le_mul_of_nonneg_left hApprox (by positivity)
+  have h2 : ‖(2 : ℂ) * (Sm.map (· ^ 2 ^ n)).sum‖ ≤ 2 * ((Sm.card : ℝ) * ρ ^ 2 ^ n) := by
+    rw [norm_mul, Complex.norm_ofNat]
+    exact mul_le_mul_of_nonneg_left hSbnd (by norm_num)
+  refine le_trans (norm_add_le _ _) ?_
+  have hrα : (α ^ 2 ^ n)⁻¹ ≤ (max α⁻¹ ρ) ^ 2 ^ n := by
+    rw [← inv_pow]
+    exact pow_le_pow_left₀ (by positivity) (le_max_left _ _) _
+  have hrρ : ρ ^ 2 ^ n ≤ (max α⁻¹ ρ) ^ 2 ^ n := pow_le_pow_left₀ hρ0 (le_max_right _ _) _
+  have hrpos : (0:ℝ) < (max α⁻¹ ρ) ^ 2 ^ n := by
+    have : (0:ℝ) < max α⁻¹ ρ := lt_of_lt_of_le (by positivity) (le_max_left _ _)
+    positivity
+  have hCα : (k : ℝ) * (2 * C / α ^ 2 ^ n) ≤ 2 * (k : ℝ) * C * (max α⁻¹ ρ) ^ 2 ^ n := by
+    rw [div_eq_mul_inv]
+    have := mul_le_mul_of_nonneg_left hrα (by positivity : (0:ℝ) ≤ (k:ℝ) * (2 * C))
+    calc (k : ℝ) * (2 * C / α ^ 2 ^ n) = (k:ℝ) * (2*C) * (α ^ 2 ^ n)⁻¹ := by
+          rw [div_eq_mul_inv]; ring
+      _ ≤ (k:ℝ) * (2*C) * (max α⁻¹ ρ) ^ 2 ^ n := by
+          exact mul_le_mul_of_nonneg_left hrα (by positivity)
+      _ = 2 * (k : ℝ) * C * (max α⁻¹ ρ) ^ 2 ^ n := by ring
+  have hSm2 : 2 * ((Sm.card : ℝ) * ρ ^ 2 ^ n)
+      ≤ 2 * (Sm.card : ℝ) * (max α⁻¹ ρ) ^ 2 ^ n := by
+    have := mul_le_mul_of_nonneg_left hrρ (by positivity : (0:ℝ) ≤ 2 * (Sm.card : ℝ))
+    calc 2 * ((Sm.card : ℝ) * ρ ^ 2 ^ n) = 2 * (Sm.card : ℝ) * ρ ^ 2 ^ n := by ring
+      _ ≤ 2 * (Sm.card : ℝ) * (max α⁻¹ ρ) ^ 2 ^ n := this
+  nlinarith [h1, h2, hCα, hSm2, hrpos]
+
+
+/-- **The denominators of the trace power sums grow geometrically unless they are `1`.**  The
+quantitative form of `tracePowSum_near_int`: for every large `n`, either `2 U_(2^n)` is a rational
+*integer*, or its denominator is at least `(C₂ r^(2^n))⁻¹` — which grows like `α^(2^n)` because
+`r ≤ max(α⁻¹, ρ)`.
+
+This is the Liouville half of the `α^l ∈ ℚ` / integrality dichotomy, and it needs **no**
+Diophantine input beyond the hypotheses of Dubickas's Theorem 1.  Combined with the valuation
+analysis (`no_bounded_den_of_unique_max_valuation`) it says: if `α` is not an algebraic integer and
+the dominant conjugate valuation at some prime is unique, then that local valuation is at least `α`
+— a genuine constraint on `α`, recorded in `PROBE-DUBICKAS-NOSUBSPACE.md`. -/
+theorem tracePowSum_den_grows {α : ℝ} (halg : IsIntegral ℚ α) (hα : 1 < α) {C : ℝ} (hC : 0 < C)
+    {y : ℕ → ℝ} {n₀ : ℕ} (hyint : ∀ n, ∃ k : ℤ, 2 * y n = (k : ℝ))
+    (hbnd : ∀ n ≥ n₀, |y n - α ^ 2 ^ n| ≤ C / α ^ 2 ^ n)
+    {n₁ : ℕ} (hsplit : ∀ w ∈ (minpoly ℚ α).aroots ℂ,
+      w ^ 2 ^ n₁ = ((α ^ 2 ^ n₁ : ℝ) : ℂ) ∨ ‖w‖ < 1) :
+    ∃ C₂ r : ℝ, 0 < C₂ ∧ 0 ≤ r ∧ r < 1 ∧ ∀ n ≥ max n₀ n₁, ∀ u : ℚ,
+      tracePowSum α (2 ^ n) = ((u : ℚ) : ℂ) →
+        (2 * u).den = 1 ∨ 1 ≤ C₂ * r ^ 2 ^ n * ((2 * u).den : ℝ) := by
+  obtain ⟨C₂, r, hC₂, hr0, hr1, hnear⟩ :=
+    tracePowSum_near_int halg hα hC hyint hbnd hsplit
+  refine ⟨C₂, r, hC₂, hr0, hr1, ?_⟩
+  intro n hn u hu
+  by_cases hden : (2 * u).den = 1
+  · exact Or.inl hden
+  refine Or.inr ?_
+  obtain ⟨m, hm⟩ := hnear n hn
+  have hcast : 2 * tracePowSum α (2 ^ n) - (m : ℂ) = ((((2 * u : ℚ) : ℝ) - (m : ℝ) : ℝ) : ℂ) := by
+    rw [hu]; push_cast; ring
+  rw [hcast, Complex.norm_real, Real.norm_eq_abs] at hm
+  have hlow := one_div_den_le_dist_int hden m
+  have hd0 : (0 : ℝ) < ((2 * u).den : ℝ) := by positivity
+  have h1 : 1 / ((2 * u).den : ℝ) ≤ C₂ * r ^ 2 ^ n := le_trans hlow hm
+  rw [div_le_iff₀ hd0] at h1
+  linarith [h1]
 
 /-- **Corvaja–Zannier (2004), main theorem, p. 177** (`δ = 1`, `u = α^(s n)`, `Γ = {α^t}`) —
 Dubickas (2022), Lemma 3.  If `q α^(s n)` is pseudo-Pisot for only finitely many `n`, then

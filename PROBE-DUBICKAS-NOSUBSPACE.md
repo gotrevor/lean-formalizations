@@ -246,6 +246,51 @@ iterated naively: the hypothesis for `α^l` needs infinitely many `N` with `l N 
 `S ⊆ {2^n}` that already fails unless `l` is a power of `2`.  CZ's own proof of the `α^l ∈ ℚ`
 branch is therefore the thing to read (`ON-LINE-REQUEST.md`, filed 2026-09-28, still unanswered).
 
+### Sixth lap: the sparse-index obstruction, and the archimedean constraint that answers it
+
+**Correction to the fifth lap's optimism.**  The Strassmann route bounds
+`ord_v(Σ_i u_i^N) ≤ C + Σ_j ord_p(t − t_j)`, and geometric decay then forces
+`p^{c t} ∣ t' − t` for consecutive members of the index set — i.e. the index set must grow at least
+like a **tower**.  `{2^n : n ∈ S}` with `S` merely infinite is *not* excluded (`S = {2^j}` gives
+`{2^(2^j)}`, a tower).  So even with Strassmann in hand the leaf does **not** close for an arbitrary
+infinite index set: it closes for index sets of at most exponential growth, e.g. a cofinite one.
+The same objection kills the cheap `k = 2` case (`Σ = u_1^N(1 + ρ^N)`, where the elementary bound
+`ord_v(ρ^M − 1) ≤ C + e·log_p M` — from the order of `ρ` in `(O_v/π^m)^*` growing like `p^{m/e}` —
+needs exactly the same non-sparseness).  Recording this because it is the reason CZ may well need
+subspace strength for Lemma 4 too; `ON-LINE-REQUEST.md` asks for their proof.
+
+**The answer: the index set can be made cofinite, at the price of "near-integer".**  New in `src/`
+(proved, axiom-clean): `tracePowSum_near_int` and `tracePowSum_den_grows`.  Once **one** pseudo-Pisot
+exponent `n₁` exists, every conjugate `w` of `α` either satisfies `w^(2^n₁) = α^(2^n₁)` — and then
+`w^(2^n) = α^(2^n)` for *every* `n ≥ n₁` — or has `‖w‖ < 1`.  Hence for **all** large `n`
+
+    2 U_(2^n) = k (2 α^(2^n)) + O(ρ^(2^n)) = k (2 y_n) + O(α^(−2^n)) + O(ρ^(2^n)),
+
+with `k ≥ 1` the number of collapsing conjugates and `2 y_n ∈ ℤ`.  So `2 U_(2^n)` is within
+`C₂ r^(2^n)` (`r = max(α⁻¹, ρ) < 1`) of a rational integer for every large `n`, and therefore
+
+> **either `2 U_(2^n) ∈ ℤ`, or its denominator is `≥ (C₂ r^(2^n))⁻¹ ≍ α^(2^n)`.**
+
+**The constraint this yields.**  Combine with the valuation side: if `α` is not an algebraic integer
+and at some prime the dominant conjugate valuation is *unique*, then `ord_v(U_N) = N·ord_v(z)`
+exactly, so the denominator of `U_N` is `≍ D_v^N` with `D_v = p^{(−ord_v z)/e_v} > 1` — and
+Liouville (`one_div_den_le_dist_int`) forces `D_v ≥ α`.  That is a genuine quantitative constraint
+obtained with **no** Diophantine input, and it is the first thing in this thread that bites on `α`
+itself.  Whether `D_v < α` can be forced (it would close the no-tie case outright) is the next
+question; note `D = ∏_p D_p ≤ a₀` and `D_v ≥ α` therefore implies `a₀ ≥ α`, i.e.
+`M(α) ≥ α^(k+1)` — no contradiction yet, since nothing bounds the Mahler measure of `α` a priori.
+
+**A bypass that was examined and refuted.**  `c_eq_zero_or_two_uncond` does **not** need `β` to be
+an algebraic integer for most of the chain: `base_bound_of_eFull_two`, the whole `bb`/`qq` analysis
+and the terminal `eq_zero_or_one_of_bRec_finite_support` use only `β > 1`, `β` algebraic, all other
+conjugates inside the unit disc, and `e_n ≡ 0` past `deg β − 1`.  Integrality enters at exactly one
+point: `pisot_conjPowSum_add_mem_int` in `exists_pisot_trace_ident`, to identify `y_(m+j)` with
+`Tr(β^(2^j))`.  For that, `den(Tr β^N) ≪ β^N` suffices — strictly weaker than integrality.  But it
+is **not** free: `9X² − 18X + 2` has the root `β = 1 + √7/3 ≈ 1.8819`, whose other conjugate is
+`≈ 0.118` and whose trace is `2 ∈ ℤ` — a genuine pseudo-Pisot number — and `3` splits in `ℚ(√7)`,
+so `ord_3(Tr β^N) = −N` and `den(Tr β^N) = 3^N ≫ β^N`.  Pseudo-Pisot alone therefore does not give
+the denominator bound; the hypothesis "integral trace for infinitely many `N`" must be used.
+
 ## Earlier recommendation (still valid for Lemma 3)
 
 Do **not** take option 2 first.  Option 1 splits the residual into one subspace-strength `Prop`

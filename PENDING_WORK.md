@@ -41,6 +41,14 @@ The open `sorry`s in `src/` are deliberate and are the active crux, both in
   (1) the leaf — classical route is Strassmann's theorem on `ℤ_p` (mathlib has **no** Strassmann /
   `p`-adic Weierstrass preparation: that is the concrete prerequisite to build; for `N = 2^n` the
   tower-growth contradiction is easy once Strassmann is available);
+  (1b) ⚠ **and Strassmann alone is NOT enough**: it forces the index set to grow like a tower, which
+  an arbitrary infinite subset of `{2^n}` may do.  The fix now in `src/` is to make the index set
+  *cofinite* at the price of near-integrality: `tracePowSum_near_int` / `tracePowSum_den_grows`
+  (proved, axiom-clean) say that once one pseudo-Pisot exponent exists, `2 U_(2^n)` is within
+  `C₂ r^(2^n)` (`r = max(α⁻¹, ρ) < 1`) of an integer for **all** large `n`, hence for every large `n`
+  either `2 U_(2^n) ∈ ℤ` or its denominator is `≳ α^(2^n)`.  With the unique-dominant-valuation case
+  this forces the local dominant valuation `D_v ≥ α` — the first constraint in this thread that bites
+  on `α` itself (see the sixth-lap section of the PROBE);
   (2) the **degenerate** branch, which is the other genuine gap — `w^l = w'^l` for distinct
   conjugates gives only `deg(α^l) < deg α` (a descent), and the descent cannot be iterated because
   the exponent set becomes `{N | l N ∈ S}`; CZ's own argument for their `α^l ∈ ℚ` branch is what
