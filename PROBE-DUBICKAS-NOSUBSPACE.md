@@ -148,6 +148,13 @@ subspace-strength.  What Lean needs: `ℚ_p`, the Newton polygon (or just the qu
 ramified quadratic extension), and `v(2u_N) ≥ 0`.  A faithful `ON-LINE-REQUEST` for CZ's own proof
 is filed (2026-09-28) so the next lap can follow their argument instead of this reconstruction.
 
+**The no-tie case is formalized** (2026-09-28): `no_bounded_den_of_unique_max_valuation` is the
+whole ultrametric argument for an arbitrary number field — `v(z^N + Σ_w w^N) = (v z)^N` when `z`
+strictly dominates, versus `v ≤ (v q)⁻¹` from `q U_N ∈ ℤ`.  It needs no archimedean input and no
+hypothesis beyond the unique-maximum.  What remains is the bridge (splitting field of `minpoly ℚ α`
+inside `ℂ` as a `NumberField`, `tracePowSum` transferred into it, dominating prime from
+`HeightOneSpectrum.mem_integers_of_valuation_le_one`) and the tie case.
+
 **Prerequisites now proved** (so the remaining Lemma-4 work is *only* the `p`-adic core):
 `tracePowSum α N = Σ_w w^N = Tr_{ℚ(α)/ℚ}(α^N)`, `tracePowSum_rat` (rational),
 `tracePowSum_recurrence` (`Σ_{k ≤ d} p_k U_(N+k) = 0`, each conjugate contributing `w^N p(w) = 0`),

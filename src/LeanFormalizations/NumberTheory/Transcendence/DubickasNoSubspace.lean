@@ -411,6 +411,118 @@ theorem isIntegral_int_iff_minpoly_den {α : ℝ} (halg : IsIntegral ℚ α) :
     show Polynomial.aeval α q = 0
     rw [← hae, minpoly.aeval]
 
+/-! ### The non-archimedean core of Lemma 4 (no-tie case)
+
+The `p`-adic half of CZ's Lemma 4 runs like this.  Suppose `α` is *not* an algebraic integer.
+Inside a number field `L` containing all conjugates of `α` there is then a prime `v` with
+`v α > 1` (`HeightOneSpectrum.mem_integers_of_valuation_le_one`, contrapositive).  The trace power
+sum `U_N = Σ_w w^N` is a sum of `N`-th powers of the conjugates; if **one** conjugate `z` strictly
+dominates the others at `v`, the ultrametric inequality gives `v U_N = (v z)^N → ∞`, while
+`q U_N ∈ ℤ` forces `v U_N ≤ (v q)⁻¹`.  Contradiction.
+
+`no_bounded_den_of_unique_max_valuation` below is exactly that argument, for an arbitrary number
+field, and it is unconditional.  What is *not* yet formalized is the tie case (several conjugates
+sharing the maximal valuation), which is where CZ's `α^l ∈ ℚ` branch comes from; see
+`PROBE-DUBICKAS-NOSUBSPACE.md`. -/
+
+/-- In `ℤₘ₀ = WithZero (Multiplicative ℤ)`: if `1 < a` and `b ≠ 0` then `b · aⁿ` eventually
+exceeds `1`. -/
+theorem exists_one_lt_mul_pow {a b : WithZero (Multiplicative ℤ)} (ha : 1 < a) (hb : b ≠ 0) :
+    ∃ n : ℕ, 1 < b * a ^ n := by
+  have ha0 : a ≠ 0 := by
+    intro h
+    rw [h] at ha
+    exact absurd ha (by simp)
+  obtain ⟨x, hx⟩ := WithZero.ne_zero_iff_exists.1 ha0
+  obtain ⟨y, hy⟩ := WithZero.ne_zero_iff_exists.1 hb
+  have hx1 : (1 : Multiplicative ℤ) < x := by
+    rw [← hx] at ha
+    exact_mod_cast ha
+  have hxA : 0 < Multiplicative.toAdd x := hx1
+  refine ⟨(-Multiplicative.toAdd y).toNat + 1, ?_⟩
+  rw [← hx, ← hy, ← WithZero.coe_pow, ← WithZero.coe_mul, ← WithZero.coe_one,
+    WithZero.coe_lt_coe]
+  show (1 : Multiplicative ℤ) < y * x ^ ((-Multiplicative.toAdd y).toNat + 1)
+  rw [show ((1 : Multiplicative ℤ) < y * x ^ ((-Multiplicative.toAdd y).toNat + 1))
+      = (0 < Multiplicative.toAdd y +
+          ((-Multiplicative.toAdd y).toNat + 1 : ℕ) * Multiplicative.toAdd x) from by
+    rw [show Multiplicative.toAdd y
+        + ((-Multiplicative.toAdd y).toNat + 1 : ℕ) * Multiplicative.toAdd x
+        = Multiplicative.toAdd (y * x ^ ((-Multiplicative.toAdd y).toNat + 1)) from by
+      rw [toAdd_mul, toAdd_pow, nsmul_eq_mul]]
+    rfl]
+  have h1 : -Multiplicative.toAdd y ≤ (-Multiplicative.toAdd y).toNat := Int.self_le_toNat _
+  have h2 : (0:ℤ) ≤ ((-Multiplicative.toAdd y).toNat : ℤ) := Int.natCast_nonneg _
+  have h3 : (1:ℤ) ≤ Multiplicative.toAdd x := hxA
+  push_cast
+  nlinarith [h1, h2, h3]
+
+/-- The valuation of a multiset sum is bounded by any bound on its members' valuations. -/
+theorem valuation_multiset_sum_lt {L : Type*} [Field L] [NumberField L]
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers L))
+    (R : Multiset L) {B : WithZero (Multiplicative ℤ)} (hB : 0 < B)
+    (h : ∀ w ∈ R, v.valuation L w < B) : v.valuation L R.sum < B := by
+  induction R using Multiset.induction with
+  | empty => simpa using hB
+  | cons a s ih =>
+      rw [Multiset.sum_cons]
+      refine lt_of_le_of_lt (Valuation.map_add _ _ _) ?_
+      exact max_lt (h a (Multiset.mem_cons_self _ _))
+        (ih fun w hw ↦ h w (Multiset.mem_cons_of_mem hw))
+
+/-- **The no-tie case of Corvaja–Zannier's Lemma 4, unconditionally.**  If one conjugate `z`
+strictly dominates all the others at some prime `v` of a number field `L`, and `v z > 1`, then
+`q · (z^N + Σ_w w^N)` cannot be a rational integer for infinitely many `N`: the ultrametric
+equality case forces `v` of it to be `v q · (v z)^N`, which is unbounded, while integers have
+valuation `≤ 1`. -/
+theorem no_bounded_den_of_unique_max_valuation {L : Type*} [Field L] [NumberField L]
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers L))
+    {z : L} {R : Multiset L} (hz : 1 < v.valuation L z)
+    (hR : ∀ w ∈ R, v.valuation L w < v.valuation L z)
+    {q : ℕ} (hq : 0 < q) {S : Set ℕ} (hS : S.Infinite)
+    (hu : ∀ N ∈ S, ∃ m : ℤ, (q : L) * (z ^ N + (R.map (· ^ N)).sum) = (m : L)) : False := by
+  classical
+  set V : WithZero (Multiplicative ℤ) := v.valuation L z with hV
+  have hV0 : (0 : WithZero (Multiplicative ℤ)) < V := lt_trans zero_lt_one hz
+  have hqne : (q : L) ≠ 0 := by
+    simp only [ne_eq, Nat.cast_eq_zero]
+    omega
+  have hqv0 : v.valuation L (q : L) ≠ 0 := by
+    simpa using hqne
+  -- the bound coming from `q U_N ∈ ℤ`
+  obtain ⟨n₀, hn₀⟩ := exists_one_lt_mul_pow (a := V) (b := v.valuation L (q : L)) hz hqv0
+  obtain ⟨N, hNS, hN⟩ := hS.exists_gt (max n₀ 1)
+  have hN1 : 1 ≤ N := le_trans (le_max_right n₀ 1) hN.le
+  have hNn₀ : n₀ ≤ N := le_trans (le_max_left n₀ 1) hN.le
+  obtain ⟨m, hm⟩ := hu N hNS
+  -- `v (z^N) = V^N` dominates the rest strictly
+  have hzN : v.valuation L (z ^ N) = V ^ N := by rw [map_pow, hV]
+  have hrest : v.valuation L ((R.map (· ^ N)).sum) < V ^ N := by
+    refine valuation_multiset_sum_lt v _ (pow_pos hV0 N) ?_
+    intro x hx
+    obtain ⟨w, hw, hxw⟩ := Multiset.mem_map.1 hx
+    rw [← hxw, map_pow]
+    exact pow_lt_pow_left₀ (hR w hw) (by simp) (by omega)
+  have hsum : v.valuation L (z ^ N + (R.map (· ^ N)).sum) = V ^ N := by
+    rw [add_comm, Valuation.map_add_eq_of_lt_right _ (by rw [hzN] at *; exact hrest), hzN]
+  -- but the left side is `v (m / q)`, at most `(v q)⁻¹`
+  have hmv : v.valuation L (m : L) ≤ 1 := by
+    rw [show ((m : L)) = algebraMap (NumberField.RingOfIntegers L) L
+        (m : NumberField.RingOfIntegers L) from
+      (map_intCast (algebraMap (NumberField.RingOfIntegers L) L) m).symm]
+    exact IsDedekindDomain.HeightOneSpectrum.valuation_le_one v _
+  have hle : v.valuation L (q : L) * V ^ N ≤ 1 := by
+    have h1 : v.valuation L ((q : L) * (z ^ N + (R.map (· ^ N)).sum))
+        = v.valuation L (q : L) * V ^ N := by rw [Valuation.map_mul, hsum]
+    rw [hm] at h1
+    rw [← h1]
+    exact hmv
+  have hmono : V ^ n₀ ≤ V ^ N := pow_le_pow_right₀ (le_of_lt hz) hNn₀
+  have hgt : 1 < v.valuation L (q : L) * V ^ N :=
+    lt_of_lt_of_le hn₀ (mul_le_mul_left' hmono _)
+  exact absurd hle (not_le.2 hgt)
+
+
 /-- **Corvaja–Zannier (2004), main theorem, p. 177** (`δ = 1`, `u = α^(s n)`, `Γ = {α^t}`) —
 Dubickas (2022), Lemma 3.  If `q α^(s n)` is pseudo-Pisot for only finitely many `n`, then
 `‖q α^(s n)‖` is eventually larger than `e^(−ε s n)`.

@@ -17,9 +17,16 @@ The open `sorry`s in `src/` are deliberate and are the active crux, both in
   `tracePowSum_recurrence` (`Σ_{k ≤ d} p_k U_(N+k) = 0` — the linear recurrence the valuation
   argument runs on) and `isIntegral_int_iff_minpoly_den` (the integrality bridge: `α` is an
   algebraic integer iff the coefficients of `minpoly ℚ α` have denominator 1 — the shape in which
-  Lemma 4's conclusion arrives).  What is still missing is only the `p`-adic core: the Newton
-  polygon of the primitive minimal polynomial at a prime dividing a coefficient denominator, plus
-  the root-of-unity tie case.
+  Lemma 4's conclusion arrives).  And the **non-archimedean core of the no-tie case is now proved**:
+  `no_bounded_den_of_unique_max_valuation` — in any number field `L`, if one conjugate `z`
+  strictly dominates the others at a prime `v` and `v z > 1`, then `q(z^N + Σ_w w^N)` cannot be a
+  rational integer for infinitely many `N` (ultrametric equality ⇒ `v = v q · (v z)^N`, unbounded,
+  while integers have valuation `≤ 1`); supporting `exists_one_lt_mul_pow`,
+  `valuation_multiset_sum_lt`.  **Remaining for Lemma 4: (a)** the bridge — build the splitting
+  field of `minpoly ℚ α` inside `ℂ` as a `NumberField`, transfer `tracePowSum` to it, and get the
+  dominating prime from `HeightOneSpectrum.mem_integers_of_valuation_le_one` (contrapositive);
+  **(b)** the tie case (several conjugates of maximal valuation), which is where CZ's `α^l ∈ ℚ`
+  branch comes from.
 
 `exists_pisot_pow_pseudoPisot_core` is *proved* from exactly those two: Dubickas's Lemma 5 (both
 branches), the `deg α^N ≤ deg α` bound and the "trace eventually nonzero" step are all formalized
