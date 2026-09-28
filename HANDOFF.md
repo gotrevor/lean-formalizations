@@ -1,14 +1,13 @@
 # HANDOFF (thin pointer)
 
-Phase 7 (2026-09-27): **Dubickas 2022 Theorem 1 is DONE.**  κ, ζ, Sylvester γ, η, τ and the
-OEIS half-rate constants (A076949, A077124, A076393 = Vardi) are proved transcendental, and
-`NumberTheory/Transcendence/` is **sorry-free and axiom-clean** (trust base only), resting on the
-two frozen literature inputs `Dubickas2022` / `Dubickas2022PisotGap`.
+Phase 8 (2026-09-28): the **Dubickas no-gap route is formalized end to end**, sorry-free and
+axiom-clean, culminating in `eFull_two_const_eq_zero_or_one` (`DubickasLimit.lean`): for a Pisot
+`β`, an eventually-constant `E₂(2^j) = z` forces `z ∈ {0,1}`.  No Lemma-8-strength lower bound on
+`|S_N|` is used anywhere.  The route is `PROBE-DUBICKAS-NOGAP.md`.
 
-Key insight: at `d = 2`, `a₀ = 1` the substitution `y_n = x_n + a₁/2` makes the recursion *exact*
-(`y_{n+1} = y_n² − c`), which deletes Dubickas's Lemmas 7 and 10 and turns (17)/(18) into
-`c ∈ {0, 2}`.
+One glue step is left to close `c_eq_zero_or_two_noGap` for every degree (express `hident` as
+`eFull β 2 (2^j) = c/2`), then `hG` can be dropped from the `Dubickas.lean` headlines.
 
-Newest full handoff: `HANDOFF-2026-09-27-dubickas-phase7-complete.md`.
+Newest full handoff: `HANDOFF-2026-09-28-nogap-route-complete.md`.
 
-Direction: [`DIRECTION.md`](DIRECTION.md) — phase 7 at the top.
+Direction: [`DIRECTION.md`](DIRECTION.md) — phase 8 at the top.
