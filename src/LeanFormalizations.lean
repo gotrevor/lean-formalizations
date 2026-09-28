@@ -109,4 +109,5 @@ import LeanFormalizations.NumberTheory.Transcendence.DubickasGrowth
 import LeanFormalizations.NumberTheory.Transcendence.DubickasPisot
 import LeanFormalizations.NumberTheory.Transcendence.Dubickas
 import LeanFormalizations.NumberTheory.Transcendence.DubickasNoGap
+import LeanFormalizations.NumberTheory.Transcendence.MultisetNewton
 import LeanFormalizations.NumberTheory.Transcendence.DubickasBRec
