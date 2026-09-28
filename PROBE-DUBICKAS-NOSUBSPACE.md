@@ -122,6 +122,37 @@ the valuation pattern at every place) is exactly the `α^l ∈ ℚ` branch.  mat
 `IsDedekindDomain.HeightOneSpectrum` valuations and the number-field trace, so this is a real
 multi-lap target rather than a wall.  Close it before touching Lemma 3.
 
+### The Lemma-4 attack, worked out for `d = 2` (2026-09-28, third lap)
+
+Let `P = a₀X² + a₁X + a₂ ∈ ℤ[X]` be primitive irreducible with roots `α > 1` and `α'`, and
+`u_N = α^N + α'^N = Tr(α^N) ∈ ℚ`.  Suppose `2 u_N ∈ ℤ` for infinitely many `N` and `p ∣ a₀`.
+Write `v = v_p`, `s = u_1 = −a₁/a₀`, `t = αα' = a₂/a₀`.  Primitivity gives
+`min(v a₀, v a₁, v a₂) = 0`, so `v a₀ ≥ 1` forces `min(v a₁, v a₂) = 0`.
+
+* If `v a₂ = 0` then `v t = −v a₀ < 0`, so some root has negative valuation.
+  * **Distinct root valuations** (`2 v s < v t`, i.e. the Newton polygon has two slopes):
+    `v(u_N) = N · v(r₁)` with `v(r₁) = v s < 0`, so `v(2u_N) → −∞` — contradiction after finitely
+    many `N`.  No cancellation is possible.
+  * **Equal root valuations** (`v r₁ = v r₂ = v t / 2 < 0`): `u_N = r₁^N (1 + ρ^N)` with `ρ = r₂/r₁`
+    a unit, so `v(u_N) = N v t / 2 + v(1 + ρ^N)`.  Infinitely many `N` with `v(u_N) ≥ −1` forces
+    `v(1 + ρ^N) ≥ −1 − N v t / 2 → ∞`.  If `1 + ρ^N = 0` for two exponents then `ρ` is a root of
+    unity, `α' = ζ α`, and `α^l ∈ ℚ` — **this is exactly Lemma 4's second branch** (witness:
+    `2X² − 3`, `α = √(3/2)`, `u_N = 0` for every odd `N`, `α² = 3/2 ∈ ℚ`).  Ruling out the
+    "unbounded but never exact" case is a small `p`-adic Skolem–Mahler–Lech step.
+* If `v a₂ ≥ 1` then `v a₁ = 0`; then `v s = −v a₀ < 0` and `v t ≥ 1 − v a₀ > 2 v s`, so the
+  Newton polygon has two distinct slopes and the first bullet applies.
+
+So for `d = 2` the only obstruction to a fully elementary proof is the unit-ratio step, and the
+tie case is the source of the root-of-a-rational branch — a good sign that CZ's Lemma 4 is *not*
+subspace-strength.  What Lean needs: `ℚ_p`, the Newton polygon (or just the quadratic formula in a
+ramified quadratic extension), and `v(2u_N) ≥ 0`.  A faithful `ON-LINE-REQUEST` for CZ's own proof
+is filed (2026-09-28) so the next lap can follow their argument instead of this reconstruction.
+
+**Already free in our application** (proved this lap, so any future proof of Lemma 4 may assume it):
+every conjugate `w` of `α` satisfies `‖w‖ < 1` or `‖w‖ = α` — `aroots_pow_mem` (conjugates of a
+power are powers of conjugates, via `(minpoly ℚ (α^N)).comp (X^N)`), `norm_lt_one_of_pseudoPisotMul`,
+`norm_eq_of_pow_eq`.  The `‖w‖ = α` case means `w = ζα` with `ζ^N = 1`.
+
 ## Earlier recommendation (still valid for Lemma 3)
 
 Do **not** take option 2 first.  Option 1 splits the residual into one subspace-strength `Prop`

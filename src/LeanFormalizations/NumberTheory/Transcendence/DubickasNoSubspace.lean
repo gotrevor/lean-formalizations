@@ -259,6 +259,49 @@ theorem card_otherConj_pow_le {α : ℝ} (halg : IsIntegral ℚ α) (N : ℕ) :
   rw [card_otherConj_add_one hintN]
   exact hle
 
+/-- **Conjugates of a power are powers of conjugates.**  If `w` is a root of `minpoly ℚ α` then
+`w^N` is a root of `minpoly ℚ (α^N)`: the polynomial `(minpoly ℚ (α^N)).comp (X^N)` kills `α`, so
+`minpoly ℚ α` divides it. -/
+theorem aroots_pow_mem {α : ℝ} (halg : IsIntegral ℚ α) (N : ℕ) {w : ℂ}
+    (hw : w ∈ (minpoly ℚ α).aroots ℂ) : w ^ N ∈ (minpoly ℚ (α ^ N)).aroots ℂ := by
+  have hdvd : minpoly ℚ α ∣ (minpoly ℚ (α ^ N)).comp (Polynomial.X ^ N) := by
+    refine minpoly.dvd ℚ α ?_
+    rw [Polynomial.aeval_comp]
+    simp [minpoly.aeval]
+  have hw0 : Polynomial.aeval w (minpoly ℚ α) = 0 := (Polynomial.mem_aroots.1 hw).2
+  obtain ⟨g, hg⟩ := hdvd
+  have h2 : Polynomial.aeval w ((minpoly ℚ (α ^ N)).comp (Polynomial.X ^ N)) = 0 := by
+    rw [hg, map_mul, hw0, zero_mul]
+  rw [Polynomial.aeval_comp] at h2
+  simp only [map_pow, Polynomial.aeval_X] at h2
+  rw [Polynomial.mem_aroots]
+  exact ⟨minpoly.ne_zero (halg.pow N), h2⟩
+
+/-- **The conjugates of `α` are either inside the unit disc or "collapse".**  If `q α^N` is
+pseudo-Pisot (`q ≥ 1`, `N > 0`) then every root `w` of `minpoly ℚ α` with `w^N ≠ α^N` satisfies
+`‖w‖ < 1`.  A `w` with `w^N = α^N` is `ζ α` for a root of unity `ζ` of order dividing `N`. -/
+theorem norm_lt_one_of_pseudoPisotMul {α : ℝ} (halg : IsIntegral ℚ α) (hα : 1 < α) {q N : ℕ}
+    (hq : 1 ≤ q) (hN : 0 < N) (h : IsPseudoPisotMul q (α ^ N)) {w : ℂ}
+    (hw : w ∈ (minpoly ℚ α).aroots ℂ) (hne : w ^ N ≠ (((α ^ N : ℝ)) : ℂ)) : ‖w‖ < 1 := by
+  have hmem : w ^ N ∈ otherConj (α ^ N) := by
+    rw [otherConj, Multiset.mem_erase_of_ne hne]
+    exact aroots_pow_mem halg N hw
+  have h1 := h.2.1 _ hmem
+  rw [norm_mul, Complex.norm_natCast, norm_pow] at h1
+  have hqR : (1:ℝ) ≤ (q:ℝ) := by exact_mod_cast hq
+  by_contra hc
+  have hge : (1:ℝ) ≤ ‖w‖ := not_lt.1 hc
+  have : (1:ℝ) ≤ ‖w‖ ^ N := one_le_pow₀ hge
+  nlinarith
+
+/-- If a conjugate `w` of `α` collapses at exponent `N > 0` (`w^N = α^N`) then `‖w‖ = α`. -/
+theorem norm_eq_of_pow_eq {α : ℝ} (hα : 1 < α) {N : ℕ} (hN : 0 < N) {w : ℂ}
+    (he : w ^ N = (((α ^ N : ℝ)) : ℂ)) : ‖w‖ = α := by
+  have hα0 : (0:ℝ) < α := by linarith
+  have h1 : ‖w‖ ^ N = α ^ N := by
+    rw [← norm_pow, he, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by positivity)]
+  exact (pow_left_inj₀ (norm_nonneg w) hα0.le hN.ne').1 h1
+
 /-- **Corvaja–Zannier (2004), main theorem, p. 177** (`δ = 1`, `u = α^(s n)`, `Γ = {α^t}`) —
 Dubickas (2022), Lemma 3.  If `q α^(s n)` is pseudo-Pisot for only finitely many `n`, then
 `‖q α^(s n)‖` is eventually larger than `e^(−ε s n)`.
@@ -282,9 +325,15 @@ integer for infinitely many `n`, then `α` is an algebraic integer or an `l`-th 
 valuation argument in `ℚ(α)` (a place where `α` has negative valuation makes the traces have
 unbounded denominators unless all conjugates share the valuation pattern, which is the
 root-of-a-rational case).  Formalizing it needs the ideal-valuation / trace machinery for number
-fields.  Stated with an index *set* rather than a strictly monotone sequence; the two are
-interchangeable. -/
+fields; the concrete `d = 2` analysis (Newton polygon in `ℚ_p`, plus a root-of-unity tie case that
+*is* the `α^l ∈ ℚ` branch) is written out in `PROBE-DUBICKAS-NOSUBSPACE.md`.
+
+Stated with an index *set* rather than a strictly monotone sequence (interchangeable), and with the
+extra hypothesis `hsmall` — every conjugate of `α` is inside the unit disc or has modulus `α` —
+which is *free* in our application (`norm_lt_one_of_pseudoPisotMul` + `norm_eq_of_pow_eq`) and
+removes the archimedean-large conjugates from any future proof. -/
 theorem corvajaZannier_lemma4 {α : ℝ} (halg : IsAlgebraic ℚ α) (hα : 1 < α) {q : ℕ} (hq : 0 < q)
+    (hsmall : ∀ w ∈ (minpoly ℚ α).aroots ℂ, ‖w‖ < 1 ∨ ‖w‖ = α)
     {S : Set ℕ} (hS : S.Infinite)
     (htr : ∀ n ∈ S, ∃ t : ℤ, t ≠ 0 ∧
       (q : ℂ) * (((minpoly ℚ (α ^ n)).aroots ℂ).sum) = (t : ℂ)) :
@@ -390,7 +439,15 @@ theorem exists_pisot_pow_pseudoPisot_core {α : ℝ} (halg : IsAlgebraic ℚ α)
     exact htrne n hn
   obtain ⟨n, hn⟩ := hS.nonempty
   obtain ⟨hps, -⟩ := hmemS n hn
-  rcases corvajaZannier_lemma4 halg hα (q := 2) (by norm_num) hSimg htr' with hintα | ⟨l, r, hl, hlr⟩
+  -- every conjugate of `α` is inside the unit disc or collapses onto `α` in modulus
+  have hsmall : ∀ w ∈ (minpoly ℚ α).aroots ℂ, ‖w‖ < 1 ∨ ‖w‖ = α := by
+    intro w hw
+    by_cases hcol : w ^ 2 ^ n = (((α ^ 2 ^ n : ℝ)) : ℂ)
+    · exact Or.inr (norm_eq_of_pow_eq hα (by positivity) hcol)
+    · exact Or.inl (norm_lt_one_of_pseudoPisotMul hint hα (q := 2) (by norm_num)
+        (by positivity) hps hw hcol)
+  rcases corvajaZannier_lemma4 halg hα (q := 2) (by norm_num) hsmall hSimg htr' with
+    hintα | ⟨l, r, hl, hlr⟩
   · -- `α` is an algebraic integer: the pseudo-Pisot number `2 α^(2ⁿ)` makes `α^(2ⁿ)` Pisot
     exact ⟨n, isPisot_of_pseudoPisotMul (q := 2) (by norm_num)
       (one_lt_pow₀ hα (by positivity)) (hintα.pow _) hps⟩

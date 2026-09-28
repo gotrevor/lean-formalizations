@@ -8,7 +8,11 @@ The open `sorry`s in `src/` are deliberate and are the active crux, both in
   the only `p`-adic-Subspace-Theorem step in the whole repo's Dubickas thread.
 * `corvajaZannier_lemma4` — CZ 2004, Lemma 4.  **Not** subspace-strength: a valuation/trace
   argument in `ℚ(α)`; mathlib has `IsDedekindDomain.HeightOneSpectrum` + the number-field trace.
-  **Attack this one next.**
+  **Attack this one next.**  The `d = 2` Newton-polygon analysis is written out in
+  `PROBE-DUBICKAS-NOSUBSPACE.md`; its `hsmall` hypothesis (every conjugate inside the unit disc or
+  of modulus `α`) is already proved at the call site, so a future proof may assume it.
+  `ON-LINE-REQUEST.md` (2026-09-28) asks for CZ's own statements/proof before anything lands in
+  `Literature/`.
 
 `exists_pisot_pow_pseudoPisot_core` is *proved* from exactly those two: Dubickas's Lemma 5 (both
 branches), the `deg α^N ≤ deg α` bound and the "trace eventually nonzero" step are all formalized
