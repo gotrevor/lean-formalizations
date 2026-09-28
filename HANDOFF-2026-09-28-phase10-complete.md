@@ -1,5 +1,7 @@
 # HANDOFF 2026-09-28 — phase 10 COMPLETE: `NumberTheory/PolyIteration/` sorry-free
 
+Branch: `main`  ·  HEAD at write time: `96056e9`  ·  clean tree, `lake build` green.
+
 ## State
 
 `src/LeanFormalizations/NumberTheory/PolyIteration/` is **sorry-free and axiom-clean**.
@@ -41,3 +43,19 @@ and `PENDING_WORK.md`.  Every other threshold (`k−1`, `3k−5`, `2k−1`, `⌊
 
 `DubickasNoSubspace.lean`'s three disclosed Corvaja–Zannier leaves — designated-open per
 `DIRECTION.md` phase 9.  Next phase is the operator's call.
+
+## Exact next steps
+
+Nothing is open inside phase 10's scope; it is closed.  A fresh lap should:
+
+1. Read `DIRECTION.md`.  Its CURRENT DIRECTIVE is still phase 9's (three Corvaja-Zannier leaves in
+   `NumberTheory/Transcendence/DubickasNoSubspace.lean` -> one).  Phase 10 was a scoped operator
+   override of that; with phase 10 closed, phase 9's directive is what stands until an altitude
+   lap replaces it.
+2. If continuing phase 9, the mandated moves are unchanged and listed in `PENDING_WORK.md`
+   SS PHASE 9: general-`k` Newton collapse, `den(U_N) | D^N`, the cofiniteness dichotomy.
+   Do NOT attempt Lemma 3 / the Subspace Theorem itself; do NOT add `Prop`s to `Literature/`.
+3. Reusable from this lap, if a later phase needs iteration divisibility:
+   `sub_dvd_sub_shift`, `dvd_sub_of_add_mul`, `intGcd_congr_of_dvd_sub` (Sylvester.lean);
+   `a003095_mod_two`, `a003095_mod_five`, `a003095_two_pow_dvd`, `a003095_five_pow_dvd`.
+
