@@ -23,9 +23,11 @@ route.  (It is still needed for *irrationality*, where Mahler's theorem wants `e
 
 ## What is open
 
-`saito_lemma36C` — Saito's Lemma 3.6 for general `c`, the minimality step that rests on
-Matomäki.  It is the only `sorry` here, and the only genuinely deep obligation left in the
-`c ≥ 5` case of Theorem 1.1.
+Nothing in this file: it is sorry-free.  `saito_lemma36C` — Saito's Lemma 3.6 for general `c`, the
+minimality step — is **proved**, conditionally on the frozen `BakerHarmanPintz2001` and
+`Matomaki2007` hypotheses (primes in short intervals), which it takes as explicit arguments.
+Those two `Prop`s are the remaining literature debt of the `c ≥ 4` case of Theorem 1.1; see
+`PENDING_WORK.md`.
 -/
 import LeanFormalizations.NumberTheory.Mills.BasicC
 import LeanFormalizations.NumberTheory.Mills.SaitoLemma41

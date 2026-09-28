@@ -1,10 +1,14 @@
 # PROBE: dropping Lemma 8 from Dubickas Theorem 1 (`c_eq_zero_or_two_noGap`)
 
-**Verdict so far: NOT an obstruction — a complete elementary route exists.**  It is longer than
-the `deg β ≤ 5` case analysis already in `DubickasNoGap.lean`, but it is uniform in the degree
-and needs nothing beyond `Dubickas2022` + integrality of power sums of conjugates.  This file
-records the route; the terminal combinatorial step is already formalized and axiom-clean in
-`DubickasBRec.lean`.
+**VERDICT (2026-09-28): NOT an obstruction — the route is COMPLETE, FORMALIZED and AXIOM-CLEAN.**
+`c_eq_zero_or_two_noGap` is proved for **every** degree from `Dubickas2022` alone, and
+`Dubickas2022PisotGap` (Lemma 8) has been dropped from `transcendental_growth_of_monic_quadratic`,
+`theorem1` and `oeis_constants` and from the comparator challenge.  All three headlines
+`#print axioms = [propext, Classical.choice, Quot.sound]`.  The `deg β ≤ 5` case analysis that this
+probe started from is deleted: the degree-uniform argument below replaces it wholesale.
+
+This file keeps the mathematical route (it is the readable form of the proof); the file map is at
+the bottom.
 
 ## Setup (all of this is what `exists_pisot_trace_ident` already hands us)
 
@@ -86,13 +90,28 @@ and the half-index `(m+k)/2` strictly between `k` and `m`, so `2 b m · b k = 0`
 If `m ≥ 1` this forces `b 0 = 0`, whence `b ≡ 0` and `b m = 0`, contradiction.  So `m = 0` and
 `−C = b 0 = −1`.
 
-## What is left to formalize (in order)
+## File map (everything below is sorry-free and `#print axioms`-clean)
 
-1. `Multiset.esymm`-based `e_k(N)`, and the Graeffe identity from `∏(X−z)∏(X+z) = ∏(X²−z²)`
-   via `Mathlib/RingTheory/Polynomial/Vieta.lean`.
-2. `k!·E_k(N) ∈ ℤ` — Newton's identities in multiset form from `pisot_conjPowSum_add_mem_int`.
-   (For `k ≤ 4` this is explicit algebra; the general case needs multiset Newton.)
-3. Steps 1–3 (analysis), then Step 4 (leading coefficients), then plug into Step 5.
+| step | file | headline |
+|---|---|---|
+| Newton for multisets; `k!·eₖ ∈ ℤ` from integral power sums | `MultisetNewton.lean` | `multiset_isRatInt_factorial_mul_esymm` |
+| Graeffe: `(−1)^k eₖ(s²) = Σ_{i+j=2k} (−1)^i eᵢ e_j` | `MultisetGraeffe.lean` | `esymm_map_sq` |
+| bridge to `otherConj β`; `E_{k+1} = e_{k+1} + βᴺ eₖ`; crude `‖eₖ‖` bound; **the `k = 1, 2` Newton glue** | `DubickasEsymm.lean` | `eFull_succ`, `isRatInt_factorial_mul_eFull`, `norm_eSmall_le`, `eSmall_one`, `two_mul_eSmall_two` |
+| Step 3, the parity-weight induction | `DubickasWeight.lean` | `weight_bound` |
+| odd `Eₙ` vanish; the normalized `A n j` | `DubickasNormalized.lean` | `eFull_eq_zero_of_odd`, `AA_odd_succ` |
+| Step 4, the finite-`j` recursion with error `O(q_j²)` | `DubickasBSeq.lean` | `bb_rec_approx` |
+| Steps 4–5 assembled: eventual constancy of `E₂` ⇒ `z ∈ {0,1}` | `DubickasLimit.lean` | `eFull_two_const_eq_zero_or_one` |
+| Step 5, the combinatorial finish | `DubickasBRec.lean` | `eq_zero_or_one_of_bRec_finite_support` |
+| the conclusion, `c ∈ {0,2}` for every degree | `DubickasNoGap.lean` | `c_eq_zero_or_two_noGap` |
 
-Only item 2 in full generality is real mathlib spelunking; nothing here needs a lower bound on
-`|S_N|`, which is what Lemma 8 (Smyth/Mignotte/Baker) was supplying.
+The last glue step (2026-09-28) was the observation that the *hypothesis* of
+`eFull_two_const_eq_zero_or_one` is literally `exists_pisot_trace_ident`'s identity rewritten:
+`eFull β 2 (2^j) = eSmall β 2 (2^j) + β^(2^j)·eSmall β 1 (2^j)` (`eFull_succ` at `k = 1`), with
+`eSmall β 1 N = S_N` (`esymm 1 = sum`, `eSmall_one`) and `2·eSmall β 2 N = S_N² − S_(2N)`
+(`two_mul_eSmall_two`, Newton at `k = 2` proved by multiset induction off `esymm_cons`).  So
+`c = 2 βᴺ S_N + S_N² − S_(2N)` **is** `E₂(2^j) = c/2` — one `linear_combination` away.
+
+Nothing in the route needs a lower bound on `|S_N|`, which is what Lemma 8
+(Smyth/Mignotte/Baker) was supplying.  The only arithmetic input is `k!·Eₖ(N) ∈ ℤ` plus
+`|β_l| < 1` for `l ≥ 2`; the only literature input left in the whole thread is `Dubickas2022`
+(Lemma 6, the Corvaja–Zannier `p`-adic subspace theorem).

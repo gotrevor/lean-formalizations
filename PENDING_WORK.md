@@ -1,5 +1,33 @@
 # PENDING_WORK — lean-formalizations
 
+## 🏁 THE WHOLE FRONTIER IS NOW HYPOTHESES, NOT SORRIES (2026-09-28)
+`src/` has **no `sorry`, no `admit`, no declared `axiom`**, and every headline is
+`[propext, Classical.choice, Quot.sound]`.  So there is no leaf work left: the only fidelity debt
+is the *literature hypotheses* carried by the conditional headlines.  Ranked (see
+`DIRECTION.md` → CURRENT DIRECTIVE for the binding order):
+
+| hypothesis | carried by | bucket | next prerequisite |
+|---|---|---|---|
+| `Dubickas2022` (his Lemma 6) | `Transcendence.Dubickas.{transcendental_growth_of_monic_quadratic,theorem1,oeis_constants}` | 🟠 generational | Corvaja–Zannier 2004 ⇒ `p`-adic Subspace Theorem (Schlickewei). mathlib has **nothing**. Chip a prerequisite: heights / places of a number field, or a Roth-shaped statement in the `Literature/Diophantine` idiom. |
+| `BakerHarmanPintz2001`, `Matomaki2007` | `Mills.{transcendental_of_four_le,transcendental_or_pisot,irrational_of_ridout}` | 🟡 project-scale | primes in short intervals `[x, x+x^0.525]`; needs a sieve/zero-density layer mathlib lacks. |
+| `PrimeBetweenCubesFrom` (Ingham) | `Mills.exists_least_of_primeBetweenCubes` | 🟡 project-scale | `θ(x+x^c)−θ(x) > 0` for `c > 5/8`; the PNTAnd dep is the natural home. |
+| `Dubickas2022PisotGap` (his Lemma 8) | **nothing on the headline path any more** — only the paper-faithful `DubickasPisot.c_eq_zero_or_two`, kept for the audit trail | — | DISCHARGED-BY-BYPASS 2026-09-28: `c_eq_zero_or_two_noGap` gets the same conclusion without it. |
+| `Ridout1957`, `Ridout1958` | `Diophantine.{mahler_of_ridout1957,ridoutSUnitDen_of_ridout1957,roth_of_ridout1958}` | 🟡 project-scale | same Subspace-Theorem family as Lemma 6; the *edges* off them are already proved (phase 5). |
+
+Non-hypothesis frontiers still registered: **Saito Remark 4.4** (degree-3 Pisot, `Mills/`),
+**Catalan phase 2** (probe-first, never claim `G ∉ ℚ`), **no-three-in-line all-`N` `(3/2−ε)N`**
+(needs a prime in `[(1−ε)N/2, N/2]`), **Goodstein B4 at limit levels**.
+
+## ✅ Dubickas 2022 phase 8 COMPLETE (2026-09-28) — Lemma 8 dropped, degree-uniform
+`c_eq_zero_or_two_noGap` is proved from `Dubickas2022` alone for **every** degree, so
+`hG : Dubickas2022PisotGap` is gone from all three `Dubickas.lean` headlines and from
+`Comparator/Dubickas/Challenge.lean` (`scripts/comparator-probe Dubickas` → identical).
+Route + file map: `PROBE-DUBICKAS-NOGAP.md`.  The decisive reframing: the exact recursion identity
+`c = 2 βᴺ S_N + S_N² − S_(2N)` *is* the statement that `E₂(βᴺ's conjugates) = c/2` is **constant**
+along the Graeffe tower, and eventual constancy of `E₂` alone forces `c/2 ∈ {0,1}` (via the
+parity-weight induction + the `b`-recursion with finite support).  Lemma 8 was only ever supplying a
+*lower* bound on `|S_N|`; nothing in the new route wants one.  Nothing to reopen.
+
 ## ✅ Dubickas 2022 phase 7 COMPLETE (2026-09-27) — `NumberTheory/Transcendence/` sorry-free, axiom-clean
 `transcendental_growth_of_monic_quadratic`, `theorem1`, `oeis_constants` all
 `[propext, Classical.choice, Quot.sound]`.  See `HANDOFF-2026-09-27-dubickas-phase7-complete.md`.

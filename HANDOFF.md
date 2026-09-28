@@ -1,13 +1,12 @@
-# HANDOFF (thin pointer)
+# HANDOFF (thin pointer — not a durable overview)
 
-Phase 8 (2026-09-28): the **Dubickas no-gap route is formalized end to end**, sorry-free and
-axiom-clean, culminating in `eFull_two_const_eq_zero_or_one` (`DubickasLimit.lean`): for a Pisot
-`β`, an eventually-constant `E₂(2^j) = z` forces `z ∈ {0,1}`.  No Lemma-8-strength lower bound on
-`|S_N|` is used anywhere.  The route is `PROBE-DUBICKAS-NOGAP.md`.
+**Durable overview: [`STATUS.md`](STATUS.md).  Binding orders: [`DIRECTION.md`](DIRECTION.md) →
+CURRENT DIRECTIVE (outranks any handoff).  Open items: [`PENDING_WORK.md`](PENDING_WORK.md).**
 
-One glue step is left to close `c_eq_zero_or_two_noGap` for every degree (express `hident` as
-`eFull β 2 (2^j) = c/2`), then `hG` can be dropped from the `Dubickas.lean` headlines.
+Newest dated baton: `HANDOFF-2026-09-28-dubickas-phase8-complete.md`
+(glob: `ls HANDOFF-*.md | sort -t p -k2 -n | tail -1`).
 
-Newest full handoff: `HANDOFF-2026-09-28-nogap-route-complete.md`.
-
-Direction: [`DIRECTION.md`](DIRECTION.md) — phase 8 at the top.
+State in one line: **Dubickas phase 8 is CLOSED** — `c_eq_zero_or_two_noGap` is proved for every
+degree from `Dubickas2022` alone, `Dubickas2022PisotGap` (Lemma 8) is dropped from all three
+`Dubickas.lean` headlines and the comparator challenge, and `src/` is now entirely sorry-free and
+axiom-free.  The frontier is literature *hypotheses* only.

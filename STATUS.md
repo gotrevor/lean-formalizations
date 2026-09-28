@@ -1,5 +1,19 @@
 # STATUS — lean-formalizations 📊
 
+**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized
+in Lean 4 + mathlib.** · **Build**: 🟢 green (**8707 jobs**) · `src/` **sorry-free** ·
+**MATH AXIOMS: 0** · **Updated**: review lap · 2026-09-28 · phase 8 close · `1827ad9`
+
+> 🏁 **2026-09-28 — the frontier is now HYPOTHESES ONLY.** `src/` contains no `sorry`, no `admit`
+> and no declared `axiom`; every headline in the ledger below is `[propext, Classical.choice,
+> Quot.sound]`.  The remaining fidelity debt is entirely the *literature hypotheses* carried by the
+> conditional headlines (`Dubickas2022`, `BakerHarmanPintz2001`, `Matomaki2007`,
+> `PrimeBetweenCubesFrom`, `Ridout1957/58`) — see `PENDING_WORK.md` for the ranked table and
+> `DIRECTION.md` → CURRENT DIRECTIVE for which one the next phase attacks.
+> **Dubickas Theorem 1 (OEIS A076949 / A077124 / A076393-Vardi) is now conditional on ONE input**:
+> `Dubickas2022` (his Lemma 6).  His Lemma 8 was dropped this lap — `c_eq_zero_or_two_noGap`
+> reaches `c ∈ {0,2}` for every degree without it (`PROBE-DUBICKAS-NOGAP.md`).
+
 > 🔢 **ACTIVE THREAD (2026-09-04): the Catalan salvage — `NumberTheory/Catalan/`, branch `catalan`.**
 > Zhi-Wei Sun's arXiv:2609.04176v1 claims Catalan's constant is irrational; **the proof is wrong**
 > (2-adic bookkeeping, `papers/sun-2026-catalan-irrationality.md`).  This thread formalises what
@@ -39,7 +53,7 @@
 - 🚧 **Off-headline (`wip/`, non-default `DaviesWip` lean_lib):** jvn 2nd-route GMT (`Capacitability`/`VonNeumannSelection`, sorry-free) + FastGrowing `Bachmann` (sorry-free); `Basic` carries the single disclosed A3 sorry. Excluded from the default `lake build`.
 
 ## Build & fidelity 🟢
-`lake build` green (**8656 jobs**) · `src/` **sorry-free** · **0 custom axioms** (`grep '^axiom' src/` empty) · every headline `#print axioms = [propext, Classical.choice, Quot.sound]`, **except** the Goodstein growth closures, which additionally carry `Lean.ofReduceBool` (finite base-case `native_decide`, `DominationBaseCases.lean`). Per-headline ledger near the bottom.
+`lake build` green (**8707 jobs**, 2026-09-28) · `src/` **sorry-free** · **0 custom axioms** (`grep '^axiom' src/` empty) · every headline `#print axioms = [propext, Classical.choice, Quot.sound]`, **except** the Goodstein growth closures, which additionally carry `Lean.ofReduceBool` (finite base-case `native_decide`, `DominationBaseCases.lean`). Per-headline ledger near the bottom.
 
 ## Goodstein / Kirby–Paris thread — detailed history
 _The banners + lap log that follow are the goodstein expedition's internal record (the densest thread). The kakeya + ntl threads' blow-by-blow lives in their `premerge/{kakeya-davies,ntl-hjsw}`-tagged commit history; their current state is the at-a-glance map above + the full ledger + each area's `Statement.lean`/`README.md`._
@@ -47,7 +61,7 @@ _The banners + lap log that follow are the goodstein expedition's internal recor
 > 🛑 **FINISH-AND-STOP (per charter — Trevor, 2026-06-19).** All umbrella headlines are COMPLETE + axiom-clean (Goodstein grows-like-`f_{ε₀}`, Curtis, power-tower, constructibles, e/π transcendence). **Do NOT start new side quests.** ONE correctness item to finish first: the **no-three-in-line pinwheel faithfulness repair** — you caught + are replacing a FALSE construction (`Pinwheel.lean:376`); that is a headline *correctness fix*, so close it (don't leave a known-false construction half-replaced). Then wind down: clear/quarantine the off-headline scratch sorries so `src/` is sorry-free, confirm headline `#print axioms` clean, and **self-stop.** Do not open new threads.
 >
 > ✅ **DONE (lap 14, 2026-06-19, `cd5a8ce`→`2b6c9a2`).** The pinwheel faithfulness repair is COMPLETE: the FALSE `{0,p}²`-corner construction was replaced by the genuine HJSW **half-band** pinwheel, and `pinwheel_noThree` / `three_mul_pred_le_maxNoThreeInLine` are FULLY PROVED and axiom-clean (trust base only). `src/` is **sorry-free** (`grep` confirms no `sorry`/`admit`/custom `axiom`), every headline `#print axioms` is the bare trust base. No new threads opened. **The ONLY thing gating the self-stop is `LEAN_LAP_ALLOW_STOP` — still `0` this lap, and the charter forbids writing the stop sentinel unless it is `1`. To finish the treadmill: set `LEAN_LAP_ALLOW_STOP=1` and the next lap will write the sentinel.** (All required work is done; remaining no-three frontier — all-`N` `(3/2−ε)N` — is blocked on PNT-grade primes and is NOT a wind-down item.)
-**Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized in Lean 4 + mathlib.** · **Build**: 🟢 green (8299 jobs, `src/` **sorry-free**) · **Updated**: lap 14 (review) · 2026-06-19 · `cd5a8ce` · **MATH AXIOMS: 0**
+_(historical header of the goodstein expedition: lap 14 review, 2026-06-19, `cd5a8ce`, 8299 jobs. The live header is at the top of this file.)_
 
 > 🎉🎉🎉 **lap 11 — "goodsteinLength GROWS LIKE f_{ε₀}" IS COMPLETE, TWO-SIDED.** Both directions
 > machine-checked (charter headline **C3 done**, ladder A–C complete):
@@ -84,9 +98,36 @@ _The banners + lap log that follow are the goodstein expedition's internal recor
 > resolved (`norm_seqONote_le`: budget is free on the descent). The five threads below are frozen.
 
 ## Where it stands
+**As of 2026-09-28 (phase 8 close).** `src/` is sorry-free with zero declared axioms, so *every*
+theorem in `src/` is on the bare trust base; the ledger below samples the headlines.  What is left
+is not proof work but **hypothesis discharge**: five conditional headline families still carry a
+frozen `Literature/` `Prop` (`Dubickas2022`, `BakerHarmanPintz2001`, `Matomaki2007`,
+`PrimeBetweenCubesFrom`, `Ridout1957/58`), and phase 5 showed those edges *can* be chipped
+(`Ridout1957 ⇒ Mahler1957` is now a theorem).  This lap removed one outright: Dubickas's Lemma 8
+(`Dubickas2022PisotGap`) no longer appears under Theorem 1 — `c_eq_zero_or_two_noGap` proves
+`c ∈ {0,2}` uniformly in `deg β` from Lemma 6 alone, by recognising the exact recursion identity as
+"`E₂` is constant along the Graeffe tower" and running a parity-weight induction to a
+finite-support `b`-recursion.  Nine threads are complete and axiom-clean (see the glance map).
+
 The repo declares **no custom axioms** (`grep '^axiom' src/` is empty), and every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]` - with one disclosed exception: the Goodstein growth closures additionally carry `Lean.ofReduceBool` from their finite base-case `native_decide` (`DominationBaseCases.lean`). Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-09-28 review lap (🎉 Dubickas Theorem 1 loses Lemma 8; `src/` fully sorry-free):**
+  `c_eq_zero_or_two_noGap` is PROVED for **every** degree from `Dubickas2022` alone, and
+  `hG : Dubickas2022PisotGap` is dropped from `transcendental_growth_of_monic_quadratic`,
+  `theorem1`, `oeis_constants` and from `Comparator/Dubickas/Challenge.lean`
+  (`scripts/comparator-probe Dubickas` → identical).  The whole `deg β ≤ 5` case analysis — and its
+  one disclosed `deg β ≥ 6` `sorry`, the last `sorry` anywhere in `src/` — is **deleted**, replaced
+  by the degree-uniform route of `PROBE-DUBICKAS-NOGAP.md`.  **The reframing that did it:** the
+  identity `c = 2 βᴺ S_N + S_N² − S_(2N)` is literally `E₂(βᴺ's conjugate multiset) = c/2`, i.e.
+  `E₂` is *eventually constant* along the Graeffe tower `N = 2^j`; and eventual constancy alone
+  forces `c/2 ∈ {0,1}`.  Lemma 8 was only ever supplying a **lower** bound on `|S_N|`, which the new
+  route never wants.  Glue = two Newton identities at `k = 1, 2` (`eSmall_one`;
+  `two_mul_eSmall_two`, proved by multiset induction off `esymm_cons`) plus one
+  `linear_combination`.  Eight supporting files (multiset Newton, multiset Graeffe, the
+  parity-weight induction, the `b`-recursion with finite support) all sorry-free and axiom-clean.
+  Headlines: `[propext, Classical.choice, Quot.sound]`; `Dubickas2022` (Lemma 6, Corvaja–Zannier
+  subspace theorem) is the sole remaining hypothesis under the OEIS-linked constants.
 - **2026-06-19 lap 14 (🎉🎉🎉 HJSW `3(p−1)` no-three-in-line — COMPLETE & axiom-clean):** The best
   *proven* density constant (`3/2`) for the no-three-in-line problem (Hall–Jackson–Sudbery–Wild 1975,
   unimproved; to my knowledge never before formalized) is now fully machine-checked.
@@ -331,6 +372,18 @@ genuine Cichoń growth content, the 8-lap-then-3-lap crux — is now complete:
 `native_decide` artifacts (excluded from the math-axiom count per the doctrine; the engines are
 trust-base-clean).
 ### Short-term (mirror PENDING_WORK top — the live frontier)
+**2026-09-28: there is no leaf work left.** `src/` is sorry-free with 0 declared axioms, so the live
+frontier is hypothesis discharge, ranked in `PENDING_WORK.md` and bound by `DIRECTION.md` → CURRENT
+DIRECTIVE.  In order: (1) 🟠 `Dubickas2022` = his Lemma 6 ⇒ Corvaja–Zannier ⇒ the `p`-adic Subspace
+Theorem — the ONLY hypothesis under the OEIS-linked Dubickas headlines; mathlib has nothing, so the
+chip is a *prerequisite* (heights / places of a number field), not the theorem. (2) 🟡 Saito
+Remark 4.4 (degree-3 Pisot, `Mills/`). (3) 🟡 Catalan phase 2 (probe-first; never claim `G ∉ ℚ`).
+(4) 🟡 `PrimeBetweenCubesFrom` / `BakerHarmanPintz2001` / `Matomaki2007` — primes in short intervals,
+the bedrock under Mills.  **CLOSED, do not reopen:** Dubickas phases 7 + 8 (Theorem 1 + Lemma-8
+removal), Mills phases 2–6, Diophantine phase 5 (the three Ridout edges), Catalan phases 1/3,
+DirichletBeta phase 4.
+
+_(older, still valid)_
 **No-three-in-line HJSW `3(p−1)` is COMPLETE (lap 14).** The natural next frontier is the **all-`N`
 `(3/2−ε)N` corollary**: from the per-prime `3(p−1) ≤ maxNoThreeInLine(2p)`, lift to every large `N`
 by choosing a prime `p ≈ N/2`. Bertrand only gives `p > N/4` (ratio `3/4` — *weaker* than the existing
@@ -368,6 +421,20 @@ For the Goodstein thread, the charter ladder is COMPLETE (A1–A4, B1–B4-finit
 ## Axiom ledger (the fidelity spine)
 | headline theorem | paper claim | `#print axioms` shows | status |
 |---|---|---|---|
+| `Transcendence.Dubickas.theorem1` | **Dubickas 2022, Theorem 1**: κ, ζ, Sylvester γ, η, τ are transcendental; **cond.** on `Dubickas2022` (his Lemma 6) — his Lemma 8 is NO LONGER needed | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms; 1 hypothesis (🟠 `Dubickas2022` = Corvaja–Zannier ⇒ `p`-adic Subspace Theorem; current chip = a heights/places prerequisite) |
+| `Transcendence.Dubickas.oeis_constants` | **OEIS A076949, A077124, A076393 (Vardi's constant) are transcendental**; same single hypothesis | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — ⚓ OEIS-linked file; comparator challenge matches (`comparator-probe Dubickas` identical) |
+| `Transcendence.Dubickas.transcendental_growth_of_monic_quadratic` | **Theorem 2 for monic quadratics**: `α = lim x_n^(1/2ⁿ)` transcendental unless `a₁²−2a₁−4a₂ ∈ {0,8}` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — `hG` dropped 2026-09-28 |
+| `Transcendence.Dubickas.c_eq_zero_or_two_noGap` | the Lemma-8-free core: Dubickas's (17)/(18) for **every** `deg β`, from Lemma 6 alone | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **the phase-8 result**; route in `PROBE-DUBICKAS-NOGAP.md` |
+| `Mills.wright` | **Wright 1951**: `∃ ω, ⌊tower ω n⌋ prime ∀ n ≥ 1`, uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **unconditional** |
+| `Mills.exists_least_of_primeBetweenCubes` | **Mills 1947** (least Mills constant), **cond.** on `PrimeBetweenCubesFrom` (Ingham) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms; 1 hypothesis (🟡 `PrimeBetweenCubesFrom`) |
+| `Mills.transcendental_of_four_le` | **Saito, Thm 1.1**: `ξ_c` transcendental for `c ≥ 4`, **cond.** on `BakerHarmanPintz2001` + `Matomaki2007` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms; 2 hypotheses (🟡 primes in short intervals) |
+| `Mills.transcendental_or_pisot` | **Saito, Thm 1.2**: `ξ₃` transcendental, or `ξ₃^(3^m)` a degree-3 Pisot | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — Remark 4.4 (degree-3 refinement) is the registered next step |
+| `Mills.irrational_of_ridout` | Saito irrationality with `Mahler1957` **discharged into** `Ridout1957` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — bedrock is BHP + Matomäki + Ridout (one fewer hypothesis than the paper) |
+| `Diophantine.{mahler_of_ridout1957, ridoutSUnitDen_of_ridout1957, roth_of_ridout1958}` | the three Diophantine wiring edges (Mahler 1957 / S-unit denominators / Roth 1955 from Ridout) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — phase 5; turns three cited hypotheses into consequences of Ridout |
+| `Catalan.residual_rank` | **Sun arXiv:2609.04176 Theorem 2.1**: full column rank of the weighted residual matrix | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — the salvageable part of a paper whose main claim is WRONG |
+| `Catalan.sun_ledger_impossible` | kernel-checked **no-go**: Sun's own integer `N_B` is divisible by `2^{v₂(F_B)}`, `v₂(F_B) ≈ 2B²` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — ⚠️ nothing in the repo claims `Irrational catalanConst` |
+| `DirichletBeta.exists_even_beta_irrational` | **Rivoal–Zudilin**: at least one of `β(2), …, β(20)` is irrational | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
+| `DirichletBeta.catalan_or_higher_beta_irrational` | Catalan's constant `β(2)` or some higher even `β` is irrational | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 | `NoThreeInLine.three_mul_pred_le_maxNoThreeInLine` | **HJSW `3/2` density (arc construction)**: `3(p−1) ≤ maxNoThreeInLine(2p)` (odd prime `p`); best PROVEN no-three-in-line constant (HJSW 1975) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — half-band pinwheel + slope-`±1` σ-reflection crux fully proved (lap 14) |
 | `NoThreeInLine.Shear.hjsw_lower_bound` | **HJSW `3/2` density (shear construction)**: `3(p−1) ≤ maxNoThreeInLine(2p)` (**all** primes `p`) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — ntl's independent sheared-hyperbola dev, kept alongside the arc one (keep-both, `NoThreeInLine.Shear.*`) |
 | `NoThreeInLine.Shear.maxNoThreeInLine_bounds` | general-`N` two-sided `maxNoThreeInLine` bounds (shear + prime-gap extension) | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
@@ -393,9 +460,21 @@ For the Goodstein thread, the charter ladder is COMPLETE (A1–A4, B1–B4-finit
 | `Transcendence.transcendental_pi_axiomClean` | `π` transcendental (Lindemann 1882), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — **fully proved (axiom deleted)** |
 | `Transcendence.e_transcendental` (+ `transcendental_exp_{nat,int,rat}`) | `e`, `eⁿ`, `eᵃ`, `e^q` transcendental (Hermite 1873; rational-exponent Hermite–Lindemann), uncond. | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms |
 
+**Math-axiom count (🟢+🟡+🟠): 0** (2026-09-28, re-run from real `#print axioms` this lap).
+**Conditional headlines and their hypotheses** (hypotheses are explicit `Prop` arguments, never
+axioms, so they do not show in `#print axioms` — this row is the honest accounting):
+🟠 `Dubickas2022` (Lemma 6 ⇒ Corvaja–Zannier ⇒ `p`-adic Subspace Theorem) under the three Dubickas
+headlines; 🟡 `BakerHarmanPintz2001` + `Matomaki2007` under the Saito/Mills transcendence and
+irrationality theorems; 🟡 `PrimeBetweenCubesFrom` (Ingham) under least-Mills; 🟡 `Ridout1957/58`
+under the Diophantine edges.  **No 🔴 anywhere**, and no unconditional theorem depends on an open
+conjecture.  Dubickas's Lemma 8 (`Dubickas2022PisotGap`) was eliminated 2026-09-28.
+
 **Math-axiom count (🟢+🟡+🟠): 0.** `grep '^axiom' src/` is empty and there is **no `sorry` in `src/`**. Every non-Goodstein-diagonal headline is the bare trust base `[propext, Classical.choice, Quot.sound]` — this includes all three merged threads (the kakeya `davies_kakeya_2d`, the shear no-three `hjsw_lower_bound`/`maxNoThreeInLine_bounds`, and the NT `mertens_first`/`sum_sigma0_isBigO_sqrt`/BV-Fourier headlines). Because `src/` is sorry-free with zero custom axioms, *every* `src/` theorem is necessarily trust-base — the table samples the headlines. The Goodstein diagonal-domination closures (`goodsteinLength_eventually_dominates_fastGrowing` and the per-level/tower variants) additionally carry **finite-base-case `native_decide` artifacts** (`goodsteinLength_base_cases._native.*`) — the computed lengths of the finitely many small Goodstein runs `4≤M<16`, a 🟢 finite/computational dependency excluded from the math-axiom count per the discharge doctrine. The proof *engines* (`towerN_le_fastGrowing`, `omegaTower_le_toOrdinal`, `exists_repr_lt_omegaTower`, …) are trust-base-clean. No 🟡/🟠/🔴 anywhere.
 
 ## Pointers
-- Open items / attack paths: **`PENDING_WORK.md`** · resume baton: newest **`HANDOFF-*.md`** · charter: `DIRECTION.md`
-- Frontier files: `Logic/FastGrowing/{Basic,Domination,Hardy}.lean` (Section A ✅) · `Logic/Goodstein/Growth.lean` (C2 ✅ bridge+descent) · `Logic/Goodstein/Engine.lean` (C3 reuses `seqOrd`/`toOrdinal`)
-- No `ON-LINE-REQUEST.md` open (the fast-growing norm ask was self-resolved this lap).
+- Binding orders: **`DIRECTION.md` → CURRENT DIRECTIVE** (outranks every handoff) · open items / attack paths: **`PENDING_WORK.md`** · resume baton: newest `HANDOFF-*.md` (glob: `ls HANDOFF-*.md | sort -t p -k2 -n | tail -1`)
+- Dubickas route write-up: **`PROBE-DUBICKAS-NOGAP.md`** (the readable form of the phase-8 proof)
+- Frontier files (2026-09): `NumberTheory/Transcendence/Dubickas*.lean` (phase 7+8 ✅) · `NumberTheory/Mills/` (Saito Thm 1.1/1.2 ✅, Remark 4.4 open) · `NumberTheory/Diophantine/Edges.lean` (three edges ✅) · `NumberTheory/Catalan/` (phase 2 probe-first) · `Literature/Pisot.lean`, `Literature/Diophantine*.lean` (FROZEN hypothesis statements — never edit)
+- Frontier files (Goodstein, complete): `Logic/FastGrowing/{Basic,Domination,Hardy}.lean` · `Logic/Goodstein/{Growth,Engine}.lean`
+- Comparator pre-flight: `scripts/comparator-probe [Dubickas|Transcendence]`
+- No `ON-LINE-REQUEST.md` open.

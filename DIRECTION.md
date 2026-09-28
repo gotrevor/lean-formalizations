@@ -1,5 +1,43 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## ⚡ CURRENT DIRECTIVE (set 2026-09-28, review lap; OUTRANKS every HANDOFF)
+
+**Phase 8 is COMPLETE and CLOSED.**  `c_eq_zero_or_two_noGap` is proved for every degree from
+`Dubickas2022` alone; `hG : Dubickas2022PisotGap` is gone from
+`transcendental_growth_of_monic_quadratic`, `theorem1`, `oeis_constants` and from
+`Comparator/Dubickas/Challenge.lean` (`scripts/comparator-probe Dubickas` = identical).  All of
+`src/` is sorry-free, `grep '^axiom' src/` is empty, and every headline (Dubickas, Mills, Catalan,
+DirichletBeta, Diophantine, Goodstein, Kakeya, no-three-in-line, transcendence) is
+`[propext, Classical.choice, Quot.sound]`.  **Do not re-open phase 8**; do not re-derive the
+`deg β ≤ 5` case analysis (deleted on purpose — the degree-uniform `E₂`-constancy route replaces it).
+
+**Objective of the NEXT phase (phase 9) — pick ONE, hardest-first, and say which in the handoff:**
+
+1. 🟠 **`Dubickas2022` (his Lemma 6) itself** — now the *only* hypothesis under the OEIS-linked
+   headlines.  It is Corvaja–Zannier 2004 ⇒ the `p`-adic Subspace Theorem (Schlickewei), which
+   mathlib does not have in any form.  Genuinely generational; the right chip is a *prerequisite*
+   (heights / absolute values on number fields / a Roth-type statement in the shape
+   `Literature/Diophantine` already uses), not the theorem.
+2. 🟡 **Saito Remark 4.4** (degree-3 Pisot refinement of `transcendental_or_pisot`) —
+   `NumberTheory/Mills/`, the registered next step of the phase-6 thread.
+3. 🟡 **Catalan phase 2** (probe-first per `DIRECTION.md`; never claim `G ∉ ℚ`).
+4. 🟡 **`PrimeBetweenCubesFrom` / `BakerHarmanPintz2001` / `Matomaki2007`** — the primes-in-short-
+   intervals bedrock under Mills.  `Ridout1957` is the one already-discharged edge (phase 5).
+
+**Forbidden drift:** no new side quests outside those four; no edits to `Literature/` statements
+(frozen); `Literature/Lindemann.lean` stays a stub (pending mathlib PR — never prove it);
+`NumberTheory/Transcendence/Dubickas.lean` keeps its path and every public name (⚓ OEIS-linked).
+
+**Why:** the repo has no `sorry` and no declared axiom anywhere, so the only remaining fidelity
+debt is the *hypotheses* on conditional headlines.  Chipping those is the whole frontier; closing
+more leaves would be theatre.
+
+**Directive history**
+- 2026-09-28 (review lap): phase 8 CLOSED — Lemma 8 dropped from the Dubickas headlines; next
+  phase must attack a literature *hypothesis*, not a leaf.
+
+---
+
 ## 🎯 THE OBJECTIVE (phase 8, 2026-09-27): drop Lemma 8 from Dubickas Theorem 1 — a 3-lap PROBE
 
 Phases 1–7 are GREEN and merged.  Trevor wants the OEIS-linked `Dubickas.lean` headline to become
