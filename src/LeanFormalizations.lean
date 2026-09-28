@@ -114,6 +114,7 @@ import LeanFormalizations.NumberTheory.Transcendence.DubickasNormalized
 import LeanFormalizations.NumberTheory.Transcendence.DubickasBSeq
 import LeanFormalizations.NumberTheory.Transcendence.DubickasLimit
 import LeanFormalizations.NumberTheory.Transcendence.DubickasNoGap
+import LeanFormalizations.NumberTheory.Transcendence.DubickasNoSubspace
 import LeanFormalizations.NumberTheory.Transcendence.MultisetGraeffe
 import LeanFormalizations.NumberTheory.Transcendence.MultisetNewton
 import LeanFormalizations.NumberTheory.Transcendence.DubickasBRec

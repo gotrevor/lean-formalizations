@@ -1,5 +1,25 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 9, 2026-09-28): drop Lemma 6 from Dubickas Theorem 1 — a 3-lap PROBE
+
+Phase 8 removed Lemma 8.  Theorem 1 now rests on `Dubickas2022` (Lemma 6, Corvaja–Zannier,
+subspace theorem) alone, consumed once in `exists_pisot_pow`.  Trevor wants the OEIS-linked
+headline unconditional.  Target: **`exists_pisot_pow_noD`** in
+`NumberTheory/Transcendence/DubickasNoSubspace.lean` (special case + leads in its header), or a
+direct `c_eq_zero_or_two_uncond` that bypasses it.
+
+Once one is proved: drop `hD` from the three `Dubickas.lean` headlines (names and path unchanged,
+the file is ⚓ OEIS-linked), update `Comparator/Dubickas/Challenge.lean` to match, and confirm
+`scripts/comparator-probe Dubickas` says identical.
+
+**This may well need subspace-theorem strength.**  A precise obstruction in
+`PROBE-DUBICKAS-NOSUBSPACE.md` is a full success: which step needs what, and the smallest
+literature `Prop` that would close it.  Do not state that `Prop` in `Literature/` yourself; propose
+it in the write-up.  Frozen: every earlier name, all of `Literature/`.
+Stop condition: `NumberTheory/Transcendence/` sorry-free.
+
+---
+
 ## ⚡ CURRENT DIRECTIVE (set 2026-09-28, review lap; OUTRANKS every HANDOFF)
 
 **Phase 8 is COMPLETE and CLOSED.**  `c_eq_zero_or_two_noGap` is proved for every degree from
