@@ -1,7 +1,28 @@
 # PENDING_WORK — lean-formalizations
 
-## 🏁 THE WHOLE FRONTIER IS NOW HYPOTHESES, NOT SORRIES (2026-09-28)
-`src/` has **no `sorry`, no `admit`, no declared `axiom`**, and every headline is
+## 🔭 PHASE 9 IN PROGRESS (2026-09-28) — `Dubickas2022` (Lemma 6) narrowed to the CZ dichotomy
+The one open `sorry` in `src/` is deliberate and is the active crux:
+`Transcendence.Dubickas.exists_pisot_pow_pseudoPisot_core`
+(`NumberTheory/Transcendence/DubickasNoSubspace.lean`).
+
+**Advance this lap.**  Lemma 6 = Dubickas's Lemma 3 (Corvaja–Zannier's main theorem, subspace) ∨
+Lemma 5 (elementary, given CZ's Lemma 4).  The *whole* rational-power case is now unconditional
+from `Ridout1957`: new `Diophantine.mahler_mul_of_ridout1957` (Mahler 1957 II **with a positive
+integer multiplier**, needed because our approximants are half-integers), then
+`exists_pisot_pow_of_rat` / `exists_pisot_pow_of_pow_rat`.  So the residual core may assume
+`α^(2^a) ∉ ℚ` for every `a`.
+
+**Refuted this lap** (do not retry): the archimedean Liouville/norm route (it only re-derives
+`M(α) ≥ α`, vacuous), and the Böttcher/Mahler-method route (`Φ_c` is not of Mahler-method shape).
+Even *degree 1* is Mahler's `‖q(3/2)ⁿ‖` problem, which is why `Ridout1957` was needed there.
+
+**Next attack:** state `CorvajaZannier2004` (pseudo-Pisot dichotomy, their p. 177) — proposal
+written out in `PROBE-DUBICKAS-NOSUBSPACE.md`, *not* yet in `Literature/` per DIRECTION — and
+split the core into that `Prop` + CZ Lemma 4 + Dubickas Lemma 5.  `hD` stays on the
+`Dubickas.lean` headlines until the core is closed; never route a headline through the `sorry`.
+
+## 🏁 THE FRONTIER IS OTHERWISE HYPOTHESES, NOT SORRIES (2026-09-28)
+Apart from the phase-9 crux above, `src/` has **no `sorry`, no `admit`, no declared `axiom`**, and every headline is
 `[propext, Classical.choice, Quot.sound]`.  So there is no leaf work left: the only fidelity debt
 is the *literature hypotheses* carried by the conditional headlines.  Ranked (see
 `DIRECTION.md` → CURRENT DIRECTIVE for the binding order):

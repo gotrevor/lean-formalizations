@@ -442,4 +442,211 @@ theorem roth_of_ridout1958 (h : Ridout1958) : Roth1955 := by
       simpa using hineq
 
 
+/-- **Mahler (1957) with a positive integer multiplier, from Ridout (1957).**
+
+Mahler's actual theorem (1957, II) allows a factor: for `u > v ≥ 2` coprime and `ϑ > 0`
+algebraic, `‖ϑ (u/v)ⁿ‖ > e^(−εn)` for all large `n`.  `Literature.Mahler1957` records only the
+case `ϑ = 1`, which is the case Saito quotes; Dubickas's Lemma 6 and its §2 remark both use the
+factor (he needs `q αⁿ`, not `αⁿ`).  The proof is Mahler's §3 route verbatim, with Ridout applied
+to the algebraic number `ϑ = q` instead of `1`, `c = 2q` instead of `2`, and `p* = round(q αⁿ)`:
+
+* `|q − p/Q| = (vⁿ/uⁿ)|q αⁿ − p*|` with `p = p* vⁿ`, `Q = uⁿ`;
+* condition (4) needs `p* ≤ 2q · p^μ`, i.e. `log p* ≤ log(2q) + μ (log p* + n log v)`, which
+  follows from `p* ≤ 2q αⁿ` exactly as for `q = 1`;
+* `p/Q ≠ q` because `vⁿ ∣ q uⁿ` and `gcd(u, v) = 1` would force `vⁿ ∣ q`, false once `vⁿ > q`
+  (`v ≥ 2`, so `n ≥ q` suffices). -/
+theorem mahler_mul_of_ridout1957 (h : Ridout1957) (q : ℕ) (hq : 0 < q) (α : ℚ) (hα1 : 1 < α)
+    (hden : α.den ≠ 1) (ε : ℝ) (hε : 0 < ε) :
+    ∃ n₀ : ℕ, ∀ n ≥ n₀,
+      Real.exp (-(ε * n)) < |(q : ℝ) * (α : ℝ) ^ n - round ((q : ℝ) * (α : ℝ) ^ n)| := by
+  have hden0 : 0 < α.den := α.pos
+  have hv2 : 2 ≤ α.den := by omega
+  have hαR : (1:ℝ) < (α:ℝ) := by exact_mod_cast hα1
+  have hnum : 0 < α.num := Rat.num_pos.mpr (lt_trans zero_lt_one hα1)
+  set v : ℕ := α.den with hv_def
+  set u : ℕ := α.num.natAbs with hu_def
+  have hu : (u : ℤ) = α.num := Int.natAbs_of_nonneg hnum.le
+  have hV0 : (0:ℝ) < (v:ℝ) := by exact_mod_cast hden0
+  have hαuv : (α:ℝ) = (u:ℝ) / (v:ℝ) := by
+    rw [Rat.cast_def]
+    congr 1
+    exact_mod_cast hu.symm
+  have hUV : (v:ℝ) < (u:ℝ) := by
+    rw [hαuv] at hαR
+    exact (one_lt_div hV0).mp hαR
+  have hu2 : 2 ≤ u := by
+    have h1 : (2:ℝ) ≤ (v:ℝ) := by exact_mod_cast hv2
+    have h2 : (2:ℝ) < (u:ℝ) := lt_of_le_of_lt h1 hUV
+    have h3 : (2:ℕ) < u := by exact_mod_cast h2
+    omega
+  have hcop : Nat.Coprime u v := α.reduced
+  have hU0 : (0:ℝ) < (u:ℝ) := by positivity
+  have hqR : (1:ℝ) ≤ (q:ℝ) := by exact_mod_cast hq
+  obtain ⟨lu, hlu_def⟩ : ∃ x : ℝ, x = Real.log u := ⟨_, rfl⟩
+  obtain ⟨lv, hlv_def⟩ : ∃ x : ℝ, x = Real.log v := ⟨_, rfl⟩
+  have hlu : 0 < lu := by rw [hlu_def]; exact Real.log_pos (by exact_mod_cast hu2)
+  have hlv : 0 < lv := by rw [hlv_def]; exact Real.log_pos (by exact_mod_cast hv2)
+  have hlvu : lv < lu := by rw [hlu_def, hlv_def]; exact Real.log_lt_log hV0 hUV
+  obtain ⟨lam, hlam_def⟩ : ∃ x : ℝ, x = lv / lu := ⟨_, rfl⟩
+  obtain ⟨μ, hμ_def⟩ : ∃ x : ℝ, x = 1 - lam := ⟨_, rfl⟩
+  obtain ⟨κ, hκ_def⟩ : ∃ x : ℝ, x = μ + ε / (2 * lu) := ⟨_, rfl⟩
+  have hlam0 : 0 ≤ lam := by rw [hlam_def]; exact div_nonneg hlv.le hlu.le
+  have hlam1 : lam ≤ 1 := by rw [hlam_def]; exact (div_le_one hlu).mpr hlvu.le
+  have hμ0 : 0 ≤ μ := by rw [hμ_def]; linarith
+  have hμ1 : μ ≤ 1 := by rw [hμ_def]; linarith
+  have hεlu : 0 < ε / (2 * lu) := div_pos hε (by linarith)
+  have hμκ : μ + 0 < κ := by rw [hκ_def]; linarith
+  have hluκ : lu * κ = lu - lv + ε / 2 := by
+    rw [hκ_def, hμ_def, hlam_def]; field_simp
+  -- ### Ridout, applied with `ϑ = q` and `c = 2q`
+  have hfin := h (q : ℝ) (isAlgebraic_nat q) (by positivity) v.primeFactors u.primeFactors
+    (fun r hr => Nat.prime_of_mem_primeFactors hr)
+    (fun r hr => Nat.prime_of_mem_primeFactors hr)
+    (Nat.Coprime.disjoint_primeFactors hcop.symm)
+    μ 0 (2 * q) κ hμ0 hμ1 le_rfl zero_le_one (by positivity) hμκ
+  set S := {x : ℕ × ℕ | 0 < x.1 ∧ 0 < x.2 ∧
+      (∃ ps a : ℕ, x.1 = ps * a ∧ (∀ r ∈ a.primeFactors, r ∈ v.primeFactors) ∧
+        0 < ps ∧ (ps : ℝ) ≤ 2 * (q:ℝ) * (x.1 : ℝ) ^ μ) ∧
+      (∃ qs b : ℕ, x.2 = qs * b ∧ (∀ r ∈ b.primeFactors, r ∈ u.primeFactors) ∧
+        0 < qs ∧ (qs : ℝ) ≤ 2 * (q:ℝ) * (x.2 : ℝ) ^ (0:ℝ)) ∧
+      0 < |(q:ℝ) - (x.1 : ℝ) / x.2| ∧ |(q:ℝ) - (x.1 : ℝ) / x.2| < 1 / (x.2 : ℝ) ^ κ} with hS_def
+  have hSfin : S.Finite := hfin
+  set f : ℕ → ℕ × ℕ :=
+    fun n => ((round ((q:ℝ) * (α:ℝ)^n)).toNat * v ^ n, u ^ n) with hf_def
+  have hinj : Function.Injective f := by
+    intro a b hab
+    exact Nat.pow_right_injective hu2 (congrArg Prod.snd hab)
+  set T : Set ℕ := {n : ℕ | q < v ^ n ∧
+      |(q:ℝ) * (α:ℝ)^n - (round ((q:ℝ) * (α:ℝ)^n) : ℝ)| ≤ Real.exp (-(ε * n))} with hT_def
+  have hsub : T ⊆ f ⁻¹' S := by
+    intro n hn
+    obtain ⟨hnq, hnd⟩ := hn
+    have hn1 : 1 ≤ n := by
+      rcases Nat.eq_zero_or_pos n with h0 | h0
+      · subst h0; simp at hnq; omega
+      · exact h0
+    have hn0 : n ≠ 0 := by omega
+    have hnR : (1:ℝ) ≤ (n:ℝ) := by exact_mod_cast hn1
+    set A : ℝ := (q:ℝ) * (α:ℝ) ^ n with hA_def
+    have hpow1 : 1 < (α:ℝ) ^ n := one_lt_pow₀ hαR hn0
+    have hA1 : 1 < A := by
+      rw [hA_def]; nlinarith
+    have hA0 : 0 < A := by linarith
+    have hAeq : A = (q:ℝ) * ((u:ℝ) ^ n / (v:ℝ) ^ n) := by
+      rw [hA_def, hαuv, div_pow]
+    have hlogA : Real.log A = Real.log q + (n * lu - n * lv) := by
+      rw [hlu_def, hlv_def, hA_def, Real.log_mul (by positivity) (by positivity),
+        Real.log_pow, hαuv, Real.log_div (by positivity) (by positivity)]
+      ring
+    set r : ℤ := round A with hr_def
+    have habs : |A - (r:ℝ)| ≤ 1/2 := abs_sub_round A
+    have habs' := abs_le.mp habs
+    have hrR : (1:ℝ) ≤ (r:ℝ) := by
+      by_contra hc
+      push_neg at hc
+      have h1 : (r:ℝ) ≤ 0 := by
+        have h2 : r < 1 := by exact_mod_cast hc
+        have h3 : r ≤ 0 := by omega
+        exact_mod_cast h3
+      linarith [habs'.1]
+    set P : ℕ := r.toNat with hP_def
+    have hPz : (P : ℤ) = r := Int.toNat_of_nonneg (by exact_mod_cast le_trans zero_le_one hrR)
+    have hPR : (P : ℝ) = (r:ℝ) := by exact_mod_cast hPz
+    have hP1 : (1:ℝ) ≤ (P:ℝ) := by rw [hPR]; exact hrR
+    have hP0 : 0 < P := by
+      have : (0:ℝ) < (P:ℝ) := by linarith
+      exact_mod_cast this
+    have hP2A : (P:ℝ) ≤ 2 * A := by rw [hPR]; linarith [habs'.2]
+    have hlogP0 : 0 ≤ Real.log P := Real.log_nonneg hP1
+    have hlog2q : 0 < Real.log (2 * q) := Real.log_pos (by linarith)
+    have hlogP : Real.log P ≤ Real.log (2 * q) + (n * lu - n * lv) := by
+      have h1 := Real.log_le_log (by linarith) hP2A
+      rw [Real.log_mul two_ne_zero hA0.ne', hlogA] at h1
+      rw [Real.log_mul two_ne_zero (by positivity)]
+      linarith
+    refine ⟨by positivity, by positivity, ⟨P, v ^ n, rfl, ?_, hP0, ?_⟩,
+      ⟨1, u ^ n, (one_mul _).symm, ?_, one_pos, ?_⟩, ?_, ?_⟩
+    · intro s hs
+      rwa [Nat.primeFactors_pow _ hn0] at hs
+    · have hlogpv : Real.log ((P * v ^ n : ℕ) : ℝ) = Real.log P + n * lv := by
+        rw [hlv_def]
+        push_cast
+        rw [Real.log_mul (by positivity) (by positivity), Real.log_pow]
+      have hgoal : Real.log P ≤ Real.log (2 * q) + (Real.log P + (n:ℝ) * lv) * μ := by
+        have f1 : lam * Real.log P
+            ≤ lam * (Real.log (2 * q) + ((n:ℝ) * lu - (n:ℝ) * lv)) :=
+          mul_le_mul_of_nonneg_left hlogP hlam0
+        have f2 : lam * ((n:ℝ) * lu) = (n:ℝ) * lv := by
+          rw [hlam_def]; field_simp [hlu.ne']
+        have h2 : lam * (Real.log (2 * q) + ((n:ℝ) * lu - (n:ℝ) * lv))
+            = lam * Real.log (2 * q) + (n:ℝ) * lv - lam * ((n:ℝ) * lv) := by
+          rw [mul_add, mul_sub, f2]; ring
+        have f3 : lam * Real.log (2 * q) ≤ Real.log (2 * q) :=
+          mul_le_of_le_one_left hlog2q.le hlam1
+        rw [hμ_def]
+        nlinarith [f1, h2, f3]
+      calc (P:ℝ) = Real.exp (Real.log P) := (Real.exp_log (by linarith)).symm
+        _ ≤ Real.exp (Real.log (2 * q) + (Real.log P + (n:ℝ) * lv) * μ) := Real.exp_le_exp.mpr hgoal
+        _ = 2 * (q:ℝ) * Real.exp ((Real.log P + (n:ℝ) * lv) * μ) := by
+            rw [Real.exp_add, Real.exp_log (by positivity)]
+        _ = 2 * (q:ℝ) * ((P * v ^ n : ℕ) : ℝ) ^ μ := by
+            rw [Real.rpow_def_of_pos (by positivity), hlogpv]
+    · intro s hs
+      rwa [Nat.primeFactors_pow _ hn0] at hs
+    · rw [Real.rpow_zero]
+      have : (1:ℝ) ≤ 2 * (q:ℝ) := by linarith
+      simpa using this
+    · -- nonvanishing: `vⁿ ∤ q uⁿ`
+      have hne : q * u ^ n ≠ P * v ^ n := by
+        intro he
+        have hdvd : v ^ n ∣ q * u ^ n := ⟨P, by rw [he]; ring⟩
+        have hdvdq : v ^ n ∣ q :=
+          (Nat.Coprime.dvd_of_dvd_mul_right (Nat.Coprime.pow n n hcop.symm) hdvd)
+        have := Nat.le_of_dvd hq hdvdq
+        omega
+      rw [abs_pos, sub_ne_zero]
+      intro he
+      have hqq : ((u ^ n : ℕ) : ℝ) ≠ 0 := by positivity
+      rw [eq_div_iff hqq] at he
+      exact hne (by exact_mod_cast he.symm : P * v ^ n = q * u ^ n).symm
+    · have hsplit : (q:ℝ) - ((P * v ^ n : ℕ) : ℝ) / ((u ^ n : ℕ) : ℝ)
+          = ((v:ℝ) ^ n / (u:ℝ) ^ n) * (A - (P:ℝ)) := by
+        push_cast
+        rw [hAeq]
+        field_simp
+      have hvu0 : (0:ℝ) < (v:ℝ) ^ n / (u:ℝ) ^ n := by positivity
+      rw [hsplit, abs_mul, abs_of_pos hvu0]
+      have hd : |A - (P:ℝ)| ≤ Real.exp (-(ε * n)) := by rw [hPR]; exact hnd
+      have hstep1 : (v:ℝ) ^ n / (u:ℝ) ^ n * |A - (P:ℝ)|
+          ≤ (v:ℝ) ^ n / (u:ℝ) ^ n * Real.exp (-(ε * n)) :=
+        mul_le_mul_of_nonneg_left hd hvu0.le
+      refine lt_of_le_of_lt hstep1 ?_
+      have hvn : (v:ℝ) ^ n = Real.exp (n * lv) := by
+        rw [hlv_def, ← Real.log_pow, Real.exp_log (by positivity)]
+      have hun : (u:ℝ) ^ n = Real.exp (n * lu) := by
+        rw [hlu_def, ← Real.log_pow, Real.exp_log (by positivity)]
+      have hrhs : ((u ^ n : ℕ) : ℝ) ^ κ = Real.exp (n * lu * κ) := by
+        rw [hlu_def]
+        push_cast
+        rw [Real.rpow_def_of_pos (by positivity), Real.log_pow]
+      rw [hrhs, hvn, hun, ← Real.exp_sub, ← Real.exp_add, one_div, ← Real.exp_neg,
+        Real.exp_lt_exp]
+      have hnκ : (n:ℝ) * lu * κ = (n:ℝ) * lu - (n:ℝ) * lv + (n:ℝ) * ε / 2 := by
+        rw [mul_assoc, hluκ]; ring
+      have hnpos : (0:ℝ) < (n:ℝ) := lt_of_lt_of_le zero_lt_one hnR
+      linarith only [hnκ, mul_pos hε hnpos]
+  have hTfin : T.Finite := Set.Finite.subset (Set.Finite.preimage hinj.injOn hSfin) hsub
+  obtain ⟨B, hB⟩ := hTfin.bddAbove
+  refine ⟨B + 1 + q, ?_⟩
+  intro n hn
+  by_contra hc
+  push_neg at hc
+  have hqv : q < v ^ n := by
+    calc q < 2 ^ q := Nat.lt_two_pow_self
+      _ ≤ v ^ q := Nat.pow_le_pow_left hv2 q
+      _ ≤ v ^ n := Nat.pow_le_pow_right (by omega) (by omega)
+  have hmem : n ∈ T := ⟨hqv, hc⟩
+  have := hB hmem
+  omega
+
 end LeanFormalizations.Diophantine
