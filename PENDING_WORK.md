@@ -12,7 +12,14 @@ The open `sorry`s in `src/` are deliberate and are the active crux, both in
   `PROBE-DUBICKAS-NOSUBSPACE.md`; its `hsmall` hypothesis (every conjugate inside the unit disc or
   of modulus `α`) is already proved at the call site, so a future proof may assume it.
   `ON-LINE-REQUEST.md` (2026-09-28) asks for CZ's own statements/proof before anything lands in
-  `Literature/`.
+  `Literature/`.  Prerequisites for it that are now **proved** in the same file: `tracePowSum`
+  (`= Tr_{ℚ(α)/ℚ}(α^N)`, the power sum over all conjugates), `tracePowSum_rat` (it is rational),
+  `tracePowSum_recurrence` (`Σ_{k ≤ d} p_k U_(N+k) = 0` — the linear recurrence the valuation
+  argument runs on) and `isIntegral_int_iff_minpoly_den` (the integrality bridge: `α` is an
+  algebraic integer iff the coefficients of `minpoly ℚ α` have denominator 1 — the shape in which
+  Lemma 4's conclusion arrives).  What is still missing is only the `p`-adic core: the Newton
+  polygon of the primitive minimal polynomial at a prime dividing a coefficient denominator, plus
+  the root-of-unity tie case.
 
 `exists_pisot_pow_pseudoPisot_core` is *proved* from exactly those two: Dubickas's Lemma 5 (both
 branches), the `deg α^N ≤ deg α` bound and the "trace eventually nonzero" step are all formalized

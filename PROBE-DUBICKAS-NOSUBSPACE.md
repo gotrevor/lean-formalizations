@@ -148,7 +148,15 @@ subspace-strength.  What Lean needs: `ℚ_p`, the Newton polygon (or just the qu
 ramified quadratic extension), and `v(2u_N) ≥ 0`.  A faithful `ON-LINE-REQUEST` for CZ's own proof
 is filed (2026-09-28) so the next lap can follow their argument instead of this reconstruction.
 
-**Already free in our application** (proved this lap, so any future proof of Lemma 4 may assume it):
+**Prerequisites now proved** (so the remaining Lemma-4 work is *only* the `p`-adic core):
+`tracePowSum α N = Σ_w w^N = Tr_{ℚ(α)/ℚ}(α^N)`, `tracePowSum_rat` (rational),
+`tracePowSum_recurrence` (`Σ_{k ≤ d} p_k U_(N+k) = 0`, each conjugate contributing `w^N p(w) = 0`),
+`isIntegral_int_iff_minpoly_den` (`IsIntegral ℤ α ↔ every `minpoly ℚ α` coefficient has denominator
+`1`, via `Polynomial.lifts_and_natDegree_eq_and_monic`).  Multiplying the recurrence by a common
+denominator `D` gives the integer recurrence whose leading coefficient is `D`; `D = 1` is exactly
+integrality, and a prime `p ∣ D` is exactly a prime at which some conjugate has negative valuation.
+
+**Already free in our application** (proved earlier, so any future proof of Lemma 4 may assume it):
 every conjugate `w` of `α` satisfies `‖w‖ < 1` or `‖w‖ = α` — `aroots_pow_mem` (conjugates of a
 power are powers of conjugates, via `(minpoly ℚ (α^N)).comp (X^N)`), `norm_lt_one_of_pseudoPisotMul`,
 `norm_eq_of_pow_eq`.  The `‖w‖ = α` case means `w = ζα` with `ζ^N = 1`.

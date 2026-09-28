@@ -302,6 +302,115 @@ theorem norm_eq_of_pow_eq {α : ℝ} (hα : 1 < α) {N : ℕ} (hN : 0 < N) {w : 
     rw [← norm_pow, he, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by positivity)]
   exact (pow_left_inj₀ (norm_nonneg w) hα0.le hN.ne').1 h1
 
+/-! ### Prerequisites for Lemma 4: the trace power sums and their integer recurrence
+
+Any route to `corvajaZannier_lemma4` works with `U_N = Σ_w w^N`, the power sum over *all*
+conjugates of `α` (`= Tr_{ℚ(α)/ℚ}(α^N)`): it is rational, and it satisfies the linear recurrence
+given by the minimal polynomial.  Both facts are proved here, unconditionally. -/
+
+/-- `U_N = Σ_w w^N`, the power sum over all conjugates of `α`, i.e. `Tr_{ℚ(α)/ℚ}(α^N)`. -/
+noncomputable def tracePowSum (α : ℝ) (N : ℕ) : ℂ := (((minpoly ℚ α).aroots ℂ).map (· ^ N)).sum
+
+/-- The trace power sums are **rational**.  (Same route as `Mills.rootPowSum_mem_int` but
+stopping at `ℚ`: no integral closure step, so no integrality hypothesis.) -/
+theorem tracePowSum_rat {α : ℝ} (halg : IsIntegral ℚ α) (N : ℕ) :
+    ∃ u : ℚ, tracePowSum α N = (u : ℂ) := by
+  haveI : FiniteDimensional ℚ ℚ⟮α⟯ := IntermediateField.adjoin.finiteDimensional halg
+  set g : ℚ⟮α⟯ := IntermediateField.AdjoinSimple.gen ℚ α with hg
+  have hinj : Function.Injective (algebraMap ℚ⟮α⟯ ℝ) := (algebraMap ℚ⟮α⟯ ℝ).injective
+  have hgmap : algebraMap ℚ⟮α⟯ ℝ g = α := IntermediateField.AdjoinSimple.algebraMap_gen ℚ α
+  refine ⟨Algebra.trace ℚ ℚ⟮α⟯ (g ^ N), ?_⟩
+  have hsum : algebraMap ℚ ℂ (Algebra.trace ℚ ℚ⟮α⟯ (g ^ N)) = ∑ σ : ℚ⟮α⟯ →ₐ[ℚ] ℂ, σ (g ^ N) :=
+    _root_.trace_eq_sum_embeddings ℂ
+  have hmin : minpoly ℚ g = minpoly ℚ α := by
+    have h := minpoly.algebraMap_eq (A := ℚ) hinj g
+    rw [hgmap] at h
+    exact h.symm
+  classical
+  set pb : PowerBasis ℚ ℚ⟮α⟯ := IntermediateField.adjoin.powerBasis halg with hpb
+  have hpbgen : pb.gen = g := IntermediateField.adjoin.powerBasis_gen halg
+  have hsep : IsSeparable ℚ pb.gen := Algebra.IsSeparable.isSeparable ℚ _
+  have hnodup : ((minpoly ℚ pb.gen).aroots ℂ).Nodup :=
+    Polynomial.nodup_roots ((Polynomial.separable_map _).mpr hsep)
+  have hfin : (∑ σ : ℚ⟮α⟯ →ₐ[ℚ] ℂ, σ (g ^ N))
+      = (((minpoly ℚ pb.gen).aroots ℂ).map (· ^ N)).sum := by
+    rw [Fintype.sum_equiv pb.liftEquiv' (fun σ : ℚ⟮α⟯ →ₐ[ℚ] ℂ => σ (g ^ N))
+        (fun x : {x : ℂ // x ∈ (minpoly ℚ pb.gen).aroots ℂ} => ((x : ℂ)) ^ N)
+        (by intro σ; rw [PowerBasis.liftEquiv'_apply_coe, hpbgen, ← map_pow]),
+      Finset.sum_mem_multiset _ _ (fun x : ℂ => x ^ N) (fun x => rfl),
+      Finset.sum_eq_multiset_sum, Multiset.toFinset_val, Multiset.dedup_eq_self.mpr hnodup]
+  rw [hpbgen, hmin] at hfin
+  rw [tracePowSum, ← hfin, ← hsum]
+  simp
+
+/-- Pulling a `Finset` sum through a `Multiset` sum. -/
+private theorem sum_range_mul_multiset_sum (c : ℕ → ℂ) (m : ℕ) (N : ℕ) (s : Multiset ℂ) :
+    (∑ k ∈ Finset.range m, c k * (s.map (· ^ (N + k))).sum)
+      = (s.map (fun w ↦ ∑ k ∈ Finset.range m, c k * w ^ (N + k))).sum := by
+  induction s using Multiset.induction with
+  | empty => simp
+  | cons a s ih =>
+      simp only [Multiset.map_cons, Multiset.sum_cons, mul_add, Finset.sum_add_distrib, ih]
+
+/-- **The trace power sums satisfy the recurrence given by the minimal polynomial**:
+`Σ_{k ≤ d} p_k U_(N+k) = 0`, where `p = minpoly ℚ α` has degree `d`.  (Each conjugate `w`
+contributes `w^N · p(w) = 0`.)  Multiplied by the content of `p` this is a recurrence with
+*integer* coefficients whose leading one is the leading coefficient of the primitive minimal
+polynomial — the object Lemma 4's valuation argument runs on. -/
+theorem tracePowSum_recurrence {α : ℝ} (halg : IsIntegral ℚ α) (N : ℕ) :
+    ∑ k ∈ Finset.range ((minpoly ℚ α).natDegree + 1),
+      (((minpoly ℚ α).coeff k : ℚ) : ℂ) * tracePowSum α (N + k) = 0 := by
+  classical
+  set p := minpoly ℚ α with hp
+  set d := p.natDegree with hd
+  rw [show (fun k ↦ (((p.coeff k : ℚ)) : ℂ) * tracePowSum α (N + k)) = fun k ↦
+      (((p.coeff k : ℚ)) : ℂ) * (((p.aroots ℂ).map (· ^ (N + k))).sum) from rfl]
+  rw [sum_range_mul_multiset_sum (fun k ↦ (((p.coeff k : ℚ)) : ℂ)) (d + 1) N]
+  refine Multiset.sum_eq_zero ?_
+  intro x hx
+  obtain ⟨w, hw, hxw⟩ := Multiset.mem_map.1 hx
+  rw [← hxw]
+  have hroot : Polynomial.aeval w p = 0 := (Polynomial.mem_aroots.1 hw).2
+  have heval : (Polynomial.aeval w) p = ∑ k ∈ Finset.range (d + 1),
+      (((p.coeff k : ℚ)) : ℂ) * w ^ k := by
+    rw [Polynomial.aeval_eq_sum_range (p := p) (x := w)]
+    rw [← hd]
+    refine Finset.sum_congr rfl fun k _ ↦ ?_
+    simp [Algebra.smul_def, eq_ratCast]
+  have hfac : ∑ k ∈ Finset.range (d + 1), (((p.coeff k : ℚ)) : ℂ) * w ^ (N + k)
+      = w ^ N * ∑ k ∈ Finset.range (d + 1), (((p.coeff k : ℚ)) : ℂ) * w ^ k := by
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl fun k _ ↦ ?_
+    rw [pow_add]
+    ring
+  rw [hfac, ← heval, hroot, mul_zero]
+
+/-- **The integrality bridge**: `α` is an algebraic *integer* exactly when the coefficients of its
+rational minimal polynomial are integers.  This is the shape in which Lemma 4's valuation argument
+delivers its conclusion (a prime dividing a coefficient denominator is the prime at which some
+conjugate has negative valuation), so it is stated here once and for all. -/
+theorem isIntegral_int_iff_minpoly_den {α : ℝ} (halg : IsIntegral ℚ α) :
+    IsIntegral ℤ α ↔ ∀ k, ((minpoly ℚ α).coeff k).den = 1 := by
+  constructor
+  · intro hint k
+    rw [minpoly.isIntegrallyClosed_eq_field_fractions' (K := ℚ) hint, Polynomial.coeff_map]
+    simp
+  · intro hden
+    have hlift : minpoly ℚ α ∈ Polynomial.lifts (Int.castRingHom ℚ) := by
+      rw [Polynomial.lifts_iff_coeff_lifts]
+      intro k
+      refine ⟨((minpoly ℚ α).coeff k).num, ?_⟩
+      have := (Rat.den_eq_one_iff _).1 (hden k)
+      simpa using this
+    obtain ⟨q, hmap, -, hmonic⟩ :=
+      Polynomial.lifts_and_natDegree_eq_and_monic hlift (minpoly.monic halg)
+    refine ⟨q, hmonic, ?_⟩
+    have hmap' : q.map (algebraMap ℤ ℚ) = minpoly ℚ α := hmap
+    have hae := Polynomial.aeval_map_algebraMap (R := ℤ) (A := ℚ) (B := ℝ) α q
+    rw [hmap'] at hae
+    show Polynomial.aeval α q = 0
+    rw [← hae, minpoly.aeval]
+
 /-- **Corvaja–Zannier (2004), main theorem, p. 177** (`δ = 1`, `u = α^(s n)`, `Γ = {α^t}`) —
 Dubickas (2022), Lemma 3.  If `q α^(s n)` is pseudo-Pisot for only finitely many `n`, then
 `‖q α^(s n)‖` is eventually larger than `e^(−ε s n)`.
