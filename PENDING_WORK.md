@@ -24,7 +24,25 @@ cofinite too.  So **the whole sparsity obstruction upgrades to the single inequa
 `D ≥ min(α, ρ⁻¹)`** — an assertion about the Mahler measure of a growth constant, which is a named,
 attackable statement rather than "the index set might be a tower".
 
-**Ordered work items**
+**Ordered work items — items 1-3 LANDED 2026-09-28 (lap 8); see the PROBE's eighth-lap sections**
+
+✅ 1-3 done: `valuation_sum_unit_pow_mulClosed` (general-`k` Newton collapse, no nondegeneracy),
+`false_of_bounded_den_tie_le` (closure only up to the TIE SIZE `K`; `K = 2` ⇒ mere doubling),
+`isIntegral_of_bounded_den_mulClosed` (Lemma 4 with **no** `α^l ∈ ℚ` branch),
+`exists_common_integral_multiple` + `exists_tracePowSum_den_dvd` (`den(U_N) ∣ D^N`),
+`tracePowSum_int_of_near_int_of_den_lt` (the cofiniteness dichotomy), and the capstone
+`isIntegral_of_tie_le_two_of_den_lt`.  `src/` went 3 disclosed `sorry`s → 2.
+
+⚠ New hard fact (the `ζ₃` witness, PROBE eighth lap part 2): doubling closure canNOT be pushed past
+tie size 2 — `u_i = ζ₃^i c` has `Σ u_i^(2^n) = 0` for every `n`.  So the residual is now exactly:
+(a) `D ≥ min(α, ρ⁻¹)`, or (b) a triple tie at some prime, or (c) the sparsity of CZ Lemma 3's index
+set.  **Next attack: (b).** A triple tie gives two conjugates with `w^3 = w'^3` at a *p-adic* place;
+the archimedean-dominant conjugates are known to differ by `2`-power roots of unity
+(`norm_eq_of_pow_eq`), so the question is whether a p-adic tie can involve conjugates that are not
+archimedean-dominant — if not, all tie ratios are `2`-power roots of unity, the tie size is a power
+of `2`, and the Graeffe tower closes it.  That is a concrete, local, checkable question.
+
+**Superseded items (kept for the record)**
 1. `valuation_sum_unit_pow_mulClosed` — general-`k` Newton collapse.  For `v`-units `u_1..u_k` and an
    exponent set closed under multiplication by `1..k`: set `x_i = u_i^N`; `multiset_mul_esymm_eq_sum`
    (in `MultisetNewton.lean`) gives `j e_j = (−1)^(j+1) Σ_{i<j} (−1)^i e_i p_(j−i)`; since

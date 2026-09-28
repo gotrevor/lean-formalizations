@@ -904,17 +904,23 @@ theorem valuation_sum_unit_pow_mulClosed {L : Type*} [Field L] [NumberField L]
     valuation_multiset_prod_eq_one v hxu, mul_one, hxcard, ← hc] at hmain
   exact absurd hmain (not_le.2 hn)
 
-/-- **Corvaja–Zannier's Lemma 4 at the level of an arbitrary number field, for a
-multiplicatively-closed exponent set** — and now *unconditionally*: if the maximum of the valuations
-is `> 1`, the power sums `Σ_w w^N` cannot have denominators dividing a fixed `q` along an infinite
-exponent set that is closed under multiplication by `1, …, |R|`.  Both the no-tie case
-(`|W| = 1`) and every tie size are handled by `valuation_sum_unit_pow_mulClosed`. -/
-theorem false_of_bounded_den_mulClosed {L : Type*} [Field L] [NumberField L]
+/-- **Corvaja–Zannier's Lemma 4 at the level of an arbitrary number field, for an exponent set
+closed under multiplication by `1, …, K`, where `K` bounds the TIE SIZE at `v`** — and now
+*unconditionally*: if the maximum of the valuations is `> 1` and attained at most `K` times, the
+power sums `Σ_w w^N` cannot have denominators dividing a fixed `q` along such an exponent set.
+Both the no-tie case (`K = 1`) and every tie size are handled by
+`valuation_sum_unit_pow_mulClosed`.
+
+Taking `K = |R|` gives `false_of_bounded_den_mulClosed` below.  Taking `K = 2` needs only closure
+under **doubling**, which the cofiniteness dichotomy
+`tracePowSum_int_of_near_int_of_den_lt` actually supplies. -/
+theorem false_of_bounded_den_tie_le {L : Type*} [Field L] [NumberField L]
     (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers L))
     {R : Multiset L} {z : L} (hzR : z ∈ R) (hz1 : 1 < v.valuation L z)
     (hmax : ∀ w ∈ R, v.valuation L w ≤ v.valuation L z)
+    {K : ℕ} (hK : (R.filter (fun w ↦ v.valuation L w = v.valuation L z)).card ≤ K)
     {q : ℕ} (hq : 0 < q) {S : Set ℕ} (hS : S.Infinite)
-    (hmulS : ∀ N ∈ S, ∀ j, 0 < j → j ≤ R.card → j * N ∈ S)
+    (hmulS : ∀ N ∈ S, ∀ j, 0 < j → j ≤ K → j * N ∈ S)
     (hu : ∀ N ∈ S, ∃ m : ℤ, (q : L) * (R.map (· ^ N)).sum = (m : L)) : False := by
   classical
   set V : WithZero (Multiplicative ℤ) := v.valuation L z with hV
@@ -957,8 +963,7 @@ theorem false_of_bounded_den_mulClosed {L : Type*} [Field L] [NumberField L]
       _ ≤ (v.valuation L (q : L))⁻¹ * 1 := by exact mul_le_mul_left' h1 _
       _ = (v.valuation L (q : L))⁻¹ := mul_one _
   have hc1 : 1 ≤ W.card := Multiset.card_pos.2 (fun h ↦ by simp [h] at hzW)
-  have hWR : W.card ≤ R.card := by
-    rw [hW]; exact Multiset.card_le_card (Multiset.filter_le _ _)
+  have hWR : W.card ≤ K := by rw [hW]; exact hK
   -- normalize the dominant conjugates by `z`
   set U : Multiset L := W.map (fun w ↦ w / z) with hU
   have hUunit : ∀ u ∈ U, v.valuation L u = 1 := by
@@ -1025,6 +1030,19 @@ theorem false_of_bounded_den_mulClosed {L : Type*} [Field L] [NumberField L]
   · calc r₀ ^ N ≤ (r * V) ^ N := pow_le_pow_left₀ (by simp) hr0V N
       _ = 1 * (r * V) ^ N := (one_mul _).symm
       _ ≤ B * (r * V) ^ N := mul_le_mul_right' (le_max_right _ _) _
+
+/-- `false_of_bounded_den_tie_le` at `K = |R|`: no tie-size hypothesis, but the exponent set must be
+closed under multiplication by every `j ≤ |R|`. -/
+theorem false_of_bounded_den_mulClosed {L : Type*} [Field L] [NumberField L]
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers L))
+    {R : Multiset L} {z : L} (hzR : z ∈ R) (hz1 : 1 < v.valuation L z)
+    (hmax : ∀ w ∈ R, v.valuation L w ≤ v.valuation L z)
+    {q : ℕ} (hq : 0 < q) {S : Set ℕ} (hS : S.Infinite)
+    (hmulS : ∀ N ∈ S, ∀ j, 0 < j → j ≤ R.card → j * N ∈ S)
+    (hu : ∀ N ∈ S, ∃ m : ℤ, (q : L) * (R.map (· ^ N)).sum = (m : L)) : False := by
+  classical
+  exact false_of_bounded_den_tie_le v hzR hz1 hmax
+    (K := R.card) (Multiset.card_le_card (Multiset.filter_le _ _)) hq hS hmulS hu
 
 /-- **Corvaja–Zannier's Lemma 4's first branch, unconditionally**, for a multiplicatively-closed
 exponent set: bounded denominators of the trace power sums `U_N = Tr(α^N)` along an infinite set of
@@ -1237,6 +1255,219 @@ theorem tracePowSum_den_grows {α : ℝ} (halg : IsIntegral ℚ α) (hα : 1 < �
   have h1 : 1 / ((2 * u).den : ℝ) ≤ C₂ * r ^ 2 ^ n := le_trans hlow hm
   rw [div_le_iff₀ hd0] at h1
   linarith [h1]
+
+/-! ### The denominator ceiling, and the cofiniteness dichotomy
+
+`tracePowSum_den_grows` is a *lower* bound on `den(2 U_(2^n))` whenever that denominator is not `1`.
+The missing half — supplied here — is the matching **ceiling**: `D w` is an algebraic integer for
+every conjugate `w` of `α`, for one positive integer `D` (`exists_common_integral_multiple`), so
+`D^N U_N = Σ_w (D w)^N` is a rational algebraic integer and therefore `den(U_N) ∣ D^N`
+(`exists_tracePowSum_den_dvd`).
+
+The two halves together give the **cofiniteness dichotomy**
+(`tracePowSum_int_of_near_int_of_den_lt`): if `D r < 1`, where `r = max(α⁻¹, ρ) < 1` is the rate
+produced by `tracePowSum_near_int`, then `2 U_(2^n)` is *exactly* a rational integer for **every**
+large `n`.  The exponent set is then cofinite in the powers of `2`, hence closed under doubling,
+which is exactly the hypothesis of `valuation_sum_unit_pow_card_two` / `false_of_two_unit_pow_sums_small`.
+
+So the seventh lap's "sparsity" obstruction has become the single inequality `D ≥ min(α, ρ⁻¹)`, a
+statement about the Mahler measure of a growth constant.  See `PROBE-DUBICKAS-NOSUBSPACE.md`
+(eighth lap) — including the `ζ_3` witness showing that *doubling* closure alone cannot replace
+closure under multiplication by `1, …, k` once the tie size `k` is `3`. -/
+
+/-- A multiset sum of algebraic integers is an algebraic integer. -/
+theorem isIntegral_multiset_sum {s : Multiset ℂ} (h : ∀ x ∈ s, IsIntegral ℤ x) :
+    IsIntegral ℤ s.sum := by
+  induction s using Multiset.induction with
+  | empty => simpa using isIntegral_zero
+  | cons a t ih =>
+      rw [Multiset.sum_cons]
+      exact (h a (Multiset.mem_cons_self _ _)).add
+        (ih fun x hx ↦ h x (Multiset.mem_cons_of_mem hx))
+
+/-- **One integral multiplier for every conjugate at once**: there is a positive integer `D` with
+`D w` an algebraic integer for *every* conjugate `w` of `α`.  (Each conjugate has its own
+multiplier; the product of the finitely many of them works for all, and `conjField α` is a
+`NumberField`, so mathlib's `exists_integral_multiples` supplies them in one step.) -/
+theorem exists_common_integral_multiple {α : ℝ} (halg : IsIntegral ℚ α) :
+    ∃ D : ℕ, 0 < D ∧ ∀ w ∈ (minpoly ℚ α).aroots ℂ, IsIntegral ℤ ((D : ℂ) * w) := by
+  classical
+  obtain ⟨D₀, hD₀, hint⟩ :=
+    exists_integral_multiples ℤ ℚ (L := conjField α) (conjMultiset α).toFinset
+  refine ⟨D₀.natAbs, Int.natAbs_pos.2 hD₀, ?_⟩
+  intro w hw
+  rw [← conjMultiset_map_coe α] at hw
+  obtain ⟨w', hw', rfl⟩ := Multiset.mem_map.1 hw
+  have h1 : IsIntegral ℤ (D₀ • w') := hint w' (Multiset.mem_toFinset.2 hw')
+  have h1' : IsIntegral ℤ ((D₀ : conjField α) * w') := by rwa [← zsmul_eq_mul]
+  have h2 := h1'.map ((algebraMap (conjField α) ℂ).toIntAlgHom)
+  simp only [RingHom.toIntAlgHom_apply, map_mul, map_intCast,
+    IntermediateField.algebraMap_apply] at h2
+  have hk : ((D₀.natAbs : ℤ)) = D₀ ∨ ((D₀.natAbs : ℤ)) = -D₀ := by
+    rcases Int.natAbs_eq D₀ with h | h
+    · exact Or.inl h.symm
+    · exact Or.inr (by omega)
+  rw [show ((D₀.natAbs : ℕ) : ℂ) = ((D₀.natAbs : ℤ) : ℂ) from (Int.cast_natCast _).symm]
+  rcases hk with h | h
+  · rw [h]; exact h2
+  · rw [h]; simpa [neg_mul] using h2.neg
+
+/-- **The denominator ceiling: `den(U_N) ∣ D^N`.**  `D^N U_N = Σ_w (D w)^N` is a sum of algebraic
+integers, and it is rational (`tracePowSum_rat`), hence a rational integer. -/
+theorem exists_tracePowSum_den_dvd {α : ℝ} (halg : IsIntegral ℚ α) :
+    ∃ D : ℕ, 0 < D ∧ ∀ (N : ℕ) (u : ℚ), tracePowSum α N = ((u : ℚ) : ℂ) →
+      ∃ m : ℤ, (D : ℚ) ^ N * u = (m : ℚ) := by
+  classical
+  obtain ⟨D, hD0, hDint⟩ := exists_common_integral_multiple halg
+  refine ⟨D, hD0, ?_⟩
+  intro N u hu
+  have hsum : (D : ℂ) ^ N * tracePowSum α N
+      = (((minpoly ℚ α).aroots ℂ).map (fun w ↦ ((D : ℂ) * w) ^ N)).sum := by
+    rw [tracePowSum, ← Multiset.sum_map_mul_left]
+    refine congrArg Multiset.sum (Multiset.map_congr rfl ?_)
+    intro w _
+    rw [mul_pow]
+  have hintC : IsIntegral ℤ ((D : ℂ) ^ N * tracePowSum α N) := by
+    rw [hsum]
+    refine isIntegral_multiset_sum ?_
+    intro x hx
+    obtain ⟨w, hw, rfl⟩ := Multiset.mem_map.1 hx
+    exact (hDint w hw).pow N
+  have hcast : (((((D : ℚ) ^ N * u : ℚ)) : ℚ) : ℂ) = (D : ℂ) ^ N * tracePowSum α N := by
+    rw [hu]; push_cast; ring
+  have hintQ : IsIntegral ℤ (((D : ℚ) ^ N * u : ℚ)) := by
+    refine (isIntegral_algHom_iff ((Rat.castHom ℂ).toIntAlgHom) Rat.cast_injective).1 ?_
+    rw [show ((Rat.castHom ℂ).toIntAlgHom) ((D : ℚ) ^ N * u) = ((((D : ℚ) ^ N * u : ℚ)) : ℂ) from rfl,
+      hcast]
+    exact hintC
+  obtain ⟨m, hm⟩ := IsIntegrallyClosed.isIntegral_iff.1 hintQ
+  exact ⟨m, by exact_mod_cast hm.symm⟩
+
+/-- **The cofiniteness dichotomy** (eighth lap).  Suppose `2 U_(2^n)` is within `C₂ r^(2^n)` of a
+rational integer for all large `n` — which `tracePowSum_near_int` supplies once *one* pseudo-Pisot
+exponent exists — and the denominator base `D` of `exists_tracePowSum_den_dvd` satisfies `D r < 1`.
+Then `2 U_(2^n)` is **exactly** a rational integer for every large `n`, so the exact-integrality
+exponent set is cofinite in the powers of `2`.
+
+This is the step that converts the sparse pseudo-Pisot index set into a doubling-closed one; what it
+costs is precisely the inequality `D < r⁻¹`. -/
+theorem tracePowSum_int_of_near_int_of_den_lt {α : ℝ} {C₂ r : ℝ} (hC₂ : 0 < C₂) (hr0 : 0 ≤ r)
+    {n₂ : ℕ}
+    (hnear : ∀ n ≥ n₂, ∃ m : ℤ, ‖2 * tracePowSum α (2 ^ n) - (m : ℂ)‖ ≤ C₂ * r ^ 2 ^ n)
+    {D : ℕ} (hD0 : 0 < D)
+    (hDden : ∀ (N : ℕ) (u : ℚ), tracePowSum α N = ((u : ℚ) : ℂ) →
+      ∃ m : ℤ, (D : ℚ) ^ N * u = (m : ℚ))
+    (hDr : (D : ℝ) * r < 1) :
+    ∃ n₃, ∀ n ≥ n₃, ∀ u : ℚ, tracePowSum α (2 ^ n) = ((u : ℚ) : ℂ) → (2 * u).den = 1 := by
+  classical
+  have hs0 : (0 : ℝ) ≤ (D : ℝ) * r := by positivity
+  obtain ⟨j, hj⟩ := exists_pow_lt_of_lt_one (show (0 : ℝ) < 1 / C₂ by positivity) hDr
+  refine ⟨max n₂ j, ?_⟩
+  intro n hn u hu
+  by_contra hden
+  obtain ⟨m, hm⟩ := hnear n (le_trans (le_max_left _ _) hn)
+  -- the Liouville lower bound
+  have hcast : 2 * tracePowSum α (2 ^ n) - (m : ℂ)
+      = (((((2 * u : ℚ) : ℝ)) - (m : ℝ) : ℝ) : ℂ) := by
+    rw [hu]; push_cast; ring
+  rw [hcast, Complex.norm_real, Real.norm_eq_abs] at hm
+  have hlow := one_div_den_le_dist_int hden m
+  have hlow2 : 1 / (((2 * u).den : ℕ) : ℝ) ≤ C₂ * r ^ 2 ^ n := le_trans hlow hm
+  -- the denominator ceiling
+  obtain ⟨m', hm'⟩ := hDden (2 ^ n) u hu
+  have hDQ0 : (0 : ℚ) < (D : ℚ) := by exact_mod_cast hD0
+  have hdvd : (((2 * u).den : ℕ) : ℤ) ∣ ((D : ℤ) ^ 2 ^ n) := by
+    have hE : (2 * u) = Rat.divInt (2 * m') ((D : ℤ) ^ 2 ^ n) := by
+      rw [Rat.divInt_eq_div, eq_div_iff (by push_cast; positivity)]
+      push_cast
+      linear_combination (2 : ℚ) * hm'
+    rw [hE]
+    exact Rat.den_dvd _ _
+  have hle : (((2 * u).den : ℕ) : ℝ) ≤ ((D : ℝ)) ^ 2 ^ n := by
+    have h1 : (((2 * u).den : ℕ) : ℤ) ≤ ((D : ℤ) ^ 2 ^ n) :=
+      Int.le_of_dvd (by positivity) hdvd
+    exact_mod_cast h1
+  have hd0 : (0 : ℝ) < (((2 * u).den : ℕ) : ℝ) := by
+    have h := (2 * u).den_pos
+    exact_mod_cast h
+  -- combine: `1 ≤ C₂ (D r)^(2^n)`, contradicting the choice of `j`
+  have hcr : (0 : ℝ) ≤ C₂ * r ^ 2 ^ n := by positivity
+  have hstep : (1 : ℝ) ≤ C₂ * r ^ 2 ^ n * (D : ℝ) ^ 2 ^ n := by
+    rw [div_le_iff₀ hd0] at hlow2
+    calc (1 : ℝ) ≤ C₂ * r ^ 2 ^ n * (((2 * u).den : ℕ) : ℝ) := hlow2
+      _ ≤ C₂ * r ^ 2 ^ n * (D : ℝ) ^ 2 ^ n := mul_le_mul_of_nonneg_left hle hcr
+  have hjn : j ≤ 2 ^ n :=
+    le_trans (le_trans (le_max_right n₂ j) hn) (Nat.le_of_lt Nat.lt_two_pow_self)
+  have hpow : ((D : ℝ) * r) ^ 2 ^ n ≤ ((D : ℝ) * r) ^ j :=
+    pow_le_pow_of_le_one hs0 hDr.le hjn
+  have hfinal : C₂ * ((D : ℝ) * r) ^ 2 ^ n < 1 := by
+    calc C₂ * ((D : ℝ) * r) ^ 2 ^ n ≤ C₂ * ((D : ℝ) * r) ^ j :=
+          mul_le_mul_of_nonneg_left hpow hC₂.le
+      _ < C₂ * (1 / C₂) := by exact mul_lt_mul_of_pos_left hj hC₂
+      _ = 1 := by field_simp
+  rw [mul_pow] at hfinal
+  have hcomm : C₂ * r ^ 2 ^ n * (D : ℝ) ^ 2 ^ n
+      = C₂ * ((D : ℝ) ^ 2 ^ n * r ^ 2 ^ n) := by ring
+  rw [hcomm] at hstep
+  linarith
+
+/-- **The capstone of the eighth lap: an unconditional constraint on a growth constant.**
+Assume (as `tracePowSum_near_int` delivers once *one* pseudo-Pisot exponent exists) that
+`2 U_(2^n)` is within `C₂ r^(2^n)` of a rational integer for all large `n`, and that the denominator
+base `D` of `exists_tracePowSum_den_dvd` satisfies `D r < 1`.  If moreover at every prime of
+`conjField α` the dominant conjugate valuation is attained **at most twice**, then `α` is an
+algebraic integer.
+
+Route: `tracePowSum_int_of_near_int_of_den_lt` makes the exact-integrality exponent set cofinite in
+the powers of `2`, hence **closed under doubling**; `false_of_bounded_den_tie_le` at `K = 2` then
+needs nothing more.  Contrapositively: a non-integral growth constant must have `D ≥ r⁻¹`, or a
+triple tie at some prime — and a triple tie forces a non-`2`-power root of unity among the ratios of
+conjugates, which is Corvaja–Zannier's degenerate branch.  See `PROBE-DUBICKAS-NOSUBSPACE.md`. -/
+theorem isIntegral_of_tie_le_two_of_den_lt {α : ℝ} (halg : IsIntegral ℚ α)
+    {C₂ r : ℝ} (hC₂ : 0 < C₂) (hr0 : 0 ≤ r) {n₂ : ℕ}
+    (hnear : ∀ n ≥ n₂, ∃ m : ℤ, ‖2 * tracePowSum α (2 ^ n) - (m : ℂ)‖ ≤ C₂ * r ^ 2 ^ n)
+    {D : ℕ} (hD0 : 0 < D)
+    (hDden : ∀ (N : ℕ) (u : ℚ), tracePowSum α N = ((u : ℚ) : ℂ) →
+      ∃ m : ℤ, (D : ℚ) ^ N * u = (m : ℚ))
+    (hDr : (D : ℝ) * r < 1)
+    (htie : ∀ (v : IsDedekindDomain.HeightOneSpectrum (𝓞 (conjField α))) (z : conjField α),
+      ((conjMultiset α).filter (fun w ↦ v.valuation (conjField α) w
+        = v.valuation (conjField α) z)).card ≤ 2) :
+    IsIntegral ℤ α := by
+  classical
+  by_contra hnint
+  obtain ⟨n₃, hn₃⟩ := tracePowSum_int_of_near_int_of_den_lt hC₂ hr0 hnear hD0 hDden hDr
+  -- the exact-integrality exponent set, cofinite in the powers of `2`
+  set S : Set ℕ := (fun n : ℕ ↦ 2 ^ n) '' {n : ℕ | n₃ ≤ n} with hSdef
+  have hpowinj : Function.Injective (fun n : ℕ ↦ 2 ^ n) := fun a b h ↦ by
+    exact Nat.pow_right_injective (le_refl 2) h
+  have hSinf : S.Infinite := by
+    refine Set.Infinite.image (Set.injOn_of_injective hpowinj) ?_
+    exact Set.Ici_infinite n₃
+  have hdbl : ∀ N ∈ S, ∀ j, 0 < j → j ≤ 2 → j * N ∈ S := by
+    intro N hN j hj hj2
+    obtain ⟨n, hn, rfl⟩ := hN
+    interval_cases j
+    · exact ⟨n, hn, by ring⟩
+    · exact ⟨n + 1, by simpa using le_trans hn (Nat.le_succ n), by ring⟩
+  -- on `S` the trace power sums are exactly half-integers
+  have hu : ∀ N ∈ S, ∃ m : ℤ, ((2 : ℕ) : ℂ) * tracePowSum α N = (m : ℂ) := by
+    intro N hN
+    obtain ⟨n, hn, rfl⟩ := hN
+    obtain ⟨u, hu'⟩ := tracePowSum_rat halg (2 ^ n)
+    have hden := hn₃ n hn u hu'
+    obtain ⟨m, hm⟩ : ∃ m : ℤ, (2 * u : ℚ) = (m : ℚ) := by
+      refine ⟨(2 * u).num, ?_⟩
+      rw [← Rat.num_div_den (2 * u), hden]
+      simp
+    refine ⟨m, ?_⟩
+    have hc : (((2 * u : ℚ)) : ℂ) = (((m : ℚ)) : ℂ) := by rw [hm]
+    rw [hu']
+    push_cast at hc ⊢
+    linear_combination hc
+  obtain ⟨v, z, hzR, hz1, hmax⟩ := exists_dominant_max halg hnint
+  exact false_of_bounded_den_tie_le v hzR hz1 hmax (K := 2) (htie v z)
+    (q := 2) (by norm_num) hSinf hdbl (conj_bounded_den hu)
 
 /-! ### The double tie closes elementarily — the residual is *sparsity*, not `p`-adic analysis
 

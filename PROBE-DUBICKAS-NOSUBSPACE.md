@@ -378,6 +378,50 @@ Mahler measure `M(α) = D' α^k` of a growth constant.  Nothing bounds `M(α)` a
 pseudo-Pisot number `β = 1 + √7/3`, root of `9X² − 18X + 2`, has `D = 3`, `α ≈ 1.88`, `ρ ≈ 0.118`),
 which is one more independent confirmation that the missing strength lives in Lemma 3.
 
+### Eighth lap, part 2: the denominator CEILING, the cofiniteness dichotomy, and the `ζ₃` witness
+
+All proved and axiom-clean in `src/`:
+
+* `isIntegral_multiset_sum`, **`exists_common_integral_multiple`** — one positive integer `D` with
+  `D w` an algebraic integer for *every* conjugate `w` of `α`.  (`conjField α` is a `NumberField`, so
+  mathlib's `exists_integral_multiples ℤ ℚ` supplies all the multipliers at once.)
+* **`exists_tracePowSum_den_dvd`** — hence `den(U_N) ∣ D^N`: `D^N U_N = Σ_w (D w)^N` is a sum of
+  algebraic integers and is rational, so it is a rational integer.  *This is the upper bound the
+  sixth lap was missing; it had only the lower bound `den ≍ D_v^N`.*
+* **`tracePowSum_int_of_near_int_of_den_lt`** — the **cofiniteness dichotomy**.  If `2 U_(2^n)` is
+  within `C₂ r^(2^n)` of a rational integer for all large `n` (what `tracePowSum_near_int` gives once
+  one pseudo-Pisot exponent exists) and `D r < 1`, then `2 U_(2^n)` is *exactly* a rational integer
+  for **every** large `n`.  Liouville (`one_div_den_le_dist_int`) versus the ceiling: the two can
+  only coexist if `(D r)^(2^n) ≥ 1/(2C₂)`.
+* `false_of_bounded_den_tie_le` — Lemma 4's local step refined so that the exponent set need only be
+  closed under multiplication by `1, …, K` where `K` bounds the **tie size** at `v`
+  (`false_of_bounded_den_mulClosed` is the case `K = |R|`).  At `K = 2` that is *doubling closure*.
+* **`isIntegral_of_tie_le_two_of_den_lt`** (the capstone) — if `D r < 1` **and** the dominant
+  conjugate valuation is attained at most twice at every prime, then `α` **is** an algebraic integer.
+  Equivalently: a non-integral growth constant must have `D ≥ r⁻¹ = min(α, ρ⁻¹)` **or** a triple tie
+  at some prime.
+
+**The `ζ₃` witness — why doubling closure cannot be pushed past tie size 2.**  Take a prime `v` whose
+local field contains `ζ₃` and set `u_i = ζ₃^i c` (`i = 0, 1, 2`) for a unit `c`.  Then
+`Σ_i u_i^N = c^N Σ_i ζ₃^{iN} = 0` whenever `3 ∤ N` — in particular for **every** `N = 2^n`.  So the
+`k = 3` tie survives an exponent set that is merely closed under doubling, and it is killed only by
+an exponent `3N` (where the sum is `3c^{3N}`, a unit times `3`).  This is a *definitive* refutation
+of the seventh lap's hope that doubling closure might suffice in general, and it pins the requirement
+to closure under multiplication by `1, …, k` exactly.  Note also that the witness is degenerate
+(`u_1^3 = u_2^3`, so `w^3 = w'^3` for two conjugates): the surviving case is precisely
+Corvaja–Zannier's `α^l ∈ ℚ` branch, and the descent it offers is useless here because `{N | 3N ∈ S}`
+is empty for `S ⊆ {2^n}`.
+
+**State of the residual after this lap.**  For a non-integral growth constant `α`, at least one of:
+
+1. `D ≥ min(α, ρ⁻¹)` — a lower bound on the Mahler measure that nothing currently supplies
+   (`9X² − 18X + 2` shows pseudo-Pisot-ness alone does not forbid it);
+2. some prime of `conjField α` carries a **triple** tie of dominant valuations, i.e. a non-`2`-power
+   root of unity among the conjugate ratios (CZ's degenerate branch, whose descent is blocked by the
+   sparsity of `{2^n}`);
+3. the pseudo-Pisot index set `S` produced by CZ's Lemma 3 is sparse — which is what makes 1 and 2
+   unresolvable and is therefore the single remaining question.
+
 ## Earlier recommendation (still valid for Lemma 3)
 
 Do **not** take option 2 first.  Option 1 splits the residual into one subspace-strength `Prop`
