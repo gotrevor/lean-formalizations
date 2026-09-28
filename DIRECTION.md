@@ -1,5 +1,26 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 8, 2026-09-27): drop Lemma 8 from Dubickas Theorem 1 — a 3-lap PROBE
+
+Phases 1–7 are GREEN and merged.  Trevor wants the OEIS-linked `Dubickas.lean` headline to become
+**unconditional**; its two literature inputs are `Dubickas2022` (Lemma 6, subspace theorem — out
+of scope) and `Dubickas2022PisotGap` (Lemma 8 — this phase).  Lemma 8 is consumed exactly once,
+in `c_eq_zero_or_two` (`hL1`).  Target: **`c_eq_zero_or_two_noGap`** in
+`NumberTheory/Transcendence/DubickasNoGap.lean` (leads in its header), from `Dubickas2022` only.
+Reuse `DubickasPisot.lean` / `Mills/SaitoPisot.lean` lemmas; decompose into named leaves freely.
+
+Once it is proved: drop the `hG` argument from `transcendental_growth_of_monic_quadratic`,
+`theorem1`, `oeis_constants` in `Dubickas.lean` (names and file path unchanged — the file is
+⚓ linked from OEIS), route through `_noGap`, update `Comparator/Dubickas/Challenge.lean` to match,
+and confirm `scripts/comparator-probe Dubickas` says identical.
+
+A refutation is an advance: if the elementary route is blocked, write the obstruction in
+`PROBE-DUBICKAS-NOGAP.md` and stop.  Frozen: every earlier name, all of `Literature/`
+(`Lindemann.lean` is a pending-mathlib-PR stub: never prove it).
+Stop condition: `NumberTheory/Transcendence/` sorry-free.
+
+---
+
 ## 🎯 THE OBJECTIVE (phase 7, 2026-09-27): Dubickas 2022 Theorem 1 — κ, ζ, Sylvester γ, η, τ transcendental
 
 Phases 1–6 are GREEN and merged.  Phase 7 is `NumberTheory/Transcendence/Dubickas.lean` (route in
