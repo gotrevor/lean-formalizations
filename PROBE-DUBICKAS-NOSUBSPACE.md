@@ -1,7 +1,10 @@
 # PROBE — Dubickas Theorem 1 without Lemma 6 (phase 9)
 
-**Status (2026-09-28): PARTIALLY CLOSED — the rational-power case is now unconditional (from
-`Ridout1957`); the residual core is exactly Corvaja–Zannier's pseudo-Pisot dichotomy.**
+**Status (2026-09-28, eighth lap): the residual is TWO named Corvaja–Zannier statements.**  The
+rational-power case is unconditional (from `Ridout1957`); CZ's **Lemma 4 is proved outright, with no
+escape branch, for every multiplicatively-closed exponent set** (Newton's identities kill every tie
+size — see the eighth-lap section); and the *only* remaining strength is CZ's main theorem (his
+Lemma 3), the `p`-adic Subspace Theorem, plus the *density* of the index set it produces.
 
 After phase 8, the three ⚓ OEIS-linked headlines in
 `NumberTheory/Transcendence/Dubickas.lean` rest on a single hypothesis, `Dubickas2022`
@@ -328,6 +331,52 @@ needs one of:
 Note also that `tracePowSum_den_grows` (sixth lap) gives a *cofinite* statement of the near-integer
 kind, so route 1 is not hopeless: the archimedean side is already cofinite; it is the *arithmetic*
 (exact-integer) side that is sparse.
+
+### Eighth lap: the degenerate branch of Lemma 4 is an ARTIFACT — Newton kills every tie size
+
+The `k = 2` Graeffe collapse generalizes to arbitrary tie size, and the generalization is *shorter*
+than the special case.  New in `src/`, all axiom-clean:
+
+* `valuation_natCast_le_one`, `valuation_multiset_prod_eq_one`, `valuation_finset_sum_le`,
+  `valuation_esymm_le_one`, `multiset_esymm_card` — the local toolkit.
+* **`valuation_factorial_mul_esymm_le`** — for a multiset `x` of `v`-units with `|x| = k`, if
+  `v(p_l(x)) ≤ ε` for every `1 ≤ l ≤ k` then `v(j! · e_j(x)) ≤ ε` for every `1 ≤ j ≤ k`.
+  *No induction is needed*: multiply Newton's identity
+  `j e_j = (−1)^(j+1) Σ_{i<j} (−1)^i e_i p_(j−i)` (mathlib-free, from the repo's
+  `multiset_mul_esymm_eq_sum`) through by `(j−1)!`; each summand is then
+  `(something of valuation ≤ 1) · p_(j−i)`, because `i! ∣ (j−1)!` is not even required — `v(m!) ≤ 1`
+  and `v(e_i) ≤ 1` hold separately for *every* integer `m` and every `i`.
+* **`valuation_sum_unit_pow_mulClosed`** — hence: `v`-units `u_1, …, u_k` (`k ≥ 1`) and an infinite
+  exponent set closed under multiplication by `1, …, k` cannot have `v(Σ_i u_i^N) ≤ B r^N`, `r < 1`.
+  At `j = k`, `e_k(x) = (∏ u_i)^N` is a unit, so the left side is the **fixed nonzero** `v(k!)`.
+  **No nondegeneracy hypothesis, and `k = 1` (the no-tie case) is included.**
+* **`false_of_bounded_den_mulClosed` / `isIntegral_of_bounded_den_mulClosed`** — so CZ's Lemma 4
+  holds for a multiplicatively-closed exponent set **with no escape branch at all**: the conclusion
+  is `IsIntegral ℤ α`, not `IsIntegral ℤ α ∨ ∃ l, α^l ∈ ℚ`.  The old disclosed leaf
+  `valuation_sum_unit_pow_nondegenerate` is **deleted** (superseded), taking `src/` from three
+  disclosed `sorry`s to **two**, both now named published statements of Corvaja–Zannier.
+
+**What this settles conceptually.**  The `α^l ∈ ℚ` branch of CZ's Lemma 4 is *not* an intrinsic
+feature of the local analysis; it is exactly what an exponent set that is **not** closed under
+multiplication buys.  The canonical witness confirms it: `α = √(3/2)` has `U_N = 0` for every odd
+`N` (so the hypothesis holds on the odds) but `U_(2M) = 2(3/2)^M` has denominator `2^M` (so it fails
+on any doubling-closed set).  Consequently **the entire residual of Lemma 4 is now the DENSITY of
+the index set produced by CZ's Lemma 3** — a single, sharply stated question, with no `p`-adic
+analysis left in it (Strassmann is not needed anywhere; the earlier laps' Strassmann plan is
+obsolete).
+
+**The remaining inequality.**  `D α` is an algebraic integer for some positive integer `D` (`D ∣ a₀`),
+so `den(U_N) ∣ D^N`.  Pair that *upper* bound with the proved `tracePowSum_near_int` (for all large
+`n`, `2 U_(2^n)` is within `C r^(2^n)` of an integer, `r = max(α⁻¹, ρ)`) and `one_div_den_le_dist_int`:
+for every large `n`, either `2 U_(2^n) ∈ ℤ` or `(D r)^(2^n) ≥ 1/(2C)`.  Hence
+
+> **if `D · max(α⁻¹, ρ) < 1` then `2 U_(2^n) ∈ ℤ` for every large `n`** — the index set is cofinite,
+> so it is multiplicatively closed, so `isIntegral_of_bounded_den_mulClosed` applies and `D = 1`.
+
+So the *whole* obstruction is now the inequality `D ≥ min(α, ρ⁻¹)`, i.e. a lower bound on the
+Mahler measure `M(α) = D' α^k` of a growth constant.  Nothing bounds `M(α)` a priori (the
+pseudo-Pisot number `β = 1 + √7/3`, root of `9X² − 18X + 2`, has `D = 3`, `α ≈ 1.88`, `ρ ≈ 0.118`),
+which is one more independent confirmation that the missing strength lives in Lemma 3.
 
 ## Earlier recommendation (still valid for Lemma 3)
 
