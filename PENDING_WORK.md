@@ -49,6 +49,14 @@ The open `sorry`s in `src/` are deliberate and are the active crux, both in
   either `2 U_(2^n) ∈ ℤ` or its denominator is `≳ α^(2^n)`.  With the unique-dominant-valuation case
   this forces the local dominant valuation `D_v ≥ α` — the first constraint in this thread that bites
   on `α` itself (see the sixth-lap section of the PROBE);
+  (1c) ✅ **the double tie now CLOSES elementarily** (seventh lap): the Graeffe identity
+  `2(u₁u₂)^N = (u₁^N+u₂^N)² − (u₁^(2N)+u₂^(2N))` has valuation exactly `v 2` on the left, so
+  `valuation_two_le_of_two_unit_pow_sums` / `false_of_two_unit_pow_sums_small` /
+  `valuation_sum_unit_pow_card_two` prove the leaf for `card U = 2` (no nondegeneracy needed), and
+  Newton's identities extend it to any tie size `k` once the exponent set is closed under
+  multiplication by `1..k`.  **The residual is therefore SPARSITY of the pseudo-Pisot index set `S`,
+  not `p`-adic analysis.**  Ranked next attack: make `S` cofinite (it comes out of CZ's Lemma 3 —
+  see the seventh-lap section of the PROBE), which would make Lemma 4 elementary outright;
   (2) the **degenerate** branch, which is the other genuine gap — `w^l = w'^l` for distinct
   conjugates gives only `deg(α^l) < deg α` (a descent), and the descent cannot be iterated because
   the exponent set becomes `{N | l N ∈ S}`; CZ's own argument for their `α^l ∈ ℚ` branch is what

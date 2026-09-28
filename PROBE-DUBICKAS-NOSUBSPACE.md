@@ -291,6 +291,44 @@ is **not** free: `9X² − 18X + 2` has the root `β = 1 + √7/3 ≈ 1.8819`, w
 so `ord_3(Tr β^N) = −N` and `den(Tr β^N) = 3^N ≫ β^N`.  Pseudo-Pisot alone therefore does not give
 the denominator bound; the hypothesis "integral trace for infinitely many `N`" must be used.
 
+### Seventh lap: the double tie CLOSES elementarily — the residual is sparsity, not `p`-adic analysis
+
+The Graeffe identity, read through `v`, does what Strassmann was wanted for.  For `v`-units
+`u₁, u₂`,
+
+    2 (u₁ u₂)^N = (u₁^N + u₂^N)² − (u₁^(2N) + u₂^(2N)),
+
+and the left side has valuation **exactly** `v 2` — a fixed nonzero quantity.  So the two power sums
+at `N` and `2N` cannot both be highly divisible.  Proved and axiom-clean in `src/`:
+`valuation_two_le_of_two_unit_pow_sums`, `false_of_two_unit_pow_sums_small`,
+`valuation_sum_unit_pow_card_two` (the leaf's own shape, for `card U = 2`), plus the `ℤₘ₀` helper
+`exists_mul_pow_lt`.  **No nondegeneracy hypothesis is needed.**
+
+The same collapse handles a tie of any size `k`, as soon as the exponent set is closed under
+multiplication by `1, …, k`: with `x_i = u_i^N`, Newton's identities `j e_j = Σ_i (−1)^(i−1) e_(j−i) p_i`
+and `ord_v(p_i) = ord_v(Σ x_i^i) = ord_v(S_(iN)) ≥ cN − C` give, by induction on `j`,
+`ord_v(j! e_j) ≥ cN − C`; at `j = k` this says `ord_v(k! ∏_i u_i^N) ≥ cN − C → ∞` while `∏ u_i` is a
+unit — contradiction.  (Consistency check: `α = √(3/2)` has `U_N = 0` for odd `N` but
+`U_(2M) = 2(3/2)^M`, so the hypothesis *fails* on a doubling-closed set, as it must.)
+
+**So the obstruction has moved, and it is now a single sharp statement**: the exponent set
+`{2^n : n ∈ S}` is only known to be *infinite*, and neither the Newton/Graeffe collapse nor
+Strassmann applies to an arbitrarily sparse set.  Closing CZ's Lemma 4 for our application therefore
+needs one of:
+
+1. **`S` cofinite (or of bounded gaps / closed under doubling).**  `S` is the pseudo-Pisot index set
+   produced by CZ's *Lemma 3*; nothing in the current derivation makes it dense.  If Lemma 3 can be
+   made to deliver a cofinite `S` (its conclusion is "for all large `n`" in the *other* branch, so
+   this is a question about how the two branches are split), Lemma 4 becomes elementary **and the
+   whole tie problem disappears**.  ⟵ *this is the most promising next attack.*
+2. bounded denominators at exponents `N, 2N, …, kN` — i.e. near-integrality at exponents that are
+   not powers of `2`, which the archimedean input does not supply (`y_n` exists only at `2^n`).
+3. subspace strength.
+
+Note also that `tracePowSum_den_grows` (sixth lap) gives a *cofinite* statement of the near-integer
+kind, so route 1 is not hopeless: the archimedean side is already cofinite; it is the *arithmetic*
+(exact-integer) side that is sparse.
+
 ## Earlier recommendation (still valid for Lemma 3)
 
 Do **not** take option 2 first.  Option 1 splits the residual into one subspace-strength `Prop`

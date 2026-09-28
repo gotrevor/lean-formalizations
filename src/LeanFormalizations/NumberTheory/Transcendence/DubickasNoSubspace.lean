@@ -1100,6 +1100,145 @@ theorem tracePowSum_den_grows {α : ℝ} (halg : IsIntegral ℚ α) (hα : 1 < �
   rw [div_le_iff₀ hd0] at h1
   linarith [h1]
 
+/-! ### The double tie closes elementarily — the residual is *sparsity*, not `p`-adic analysis
+
+`valuation_two_le_of_two_unit_pow_sums` is the Graeffe identity
+`2 (u₁u₂)^N = (u₁^N + u₂^N)² − (u₁^(2N) + u₂^(2N))` read through `v`: the left side has valuation
+exactly `v 2` (the `u_i` are units), so the power sums at `N` and `2N` cannot both be highly
+divisible.  Hence `false_of_two_unit_pow_sums_small` / `valuation_sum_unit_pow_card_two`: the local
+leaf is **proved** for a double tie whenever the exponent set is closed under doubling, with no
+nondegeneracy hypothesis at all.
+
+The same collapse handles a tie of any size `k` as soon as the exponent set is closed under
+multiplication by `1, …, k`: Newton's identities `j e_j = Σ_i (−1)^(i−1) e_(j−i) p_i` then give
+`ord_v(k! · ∏_i u_i) → ∞` while `∏_i u_i` is a unit.  So the residual difficulty in
+`valuation_sum_unit_pow_nondegenerate` is entirely the **sparsity** of the exponent set — for
+`{2^n : n ∈ S}` with `S` merely infinite, neither this nor Strassmann applies. -/
+
+
+/-- In `ℤₘ₀`: if `r < 1` and `c ≠ 0` then `B rⁿ < c` for some `n`. -/
+theorem exists_mul_pow_lt {B r c : WithZero (Multiplicative ℤ)} (hr : r < 1) (hc : c ≠ 0)
+    (hB : B ≠ 0) : ∃ n : ℕ, B * r ^ n < c := by
+  rcases eq_or_ne r 0 with rfl | hr0
+  · exact ⟨1, by simpa using (zero_lt_iff.2 hc)⟩
+  have hrinv : 1 < r⁻¹ := by
+    rw [one_lt_inv_iff₀]
+    exact ⟨zero_lt_iff.2 hr0, hr⟩
+  obtain ⟨n, hn⟩ := exists_one_lt_mul_pow (a := r⁻¹) (b := c * B⁻¹) hrinv
+    (by simp [hc, hB])
+  refine ⟨n, ?_⟩
+  have hx0 : (0 : WithZero (Multiplicative ℤ)) < B * r ^ n := by
+    refine zero_lt_iff.2 ?_
+    simp [hB, hr0]
+  have heq : c * B⁻¹ * r⁻¹ ^ n = c * (B * r ^ n)⁻¹ := by
+    rw [inv_pow]
+    field_simp
+  rw [heq, ← div_eq_mul_inv, lt_div_iff₀ hx0, one_mul] at hn
+  exact hn
+
+
+/-- **Graeffe at `k = 2`.**  For `v`-units `u₁, u₂`,
+`2 (u₁u₂)^N = (u₁^N + u₂^N)² − (u₁^(2N) + u₂^(2N))`, and the left side has valuation exactly
+`v 2`.  So the two power sums at `N` and `2N` cannot *both* be highly divisible: the fixed nonzero
+value `v 2` bounds them. -/
+theorem valuation_two_le_of_two_unit_pow_sums {L : Type*} [Field L] [NumberField L]
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers L)) {u₁ u₂ : L}
+    (h₁ : v.valuation L u₁ = 1) (h₂ : v.valuation L u₂ = 1) (N : ℕ) :
+    v.valuation L (2 : L) ≤ max ((v.valuation L (u₁ ^ N + u₂ ^ N)) ^ 2)
+      (v.valuation L (u₁ ^ (2 * N) + u₂ ^ (2 * N))) := by
+  have key : (2 : L) * (u₁ * u₂) ^ N
+      = (u₁ ^ N + u₂ ^ N) ^ 2 - (u₁ ^ (2 * N) + u₂ ^ (2 * N)) := by
+    rw [mul_comm 2 N, pow_mul, pow_mul, mul_pow]
+    ring
+  have hv : v.valuation L ((2 : L) * (u₁ * u₂) ^ N) = v.valuation L (2 : L) := by
+    rw [Valuation.map_mul, map_pow, Valuation.map_mul, h₁, h₂]
+    simp
+  rw [← hv, key]
+  refine le_trans (Valuation.map_sub _ _ _) (max_le_max ?_ le_rfl)
+  rw [map_pow]
+
+/-- **The tie case of Corvaja–Zannier's Lemma 4 for a *double* tie is elementary** — provided the
+exponent set is closed under doubling.  Two `v`-units whose power sums decay geometrically along
+such a set do not exist: `valuation_two_le_of_two_unit_pow_sums` pins the fixed nonzero `v 2`
+below something that tends to `0`.
+
+This is the first genuinely closed instance of `valuation_sum_unit_pow_nondegenerate`, it needs
+**no** nondegeneracy hypothesis, and it shows that the residual difficulty of that leaf is the
+*sparsity* of the exponent set, not `p`-adic analysis: Newton's identities
+(`j e_j = Σ_i (−1)^(i−1) e_(j−i) p_i`) give the same collapse for a tie of any size `k` as soon as
+the exponent set is closed under multiplication by `1, …, k`, since then `ord_v(k! · ∏ u_i) → ∞`
+while `∏ u_i` is a unit.  See `PROBE-DUBICKAS-NOSUBSPACE.md`. -/
+theorem false_of_two_unit_pow_sums_small {L : Type*} [Field L] [NumberField L]
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers L)) {u₁ u₂ : L}
+    (h₁ : v.valuation L u₁ = 1) (h₂ : v.valuation L u₂ = 1)
+    {S : Set ℕ} (hSne : ∃ N ∈ S, 0 < N) (hdbl : ∀ N ∈ S, 2 * N ∈ S)
+    {B r : WithZero (Multiplicative ℤ)} (hB : B ≠ 0) (hr : r < 1)
+    (hsum : ∀ N ∈ S, v.valuation L (u₁ ^ N + u₂ ^ N) ≤ B * r ^ N) : False := by
+  classical
+  set c : WithZero (Multiplicative ℤ) := v.valuation L (2 : L) with hc
+  have hc0 : c ≠ 0 := by
+    rw [hc]
+    simp only [ne_eq, Valuation.zero_iff]
+    exact two_ne_zero
+  have hc1 : c ≤ 1 := by
+    rw [hc, show ((2 : L)) = ((2 : ℤ) : L) from by norm_num,
+      show (((2 : ℤ)) : L) = algebraMap (NumberField.RingOfIntegers L) L ((2 : ℤ) : _) from
+        (map_intCast (algebraMap (NumberField.RingOfIntegers L) L) 2).symm]
+    exact IsDedekindDomain.HeightOneSpectrum.valuation_le_one v _
+  obtain ⟨n, hn⟩ := exists_mul_pow_lt (B := B) (r := r) (c := c) hr hc0 hB
+  -- an element of `S` above `n`, obtained by repeated doubling
+  obtain ⟨N₀, hN₀S, hN₀⟩ := hSne
+  have hpow : ∀ j : ℕ, N₀ * 2 ^ j ∈ S := by
+    intro j
+    induction j with
+    | zero => simpa using hN₀S
+    | succ j ih =>
+        have := hdbl _ ih
+        rw [show 2 * (N₀ * 2 ^ j) = N₀ * 2 ^ (j + 1) from by ring] at this
+        exact this
+  obtain ⟨j, hj⟩ : ∃ j : ℕ, n ≤ N₀ * 2 ^ j := by
+    refine ⟨n, le_trans ?_ (Nat.mul_le_mul_left _ (Nat.le_of_lt (Nat.lt_two_pow_self)))⟩
+    calc n = 1 * n := (one_mul n).symm
+      _ ≤ N₀ * n := Nat.mul_le_mul_right _ hN₀
+  set N : ℕ := N₀ * 2 ^ j with hN
+  have hNS : N ∈ S := hpow j
+  have hmono : ∀ M : ℕ, n ≤ M → B * r ^ M ≤ B * r ^ n := by
+    intro M hM
+    refine mul_le_mul_left' ?_ B
+    exact pow_le_pow_of_le_one (by simp) hr.le hM
+  have hx : B * r ^ N < c := lt_of_le_of_lt (hmono N hj) hn
+  have hx2 : B * r ^ (2 * N) < c := lt_of_le_of_lt (hmono (2 * N) (by omega)) hn
+  have hxle1 : B * r ^ N ≤ 1 := le_trans hx.le hc1
+  have hsq : (v.valuation L (u₁ ^ N + u₂ ^ N)) ^ 2 < c := by
+    refine lt_of_le_of_lt ?_ hx
+    calc (v.valuation L (u₁ ^ N + u₂ ^ N)) ^ 2
+        ≤ (B * r ^ N) ^ 2 := pow_le_pow_left₀ (by simp) (hsum N hNS) 2
+      _ = (B * r ^ N) * (B * r ^ N) := by rw [sq]
+      _ ≤ (B * r ^ N) * 1 := mul_le_mul_left' hxle1 _
+      _ = B * r ^ N := mul_one _
+  have h2 : v.valuation L (u₁ ^ (2 * N) + u₂ ^ (2 * N)) < c :=
+    lt_of_le_of_lt (hsum (2 * N) (hdbl N hNS)) hx2
+  have := valuation_two_le_of_two_unit_pow_sums v h₁ h₂ N
+  rw [← hc] at this
+  exact absurd this (not_le.2 (max_lt hsq h2))
+
+
+/-- The local leaf `valuation_sum_unit_pow_nondegenerate`, **proved** in the shape it is used, for a
+*double* tie and an exponent set closed under doubling — and with no nondegeneracy hypothesis. -/
+theorem valuation_sum_unit_pow_card_two {L : Type*} [Field L] [NumberField L]
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers L))
+    {U : Multiset L} (hU : ∀ u ∈ U, v.valuation L u = 1) (hcard : U.card = 2)
+    {S : Set ℕ} (hSne : ∃ N ∈ S, 0 < N) (hdbl : ∀ N ∈ S, 2 * N ∈ S)
+    {B r : WithZero (Multiplicative ℤ)} (hB : B ≠ 0) (hr : r < 1)
+    (hsum : ∀ N ∈ S, v.valuation L ((U.map (· ^ N)).sum) ≤ B * r ^ N) : False := by
+  obtain ⟨u₁, u₂, hU12⟩ := Multiset.card_eq_two.1 hcard
+  subst hU12
+  refine false_of_two_unit_pow_sums_small v (hU u₁ (by simp)) (hU u₂ (by simp))
+    hSne hdbl hB hr ?_
+  intro N hN
+  have := hsum N hN
+  simpa using this
+
 /-- **Corvaja–Zannier (2004), main theorem, p. 177** (`δ = 1`, `u = α^(s n)`, `Γ = {α^t}`) —
 Dubickas (2022), Lemma 3.  If `q α^(s n)` is pseudo-Pisot for only finitely many `n`, then
 `‖q α^(s n)‖` is eventually larger than `e^(−ε s n)`.
