@@ -11,18 +11,20 @@ import Comparator.Dubickas.Support.Pisot
 A. Dubickas, *Transcendency of some constants related to integer sequences of polynomial
 iterations*, Ramanujan J. **57** (2022), 569–581, doi:10.1007/s11139-021-00428-5.
 
-This file imports *only* Mathlib (via `Support/Pisot.lean`, which states the two hypotheses
+This file imports *only* Mathlib (via `Support/Pisot.lean`, which states the hypothesis
 and the Pisot notion - read it too).  `Solution.lean` must prove *these exact statements*;
 `comparator` checks every declaration below is identical in the solution, replays the proofs
 through the Lean kernel and `nanoda`, and allows only `propext`, `Quot.sound`, `Classical.choice`.
 
-**Read the hypotheses.**  The theorems are *conditional* on two results Dubickas proves in the
-same paper and that are not formalized here:
+**Read the hypothesis.**  The theorems are *conditional* on exactly one result Dubickas proves
+in the same paper and that is not formalized here:
 * `Dubickas2022` - his Lemma 6 (from Corvaja–Zannier 2004, the `p`-adic subspace theorem).
-* `Dubickas2022PisotGap` - his Lemma 8 (from Smyth, Mignotte and Baker's linear forms in logs).
-Both are stated below as `Prop` definitions and taken as hypotheses, never as axioms.
+It is stated in `Support/Pisot.lean` as a `Prop` definition and taken as a hypothesis, never as an
+axiom.  Dubickas's Lemma 8 (`Dubickas2022PisotGap`, Smyth/Mignotte/Baker linear forms in logs) is
+also stated there for reference but is **not** a hypothesis of anything below: the solution proves
+its consequence `c ∈ {0, 2}` outright, uniformly in the degree.
 
-The project definitions on this surface are the Pisot notion, the two hypotheses, the five
+The project definitions on this surface are the Pisot notion, the hypothesis, the five
 integer sequences (each a two-line recursion), and the two "limit exists and is transcendental"
 predicates.  `Transcendental ℚ x` is Mathlib's `¬ IsAlgebraic ℚ x`.
 -/
@@ -36,7 +38,7 @@ open Filter Topology LeanFormalizations.Literature
 
 /-- **Dubickas (2022), Theorem 2 for monic quadratics.** -/
 theorem transcendental_growth_of_monic_quadratic (hD : Dubickas2022)
-    (hG : Dubickas2022PisotGap) (a₁ a₂ : ℤ) (x : ℕ → ℤ)
+    (a₁ a₂ : ℤ) (x : ℕ → ℤ)
     (hx : ∀ n, x (n + 1) = x n ^ 2 + a₁ * x n + a₂) (hinf : Tendsto x atTop atTop)
     (h17 : a₁ ^ 2 - 2 * a₁ - 4 * a₂ ≠ 0) (h18 : a₁ ^ 2 - 2 * a₁ - 4 * a₂ ≠ 8) :
     ∃ α : ℝ, Tendsto (fun n ↦ (x n : ℝ) ^ ((1 : ℝ) / 2 ^ n)) atTop (𝓝 α) ∧
@@ -72,7 +74,7 @@ def HasTranscendentalGrowth (x : ℕ → ℤ) : Prop :=
   ∃ α : ℝ, Tendsto (fun n ↦ (x n : ℝ) ^ ((1 : ℝ) / 2 ^ n)) atTop (𝓝 α) ∧ Transcendental ℚ α
 
 /-- **Dubickas (2022), Theorem 1: κ, ζ, γ, η, τ are all transcendental.** -/
-theorem theorem1 (hD : Dubickas2022) (hG : Dubickas2022PisotGap) :
+theorem theorem1 (hD : Dubickas2022) :
     HasTranscendentalGrowth kappaSeq ∧ HasTranscendentalGrowth zetaSeq ∧
       HasTranscendentalGrowth sylvester ∧ HasTranscendentalGrowth etaSeq ∧
       HasTranscendentalGrowth tauSeq := sorry
@@ -83,7 +85,7 @@ def HasTranscendentalHalfGrowth (x : ℕ → ℤ) : Prop :=
     Transcendental ℚ c
 
 /-- **OEIS A076949, A077124, A076393 (Vardi's constant) are transcendental.** -/
-theorem oeis_constants (hD : Dubickas2022) (hG : Dubickas2022PisotGap) :
+theorem oeis_constants (hD : Dubickas2022) :
     HasTranscendentalHalfGrowth kappaSeq ∧ HasTranscendentalHalfGrowth zetaSeq ∧
       HasTranscendentalHalfGrowth sylvester := sorry
 

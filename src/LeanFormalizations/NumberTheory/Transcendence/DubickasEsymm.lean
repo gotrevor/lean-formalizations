@@ -50,6 +50,40 @@ theorem eFull_succ {β : ℝ} (halg : IsIntegral ℚ β) (k N : ℕ) :
 
 theorem eFull_zero {β : ℝ} (N : ℕ) : eFull β 0 N = 1 := Multiset.esymm_zero' _
 
+/-! ### The `k = 1, 2` bridge to `conjPowSum` -/
+
+/-- `e₁(s) = Σ s`. -/
+theorem esymm_one_eq_sum {R : Type*} [CommRing R] (s : Multiset R) : s.esymm 1 = s.sum := by
+  simp [Multiset.esymm, Multiset.powersetCard_one]
+
+/-- Newton at `k = 2`, by multiset induction: `(Σ s)² = p₂(s) + 2 e₂(s)`. -/
+theorem sq_sum_eq_psum_add_two_esymm {R : Type*} [CommRing R] (s : Multiset R) :
+    s.sum ^ 2 = s.psum 2 + 2 * s.esymm 2 := by
+  induction s using Multiset.induction with
+  | empty => simp [Multiset.psum_def, Multiset.esymm]
+  | cons a s ih =>
+      have hp : (a ::ₘ s).psum 2 = a ^ 2 + s.psum 2 := by
+        simp [Multiset.psum_def]
+      rw [Multiset.sum_cons, hp, Multiset.esymm_cons, esymm_one_eq_sum]
+      linear_combination ih
+
+/-- `e₁(β₂^N, …) = S_N`. -/
+theorem eSmall_one (β : ℝ) (N : ℕ) : eSmall β 1 N = conjPowSum β N := by
+  rw [eSmall, esymm_one_eq_sum, conjPowSum]
+
+/-- `2 e₂(β₂^N, …) = S_N² − S_(2N)`. -/
+theorem two_mul_eSmall_two (β : ℝ) (N : ℕ) :
+    2 * eSmall β 2 N = conjPowSum β N ^ 2 - conjPowSum β (2 * N) := by
+  have h := sq_sum_eq_psum_add_two_esymm ((otherConj β).map (· ^ N))
+  have h1 : ((otherConj β).map (· ^ N)).sum = conjPowSum β N := rfl
+  have h2 : ((otherConj β).map (· ^ N)).psum 2 = conjPowSum β (2 * N) := by
+    rw [Multiset.psum_def, Multiset.map_map, conjPowSum]
+    exact congrArg _ (Multiset.map_congr rfl fun z _ => by
+      rw [Function.comp_apply, ← pow_mul, Nat.mul_comm])
+  rw [h1, h2] at h
+  rw [eSmall]
+  linear_combination -h
+
 /-! ### Integrality -/
 
 /-- Every power sum of the full conjugate multiset is a rational integer. -/

@@ -22,15 +22,19 @@ exists (Wagner–Ziegler).  **Theorem 1**: for the five recurrences below, `α` 
 Theorem 1 is Theorem 2 for monic quadratics: `α` is transcendental unless
 `a₁² − 2a₁ − 4a₂ ∈ {0, 8}` ((17), (18)); none of the five hits either value.
 
-Inputs (frozen hypotheses, `Literature/Pisot.lean`): `Dubickas2022` (his Lemma 6, from
-Corvaja–Zannier) and `Dubickas2022PisotGap` (his Lemma 8, from Smyth/Mignotte/Baker).
+Input (frozen hypothesis, `Literature/Pisot.lean`): `Dubickas2022` alone (his Lemma 6, from
+Corvaja–Zannier).  Dubickas's Lemma 8 (`Dubickas2022PisotGap`, from Smyth/Mignotte/Baker) is
+**not** used: its single consumer `c_eq_zero_or_two` has been replaced by the degree-uniform
+elementary `c_eq_zero_or_two_noGap` (`DubickasNoGap.lean`).
 
 ## Route (Dubickas §1, §4, §5 with `d = 2`, `a₀ = 1`)
 
 1. **Formula (6)** (§1, elementary): with `y_n = x_n + a₁/2`, `y_{n+1} = y_n² + O(1)`;
    `α := lim x_n^(2^-n)` exists, `α > 1`, and `x_n = α^(2ⁿ) − a₁/2 + O(α^(−2ⁿ))`.
 2. **Lemma 9**: if `α` is algebraic, `Dubickas2022` (with `q = 2`, `s_n = 2ⁿ`) makes some
-   `β = α^(2^m)` Pisot; `Dubickas2022PisotGap` then forces `β` an integer or a quadratic Pisot unit.
+   `β = α^(2^m)` Pisot.  Dubickas then invokes his Lemma 8 to force `β` an integer or a quadratic
+   Pisot unit; we instead run the degree-uniform `E₂`-constancy argument of `DubickasNoGap.lean`,
+   which needs no gap theorem.
 3. **Lemma 7** (Chebyshev, elementary): `z_n = α₁^(2ⁿ) + α₂^(2ⁿ)` satisfies `z_{n+1} = z_n² − 2`.
 4. **Lemma 10** (polynomial identity from agreement at infinitely many points) and **§5**: integer
    case ⇒ `y_{n+1} = y_n²` for all `n` ⇒ (17); Pisot-unit case ⇒ `y_{n+1} = y_n² − 2` ⇒ (18).
@@ -38,7 +42,7 @@ Corvaja–Zannier) and `Dubickas2022PisotGap` (his Lemma 8, from Smyth/Mignotte/
 Only `d = 2` is needed for Theorem 1; general-degree Theorem 2 is a stretch, not a target.
 -/
 import LeanFormalizations.Literature.Pisot
-import LeanFormalizations.NumberTheory.Transcendence.DubickasPisot
+import LeanFormalizations.NumberTheory.Transcendence.DubickasNoGap
 
 namespace LeanFormalizations.Transcendence.Dubickas
 
@@ -48,7 +52,7 @@ open Filter Topology LeanFormalizations.Literature
 sequence with `x_{n+1} = x_n² + a₁ x_n + a₂` tending to `∞` has a growth constant
 `α = lim x_n^(1/2ⁿ)`, and `α` is transcendental unless `a₁² − 2a₁ − 4a₂ ∈ {0, 8}`. -/
 theorem transcendental_growth_of_monic_quadratic (hD : Dubickas2022)
-    (hG : Dubickas2022PisotGap) (a₁ a₂ : ℤ) (x : ℕ → ℤ)
+    (a₁ a₂ : ℤ) (x : ℕ → ℤ)
     (hx : ∀ n, x (n + 1) = x n ^ 2 + a₁ * x n + a₂) (hinf : Tendsto x atTop atTop)
     (h17 : a₁ ^ 2 - 2 * a₁ - 4 * a₂ ≠ 0) (h18 : a₁ ^ 2 - 2 * a₁ - 4 * a₂ ≠ 8) :
     ∃ α : ℝ, Tendsto (fun n ↦ (x n : ℝ) ^ ((1 : ℝ) / 2 ^ n)) atTop (𝓝 α) ∧
@@ -90,7 +94,7 @@ theorem transcendental_growth_of_monic_quadratic (hD : Dubickas2022)
           linarith [h1, hdiv]
   · -- transcendence: an algebraic `α` would force `c ∈ {0, 2}`, i.e. (17) or (18)
     intro halg
-    rcases c_eq_zero_or_two hD hG hrec halg hα hC hyint hbnd with h | h
+    rcases c_eq_zero_or_two_noGap hD hrec halg hα hC hyint hbnd with h | h
     · refine h17 ?_
       rw [hc] at h
       have h' : ((a₁ ^ 2 - 2 * a₁ - 4 * a₂ : ℤ) : ℝ) = ((0 : ℤ) : ℝ) := by push_cast at h ⊢; linarith
@@ -189,19 +193,19 @@ theorem tauSeq_tendsto : Tendsto tauSeq atTop atTop :=
 /-- **Dubickas (2022), Theorem 1: κ, ζ, γ, η, τ are all transcendental.**  For each of the five
 polynomials `a₁² − 2a₁ − 4a₂` is `−4, 4, −1, −5, −4` respectively, so neither (17) nor (18)
 holds and `transcendental_growth_of_monic_quadratic` applies. -/
-theorem theorem1 (hD : Dubickas2022) (hG : Dubickas2022PisotGap) :
+theorem theorem1 (hD : Dubickas2022) :
     HasTranscendentalGrowth kappaSeq ∧ HasTranscendentalGrowth zetaSeq ∧
       HasTranscendentalGrowth sylvester ∧ HasTranscendentalGrowth etaSeq ∧
       HasTranscendentalGrowth tauSeq :=
-  ⟨transcendental_growth_of_monic_quadratic hD hG 0 1 kappaSeq kappaSeq_rec
+  ⟨transcendental_growth_of_monic_quadratic hD 0 1 kappaSeq kappaSeq_rec
       kappaSeq_tendsto (by decide) (by decide),
-   transcendental_growth_of_monic_quadratic hD hG 0 (-1) zetaSeq zetaSeq_rec
+   transcendental_growth_of_monic_quadratic hD 0 (-1) zetaSeq zetaSeq_rec
       zetaSeq_tendsto (by decide) (by decide),
-   transcendental_growth_of_monic_quadratic hD hG (-1) 1 sylvester sylvester_rec
+   transcendental_growth_of_monic_quadratic hD (-1) 1 sylvester sylvester_rec
       sylvester_tendsto (by decide) (by decide),
-   transcendental_growth_of_monic_quadratic hD hG 1 1 etaSeq etaSeq_rec
+   transcendental_growth_of_monic_quadratic hD 1 1 etaSeq etaSeq_rec
       etaSeq_tendsto (by decide) (by decide),
-   transcendental_growth_of_monic_quadratic hD hG 2 1 tauSeq tauSeq_rec
+   transcendental_growth_of_monic_quadratic hD 2 1 tauSeq tauSeq_rec
       tauSeq_tendsto (by decide) (by decide)⟩
 
 /-! ## The OEIS-normalised constants
@@ -249,10 +253,10 @@ theorem halfGrowth_of_growth {x : ℕ → ℤ} (hinf : Tendsto x atTop atTop)
     rwa [h2] at h3
 
 /-- **OEIS A076949, A077124, A076393 (Vardi's constant) are transcendental.** -/
-theorem oeis_constants (hD : Dubickas2022) (hG : Dubickas2022PisotGap) :
+theorem oeis_constants (hD : Dubickas2022) :
     HasTranscendentalHalfGrowth kappaSeq ∧ HasTranscendentalHalfGrowth zetaSeq ∧
       HasTranscendentalHalfGrowth sylvester := by
-  obtain ⟨h1, h2, h3, -, -⟩ := theorem1 hD hG
+  obtain ⟨h1, h2, h3, -, -⟩ := theorem1 hD
   exact ⟨halfGrowth_of_growth kappaSeq_tendsto h1, halfGrowth_of_growth zetaSeq_tendsto h2,
     halfGrowth_of_growth sylvester_tendsto h3⟩
 
