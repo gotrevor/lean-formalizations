@@ -208,6 +208,44 @@ Also worth recording: the archimedean input `hsmall` does **not** help with ties
 non-archimedean phenomenon, and `2X² − 3` (`α = √(3/2)`, `U_N = 0` for odd `N`) shows the tie case
 is genuinely nonvacuous.
 
+### The tie case is reduced to ONE local leaf; Lemma 4 is proved in the nondegenerate case (fifth lap)
+
+`false_of_bounded_den_of_nondegenerate` (proved) handles **both** halves at the level of an
+arbitrary number field.  Split the conjugate multiset `R` at a prime `v` into the dominant part
+`W = {w : v w = V}` (`V = max`, `> 1`) and the rest.  If `|W| = 1` this is
+`no_bounded_den_of_unique_max_valuation`.  If `|W| ≥ 2`, normalize: `U = {w / z : w ∈ W}` are
+`v`-units, and
+
+    v(Σ_{u ∈ U} u^N) = v(Σ_W w^N) / V^N ≤ max((v q)⁻¹, r₀^N) / V^N ≤ B · r^N,
+    r = max(V⁻¹, r₀/V) < 1,  B = max((v q)⁻¹, 1),  r₀ = max_{w ∉ W} v w < V.
+
+So the entire residual of CZ's Lemma 4 is the local leaf
+
+> **`valuation_sum_unit_pow_nondegenerate`** — units `u_1, …, u_k` (`k ≥ 2`) at a prime `v`, no two
+> of which satisfy `u_i^l = u_j^l`, cannot have `v(Σ_i u_i^N) ≤ B r^N` (`r < 1`) along an infinite
+> set of exponents `N`.
+
+and at the level of `α` this yields **`isIntegral_of_bounded_den_of_nondegenerate`** (proved modulo
+that leaf): *if no two distinct conjugates of `α` share a power, bounded denominators of the trace
+power sums along an infinite exponent set make `α` an algebraic integer.*
+
+**Proof sketch for the leaf** (the next real target; mathlib is missing the input): pass to an
+arithmetic progression `N = r + h t` with `u_i^h ∈ 1 + π^m`, `m > 1/(p−1)`.  Then
+`t ↦ Σ_i u_i^r (u_i^h)^t` is a convergent `p`-adic power series on `ℤ_p`, not identically zero by
+nondegeneracy, so **Strassmann's theorem** gives finitely many zeros `t_1, …, t_s ∈ ℤ_p` and
+`ord_v(Σ_i u_i^N) ≤ C + Σ_j ord_p(t − t_j)`.  Geometric decay forces `ord_p(t − t_j) ≳ c t`, hence
+`p^{c t} ∣ t' − t` for two exponents in the set, so the exponent set must grow at least like a
+**tower**.  For `N = 2^n` (all the headline needs) consecutive `t` roughly double, which is far
+below `p^{c t}` — contradiction.  **mathlib has no Strassmann theorem / `p`-adic Weierstrass
+preparation**; that is the concrete prerequisite to build (or to request as a `Literature` `Prop`).
+
+**The degenerate branch is now the other gap, and it is a genuine gap, not laziness.**  From
+`w^l = w'^l` for distinct conjugates one gets only `deg(α^l) < deg α` (the fibre of `w ↦ w^l` over
+`α^l` has `≥ 2` elements, and every fibre has size `[ℚ(α):ℚ(α^l)]`) — a *descent*.  It cannot be
+iterated naively: the hypothesis for `α^l` needs infinitely many `N` with `l N ∈ S`, and for
+`S ⊆ {2^n}` that already fails unless `l` is a power of `2`.  CZ's own proof of the `α^l ∈ ℚ`
+branch is therefore the thing to read (`ON-LINE-REQUEST.md`, filed 2026-09-28, still unanswered).
+
 ## Earlier recommendation (still valid for Lemma 3)
 
 Do **not** take option 2 first.  Option 1 splits the residual into one subspace-strength `Prop`

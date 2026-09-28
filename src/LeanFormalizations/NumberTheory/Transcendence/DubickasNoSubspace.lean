@@ -597,6 +597,62 @@ theorem exists_valuation_one_lt {L : Type*} [Field L] [NumberField L] {x : L}
   exact hx (hy ▸ RingOfIntegers.isIntegral_coe y)
 
 
+/-- `≤` form of `valuation_multiset_sum_lt`. -/
+theorem valuation_multiset_sum_le {L : Type*} [Field L] [NumberField L]
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers L))
+    (R : Multiset L) {B : WithZero (Multiplicative ℤ)}
+    (h : ∀ w ∈ R, v.valuation L w ≤ B) : v.valuation L R.sum ≤ B := by
+  induction R using Multiset.induction with
+  | empty => simp
+  | cons a s ih =>
+      rw [Multiset.sum_cons]
+      refine le_trans (Valuation.map_add _ _ _) ?_
+      exact max_le (h a (Multiset.mem_cons_self _ _))
+        (ih fun w hw ↦ h w (Multiset.mem_cons_of_mem hw))
+
+theorem coe_mem_aroots_of_mem_conjMultiset {α : ℝ} {w : conjField α} (hw : w ∈ conjMultiset α) :
+    (w : ℂ) ∈ (minpoly ℚ α).aroots ℂ := by
+  classical
+  rw [conjMultiset, Multiset.mem_pmap] at hw
+  obtain ⟨a, ha, rfl⟩ := hw
+  exact ha
+
+/-- Lemma 4's hypothesis, transported into `conjField α`. -/
+theorem conj_bounded_den {α : ℝ} {q : ℕ} {S : Set ℕ}
+    (hu : ∀ N ∈ S, ∃ m : ℤ, (q : ℂ) * tracePowSum α N = (m : ℂ)) :
+    ∀ N ∈ S, ∃ m : ℤ, (q : conjField α) * (((conjMultiset α).map (· ^ N)).sum)
+      = (m : conjField α) := by
+  intro N hN
+  obtain ⟨m, hm⟩ := hu N hN
+  refine ⟨m, ?_⟩
+  apply (algebraMap (conjField α) ℂ).injective
+  rw [map_mul, map_intCast, map_natCast, ← hm, ← conjMultiset_pow_sum_coe α N]
+
+/-- If `α` is not an algebraic integer, some prime of `conjField α` has a conjugate of valuation
+`> 1`, and among the conjugates one of maximal valuation can be chosen. -/
+theorem exists_dominant_max {α : ℝ} (halg : IsIntegral ℚ α) (hnint : ¬ IsIntegral ℤ α) :
+    ∃ (v : HeightOneSpectrum (𝓞 (conjField α))) (z : conjField α), z ∈ conjMultiset α ∧
+      1 < v.valuation (conjField α) z ∧
+      ∀ y ∈ conjMultiset α, v.valuation (conjField α) y ≤ v.valuation (conjField α) z := by
+  classical
+  have hmemα : ((α : ℂ)) ∈ conjField α := mem_conjField_of_mem_aroots (beta_mem_aroots halg)
+  set a : conjField α := ⟨(α : ℂ), hmemα⟩ with ha
+  have haR : a ∈ conjMultiset α := by
+    rw [conjMultiset, Multiset.mem_pmap]
+    exact ⟨(α : ℂ), beta_mem_aroots halg, rfl⟩
+  have hnint' : ¬ IsIntegral ℤ a := by
+    intro hint
+    have h1 : IsIntegral ℤ ((α : ℝ) : ℂ) := by
+      have := hint.map ((algebraMap (conjField α) ℂ).toIntAlgHom)
+      simpa [ha] using this
+    exact hnint ((isIntegral_algHom_iff (Complex.ofRealHom.toIntAlgHom)
+      Complex.ofReal_injective).1 h1)
+  obtain ⟨v, hv⟩ := exists_valuation_one_lt hnint'
+  obtain ⟨z, hzR, hmax⟩ := exists_max_image_multiset (conjMultiset α)
+    (v.valuation (conjField α)) (fun h ↦ by simp [h] at haR)
+  exact ⟨v, z, hzR, lt_of_lt_of_le hv (hmax a haR), hmax⟩
+
+
 /-- **At a prime where one conjugate of `α` strictly dominates, Lemma 4's hypothesis is
 contradictory.**  Hence: if the power sums `U_N = Σ_w w^N` have denominators dividing a fixed `q`
 for infinitely many `N`, then at *every* prime of `conjField α` the maximal conjugate valuation,
@@ -646,25 +702,204 @@ theorem exists_tie_of_bounded_den {α : ℝ} (halg : IsIntegral ℚ α) {q : ℕ
       1 < v.valuation (conjField α) z ∧
       v.valuation (conjField α) w = v.valuation (conjField α) z ∧
       ∀ y ∈ conjMultiset α, v.valuation (conjField α) y ≤ v.valuation (conjField α) z := by
-  classical
-  have hmemα : ((α : ℂ)) ∈ conjField α := mem_conjField_of_mem_aroots (beta_mem_aroots halg)
-  set a : conjField α := ⟨(α : ℂ), hmemα⟩ with ha
-  have haR : a ∈ conjMultiset α := by
-    rw [conjMultiset, Multiset.mem_pmap]
-    exact ⟨(α : ℂ), beta_mem_aroots halg, rfl⟩
-  have hnint' : ¬ IsIntegral ℤ a := by
-    intro hint
-    have h1 : IsIntegral ℤ ((α : ℝ) : ℂ) := by
-      have := hint.map ((algebraMap (conjField α) ℂ).toIntAlgHom)
-      simpa [ha] using this
-    exact hnint ((isIntegral_algHom_iff (Complex.ofRealHom.toIntAlgHom)
-      Complex.ofReal_injective).1 h1)
-  obtain ⟨v, hv⟩ := exists_valuation_one_lt hnint'
-  obtain ⟨z, hzR, hmax⟩ := exists_max_image_multiset (conjMultiset α)
-    (v.valuation (conjField α)) (fun h ↦ by simp [h] at haR)
-  have hz1 : 1 < v.valuation (conjField α) z := lt_of_lt_of_le hv (hmax a haR)
+  obtain ⟨v, z, hzR, hz1, hmax⟩ := exists_dominant_max halg hnint
   obtain ⟨w, hw, hwe⟩ := tie_of_bounded_den hq hS hu v hzR hz1 hmax
   exact ⟨v, z, w, hzR, hw, hz1, hwe, hmax⟩
+/-! ### The tie case, reduced to one local leaf
+
+`false_of_bounded_den_of_nondegenerate` closes **both** halves of CZ's Lemma 4 at the level of an
+arbitrary number field, modulo a single local statement: normalizing the dominant conjugates by the
+dominant one turns the tie case into `v(Σ_i u_i^N) ≤ B r^N` for `v`-units `u_i` with `r < 1`, and
+`valuation_sum_unit_pow_nondegenerate` says that cannot happen along an infinite exponent set when
+no two of the `u_i` share a power.  At the level of `α` this gives
+`isIntegral_of_bounded_den_of_nondegenerate`: Lemma 4's conclusion in the nondegenerate case. -/
+
+/-- **The residual local leaf of Corvaja–Zannier's Lemma 4** (`p`-adic nondegeneracy of a power
+sum of units).  If `u_1, …, u_k` (`k ≥ 2`) are units at a prime `v` of a number field, no two of
+which have a common power (equivalently: no ratio is a root of unity), then `v(Σ_i u_i^N)` cannot
+decay geometrically along an infinite set of exponents `N`.
+
+**DISCLOSED OPEN.**  This is the only residual of Lemma 4 after `exists_tie_of_bounded_den`
+(which forces the tie) and `isIntegral_of_bounded_den_of_nondegenerate` (which reduces the tie case
+to this).  The classical proof is the `p`-adic analytic one: after passing to an arithmetic
+progression `N = r + h t` with every `u_i^h ∈ 1 + π^m`, the map `t ↦ Σ_i u_i^r (u_i^h)^t` is given
+by a convergent power series on `ℤ_p`, not identically zero by nondegeneracy, so Strassmann's
+theorem gives finitely many zeros `t_1, …, t_s ∈ ℤ_p` and
+`ord_v (Σ_i u_i^N) ≤ C + Σ_j ord_p (t − t_j)`; geometric decay forces `p^{c t} ∣ t' − t` for
+consecutive exponents, so the exponent set must grow at least like a tower — impossible for
+`N = 2^n`, which is all the headline needs.  mathlib has no Strassmann theorem and no `p`-adic
+Weierstrass preparation, so this is the next real prerequisite.  See
+`PROBE-DUBICKAS-NOSUBSPACE.md`. -/
+theorem valuation_sum_unit_pow_nondegenerate {L : Type*} [Field L] [NumberField L]
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers L))
+    {U : Multiset L} (hU : ∀ u ∈ U, v.valuation L u = 1) (hcard : 2 ≤ U.card)
+    (hnd : ∀ u ∈ U, ∀ u' ∈ U, u ≠ u' → ∀ l : ℕ, 0 < l → u ^ l ≠ u' ^ l)
+    {S : Set ℕ} (hS : S.Infinite) {B r : WithZero (Multiplicative ℤ)} (hr : r < 1)
+    (hsum : ∀ N ∈ S, v.valuation L ((U.map (· ^ N)).sum) ≤ B * r ^ N) : False := by
+  sorry
+
+
+/-- **Corvaja–Zannier's Lemma 4 for a nondegenerate conjugate multiset**, at the level of an
+arbitrary number field: if the maximum of the valuations is `> 1` and no two distinct members share
+a power, the power sums `Σ_w w^N` cannot have denominators dividing a fixed `q` along an infinite
+set of exponents.  The no-tie case is `no_bounded_den_of_unique_max_valuation`; the tie case is
+reduced here to `valuation_sum_unit_pow_nondegenerate`, after normalizing the dominant conjugates
+by the dominant one (`u = w / z`, a `v`-unit). -/
+theorem false_of_bounded_den_of_nondegenerate {L : Type*} [Field L] [NumberField L]
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers L))
+    {R : Multiset L} {z : L} (hzR : z ∈ R) (hz1 : 1 < v.valuation L z)
+    (hmax : ∀ w ∈ R, v.valuation L w ≤ v.valuation L z)
+    (hnd : ∀ w ∈ R, ∀ w' ∈ R, w ≠ w' → ∀ l : ℕ, 0 < l → w ^ l ≠ w' ^ l)
+    {q : ℕ} (hq : 0 < q) {S : Set ℕ} (hS : S.Infinite)
+    (hu : ∀ N ∈ S, ∃ m : ℤ, (q : L) * (R.map (· ^ N)).sum = (m : L)) : False := by
+  classical
+  set V : WithZero (Multiplicative ℤ) := v.valuation L z with hV
+  have hV0 : (0 : WithZero (Multiplicative ℤ)) < V := lt_trans zero_lt_one hz1
+  have hz0 : z ≠ 0 := by
+    intro h
+    rw [h] at hV
+    simp at hV
+    exact absurd hV hV0.ne'
+  set W : Multiset L := R.filter (fun w ↦ v.valuation L w = V) with hW
+  set Rest : Multiset L := R.filter (fun w ↦ ¬ (v.valuation L w = V)) with hRest
+  have hWmem : ∀ w ∈ W, w ∈ R ∧ v.valuation L w = V := by
+    intro w hw
+    exact Multiset.mem_filter.1 (show w ∈ R.filter (fun w ↦ v.valuation L w = V) from hw)
+  have hRestlt : ∀ w ∈ Rest, v.valuation L w < V := by
+    intro w hw
+    obtain ⟨h1, h2⟩ := Multiset.mem_filter.1
+      (show w ∈ R.filter (fun w ↦ ¬ (v.valuation L w = V)) from hw)
+    exact lt_of_le_of_ne (hmax w h1) h2
+  have hzW : z ∈ W := Multiset.mem_filter.2 ⟨hzR, rfl⟩
+  have hsplit : W + Rest = R := Multiset.filter_add_not _ _
+  -- the bound coming from `q U_N ∈ ℤ`
+  have hqv0 : v.valuation L (q : L) ≠ 0 := by
+    simp only [ne_eq, Valuation.zero_iff, Nat.cast_eq_zero]
+    omega
+  have hUbound : ∀ N ∈ S, v.valuation L ((R.map (· ^ N)).sum) ≤ (v.valuation L (q : L))⁻¹ := by
+    intro N hN
+    obtain ⟨m, hm⟩ := hu N hN
+    have hmv : v.valuation L (m : L) ≤ 1 := by
+      rw [show ((m : L)) = algebraMap (NumberField.RingOfIntegers L) L
+          (m : NumberField.RingOfIntegers L) from
+        (map_intCast (algebraMap (NumberField.RingOfIntegers L) L) m).symm]
+      exact IsDedekindDomain.HeightOneSpectrum.valuation_le_one v _
+    have h1 : v.valuation L (q : L) * v.valuation L ((R.map (· ^ N)).sum) ≤ 1 := by
+      rw [← Valuation.map_mul, hm]; exact hmv
+    calc v.valuation L ((R.map (· ^ N)).sum)
+        = (v.valuation L (q : L))⁻¹ * (v.valuation L (q : L)
+            * v.valuation L ((R.map (· ^ N)).sum)) := by
+          rw [← mul_assoc, inv_mul_cancel₀ hqv0, one_mul]
+      _ ≤ (v.valuation L (q : L))⁻¹ * 1 := by exact mul_le_mul_left' h1 _
+      _ = (v.valuation L (q : L))⁻¹ := mul_one _
+  have hc1 : 1 ≤ W.card := Multiset.card_pos.2 (fun h ↦ by simp [h] at hzW)
+  rcases eq_or_lt_of_le hc1 with hcard1 | hcard2
+  · -- no tie: the maximum is attained only by `z`, so `no_bounded_den_of_unique_max_valuation`
+    have hWz : W = {z} := by
+      symm
+      refine Multiset.eq_of_le_of_card_le (by simpa using hzW) (by simp [← hcard1])
+    have hRz : Rest = R.erase z := by
+      rw [← Multiset.cons_erase hzR] at hsplit
+      rw [hWz] at hsplit
+      have : z ::ₘ Rest = z ::ₘ R.erase z := by simpa using hsplit
+      exact (Multiset.cons_inj_right z).1 this
+    refine no_bounded_den_of_unique_max_valuation v hz1 (R := Rest) ?_ hq hS ?_
+    · intro w hw; exact hRestlt w hw
+    · intro N hN
+      obtain ⟨m, hm⟩ := hu N hN
+      refine ⟨m, ?_⟩
+      rw [← hm, hRz]
+      congr 1
+      conv_rhs => rw [← Multiset.cons_erase hzR]
+      simp [Multiset.map_cons, Multiset.sum_cons]
+  · -- the tie case: normalize by `z` and invoke the local leaf
+    set U : Multiset L := W.map (fun w ↦ w / z) with hU
+    have hUunit : ∀ u ∈ U, v.valuation L u = 1 := by
+      intro u hu'
+      obtain ⟨w, hw, rfl⟩ := Multiset.mem_map.1 hu'
+      rw [Valuation.map_div, (hWmem w hw).2, ← hV]
+      exact div_self (hV0.ne')
+    have hUcard : 2 ≤ U.card := by rw [hU, Multiset.card_map]; omega
+    have hUnd : ∀ u ∈ U, ∀ u' ∈ U, u ≠ u' → ∀ l : ℕ, 0 < l → u ^ l ≠ u' ^ l := by
+      intro u hu' u' hu'' hne l hl heq
+      obtain ⟨w, hw, rfl⟩ := Multiset.mem_map.1 hu'
+      obtain ⟨w', hw', rfl⟩ := Multiset.mem_map.1 hu''
+      have hww' : w ≠ w' := fun h ↦ hne (by rw [h])
+      refine hnd w (hWmem w hw).1 w' (hWmem w' hw').1 hww' l hl ?_
+      rw [div_pow, div_pow, div_eq_div_iff (pow_ne_zero _ hz0) (pow_ne_zero _ hz0)] at heq
+      exact mul_right_cancel₀ (pow_ne_zero l hz0) heq
+    -- a uniform bound `r₀ < V` for the non-dominant conjugates
+    obtain ⟨r₀, hr₀V, hr₀⟩ : ∃ r₀ : WithZero (Multiplicative ℤ), r₀ < V ∧
+        ∀ w ∈ Rest, v.valuation L w ≤ r₀ := by
+      by_cases hRe : Rest = 0
+      · exact ⟨0, hV0, fun w hw ↦ by simp [hRe] at hw⟩
+      · obtain ⟨y, hy, hymax⟩ := exists_max_image_multiset Rest (v.valuation L) hRe
+        exact ⟨v.valuation L y, hRestlt y hy, hymax⟩
+    set r : WithZero (Multiplicative ℤ) := max V⁻¹ (r₀ / V) with hr
+    have hVinv1 : V⁻¹ < 1 := by
+      rw [inv_lt_one₀ hV0]
+      exact hz1
+    have hr1 : r < 1 := max_lt hVinv1 (by rw [div_lt_one₀ hV0]; exact hr₀V)
+    set B : WithZero (Multiplicative ℤ) := max ((v.valuation L (q : L))⁻¹) 1 with hB
+    refine valuation_sum_unit_pow_nondegenerate v hUunit hUcard hUnd hS (B := B) hr1 ?_
+    intro N hN
+    -- `Σ_u u^N = (Σ_{w ∈ W} w^N) / z^N`
+    have hUsum : (U.map (· ^ N)).sum = ((W.map (· ^ N)).sum) / z ^ N := by
+      rw [hU, Multiset.map_map]
+      rw [show ((· ^ N) ∘ fun w ↦ w / z) = (fun w ↦ w ^ N / z ^ N) from by
+        funext w; simp [div_pow]]
+      exact Multiset.sum_map_div _ _ _
+    have hWsum : (W.map (· ^ N)).sum
+        = (R.map (· ^ N)).sum - (Rest.map (· ^ N)).sum := by
+      rw [← hsplit, Multiset.map_add, Multiset.sum_add]; ring
+    have h1 : v.valuation L ((W.map (· ^ N)).sum) ≤ max ((v.valuation L (q : L))⁻¹) (r₀ ^ N) := by
+      rw [hWsum]
+      refine le_trans (Valuation.map_sub _ _ _) (max_le_max (hUbound N hN) ?_)
+      refine valuation_multiset_sum_le v _ ?_
+      intro x hx
+      obtain ⟨w, hw, hxw⟩ := Multiset.mem_map.1 hx
+      rw [← hxw, map_pow]
+      exact pow_le_pow_left₀ (by simp) (hr₀ w hw) N
+    have h2 : v.valuation L ((U.map (· ^ N)).sum) ≤ max ((v.valuation L (q : L))⁻¹) (r₀ ^ N) / V ^ N := by
+      rw [hUsum, Valuation.map_div, map_pow, ← hV, div_eq_mul_inv, div_eq_mul_inv]
+      exact mul_le_mul_right' h1 _
+    refine le_trans h2 ?_
+    have hrV : (1 : WithZero (Multiplicative ℤ)) ≤ r * V := by
+      calc (1 : WithZero (Multiplicative ℤ)) = V⁻¹ * V := (inv_mul_cancel₀ hV0.ne').symm
+        _ ≤ r * V := mul_le_mul_right' (le_max_left _ _) _
+    have hr0V : r₀ ≤ r * V := by
+      calc r₀ = (r₀ / V) * V := (div_mul_cancel₀ r₀ hV0.ne').symm
+        _ ≤ r * V := mul_le_mul_right' (le_max_right _ _) _
+    rw [div_le_iff₀ (pow_pos hV0 N), mul_assoc, ← mul_pow]
+    refine max_le ?_ ?_
+    · calc (v.valuation L (q : L))⁻¹ ≤ B := le_max_left _ _
+        _ = B * 1 := (mul_one _).symm
+        _ ≤ B * (r * V) ^ N := mul_le_mul_left' (one_le_pow₀ hrV) _
+    · calc r₀ ^ N ≤ (r * V) ^ N := pow_le_pow_left₀ (by simp) hr0V N
+        _ = 1 * (r * V) ^ N := (one_mul _).symm
+        _ ≤ B * (r * V) ^ N := mul_le_mul_right' (le_max_right _ _) _
+
+
+
+/-- **Corvaja–Zannier's Lemma 4 in the nondegenerate case** — proved, modulo the single local leaf
+`valuation_sum_unit_pow_nondegenerate`.  If no two distinct conjugates of `α` share a power (the
+negation of the `α^l ∈ ℚ` branch's mechanism: `w' = ζ w`), then bounded denominators of the trace
+power sums along an infinite set of exponents force `α` to be an **algebraic integer**. -/
+theorem isIntegral_of_bounded_den_of_nondegenerate {α : ℝ} (halg : IsIntegral ℚ α) {q : ℕ}
+    (hq : 0 < q) {S : Set ℕ} (hS : S.Infinite)
+    (hu : ∀ N ∈ S, ∃ m : ℤ, (q : ℂ) * tracePowSum α N = (m : ℂ))
+    (hnd : ∀ w ∈ (minpoly ℚ α).aroots ℂ, ∀ w' ∈ (minpoly ℚ α).aroots ℂ, w ≠ w' →
+      ∀ l : ℕ, 0 < l → w ^ l ≠ w' ^ l) :
+    IsIntegral ℤ α := by
+  by_contra hnint
+  obtain ⟨v, z, hzR, hz1, hmax⟩ := exists_dominant_max halg hnint
+  refine false_of_bounded_den_of_nondegenerate v hzR hz1 hmax ?_ hq hS (conj_bounded_den hu)
+  intro w hw w' hw' hne l hl heq
+  refine hnd (w : ℂ) (coe_mem_aroots_of_mem_conjMultiset hw)
+    (w' : ℂ) (coe_mem_aroots_of_mem_conjMultiset hw') (fun h ↦ hne (by exact_mod_cast h)) l hl ?_
+  have := congrArg (algebraMap (conjField α) ℂ) heq
+  simpa using this
+
 /-- **Corvaja–Zannier (2004), main theorem, p. 177** (`δ = 1`, `u = α^(s n)`, `Γ = {α^t}`) —
 Dubickas (2022), Lemma 3.  If `q α^(s n)` is pseudo-Pisot for only finitely many `n`, then
 `‖q α^(s n)‖` is eventually larger than `e^(−ε s n)`.
@@ -691,7 +926,15 @@ root-of-a-rational case).  Formalizing it needs the ideal-valuation / trace mach
 fields; the concrete `d = 2` analysis (Newton polygon in `ℚ_p`, plus a root-of-unity tie case that
 *is* the `α^l ∈ ℚ` branch) is written out in `PROBE-DUBICKAS-NOSUBSPACE.md`.
 
-**Residual after this lap**: `exists_tie_of_bounded_den` proves the *whole* argument except the
+**Residual (2026-09-28)**: `isIntegral_of_bounded_den_of_nondegenerate` proves this lemma's
+*first* branch whenever no two distinct conjugates of `α` share a power, modulo the single local
+leaf `valuation_sum_unit_pow_nondegenerate`.  What is still missing is only the **degenerate**
+branch: from `w^l = w'^l` for distinct conjugates one gets `deg (α^l) < deg α` (the fibre of
+`w ↦ w^l` has `≥ 2` elements, and all fibres have size `[ℚ(α) : ℚ(α^l)]`), i.e. a *descent*, not
+yet `α^l ∈ ℚ`; and the descent cannot be iterated naively because the exponent set `S` must be
+replaced by `{N | l N ∈ S}`, which can be empty for sparse `S`.
+
+Earlier in the chain: `exists_tie_of_bounded_den` proves the argument except the
 tie case — if `α` is not an algebraic integer then at some prime `v` of `conjField α` the maximal
 conjugate valuation is `> 1` and is attained at least twice.  So what is left is purely local:
 writing the dominant conjugates as `z u_i` with `u_i` a `v`-unit, the hypothesis forces
