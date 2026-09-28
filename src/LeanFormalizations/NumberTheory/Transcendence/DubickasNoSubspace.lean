@@ -20,9 +20,12 @@ instead and leave the Pisot lemma as a `sorry`d side leaf.
 * **Closed, unconditionally (from `Ridout1957`):** every `α` with a rational `2^a`-th power —
   `exists_pisot_pow_of_rat`, `exists_pisot_pow_of_pow_rat`, on top of the new multiplier form of
   Mahler's inequality `Diophantine.mahler_mul_of_ridout1957`.
-* **Open:** `exists_pisot_pow_pseudoPisot_core`, which is exactly Corvaja–Zannier's pseudo-Pisot
-  dichotomy (their main theorem, p. 177 = Dubickas's Lemma 3).  Both leads that were recorded
-  here have been *refuted*: the archimedean Liouville/norm bound is vacuous (it only re-derives
+* **Open (exactly two named leaves, everything between them proved):**
+  `corvajaZannier_dichotomy` — CZ's main theorem, p. 177 = Dubickas's Lemma 3, the *only*
+  subspace-strength step — and `corvajaZannier_lemma4` — CZ's Lemma 4, a valuation/trace argument
+  in `ℚ(α)` that is **not** subspace-strength and is the next target.
+  `exists_pisot_pow_pseudoPisot_core` is now *proved* from those two.
+  Both leads that were recorded here have been *refuted*: the archimedean Liouville/norm bound is vacuous (it only re-derives
   `M(α) ≥ α`), and the Böttcher coordinate is not of Mahler-method shape.  Full write-up, with
   the proposed literature `Prop`, in `PROBE-DUBICKAS-NOSUBSPACE.md`.
 * `hD` therefore still sits on the `Dubickas.lean` headlines; it must not be routed through the
@@ -33,7 +36,7 @@ import LeanFormalizations.NumberTheory.Diophantine.Edges
 
 namespace LeanFormalizations.Transcendence.Dubickas
 
-open Filter Topology LeanFormalizations.Literature LeanFormalizations.Mills
+open Filter Topology IntermediateField LeanFormalizations.Literature LeanFormalizations.Mills
 
 /-- A rational integer `> 1` is a Pisot number: its minimal polynomial is linear, so there are
 no other conjugates to bound. -/
@@ -151,6 +154,143 @@ theorem exists_pisot_pow_of_pow_rat (hR : Ridout1957) {α : ℝ} (hα : 1 < α) 
       rwa [hpow j] at this) (r := r) rfl
   exact ⟨a + m, by rwa [hpow m]⟩
 
+/-! ### Pseudo-Pisot numbers and the Corvaja–Zannier split of Lemma 6
+
+Corvaja–Zannier (2004) call an algebraic `z` **pseudo-Pisot** when `|z| > 1`, every other
+conjugate of `z` lies in the open unit disc, and the trace of `z` is a rational integer (an
+algebraic *integer* that is pseudo-Pisot is a Pisot number).  Dubickas's Lemma 6 is the
+disjunction of
+
+* **Lemma 3** = CZ's main theorem (p. 177) at `δ = 1`, `u = α^(s n)`, `Γ = {α^t}`: if `q α^(s n)`
+  is pseudo-Pisot for only finitely many `n`, then `‖q α^(s n)‖ > (1 − ε)^(s n)` eventually.
+  *This* is where the `p`-adic Subspace Theorem enters, and it is the only place.
+* **Lemma 5**: pseudo-Pisot infinitely often ⇒ some `α^(s m)` is Pisot.  Elementary once CZ's
+  **Lemma 4** (trace of `q α^(s n)` a nonzero integer ⇒ `α` is an algebraic integer or a root of a
+  rational) is available; both of its branches are discharged below.
+
+We express "`q β` is pseudo-Pisot" through `β`'s own conjugates: the conjugates of `q β` are `q`
+times those of `β` and `trace (q β) = q · trace β`, so this is the same condition, and it avoids a
+minimal-polynomial rescaling lemma. -/
+
+/-- `q β` is a **pseudo-Pisot** number, phrased in terms of the conjugates of `β`. -/
+def IsPseudoPisotMul (q : ℕ) (β : ℝ) : Prop :=
+  1 < (q : ℝ) * β ∧ (∀ w ∈ otherConj β, ‖(q : ℂ) * w‖ < 1) ∧
+    ∃ t : ℤ, (q : ℂ) * (((minpoly ℚ β).aroots ℂ).sum) = (t : ℂ)
+
+/-- **Lemma 5, algebraic-integer branch.**  If `β > 1` is an algebraic integer and `q β` is
+pseudo-Pisot with `q ≥ 1`, then `β` itself is a Pisot number: `‖q w‖ < 1` and `q ≥ 1` force
+`‖w‖ < 1` for every other conjugate `w`. -/
+theorem isPisot_of_pseudoPisotMul {β : ℝ} {q : ℕ} (hq : 1 ≤ q) (hβ : 1 < β)
+    (hint : IsIntegral ℤ β) (h : IsPseudoPisotMul q β) : IsPisot β := by
+  refine ⟨hβ, hint, fun z hz ↦ ?_⟩
+  have hz' : z ∈ otherConj β := hz
+  have h1 := h.2.1 z hz'
+  have hqR : (1:ℝ) ≤ (q:ℝ) := by exact_mod_cast hq
+  rw [norm_mul, Complex.norm_natCast] at h1
+  nlinarith [norm_nonneg z]
+
+/-- **Lemma 5, root-of-a-rational branch.**  If some power `β^l` is rational then *all* conjugates
+of `β` have modulus `β`, so the pseudo-Pisot condition (other conjugates inside the unit disc)
+forces `β` to have no other conjugates at all, i.e. `β ∈ ℚ`. -/
+theorem otherConj_eq_zero_of_pow_rat {β : ℝ} (hβ : 1 < β) {l : ℕ} (hl : 0 < l) {c : ℚ}
+    (hc : β ^ l = (c : ℝ)) {q : ℕ} (hq : 1 ≤ q)
+    (h : ∀ w ∈ otherConj β, ‖(q : ℂ) * w‖ < 1) : otherConj β = 0 := by
+  have halg : IsAlgebraic ℚ β := ⟨Polynomial.X ^ l - Polynomial.C c, by
+    intro he
+    have := congrArg (fun p : Polynomial ℚ ↦ p.coeff l) he
+    simp [Polynomial.coeff_X_pow, Polynomial.coeff_C, hl.ne'] at this, by
+    simp [hc]⟩
+  have hint : IsIntegral ℚ β := halg.isIntegral
+  have hqR : (1:ℝ) ≤ (q:ℝ) := by exact_mod_cast hq
+  rw [Multiset.eq_zero_iff_forall_notMem]
+  intro w hw
+  have hdvd : minpoly ℚ β ∣ (Polynomial.X ^ l - Polynomial.C c) := by
+    refine minpoly.dvd ℚ β ?_
+    simp only [map_sub, map_pow, Polynomial.aeval_X, Polynomial.aeval_C, eq_ratCast, hc, sub_self]
+  have hwroot : w ∈ (minpoly ℚ β).aroots ℂ := Multiset.mem_of_mem_erase hw
+  have hw0 : Polynomial.aeval w (minpoly ℚ β) = 0 := (Polynomial.mem_aroots.1 hwroot).2
+  have hwl : w ^ l = ((c : ℚ) : ℂ) := by
+    obtain ⟨g, hg⟩ := hdvd
+    have h2 : Polynomial.aeval w (Polynomial.X ^ l - Polynomial.C c) = 0 := by
+      rw [hg, map_mul, hw0, zero_mul]
+    rw [map_sub, map_pow, Polynomial.aeval_X, Polynomial.aeval_C, eq_ratCast] at h2
+    linear_combination h2
+  have hβ0 : (0:ℝ) < β := by linarith
+  have hnorm : ‖w‖ = β := by
+    have h1 : ‖w‖ ^ l = β ^ l := by
+      rw [← norm_pow, hwl]
+      have hcc : ((c : ℚ) : ℂ) = (((c : ℝ)) : ℂ) := by push_cast; ring
+      rw [hcc, Complex.norm_real, Real.norm_eq_abs, ← hc, abs_of_pos (by positivity)]
+    exact (pow_left_inj₀ (norm_nonneg w) hβ0.le hl.ne').1 h1
+  have := h w hw
+  rw [norm_mul, Complex.norm_natCast, hnorm] at this
+  nlinarith
+
+/-- A real algebraic number with no conjugates other than itself is rational. -/
+theorem eq_rat_of_otherConj_eq_zero {β : ℝ} (hint : IsIntegral ℚ β) (h : otherConj β = 0) :
+    ∃ r : ℚ, β = (r : ℝ) := by
+  have hcard := card_otherConj_add_one hint
+  rw [h] at hcard
+  simp at hcard
+  have hmonic := minpoly.monic hint
+  have heq : minpoly ℚ β = Polynomial.X + Polynomial.C ((minpoly ℚ β).coeff 0) :=
+    hmonic.eq_X_add_C hcard.symm
+  have h0 : Polynomial.aeval β (minpoly ℚ β) = 0 := minpoly.aeval ℚ β
+  rw [heq] at h0
+  simp at h0
+  exact ⟨-((minpoly ℚ β).coeff 0), by push_cast; linarith⟩
+
+/-- The degree of `α^N` is at most the degree of `α`, so `α^N` has at most `deg α − 1` other
+conjugates — uniformly in `N`.  (`α^N ∈ ℚ⟮α⟯`, and `minpoly.natDegree_le` bounds a degree by the
+`ℚ`-rank of the ambient field, which is `deg α`.) -/
+theorem card_otherConj_pow_le {α : ℝ} (halg : IsIntegral ℚ α) (N : ℕ) :
+    (otherConj (α ^ N)).card + 1 ≤ (minpoly ℚ α).natDegree := by
+  haveI : FiniteDimensional ℚ ℚ⟮α⟯ := IntermediateField.adjoin.finiteDimensional halg
+  set g : ℚ⟮α⟯ := IntermediateField.AdjoinSimple.gen ℚ α with hg
+  have hinj : Function.Injective (algebraMap ℚ⟮α⟯ ℝ) := (algebraMap ℚ⟮α⟯ ℝ).injective
+  have hgmap : algebraMap ℚ⟮α⟯ ℝ g = α := IntermediateField.AdjoinSimple.algebraMap_gen ℚ α
+  have hmin : minpoly ℚ (g ^ N) = minpoly ℚ (α ^ N) := by
+    have h := minpoly.algebraMap_eq (A := ℚ) hinj (g ^ N)
+    rw [map_pow, hgmap] at h
+    exact h.symm
+  have hle : (minpoly ℚ (g ^ N)).natDegree ≤ Module.finrank ℚ ℚ⟮α⟯ := minpoly.natDegree_le _
+  rw [hmin, IntermediateField.adjoin.finrank halg] at hle
+  have hintN : IsIntegral ℚ (α ^ N) := halg.pow N
+  rw [card_otherConj_add_one hintN]
+  exact hle
+
+/-- **Corvaja–Zannier (2004), main theorem, p. 177** (`δ = 1`, `u = α^(s n)`, `Γ = {α^t}`) —
+Dubickas (2022), Lemma 3.  If `q α^(s n)` is pseudo-Pisot for only finitely many `n`, then
+`‖q α^(s n)‖` is eventually larger than `e^(−ε s n)`.
+
+**DISCLOSED OPEN.**  This is the single step of Dubickas's Theorem 1 that needs the `p`-adic
+Subspace Theorem (Schlickewei), of which mathlib has nothing.  Everything else in Lemma 6 is
+discharged in this file (`isPisot_of_pseudoPisotMul`, `otherConj_eq_zero_of_pow_rat`,
+`exists_pisot_pow_of_pow_rat`) or is `corvajaZannier_lemma4` below.  See
+`PROBE-DUBICKAS-NOSUBSPACE.md`: the archimedean Liouville/Roth bound provably cannot replace it. -/
+theorem corvajaZannier_dichotomy {α : ℝ} (halg : IsAlgebraic ℚ α) (hα : 1 < α) {q : ℕ}
+    (hq : 0 < q) (s : ℕ → ℕ) (hs : StrictMono s) (hs0 : 0 < s 0)
+    (hfin : {n : ℕ | IsPseudoPisotMul q (α ^ s n)}.Finite) :
+    ∀ ε > (0 : ℝ), ∃ n₀ : ℕ, ∀ n ≥ n₀,
+      Real.exp (-(ε * s n)) < |(q : ℝ) * α ^ s n - round ((q : ℝ) * α ^ s n)| := by
+  sorry
+
+/-- **Corvaja–Zannier (2004), Lemma 4.**  If the trace of `q α^(s n)` is a nonzero rational
+integer for infinitely many `n`, then `α` is an algebraic integer or an `l`-th root of a rational.
+
+**DISCLOSED OPEN.**  Unlike `corvajaZannier_dichotomy` this is *not* subspace-strength: it is a
+valuation argument in `ℚ(α)` (a place where `α` has negative valuation makes the traces have
+unbounded denominators unless all conjugates share the valuation pattern, which is the
+root-of-a-rational case).  Formalizing it needs the ideal-valuation / trace machinery for number
+fields.  Stated with an index *set* rather than a strictly monotone sequence; the two are
+interchangeable. -/
+theorem corvajaZannier_lemma4 {α : ℝ} (halg : IsAlgebraic ℚ α) (hα : 1 < α) {q : ℕ} (hq : 0 < q)
+    {S : Set ℕ} (hS : S.Infinite)
+    (htr : ∀ n ∈ S, ∃ t : ℤ, t ≠ 0 ∧
+      (q : ℂ) * (((minpoly ℚ (α ^ n)).aroots ℂ).sum) = (t : ℂ)) :
+    IsIntegral ℤ α ∨ ∃ (l : ℕ) (r : ℚ), 0 < l ∧ α ^ l = (r : ℝ) := by
+  sorry
+
 /-- **The residual core of Dubickas's Lemma 6 for `q = 2`, `s_n = 2ⁿ`** — the only step of
 Theorem 1 that this repo has not reduced to an elementary argument or to `Ridout1957`.
 
@@ -171,7 +311,99 @@ theorem exists_pisot_pow_pseudoPisot_core {α : ℝ} (halg : IsAlgebraic ℚ α)
     (hbnd : ∀ n ≥ n₀, |y n - α ^ 2 ^ n| ≤ C / α ^ 2 ^ n)
     (hnr : ∀ (a : ℕ) (r : ℚ), α ^ 2 ^ a ≠ (r : ℝ)) :
     ∃ m : ℕ, IsPisot (α ^ 2 ^ m) := by
-  sorry
+  classical
+  have hint : IsIntegral ℚ α := halg.isIntegral
+  have hα0 : (0:ℝ) < α := by linarith
+  set d : ℕ := (minpoly ℚ α).natDegree with hd
+  have hs : StrictMono (fun n : ℕ ↦ 2 ^ n) := fun a b h ↦ Nat.pow_lt_pow_right (by norm_num) h
+  -- ### Step 1: the pseudo-Pisot set is infinite (else Lemma 3 contradicts `hbnd`)
+  have hSinf : {n : ℕ | IsPseudoPisotMul 2 (α ^ 2 ^ n)}.Infinite := by
+    intro hfin
+    obtain ⟨k₀, hk₀⟩ := round_dist_le_of_bnd hα hC hyint hbnd
+    obtain ⟨n₁, hn₁⟩ := corvajaZannier_dichotomy halg hα (q := 2) (by norm_num)
+      (fun n : ℕ ↦ 2 ^ n) hs (by norm_num) hfin (Real.log α / 2) (by
+      have := Real.log_pos hα; linarith)
+    have h1 := hk₀ (max k₀ n₁) (le_max_left _ _)
+    have h2 := hn₁ (max k₀ n₁) (le_max_right _ _)
+    push_cast at h1 h2
+    linarith
+  -- ### Step 2: on the pseudo-Pisot set the trace is eventually nonzero
+  have hlarge : ∃ K : ℕ, ∀ n ≥ K, (d : ℝ) < α ^ 2 ^ n := by
+    obtain ⟨K, hK⟩ := Filter.eventually_atTop.1
+      ((tendsto_pow_two_pow_atTop hα).eventually_gt_atTop (d : ℝ))
+    exact ⟨K, fun n hn ↦ hK n hn⟩
+  obtain ⟨K, hK⟩ := hlarge
+  set S : Set ℕ := {n : ℕ | IsPseudoPisotMul 2 (α ^ 2 ^ n)} \ Set.Iio K with hSdef
+  have hS : S.Infinite := hSinf.sdiff (Set.finite_Iio K)
+  have hmemS : ∀ n ∈ S, IsPseudoPisotMul 2 (α ^ 2 ^ n) ∧ K ≤ n := by
+    intro n hn
+    exact ⟨hn.1, not_lt.1 hn.2⟩
+  have htrne : ∀ n ∈ S, ∃ t : ℤ, t ≠ 0 ∧
+      ((2 : ℕ) : ℂ) * (((minpoly ℚ (α ^ 2 ^ n)).aroots ℂ).sum) = (t : ℂ) := by
+    intro n hn
+    obtain ⟨⟨h1, h2, t, ht⟩, hnK⟩ := hmemS n hn
+    refine ⟨t, ?_, ht⟩
+    intro ht0
+    subst ht0
+    -- `aroots = β ::ₘ otherConj β`, each other conjugate has modulus `< 1/2`
+    have hintβ : IsIntegral ℚ (α ^ 2 ^ n) := hint.pow _
+    have hmem : ((α ^ 2 ^ n : ℝ) : ℂ) ∈ (minpoly ℚ (α ^ 2 ^ n)).aroots ℂ := beta_mem_aroots hintβ
+    have hcons : (minpoly ℚ (α ^ 2 ^ n)).aroots ℂ
+        = ((α ^ 2 ^ n : ℝ) : ℂ) ::ₘ otherConj (α ^ 2 ^ n) := (Multiset.cons_erase hmem).symm
+    rw [hcons, Multiset.sum_cons] at ht
+    have hhalf : ∀ w ∈ otherConj (α ^ 2 ^ n), ‖w‖ ≤ 1 / 2 := by
+      intro w hw
+      have := h2 w hw
+      rw [norm_mul, Complex.norm_natCast] at this
+      push_cast at this
+      linarith
+    have hsum : ‖(otherConj (α ^ 2 ^ n)).sum‖ ≤ ((otherConj (α ^ 2 ^ n)).card : ℝ) * (1 / 2) := by
+      refine le_trans (norm_multiset_sum_le _) ?_
+      have := Multiset.sum_le_card_nsmul ((otherConj (α ^ 2 ^ n)).map (‖·‖)) (1/2 : ℝ)
+        (by
+          intro x hx
+          obtain ⟨w, hw, hxw⟩ := Multiset.mem_map.1 hx
+          rw [← hxw]; exact hhalf w hw)
+      simpa [nsmul_eq_mul, mul_comm] using this
+    have hcard : ((otherConj (α ^ 2 ^ n)).card : ℝ) ≤ (d : ℝ) := by
+      have := card_otherConj_pow_le hint (2 ^ n)
+      have : (otherConj (α ^ 2 ^ n)).card ≤ d := by omega
+      exact_mod_cast this
+    have hz : ((α ^ 2 ^ n : ℝ) : ℂ) = -(otherConj (α ^ 2 ^ n)).sum := by
+      push_cast at ht ⊢
+      linear_combination ht / 2
+    have hnorm : α ^ 2 ^ n ≤ (d : ℝ) := by
+      have h3 : ‖((α ^ 2 ^ n : ℝ) : ℂ)‖ = α ^ 2 ^ n := by
+        rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by positivity)]
+      rw [hz, norm_neg] at h3
+      have := hK n hnK
+      nlinarith [hsum, hcard, h3]
+    linarith [hK n hnK]
+  -- ### Step 3: Lemma 4, then the two elementary branches of Lemma 5
+  have hSimg : ((fun n : ℕ ↦ 2 ^ n) '' S).Infinite :=
+    hS.image (Set.injOn_of_injective hs.injective)
+  have htr' : ∀ N ∈ (fun n : ℕ ↦ 2 ^ n) '' S, ∃ t : ℤ, t ≠ 0 ∧
+      ((2 : ℕ) : ℂ) * (((minpoly ℚ (α ^ N)).aroots ℂ).sum) = (t : ℂ) := by
+    intro N hN
+    obtain ⟨n, hn, hNn⟩ := hN
+    rw [← hNn]
+    exact htrne n hn
+  obtain ⟨n, hn⟩ := hS.nonempty
+  obtain ⟨hps, -⟩ := hmemS n hn
+  rcases corvajaZannier_lemma4 halg hα (q := 2) (by norm_num) hSimg htr' with hintα | ⟨l, r, hl, hlr⟩
+  · -- `α` is an algebraic integer: the pseudo-Pisot number `2 α^(2ⁿ)` makes `α^(2ⁿ)` Pisot
+    exact ⟨n, isPisot_of_pseudoPisotMul (q := 2) (by norm_num)
+      (one_lt_pow₀ hα (by positivity)) (hintα.pow _) hps⟩
+  · -- `α^l ∈ ℚ`: then `α^(2ⁿ)` would have to be rational, which `hnr` forbids
+    exfalso
+    have hβ1 : 1 < α ^ 2 ^ n := one_lt_pow₀ hα (by positivity)
+    have hcl : (α ^ 2 ^ n) ^ l = ((r ^ 2 ^ n : ℚ) : ℝ) := by
+      rw [← pow_mul, Nat.mul_comm, pow_mul, hlr]
+      push_cast
+      ring
+    have h0 := otherConj_eq_zero_of_pow_rat hβ1 hl hcl (q := 2) (by norm_num) hps.2.1
+    obtain ⟨r', hr'⟩ := eq_rat_of_otherConj_eq_zero (hint.pow _) h0
+    exact hnr n r' hr'
 
 /-- **`exists_pisot_pow` without Lemma 6**, for the growth constant of an exact quadratic
 recursion: some `α^(2^m)` is a Pisot number. -/

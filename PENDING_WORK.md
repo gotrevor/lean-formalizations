@@ -1,9 +1,19 @@
 # PENDING_WORK — lean-formalizations
 
 ## 🔭 PHASE 9 IN PROGRESS (2026-09-28) — `Dubickas2022` (Lemma 6) narrowed to the CZ dichotomy
-The one open `sorry` in `src/` is deliberate and is the active crux:
-`Transcendence.Dubickas.exists_pisot_pow_pseudoPisot_core`
-(`NumberTheory/Transcendence/DubickasNoSubspace.lean`).
+The open `sorry`s in `src/` are deliberate and are the active crux, both in
+`NumberTheory/Transcendence/DubickasNoSubspace.lean`:
+
+* `corvajaZannier_dichotomy` — CZ 2004 main theorem, p. 177 (= Dubickas's Lemma 3).  **The wall**:
+  the only `p`-adic-Subspace-Theorem step in the whole repo's Dubickas thread.
+* `corvajaZannier_lemma4` — CZ 2004, Lemma 4.  **Not** subspace-strength: a valuation/trace
+  argument in `ℚ(α)`; mathlib has `IsDedekindDomain.HeightOneSpectrum` + the number-field trace.
+  **Attack this one next.**
+
+`exists_pisot_pow_pseudoPisot_core` is *proved* from exactly those two: Dubickas's Lemma 5 (both
+branches), the `deg α^N ≤ deg α` bound and the "trace eventually nonzero" step are all formalized
+(`isPisot_of_pseudoPisotMul`, `otherConj_eq_zero_of_pow_rat`, `eq_rat_of_otherConj_eq_zero`,
+`card_otherConj_pow_le`).
 
 **Advance this lap.**  Lemma 6 = Dubickas's Lemma 3 (Corvaja–Zannier's main theorem, subspace) ∨
 Lemma 5 (elementary, given CZ's Lemma 4).  The *whole* rational-power case is now unconditional

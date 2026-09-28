@@ -39,12 +39,32 @@ Lemma 6 = Lemma 3 ∨ Lemma 5.  **All of the subspace strength sits in Lemma 3.*
   the route Dubickas sketches in his §2 for Wagner–Ziegler's Theorem 1.
 * `exists_pisot_pow_noD (hR : Ridout1957)` — reduces the full statement to the one residual:
 
+## The decomposition now in `src/` (second lap)
+
+`exists_pisot_pow_pseudoPisot_core` is **proved** from exactly two named literature leaves, and
+nothing else:
+
+| leaf | strength | status |
+|---|---|---|
+| `corvajaZannier_dichotomy` (CZ main thm p. 177 = Dubickas Lemma 3) | `p`-adic Subspace Theorem | `sorry` — the wall |
+| `corvajaZannier_lemma4` (CZ Lemma 4) | valuations/traces in `ℚ(α)`, **not** subspace | `sorry` — next lap |
+
+Everything between them is elementary and formalized: `IsPseudoPisotMul` (pseudo-Pisot for `qβ`,
+phrased through `β`'s conjugates — the conjugates of `qβ` are `q` times `β`'s and
+`trace(qβ) = q·trace β`), `isPisot_of_pseudoPisotMul` (Lemma 5's algebraic-integer branch: `‖qw‖<1`
+and `q ≥ 1` give `‖w‖<1`), `otherConj_eq_zero_of_pow_rat` + `eq_rat_of_otherConj_eq_zero` (Lemma 5's
+root-of-a-rational branch: if `β^l ∈ ℚ` then *every* conjugate has modulus `β > 1`, so pseudo-Pisot
+forces `β ∈ ℚ`, which `hnr` forbids), `card_otherConj_pow_le` (`deg α^N ≤ deg α`, uniformly in `N`,
+via `minpoly.natDegree_le` over `ℚ⟮α⟯`), and the derivation — Dubickas's "we may assume the trace is
+nonzero" — that `trace(2α^(2ⁿ)) ≠ 0` once `α^(2ⁿ) > deg α`, since the other conjugates contribute
+less than `card/2`.
+
 ## The obstruction, precisely
 
-`exists_pisot_pow_pseudoPisot_core` (the one `sorry` in `src/`):
+The residual, `corvajaZannier_dichotomy`:
 
-> `α > 1` algebraic, **no power `α^(2^a)` rational**, `2 y_n ∈ ℤ`,
-> `|y_n − α^(2ⁿ)| ≤ C α^(−2ⁿ)` ⟹ some `α^(2^m)` is Pisot.
+> `α > 1` algebraic, `q ≥ 1`, `s` strictly monotone: if `q α^(s n)` is pseudo-Pisot for only
+> finitely many `n`, then `‖q α^(s n)‖ > e^(−ε s n)` eventually.
 
 Why the elementary tools do not reach it:
 
@@ -92,7 +112,17 @@ A third, narrower option worth recording: our situation has an **exact recursion
 Nothing in the obstruction above is improved by it: the conjugate sequences `σ(δ_n)` satisfy the
 same recursion, which is an identity, not new information at the non-archimedean places.
 
-## Recommended next step
+## Recommended next step (updated after the decomposition lap)
+
+`corvajaZannier_lemma4` is the one that can be attacked *without* the subspace theorem: if `α` is
+not an algebraic integer, some prime `𝔭` of `ℚ(α)` has `v_𝔭(α) < 0`, and `trace(q α^(s n)) ∈ ℤ`
+forces `v_𝔭` of a sum of `n`-th powers to stay `≥ 0`; a unique conjugate of minimal valuation gives
+`v_𝔭(trace) = n·v_𝔭(α) + v_𝔭(q) → −∞`, a contradiction, and the tie case (all conjugates sharing
+the valuation pattern at every place) is exactly the `α^l ∈ ℚ` branch.  mathlib has
+`IsDedekindDomain.HeightOneSpectrum` valuations and the number-field trace, so this is a real
+multi-lap target rather than a wall.  Close it before touching Lemma 3.
+
+## Earlier recommendation (still valid for Lemma 3)
 
 Do **not** take option 2 first.  Option 1 splits the residual into one subspace-strength `Prop`
 plus two genuinely elementary lemmas (CZ Lemma 4, Dubickas Lemma 5), which is the same shape that
