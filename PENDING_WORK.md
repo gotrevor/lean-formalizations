@@ -1,5 +1,20 @@
 # PENDING_WORK — lean-formalizations
 
+## PHASE 10 — CLOSED 2026-09-28: `NumberTheory/PolyIteration/` sorry-free + axiom-clean
+
+`Sylvester.lean` (3 theorems) and `A003095.lean` (16 theorems) are fully proved; `#print axioms`
+shows only `propext, Classical.choice, Quot.sound` on every one.
+
+One faithfulness correction, recorded here and in the `A003095.lean` header: **`a003095_sq_dvd`
+as frozen was false.**  `a(n)^2 ∣ a(n+m) − a(m)` fails at `m = 0` (it reads `a(n)^2 ∣ a(n)`;
+`n = 2` gives `4 ∤ 2`).  Added `1 ≤ m`, the same hypothesis Bala's product identity carries.
+Nothing else needed adjusting — every other threshold (`k−1`, `3k−5`, `2k−1`, `⌊k/2⌋`) is sharp
+enough to prove as stated.
+
+Reusable: `sub_dvd_sub_shift` (iteration preserves index-shifted differences),
+`intGcd_congr_of_dvd_sub`, `a003095_mod_two`, `a003095_mod_five`, and the two Harden towers
+`a003095_two_pow_dvd` / `a003095_five_pow_dvd`.
+
 ## 🎯 PHASE 9 — ATTACK PATH SET BY THE REVIEW LAP (2026-09-28, lap #8)
 
 `DIRECTION.md` → CURRENT DIRECTIVE is binding.  Summary: **Lemma 3 stays a disclosed leaf** (it is
