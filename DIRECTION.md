@@ -2,7 +2,15 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 THE OBJECTIVE (phase 24, 2026-09-29): weakest hypotheses — what follows from Conjecture 1
+## 🎯 THE OBJECTIVE (phase 25, 2026-09-29): sharp-six repair + periods / zeta values
+
+**Operator correction to the phase-24 handoff:** `SixExponentialsShifted` is NOT a dropped overbar.  The rendered survey page really says `ℚ`; the survey misprints the sharp six exponentials theorem, dropping the exceptional case `xᵢyⱼ = βᵢⱼ`.  The correct statement is now `Literature.SixExponentialsSharp` (Waldschmidt NCTS 2003 slide 23; Waldschmidt 2005 Thm 1.4), and it keeps `ℚ`-independence.  The ℚ̄ repair suggested in the handoff would NOT contain the six exponentials theorem, so do not use it.
+
+Target `NumberTheory/Transcendence/Periods.lean`, 10 frozen statements (routes in the header): sharp six ⇒ six; sharp six + Baker ⇒ five; zeta-values conjecture ⇒ Apéry, ζ(5), Ball–Rivoal, `ζ(3)/π³` transcendental, `ζ(3), ζ(5)` alg. indep.; `catalanG = Catalan.catalanConst`; Catalan–π conjecture ⇒ `G` transcendental and `G/π²` irrational.  After the lap, run `scripts/fact-graph`.  Frozen: the 10, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.
+
+---
+
+## ✅ DONE (phase 24, 2026-09-29): weakest hypotheses — what follows from Conjecture 1
 
 Trevor 2026-09-29: *"Feed the treadmill w/ cheap consequences."*  Target `NumberTheory/Transcendence/WeakSchanuel.lean`, 5 frozen statements (routes in header): Conj 1 ⇒ Gelfond–Schneider, ⇒ Baker1966, ⇒ log-primes alg. indep., ⇒ π + log-primes alg. indep., ⇒ strong four exponentials (⚠️ the last is Ren's ~70% reading; refuting or failing it is an advance).  After the lap, run `scripts/fact-graph`.  Frozen: the 5, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.
 

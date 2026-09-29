@@ -32,9 +32,10 @@ def FiveExponentials : Prop :=
     IsAlgebraic ℚ γ → γ ≠ 0 →
     (∃ i j : Fin 2, Transcendental ℚ (exp (x i * y j))) ∨ Transcendental ℚ (exp (γ * x 0 / x 1))
 
-/-- **Six exponentials, algebraically shifted** (Waldschmidt 1988 Cor. 2.1): with `x` (two)
-and `y` (three) `ℚ`-linearly independent and any six algebraic `βᵢⱼ`, some
-`e^{xᵢyⱼ − βᵢⱼ}` is transcendental. -/
+/-- ⚠️ **FALSE as printed** (Waldschmidt 2023, p. 8): it lacks the exceptional case
+`xᵢyⱼ = βᵢⱼ`.  Refuted in the kernel by `ExponentialsKnown.not_sixExponentialsShifted`.  This is a
+misprint in the survey, not a dropped overbar (the rendered page says `ℚ`).  The correct theorem is
+`Literature.SixExponentialsSharp`.  Kept on purpose, with its refutation. -/
 def SixExponentialsShifted : Prop :=
   ∀ (x : Fin 2 → ℂ) (y : Fin 3 → ℂ) (β : Fin 2 → Fin 3 → ℂ),
     LinearIndependent ℚ x → LinearIndependent ℚ y → (∀ i j, IsAlgebraic ℚ (β i j)) →
