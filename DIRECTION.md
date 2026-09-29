@@ -1,6 +1,10 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 THE OBJECTIVE (phase 13b, 2026-09-29): Dubickas Lemma 6 from Stephan's machine-checked CZ
+## ⏸️ PARKED (phase 13b, 2026-09-29): Dubickas Lemma 6 from Stephan's machine-checked CZ
+
+**Parked by Trevor 2026-09-29**: *"Why bother with 13b?  That's filling a hole that we're no longer
+looking to publish."*  The unconditional Dubickas chain only mattered for an OEIS citation, and OEIS
+is out.  Literature theorems stay as hypothesis `Prop`s; effort goes to new math (phase 14).
 
 Phase 13 is STOPPED and superseded: Stephan formalized Corvaja–Zannier 2004 itself
 (`rwst/Subspace-Theorems`, `CorvajaZannier2004/`).  Its Main Theorem and Lemma 4 are now
