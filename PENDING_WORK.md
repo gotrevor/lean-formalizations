@@ -1590,9 +1590,25 @@ Why the deep condition propagates: if `W x^(p−1) < W p` then `W x' = W p · W 
 term is then dominated by `p·x` at every level, so the tie never recurs and the max in
 `valuation_pow_char_sub_one` is always the left one.
 
-**Next leaf (step 3)**: the `ℤ_p`-action.  With the exact rate in hand, `k ↦ θ^k` on a deep `θ` is
-uniformly continuous for the `p`-adic topology on `k` — `k ≡ k' mod p^j` gives
-`W (θ^k − θ^{k'}) = W (θ^{k−k'} − 1) ≤ W p^j · W (θ−1)` — so it extends to `ℤ_p → U`, and the
-extension is a continuous group hom, injective by `pow_pow_char_ne_one_of_deep`.  That is the
-`ℤ_p`-module structure; `padicLog` and Brumer follow.  **Entry point for the next lap.**  Note the
-rank-≤1 theorem needs none of this — it is pure phase-28 (rank ≥ 2) machinery.
+### Phase 28 step (3a) DONE (2026-09-29, same lap): the Cauchy estimate
+
+- `valuation_zpow_sub_one_le` — the `ℤ`-exponent version of `valuation_pow_sub_one_le`.
+- `valuation_zpow_sub_one_le_of_dvd` — on a deep `θ`, `p^j ∣ m` gives
+  `W (θ^m − 1) ≤ W p ^ j · W (θ − 1)`.
+- `valuation_zpow_sub_zpow_le` — **the uniform continuity of `k ↦ θ^k`**: `p^j ∣ k − l` gives
+  `W (θ^k − θ^l) ≤ W p ^ j · W (θ − 1)`.  Via the factorisation `θ^k − θ^l = θ^l (θ^{k−l} − 1)`
+  and `W (θ^l) = 1`.
+
+All in `K`, no completeness used, all axiom-clean.
+
+**Next leaf (step 3b) — the extension itself.**  `valuation_zpow_sub_zpow_le` says
+`k ↦ algebraMap K (v.adicCompletion K) (θ^k)` is uniformly continuous for the `p`-adic uniformity
+on `ℤ`; `v.adicCompletion K` is complete, so it extends to `zpowExtend θ : ℤ_[p] → (v.adicCompletion K)`.
+Shape of the build: (1) show the map is Cauchy along any `ℤ`-sequence converging in `ℤ_[p]`
+(the estimate gives it directly, since `‖(k : ℤ_[p]) − l‖ ≤ p^{-j}` iff `p^j ∣ k − l` by
+`PadicInt.norm_int_le_pow_iff_dvd`), (2) define the extension by `CauSeq`/`UniformSpace.Completion`
+or, more cheaply, by `DenseInducing.extend` from `ℤ` dense in `ℤ_[p]`, (3) `map_mul` and continuity
+transfer, (4) injectivity from `pow_pow_char_ne_one_of_deep`.  Then `padicLog` (or in fact the
+`ℤ_p`-module structure alone, which is all Ax's reduction needs) and Brumer.
+
+Note the rank-≤1 theorem needs **none** of this — steps 1–3 are pure phase-28 (rank ≥ 2) machinery.

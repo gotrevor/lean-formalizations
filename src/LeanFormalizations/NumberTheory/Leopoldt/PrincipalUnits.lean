@@ -363,6 +363,75 @@ theorem pow_pow_char_ne_one_of_deep {θ : K} (hθ : W (θ - 1) < 1) (hθ1 : θ �
   rw [hcon, sub_self, map_zero] at h
   exact mul_ne_zero (pow_ne_zero _ hWp) hWx h.symm
 
+/-! ### The `ℤ_p`-action: the uniform-continuity estimate
+
+Step (3) of the phase-28 route.  On a deep `θ`, congruent exponents give close powers **at a known
+rate**: `p^j ∣ k − k'` implies `W (θ^k − θ^{k'}) ≤ W p ^ j · W (θ − 1)`.  So `k ↦ θ^k` is uniformly
+continuous from the `p`-adic topology on `ℤ` to `K_v`, hence extends to `ℤ_p → U⁽¹⁾` by
+completeness, and the extension is injective by `pow_pow_char_ne_one_of_deep`.  That is the
+`ℤ_p`-module structure on the deep principal units; `padicLog` and Brumer follow.
+
+Everything here is in `K` and needs no completeness — the extension itself is the next leaf.
+-/
+
+/-- The `ℤ`-power version of `valuation_pow_sub_one_le`. -/
+theorem valuation_zpow_sub_one_le {θ : K} (hθ : W (θ - 1) < 1) (t : ℤ) :
+    W (θ ^ t - 1) ≤ W (θ - 1) := by
+  have h1 : W θ = 1 := valuation_eq_one_of_principal v hθ
+  have hθ0 : θ ≠ 0 := by rintro rfl; simp at h1
+  rcases le_or_gt 0 t with h | h
+  · lift t to ℕ using h with n
+    simpa using valuation_pow_sub_one_le v hθ n
+  · obtain ⟨n, hn⟩ : ∃ n : ℕ, t = -(n : ℤ) := ⟨(-t).toNat, by omega⟩
+    subst hn
+    have h2 : θ ^ (-(n : ℤ)) * θ ^ (n : ℕ) = 1 := by
+      rw [← zpow_natCast θ n, ← zpow_add₀ hθ0]
+      simp
+    have hpow : θ ^ (-(n : ℤ)) - 1 = -(θ ^ (-(n : ℤ))) * (θ ^ (n : ℕ) - 1) := by
+      linear_combination h2
+    have hv1 : W (θ ^ (-(n : ℤ))) = 1 := by
+      rw [zpow_neg, map_inv₀, zpow_natCast, map_pow, h1]
+      simp
+    rw [hpow, map_mul, Valuation.map_neg, hv1, one_mul]
+    exact valuation_pow_sub_one_le v hθ n
+
+/-- On a deep principal unit, an exponent divisible by `p ^ j` pushes the valuation down by at
+least the exact factor `W p ^ j`. -/
+theorem valuation_zpow_sub_one_le_of_dvd {θ : K} (hθ : W (θ - 1) < 1)
+    (hdeep : W (θ - 1) ^ (p - 1) < W ((p : ℕ) : K)) (j : ℕ) {m : ℤ} (hm : ((p : ℕ) : ℤ) ^ j ∣ m) :
+    W (θ ^ m - 1) ≤ W ((p : ℕ) : K) ^ j * W (θ - 1) := by
+  obtain ⟨t, ht⟩ := hm
+  have hWple : W ((p : ℕ) : K) ≤ 1 := valuation_natCast_le_one v p
+  have hψ : W (θ ^ (p ^ j) - 1) = W ((p : ℕ) : K) ^ j * W (θ - 1) :=
+    valuation_pow_pow_char_sub_one v hθ hdeep j
+  have hψlt : W (θ ^ (p ^ j) - 1) < 1 := by
+    rw [hψ]
+    calc W ((p : ℕ) : K) ^ j * W (θ - 1) ≤ 1 * W (θ - 1) :=
+          mul_le_mul_right' (pow_le_one' hWple j) _
+      _ = W (θ - 1) := one_mul _
+      _ < 1 := hθ
+  have hrw : θ ^ m = (θ ^ (p ^ j)) ^ t := by
+    rw [ht, ← zpow_natCast θ (p ^ j), ← zpow_mul]
+    congr 1
+  rw [hrw, ← hψ]
+  exact valuation_zpow_sub_one_le v hψlt t
+
+/-- **The Cauchy estimate.**  Congruent exponents give close powers, at the known rate `W p ^ j`.
+This is exactly the uniform continuity of `k ↦ θ ^ k` for the `p`-adic topology on `ℤ`. -/
+theorem valuation_zpow_sub_zpow_le {θ : K} (hθ : W (θ - 1) < 1)
+    (hdeep : W (θ - 1) ^ (p - 1) < W ((p : ℕ) : K)) (j : ℕ) {k l : ℤ}
+    (hkl : ((p : ℕ) : ℤ) ^ j ∣ (k - l)) :
+    W (θ ^ k - θ ^ l) ≤ W ((p : ℕ) : K) ^ j * W (θ - 1) := by
+  have h1 : W θ = 1 := valuation_eq_one_of_principal v hθ
+  have hθ0 : θ ≠ 0 := by rintro rfl; simp at h1
+  have hfac : θ ^ k - θ ^ l = θ ^ l * (θ ^ (k - l) - 1) := by
+    rw [mul_sub, mul_one, ← zpow_add₀ hθ0]
+    congr 2
+    ring
+  have hWl : W (θ ^ l) = 1 := by rw [map_zpow₀, h1, one_zpow]
+  rw [hfac, map_mul, hWl, one_mul]
+  exact valuation_zpow_sub_one_le_of_dvd v hθ hdeep j hkl
+
 /-! ### The heart of the rank-one case
 
 Only the `p`-part of the exponent can move `ε ^ m` towards `1` at `v`, and `a ≠ 0` in `ℤ_p`
