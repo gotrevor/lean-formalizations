@@ -177,6 +177,70 @@ theorem mulHeight_eq_prod_S {ι : Type*} [Fintype ι] [Nonempty ι]
   by_contra h
   exact hv (iSup_eq_one_of_isSUnit hx (by simpa using h))
 
+/-- The `S`-unit tuple has strictly positive `v`-norm at every place. -/
+theorem iSup_pos_of_isSUnit {ι : Type*} [Fintype ι] [Nonempty ι]
+    {Sfin : Finset (FinitePlace K)} {x : ι → K} (hx : ∀ i, IsSUnit Sfin (x i))
+    (v : AbsoluteValue K ℝ) : 0 < ⨆ j, v (x j) := by
+  refine lt_of_lt_of_le (v.pos (hx (Classical.arbitrary ι)).1) ?_
+  exact le_ciSup (f := fun j ↦ v (x j)) (Set.Finite.bddAbove (Set.finite_range _)) _
+
+/-- The product of the `v`-norms of an `S`-unit tuple over the places of `S` is `1`. -/
+theorem prod_prod_eq_one_of_isSUnit {ι : Type*} [Fintype ι]
+    {Sfin : Finset (FinitePlace K)} {x : ι → K} (hx : ∀ i, IsSUnit Sfin (x i)) :
+    ((∏ v : InfinitePlace K, (∏ i, v (x i)) ^ v.mult) * ∏ v ∈ Sfin, ∏ i, v (x i)) = 1 := by
+  have h1 : (∏ v : InfinitePlace K, (∏ i, v (x i)) ^ v.mult)
+      = ∏ i, ∏ v : InfinitePlace K, v (x i) ^ v.mult := by
+    rw [Finset.prod_comm]
+    exact Finset.prod_congr rfl fun v _ ↦ (Finset.prod_pow _ _ _).symm
+  have h2 : (∏ v ∈ Sfin, ∏ i, v (x i)) = ∏ i, ∏ v ∈ Sfin, v (x i) := Finset.prod_comm
+  rw [h1, h2, ← Finset.prod_mul_distrib]
+  exact Finset.prod_eq_one fun i _ ↦ prod_places_eq_one_of_isSUnit (hx i)
+
+open Literature in
+/-- **The `approxProd` evaluation.**  If at every place the product of the linear forms on the
+`S`-unit tuple `x` differs from `∏ᵢ |xᵢ|_v` by the factor `c v`, then Stephan's double product is
+exactly `(∏_S c) / H(x)^n`.  This is CZ's "multiplying and dividing by `|x₁|_w`" computation
+(Lemma 1) and its Lemma-3 analogue, packaged once. -/
+theorem approxProd_of_prod_eq {ι : Type*} [Fintype ι] [Nonempty ι]
+    {Sfin : Finset (FinitePlace K)} {x : ι → K} (hx : ∀ i, IsSUnit Sfin (x i))
+    (L : AbsoluteValue K ℝ → ι → Module.Dual K (ι → K)) (c : AbsoluteValue K ℝ → ℝ)
+    (hL : ∀ v : AbsoluteValue K ℝ, ∏ i, v (L v i x) = c v * ∏ i, v (x i)) :
+    approxProd (Finset.univ : Finset (InfinitePlace K)) Sfin (fun v ↦ v) L x
+      = ((∏ v : InfinitePlace K, c v.1 ^ v.mult) * ∏ v ∈ Sfin, c v.1)
+        / Height.mulHeight x ^ (Fintype.card ι) := by
+  classical
+  set n := Fintype.card ι with hn
+  have hD : ∀ v : AbsoluteValue K ℝ, 0 < ⨆ j, v (x j) := iSup_pos_of_isSUnit hx
+  have key : ∀ v : AbsoluteValue K ℝ,
+      (∏ i, v (L v i fun j ↦ algebraMap K K (x j)) / ⨆ j, v (x j))
+        = c v * (∏ i, v (x i)) / (⨆ j, v (x j)) ^ n := by
+    intro v
+    have hxx : (fun j ↦ algebraMap K K (x j)) = x := by funext j; simp
+    rw [hxx, Finset.prod_div_distrib, hL v, Finset.prod_const, hn, Finset.card_univ]
+  have keyI : ∀ v : InfinitePlace K,
+      (∏ i, v.1 (L v.1 i fun j ↦ algebraMap K K (x j)) / ⨆ j, v (x j))
+        = c v.1 * (∏ i, v (x i)) / (⨆ j, v (x j)) ^ n := fun v ↦ key v.1
+  have keyF : ∀ v : FinitePlace K,
+      (∏ i, v.1 (L v.1 i fun j ↦ algebraMap K K (x j)) / ⨆ j, v (x j))
+        = c v.1 * (∏ i, v (x i)) / (⨆ j, v (x j)) ^ n := fun v ↦ key v.1
+  have hone := prod_prod_eq_one_of_isSUnit (Sfin := Sfin) hx
+  have hnum : (∏ v : InfinitePlace K, (c v.1 * ∏ i, v (x i)) ^ v.mult) *
+      ∏ v ∈ Sfin, (c v.1 * ∏ i, v (x i))
+      = (∏ v : InfinitePlace K, c v.1 ^ v.mult) * ∏ v ∈ Sfin, c v.1 := by
+    simp only [mul_pow, Finset.prod_mul_distrib]
+    rw [mul_mul_mul_comm, hone, mul_one]
+  have hden : (∏ v : InfinitePlace K, ((⨆ j, v (x j)) ^ n) ^ v.mult) *
+      ∏ v ∈ Sfin, ((⨆ j, v (x j)) ^ n)
+      = ((∏ v : InfinitePlace K, (⨆ i, v (x i)) ^ v.mult) * ∏ v ∈ Sfin, ⨆ i, v (x i)) ^ n := by
+    rw [mul_pow, ← Finset.prod_pow, ← Finset.prod_pow]
+    refine congrArg₂ (· * ·) (Finset.prod_congr rfl fun v _ ↦ ?_) rfl
+    rw [← pow_mul, ← pow_mul, Nat.mul_comm]
+  rw [approxProd]
+  simp only [keyI, keyF]
+  rw [mulHeight_eq_prod_S hx]
+  simp only [div_pow, Finset.prod_div_distrib]
+  rw [div_mul_div_comm, hnum, hden]
+
 end CZ
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
