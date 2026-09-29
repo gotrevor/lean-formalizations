@@ -54,3 +54,10 @@ Theorem over number fields with several places, including the affine `S`-integra
 So Dubickas's Lemma 6 may reduce to his theorems too: CZ 2004's argument on top of his Subspace
 Theorem, not a proof of the Subspace Theorem.  Next probe after phase 12: state 6.2 or 6.4 verbatim
 as a `Prop`, then try to derive `corvajaZannier_dichotomy` from it.
+
+## Update 2026-09-29: Stephan also formalized Corvaja–Zannier 2004 (and Adamczewski–Bugeaud 2007)
+
+Paper lanes beside the libraries: `CorvajaZannier2004/` (whole paper, 11 certified statements,
+comparator `corvaja-zannier-2004.json`) and `AdamczewskiBugeaud2007/` (32).  Phase 13 (deriving CZ
+from his Subspace Theorem, `CorvajaZannier.lean`) was stopped and superseded by phase 13b
+(`CorvajaZannierStephan.lean`, from `Stephan2026CZMain` / `Stephan2026CZLemma4`).
