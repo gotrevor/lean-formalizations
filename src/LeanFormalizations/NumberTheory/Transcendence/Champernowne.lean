@@ -196,6 +196,99 @@ lemma ctail_succ (K : ℕ) : ctail K = cterm (K + 1) + ctail (K + 1) := by
   congr 1
   exact tsum_congr fun i => by congr 1; omega
 
+
+/-! ## Leaf 3: partial sums are explicit rationals, and the block split -/
+
+/-- The integer formed by writing `1, 2, …, K` in a row. -/
+def prefixNum : ℕ → ℕ
+  | 0 => 0
+  | K + 1 => prefixNum K * 10 ^ (Nat.digits 10 (K + 1)).length + (K + 1)
+
+/-- The partial sum of Champernowne's series. -/
+noncomputable def cpartial (K : ℕ) : ℝ := ∑ i ∈ Finset.range K, cterm (i + 1)
+
+lemma cpartial_eq (K : ℕ) : cpartial K = (prefixNum K : ℝ) / 10 ^ digitsUpTo K := by
+  induction K with
+  | zero => simp [cpartial, prefixNum]
+  | succ K ih =>
+    rw [cpartial, Finset.sum_range_succ, ← cpartial, ih, prefixNum, digitsUpTo_succ]
+    have h1 : (0:ℝ) < 10 ^ digitsUpTo K := by positivity
+    have h2 : (0:ℝ) < 10 ^ (Nat.digits 10 (K + 1)).length := by positivity
+    unfold cterm
+    rw [digitsUpTo_succ]
+    push_cast
+    rw [pow_add]
+    field_simp
+
+lemma champ_split (K : ℕ) : champernowne = cpartial K + ctail K := by
+  have h := Summable.sum_add_tsum_nat_add (f := fun n : ℕ => cterm (n + 1)) K summable_cterm
+  rw [champernowne_eq_tsum, ← h]
+  congr 1
+  exact tsum_congr fun i => by congr 1; omega
+
+/-- The `j`-th term of the geometric-arithmetic series continuing the `(m+1)`-digit block. -/
+noncomputable def gser (m j : ℕ) : ℝ :=
+  ((10 ^ m + j : ℕ) : ℝ) / 10 ^ (blockStart m + (m + 1) * (j + 1))
+
+lemma cterm_eq_gser {m i : ℕ} (hi : i < 9 * 10 ^ m) : cterm (10 ^ m + i) = gser m i := by
+  unfold cterm gser
+  rw [digitsUpTo_block m i hi]
+
+lemma hasSum_gser (m : ℕ) :
+    HasSum (gser m)
+      (((10:ℝ) ^ m * (10 ^ (m + 1) - 1) + 1) / (10 ^ blockStart m * (10 ^ (m + 1) - 1) ^ 2)) := by
+  set T : ℝ := (10:ℝ) ^ (m + 1) with hTdef
+  have hT10 : (10:ℝ) ≤ T := by
+    rw [hTdef]; calc (10:ℝ) = 10 ^ 1 := by norm_num
+      _ ≤ 10 ^ (m+1) := by apply pow_le_pow_right₀ (by norm_num); omega
+  have hT0 : (0:ℝ) < T := by linarith
+  have hT1 : T - 1 ≠ 0 := by intro h; linarith [h ▸ (by linarith : (9:ℝ) ≤ T - 1)]
+  set y : ℝ := T⁻¹ with hy
+  have hy1 : |y| < 1 := by
+    rw [hy, abs_of_pos (by positivity)]
+    rw [inv_lt_one_iff₀]; right; linarith
+  have h1 : HasSum (fun j : ℕ => y ^ j) (1 - y)⁻¹ :=
+    hasSum_geometric_of_abs_lt_one hy1
+  have h2 : HasSum (fun j : ℕ => (j : ℝ) * y ^ j) (y / (1 - y) ^ 2) :=
+    hasSum_coe_mul_geometric_of_norm_lt_one (by simpa using hy1)
+  have h3 := ((h1.mul_left ((10:ℝ) ^ m)).add h2).mul_left
+    (1 / ((10:ℝ) ^ blockStart m * T))
+  have hval : (1 / ((10:ℝ) ^ blockStart m * T)) *
+      ((10:ℝ) ^ m * (1 - y)⁻¹ + y / (1 - y) ^ 2) =
+      ((10:ℝ) ^ m * (T - 1) + 1) / (10 ^ blockStart m * (T - 1) ^ 2) := by
+    rw [hy]
+    have h10 : ((10:ℝ) ^ blockStart m) ≠ 0 := by positivity
+    field_simp
+  rw [hval] at h3
+  refine h3.congr_fun fun j => ?_
+  have hT0' : T ≠ 0 := ne_of_gt hT0
+  have hpow : (10:ℝ) ^ (blockStart m + (m + 1) * (j + 1))
+      = 10 ^ blockStart m * T * T ^ j := by
+    rw [hTdef, ← pow_mul, ← pow_add, ← pow_add]
+    congr 1
+    ring
+  unfold gser
+  rw [hpow, hy, inv_pow]
+  push_cast
+  field_simp
+
+lemma summable_gser (m : ℕ) : Summable (gser m) := (hasSum_gser m).summable
+
+/-- The tail of the continued block series past its `9·10^m` genuine terms. -/
+noncomputable def gtail (m : ℕ) : ℝ := ∑' j : ℕ, gser m (9 * 10 ^ m + j)
+
+lemma gser_block_sum (m : ℕ) :
+    ∑ i ∈ Finset.range (9 * 10 ^ m), gser m i =
+      (((10:ℝ) ^ m * (10 ^ (m + 1) - 1) + 1) /
+        (10 ^ blockStart m * (10 ^ (m + 1) - 1) ^ 2)) - gtail m := by
+  have h := Summable.sum_add_tsum_nat_add (f := gser m) (9 * 10 ^ m) (summable_gser m)
+  rw [(hasSum_gser m).tsum_eq] at h
+  unfold gtail
+  have : (∑' j : ℕ, gser m (9 * 10 ^ m + j)) = ∑' j : ℕ, gser m (j + 9 * 10 ^ m) :=
+    tsum_congr fun j => by congr 1; omega
+  rw [this]
+  linarith
+
 /-- Sanity anchor for the definition: the first eleven digits are `12345678910`. -/
 theorem champernowne_prefix :
     ⌊champernowne * 10 ^ 11⌋ = 12345678910 := by
