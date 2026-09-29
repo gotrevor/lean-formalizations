@@ -1556,3 +1556,26 @@ imply `ℚ_p`-linear independence of `p`-adic logarithms, i.e. Baker–Brumer.  
 order: (1) `padicLog` on the principal units of `v.adicCompletion K` (the only step with real
 content), (2) Brumer's `p`-adic Baker theorem as a `Literature/` axiom with a faithfulness
 argument, (3) rank-2 Leopoldt for ℚ(ζ₇) from it.
+
+### Phase 28 step (1) started (2026-09-29, same lap)
+
+`PrincipalUnits.lean` now has the **exact** filtration formula, which is what `padicLog` and
+genuine torsion-freeness need (`valuation_pow_sub_one_le` only gave the inequality):
+
+- `valuation_pow_char_sub_one` — for `θ` principal at `v` and `p` the residue characteristic,
+  `W (θ^p − 1) = max (W p · W (θ−1)) (W (θ−1)^p)` **whenever those two differ**.  Proof: the
+  binomial decomposition `θ^p − 1 = p·x + B + x^p` with `B = ∑_{2 ≤ k ≤ p−1} C(p,k) x^k`; every
+  `C(p,k)` there is divisible by `p`, so `W B ≤ W p · W x² < W p · W x`, and the two extremes are
+  distinguished exactly by the hypothesis.
+- `pow_char_ne_one_of_principal` — hence no `p`-torsion in `U⁽¹⁾` away from the tie
+  `W p = W (θ−1)^(p−1)`.
+
+**The tie is not an artefact.**  `θ = −1` in `ℚ₂` has `ν(θ−1) = 1 = ν(2)` and `(p−1)·1 = 1`, and
+it *is* a genuine `2`-torsion element of `U⁽¹⁾`.  So the hypothesis is sharp; it is automatic for
+`p` odd at an unramified `v` (`ν p = 1`, `ν x ≥ 1`, `1 = (p−1)ν x` impossible).
+
+**Next leaf**: iterate the formula to get `ν(θ^{p^j} − 1) = ν(θ−1) + j·e` for `p` odd unramified
+(needs a lemma extracting `e = 1`, i.e. that `p` is a uniformizer at `v` — the unramifiedness
+input that rank ≤ 1 managed to avoid).  That exact-growth statement is what makes
+`k ↦ θ^k` uniformly continuous for the `p`-adic topology on `k`, hence `padicLog` and the
+`ℤ_p`-module structure, hence Brumer and rank ≥ 2.

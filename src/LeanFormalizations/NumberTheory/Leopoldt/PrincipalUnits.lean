@@ -179,6 +179,110 @@ theorem exists_principal_exponent (hv : ((p : ℕ) : 𝓞 K) ∈ v.asIdeal) (ε 
     (v := v) ((ε : 𝓞 K) ^ N - 1)).mpr hmem
   simpa using h
 
+/-! ### Exact behaviour of the principal filtration under `θ ↦ θ ^ p`
+
+Phase 28 groundwork (towards `padicLog`, hence Brumer, hence rank `≥ 2`).  `valuation_pow_sub_one_le`
+only says the level does not decrease.  The *exact* statement is
+`ν (θ^p − 1) = min (ν p + ν x, p · ν x)` with `x = θ − 1`, which is what makes `U⁽¹⁾` pro-`p` with
+no `p`-torsion and makes the `padicLog` series converge.  Multiplicatively:
+
+`W (θ^p − 1) = max (W p · W x) (W x ^ p)` whenever those two differ,
+
+and the tie `W p = W x ^ (p−1)` is exactly the exceptional case — `θ = −1` in `ℚ₂` is the tie, and
+it is a genuine `p`-torsion element of `U⁽¹⁾`.  So the no-`p`-torsion statement really does need the
+hypothesis, and it holds automatically for `p` odd at an unramified `v` (`ν p = 1`, `ν x ≥ 1`,
+`1 = (p−1) ν x` impossible).
+-/
+
+/-- An integer has `v`-valuation at most `1`. -/
+theorem valuation_natCast_le_one (n : ℕ) : W ((n : ℕ) : K) ≤ 1 := by
+  have h := IsDedekindDomain.HeightOneSpectrum.valuation_le_one (K := K) v ((n : ℕ) : 𝓞 K)
+  simpa using h
+
+/-- The binomial decomposition of `θ ^ p − 1` for a prime `p`, isolating the two extreme terms
+`p · x` and `x ^ p`; everything between them has valuation `≤ W p · W x ^ 2`. -/
+theorem valuation_pow_char_sub_one {θ : K} (hθ : W (θ - 1) < 1)
+    (hne : W ((p : ℕ) : K) ≠ W (θ - 1) ^ (p - 1)) :
+    W (θ ^ p - 1) = max (W ((p : ℕ) : K) * W (θ - 1)) (W (θ - 1) ^ p) := by
+  obtain ⟨q, hq⟩ : ∃ q, p = q + 2 := ⟨p - 2, by have := hp.out.two_le; omega⟩
+  set x : K := θ - 1 with hxdef
+  have hθx : θ = x + 1 := by rw [hxdef]; ring
+  rcases eq_or_ne x 0 with hx0 | hx0
+  · have hθ1 : θ = 1 := sub_eq_zero.mp (hxdef.symm.trans hx0)
+    have hL : W (θ ^ p - 1) = 0 := by rw [hθ1]; simp
+    rw [hL, hx0]
+    simp [zero_pow hp.out.pos.ne']
+  set B : K := ∑ k ∈ Finset.range q, ((Nat.choose p (k + 2) : ℕ) : K) * x ^ (k + 2) with hB
+  have hdecomp : θ ^ p - 1 = ((p : ℕ) : K) * x + B + x ^ p := by
+    rw [hθx, add_pow]
+    simp only [one_pow, mul_one]
+    rw [hq, Finset.sum_range_succ, Finset.sum_range_succ', Finset.sum_range_succ']
+    simp only [hB, hq]
+    push_cast
+    ring_nf
+    simp only [Nat.choose_one_right, Nat.choose_self, Nat.choose_zero_right, Nat.cast_one,
+      Nat.cast_add, Nat.cast_ofNat]
+    ring
+  -- the middle block is small
+  have hBle : W B ≤ W ((p : ℕ) : K) * W x ^ 2 := by
+    rw [hB]
+    refine Valuation.map_sum_le _ fun k hk ↦ ?_
+    rw [Finset.mem_range] at hk
+    obtain ⟨c, hc⟩ := hp.out.dvd_choose_self (by omega) (by omega : k + 2 < p)
+    rw [map_mul, map_pow]
+    have h1 : W ((Nat.choose p (k + 2) : ℕ) : K) ≤ W ((p : ℕ) : K) := by
+      rw [hc]
+      push_cast
+      rw [map_mul]
+      exact mul_le_of_le_one_right' (valuation_natCast_le_one v c)
+    have h2 : W x ^ (k + 2) ≤ W x ^ 2 := by
+      rw [pow_add, mul_comm]
+      exact mul_le_of_le_one_right' (pow_le_one' (le_of_lt hθ) k)
+    exact mul_le_mul' h1 h2
+  -- so `p * x + B` has the valuation of `p * x`
+  have hWp : W ((p : ℕ) : K) ≠ 0 := by
+    rw [Valuation.ne_zero_iff]
+    exact Nat.cast_ne_zero.mpr hp.out.pos.ne'
+  have hWx : W x ≠ 0 := by rwa [Valuation.ne_zero_iff]
+  have hBlt : W B < W (((p : ℕ) : K) * x) := by
+    rw [map_mul]
+    refine lt_of_le_of_lt hBle ?_
+    rw [pow_two, ← mul_assoc]
+    exact mul_lt_of_lt_one_right (zero_lt_iff.mpr (mul_ne_zero hWp hWx)) hθ
+  have hAB : W (((p : ℕ) : K) * x + B) = W ((p : ℕ) : K) * W x := by
+    rw [Valuation.map_add_eq_of_lt_left _ hBlt, map_mul]
+  -- and the two extremes differ, so the sum's valuation is their max
+  have hdiff : W (((p : ℕ) : K) * x + B) ≠ W (x ^ p) := by
+    rw [hAB, map_pow]
+    intro h
+    apply hne
+    have hpow : W x ^ p = W x ^ (p - 1) * W x := by
+      rw [← pow_succ]
+      congr 1
+      have := hp.out.pos
+      omega
+    rw [hpow] at h
+    exact mul_right_cancel₀ hWx h
+  rw [hdecomp, Valuation.map_add_of_distinct_val _ hdiff, hAB, map_pow]
+
+/-- **No `p`-torsion in the principal units**, away from the exceptional tie
+`W p = W (θ − 1) ^ (p − 1)`.  (The tie is real: `θ = −1` at `p = 2` over `ℚ₂`.) -/
+theorem pow_char_ne_one_of_principal {θ : K} (hθ : W (θ - 1) < 1) (hθ1 : θ ≠ 1)
+    (hne : W ((p : ℕ) : K) ≠ W (θ - 1) ^ (p - 1)) : θ ^ p ≠ 1 := by
+  intro hcon
+  have hW : W (θ ^ p - 1) = 0 := by rw [hcon, sub_self, map_zero]
+  rw [valuation_pow_char_sub_one v hθ hne] at hW
+  have hWp : W ((p : ℕ) : K) ≠ 0 := by
+    rw [Valuation.ne_zero_iff]
+    exact Nat.cast_ne_zero.mpr hp.out.pos.ne'
+  have hWx : W (θ - 1) ≠ 0 := by
+    rw [Valuation.ne_zero_iff, sub_ne_zero]
+    exact hθ1
+  rw [max_eq_iff] at hW
+  rcases hW with ⟨h, -⟩ | ⟨h, -⟩
+  · exact mul_ne_zero hWp hWx h
+  · exact pow_ne_zero _ hWx h
+
 /-! ### The heart of the rank-one case
 
 Only the `p`-part of the exponent can move `ε ^ m` towards `1` at `v`, and `a ≠ 0` in `ℤ_p`
