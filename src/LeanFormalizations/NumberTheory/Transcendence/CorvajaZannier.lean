@@ -1081,6 +1081,34 @@ theorem no_strict_decreasing_chain {K : Type*} [Field K] [NumberField K]
   have h := hle (Module.finrank ℚ (k 0) + 1)
   omega
 
+/-!
+## Step 16 — the Main Theorem's height bookkeeping
+
+At each descent step CZ replace `u` by `v = u/δ'` and must keep an inequality of the same shape
+with a slightly smaller `ε`.  The input is `H(δ'v) ≥ H(δ')⁻¹H(v)`, i.e. submultiplicativity of
+`mulHeight₁`, plus: for `H(v)` large, `H(δ')⁻¹H(v) ≥ H(v)^θ` for any `θ < 1`.
+-/
+
+/-- `H(δ v) ≥ H(δ)⁻¹ H(v)` — the form of submultiplicativity CZ use at each descent step. -/
+theorem mulHeight₁_mul_ge {K : Type*} [Field K] [NumberField K] {δ : K} (hδ0 : δ ≠ 0) (v : K) :
+    (Height.mulHeight₁ δ)⁻¹ * Height.mulHeight₁ v ≤ Height.mulHeight₁ (δ * v) := by
+  have hδ : (0 : ℝ) < Height.mulHeight₁ δ := Height.mulHeight₁_pos δ
+  have h := Height.mulHeight₁_mul_le δ⁻¹ (δ * v)
+  rw [show δ⁻¹ * (δ * v) = v by field_simp, Height.mulHeight₁_inv] at h
+  rw [inv_mul_le_iff₀ hδ]
+  exact h
+
+/-- For `θ < 1` and `H(v)` past an explicit threshold, `H(δ)⁻¹H(v) ≥ H(v)^θ`: the descent keeps
+an inequality of the same shape with exponent `ε·θ`. -/
+theorem rpow_le_of_mulHeight₁_large {C : ℝ} (hC : 1 ≤ C) {θ : ℝ} {H : ℝ}
+    (hH : 1 < H) (hbig : C ≤ H ^ (1 - θ)) : H ^ θ ≤ C⁻¹ * H := by
+  have hH0 : (0 : ℝ) < H := lt_trans zero_lt_one hH
+  have hC0 : (0 : ℝ) < C := lt_of_lt_of_le zero_lt_one hC
+  rw [le_inv_mul_iff₀ hC0]
+  calc C * H ^ θ ≤ H ^ (1 - θ) * H ^ θ := by
+        exact mul_le_mul_of_nonneg_right hbig (Real.rpow_nonneg hH0.le θ)
+    _ = H := by rw [← Real.rpow_add hH0]; simp
+
 end CZ
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
