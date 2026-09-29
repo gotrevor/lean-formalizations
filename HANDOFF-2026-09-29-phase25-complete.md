@@ -1,5 +1,7 @@
 # HANDOFF — phase 25 COMPLETE (2026-09-29)
 
+**Branch:** `main`  **HEAD at lap end:** `2974766` (proofs: `564ae0a`)  **Build:** green, `lake build` clean
+
 **Scope:** `sorry-free:src/LeanFormalizations/NumberTheory/Transcendence/Periods.lean` — **MET.**
 
 All ten frozen statements proved, `#print axioms` clean (`propext`, `Classical.choice`,
@@ -36,7 +38,22 @@ non-derivability note in `ExponentialsKnown.lean` stands.
 * `field_simp` inside `ℂ` after `push_cast` can blow the heartbeat budget — do the algebra in
   `ℝ` and lift with `Complex.ofReal_mul`/`ofReal_pow`.
 
-## Next
+## Exact next steps (for a fresh session)
+
+1. Nothing is pending in phase 25 — the scope is closed and the stop sentinel is written
+   (`~/src/.treadmill/lean-formalizations.stop`). The treadmill will not relaunch.
+2. The next phase needs an operator directive in `DIRECTION.md`. Candidate targets, in the
+   order the repo's own notes rank them:
+   - `WALDSCHMIDT-2023.md` lists the survey items still uncovered (§ beyond Conj 1 / rank).
+   - `src/LeanFormalizations/Maze.lean` — each row's `reopenIf` names the new idea a closed
+     route would need; grep it BEFORE planting anything.
+   - `SharpSixVariants.lean` and the Leopoldt scaffold (`StressTests.lean`) were committed by
+     another session as `2307035`; their sorries are designated-open and were untouched here.
+     Whoever owns that thread should pick it up, not this one.
+3. Re-run `scripts/fact-graph` after any new phase (it is current as of this commit:
+   30 edges, 27 hypotheses).
+
+## Notes
 
 Operator's call. Uncovered survey items are listed in `WALDSCHMIDT-2023.md`; `Maze.lean` records
 routes already closed. Note another session committed `SharpSixVariants.lean` and the Leopoldt
