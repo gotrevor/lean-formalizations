@@ -241,6 +241,77 @@ theorem approxProd_of_prod_eq {ι : Type*} [Fintype ι] [Nonempty ι]
   simp only [div_pow, Finset.prod_div_distrib]
   rw [div_mul_div_comm, hnum, hden]
 
+/-!
+## Step 3 — CZ's linear forms and their independence
+
+At the distinguished place `w` one coordinate form is replaced by `Σ λⱼ xⱼ`; everywhere else the
+forms are the coordinates.  Independence is the only hypothesis `Stephan2026Subspace` asks for.
+-/
+
+/-- The linear form `x ↦ Σⱼ λⱼ xⱼ`. -/
+noncomputable def czForm {ι : Type*} [Fintype ι] (lam : ι → K) : Module.Dual K (ι → K) :=
+  ∑ j, lam j • (LinearMap.proj j : Module.Dual K (ι → K))
+
+@[simp] theorem czForm_apply {ι : Type*} [Fintype ι] (lam x : ι → K) :
+    czForm lam x = ∑ j, lam j * x j := by
+  simp [czForm]
+
+/-- The coordinate forms are linearly independent. -/
+theorem linearIndependent_proj {ι : Type*} [Fintype ι] [DecidableEq ι] :
+    LinearIndependent K (fun i : ι ↦ (LinearMap.proj i : Module.Dual K (ι → K))) := by
+  rw [Fintype.linearIndependent_iff]
+  intro g hg j
+  have h := DFunLike.congr_fun hg (Pi.single j (1 : K))
+  simp only [LinearMap.coe_sum, Finset.sum_apply, LinearMap.smul_apply, smul_eq_mul,
+    LinearMap.zero_apply, LinearMap.proj_apply, Pi.single_apply, mul_ite, mul_one, mul_zero] at h
+  rw [Finset.sum_ite_eq' Finset.univ j g] at h
+  simpa using h
+
+/-- CZ's forms at a place: the coordinate forms, with the `i₀`-th replaced by `Σ λⱼ xⱼ`. -/
+noncomputable def czFormFamily {ι : Type*} [Fintype ι] [DecidableEq ι] (i₀ : ι) (lam : ι → K) :
+    ι → Module.Dual K (ι → K) :=
+  fun i ↦ if i = i₀ then czForm lam else LinearMap.proj i
+
+/-- **Independence of CZ's forms** at the distinguished place: needs only `λ_{i₀} ≠ 0`. -/
+theorem linearIndependent_czFormFamily {ι : Type*} [Fintype ι] [DecidableEq ι] {i₀ : ι}
+    {lam : ι → K} (h0 : lam i₀ ≠ 0) : LinearIndependent K (czFormFamily i₀ lam) := by
+  classical
+  rw [Fintype.linearIndependent_iff]
+  intro g hg
+  have hF : ∀ i j : ι, (czFormFamily i₀ lam i) (Pi.single j (1 : K))
+      = if i = i₀ then lam j else (if i = j then 1 else 0) := by
+    intro i j
+    by_cases hi : i = i₀
+    · subst hi; simp [czFormFamily, Pi.single_apply, eq_comm]
+    · simp [czFormFamily, hi, Pi.single_apply]
+  have hsum : ∀ j : ι,
+      ∑ i, g i * (if i = i₀ then lam j else (if i = j then (1 : K) else 0)) = 0 := by
+    intro j
+    have h := DFunLike.congr_fun hg (Pi.single j (1 : K))
+    simpa only [LinearMap.coe_sum, Finset.sum_apply, LinearMap.smul_apply, smul_eq_mul,
+      LinearMap.zero_apply, hF] using h
+  have hi0 : g i₀ = 0 := by
+    have h := hsum i₀
+    rw [Finset.sum_congr rfl (g := fun i ↦ if i = i₀ then g i * lam i₀ else 0)
+      (fun i _ ↦ by by_cases hi : i = i₀ <;> simp [hi])] at h
+    rw [Finset.sum_ite_eq' Finset.univ i₀ (fun i ↦ g i * lam i₀)] at h
+    simp only [Finset.mem_univ, if_pos] at h
+    exact (mul_eq_zero.mp h).resolve_right h0
+  intro i
+  by_cases hi : i = i₀
+  · rw [hi]; exact hi0
+  · have h := hsum i
+    rw [Finset.sum_congr rfl (g := fun k ↦ (if k = i₀ then g i₀ * lam i else 0)
+        + (if k = i then g k else 0))
+      (fun k _ ↦ by
+        by_cases hk : k = i₀
+        · subst hk; simp [Ne.symm hi]
+        · by_cases hk2 : k = i <;> simp [hk, hk2, hi])] at h
+    rw [Finset.sum_add_distrib, Finset.sum_ite_eq' Finset.univ i₀ (fun _ ↦ g i₀ * lam i),
+      Finset.sum_ite_eq' Finset.univ i g] at h
+    simp only [Finset.mem_univ, if_pos, hi0, zero_mul, zero_add] at h
+    exact h
+
 end CZ
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
