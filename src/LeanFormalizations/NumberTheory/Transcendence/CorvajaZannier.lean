@@ -371,7 +371,73 @@ theorem czLemma1_arch (hSub : Stephan2026Subspace) {K : Type} [Field K] [NumberF
     (hineq : ∀ x ∈ Ξ, w (∑ i, lam i * x i) ≤ w (x i₀) * Height.mulHeight x ^ (-ε)) :
     ∃ a : ι → K, a ≠ 0 ∧ {x ∈ Ξ | ∑ i, a i * x i = 0}.Infinite := by
   classical
-  sorry
+  have hx0 : ∀ x ∈ Ξ, ∀ i, x i ≠ 0 := fun x hx i ↦ (hS x hx i).1
+  have hxne : ∀ x ∈ Ξ, x ≠ 0 := fun x hx h ↦ hx0 x hx i₀ (by rw [h]; rfl)
+  -- the deviation product collapses to the distinguished place
+  have hcprod : ∀ x : ι → K,
+      ((∏ v : InfinitePlace K, czC w.1 i₀ lam x v.1 ^ v.mult) * ∏ v ∈ Sfin, czC w.1 i₀ lam x v.1)
+        = (czC w.1 i₀ lam x w.1) ^ w.mult := by
+    intro x
+    have hfin : ∀ v ∈ Sfin, czC w.1 i₀ lam x v.1 = 1 := fun v _ ↦ by
+      simp [czC, finitePlace_val_ne_infinitePlace_val v w]
+    rw [Finset.prod_congr rfl hfin, Finset.prod_const_one, mul_one,
+      Finset.prod_eq_single w (fun v _ hvw ↦ by
+        have hv : v.1 ≠ w.1 := fun h ↦ hvw (Subtype.ext h)
+        simp [czC, hv]) (fun h ↦ absurd (Finset.mem_univ w) h)]
+  -- the approximation bound
+  have hbound : ∀ x ∈ Ξ, approxProd (Finset.univ : Finset (InfinitePlace K)) Sfin (fun v ↦ v)
+      (czL w.1 i₀ lam) x ≤ Height.mulHeight x ^ (-(Fintype.card ι : ℝ) - ε) := by
+    intro x hx
+    rw [approxProd_of_prod_eq (hS x hx) _ _ (fun v ↦ prod_czL (hx0 x hx i₀) v), hcprod x]
+    set H := Height.mulHeight x with hH
+    have hH1 : (1 : ℝ) ≤ H := Height.one_le_mulHeight x
+    have hHpos : (0 : ℝ) < H := lt_of_lt_of_le zero_lt_one hH1
+    have hc0 : 0 ≤ czC w.1 i₀ lam x w.1 := by
+      simp only [czC, if_true]
+      exact div_nonneg (w.1.nonneg _) (w.1.nonneg _)
+    have hcle : czC w.1 i₀ lam x w.1 ≤ H ^ (-ε) := by
+      simp only [czC, if_true]
+      rw [div_le_iff₀ (w.1.pos (hx0 x hx i₀))]
+      exact (hineq x hx).trans_eq (mul_comm _ _)
+    have hrle : H ^ (-ε) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hH1 (by linarith)
+    have hpow : czC w.1 i₀ lam x w.1 ^ w.mult ≤ H ^ (-ε) :=
+      le_trans (pow_le_of_le_one hc0 (hcle.trans hrle) NumberField.InfinitePlace.mult_ne_zero) hcle
+    rw [div_le_iff₀ (pow_pos hHpos _)]
+    refine hpow.trans (le_of_eq ?_)
+    rw [← Real.rpow_natCast H (Fintype.card ι), ← Real.rpow_add hHpos]
+    ring_nf
+  -- independence of the forms
+  have hLi : ∀ v ∈ (Finset.univ : Finset (InfinitePlace K)),
+      LinearIndependent K (czL w.1 i₀ lam v.1) := by
+    intro v _
+    by_cases hv : v = w
+    · have : czL w.1 i₀ lam v.1 = czFormFamily i₀ lam := by
+        funext i; simp [czL, hv]
+      rw [this]; exact linearIndependent_czFormFamily h0
+    · have hv' : v.1 ≠ w.1 := fun h ↦ hv (Subtype.ext h)
+      have : czL w.1 i₀ lam v.1 = fun i ↦ (LinearMap.proj i : Module.Dual K (ι → K)) := by
+        funext i; simp [czL, hv']
+      rw [this]; exact linearIndependent_proj
+  have hLf : ∀ v ∈ Sfin, LinearIndependent K (czL w.1 i₀ lam v.1) := by
+    intro v _
+    have hv' : v.1 ≠ w.1 := finitePlace_val_ne_infinitePlace_val v w
+    have : czL w.1 i₀ lam v.1 = fun i ↦ (LinearMap.proj i : Module.Dual K (ι → K)) := by
+      funext i; simp [czL, hv']
+    rw [this]; exact linearIndependent_proj
+  obtain ⟨a, ha, hainf⟩ := exists_dual_infinite_of_stephan hSub (Finset.univ) Sfin
+    (czL w.1 i₀ lam) hLi hLf hε Ξ hΞ hxne hbound
+  refine ⟨fun i ↦ a (fun j ↦ if i = j then (1 : K) else 0), ?_, hainf.mono ?_⟩
+  · intro hA
+    refine ha (LinearMap.ext fun x ↦ ?_)
+    rw [LinearMap.pi_apply_eq_sum_univ a x]
+    refine Finset.sum_eq_zero fun i _ ↦ ?_
+    rw [congrFun hA i]
+    simp
+  · rintro x ⟨hx, hax⟩
+    refine ⟨hx, ?_⟩
+    rw [LinearMap.pi_apply_eq_sum_univ a x] at hax
+    refine Eq.trans ?_ hax
+    exact Finset.sum_congr rfl fun i _ ↦ by rw [smul_eq_mul, mul_comm]
 
 
 end CZ
