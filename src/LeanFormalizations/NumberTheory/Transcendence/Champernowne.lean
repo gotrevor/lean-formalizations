@@ -364,6 +364,128 @@ lemma champApprox_den_dvd (m : ℕ) : (champApprox m).den ∣ champDen m := by
   rw [Rat.divInt_eq_div, e] at h
   exact_mod_cast h
 
+
+/-! ## Leaf 5: numeric bounds on the two tails -/
+
+lemma gser_nonneg (m j : ℕ) : 0 ≤ gser m j := by unfold gser; positivity
+
+lemma summable_gtail (m : ℕ) : Summable fun j : ℕ => gser m (9 * 10 ^ m + j) :=
+  ((summable_nat_add_iff (9 * 10 ^ m)).mpr (summable_gser m)).congr
+    (fun j => by congr 1; omega)
+
+lemma gser_first (m : ℕ) : gser m (9 * 10 ^ m) = 1 / 10 ^ blockStart (m + 1) := by
+  have hnum : (10:ℕ) ^ m + 9 * 10 ^ m = 10 ^ (m + 1) := by ring
+  have hexp : blockStart m + (m + 1) * (9 * 10 ^ m + 1) = blockStart (m + 1) + (m + 1) := by
+    rw [blockStart_succ]; ring
+  unfold gser
+  rw [hnum, hexp, pow_add]
+  push_cast
+  rw [div_eq_div_iff (by positivity) (by positivity)]
+  ring
+
+lemma gtail_ge (m : ℕ) : 1 / 10 ^ blockStart (m + 1) ≤ gtail m := by
+  have h := (summable_gtail m).le_tsum 0 (fun j _ => gser_nonneg _ _)
+  rw [← gser_first m]
+  simpa [gtail] using h
+
+/-- `∑' j, (j+1) r^j = (1−r)⁻²` for `0 ≤ r < 1`; the instance we need is `r = 1/10`. -/
+lemma tsum_succ_mul_geometric_tenth :
+    ∑' j : ℕ, ((j : ℝ) + 1) * (1/10 : ℝ) ^ j = 100 / 81 := by
+  have h1 : HasSum (fun j : ℕ => (1/10 : ℝ) ^ j) (1 - 1/10)⁻¹ :=
+    hasSum_geometric_of_lt_one (by norm_num) (by norm_num)
+  have h2 : HasSum (fun j : ℕ => (j : ℝ) * (1/10 : ℝ) ^ j) ((1/10 : ℝ) / (1 - 1/10) ^ 2) :=
+    hasSum_coe_mul_geometric_of_norm_lt_one (by rw [Real.norm_eq_abs]; norm_num)
+  have h3 := h2.add h1
+  have : ((1/10 : ℝ) / (1 - 1/10) ^ 2 + (1 - 1/10)⁻¹) = 100 / 81 := by norm_num
+  rw [this] at h3
+  exact (h3.congr_fun fun j => by ring).tsum_eq
+
+lemma gtail_le (m : ℕ) : gtail m ≤ 2 * (1 / 10 ^ blockStart (m + 1)) := by
+  have hT : (10:ℝ) ≤ 10 ^ (m + 1) := by
+    calc (10:ℝ) = 10 ^ 1 := by norm_num
+      _ ≤ 10 ^ (m + 1) := by apply pow_le_pow_right₀ (by norm_num); omega
+  have key : ∀ j : ℕ, gser m (9 * 10 ^ m + j) ≤
+      (1 / 10 ^ blockStart (m + 1)) * (((j : ℝ) + 1) * (1/10 : ℝ) ^ j) := by
+    intro j
+    have hnum : (10:ℕ) ^ m + (9 * 10 ^ m + j) = 10 ^ (m + 1) + j := by ring
+    have hexp : blockStart m + (m + 1) * (9 * 10 ^ m + j + 1)
+        = blockStart (m + 1) + (m + 1) + (m + 1) * j := by rw [blockStart_succ]; ring
+    have hc : (((10 ^ (m + 1) + j : ℕ)) : ℝ) = (10:ℝ) ^ (m + 1) + (j : ℝ) := by push_cast; ring
+    have hden : (10:ℝ) ^ (blockStart (m + 1) + (m + 1) + (m + 1) * j)
+        = 10 ^ blockStart (m + 1) * 10 ^ (m + 1) * ((10:ℝ) ^ (m + 1)) ^ j := by
+      rw [← pow_mul, ← pow_add, ← pow_add]
+    unfold gser
+    rw [hnum, hexp, hc, hden]
+    set X : ℝ := (10:ℝ) ^ (m + 1) with hXdef
+    set P : ℝ := (10:ℝ) ^ blockStart (m + 1) with hPdef
+    have hX : (10:ℝ) ≤ X := hT
+    have hP : (0:ℝ) < P := by rw [hPdef]; positivity
+    have hj : (0:ℝ) ≤ (j : ℝ) := Nat.cast_nonneg j
+    have hXj : (0:ℝ) < X ^ j := by positivity
+    have hZ : (0:ℝ) < (10:ℝ) ^ j := by positivity
+    have hZY : (10:ℝ) ^ j ≤ X ^ j := pow_le_pow_left₀ (by norm_num) hX j
+    have hR : (1 / P) * (((j : ℝ) + 1) * (1/10 : ℝ) ^ j) = ((j : ℝ) + 1) / (P * 10 ^ j) := by
+      rw [div_pow, one_pow]; field_simp
+    rw [hR, div_le_div_iff₀ (by positivity) (by positivity)]
+    calc (X + (j : ℝ)) * (P * 10 ^ j) ≤ (((j : ℝ) + 1) * X) * (P * 10 ^ j) := by
+          apply mul_le_mul_of_nonneg_right _ (by positivity)
+          nlinarith [hX, hj]
+      _ ≤ (((j : ℝ) + 1) * X) * (P * X ^ j) := by
+          apply mul_le_mul_of_nonneg_left _ (by positivity)
+          exact mul_le_mul_of_nonneg_left hZY hP.le
+      _ = ((j : ℝ) + 1) * (P * X * X ^ j) := by ring
+  have hs : Summable fun j : ℕ =>
+      (1 / 10 ^ blockStart (m + 1) : ℝ) * (((j : ℝ) + 1) * (1/10 : ℝ) ^ j) := by
+    have h1 : Summable (fun j : ℕ => (j : ℝ) * (1/10 : ℝ) ^ j) :=
+      (hasSum_coe_mul_geometric_of_norm_lt_one (r := (1/10:ℝ))
+        (by rw [Real.norm_eq_abs]; norm_num)).summable
+    have h2 : Summable (fun j : ℕ => (1/10 : ℝ) ^ j) :=
+      summable_geometric_of_lt_one (by norm_num) (by norm_num)
+    exact ((h1.add h2).congr (fun j => by ring)).mul_left _
+  have hle := (summable_gtail m).tsum_le_tsum key hs
+  rw [tsum_mul_left, tsum_succ_mul_geometric_tenth] at hle
+  have hB : (0:ℝ) < 1 / 10 ^ blockStart (m + 1) := by positivity
+  calc gtail m ≤ 1 / 10 ^ blockStart (m + 1) * (100 / 81) := hle
+    _ ≤ 2 * (1 / 10 ^ blockStart (m + 1)) := by linarith
+
+lemma digitsUpTo_pow (m : ℕ) : digitsUpTo (10 ^ (m + 1)) = blockStart (m + 1) + (m + 2) := by
+  have h := digitsUpTo_block (m + 1) 0 (by positivity)
+  simpa using h
+
+lemma ctail_block_le (m : ℕ) :
+    ctail (10 ^ (m + 1) - 1) ≤ (1/5) * (1 / 10 ^ blockStart (m + 1)) := by
+  have h1 : (1:ℕ) ≤ 10 ^ (m + 1) := Nat.one_le_pow _ _ (by norm_num)
+  have hK : 10 ^ (m + 1) - 1 + 1 = 10 ^ (m + 1) := by omega
+  have hsucc := ctail_succ (10 ^ (m + 1) - 1)
+  rw [hK] at hsucc
+  have hterm : cterm (10 ^ (m + 1)) = (1/10) * (1 / 10 ^ blockStart (m + 1)) := by
+    unfold cterm
+    rw [digitsUpTo_pow m]
+    have hc : (((10:ℕ) ^ (m + 1) : ℕ) : ℝ) = (10:ℝ) ^ (m + 1) := by push_cast; ring
+    rw [hc, show blockStart (m + 1) + (m + 2) = blockStart (m + 1) + 1 + (m + 1) by omega,
+      pow_add, pow_add]
+    have hb : (0:ℝ) < 10 ^ blockStart (m + 1) := by positivity
+    have hx : (0:ℝ) < (10:ℝ) ^ (m + 1) := by positivity
+    field_simp
+    ring
+  have htail : ctail (10 ^ (m + 1)) ≤ (10/9) * (1 / 10 ^ digitsUpTo (10 ^ (m + 1))) :=
+    ctail_le _
+  have hmono : (1:ℝ) / 10 ^ digitsUpTo (10 ^ (m + 1)) ≤
+      (1/100) * (1 / 10 ^ blockStart (m + 1)) := by
+    rw [digitsUpTo_pow m, show blockStart (m + 1) + (m + 2) = blockStart (m + 1) + 2 + m by omega,
+      pow_add, pow_add]
+    have hb : (0:ℝ) < 10 ^ blockStart (m + 1) := by positivity
+    have e : (1:ℝ) / (10 ^ blockStart (m + 1) * 10 ^ 2 * 10 ^ m)
+        = (1/100) * (1 / 10 ^ blockStart (m + 1)) * (1 / 10 ^ m) := by
+      field_simp; ring
+    rw [e]
+    have h10 : (1:ℝ) / 10 ^ m ≤ 1 := by
+      rw [div_le_one (by positivity)]; exact one_le_pow₀ (by norm_num)
+    nlinarith [h10, (by positivity : (0:ℝ) < (1/100 : ℝ) * (1 / 10 ^ blockStart (m + 1)))]
+  have hbpos : (0:ℝ) < 1 / 10 ^ blockStart (m + 1) := by positivity
+  rw [hsucc, hterm]
+  linarith [htail, hmono, hbpos]
+
 /-- Sanity anchor for the definition: the first eleven digits are `12345678910`. -/
 theorem champernowne_prefix :
     ⌊champernowne * 10 ^ 11⌋ = 12345678910 := by
