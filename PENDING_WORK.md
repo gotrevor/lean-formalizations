@@ -1,3 +1,19 @@
+## PHASE 15 (2026-09-29) — CLOSED: consequences of Schanuel's conjecture
+
+`NumberTheory/Transcendence/Schanuel.lean` sorry-free, all ten frozen statements axiom-clean.
+Details + reusable toolkit + gotchas: `HANDOFF-2026-09-29-phase15-complete.md`.
+Unconditional by-products for other threads: `linearIndependent_log_primes` (ℤ and ℚ),
+`factorization_prod_primes`, `isAlgebraic_two_rpow_rat`, `irrational_two_rpow_rat`,
+`linearIndependent_int_of_nat` (mathlib has no `LinearIndependent ℕ` API),
+`eq_zero_of_algebraicIndependent_linear`.
+
+**Next attack (nothing blocked):** more Schanuel consequences are now cheap — `2^√2`, `e^{e^e}`,
+`π` together with logs of primes, `e + log 2`, Baker's theorem as the `n`-generator version of
+the log-primes argument.  The four-exponentials conjecture is *not* implied and would need its
+own `Literature/` entry.
+
+---
+
 ## PHASE 13 (2026-09-29) — Corvaja–Zannier from Stephan's Subspace Theorem
 
 `NumberTheory/Transcendence/CorvajaZannier.lean`.  **CZ's Lemma 1 is PROVED** (both the
