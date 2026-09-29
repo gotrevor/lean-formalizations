@@ -1109,6 +1109,41 @@ theorem rpow_le_of_mulHeight₁_large {C : ℝ} (hC : 1 ≤ C) {θ : ℝ} {H : �
         exact mul_le_mul_of_nonneg_right hbig (Real.rpow_nonneg hH0.le θ)
     _ = H := by rw [← Real.rpow_add hH0]; simp
 
+/-!
+## Step 17 — CZ's Lemma-3 point `x = (p, qσ₁(u), …, qσ_d(u))`
+-/
+
+/-- CZ's Lemma-3 point: the rational integer `p` in coordinate `none`, and `q zᵢ` elsewhere. -/
+noncomputable def czPoint {ι : Type*} (p q : ℤ) (z : ι → K) : Option ι → K
+  | none => (p : K)
+  | some i => (q : K) * z i
+
+@[simp] theorem czPoint_none {ι : Type*} (p q : ℤ) (z : ι → K) :
+    czPoint p q z none = (p : K) := rfl
+
+@[simp] theorem czPoint_some {ι : Type*} (p q : ℤ) (z : ι → K) (i : ι) :
+    czPoint p q z (some i) = (q : K) * z i := rfl
+
+/-- The Lemma-3 point is `S`-integral: off `S` every coordinate lies in the closed unit disc. -/
+theorem iSup_czPoint_le_one {ι : Type*} [Fintype ι] {Sfin : Finset (FinitePlace K)}
+    (p q : ℤ) {z : ι → K} (hz : ∀ i, IsSUnit Sfin (z i)) {v : FinitePlace K} (hv : v ∉ Sfin) :
+    (⨆ j, v (czPoint p q z j)) ≤ 1 := by
+  refine ciSup_le fun j ↦ ?_
+  rcases j with _ | i
+  · exact finitePlace_intCast_le_one v p
+  · rw [czPoint_some, map_mul, (hz i).2 v hv, mul_one]
+    exact finitePlace_intCast_le_one v q
+
+/-- The Lemma-3 point is nonzero as soon as `q ≠ 0` and there is at least one coordinate. -/
+theorem czPoint_ne_zero {ι : Type*} [Nonempty ι] {Sfin : Finset (FinitePlace K)}
+    (p : ℤ) {q : ℤ} (hq : q ≠ 0) {z : ι → K} (hz : ∀ i, IsSUnit Sfin (z i)) :
+    czPoint p q z ≠ 0 := by
+  intro h
+  have := congrFun h (some (Classical.arbitrary ι))
+  rw [czPoint_some] at this
+  have hqK : (q : K) ≠ 0 := Int.cast_ne_zero.mpr hq
+  exact (hz (Classical.arbitrary ι)).1 ((mul_eq_zero.mp this).resolve_left hqK)
+
 end CZ
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
