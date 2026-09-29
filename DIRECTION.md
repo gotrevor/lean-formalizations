@@ -14,6 +14,11 @@ freely.  Frozen by name: the two phase-14 theorems, every earlier name, all of `
 Stop condition: `TranscendentalRH.lean` sorry-free.
 
 ---
+## ⏳ QUEUED (phase 15, 2026-09-29): what follows from Schanuel's conjecture
+
+Launches after phase 14 exits; phase-14 laps ignore this section.  Trevor 2026-09-29: *"Since there are a lot of things that follow from it, I think it's worth writing those things down.  Maybe, just maybe, we'll bump into a contradiction, or notice something interesting."*  Hypothesis: `Literature.SchanuelConjecture` (verbatim from formal-conjectures).  Target file `NumberTheory/Transcendence/Schanuel.lean`: 10 frozen statements (consistency edges to Gelfond–Schneider, Lindemann–Weierstrass and Nesterenko; open consequences `e, π` algebraically independent, `e+π`, `eπ`, `e, e^e`, logs of primes; Wright towers).  Sketches are in the header.  Add further consequences as new theorems freely; a statement found underivable is an advance, so record it.  Frozen by name: the ten statements, every earlier name, all of `Literature/`.  Stop condition: `Schanuel.lean` sorry-free.
+
+---
 
 ## ⏸️ PARKED (phase 13b, 2026-09-29): Dubickas Lemma 6 from Stephan's machine-checked CZ
 
