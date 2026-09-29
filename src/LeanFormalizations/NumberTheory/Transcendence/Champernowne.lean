@@ -59,7 +59,7 @@ lemma digits_len_of_mem_block {m n : ℕ} (h₁ : 10 ^ m ≤ n) (h₂ : n < 10 ^
   rw [Nat.length_digits 10 n (by norm_num) hn, Nat.log_eq_of_pow_le_of_lt_pow h₁ h₂]
 
 /-- `N m` = number of decimal digits used by all of `1, 2, …, 10 ^ m − 1`. -/
-noncomputable abbrev blockStart (m : ℕ) : ℕ := digitsUpTo (10 ^ m - 1)
+abbrev blockStart (m : ℕ) : ℕ := digitsUpTo (10 ^ m - 1)
 
 /-- Inside the block of `(m+1)`-digit numbers, `digitsUpTo` is arithmetic with step `m + 1`. -/
 lemma digitsUpTo_block (m : ℕ) : ∀ j : ℕ, j < 9 * 10 ^ m →
@@ -288,6 +288,81 @@ lemma gser_block_sum (m : ℕ) :
     tsum_congr fun j => by congr 1; omega
   rw [this]
   linarith
+
+
+/-! ## Leaf 4: the master identity `C − p_m/q_m = ctail − gtail` -/
+
+lemma ctail_block (m : ℕ) :
+    ctail (10 ^ m - 1) =
+      (∑ i ∈ Finset.range (9 * 10 ^ m), cterm (10 ^ m + i)) + ctail (10 ^ (m + 1) - 1) := by
+  have ha : (1:ℕ) ≤ 10 ^ m := Nat.one_le_pow _ _ (by norm_num)
+  have hpow : (10:ℕ) ^ (m + 1) = 10 ^ m * 10 := by ring
+  have hs : Summable (fun i : ℕ => cterm (10 ^ m + i)) :=
+    (summable_cterm_shift (10 ^ m - 1)).congr (fun i => by congr 1; omega)
+  have h := Summable.sum_add_tsum_nat_add (f := fun i : ℕ => cterm (10 ^ m + i)) (9 * 10 ^ m) hs
+  have e1 : ctail (10 ^ m - 1) = ∑' i : ℕ, cterm (10 ^ m + i) :=
+    tsum_congr fun i => by congr 1; omega
+  have e2 : ctail (10 ^ (m + 1) - 1) = ∑' i : ℕ, cterm (10 ^ m + (i + 9 * 10 ^ m)) :=
+    tsum_congr fun i => by congr 1; omega
+  rw [e1, e2, ← h]
+
+lemma champ_sub_approx (m : ℕ) :
+    champernowne - (cpartial (10 ^ m - 1) +
+        ((10:ℝ) ^ m * (10 ^ (m + 1) - 1) + 1) /
+          (10 ^ blockStart m * (10 ^ (m + 1) - 1) ^ 2))
+      = ctail (10 ^ (m + 1) - 1) - gtail m := by
+  have hblk : ∑ i ∈ Finset.range (9 * 10 ^ m), cterm (10 ^ m + i)
+      = ∑ i ∈ Finset.range (9 * 10 ^ m), gser m i :=
+    Finset.sum_congr rfl fun i hi => cterm_eq_gser (Finset.mem_range.mp hi)
+  have h := champ_split (10 ^ m - 1)
+  rw [ctail_block m, hblk, gser_block_sum m] at h
+  linarith
+
+/-! ### The approximation as an explicit rational -/
+
+/-- Numerator of the `m`-th block approximation. -/
+def champNum (m : ℕ) : ℕ :=
+  prefixNum (10 ^ m - 1) * (10 ^ (m + 1) - 1) ^ 2 + 10 ^ m * (10 ^ (m + 1) - 1) + 1
+
+/-- Denominator of the `m`-th block approximation: `10^N · (10^{m+1} − 1)²`. -/
+def champDen (m : ℕ) : ℕ := 10 ^ blockStart m * (10 ^ (m + 1) - 1) ^ 2
+
+lemma champDen_pos (m : ℕ) : 0 < champDen m := by
+  have h1 : (1:ℕ) ≤ 10 ^ (m + 1) := Nat.one_le_pow _ _ (by norm_num)
+  have h9 : (10:ℕ) ^ (m + 1) = 10 ^ m * 10 := by ring
+  have ha : (1:ℕ) ≤ 10 ^ m := Nat.one_le_pow _ _ (by norm_num)
+  have : 0 < 10 ^ (m + 1) - 1 := by omega
+  unfold champDen
+  positivity
+
+/-- The `m`-th block approximation to Champernowne's constant. -/
+noncomputable def champApprox (m : ℕ) : ℚ := (champNum m : ℚ) / (champDen m : ℚ)
+
+lemma champApprox_cast (m : ℕ) :
+    ((champApprox m : ℚ) : ℝ) = cpartial (10 ^ m - 1) +
+      ((10:ℝ) ^ m * (10 ^ (m + 1) - 1) + 1) /
+        (10 ^ blockStart m * (10 ^ (m + 1) - 1) ^ 2) := by
+  have h1 : (1:ℕ) ≤ 10 ^ (m + 1) := Nat.one_le_pow _ _ (by norm_num)
+  have hA : ((10:ℝ) ^ (m + 1) - 1) ≠ 0 := by
+    have : (10:ℝ) ≤ 10 ^ (m + 1) := by
+      calc (10:ℝ) = 10 ^ 1 := by norm_num
+        _ ≤ 10 ^ (m + 1) := by apply pow_le_pow_right₀ (by norm_num); omega
+    intro h; linarith
+  have hB : ((10:ℝ) ^ blockStart m) ≠ 0 := by positivity
+  rw [cpartial_eq]
+  unfold champApprox champNum champDen
+  push_cast [Nat.cast_sub h1]
+  rw [show digitsUpTo (10 ^ m - 1) = blockStart m from rfl]
+  field_simp
+  ring
+
+/-- The denominator of the reduced rational divides the explicit `champDen`. -/
+lemma champApprox_den_dvd (m : ℕ) : (champApprox m).den ∣ champDen m := by
+  have h := Rat.den_dvd (champNum m : ℤ) (champDen m : ℤ)
+  have e : ((champNum m : ℤ) : ℚ) / ((champDen m : ℤ) : ℚ) = champApprox m := by
+    unfold champApprox; push_cast; ring
+  rw [Rat.divInt_eq_div, e] at h
+  exact_mod_cast h
 
 /-- Sanity anchor for the definition: the first eleven digits are `12345678910`. -/
 theorem champernowne_prefix :
