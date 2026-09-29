@@ -44,3 +44,13 @@ Peer, not race: reuse his proof, don't redo it.  Toolchains differ (his `v4.35.0
 Our own Pottmeyer-based scaffold (index, counting lemma 2.6.4, auxiliary polynomial, Roth's lemma)
 was drafted and discarded after this finding; the source notes are
 `papers/pottmeyer-2022-dioapp.{pdf,txt}` (ch. 3) if a native proof is ever wanted.
+
+## Bonus: the phase-9 wall
+
+Phase 9 stopped at Corvaja–Zannier's main theorem, which rests on the `p`-adic (Schlickewei)
+Subspace Theorem (`PROBE-DUBICKAS-NOSUBSPACE.md`).  Stephan's `COMPARATOR.md` lists the Subspace
+Theorem over number fields with several places, including the affine `S`-integral form
+(`NumberField.exists_finset_submodule_of_integer_of_affineProd_le`, 6.4) and Vojta's form (6.5).
+So Dubickas's Lemma 6 may reduce to his theorems too: CZ 2004's argument on top of his Subspace
+Theorem, not a proof of the Subspace Theorem.  Next probe after phase 12: state 6.2 or 6.4 verbatim
+as a `Prop`, then try to derive `corvajaZannier_dichotomy` from it.
