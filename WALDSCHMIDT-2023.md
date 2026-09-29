@@ -9,7 +9,7 @@ Fields (`ℚ` vs `ℚ̄`) are checked against the rendered PDF, never a pdftotex
 
 | Survey item | Lean | Status |
 |---|---|---|
-| §2 Leopoldt's conjecture (p-adic regulator), Ax/Brumer | none | ⏭️ not covered: needs p-adic logarithms and regulators; a separate project |
+| §2 Leopoldt's conjecture (p-adic regulator ≠ 0; open in general, proved for abelian extensions of ℚ or of imaginary quadratic fields by Ax 1965 + Brumer 1967; Mihăilescu's announced CM-field proof (2009/2011) is not accepted as of 2026-09-29) | none | ⏭️ **not stated**: a faithful statement needs the p-adic logarithm on local unit groups (or the ℤ_p-module structure on principal units), which mathlib at our pin lacks.  Stating it is the heavy lift; proving it is out of reach |
 | Conj 1, algebraic independence of logs ("weak Schanuel") | `Literature.AlgIndepLogsConjecture` | stated; ✅ from Schanuel (phase 19) |
 | Conj 1, n = 1 (Hermite–Lindemann) | `Waldschmidt2023.transcendental_log_of_lindemann` | ✅ phase 19 |
 | Baker 1966 (p. 4 conclusion, `ℚ̄`-linear independence) | `Literature.BakerHomogeneous`; inhomogeneous `Literature.Baker1966` | stated; ✅ Conj 1 ⇒ Baker (phase 19) |

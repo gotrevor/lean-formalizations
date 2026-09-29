@@ -119,6 +119,7 @@ import LeanFormalizations.NumberTheory.Transcendence.Waldschmidt2023
 import LeanFormalizations.Literature.StructuralRank
 import LeanFormalizations.Literature.Roy2001
 import LeanFormalizations.Literature.Nesterenko
+import LeanFormalizations.Literature.Ax1971
 import LeanFormalizations.NumberTheory.Transcendence.Bedrock
 import LeanFormalizations.NumberTheory.Transcendence.BedrockBaker
 import LeanFormalizations.NumberTheory.Transcendence.SchanuelPi
