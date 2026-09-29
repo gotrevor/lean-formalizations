@@ -2,7 +2,17 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 THE OBJECTIVE (phase 22, 2026-09-29): more bedrock, via LW and Baker
+## ✅ DONE (phase 22, 2026-09-29, 1 lap): more bedrock, via LW and Baker
+
+**All five frozen statements are PROVED and `#print axioms`-clean; `BedrockBaker.lean` is
+sorry-free.**  Nothing turned out false or underivable.  Two real design points: `tan` is a
+*linear* relation in `e^{2ia}` (not a quadratic in `e^{ia}`), so the weak `ℚ`-form of
+Hermite–Lindemann suffices there; and `2^√2·3^√3` needs no third logarithm beyond
+`μ = √2 log2 + √3 log3` itself, at the cost of a case split on whether `log2, log3, μ` are
+`ℚ`-independent.  Route, leaves (`baker_relation`, `not_quad_cexp_real`, `logTwoPair`) and the
+`simp`-rewrites-`ofReal_log` gotcha: the file header.
+
+### original directive
 
 Target `NumberTheory/Transcendence/BedrockBaker.lean`, 5 frozen statements (routes in the header): `tan`, `sinh`, `cosh` at nonzero algebraic reals (LW); `π + log 2` and `2^√2·3^√3` transcendental (Baker, homogeneous).  Frozen: the 5, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.
 
