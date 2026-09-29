@@ -439,7 +439,79 @@ theorem threeAdic_pm_one (hG : GaussCongruenceTrace) {n : ℕ}
     (hmono : ∀ k ≥ k₀, (C ^ (3 ^ k)).trace < (C ^ (3 ^ (k + 1))).trace) :
     ∀ e : ℕ, ∃ K, ∀ k ≥ K,
       (C ^ (3 ^ k)).trace ≡ 1 [ZMOD 3 ^ e] ∨ (C ^ (3 ^ k)).trace ≡ -1 [ZMOD 3 ^ e] := by
-  sorry
+  haveI := fact_three
+  intro e
+  set t : ℕ → ℤ := fun k => (C ^ (3 ^ k)).trace with ht
+  -- the residue of `t k` modulo `3 ^ e` is eventually constant (Gauss congruence)
+  have hgauss : ∀ k, ((3 : ℤ) ^ (k + 1)) ∣ t (k + 1) - t k := by
+    intro k
+    have := hG n C 3 k (by norm_num)
+    push_cast at this ⊢
+    exact this
+  have hconst : ∀ k, e ≤ k → ∀ l, k ≤ l → t l ≡ t k [ZMOD 3 ^ e] := by
+    intro k hk l hl
+    induction l, hl using Nat.le_induction with
+    | base => rfl
+    | succ l hl ih =>
+        refine Int.ModEq.trans ?_ ih
+        have hd : ((3 : ℤ) ^ e) ∣ t (l + 1) - t l :=
+          dvd_trans (pow_dvd_pow 3 (by omega)) (hgauss l)
+        exact (Int.modEq_iff_dvd.2 (by simpa using dvd_neg.2 hd))
+  -- pick a large index
+  obtain ⟨K₂, hK₂⟩ := lt_padicValNat_glCard C hdet hprime hmono
+  obtain ⟨K₃, hK₃0, hK₃'⟩ := trace_eventually_gt C hmono 3
+  have hK₃ : ∀ k ≥ K₃, (3 : ℤ) < t k := hK₃'
+  obtain ⟨k₁, hk₁⟩ : ∃ k₁, k₁ = max (max K₂ K₃) (max e (n * (2 * e + n) + 1)) := ⟨_, rfl⟩
+  have hk₁K₂ : K₂ ≤ k₁ := by omega
+  have hk₁K₃ : K₃ ≤ k₁ := by omega
+  have hk₁e : e ≤ k₁ := by omega
+  have hk₁n : n * (2 * e + n) < k₁ := by omega
+  have hk₁k₀ : k₀ ≤ k₁ := le_trans hK₃0 hk₁K₃
+  -- the witness value
+  have htgt : (3 : ℤ) < t k₁ := hK₃ k₁ hk₁K₃
+  obtain ⟨T, hT⟩ : ∃ T : ℕ, (T : ℤ) = t k₁ := ⟨(t k₁).toNat, Int.toNat_of_nonneg (by omega)⟩
+  have hT4 : 4 ≤ T := by omega
+  have hTtoNat : (t k₁).toNat = T := by omega
+  have hTprime : T.Prime := by
+    have := hprime k₁ hk₁k₀
+    have hnat : (t k₁).natAbs = T := by omega
+    rw [Int.prime_iff_natAbs_prime, hnat] at this
+    exact this
+  have hT3 : ¬ (3 ∣ T) := by
+    intro h
+    have := (Nat.Prime.eq_one_or_self_of_dvd hTprime 3 h)
+    omega
+  -- the key claim at `k₁`
+  have hclaim : t k₁ ≡ 1 [ZMOD 3 ^ e] ∨ t k₁ ≡ -1 [ZMOD 3 ^ e] := by
+    by_contra hc
+    push_neg at hc
+    obtain ⟨hc1, hc2⟩ := hc
+    have hcast3 : (((3:ℕ) ^ e : ℕ) : ℤ) = (3 : ℤ) ^ e := by push_cast; ring
+    have h1 : ¬ ((3:ℕ) ^ e ∣ (T - 1)) := by
+      intro h
+      apply hc1
+      refine Int.ModEq.symm (Int.modEq_iff_dvd.2 ?_)
+      have := Int.natCast_dvd_natCast.2 h
+      rw [hcast3, Nat.cast_sub (by omega)] at this
+      simpa [hT] using this
+    have h2 : ¬ ((3:ℕ) ^ e ∣ (T + 1)) := by
+      intro h
+      apply hc2
+      refine Int.ModEq.symm (Int.modEq_iff_dvd.2 ?_)
+      have hd := Int.natCast_dvd_natCast.2 h
+      rw [hcast3] at hd
+      push_cast at hd
+      rw [hT] at hd
+      simpa using hd
+    have hbound := padicValNat_glCard_le (n := n) (e := e) hT3 (by omega) h1 h2
+    have := hK₂ k₁ hk₁K₂
+    rw [hTtoNat] at this
+    omega
+  refine ⟨k₁, fun k hk => ?_⟩
+  have := hconst k₁ hk₁e k hk
+  rcases hclaim with h | h
+  · exact Or.inl (this.trans h)
+  · exact Or.inr (this.trans h)
 
 /-- **Step 4: if the least Mills constant is algebraic, its primes tend to `±1` in `ℤ₃`.** -/
 theorem mills_threeAdic (hGc : GaussCongruenceTrace)
