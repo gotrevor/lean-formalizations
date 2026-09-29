@@ -1,5 +1,17 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 13b, 2026-09-29): Dubickas Lemma 6 from Stephan's machine-checked CZ
+
+Phase 13 is STOPPED and superseded: Stephan formalized Corvaja–Zannier 2004 itself
+(`rwst/Subspace-Theorems`, `CorvajaZannier2004/`).  Its Main Theorem and Lemma 4 are now
+`Literature.Stephan2026CZMain` / `Stephan2026CZLemma4` (verbatim, frozen).  Phase 13b is
+`NumberTheory/Transcendence/CorvajaZannierStephan.lean`: wire them into the phase-9 statements and
+`Dubickas2022`.  Sketches in the file header.  Do NOT continue `CorvajaZannier.lean`.  Frozen by
+name: the three phase-13b theorems, every earlier name, all of `Literature/`.  Stop condition:
+`CorvajaZannierStephan.lean` sorry-free.
+
+---
+
 ## 🎯 THE OBJECTIVE (phase 13, 2026-09-29): Corvaja–Zannier from Stephan's Subspace Theorem
 
 Phase 12 is green (`StephanEdges.lean`).  R. Stephan's Subspace Theorem with several places is

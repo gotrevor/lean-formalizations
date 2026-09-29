@@ -7,6 +7,12 @@ Authors: Trevor Morris
 /-
 # Corvaja–Zannier (2004) from Stephan's Subspace Theorem — closing the phase-9 wall
 
+**SUPERSEDED (2026-09-29)**: Stephan formalized CZ 2004 itself; the live route is
+`CorvajaZannierStephan.lean` from `Stephan2026CZMain`/`Stephan2026CZLemma4`.  This file's
+remaining `sorry`s are disclosed and left as is (stopped after 18 commits: Lemma 1 at both place
+types, the Lemma 3 Subspace step and the Main Theorem's descent were proved; Lemma 2 = the
+unit equation was the open leaf).
+
 Phase 9 (`DubickasNoSubspace.lean`, `PROBE-DUBICKAS-NOSUBSPACE.md`) reduced Dubickas's Lemma 6
 to Corvaja–Zannier's Main Theorem, which needs the `p`-adic Subspace Theorem, and left two
 disclosed `sorry`s: `corvajaZannier_dichotomy` and `corvajaZannier_lemma4`.  R. Stephan has now

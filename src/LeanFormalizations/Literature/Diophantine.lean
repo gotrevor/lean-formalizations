@@ -16,6 +16,8 @@ repo does not prove them.
   verbatim; waits only on a toolchain match to be discharged.
 * `Stephan2026Subspace` — Stephan's Subspace Theorem with several places (Schlickewei form),
   verbatim, same status.
+* `Stephan2026CZMain`, `Stephan2026CZLemma4` — Corvaja–Zannier 2004's Main Theorem and
+  (strengthened) Lemma 4 as machine-checked by Stephan, verbatim, same status.
 
 Wiring edges (proved in `NumberTheory/Diophantine/Edges.lean`): `Ridout1957 → Mahler1957`,
 `Ridout1957 → Ridout1957SUnitDen`, `Ridout1958 → Roth1955`.
@@ -149,5 +151,55 @@ def Stephan2026Subspace : Prop :=
         approxProd Sinf Sfin (fun v ↦ v) L x ≤
           Height.mulHeight x ^ (-(Fintype.card ι : ℝ) - ε) →
         ∃ W ∈ T, x ∈ W
+
+open Classical IntermediateField in
+/-- Mathlib's `NumberField.absMulHeight₁` (absolute multiplicative Weil height), copied verbatim
+from mathlib `v4.33.x` `Mathlib/NumberTheory/Height/NumberField.lean`, because this repo's mathlib
+predates it.  Only needed to state `Stephan2026CZMain`; delete on the next mathlib bump and use
+mathlib's. -/
+noncomputable def absMulHeight₁ {K : Type*} [Field K] [CharZero K] (x : K) : ℝ :=
+  if hx : IsIntegral ℚ x then
+    haveI : FiniteDimensional ℚ ℚ⟮x⟯ := adjoin.finiteDimensional hx
+    haveI : NumberField ℚ⟮x⟯ := {}
+    (Height.mulHeight₁ (AdjoinSimple.gen ℚ x)) ^ (Module.finrank ℚ ℚ⟮x⟯ : ℝ)⁻¹
+  else 1
+
+/-- Stephan's pseudo-Pisot predicate (verbatim, `CorvajaZannier2004/PseudoPisot.lean`):
+`|α| > 1`, algebraic, every other conjugate inside the unit disc, integral trace.  CZ 2004 p. 2. -/
+def IsPseudoPisot (α : ℝ) : Prop :=
+  1 < |α| ∧ IsAlgebraic ℚ α ∧ (∀ z ∈ (minpoly ℚ α).aroots ℂ, z ≠ (α : ℂ) → ‖z‖ < 1) ∧
+    ∃ n : ℤ, ((minpoly ℚ α).aroots ℂ).sum = n
+
+open IntermediateField Module in
+/-- **Corvaja–Zannier (2004), Main Theorem, as formalized by Ralf Stephan (2026)**, verbatim up to
+universes.  For a finitely generated group `Γ` of real algebraic units, algebraic `δ ≠ 0` and
+`ε > 0`, only finitely many `(q, u) ∈ ℤ × Γ` have `|δqu| > 1`, `δqu` not pseudo-Pisot and
+`0 < ‖δqu‖ < H(u)^(−ε) |q|^(−[ℚ(u):ℚ]−ε)`.
+
+`finite_setOf_not_isPseudoPisot`, R. Stephan, *Subspace-Theorems* at `ce289c64`,
+`CorvajaZannier2004/MainTheorem.lean:251`, challenge `ChallengeCorvajaZannier2004.lean:128`
+(comparator lane `corvaja-zannier-2004`).  P. Corvaja, U. Zannier, Acta Math. 193 (2004), 175–191. -/
+def Stephan2026CZMain : Prop :=
+  ∀ {Γ : Subgroup ℝˣ}, Γ.FG → (∀ u ∈ Γ, IsAlgebraic ℚ (u : ℝ)) →
+    ∀ {δ : ℝ}, IsAlgebraic ℚ δ → δ ≠ 0 → ∀ {ε : ℝ}, 0 < ε →
+    {p : ℤ × Γ | 1 < |δ * p.1 * ((p.2 : ℝˣ) : ℝ)| ∧
+      ¬ IsPseudoPisot (δ * p.1 * ((p.2 : ℝˣ) : ℝ)) ∧
+      0 < |δ * p.1 * ((p.2 : ℝˣ) : ℝ) - round (δ * p.1 * ((p.2 : ℝˣ) : ℝ))| ∧
+      |δ * p.1 * ((p.2 : ℝˣ) : ℝ) - round (δ * p.1 * ((p.2 : ℝˣ) : ℝ))| <
+        absMulHeight₁ ((p.2 : ℝˣ) : ℝ) ^ (-ε) *
+          |(p.1 : ℝ)| ^ (-(finrank ℚ ℚ⟮((p.2 : ℝˣ) : ℝ)⟯ : ℝ) - ε)}.Finite
+
+open Filter Topology IntermediateField in
+/-- **Corvaja–Zannier (2004), Lemma 4, in the stronger form Stephan proves** (the `α^h ∈ ℚ`
+alternative never occurs): if `Tr_{ℚ(α)/ℚ}(q_n αⁿ) ∈ ℤ ∖ {0}` along an infinite `Ξ` with
+`log q_n = o(n)`, then `α` is an algebraic integer.
+
+`isIntegral_of_trace_mul_pow`, R. Stephan, *Subspace-Theorems* at `ce289c64`,
+`CorvajaZannier2004/IntegralPowerSums.lean:368`, challenge `ChallengeCorvajaZannier2004.lean:107`. -/
+def Stephan2026CZLemma4 : Prop :=
+  ∀ {α : ℂ}, IsAlgebraic ℚ α → ∀ {Ξ : Set ℕ}, Ξ.Infinite → ∀ {q : ℕ → ℕ}, (∀ n ∈ Ξ, 0 < q n) →
+    Tendsto (fun n : ℕ ↦ Real.log (q n) / n) (atTop ⊓ 𝓟 Ξ) (𝓝 0) →
+    (∀ n ∈ Ξ, ∃ t : ℤ, t ≠ 0 ∧ Algebra.trace ℚ ℚ⟮α⟯ (q n * AdjoinSimple.gen ℚ α ^ n) = t) →
+    IsIntegral ℤ α
 
 end LeanFormalizations.Literature

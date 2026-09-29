@@ -120,6 +120,7 @@ import LeanFormalizations.NumberTheory.PolyIteration.A003095
 import LeanFormalizations.NumberTheory.PolyIteration.Siblings
 import LeanFormalizations.NumberTheory.Diophantine.StephanEdges
 import LeanFormalizations.NumberTheory.Transcendence.CorvajaZannier
+import LeanFormalizations.NumberTheory.Transcendence.CorvajaZannierStephan
 import LeanFormalizations.NumberTheory.Transcendence.MultisetGraeffe
 import LeanFormalizations.NumberTheory.Transcendence.MultisetNewton
 import LeanFormalizations.NumberTheory.Transcendence.DubickasBRec
