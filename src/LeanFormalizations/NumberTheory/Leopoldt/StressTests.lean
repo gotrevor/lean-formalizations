@@ -37,11 +37,46 @@ def LeopoldtNoIndep (K : Type*) [Field K] [NumberField K] (p : ℕ) [Fact p.Prim
         (∏ i, (((ε i : 𝓞 K) : K)) ^ (m n i))) atTop (𝓝 1)) →
     a = 0
 
+/-- In unit rank `0` every unit is torsion: Dirichlet's decomposition has an empty product. -/
+theorem isOfFinOrder_of_rank_zero {K : Type*} [Field K] [NumberField K]
+    (h : Units.rank K = 0) (x : (𝓞 K)ˣ) : IsOfFinOrder x := by
+  haveI : IsEmpty (Fin (Units.rank K)) := by rw [h]; infer_instance
+  obtain ⟨⟨ζ, e⟩, hx, -⟩ := NumberField.Units.exist_unique_eq_mul_prod K x
+  simp only [Finset.univ_eq_empty, Finset.prod_empty, mul_one] at hx
+  subst hx
+  exact ζ.2
+
 theorem leopoldt_of_rank_zero (K : Type*) [Field K] [NumberField K] (p : ℕ) [Fact p.Prime]
     (h : Units.rank K = 0) : LeopoldtConjecture K p := by
-  sorry
+  intro r ε hind a m _ _
+  -- In rank `0` there is no nonempty multiplicatively independent family, so `r = 0`.
+  have hr : r = 0 := by
+    by_contra hr
+    obtain ⟨i₀⟩ : Nonempty (Fin r) := Fin.pos_iff_nonempty.mp (Nat.pos_of_ne_zero hr)
+    obtain ⟨N, hN, hpow⟩ := (isOfFinOrder_iff_pow_eq_one).mp (isOfFinOrder_of_rank_zero h (ε i₀))
+    have hprod : ∏ i, ε i ^ ((Pi.single i₀ (N : ℤ) : Fin r → ℤ) i) = 1 := by
+      rw [Finset.prod_eq_single i₀]
+      · simpa using hpow
+      · intro b _ hb; simp [Pi.single_eq_of_ne hb]
+      · intro hb; exact absurd (Finset.mem_univ i₀) hb
+    have := congrFun (hind (Pi.single i₀ (N : ℤ)) hprod) i₀
+    simp at this
+    omega
+  subst hr
+  funext i
+  exact i.elim0
 
 theorem not_leopoldtNoIndep_rat (p : ℕ) [Fact p.Prime] : ¬ LeopoldtNoIndep ℚ p := by
-  sorry
+  intro H
+  have := H 1 (fun _ => -1) (fun _ => (2 : ℤ_[p])) (fun _ _ => (2 : ℤ))
+    (fun _ => by simp only [Int.cast_ofNat]; exact tendsto_const_nhds)
+    (fun v _ => by
+      have hone : (∏ _i : Fin 1, ((((-1 : (𝓞 ℚ)ˣ) : 𝓞 ℚ) : ℚ)) ^ (2 : ℤ)) = 1 := by
+        norm_num
+      simp only [hone, map_one]
+      exact tendsto_const_nhds)
+  have h2 := congrFun this 0
+  rw [Pi.zero_apply] at h2
+  exact two_ne_zero h2
 
 end LeanFormalizations.Leopoldt
