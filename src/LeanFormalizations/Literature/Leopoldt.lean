@@ -22,6 +22,8 @@ of the global units in `∏_{v | p} U_v⁽¹⁾` equals their `ℤ`-rank.  Equiv
 vectors `m⁽ⁿ⁾` converge `p`-adically to `a ∈ ℤ_p^r` and `∏ εᵢ^{mᵢ⁽ⁿ⁾} → 1` in every completion `K_v`
 with `v | p`, then `a = 0`.
 
+**Peer formalization.**  William Coram's formal-conjectures PR #5497 (opened 2026-09-10; branch `WilliamCoram/formal-conjectures@Leopoldts` proves the equivalences) states Leopoldt in five forms: Wikipedia's closure rank, the p-adic regulator, `padicRelation`, `elementary`, and Mihăilescu's defect.  Ours is closest to his `padicRelation`.  Found only after this file was written.  His is the public statement; ours is the fact-graph node.
+
 **Faithfulness.**  Ren's argument; an independent adversarial review on 2026-09-29 judged it faithful
 at 88% and supplied the converse direction.
 - *Classical ⇒ Lean.*  Let `N` be the lcm of `q_v − 1` over `v | p`, where `q_v` is the residue field
