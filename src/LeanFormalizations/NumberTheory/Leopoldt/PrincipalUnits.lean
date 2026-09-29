@@ -432,6 +432,39 @@ theorem valuation_zpow_sub_zpow_le {θ : K} (hθ : W (θ - 1) < 1)
   rw [hfac, map_mul, hWl, one_mul]
   exact valuation_zpow_sub_one_le_of_dvd v hθ hdeep j hkl
 
+/-! ### The topology endgame, factored out
+
+A sequence in `K` whose images in `K_v` tend to `1` cannot keep its distance to `1` bounded below.
+-/
+
+/-- If `f n → 1` in `K_v` then `W (f n − 1)` cannot stay `≥` a fixed nonzero value. -/
+theorem false_of_tendsto_one_of_valuation_ge {f : ℕ → K} {y : K} (hy : W y ≠ 0)
+    (hfc : ∀ᶠ n in atTop, W y ≤ W (f n - 1))
+    (hloc : Tendsto (fun n ↦ algebraMap K (v.adicCompletion K) (f n)) atTop (𝓝 1)) : False := by
+  set L := v.adicCompletion K with hL
+  set c := Valued.v.restrict (algebraMap K L y) with hc
+  have hcemb : MonoidWithZeroHom.ValueGroup₀.embedding c = W y := by
+    rw [hc, Valuation.embedding_restrict]
+    exact IsDedekindDomain.HeightOneSpectrum.valuedAdicCompletion_eq_valuation' v _
+  have hcne : c ≠ 0 := by
+    intro h
+    apply hy
+    rw [← hcemb, h, map_zero]
+  have hzero : (0 : L) ∈ {z : L | Valued.v.restrict z < c} := by
+    simp only [Set.mem_setOf_eq, map_zero]
+    exact zero_lt_iff.mpr hcne
+  have hsub : Tendsto (fun n ↦ algebraMap K L (f n) - 1) atTop (𝓝 0) := by
+    simpa using hloc.sub (tendsto_const_nhds (x := (1 : L)) (f := atTop))
+  have hfin : ∀ᶠ n in atTop, Valued.v.restrict (algebraMap K L (f n) - 1) < c :=
+    hsub ((Valued.isOpen_ball L c).mem_nhds hzero)
+  obtain ⟨n, hn1, hn2⟩ := (hfc.and hfin).exists
+  have hval : Valued.v (algebraMap K L (f n) - 1) = W (f n - 1) := by
+    rw [show (algebraMap K L (f n) - 1) = algebraMap K L (f n - 1) by rw [map_sub, map_one]]
+    exact IsDedekindDomain.HeightOneSpectrum.valuedAdicCompletion_eq_valuation' v _
+  have h := MonoidWithZeroHom.ValueGroup₀.embedding_strictMono hn2
+  rw [Valuation.embedding_restrict, hval, hcemb] at h
+  exact absurd hn1 (not_le.mpr h)
+
 /-! ### Beyond rank one: the ultrametric leading term of a product of principal units
 
 This is the tool that reaches past rank `1`, and it makes the shape of the rank-`≥ 2` wall exact.
@@ -497,6 +530,83 @@ theorem valuation_prod_one_add_sub_one {ι : Type*} [DecidableEq ι] (x : ι →
   calc W (x i₀) * W Q ≤ 1 * W Q := mul_le_mul_right' (le_of_lt hlt) _
     _ = W Q := one_mul _
     _ < W (x i₀) := hQ
+
+/-! ### The exact level of a single power, and Leopoldt under a unique leading level -/
+
+/-- **The exact level formula.**  On a deep principal unit, splitting the exponent as `p^j · t`
+with `p ∤ t`, the level is `W p ^ j · W (θ − 1)` — exactly, with no dependence on `t`. -/
+theorem valuation_zpow_sub_one_eq (hv : ((p : ℕ) : 𝓞 K) ∈ v.asIdeal) {θ : K}
+    (hθ : W (θ - 1) < 1) (hdeep : W (θ - 1) ^ (p - 1) < W ((p : ℕ) : K)) (j : ℕ) {t : ℤ}
+    (hpt : ¬ ((p : ℤ) ∣ t)) :
+    W (θ ^ (((p : ℕ) : ℤ) ^ j * t) - 1) = W ((p : ℕ) : K) ^ j * W (θ - 1) := by
+  have hWple : W ((p : ℕ) : K) ≤ 1 := valuation_natCast_le_one v p
+  have hψ : W (θ ^ (p ^ j) - 1) = W ((p : ℕ) : K) ^ j * W (θ - 1) :=
+    valuation_pow_pow_char_sub_one v hθ hdeep j
+  have hψlt : W (θ ^ (p ^ j) - 1) < 1 := by
+    rw [hψ]
+    calc W ((p : ℕ) : K) ^ j * W (θ - 1) ≤ 1 * W (θ - 1) :=
+          mul_le_mul_right' (pow_le_one' hWple j) _
+      _ = W (θ - 1) := one_mul _
+      _ < 1 := hθ
+  have hrw : θ ^ (((p : ℕ) : ℤ) ^ j * t) = (θ ^ (p ^ j)) ^ t := by
+    rw [← zpow_natCast θ (p ^ j), ← zpow_mul]
+    congr 1
+  rw [hrw, valuation_zpow_sub_one v hψlt (valuation_intCast_eq_one v hv hpt), hψ]
+
+/-- **Leopoldt's mechanism for arbitrary rank**, under the hypothesis that the leading level is
+uniquely attained.  The exponents are given in split form `m n i = p ^ (j i) · t n i` with the
+`p`-part `j i` **fixed in `n`** — which is what `a i ≠ 0` supplies for the indices that matter, and
+`a i = 0` pushes out of the way.  What is *not* covered is the tie: two indices realising the same
+leading level, whose residue-field leading coefficients may cancel.  That case is Baker/Brumer. -/
+theorem false_of_unique_leading_level (hv : ((p : ℕ) : 𝓞 K) ∈ v.asIdeal) {r : ℕ} (θ : Fin r → K)
+    (hprin : ∀ i, W (θ i - 1) < 1) (hdeep : ∀ i, W (θ i - 1) ^ (p - 1) < W ((p : ℕ) : K))
+    (hθne : ∀ i, θ i ≠ 1) {m : ℕ → Fin r → ℤ} {j : Fin r → ℕ} {t : ℕ → Fin r → ℤ}
+    (hsplit : ∀ n i, m n i = ((p : ℕ) : ℤ) ^ (j i) * t n i)
+    (hpt : ∀ n i, ¬ ((p : ℤ) ∣ t n i)) (i₀ : Fin r)
+    (huniq : ∀ i, i ≠ i₀ →
+      W ((p : ℕ) : K) ^ (j i) * W (θ i - 1) < W ((p : ℕ) : K) ^ (j i₀) * W (θ i₀ - 1))
+    (hloc : Tendsto (fun n ↦ algebraMap K (v.adicCompletion K) (∏ i, θ i ^ (m n i)))
+      atTop (𝓝 1)) : False := by
+  classical
+  have hWp : W ((p : ℕ) : K) ≠ 0 := by
+    rw [Valuation.ne_zero_iff]
+    exact Nat.cast_ne_zero.mpr hp.out.pos.ne'
+  have hWple : W ((p : ℕ) : K) ≤ 1 := valuation_natCast_le_one v p
+  have hWθ : ∀ i, W (θ i - 1) ≠ 0 := by
+    intro i
+    rw [Valuation.ne_zero_iff, sub_ne_zero]
+    exact hθne i
+  -- every level is exactly `W p ^ (j i) * W (θ i − 1)`, independent of `n`
+  have hlevel : ∀ n i, W (θ i ^ (m n i) - 1) = W ((p : ℕ) : K) ^ (j i) * W (θ i - 1) := by
+    intro n i
+    rw [hsplit n i]
+    exact valuation_zpow_sub_one_eq v hv (hprin i) (hdeep i) (j i) (hpt n i)
+  have hlvlne : W ((p : ℕ) : K) ^ (j i₀) * W (θ i₀ - 1) ≠ 0 :=
+    mul_ne_zero (pow_ne_zero _ hWp) (hWθ i₀)
+  have hlvllt : W ((p : ℕ) : K) ^ (j i₀) * W (θ i₀ - 1) < 1 := by
+    calc W ((p : ℕ) : K) ^ (j i₀) * W (θ i₀ - 1) ≤ 1 * W (θ i₀ - 1) :=
+          mul_le_mul_right' (pow_le_one' hWple _) _
+      _ = W (θ i₀ - 1) := one_mul _
+      _ < 1 := hprin i₀
+  -- so the product sits at exactly the leading level, for every `n`
+  have hconst : ∀ n, W ((∏ i, θ i ^ (m n i)) - 1)
+      = W (θ i₀ ^ (m n i₀) - 1) := by
+    intro n
+    have hrw : (∏ i, θ i ^ (m n i)) = ∏ i, (1 + (θ i ^ (m n i) - 1)) := by
+      refine Finset.prod_congr rfl fun i _ ↦ ?_
+      ring
+    rw [hrw]
+    refine valuation_prod_one_add_sub_one v (fun i ↦ θ i ^ (m n i) - 1) Finset.univ
+      (Finset.mem_univ i₀) ?_ ?_ ?_
+    · rw [hlevel n i₀]; exact hlvlne
+    · rw [hlevel n i₀]; exact hlvllt
+    · intro i _ hi
+      rw [hlevel n i, hlevel n i₀]
+      exact huniq i hi
+  refine false_of_tendsto_one_of_valuation_ge v (y := θ i₀ ^ (m 0 i₀) - 1) ?_ ?_ hloc
+  · rw [hlevel 0 i₀]; exact hlvlne
+  · filter_upwards with n
+    rw [hconst n, hlevel n i₀, hlevel 0 i₀]
 
 /-! ### The heart of the rank-one case
 

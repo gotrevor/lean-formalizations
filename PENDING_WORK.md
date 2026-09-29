@@ -1638,10 +1638,34 @@ exactly the linear-forms-in-`p`-adic-logarithms problem, i.e. Baker/Brumer.  **T
 residue-field cancellation problem, not a missing construction** — which is worth knowing, because
 it means no amount of further valuation-theoretic infrastructure will close it.
 
-**Next leaf**: formalize `leopoldt_of_unique_level` — the `r`-general theorem under the
-unique-minimum hypothesis.  Needs: (a) the exact level formula `ν(θ^m − 1) = t + v_p(m)·e` as a
-standalone lemma (combine `valuation_pow_pow_char_sub_one` with `valuation_zpow_sub_one` for the
-prime-to-`p` part — both already proved), (b) the "eventually `v_p(mₙᵢ)` is constant on `S` and
-→ ∞ off `S`" bookkeeping (the `S = {i}` case is already in `eq_zero_of_local_tendsto_one`),
-(c) plugging into `valuation_prod_one_add_sub_one`.  Then state the tie case as the `Literature/`
-Brumer statement.
+### Phase 28 step (5) DONE (2026-09-29, same lap): Leopoldt's mechanism at arbitrary rank
+
+Three more axiom-clean lemmas; the arbitrary-rank theorem is now **proved** modulo the tie.
+
+- `false_of_tendsto_one_of_valuation_ge` — the topology endgame, factored out: if `f n → 1` in
+  `K_v` then `W (f n − 1)` cannot stay `≥` a fixed nonzero value.  (Reusable; the rank-1 proof has
+  the same block inline.)
+- `valuation_zpow_sub_one_eq` — **the exact level formula**: on a deep principal unit, splitting
+  `m = p^j · t` with `p ∤ t`, `W (θ^m − 1) = W p ^ j · W (θ − 1)` exactly, with **no dependence on
+  `t`**.  (Step 2 for the `p`-part, step 1's prime-to-`p` invariance for the rest.)
+- `false_of_unique_leading_level` — **arbitrary `r`**: if the exponents are in split form
+  `m n i = p^(j i) · t n i` with the `p`-part `j i` *fixed in `n`*, all `θ i` deep principal and
+  `≠ 1`, and the leading level `W p ^ (j i) · W (θ i − 1)` is *uniquely* maximised at `i₀`, then
+  `∏ θ i ^ (m n i) → 1` is impossible.
+
+So the valuation-theoretic side of Leopoldt is **complete at every rank**.  Exactly two gaps
+remain, and both are bookkeeping-or-Baker, not construction:
+
+1. *(bookkeeping, tractable)* deriving the split form from the real hypotheses: `a i ≠ 0` makes
+   `v_p(m n i)` eventually constant `= v_p(a i)` (this is already done for `r = 1` inside
+   `eq_zero_of_local_tendsto_one`), and `a i = 0` makes `v_p(m n i) → ∞` so those indices
+   eventually leave the leading level.  Needs a `Fin r`-indexed "eventually" intersection and a
+   `PadicInt` valuation function; then `false_of_unique_leading_level` applies verbatim.
+2. *(the wall)* the **tie**: two or more indices realising the same leading level.  Then the
+   leading coefficients live in the residue field and can cancel, letting `ν` jump — which is
+   precisely a nonvanishing statement for a linear form in `p`-adic logarithms, i.e. Baker/Brumer.
+   Nothing in the valuation calculus can decide it; it must be imported as a `Literature/`
+   statement.
+
+**Next leaf**: gap (1) — `leopoldt_of_unique_level` in terms of `a`, i.e. replace the split-form
+hypothesis by `∀ i, a i ≠ 0 → (unique leading level)`.  Then gap (2) as `Literature/Brumer.lean`.
