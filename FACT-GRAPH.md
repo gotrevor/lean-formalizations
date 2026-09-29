@@ -9,27 +9,30 @@ A theorem with several hypotheses draws one arrow from each (they are needed *jo
 
 ```mermaid
 graph LR
-  n0["AlgIndepLogsConjecture"] --> n1["BakerHomogeneous"]
-  n0["AlgIndepLogsConjecture"] --> n2["FourExponentialsConjecture"]
-  n3["Baker1966"] --> n4["ExponentialsKnown.BakerTwoLogs"]
-  n3["Baker1966"] --> n5["FiveExponentials"]
-  n4["ExponentialsKnown.BakerTwoLogs"] --> n5["FiveExponentials"]
-  n6["Ridout1957"] --> n7["Mahler1957"]
-  n6["Ridout1957"] --> n8["Ridout1957SUnitDen"]
-  n9["Ridout1958"] --> n10["Roth1955"]
-  n11["SchanuelConjecture"] --> n0["AlgIndepLogsConjecture"]
-  n11["SchanuelConjecture"] --> n4["ExponentialsKnown.BakerTwoLogs"]
-  n11["SchanuelConjecture"] --> n5["FiveExponentials"]
-  n11["SchanuelConjecture"] --> n2["FourExponentialsConjecture"]
-  n11["SchanuelConjecture"] --> n12["GelfondSchneider1934"]
-  n11["SchanuelConjecture"] --> n13["LindemannWeierstrassAlgIndep"]
-  n11["SchanuelConjecture"] --> n14["StrongSixExponentials"]
-  n15["SixExponentialsShifted"] --> n5["FiveExponentials"]
-  n15["SixExponentialsShifted"] --> n16["SixExponentials"]
-  n17["Stephan2026Ridout"] --> n7["Mahler1957"]
-  n17["Stephan2026Ridout"] --> n8["Ridout1957SUnitDen"]
-  n17["Stephan2026Ridout"] --> n10["Roth1955"]
-  n18["StrongSixExponentialsOverQ"] --> n16["SixExponentials"]
+  n0["AlgIndepLogsConjecture"] --> n1["Baker1966"]
+  n0["AlgIndepLogsConjecture"] --> n2["BakerHomogeneous"]
+  n0["AlgIndepLogsConjecture"] --> n3["FourExponentialsConjecture"]
+  n0["AlgIndepLogsConjecture"] --> n4["GelfondSchneider1934"]
+  n0["AlgIndepLogsConjecture"] --> n5["StrongFourExponentialsConjecture"]
+  n1["Baker1966"] --> n6["ExponentialsKnown.BakerTwoLogs"]
+  n1["Baker1966"] --> n7["FiveExponentials"]
+  n6["ExponentialsKnown.BakerTwoLogs"] --> n7["FiveExponentials"]
+  n8["Ridout1957"] --> n9["Mahler1957"]
+  n8["Ridout1957"] --> n10["Ridout1957SUnitDen"]
+  n11["Ridout1958"] --> n12["Roth1955"]
+  n13["SchanuelConjecture"] --> n0["AlgIndepLogsConjecture"]
+  n13["SchanuelConjecture"] --> n6["ExponentialsKnown.BakerTwoLogs"]
+  n13["SchanuelConjecture"] --> n7["FiveExponentials"]
+  n13["SchanuelConjecture"] --> n3["FourExponentialsConjecture"]
+  n13["SchanuelConjecture"] --> n4["GelfondSchneider1934"]
+  n13["SchanuelConjecture"] --> n14["LindemannWeierstrassAlgIndep"]
+  n13["SchanuelConjecture"] --> n15["StrongSixExponentials"]
+  n16["SixExponentialsShifted"] --> n7["FiveExponentials"]
+  n16["SixExponentialsShifted"] --> n17["SixExponentials"]
+  n18["Stephan2026Ridout"] --> n9["Mahler1957"]
+  n18["Stephan2026Ridout"] --> n10["Ridout1957SUnitDen"]
+  n18["Stephan2026Ridout"] --> n12["Roth1955"]
+  n19["StrongSixExponentialsOverQ"] --> n17["SixExponentials"]
 ```
 
 | Hypothesis | Status | Theorems resting on it |
@@ -38,13 +41,13 @@ graph LR
 | `BakerHarmanPintz2001` | 📚 theorem | 17 |
 | `Matomaki2007` | 📚 theorem | 13 |
 | `LindemannWeierstrassAlgIndep` | 📚 theorem | 11 |
+| `AlgIndepLogsConjecture` | 🔮 conjecture | 10 |
 | `Dubickas2022PisotGap` | 📚 theorem | 8 |
 | `Schoenfeld1976` | 📚 theorem | 8 |
 | `RiemannHypothesis` | 🔮 conjecture | 8 |
 | `Dubickas2022` | 📚 theorem | 7 |
 | `Stephan2026Ridout` | 📚 theorem | 6 |
 | `Nesterenko1996` | 📚 theorem | 6 |
-| `AlgIndepLogsConjecture` | 🔮 conjecture | 5 |
 | `Ridout1957` | 📚 theorem | 4 |
 | `SixExponentialsShifted` | 📚 theorem | 4 |
 | `SixExponentials` | 📚 theorem | 4 |
@@ -60,7 +63,7 @@ graph LR
 | `Roth1955` | 📚 theorem | 1 |
 | `Mahler1957` | 📚 theorem | 1 |
 
-Unconditional theorems in the scanned namespaces (no named hypothesis): 301.
+Unconditional theorems in the scanned namespaces (no named hypothesis): 313.
 
 ## Refuted
 

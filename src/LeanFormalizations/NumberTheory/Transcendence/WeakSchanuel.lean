@@ -22,10 +22,29 @@ needs.
 * Conj 1 ⇒ logarithms of distinct primes are algebraically independent (phase 15 used Schanuel).
 * Conj 1 ⇒ `π` together with the logarithms of distinct primes is algebraically independent
   (`iπ` is a logarithm of `−1`; phase 16 used Schanuel).
-* Conj 1 ⇒ strong four exponentials.  ⚠️ **Ren, about 70% confident, not checked against a
-  source.**  Waldschmidt (2005a) lists consequences of the strong four exponentials problem; that
-  it is itself a special case of Conj 1 is my reading.  If it is false or underivable, record why:
-  that is an advance.
+* Conj 1 ⇒ strong four exponentials.  ⚠️ was flagged "Ren, about 70% confident, not checked
+  against a source".  **The reading is CORRECT and the implication is now proved.**
+
+**Result (2026-09-29, one lap): all five are proved and `#print axioms`-clean; this file is
+sorry-free.**  Nothing turned out false or underivable.  The three real design points:
+
+1. *Strong four exponentials.*  `StrongSix.strongSix`'s `Fin 2 × Fin 3` argument transfers to
+   `Fin 2 × Fin 2` verbatim — the plumbing (`exists_logBasis`, `exists_aff_of_mem`) is reused
+   unchanged, and Schanuel is never needed because `strongSix` touches `hS` only through
+   `algebraicIndependent_of_exp_isAlgebraic`, i.e. through Conjecture 1 exactly.  What does NOT
+   transfer is `AffineRankOne.const_ratio`: Roy's derivation argument genuinely needs three
+   columns (it forces the three `Pⱼ` into a 2-dimensional space).  The replacement is the
+   `AffTwo` section: from `A·D = B·C` for affine forms, `pderiv` + `eval 0` reads off the
+   symmetric coefficient identity `AᵢD_j + A_jDᵢ = BᵢC_j + B_jCᵢ` (`sym_coeff`); then a
+   `K`-functional `f` supported on a nonvanishing `2×2` minor of `(A,B)` with `f A = 0`,
+   `f B = 1` gives `2·f C = 0` and hence `C = (f D)·A` (`eq_smul_of_sym`).  Characteristic `0`
+   is used exactly once, to divide by `2`.
+2. *Baker inhomogeneous.*  `Baker1966` has no independence hypothesis on the `ℓᵢ`, so the
+   homogeneous form does not apply directly; pass to a `ℚ`-basis of `span ℚ (range ℓ)`.  That
+   this basis again consists of logarithms of algebraic numbers is `logSubmodule` — the key
+   closure being `exp (q·z)` algebraic, via `IsAlgebraic.of_pow` on `(exp z)^{q.num}`.
+3. *`π` and prime logarithms.*  Conjecture 1 gives `iπ, log p₁, …` directly; trading `iπ` for
+   `π` is the phase-15 master step `algebraicIndependent_of_le_trdeg_of_isAlgebraic`.
 
 Frozen: the statements below, every earlier name, all of `Literature/`.
 -/
@@ -144,8 +163,106 @@ theorem algebraicIndependent_pi_log_primes_of_algIndepLogs (h : AlgIndepLogsConj
   · show IsAlgebraic K ((Real.log ((p j : ℕ) : ℝ) : ℂ))
     exact isAlgebraic_algebraMap (R := K) (A := ℂ) ⟨_, mlog j⟩
 
+/-! ## Conjecture 1 ⇒ Baker's inhomogeneous theorem
+
+`Baker1966` has no linear-independence hypothesis on the `ℓᵢ`, so the homogeneous form
+(`bakerHomogeneous_of_algIndepLogs`) does not apply directly.  Pass to a `ℚ`-basis `μ` of the
+`ℚ`-span of the `ℓᵢ`: each `μ_s` is again a logarithm of an algebraic number, because that span
+is a `ℚ`-submodule of `{z | exp z algebraic}` (`logSubmodule`), and the relation becomes a
+`ℚ̄`-affine relation among the algebraically independent `μ`. -/
+
+/-- `exp (q·z)` is algebraic when `exp z` is: its `q.den`-th power is `(exp z)^q.num`. -/
+theorem isAlgebraic_exp_rat_mul {q : ℚ} {z : ℂ} (h : IsAlgebraic ℚ (Complex.exp z)) :
+    IsAlgebraic ℚ (Complex.exp ((q : ℂ) * z)) := by
+  refine IsAlgebraic.of_pow (n := q.den) q.pos ?_
+  rw [← Complex.exp_nat_mul]
+  have hq : ((q.den : ℚ) : ℂ) * (q : ℂ) = ((q.num : ℤ) : ℂ) := by
+    have : (q.den : ℚ) * q = (q.num : ℚ) := by
+      rw [mul_comm]; exact_mod_cast Rat.mul_den_eq_num q
+    exact_mod_cast congrArg (fun r : ℚ => (r : ℂ)) this
+  have hq' : (q.den : ℂ) * ((q : ℂ) * z) = ((q.num : ℤ) : ℂ) * z := by
+    rw [← mul_assoc]; push_cast at hq ⊢; rw [hq]
+  rw [hq', Complex.exp_int_mul]
+  refine mem_algebraicClosure_iff.1 ?_
+  exact zpow_mem (mem_algebraicClosure_iff.2 h) _
+
+/-- The logarithms of algebraic numbers form a `ℚ`-submodule of `ℂ`. -/
+noncomputable def logSubmodule : Submodule ℚ ℂ where
+  carrier := {z | IsAlgebraic ℚ (Complex.exp z)}
+  add_mem' := by
+    intro x y hx hy
+    show IsAlgebraic ℚ (Complex.exp (x + y))
+    rw [Complex.exp_add]
+    exact mem_algebraicClosure_iff.1
+      (mul_mem (mem_algebraicClosure_iff.2 hx) (mem_algebraicClosure_iff.2 hy))
+  zero_mem' := by
+    show IsAlgebraic ℚ (Complex.exp 0)
+    simpa using isAlgebraic_algebraMap (R := ℚ) (A := ℂ) 1
+  smul_mem' := by
+    intro c x hx
+    show IsAlgebraic ℚ (Complex.exp (c • x))
+    rw [Rat.smul_def]
+    exact isAlgebraic_exp_rat_mul hx
+
+theorem isAlgebraic_exp_of_mem_span {ι : Type} {ℓ : ι → ℂ}
+    (hℓ : ∀ i, IsAlgebraic ℚ (Complex.exp (ℓ i))) {z : ℂ}
+    (hz : z ∈ Submodule.span ℚ (Set.range ℓ)) : IsAlgebraic ℚ (Complex.exp z) := by
+  have hle : Submodule.span ℚ (Set.range ℓ) ≤ logSubmodule := by
+    rw [Submodule.span_le]
+    rintro w ⟨i, rfl⟩
+    exact hℓ i
+  exact hle hz
+
+/-- A finite family of complex numbers, written in a `ℚ`-basis of its own span. -/
+theorem exists_rat_basis {ι : Type} [Fintype ι] (y : ι → ℂ) :
+    ∃ (t : ℕ) (u : Fin t → ℂ) (q : ι → Fin t → ℚ), LinearIndependent ℚ u ∧
+      (∀ s, u s ∈ Submodule.span ℚ (Set.range y)) ∧
+      ∀ j, y j = ∑ s, (q j s : ℂ) * u s := by
+  classical
+  have hfin : FiniteDimensional ℚ (Submodule.span ℚ (Set.range y)) :=
+    FiniteDimensional.span_of_finite ℚ (Set.finite_range _)
+  set V := Submodule.span ℚ (Set.range y) with hV
+  set B := Module.finBasis ℚ V with hB
+  refine ⟨Module.finrank ℚ V, fun s => (B s : ℂ),
+    fun j s => B.repr ⟨y j, Submodule.subset_span ⟨j, rfl⟩⟩ s, ?_, fun s => (B s).2, fun j => ?_⟩
+  · exact B.linearIndependent.map' V.subtype (Submodule.ker_subtype V)
+  · have := congrArg (fun v : V => (v : ℂ)) (B.sum_repr ⟨y j, Submodule.subset_span ⟨j, rfl⟩⟩)
+    simp only [Submodule.coe_sum, Submodule.coe_smul] at this
+    rw [← this]
+    exact Finset.sum_congr rfl fun s _ => by rw [Rat.smul_def]
+
+/-- **Conjecture 1 ⇒ Baker's theorem (1966), inhomogeneous form.** -/
 theorem baker1966_of_algIndepLogs (h : AlgIndepLogsConjecture) : Baker1966 := by
-  sorry
+  classical
+  intro n β ℓ hβ hℓ hβ0 hrel
+  obtain ⟨t, μ, q, hμli, hμmem, hcoord⟩ := exists_rat_basis ℓ
+  have hμexp : ∀ s, IsAlgebraic ℚ (Complex.exp (μ s)) := fun s =>
+    isAlgebraic_exp_of_mem_span hℓ (hμmem s)
+  have hind : AlgebraicIndependent ℚ μ := h t μ hμli hμexp
+  have halg : Algebra.IsAlgebraic ℚ (↥(algebraicClosure ℚ ℂ)) :=
+    algebraicClosure.isAlgebraic ℚ ℂ
+  have hindK : AlgebraicIndependent (↥(algebraicClosure ℚ ℂ)) μ :=
+    hind.extendScalars (↥(algebraicClosure ℚ ℂ))
+  have hrat : ∀ r : ℚ, (r : ℂ) ∈ algebraicClosure ℚ ℂ := fun r =>
+    mem_algebraicClosure_iff.2 (isAlgebraic_algebraMap (R := ℚ) (A := ℂ) r)
+  set b0 : (algebraicClosure ℚ ℂ) := ⟨β 0, mem_algebraicClosure_iff.2 (hβ 0)⟩ with hb0
+  set c : Fin t → (algebraicClosure ℚ ℂ) := fun s =>
+    ⟨∑ i : Fin n, β i.succ * (q i s : ℂ),
+      sum_mem fun i _ => mul_mem (mem_algebraicClosure_iff.2 (hβ i.succ)) (hrat _)⟩ with hc
+  have hrel' : algebraMap (algebraicClosure ℚ ℂ) ℂ b0
+      + ∑ s, algebraMap (algebraicClosure ℚ ℂ) ℂ (c s) * μ s = 0 := by
+    have hexpand : ∑ s, (∑ i : Fin n, β i.succ * (q i s : ℂ)) * μ s
+        = ∑ i : Fin n, β i.succ * ℓ i := by
+      simp only [Finset.sum_mul]
+      rw [Finset.sum_comm]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [hcoord i, Finset.mul_sum]
+      exact Finset.sum_congr rfl fun s _ => by ring
+    show (β 0 : ℂ) + ∑ s, (∑ i : Fin n, β i.succ * (q i s : ℂ)) * μ s = 0
+    rw [hexpand]
+    exact hrel
+  obtain ⟨hz, -⟩ := eq_zero_of_algebraicIndependent_linear hindK b0 c hrel'
+  exact hβ0 (congrArg Subtype.val hz)
 
 
 /-! ## Conjecture 1 ⇒ the strong four exponentials conjecture
