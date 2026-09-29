@@ -125,6 +125,7 @@ import LeanFormalizations.Literature.Periods
 import LeanFormalizations.NumberTheory.Transcendence.Periods
 import LeanFormalizations.NumberTheory.Transcendence.SharpSixVariants
 import LeanFormalizations.Literature.Leopoldt
+import LeanFormalizations.NumberTheory.Leopoldt.PrincipalUnits
 import LeanFormalizations.NumberTheory.Leopoldt.StressTests
 import LeanFormalizations.NumberTheory.Leopoldt.RankOne
 import LeanFormalizations.NumberTheory.Transcendence.Bedrock
