@@ -23,6 +23,40 @@ Survey claims, each proved here from the stated input:
 If a frozen statement is false as written (e.g. the six-exponentials claim needs an extra
 hypothesis), record the counterexample; that is an advance.  Frozen: the statements below, every
 earlier name, all of `Literature/`.
+
+## RESULT (phase 20, 2026-09-29): all four are PROVED and axiom-clean.
+
+No statement needed an extra hypothesis.  The route, and the four leaves it is built from:
+
+* **Leaf 1, rank via minors** (`exists_submatrix_det_ne_zero`, `le_rank_of_det_ne_zero`) — this is
+  MISSING FROM MATHLIB and is the engine of the whole file.  `rank ≥ s` gives a nonzero `s × s`
+  minor: pick `s` independent columns (`exists_indep_subfamily`, extracted from
+  `exists_linearIndependent` plus `finrank_span_set_eq_card`), then `s` independent rows of that,
+  then `linearIndependent_rows_iff_isUnit`.  From the two directions:
+  `rank_map_le_rank_map`: for `ψ₁ ψ₂` out of a common ring into fields with `ψ₁ x ≠ 0 → ψ₂ x ≠ 0`,
+  `rank (G.map ψ₁) ≤ rank (G.map ψ₂)`.  EVERY rank comparison below is an instance of it.
+* **`rank_le_structRank`**: specialise `Xₖ ↦ eₖ`; only injectivity of `P → Frac P` is used.
+* **`rank_eq_structRank_of_algIndepLogs`**: the subtlety is that `IsStructRank` quantifies over an
+  ARBITRARY `ℚ`-independent `e`, which need not consist of logarithms, so Conjecture 1 does not
+  apply to it.  Fix (`genericMat_refine`): refine to a maximal `ℚ`-independent set of *entries* —
+  those ARE logarithms, so Conj 1 makes them algebraically independent and the specialisation
+  injective.  The given generic matrix is the image of the refined one under the polynomial
+  substitution `Yⱼ ↦ ∑ₖ sⱼₖ Xₖ`, which can only LOWER rank, and that direction is free.  Hence
+  `r ≤ r' ≤ rk M ≤ r`.
+* **`two_le_rank_of_sixExponentials`**: `rk ≤ 1` gives `M i j = xᵢ yⱼ`
+  (`exists_vecMulVec_of_rank_le_one`).  The structural bound is `structRank_le_of_factor`: if
+  `M = A · b` with `b` RATIONAL of inner width `p`, then every structural rank is `≤ card p`.
+  Proved by applying the dual functionals `φₖ` of `e` (`exists_dual`, via `Basis.extend`)
+  entrywise: `cₖ = Dₖ · b` with `Dₖ` rational, so the generic matrix factors through width
+  `card p`.  So `dim_ℚ⟨x⟩ ≤ 1` or `dim_ℚ⟨y⟩ ≤ 2` would force `r ≤ 2`; with `r ≥ 3` both sides are
+  big enough to feed six exponentials, whose transcendental `exp (xᵢyⱼ)` contradicts
+  `IsLogMatrix`.  (The `x`-side case is run on `Mᵀ` via `structRank_transpose`.)
+* **`structRank_log_example`**: generic matrix `= vecMulVec ![1,2] ![X₀,X₁]`, so `rank ≤ 1` by
+  mathlib and `≥ 1` by the `1×1` minor `X₀ ≠ 0`.
+
+Gotcha worth keeping: `set` with a body (`set v := …`) made the phase-2 proof blow the heartbeat
+budget at `whnf`; `obtain ⟨v, hv⟩ : ∃ v, ∀ …` (opaque local + equation) is instant.  Likewise
+`refine rank_map_le_rank_map _ _ ?_ _` with the ring homs left as metavariables loops; name them.
 -/
 import LeanFormalizations.Literature.StructuralRank
 import LeanFormalizations.Literature.Waldschmidt2023
@@ -175,6 +209,136 @@ theorem genericMat_refine {t t' : ℕ} {M : Matrix m n ℂ} {e : Fin t → ℂ} 
 
 end
 
+
+/-! ### Leaf 4: dual functionals, and the factorisation bound on structural rank -/
+
+/-- A `ℚ`-linearly independent family in `ℂ` has a dual family of `ℚ`-linear functionals. -/
+theorem exists_dual {t : ℕ} {e : Fin t → ℂ} (h : LinearIndependent ℚ e) :
+    ∃ φ : Fin t → (ℂ →ₗ[ℚ] ℚ), ∀ k l, φ k (e l) = if k = l then 1 else 0 := by
+  classical
+  have hs : LinearIndepOn ℚ id (Set.range e) := h.linearIndepOn_id
+  set B := Basis.extend hs with hB
+  have hmem : ∀ k, e k ∈ hs.extend (Set.subset_univ _) := fun k =>
+    Basis.subset_extend hs (Set.mem_range_self k)
+  refine ⟨fun k => B.coord ⟨e k, hmem k⟩, fun k l => ?_⟩
+  have hBl : B ⟨e l, hmem l⟩ = e l := by rw [hB, Basis.coe_extend]
+  rw [← hBl, Basis.coord_apply, Basis.repr_self, Finsupp.single_apply]
+  by_cases hkl : k = l
+  · simp [hkl]
+  · have hne : (⟨e l, hmem l⟩ : hs.extend (Set.subset_univ _)) ≠ ⟨e k, hmem k⟩ := by
+      simp only [ne_eq, Subtype.mk.injEq]
+      exact fun hc => hkl (h.injective hc).symm
+    rw [if_neg hkl, if_neg hne]
+
+
+/-- If `M` factors as `A * b` with `b` a *rational* matrix of inner dimension `p`, then every
+structural rank of `M` is at most `card p`.  Proof: apply the dual functionals `φₖ` of the basis
+`e` entrywise; they turn the factorisation into `cₖ = Dₖ * b` with `Dₖ` rational, so the generic
+matrix factors through width `card p`. -/
+theorem structRank_le_of_factor {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
+    [DecidableEq n] [DecidableEq p] {M : Matrix m n ℂ} {r : ℕ}
+    (A : m → p → ℂ) (b : p → n → ℚ)
+    (hfac : ∀ i j, M i j = ∑ s, A i s * (b s j : ℂ))
+    (h : IsStructRank M r) : r ≤ Fintype.card p := by
+  classical
+  obtain ⟨t, e, c, hind, hMe, hrank⟩ := h
+  obtain ⟨φ, hφ⟩ := exists_dual hind
+  have hsmul : ∀ (q : ℚ) (z : ℂ), (q : ℂ) * z = q • z := fun q z => (Rat.smul_def q z).symm
+  have hcoord : ∀ k i j, c k i j = ∑ s, φ k (A i s) * b s j := by
+    intro k i j
+    have h1 : (φ k) (M i j) = c k i j := by
+      rw [entry_eq hMe i j, map_sum]
+      simp_rw [hsmul, map_smul, hφ]
+      simp
+    have h2 : (φ k) (M i j) = ∑ s, φ k (A i s) * b s j := by
+      rw [hfac i j, map_sum]
+      refine Finset.sum_congr rfl fun s _ => ?_
+      rw [mul_comm (A i s), hsmul, map_smul, smul_eq_mul, mul_comm]
+    rw [← h1, h2]
+  obtain ⟨D, hD⟩ : ∃ D : Fin t → Matrix m p ℚ, ∀ k i s, D k i s = φ k (A i s) :=
+    ⟨fun k => Matrix.of fun i s => φ k (A i s), fun _ _ _ => rfl⟩
+  obtain ⟨Bq, hBq⟩ : ∃ Bq : Matrix p n (MvPolynomial (Fin t) ℚ), ∀ s j, Bq s j = C (b s j) :=
+    ⟨Matrix.of fun s j => C (b s j), fun _ _ => rfl⟩
+  have hprod : genericMat c = genericMat D * Bq := by
+    refine Matrix.ext fun i j => ?_
+    simp only [Matrix.mul_apply, genericMat, Matrix.sum_apply, Matrix.map_apply, hD, hBq]
+    simp_rw [hcoord _ i j, map_sum, Finset.sum_mul, C_mul]
+    rw [Finset.sum_comm]
+    exact Finset.sum_congr rfl fun s _ => Finset.sum_congr rfl fun k _ => by ring
+  rw [genericMat_map c (algebraMap (MvPolynomial (Fin t) ℚ)
+    (FractionRing (MvPolynomial (Fin t) ℚ)))] at hrank
+  rw [← hrank, hprod,
+    Matrix.map_mul (f := algebraMap (MvPolynomial (Fin t) ℚ)
+      (FractionRing (MvPolynomial (Fin t) ℚ)))]
+  exact le_trans (Matrix.rank_mul_le_left _ _) (Matrix.rank_le_card_width _)
+
+
+/-- Structural rank is invariant under transposition. -/
+theorem structRank_transpose {m n : Type} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
+    {M : Matrix m n ℂ} {r : ℕ} (h : IsStructRank M r) : IsStructRank Mᵀ r := by
+  obtain ⟨t, e, c, hind, hMe, hrank⟩ := h
+  refine ⟨t, e, fun k => (c k)ᵀ, hind, ?_, ?_⟩
+  · rw [hMe]
+    refine Matrix.ext fun j i => ?_
+    simp [Matrix.sum_apply]
+  · have hT : (∑ k, ((c k)ᵀ).map (fun q : ℚ ↦
+        algebraMap (MvPolynomial (Fin t) ℚ) (FractionRing (MvPolynomial (Fin t) ℚ))
+          (C q * X k)))
+        = (∑ k, (c k).map (fun q : ℚ ↦
+            algebraMap (MvPolynomial (Fin t) ℚ) (FractionRing (MvPolynomial (Fin t) ℚ))
+              (C q * X k)))ᵀ := by
+      refine Matrix.ext fun j i => ?_
+      simp [Matrix.sum_apply]
+    rw [hT, Matrix.rank_transpose]
+    exact hrank
+
+/-- A complex matrix of rank at most one is a product of a column and a row. -/
+theorem exists_vecMulVec_of_rank_le_one {m n : Type} [Fintype m] [Fintype n] [DecidableEq n]
+    {M : Matrix m n ℂ} (h : M.rank ≤ 1) :
+    ∃ (x : m → ℂ) (y : n → ℂ), ∀ i j, M i j = x i * y j := by
+  classical
+  by_cases hz : ∀ i j, M i j = 0
+  · exact ⟨0, 0, fun i j => by simp [hz i j]⟩
+  · push_neg at hz
+    obtain ⟨i0, j0, hij⟩ := hz
+    have hcol : M.col j0 ≠ 0 := fun hc => hij (congrFun hc i0)
+    have hle : Submodule.span ℂ {M.col j0} ≤ Submodule.span ℂ (Set.range M.col) :=
+      Submodule.span_mono (by simp [Set.singleton_subset_iff])
+    have hfin : FiniteDimensional ℂ (Submodule.span ℂ (Set.range M.col)) :=
+      FiniteDimensional.span_of_finite ℂ (Set.finite_range _)
+    have h1 : finrank ℂ (Submodule.span ℂ ({M.col j0} : Set (m → ℂ))) = 1 := by
+      rw [finrank_span_singleton hcol]
+    have h2 : finrank ℂ (Submodule.span ℂ (Set.range M.col)) ≤ 1 := by
+      rw [← M.rank_eq_finrank_span_cols]; exact h
+    have heq : Submodule.span ℂ ({M.col j0} : Set (m → ℂ)) = Submodule.span ℂ (Set.range M.col) :=
+      Submodule.eq_of_le_of_finrank_le hle (by omega)
+    have hmem : ∀ j, M.col j ∈ Submodule.span ℂ ({M.col j0} : Set (m → ℂ)) := by
+      intro j
+      rw [heq]
+      exact Submodule.subset_span ⟨j, rfl⟩
+    choose a ha using fun j => Submodule.mem_span_singleton.mp (hmem j)
+    refine ⟨fun i => M i j0, a, fun i j => ?_⟩
+    have := congrFun (ha j) i
+    simpa [Matrix.col_apply, mul_comm] using this.symm
+
+
+/-- Any finite family of complex numbers is a rational combination of a `ℚ`-basis of its span,
+of size the `ℚ`-dimension of that span. -/
+theorem exists_rat_coords {ι : Type} [Fintype ι] (y : ι → ℂ) :
+    ∃ (u : Fin (finrank ℚ (Submodule.span ℚ (Set.range y))) → ℂ)
+      (q : ι → Fin (finrank ℚ (Submodule.span ℚ (Set.range y))) → ℚ),
+      ∀ j, y j = ∑ s, (q j s : ℂ) * u s := by
+  classical
+  have hfin : FiniteDimensional ℚ (Submodule.span ℚ (Set.range y)) :=
+    FiniteDimensional.span_of_finite ℚ (Set.finite_range _)
+  set V := Submodule.span ℚ (Set.range y) with hV
+  set B := Module.finBasis ℚ V with hB
+  refine ⟨fun s => (B s : ℂ), fun j s => B.repr ⟨y j, Submodule.subset_span ⟨j, rfl⟩⟩ s, fun j => ?_⟩
+  have := congrArg (fun v : V => (v : ℂ)) (B.sum_repr ⟨y j, Submodule.subset_span ⟨j, rfl⟩⟩)
+  simp only [Submodule.coe_sum, Submodule.coe_smul] at this
+  rw [← this]
+  exact Finset.sum_congr rfl fun s _ => by rw [Rat.smul_def]
+
 /-! ### The frozen statements -/
 
 theorem rank_le_structRank {m n : Type} [Fintype m] [Fintype n] [DecidableEq n]
@@ -265,7 +429,41 @@ theorem rank_eq_structRank_of_algIndepLogs (h1 : AlgIndepLogsConjecture) {m n : 
 theorem two_le_rank_of_sixExponentials (h6 : SixExponentials) {m n : Type} [Fintype m]
     [Fintype n] [DecidableEq n] {M : Matrix m n ℂ} {r : ℕ} (hM : IsLogMatrix M)
     (h : IsStructRank M r) (hr : 3 ≤ r) : 2 ≤ M.rank := by
-  sorry
+  classical
+  by_contra hcon
+  have hrk : M.rank ≤ 1 := by omega
+  obtain ⟨x, y, hxy⟩ := exists_vecMulVec_of_rank_le_one hrk
+  by_cases hdx : 2 ≤ finrank ℚ (Submodule.span ℚ (Set.range x))
+  · by_cases hdy : 3 ≤ finrank ℚ (Submodule.span ℚ (Set.range y))
+    · -- both sides big: six exponentials produces a transcendental exponential entry
+      obtain ⟨g, hg⟩ := exists_indep_subfamily x 2 hdx
+      obtain ⟨g', hg'⟩ := exists_indep_subfamily y 3 hdy
+      obtain ⟨i, j, htr⟩ := h6 (x ∘ g) (y ∘ g') hg hg'
+      refine htr ?_
+      have : (x ∘ g) i * (y ∘ g') j = M (g i) (g' j) := (hxy _ _).symm
+      rw [this]
+      exact hM _ _
+    · -- the `y` side has dimension ≤ 2, so the structural rank is ≤ 2
+      push_neg at hdy
+      obtain ⟨u, q, hq⟩ := exists_rat_coords y
+      have hfac : ∀ i j, M i j = ∑ s, (x i * u s) * ((fun s j => q j s) s j : ℚ) := by
+        intro i j
+        rw [hxy i j, hq j, Finset.mul_sum]
+        exact Finset.sum_congr rfl fun s _ => by push_cast; ring
+      have hle := structRank_le_of_factor (fun i s => x i * u s) (fun s j => q j s) hfac h
+      rw [Fintype.card_fin] at hle
+      omega
+  · -- the `x` side has dimension ≤ 1, so the structural rank is ≤ 1 (work with `Mᵀ`)
+    push_neg at hdx
+    obtain ⟨u, q, hq⟩ := exists_rat_coords x
+    have hfac : ∀ j i, Mᵀ j i = ∑ s, (y j * u s) * ((fun s i => q i s) s i : ℚ) := by
+      intro j i
+      rw [Matrix.transpose_apply, hxy i j, hq i, Finset.sum_mul]
+      exact Finset.sum_congr rfl fun s _ => by push_cast; ring
+    have hle := structRank_le_of_factor (fun j s => y j * u s) (fun s i => q i s) hfac
+      (structRank_transpose h)
+    rw [Fintype.card_fin] at hle
+    omega
 
 theorem structRank_log_example :
     IsStructRank !![(Real.log 2 : ℂ), (Real.log 3 : ℂ); 2 * (Real.log 2 : ℂ), 2 * (Real.log 3 : ℂ)] 1 := by

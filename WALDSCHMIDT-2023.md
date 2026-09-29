@@ -17,7 +17,7 @@ Fields (`ℚ` vs `ℚ̄`) are checked against the rendered PDF, never a pdftotex
 | Conj 2, four exponentials | `Literature.FourExponentialsConjecture` | ✅ from Schanuel (phase 16); ✅ from Conj 1 (phase 19, the survey's route) |
 | Consequence: `2^t` or `3^t` transcendental | `Exponentials.two_rpow_or_three_rpow_transcendental` | ✅ phase 16 |
 | Thm 3, six exponentials (Lang, Ramachandra) | `Literature.SixExponentials` | stated; consequences ✅ phases 16–17 (`p^t ∈ ℤ` for 3 primes ⇒ `t ∈ ℕ`; `2^t, 3^t, 5^t`) |
-| §5 Def 1 structural rank; rk ≤ r_str; Waldschmidt 1981 `rk ≥ ½ r_str`; Conj 1 ⇒ `rk = r_str`; six exp ⇒ (`r_str ≥ 3` ⇒ `rk ≥ 2`) | `Literature.IsStructRank`, `Literature.Waldschmidt1981`; `StructuralRank.*` | stated; derivations in phase 20 |
+| §5 Def 1 structural rank; rk ≤ r_str; Waldschmidt 1981 `rk ≥ ½ r_str`; Conj 1 ⇒ `rk = r_str`; six exp ⇒ (`r_str ≥ 3` ⇒ `rk ≥ 2`) | `Literature.IsStructRank`, `Literature.Waldschmidt1981`; `StructuralRank.*` | **DONE phase 20** — `rank_le_structRank`, `rank_eq_structRank_of_algIndepLogs`, `two_le_rank_of_sixExponentials`, `structRank_log_example`, all axiom-clean; Waldschmidt 1981 still a `Literature` Prop |
 | Thm 4, five exponentials (Waldschmidt 1988) | `Literature.FiveExponentials` | stated; ✅ from shifted six + Baker (phase 17) |
 | Shifted six exponentials (Waldschmidt 1988 Cor 2.1) | `Literature.SixExponentialsShifted` | stated; ✅ ⇒ six exponentials (phase 17) |
 | Thm 5, Roy's strong six exponentials | `Literature.StrongSixExponentials` | stated; ✅ from Schanuel (phase 17) |
