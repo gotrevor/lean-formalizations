@@ -43,6 +43,159 @@ last digit is decimal place `digitsUpTo n`. -/
 noncomputable def champernowne : ℝ :=
   ∑' n : ℕ, ((n + 1 : ℕ) : ℝ) / 10 ^ digitsUpTo (n + 1)
 
+
+/-! ## Leaf 1: the digit-counting function `digitsUpTo` -/
+
+lemma digitsUpTo_succ (n : ℕ) :
+    digitsUpTo (n + 1) = digitsUpTo n + (Nat.digits 10 (n + 1)).length := by
+  unfold digitsUpTo
+  rw [Finset.sum_Icc_succ_top (by omega)]
+
+/-- A number with `10 ^ m ≤ n < 10 ^ (m+1)` has exactly `m + 1` decimal digits. -/
+lemma digits_len_of_mem_block {m n : ℕ} (h₁ : 10 ^ m ≤ n) (h₂ : n < 10 ^ (m + 1)) :
+    (Nat.digits 10 n).length = m + 1 := by
+  have hp : 0 < 10 ^ m := pow_pos (by norm_num) m
+  have hn : n ≠ 0 := by omega
+  rw [Nat.length_digits 10 n (by norm_num) hn, Nat.log_eq_of_pow_le_of_lt_pow h₁ h₂]
+
+/-- `N m` = number of decimal digits used by all of `1, 2, …, 10 ^ m − 1`. -/
+noncomputable abbrev blockStart (m : ℕ) : ℕ := digitsUpTo (10 ^ m - 1)
+
+/-- Inside the block of `(m+1)`-digit numbers, `digitsUpTo` is arithmetic with step `m + 1`. -/
+lemma digitsUpTo_block (m : ℕ) : ∀ j : ℕ, j < 9 * 10 ^ m →
+    digitsUpTo (10 ^ m + j) = blockStart m + (m + 1) * (j + 1) := by
+  intro j
+  induction j with
+  | zero =>
+    intro _
+    have h1 : (1:ℕ) ≤ 10 ^ m := Nat.one_le_pow _ _ (by norm_num)
+    have : 10 ^ m + 0 = (10 ^ m - 1) + 1 := by omega
+    rw [this, digitsUpTo_succ]
+    have : (10 ^ m - 1) + 1 = 10 ^ m := by omega
+    rw [this, digits_len_of_mem_block (le_refl _) (by
+      have : (10:ℕ) ^ m * 1 < 10 ^ m * 10 := by
+        have := Nat.one_le_pow m 10 (by norm_num); omega
+      simpa [pow_succ] using this)]
+    ring
+  | succ j ih =>
+    intro hj
+    have hj' : j < 9 * 10 ^ m := by omega
+    have heq : 10 ^ m + (j + 1) = (10 ^ m + j) + 1 := by ring
+    rw [heq, digitsUpTo_succ, ih hj']
+    have hlen : (Nat.digits 10 (10 ^ m + j + 1)).length = m + 1 := by
+      refine digits_len_of_mem_block (by omega) ?_
+      have : (10:ℕ) ^ (m+1) = 10 ^ m * 10 := by ring
+      omega
+    rw [hlen]; ring
+
+
+lemma blockStart_succ (m : ℕ) :
+    blockStart (m + 1) = blockStart m + (m + 1) * (9 * 10 ^ m) := by
+  have h1 : (1:ℕ) ≤ 10 ^ m := Nat.one_le_pow _ _ (by norm_num)
+  have h : (10:ℕ) ^ (m + 1) - 1 = 10 ^ m + (9 * 10 ^ m - 1) := by
+    have : (10:ℕ) ^ (m + 1) = 10 ^ m * 10 := by ring
+    omega
+  rw [show blockStart (m+1) = digitsUpTo (10 ^ (m+1) - 1) from rfl, h,
+    digitsUpTo_block m (9 * 10 ^ m - 1) (by omega)]
+  congr 2
+  omega
+
+/-! ## Leaf 2: term bounds, summability, tail estimates -/
+
+/-- The `n`-th summand of Champernowne's constant. -/
+noncomputable def cterm (n : ℕ) : ℝ := (n : ℝ) / 10 ^ digitsUpTo n
+
+lemma champernowne_eq_tsum : champernowne = ∑' n : ℕ, cterm (n + 1) := rfl
+
+lemma one_le_digits_len {n : ℕ} (hn : n ≠ 0) : 1 ≤ (Nat.digits 10 n).length := by
+  cases h : Nat.digits 10 n with
+  | nil => exact absurd (Nat.digits_eq_nil_iff_eq_zero.mp h) hn
+  | cons a l => simp
+
+lemma digitsUpTo_add_le (M : ℕ) : ∀ i : ℕ, digitsUpTo M + i ≤ digitsUpTo (M + i) := by
+  intro i
+  induction i with
+  | zero => simp
+  | succ i ih =>
+    have e : M + (i + 1) = M + i + 1 := by omega
+    rw [e]
+    have := one_le_digits_len (n := M + i + 1) (by omega)
+    have h := digitsUpTo_succ (M + i)
+    omega
+
+@[simp] lemma digitsUpTo_zero : digitsUpTo 0 = 0 := by simp [digitsUpTo]
+
+lemma le_digitsUpTo (n : ℕ) : n ≤ digitsUpTo n := by
+  simpa using digitsUpTo_add_le 0 n
+
+lemma cterm_nonneg (n : ℕ) : 0 ≤ cterm n := by
+  unfold cterm; positivity
+
+/-- The key size bound: the `(n+1)`-st term is below `10 ^ (−digitsUpTo n)`. -/
+lemma cterm_succ_lt (n : ℕ) : cterm (n + 1) < 1 / 10 ^ digitsUpTo n := by
+  have hlt : (n + 1 : ℕ) < 10 ^ (Nat.digits 10 (n + 1)).length :=
+    Nat.lt_base_pow_length_digits (by norm_num)
+  have hlt' : ((n + 1 : ℕ) : ℝ) < 10 ^ (Nat.digits 10 (n + 1)).length := by
+    exact_mod_cast hlt
+  unfold cterm
+  rw [digitsUpTo_succ, pow_add]
+  rw [div_lt_div_iff₀ (by positivity) (by positivity)]
+  have h1 : (0:ℝ) < 10 ^ digitsUpTo n := by positivity
+  nlinarith [hlt', h1]
+
+lemma summable_cterm : Summable fun n : ℕ => cterm (n + 1) := by
+  apply Summable.of_nonneg_of_le (fun n => cterm_nonneg _) (fun n => (cterm_succ_lt n).le)
+  have : ∀ n : ℕ, (1:ℝ) / 10 ^ digitsUpTo n ≤ (1/10 : ℝ) ^ n := by
+    intro n
+    rw [div_pow, one_pow, one_div, one_div, inv_le_inv₀ (by positivity) (by positivity)]
+    exact pow_le_pow_right₀ (by norm_num) (le_digitsUpTo n)
+  exact Summable.of_nonneg_of_le (fun n => by positivity) this
+    (summable_geometric_of_lt_one (by norm_num) (by norm_num))
+
+/-- Shifted summability: the tail starting at `K + 1`. -/
+lemma summable_cterm_shift (K : ℕ) : Summable fun i : ℕ => cterm (K + 1 + i) := by
+  exact ((summable_nat_add_iff K).mpr summable_cterm).congr (fun i => by congr 1; omega)
+
+/-- The tail of Champernowne's series past `K`. -/
+noncomputable def ctail (K : ℕ) : ℝ := ∑' i : ℕ, cterm (K + 1 + i)
+
+lemma ctail_nonneg (K : ℕ) : 0 ≤ ctail K :=
+  tsum_nonneg fun i => cterm_nonneg _
+
+lemma ctail_pos (K : ℕ) : 0 < ctail K := by
+  refine lt_of_lt_of_le ?_ ((summable_cterm_shift K).le_tsum 0 (fun i _ => cterm_nonneg _))
+  have : cterm (K + 1 + 0) = ((K+1:ℕ):ℝ) / 10 ^ digitsUpTo (K+1+0) := rfl
+  rw [this]
+  positivity
+
+lemma ctail_le (K : ℕ) : ctail K ≤ (10/9) * (1 / 10 ^ digitsUpTo K) := by
+  have hb : ∀ i : ℕ, cterm (K + 1 + i) ≤ (1 / 10 ^ digitsUpTo K) * (1/10 : ℝ) ^ i := by
+    intro i
+    have h1 : cterm (K + i + 1) < 1 / 10 ^ digitsUpTo (K + i) := cterm_succ_lt _
+    have h2 : digitsUpTo K + i ≤ digitsUpTo (K + i) := digitsUpTo_add_le K i
+    have h3 : (1:ℝ) / 10 ^ digitsUpTo (K + i) ≤ 1 / 10 ^ (digitsUpTo K + i) := by
+      apply one_div_le_one_div_of_le (by positivity)
+      exact pow_le_pow_right₀ (by norm_num) h2
+    have : cterm (K + 1 + i) = cterm (K + i + 1) := by ring_nf
+    rw [this]
+    calc cterm (K + i + 1) ≤ 1 / 10 ^ (digitsUpTo K + i) := le_trans h1.le h3
+      _ = (1 / 10 ^ digitsUpTo K) * (1/10 : ℝ) ^ i := by
+          rw [pow_add, div_pow, one_pow]; field_simp
+  have hs : Summable fun i : ℕ => (1 / 10 ^ digitsUpTo K : ℝ) * (1/10 : ℝ) ^ i :=
+    (summable_geometric_of_lt_one (by norm_num) (by norm_num)).mul_left _
+  show (∑' i : ℕ, cterm (K + 1 + i)) ≤ _
+  refine le_trans ((summable_cterm_shift K).tsum_le_tsum hb hs) ?_
+  rw [tsum_mul_left, tsum_geometric_of_lt_one (by norm_num) (by norm_num),
+    show ((1:ℝ) - 1/10)⁻¹ = 10/9 by norm_num]
+  ring_nf
+  exact le_refl _
+
+lemma ctail_succ (K : ℕ) : ctail K = cterm (K + 1) + ctail (K + 1) := by
+  show (∑' i : ℕ, cterm (K + 1 + i)) = _
+  rw [(summable_cterm_shift K).tsum_eq_zero_add]
+  congr 1
+  exact tsum_congr fun i => by congr 1; omega
+
 /-- Sanity anchor for the definition: the first eleven digits are `12345678910`. -/
 theorem champernowne_prefix :
     ⌊champernowne * 10 ^ 11⌋ = 12345678910 := by
