@@ -621,6 +621,68 @@ theorem mulHeight_le_prod_S_of_sIntegral {ι : Type*} [Fintype ι] [Nonempty ι]
   · simp only [hg, if_neg hv]
     exact hint v hv
 
+open Literature in
+/-- **The `approxProd` bound for `S`-integral tuples.**  If the double product of the linear
+forms over `S` is at most `B`, then `approxProd ≤ B / H(x)^n`.  This is the inequality CZ derive
+just before applying [S, Theorem 1D′] in the proof of Lemma 3. -/
+theorem approxProd_le_of_prod_le {ι : Type*} [Fintype ι] [Nonempty ι]
+    {Sfin : Finset (FinitePlace K)} {x : ι → K} (hx : x ≠ 0)
+    (hint : ∀ v : FinitePlace K, v ∉ Sfin → (⨆ i, v (x i)) ≤ 1)
+    (L : AbsoluteValue K ℝ → ι → Module.Dual K (ι → K)) {B : ℝ}
+    (hnum : ((∏ v : InfinitePlace K, (∏ i, v.1 (L v.1 i x)) ^ v.mult) *
+      ∏ v ∈ Sfin, ∏ i, v.1 (L v.1 i x)) ≤ B) :
+    approxProd (Finset.univ : Finset (InfinitePlace K)) Sfin (fun v ↦ v) L x
+      ≤ B / Height.mulHeight x ^ (Fintype.card ι) := by
+  classical
+  set n := Fintype.card ι with hn
+  have hnn : ∀ v : AbsoluteValue K ℝ, 0 ≤ ⨆ i, v (x i) := fun v ↦
+    Real.iSup_nonneg fun i ↦ v.nonneg _
+  have hpos : ∀ v : AbsoluteValue K ℝ, 0 < ⨆ i, v (x i) := by
+    intro v
+    obtain ⟨i, hi⟩ := Function.ne_iff.mp hx
+    exact lt_of_lt_of_le (v.pos (by simpa using hi))
+      (le_ciSup (f := fun j ↦ v (x j)) (Set.Finite.bddAbove (Set.finite_range _)) i)
+  -- rewrite `approxProd` as numerator / denominator
+  have hxx : (fun j ↦ algebraMap K K (x j)) = x := by funext j; simp
+  have hsplit : ∀ v : AbsoluteValue K ℝ,
+      (∏ i, v (L v i fun j ↦ algebraMap K K (x j)) / ⨆ j, v (x j))
+        = (∏ i, v (L v i x)) / (⨆ j, v (x j)) ^ n := by
+    intro v
+    rw [hxx, Finset.prod_div_distrib, Finset.prod_const, hn, Finset.card_univ]
+  have keyI : ∀ v : InfinitePlace K,
+      (∏ i, v.1 (L v.1 i fun j ↦ algebraMap K K (x j)) / ⨆ j, v (x j))
+        = (∏ i, v.1 (L v.1 i x)) / (⨆ j, v (x j)) ^ n := fun v ↦ hsplit v.1
+  have keyF : ∀ v : FinitePlace K,
+      (∏ i, v.1 (L v.1 i fun j ↦ algebraMap K K (x j)) / ⨆ j, v (x j))
+        = (∏ i, v.1 (L v.1 i x)) / (⨆ j, v (x j)) ^ n := fun v ↦ hsplit v.1
+  set P := (∏ v : InfinitePlace K, (⨆ i, v (x i)) ^ v.mult) * ∏ v ∈ Sfin, ⨆ i, v (x i) with hP
+  have hPpos : 0 < P :=
+    mul_pos (Finset.prod_pos fun v _ ↦ pow_pos (hpos v.1) _) (Finset.prod_pos fun v _ ↦ hpos v.1)
+  have hden : (∏ v : InfinitePlace K, ((⨆ j, v (x j)) ^ n) ^ v.mult) *
+      ∏ v ∈ Sfin, ((⨆ j, v (x j)) ^ n) = P ^ n := by
+    rw [hP, mul_pow, ← Finset.prod_pow, ← Finset.prod_pow]
+    refine congrArg₂ (· * ·) (Finset.prod_congr rfl fun v _ ↦ ?_) rfl
+    rw [← pow_mul, ← pow_mul, Nat.mul_comm]
+  have hrw : approxProd (Finset.univ : Finset (InfinitePlace K)) Sfin (fun v ↦ v) L x
+      = ((∏ v : InfinitePlace K, (∏ i, v.1 (L v.1 i x)) ^ v.mult) *
+          ∏ v ∈ Sfin, ∏ i, v.1 (L v.1 i x)) / P ^ n := by
+    rw [approxProd]
+    simp only [keyI, keyF, div_pow, Finset.prod_div_distrib]
+    rw [div_mul_div_comm, hden]
+  rw [hrw]
+  have hH : Height.mulHeight x ≤ P := mulHeight_le_prod_S_of_sIntegral hx hint
+  have hHpos : (0 : ℝ) < Height.mulHeight x := Height.mulHeight_pos x
+  have hN0 : 0 ≤ (∏ v : InfinitePlace K, (∏ i, v.1 (L v.1 i x)) ^ v.mult) *
+      ∏ v ∈ Sfin, ∏ i, v.1 (L v.1 i x) :=
+    mul_nonneg (Finset.prod_nonneg fun v _ ↦
+        pow_nonneg (Finset.prod_nonneg fun i _ ↦ v.1.nonneg _) _)
+      (Finset.prod_nonneg fun v _ ↦ Finset.prod_nonneg fun i _ ↦ v.1.nonneg _)
+  have hB0 : 0 ≤ B := le_trans hN0 hnum
+  have hHn : (0 : ℝ) < Height.mulHeight x ^ n := pow_pos hHpos n
+  have hHPn : Height.mulHeight x ^ n ≤ P ^ n := pow_le_pow_left₀ hHpos.le hH n
+  calc _ ≤ B / P ^ n := by gcongr
+    _ ≤ B / Height.mulHeight x ^ n := by gcongr
+
 end CZ
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
