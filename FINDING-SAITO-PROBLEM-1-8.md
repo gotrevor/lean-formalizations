@@ -45,9 +45,9 @@ The sequences in Problems 1.1 and 1.7, and the Fermat numbers, are **traces**, s
 
 As a consistency check, the Lucas analogue `L(2^n) + h` escapes the argument exactly at `h ∈ {0, 2}`.  `L(2^n) + 2 = L(2^(n−1))²` is composite, and `L(2^n)` itself is a Fermat-type open problem.
 
-## Extension in progress
+## Extension: every Lucas sequence with `P, Q` odd
 
-The same proof should work for every Lucas sequence `U(P,Q)` with `P, Q` odd and `|U(2^n)| → ∞`: `NumberTheory/Mills/LucasTwoPow.lean` (phase 33).
+The same proof works for every Lucas sequence `U_N(P,Q)` (`U₀ = 0`, `U₁ = 1`, `U_(N+2) = P U_(N+1) − Q U_N`) with `P, Q` odd and `|U(2^n)| → ∞`.  It is also checked in Lean: [`NumberTheory/Mills/LucasTwoPow.lean`](src/LeanFormalizations/NumberTheory/Mills/LucasTwoPow.lean), theorem `lucasU_two_pow_add_not_prime`.  The sign flip becomes `V(2m) = V(m)² − 2Q^m` with `Q^(2^n) ≡ 1 (mod 2^(n+2))`.
 
 ## Provenance
 
