@@ -1412,3 +1412,29 @@ a rational exponent to be a natural number — the three-primes hypothesis is on
 3. **`e^e` and `π`, `e^π` and `e`, etc.** — more pairs from the same toolkit, cheap.
 4. The Wright row of `Maze.lean` stays open (phase 15): every level `≥ 2` transcendental is
    consistent with every level sitting just above a prime.  Nothing in phase 16 moves it.
+
+
+## Phase 17 (2026-09-29, same lap as 16) — `ExponentialsKnown.lean`: 3 of 4, and a real obstruction
+
+Proved and axiom-clean: `two_three_five_rpow_transcendental` (unconditional: for irrational `t`
+one of `2^t, 3^t, 5^t` is transcendental — the six-exponentials cousin of phase 16's
+conditional two/three statement), `sixExponentials_of_shifted` (take every shift `β = 0`),
+`sixExponentials_of_strong` (an algebraic `e^{xᵢyⱼ}` puts `xᵢyⱼ` in `LogAlgSpan` with `n = 1`,
+`β = (0,1)`).
+
+**`fiveExponentials_of_shifted` is a documented obstruction, not laziness.**  The reduction is
+proved in full as `fiveExponentials_of_shifted_of_baker` (axiom-clean): apply the shifted six
+exponentials theorem to `y = (y₀, y₁, γ/x₁)` with `β₁₂ = γ`, so the sixth exponential is
+`e^{x₁·γ/x₁ − γ} = e⁰ = 1`.  The gap is the `ℚ`-linear independence of those three `y`, which
+`FiveExponentials` does not supply; in the degenerate case `γ/x₁ ∈ span_ℚ{y₀,y₁}` the statement
+*is* `BakerTwoLogs` — a nonzero algebraic number equal to a `ℚ`-linear combination of the two
+logarithms `x₁y₀, x₁y₁`.  With one coefficient zero that is Hermite–Lindemann; with both nonzero
+it is Baker's theorem on linear forms in two logarithms, strictly deeper than six exponentials.
+`BakerTwoLogs` is defined in `ExponentialsKnown.lean` (not `Literature/`, which is frozen).
+
+**Next:** the operator call is whether to add Baker to `Literature/` (then
+`fiveExponentials_of_shifted` closes in one line from the reduction already proved), or to
+restate the frozen `SixExponentialsShifted` with Waldschmidt's actual weaker independence
+hypothesis.  Either is a one-line unblock; neither is this run's to make.  Meanwhile the fifth
+bullet of the file header — a five-exponentials corollary such as `e^{π²}` or `2^{√2}` — is
+open and needs no Baker.
