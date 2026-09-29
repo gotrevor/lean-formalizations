@@ -47,10 +47,27 @@ def LogAlgSpan : Set ℂ :=
   {z | ∃ (n : ℕ) (β : Fin (n + 1) → ℂ) (ℓ : Fin n → ℂ), (∀ i, IsAlgebraic ℚ (β i)) ∧
     (∀ i, IsAlgebraic ℚ (exp (ℓ i))) ∧ z = β 0 + ∑ i, β i.succ * ℓ i}
 
-/-- **Strong six exponentials theorem** (D. Roy): with `x` (two) and `y` (three) `ℚ`-linearly
-independent, some `xᵢyⱼ` lies outside `LogAlgSpan`. -/
-def StrongSixExponentials : Prop :=
+/-- ⚠️ **FALSE: a mistranscription, kept on purpose.**  Ren's first transcription of Roy's
+theorem, with `ℚ`-linear independence (pdftotext had dropped the bar from `ℚ̄`).  It is refuted
+in the kernel by `ExponentialsKnown.not_strongSixExponentialsOverQ` (witness `x = (1, log 2)`,
+`y = (1, √2, i)`).  The correct statement is `StrongSixExponentials`. -/
+def StrongSixExponentialsOverQ : Prop :=
   ∀ (x : Fin 2 → ℂ) (y : Fin 3 → ℂ), LinearIndependent ℚ x → LinearIndependent ℚ y →
     ∃ i j, x i * y j ∉ LogAlgSpan
+
+/-- **Strong six exponentials theorem** (D. Roy): with `x` (two) and `y` (three) linearly
+independent over the **algebraic numbers** `ℚ̄`, some `xᵢyⱼ` lies outside `LogAlgSpan`. -/
+def StrongSixExponentials : Prop :=
+  ∀ (x : Fin 2 → ℂ) (y : Fin 3 → ℂ), LinearIndependent (integralClosure ℚ ℂ) x →
+    LinearIndependent (integralClosure ℚ ℂ) y → ∃ i j, x i * y j ∉ LogAlgSpan
+
+/-- **Baker's theorem (1966), inhomogeneous form**: a nonzero algebraic number is never an
+algebraic-coefficient combination of logarithms of algebraic numbers.  Equivalently
+`β₀ + β₁ℓ₁ + ⋯ + βₙℓₙ ≠ 0` whenever `β₀ ≠ 0`.  A. Baker, *Linear forms in the logarithms of
+algebraic numbers I–III*, Mathematika **13–14** (1966–67); *Transcendental Number Theory*
+(1975), Theorem 2.1. -/
+def Baker1966 : Prop :=
+  ∀ (n : ℕ) (β : Fin (n + 1) → ℂ) (ℓ : Fin n → ℂ), (∀ i, IsAlgebraic ℚ (β i)) →
+    (∀ i, IsAlgebraic ℚ (exp (ℓ i))) → β 0 ≠ 0 → β 0 + ∑ i, β i.succ * ℓ i ≠ 0
 
 end LeanFormalizations.Literature

@@ -17,13 +17,13 @@ cited literature.
   cousin of phase 16's `two_rpow_or_three_rpow_transcendental`, which needs four exponentials.
 * **Consistency edges**: `SixExponentialsShifted ⇒ SixExponentials` and
   `SixExponentialsShifted ⇒ FiveExponentials` (Waldschmidt says it covers both), and
-  `StrongSixExponentials ⇒ SixExponentials` (if every `e^{xᵢyⱼ}` were algebraic, every `xᵢyⱼ`
+  `StrongSixExponentialsOverQ ⇒ SixExponentials` (if every `e^{xᵢyⱼ}` were algebraic, every `xᵢyⱼ`
   would be a logarithm, hence in `LogAlgSpan`).
 * **Five exponentials ⇒** `e^{π²}` or `2^{√2}`-style corollaries: left to the lap to choose one
   (Waldschmidt 2023 §6 lists them); add as a new theorem.
 
-⚠️ **FAITHFULNESS BUG FOUND (2026-09-29): `Literature.StrongSixExponentials` is FALSE as
-stated**, and `not_strongSixExponentials` below is a machine-checked refutation.  Roy's theorem
+⚠️ **FAITHFULNESS BUG FOUND (2026-09-29): `Literature.StrongSixExponentialsOverQ` is FALSE as
+stated**, and `not_strongSixExponentialsOverQ` below is a machine-checked refutation.  Roy's theorem
 asks for `x` and `y` linearly independent over the field of *algebraic* numbers; the frozen
 `Prop` asks only for `ℚ`-linear independence, which is far too weak.  Witness:
 `x = (1, log 2)` and `y = (1, √2, i)` are `ℚ`-linearly independent, yet all six products
@@ -198,10 +198,11 @@ not missing**: `bakerTwoLogs_of_schanuel` below proves `BakerTwoLogs`, so
 `fiveExponentials_of_shifted_of_schanuel` closes the five exponentials theorem from the shifted
 six exponentials theorem plus Schanuel.  What stays open is only the *unconditional* form.
 -/
-theorem fiveExponentials_of_shifted (h : SixExponentialsShifted) : FiveExponentials := by
+theorem fiveExponentials_of_shifted (h : SixExponentialsShifted) (hB : Baker1966) :
+    FiveExponentials := by
   sorry
 
-theorem sixExponentials_of_strong (h : StrongSixExponentials) : SixExponentials := by
+theorem sixExponentials_of_strongOverQ (h : StrongSixExponentialsOverQ) : SixExponentials := by
   intro x y hx hy
   obtain ⟨i, j, hmem⟩ := h x y hx hy
   refine ⟨i, j, fun halg => hmem ?_⟩
@@ -373,7 +374,7 @@ theorem irrational_log_two : Irrational (Real.log 2) := by
   · simp [hpow]
 
 
-/-! ### `StrongSixExponentials` as frozen is FALSE -/
+/-! ### `StrongSixExponentialsOverQ` as frozen is FALSE -/
 
 /-- Every algebraic number lies in `𝓛̃` (take `n = 0`). -/
 theorem mem_logAlgSpan_of_isAlgebraic {z : ℂ} (hz : IsAlgebraic ℚ z) : z ∈ LogAlgSpan :=
@@ -420,13 +421,13 @@ theorem linearIndependent_one_sqrt_two_I :
   · exact hg1
   · exact him
 
-/-- **The frozen `Literature.StrongSixExponentials` is FALSE as stated** (2026-09-29).  Roy's
+/-- **The frozen `Literature.StrongSixExponentialsOverQ` is FALSE as stated** (2026-09-29).  Roy's
 strong six exponentials theorem requires `x` and `y` to be linearly independent over the field
 of *algebraic* numbers; the frozen statement asks only for `ℚ`-linear independence, and that is
 far too weak: `x = (1, log 2)` and `y = (1, √2, i)` are `ℚ`-linearly independent while all six
 products `1, √2, i, log 2, √2 log 2, i log 2` lie in `𝓛̃`.  (Over `ℚ̄` the triple `1, √2, i` is
 of course dependent, which is exactly what the real theorem rules out.) -/
-theorem not_strongSixExponentials : ¬ StrongSixExponentials := by
+theorem not_strongSixExponentialsOverQ : ¬ StrongSixExponentialsOverQ := by
   intro h
   obtain ⟨i, j, hmem⟩ := h ![(1 : ℂ), ((Real.log 2 : ℝ) : ℂ)]
     ![(1 : ℂ), ((Real.sqrt 2 : ℝ) : ℂ), Complex.I]
@@ -446,5 +447,11 @@ theorem not_strongSixExponentials : ¬ StrongSixExponentials := by
   · show ((Real.log 2 : ℝ) : ℂ) * Complex.I ∈ LogAlgSpan
     rw [mul_comm]; exact mem_logAlgSpan_mul isAlgebraic_I hlog
 
+
+/-- Schanuel ⇒ **Roy's strong six exponentials theorem** (with the corrected `ℚ̄`-independence
+hypothesis).  A multi-lap target: the phase-16 handoff sketches the basis-of-logarithms
+decomposition, and the `OverQ` refutation shows exactly where `ℚ̄`-independence is used. -/
+theorem strongSixExponentials_of_schanuel (hS : SchanuelConjecture) : StrongSixExponentials := by
+  sorry
 
 end LeanFormalizations.ExponentialsKnown

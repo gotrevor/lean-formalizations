@@ -19,9 +19,9 @@ Not yet planted.  Mahler 1937.  The run of consecutive k-digit integers is a sma
 
 ---
 
-## ⏳ QUEUED (phase 17, 2026-09-29): consequences of the KNOWN exponentials theorems
+## 🎯 THE OBJECTIVE (phase 17, 2026-09-29): consequences of the KNOWN exponentials theorems
 
-Phase-16 laps ignore this section.  Target `NumberTheory/Transcendence/ExponentialsKnown.lean`: unconditional `2^t, 3^t, 5^t` (six exp), and consistency edges among `Literature/ExponentialsKnown.lean` (five exp, shifted six exp, Roy's strong six exp).  Stop condition: that file sorry-free.
+Operator fix 2026-09-29: `StrongSixExponentials` now takes `ℚ̄`-independence (the `ℚ` version is kept as `StrongSixExponentialsOverQ`, refuted); `Literature.Baker1966` was added, and `fiveExponentials_of_shifted` now takes `hB : Baker1966` (the lap showed that the reduction needs exactly Baker for two logs).  New frozen target: `strongSixExponentials_of_schanuel`.  Target `NumberTheory/Transcendence/ExponentialsKnown.lean`: unconditional `2^t, 3^t, 5^t` (six exp), and consistency edges among `Literature/ExponentialsKnown.lean` (five exp, shifted six exp, Roy's strong six exp).  Stop condition: that file sorry-free.
 
 ---
 
