@@ -2,6 +2,12 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 23, 2026-09-29): Schanuel ⇒ log π, π^e, π^π
+
+Target `NumberTheory/Transcendence/SchanuelPi.lean`, 5 frozen statements, two-step Schanuel bootstrap in the header.  Frozen: the 5, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.
+
+---
+
 ## ✅ DONE (phase 22, 2026-09-29, 1 lap): more bedrock, via LW and Baker
 
 **All five frozen statements are PROVED and `#print axioms`-clean; `BedrockBaker.lean` is

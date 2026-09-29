@@ -121,6 +121,7 @@ import LeanFormalizations.Literature.Roy2001
 import LeanFormalizations.Literature.Nesterenko
 import LeanFormalizations.NumberTheory.Transcendence.Bedrock
 import LeanFormalizations.NumberTheory.Transcendence.BedrockBaker
+import LeanFormalizations.NumberTheory.Transcendence.SchanuelPi
 import LeanFormalizations.NumberTheory.Transcendence.StructuralRank
 import LeanFormalizations.NumberTheory.Transcendence.DubickasGrowth
 import LeanFormalizations.NumberTheory.Transcendence.DubickasPisot
