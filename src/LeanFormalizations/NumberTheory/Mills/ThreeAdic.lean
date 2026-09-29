@@ -609,6 +609,7 @@ lemma companion3_trace_pow {a b c : ℤ} {x y z : ℂ}
 
 end Companion
 
+open Polynomial in
 /-- **Vieta for a cubic Pisot number.**  The minimal polynomial of `β` over `ℤ` is
 `X³ + aX² + bX + c`, whose complex roots are `β, u, v`.
 
@@ -621,7 +622,60 @@ private lemma exists_vieta_of_cubic_pisot {β : ℝ} (hP : IsPisot β)
     (h3 : (minpoly ℚ β).natDegree = 3) {u v : ℂ} (huv : otherConj β = {u, v}) :
     ∃ a b c : ℤ, c ≠ 0 ∧ (β : ℂ) + u + v = -(a : ℂ) ∧
       (β : ℂ) * u + (β : ℂ) * v + u * v = (b : ℂ) ∧ (β : ℂ) * u * v = -(c : ℂ) := by
-  sorry
+  classical
+  have hZ : IsIntegral ℤ β := hP.2.1
+  have hQ : IsIntegral ℚ β := hZ.tower_top
+  obtain ⟨g, hg⟩ : ∃ g, g = minpoly ℤ β := ⟨_, rfl⟩
+  have hmap : minpoly ℚ β = g.map (algebraMap ℤ ℚ) := by
+    rw [hg]; exact minpoly.isIntegrallyClosed_eq_field_fractions' ℚ hZ
+  -- the split form over `ℂ`
+  have hmonic : ((minpoly ℚ β).map (algebraMap ℚ ℂ)).Monic := (minpoly.monic hQ).map _
+  have hsplit : ((minpoly ℚ β).map (algebraMap ℚ ℂ)).Splits := IsAlgClosed.splits _
+  have hroots : ((minpoly ℚ β).map (algebraMap ℚ ℂ)).roots = (β : ℂ) ::ₘ u ::ₘ {v} := by
+    have hcons : (minpoly ℚ β).aroots ℂ = (β : ℂ) ::ₘ otherConj β :=
+      (Multiset.cons_erase (beta_mem_aroots hQ)).symm
+    have : (minpoly ℚ β).aroots ℂ = ((minpoly ℚ β).map (algebraMap ℚ ℂ)).roots := rfl
+    rw [← this, hcons, huv]
+    rfl
+  have hfC : (minpoly ℚ β).map (algebraMap ℚ ℂ)
+      = (X - C (β : ℂ)) * (X - C u) * (X - C v) := by
+    rw [hsplit.eq_prod_roots_of_monic hmonic, hroots]
+    simp only [Multiset.map_cons, Multiset.prod_cons, Multiset.map_singleton,
+      Multiset.prod_singleton]
+    ring
+  have hexp : ((X - C (β : ℂ)) * (X - C u) * (X - C v))
+      = X ^ 3 - C ((β : ℂ) + u + v) * X ^ 2 + C ((β : ℂ) * u + (β : ℂ) * v + u * v) * X
+        - C ((β : ℂ) * u * v) := by
+    simp only [map_add, map_mul]
+    ring
+  have hcoeff : ∀ k, ((g.coeff k : ℤ) : ℂ) =
+      (X ^ 3 - C ((β : ℂ) + u + v) * X ^ 2 + C ((β : ℂ) * u + (β : ℂ) * v + u * v) * X
+        - C ((β : ℂ) * u * v)).coeff k := by
+    intro k
+    rw [← hexp, ← hfC, hmap, Polynomial.coeff_map, Polynomial.coeff_map]
+    simp
+  have c2 := hcoeff 2
+  have c1 := hcoeff 1
+  have c0 := hcoeff 0
+  simp only [Polynomial.coeff_sub, Polynomial.coeff_add, Polynomial.coeff_X_pow,
+    Polynomial.coeff_C_mul, Polynomial.coeff_C, Polynomial.coeff_X] at c2 c1 c0
+  norm_num at c2 c1 c0
+  -- the constant term is nonzero
+  have hc0 : g.coeff 0 ≠ 0 := by
+    intro h0
+    have hq0 : (minpoly ℚ β).coeff 0 = 0 := by rw [hmap, Polynomial.coeff_map, h0]; simp
+    obtain ⟨q, hq⟩ : (X : ℚ[X]) ∣ minpoly ℚ β := Polynomial.X_dvd_iff.2 hq0
+    have hirr := minpoly.irreducible hQ
+    rcases hirr.isUnit_or_isUnit hq with hu' | hu'
+    · exact Polynomial.not_isUnit_X hu'
+    · have hqne : q ≠ 0 := by
+        intro h; rw [h, mul_zero] at hq; exact minpoly.ne_zero hQ hq
+      have hdeg : (minpoly ℚ β).natDegree = 1 := by
+        rw [hq, Polynomial.natDegree_mul Polynomial.X_ne_zero hqne, Polynomial.natDegree_X,
+          Polynomial.natDegree_eq_zero_of_isUnit hu']
+      omega
+  exact ⟨g.coeff 2, g.coeff 1, g.coeff 0, hc0, by linear_combination c2, by linear_combination -c1,
+    by linear_combination c0⟩
 
 /-- **Step 4: if the least Mills constant is algebraic, its primes tend to `±1` in `ℤ₃`.** -/
 theorem mills_threeAdic (hGc : GaussCongruenceTrace)
