@@ -620,18 +620,257 @@ theorem algebraicIndependent_log_primes (hS : SchanuelConjecture) {n : ℕ}
 
 /-! ## Wright towers -/
 
+/-! ### Unconditional inputs for the Wright tower
+
+`tower ω 1 = 2^ω`, which for rational non-integer `ω` is algebraic (a root of `X^den − 2^num`)
+but irrational (the `2`-adic valuation of `r^den = 2^num` forces `den ∣ num`).  These are the
+only two facts about the base point the induction uses. -/
+
+theorem two_rpow_pow_den (q : ℚ) :
+    ((2:ℝ) ^ (q:ℝ)) ^ (q.den : ℕ) = ((2:ℚ) ^ (q.num) : ℚ) := by
+  rw [← Real.rpow_natCast ((2:ℝ) ^ (q:ℝ)) q.den, ← Real.rpow_mul (by norm_num)]
+  have h : (q:ℝ) * ((q.den : ℕ) : ℝ) = (q.num : ℝ) := by
+    have hd : ((q.den : ℝ)) ≠ 0 := by exact_mod_cast q.den_nz
+    field_simp
+    exact_mod_cast congrArg (fun t : ℚ => (t : ℝ)) (Rat.mul_den_eq_num q)
+  rw [h, Real.rpow_intCast]
+  push_cast
+  ring
+
+theorem isAlgebraic_two_rpow_rat (q : ℚ) : IsAlgebraic ℚ ((2:ℝ) ^ (q:ℝ)) := by
+  refine ⟨Polynomial.X ^ q.den - Polynomial.C ((2:ℚ) ^ q.num), ?_, ?_⟩
+  · have hm : (Polynomial.X ^ q.den - Polynomial.C ((2:ℚ) ^ q.num) : Polynomial ℚ).Monic :=
+      Polynomial.monic_X_pow_sub_C _ q.den_nz
+    exact hm.ne_zero
+  · simp [two_rpow_pow_den q]
+
+theorem irrational_two_rpow_rat {q : ℚ} (hq : q.den ≠ 1) :
+    Irrational ((2:ℝ) ^ (q:ℝ)) := by
+  rintro ⟨r, hr⟩
+  haveI : Fact (Nat.Prime 2) := ⟨Nat.prime_two⟩
+  have hpow : (r : ℚ) ^ (q.den : ℕ) = (2:ℚ) ^ q.num := by
+    have h := two_rpow_pow_den q
+    rw [← hr] at h
+    exact_mod_cast h
+  have hr0 : r ≠ 0 := by
+    intro h
+    rw [h, zero_pow (by exact q.den_nz)] at hpow
+    exact absurd hpow.symm (by positivity)
+  have hval := congrArg (padicValRat 2) hpow
+  rw [padicValRat.pow (p := 2), padicValRat.zpow (p := 2)] at hval
+  have h2 : padicValRat 2 (2:ℚ) = 1 := by
+    simpa using padicValRat.self (p := 2) (by norm_num)
+  rw [h2, mul_one] at hval
+  have hdvd : (q.den : ℤ) ∣ q.num := ⟨padicValRat 2 r, by linarith [hval]⟩
+  have hdvd' : q.den ∣ q.num.natAbs := by
+    have := Int.natAbs_dvd_natAbs.2 hdvd
+    simpa using this
+  exact hq (Nat.Coprime.eq_one_of_dvd q.reduced.symm hdvd')
+
+open MvPolynomial in
+/-- An algebraically independent family admits no nontrivial affine relation over the base. -/
+theorem eq_zero_of_algebraicIndependent_linear {R A : Type} [CommRing R] [CommRing A]
+    [Algebra R A] {n : ℕ} {x : Fin n → A} (h : AlgebraicIndependent R x) (c₀ : R)
+    (c : Fin n → R)
+    (hrel : algebraMap R A c₀ + ∑ i, algebraMap R A (c i) * x i = 0) :
+    c₀ = 0 ∧ ∀ i, c i = 0 := by
+  set P : MvPolynomial (Fin n) R := C c₀ + ∑ i, C (c i) * X i with hP
+  have haev : (MvPolynomial.aeval x) P = 0 := by
+    simp [hP, map_sum]
+    exact hrel
+  have hP0 : P = 0 := h (by simpa using haev)
+  constructor
+  · have := congrArg (fun p => MvPolynomial.coeff 0 p) hP0
+    simpa [hP, MvPolynomial.coeff_C, MvPolynomial.coeff_sum, MvPolynomial.coeff_C_mul,
+      MvPolynomial.coeff_X'] using this
+  · intro i
+    have := congrArg (fun p => MvPolynomial.coeff (Finsupp.single i 1) p) hP0
+    simpa [hP, MvPolynomial.coeff_C, MvPolynomial.coeff_sum, MvPolynomial.coeff_C_mul,
+      MvPolynomial.coeff_X', Finsupp.single_eq_single_iff, eq_comm] using this
+
+open IntermediateField Algebra in
+theorem isAlgebraic_mul_left {L : IntermediateField ℚ ℂ} {a b : ℂ}
+    (ha : IsAlgebraic L a) (hb : IsAlgebraic L b) : IsAlgebraic L (a * b) :=
+  mem_algebraicClosure_iff.1
+    (mul_mem (mem_algebraicClosure_iff.2 ha) (mem_algebraicClosure_iff.2 hb))
+
+/-- The Wright tower family: `log 2, tower ω 2, …, tower ω (n+1)`. -/
+noncomputable def wtower (q : ℚ) (n : ℕ) : Fin (n + 1) → ℝ :=
+  Fin.cons (Real.log 2) fun i : Fin n => tower (q : ℝ) (i + 2)
+
+/-- The Schanuel input at stage `n`: `log 2, g₁ log 2, …, g_{n+1} log 2`. -/
+noncomputable def zwtower (q : ℚ) (n : ℕ) : Fin (n + 2) → ℝ :=
+  Fin.cons (Real.log 2) fun j : Fin (n + 1) => tower (q : ℝ) (j + 1) * Real.log 2
+
+theorem tower_one (q : ℚ) : tower (q:ℝ) 1 = (2:ℝ) ^ (q:ℝ) := rfl
+
+theorem tower_succ_eq (q : ℚ) (k : ℕ) :
+    Real.exp (tower (q:ℝ) k * Real.log 2) = tower (q:ℝ) (k + 1) := by
+  show _ = (2:ℝ) ^ tower (q:ℝ) k
+  rw [Real.rpow_def_of_pos (by norm_num)]
+  ring_nf
+
+open Complex IntermediateField Algebra Set Finset in
+/-- **The linear-independence half of the Wright induction.**  A `ℚ`-relation among
+`log 2, g₁ log 2, …, g_{n+1} log 2` divides by `log 2 ≠ 0` to a relation
+`c₀ + c₁g₁ + ∑ cₖgₖ = 0`.  Over the field `K` of real algebraic numbers `c₀ + c₁g₁ ∈ K`, so the
+previous stage's algebraic independence (base-changed to `K`) kills every `cₖ` with `k ≥ 2`,
+and `g₁ = 2^ω` irrational kills `c₀, c₁`. -/
+theorem linearIndependent_zwtower {q : ℚ} (hq : q.den ≠ 1) (n : ℕ)
+    (IH : AlgebraicIndependent ℚ (wtower q n)) : LinearIndependent ℚ (zwtower q n) := by
+  have hL : Real.log 2 ≠ 0 := Real.log_ne_zero_of_pos_of_ne_one (by norm_num) (by norm_num)
+  rw [Fintype.linearIndependent_iff]
+  intro c hc
+  rw [Fin.sum_univ_succ] at hc
+  simp only [zwtower, Fin.cons_zero, Fin.cons_succ, Rat.smul_def] at hc
+  have hS : (c 0 : ℝ) + ∑ j : Fin (n+1), (c j.succ : ℝ) * tower (q:ℝ) (j + 1) = 0 := by
+    have h : ((c 0 : ℝ) + ∑ j : Fin (n+1), (c j.succ : ℝ) * tower (q:ℝ) (j + 1))
+        * Real.log 2 = 0 := by
+      rw [add_mul, Finset.sum_mul]
+      simpa [mul_assoc] using hc
+    rcases mul_eq_zero.1 h with h | h
+    · exact h
+    · exact absurd h hL
+  rw [Fin.sum_univ_succ] at hS
+  set K := algebraicClosure ℚ ℝ with hK
+  haveI : Algebra.IsAlgebraic ℚ K := algebraicClosure.isAlgebraic ℚ ℝ
+  have hIHK : AlgebraicIndependent K (wtower q n) := IH.extendScalars K
+  have hg1 : ((2:ℝ) ^ (q:ℝ)) ∈ K := mem_algebraicClosure_iff.2 (isAlgebraic_two_rpow_rat q)
+  have hc0K : ((c 0 : ℝ) + (c (Fin.succ 0) : ℝ) * ((2:ℝ) ^ (q:ℝ))) ∈ K := by
+    refine add_mem ?_ (mul_mem ?_ hg1)
+    · exact mem_algebraicClosure_iff.2 (isAlgebraic_algebraMap (R := ℚ) (A := ℝ) (c 0))
+    · exact mem_algebraicClosure_iff.2 (isAlgebraic_algebraMap (R := ℚ) (A := ℝ) (c (Fin.succ 0)))
+  have hrel : (algebraMap K ℝ) ⟨_, hc0K⟩
+      + ∑ i : Fin (n+1), (algebraMap K ℝ)
+        ((Fin.cons (0 : K) (fun i : Fin n => algebraMap ℚ K (c i.succ.succ)) : Fin (n+1) → K) i)
+        * (wtower q n i) = 0 := by
+    rw [Fin.sum_univ_succ]
+    simp only [Fin.cons_zero, Fin.cons_succ, wtower, map_zero, zero_mul, zero_add]
+    have hcast : ∀ r : ℚ, (algebraMap K ℝ) ((algebraMap ℚ K) r) = (r : ℝ) := by
+      intro r
+      rw [← IsScalarTower.algebraMap_apply ℚ K ℝ]
+      simp
+    simp only [hcast]
+    have hval : ∀ i : Fin n, ((i.succ : Fin (n+1)) : ℕ) + 1 = (i : ℕ) + 2 := by
+      intro i; simp [Fin.val_succ]
+    simp only [hval] at hS
+    have hgoal : (algebraMap K ℝ) (⟨_, hc0K⟩ : K)
+        = (c 0 : ℝ) + (c (Fin.succ 0) : ℝ) * (2:ℝ)^(q:ℝ) := rfl
+    rw [hgoal]
+    simp only [Fin.val_zero, zero_add, tower_one] at hS
+    linarith [hS]
+  obtain ⟨hz0, hzi⟩ := eq_zero_of_algebraicIndependent_linear hIHK ⟨_, hc0K⟩ _ hrel
+  have hc0 : (c 0 : ℝ) + (c (Fin.succ 0) : ℝ) * (2:ℝ)^(q:ℝ) = 0 := congrArg Subtype.val hz0
+  have hc1 : c (Fin.succ 0) = 0 := by
+    by_contra h
+    refine (irrational_two_rpow_rat hq).ne_rat (-(c 0) / c (Fin.succ 0)) ?_
+    have hne : ((c (Fin.succ 0) : ℝ)) ≠ 0 := by exact_mod_cast h
+    push_cast
+    field_simp
+    linarith [hc0]
+  have hc00 : c 0 = 0 := by
+    rw [hc1] at hc0
+    simp at hc0
+    exact_mod_cast hc0
+  intro k
+  refine Fin.cases ?_ (fun j => ?_) k
+  · exact hc00
+  · refine Fin.cases ?_ (fun i => ?_) j
+    · exact hc1
+    · have hzero := hzi i.succ
+      simp only [Fin.cons_succ] at hzero
+      exact (map_eq_zero_iff _ (algebraMap ℚ K).injective).1 hzero
+
+open Complex IntermediateField Algebra Set Finset in
+/-- **The Schanuel half of the Wright induction.**  Applying Schanuel to
+`z = (log 2, g₁ log 2, …, g_{n+1} log 2)` — whose exponentials are `2, g₂, …, g_{n+2}` — bounds
+the transcendence degree of a field algebraic over `ℚ(log 2, g₂, …, g_{n+2})`. -/
+theorem algebraicIndependent_wtower_succ (hS : SchanuelConjecture) (q : ℚ) (n : ℕ)
+    (hli : LinearIndependent ℚ (zwtower q n)) :
+    AlgebraicIndependent ℚ (wtower q (n+1)) := by
+  refine algebraicIndependent_real_of_complex ?_
+  have hzc : LinearIndependent ℚ (fun k => ((zwtower q n k : ℝ) : ℂ)) :=
+    hli.map' ((IsScalarTower.toAlgHom ℚ ℝ ℂ).toLinearMap)
+      (by rw [LinearMap.ker_eq_bot]; exact (IsScalarTower.toAlgHom ℚ ℝ ℂ).injective)
+  refine algebraicIndependent_of_schanuel hS _ hzc _ ?_
+  set L := IntermediateField.adjoin ℚ (Set.range fun k => ((wtower q (n+1) k : ℝ) : ℂ)) with hL
+  have hmem : ∀ k : Fin (n+2), ((wtower q (n+1) k : ℝ) : ℂ) ∈ L :=
+    fun k => subset_adjoin _ _ ⟨k, rfl⟩
+  have halgmem : ∀ k : Fin (n+2), IsAlgebraic L ((wtower q (n+1) k : ℝ) : ℂ) :=
+    fun k => isAlgebraic_algebraMap (R := L) (A := ℂ) ⟨_, hmem k⟩
+  have hlog2 : IsAlgebraic L ((Real.log 2 : ℝ) : ℂ) := by
+    have h := halgmem 0
+    simpa [wtower] using h
+  have htow : ∀ i : Fin (n+1), IsAlgebraic L ((tower (q:ℝ) ((i:ℕ)+2) : ℝ) : ℂ) := by
+    intro i
+    have h := halgmem i.succ
+    simpa [wtower, Fin.cons_succ] using h
+  rintro w (⟨k, rfl⟩ | ⟨k, rfl⟩)
+  · refine Fin.cases ?_ (fun j => ?_) k
+    · show IsAlgebraic L ((zwtower q n 0 : ℝ) : ℂ)
+      simpa [zwtower] using hlog2
+    · show IsAlgebraic L ((zwtower q n j.succ : ℝ) : ℂ)
+      simp only [zwtower, Fin.cons_succ]
+      push_cast
+      refine Fin.cases ?_ (fun i => ?_) j
+      · simp only [Fin.val_zero, zero_add]
+        exact isAlgebraic_mul_rat
+          (isAlgebraic_complex_of_real (by rw [tower_one]; exact isAlgebraic_two_rpow_rat q)) hlog2
+      · have h2 : ((i.succ : Fin (n+1)) : ℕ) + 1 = (i : ℕ) + 2 := by simp
+        rw [h2]
+        exact isAlgebraic_mul_left (htow i.castSucc) hlog2
+  · refine Fin.cases ?_ (fun j => ?_) k
+    · show IsAlgebraic L (Complex.exp ((zwtower q n 0 : ℝ) : ℂ))
+      have h2 : Complex.exp (((zwtower q n 0 : ℝ)) : ℂ) = ((2:ℝ) : ℂ) := by
+        simp only [zwtower, Fin.cons_zero]
+        rw [← Complex.ofReal_exp, Real.exp_log (by norm_num)]
+      rw [h2]
+      exact (isAlgebraic_complex_of_real (isAlgebraic_algebraMap (R := ℚ) (A := ℝ) 2)).tower_top _
+    · show IsAlgebraic L (Complex.exp ((zwtower q n j.succ : ℝ) : ℂ))
+      have h2 : Complex.exp (((zwtower q n j.succ : ℝ)) : ℂ)
+          = ((tower (q:ℝ) ((j:ℕ)+2) : ℝ) : ℂ) := by
+        simp only [zwtower, Fin.cons_succ]
+        rw [← Complex.ofReal_exp, tower_succ_eq]
+      rw [h2]
+      exact htow j
+
+open Complex IntermediateField Algebra Set in
+/-- The base case: `log 2` is transcendental (Schanuel at `z = (log 2)`, exponential `2`). -/
+theorem algebraicIndependent_wtower_zero (hS : SchanuelConjecture) (q : ℚ) :
+    AlgebraicIndependent ℚ (wtower q 0) := by
+  refine algebraicIndependent_real_of_complex ?_
+  refine algebraicIndependent_of_schanuel hS (fun _ : Fin 1 => ((Real.log 2 : ℝ) : ℂ)) ?_ _ ?_
+  · rw [linearIndependent_unique_iff]
+    simp only [ne_eq, Complex.ofReal_eq_zero]
+    exact Real.log_ne_zero_of_pos_of_ne_one (by norm_num) (by norm_num)
+  · rintro w (⟨i, rfl⟩ | ⟨i, rfl⟩)
+    · exact isAlgebraic_algebraMap
+        (R := IntermediateField.adjoin ℚ (Set.range fun k => ((wtower q 0 k : ℝ) : ℂ)))
+        (A := ℂ) ⟨_, subset_adjoin _ _ ⟨0, rfl⟩⟩
+    · show IsAlgebraic _ (Complex.exp ((Real.log 2 : ℝ) : ℂ))
+      have h2 : Complex.exp ((Real.log 2 : ℝ) : ℂ) = ((2:ℝ) : ℂ) := by
+        rw [← Complex.ofReal_exp, Real.exp_log (by norm_num)]
+      rw [h2]
+      exact (isAlgebraic_complex_of_real (isAlgebraic_algebraMap (R := ℚ) (A := ℝ) 2)).tower_top _
+
 /-- Schanuel ⇒ for rational non-integer `ω`, the numbers `log 2, tower ω 2, …, tower ω n` are
 algebraically independent (the induction in the header). -/
 theorem algebraicIndependent_wright_tower (hS : SchanuelConjecture) {q : ℚ} (hq : q.den ≠ 1)
     (n : ℕ) :
     AlgebraicIndependent ℚ
       (Fin.cons (Real.log 2) fun i : Fin n ↦ tower (q : ℝ) (i + 2) : Fin (n + 1) → ℝ) := by
-  sorry
+  show AlgebraicIndependent ℚ (wtower q n)
+  induction n with
+  | zero => exact algebraicIndependent_wtower_zero hS q
+  | succ m IH =>
+      exact algebraicIndependent_wtower_succ hS q m (linearIndependent_zwtower hq m IH)
 
 /-- Schanuel ⇒ every level `n ≥ 2` of the Wright tower at a rational non-integer point is
 transcendental.  (Level 2 needs only Gelfond–Schneider: `Maze.WrightLevelTwoTranscendental`.) -/
 theorem transcendental_wright_tower (hS : SchanuelConjecture) {q : ℚ} (hq : q.den ≠ 1)
     {n : ℕ} (hn : 2 ≤ n) : Transcendental ℚ (tower (q : ℝ) n) := by
-  sorry
+  obtain ⟨m, rfl⟩ : ∃ m, n = m + 2 := ⟨n - 2, by omega⟩
+  have h := (algebraicIndependent_wright_tower hS hq (m+1)).transcendental ((Fin.last m).succ)
+  simpa [wtower, Fin.cons_succ] using h
 
 end LeanFormalizations.Schanuel
