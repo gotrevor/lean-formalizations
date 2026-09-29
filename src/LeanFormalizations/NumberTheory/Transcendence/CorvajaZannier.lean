@@ -1049,6 +1049,38 @@ theorem sum_eq_sum_apply_of_ratCast {ι : Type*} [Fintype ι] (τ : K ≃ₐ[ℚ
   rw [Finset.sum_sub_distrib, sub_eq_zero] at this
   exact this
 
+/-!
+## Step 15 — the descent: a number field has no infinite strictly decreasing chain of subfields
+
+CZ finish the Main Theorem by iterating Lemma 3 down a strictly decreasing chain `k₀ ⊋ k₁ ⊋ …`
+of subfields of `K` and observing that no such chain exists.  In Lean the cleanest form is
+well-foundedness of `>` on `IntermediateField ℚ K`, which follows from strict monotonicity of the
+degree: `k' < k → finrank ℚ k' < finrank ℚ k`.
+-/
+
+/-- A strictly smaller intermediate field has strictly smaller degree over `ℚ`. -/
+theorem finrank_lt_of_lt {K : Type*} [Field K] [NumberField K]
+    {k k' : IntermediateField ℚ K} (h : k' < k) :
+    Module.finrank ℚ k' < Module.finrank ℚ k := by
+  haveI : FiniteDimensional ℚ K := NumberField.to_finiteDimensional
+  haveI : FiniteDimensional ℚ k := IntermediateField.finiteDimensional_left k
+  exact Submodule.finrank_lt_finrank_of_lt
+    (show k'.toSubalgebra.toSubmodule < k.toSubalgebra.toSubmodule from h)
+
+/-- **No infinite strictly decreasing chain of subfields.**  Any `ℕ`-indexed chain of
+intermediate fields that strictly decreases at every step is impossible. -/
+theorem no_strict_decreasing_chain {K : Type*} [Field K] [NumberField K]
+    (k : ℕ → IntermediateField ℚ K) (hk : ∀ n, k (n + 1) < k n) : False := by
+  have hmono : ∀ n, Module.finrank ℚ (k (n + 1)) < Module.finrank ℚ (k n) :=
+    fun n ↦ finrank_lt_of_lt (hk n)
+  have hle : ∀ n, Module.finrank ℚ (k n) + n ≤ Module.finrank ℚ (k 0) := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ m ih => have := hmono m; omega
+  have h := hle (Module.finrank ℚ (k 0) + 1)
+  omega
+
 end CZ
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
