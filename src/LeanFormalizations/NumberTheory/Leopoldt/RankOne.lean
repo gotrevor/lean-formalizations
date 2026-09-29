@@ -14,19 +14,32 @@ Mathlib already knows it is a number field.  The prime is `p = 7`, which is unra
 conductor is 8).  Leopoldt is **known** here (the field is abelian: Ax–Brumer), so this checks our
 statement against a true case.  It is not new math.
 
-Route, from the phase-26 handoff: mathlib at our pin has no p-adic logarithm and no `ℤ_p`-module
-structure on principal local units.  Build the minimum:
-1. the principal units `U⁽¹⁾ ⊂ (v.adicCompletion K)ˣ`, and the `ℤ_p`-action `ℤ_p × U⁽¹⁾ → U⁽¹⁾` by
-   continuity from `ℤ`-powers (`u^{m} ≡ u^{m'}` when `m ≡ m' mod p^k`);
-2. torsion-freeness of `U⁽¹⁾` for odd unramified `p`, from the valuation of `(1+x)^p − 1`;
-3. the rank-1 case: a fundamental unit `η` has `π(η)` of infinite order, so `π(η)^a = 1` forces
-   `a = 0`, and the Lean statement's hypotheses supply exactly that equation, as in the header
-   argument of `Literature/Leopoldt.lean`.
+## What the route turned out to be (phase 27, 2026-09-29)
 
-Split into named leaves freely; infrastructure lemmas are welcome.  Frozen: the statements below,
-every earlier name, all of `Literature/`.
+The phase-26 plan called for the `ℤ_p`-action on principal units built by continuity, plus
+torsion-freeness of `U⁽¹⁾` for odd unramified `p`.  **None of that is needed**, and the result
+proved is much stronger than the cyclotomic case: `leopoldt_of_rank_le_one` in
+`Leopoldt/PrincipalUnits.lean` is Leopoldt for **every** number field of unit rank `≤ 1` and
+**every** prime, with no abelian hypothesis, no `p` odd, no unramifiedness.
+
+Two observations collapse the problem.
+* The exponent `N` that makes a unit principal at `v` is prime to `p`, hence a unit of `ℤ_p`, so
+  proving `N·a = 0` suffices and one may work with the exponents `N · m n` throughout.  No
+  residue-class subsequence (as in the `Literature/Leopoldt.lean` header) is required.
+* On a principal unit, raising to an exponent **prime to `p`** does not move the valuation at all:
+  `W (θ ^ t − 1) = W (θ − 1)` (`valuation_zpow_sub_one`).  So only the `p`-part of the exponent can
+  push `ε ^ m` towards `1`, and `a ≠ 0` in `ℤ_p` bounds that `p`-part (`exists_pow_split`).  The
+  valuations `W (ε ^ (N · m n) − 1)` are therefore ≥ the nonzero value `W (ε ^ (N p^k) − 1)`, by
+  antitonicity — contradicting the local limit.
+
+Rank `≤ 1` enters only through `card_le_rank`: multiplicative independence of `r` units makes them
+`ℤ`-linearly independent in `Additive (𝓞 K)ˣ`, whose `ℤ`-rank is `rank K`.  So `r ≤ 1`, and a
+single unit of infinite order is all the local lemma ever sees.  For `r ≥ 2` the local lemma is
+genuinely false without Baker–Brumer, which is exactly where the open case of Leopoldt lives.
+
+Frozen: the statements below, every earlier name, all of `Literature/`.
 -/
-import LeanFormalizations.Literature.Leopoldt
+import LeanFormalizations.NumberTheory.Leopoldt.PrincipalUnits
 
 namespace LeanFormalizations.Leopoldt
 
@@ -35,9 +48,15 @@ open NumberField LeanFormalizations.Literature
 instance : Fact (Nat.Prime 7) := ⟨by norm_num⟩
 
 theorem rank_cyclotomic_eight : Units.rank (CyclotomicField 8 ℚ) = 1 := by
-  sorry
+  haveI : IsCyclotomicExtension {8} ℚ (CyclotomicField 8 ℚ) :=
+    CyclotomicField.instIsCyclotomicExtensionSingletonNatSetOfCharZero 8 ℚ
+  dsimp only [Units.rank]
+  rw [InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces,
+    IsCyclotomicExtension.Rat.nrRealPlaces_eq_zero (n := 8) (CyclotomicField 8 ℚ) (by decide),
+    zero_add, IsCyclotomicExtension.Rat.nrComplexPlaces_eq_totient_div_two 8]
+  rfl
 
-theorem leopoldt_cyclotomic_eight_seven : LeopoldtConjecture (CyclotomicField 8 ℚ) 7 := by
-  sorry
+theorem leopoldt_cyclotomic_eight_seven : LeopoldtConjecture (CyclotomicField 8 ℚ) 7 :=
+  leopoldt_of_rank_le_one 7 (le_of_eq rank_cyclotomic_eight)
 
 end LeanFormalizations.Leopoldt

@@ -280,4 +280,106 @@ theorem eq_zero_of_local_tendsto_one (hv : ((p : ℕ) : 𝓞 K) ∈ v.asIdeal) (
 
 end Valuation
 
+/-! ### Leopoldt's conjecture in unit rank `≤ 1`
+
+Now global.  Two ingredients: multiplicative independence of `r` units forces `r ≤ rank K`
+(so `r ≤ 1`), and a prime of `𝓞 K` above `p` exists.  Then `eq_zero_of_local_tendsto_one`
+finishes.  Note this is unconditional in `K` and `p`: **no** abelian hypothesis, because in rank
+`≤ 1` there is no Baker-type linear form to bound.
+-/
+
+section Global
+
+variable {K : Type*} [Field K] [NumberField K]
+
+open Module
+
+/-- A multiplicatively independent family of units has at most `rank K` members:
+in `Additive (𝓞 K)ˣ`, which has `ℤ`-rank `rank K`, it is `ℤ`-linearly independent. -/
+theorem card_le_rank (r : ℕ) (ε : Fin r → (𝓞 K)ˣ)
+    (hindep : ∀ m : Fin r → ℤ, ∏ i, ε i ^ m i = 1 → m = 0) : r ≤ NumberField.Units.rank K := by
+  have hli : LinearIndependent ℤ (fun i ↦ Additive.ofMul (ε i)) := by
+    rw [Fintype.linearIndependent_iff]
+    intro g hg
+    have h : ∏ i, ε i ^ g i = 1 := by
+      have h2 : Additive.ofMul (∏ i, ε i ^ g i) = ∑ i, g i • Additive.ofMul (ε i) := by
+        rw [ofMul_prod]
+        exact Finset.sum_congr rfl fun i _ ↦ ofMul_zpow _ _
+      rw [hg] at h2
+      simpa using congrArg Additive.toMul h2
+    exact fun i ↦ congrFun (hindep g h) i
+  simpa [NumberField.Units.finrank_eq] using hli.fintype_card_le_finrank
+
+/-- Some height-one prime of `𝓞 K` lies above `p` (it is a nonunit, its norm being `p ^ d`). -/
+theorem exists_prime_above (p : ℕ) [hp : Fact p.Prime] :
+    ∃ v : IsDedekindDomain.HeightOneSpectrum (𝓞 K), ((p : ℕ) : 𝓞 K) ∈ v.asIdeal := by
+  have hnu : ¬ IsUnit ((p : ℕ) : 𝓞 K) := by
+    rw [NumberField.isUnit_iff_norm]
+    have h : ((RingOfIntegers.norm ℚ ((p : ℕ) : 𝓞 K) : ℚ))
+        = (p : ℚ) ^ (finrank ℚ K) := by
+      rw [RingOfIntegers.coe_norm]
+      push_cast
+      rw [show ((p : ℕ) : K) = algebraMap ℚ K (p : ℚ) by push_cast; ring, Algebra.norm_algebraMap]
+    rw [h]
+    have h1 : 1 < (p : ℚ) := by exact_mod_cast hp.out.one_lt
+    have h2 : 0 < finrank ℚ K := Module.finrank_pos
+    rw [abs_of_nonneg (by positivity)]
+    intro hcon
+    nlinarith [one_lt_pow₀ h1 (n := finrank ℚ K) (by omega)]
+  have hne : Ideal.span {((p : ℕ) : 𝓞 K)} ≠ ⊤ := by
+    rw [Ne, Ideal.span_singleton_eq_top]
+    exact hnu
+  obtain ⟨M, hM, hle⟩ := Ideal.exists_le_maximal _ hne
+  have hmem : ((p : ℕ) : 𝓞 K) ∈ M := hle (Ideal.mem_span_singleton_self _)
+  have hp0 : ((p : ℕ) : 𝓞 K) ≠ 0 := by
+    simpa using (Nat.cast_ne_zero (R := 𝓞 K)).mpr hp.out.pos.ne'
+  refine ⟨⟨M, hM.isPrime, ?_⟩, hmem⟩
+  intro h
+  rw [h, Ideal.mem_bot] at hmem
+  exact hp0 hmem
+
+/-- **Leopoldt's conjecture holds whenever the unit rank is at most `1`** — for every number
+field and every prime, with no abelian hypothesis. -/
+theorem leopoldt_of_rank_le_one (p : ℕ) [hp : Fact p.Prime]
+    (hrank : NumberField.Units.rank K ≤ 1) :
+    LeanFormalizations.Literature.LeopoldtConjecture K p := by
+  intro r ε hindep a m hm hlocal
+  have hr : r ≤ 1 := le_trans (card_le_rank r ε hindep) hrank
+  obtain ⟨v, hv⟩ := exists_prime_above (K := K) p
+  funext i
+  have hsub : ∀ k : Fin r, k = i := by
+    intro k
+    have h1 := k.isLt
+    have h2 := i.isLt
+    exact Fin.ext (by omega)
+  have hprod : ∀ f : Fin r → ℤ, ∏ k, ε k ^ f k = ε i ^ f i :=
+    fun f ↦ Finset.prod_eq_single_of_mem i (Finset.mem_univ i)
+      (fun k _ hk ↦ absurd (hsub k) hk)
+  have hprodK : ∀ f : Fin r → ℤ, ∏ k, (((ε k : 𝓞 K)) : K) ^ f k = (((ε i : 𝓞 K)) : K) ^ f i :=
+    fun f ↦ Finset.prod_eq_single_of_mem i (Finset.mem_univ i)
+      (fun k _ hk ↦ absurd (hsub k) hk)
+  have hinf : ∀ j : ℕ, 0 < j → (((ε i : 𝓞 K)) : K) ^ j ≠ 1 := by
+    intro j hj hcon
+    have hOK : ((ε i : 𝓞 K)) ^ j = 1 := by
+      have hinj : Function.Injective (algebraMap (𝓞 K) K) :=
+        FaithfulSMul.algebraMap_injective (𝓞 K) K
+      apply hinj
+      rw [map_pow, map_one]
+      exact hcon
+    have hu : ε i ^ (j : ℤ) = 1 := by
+      rw [zpow_natCast]
+      exact Units.ext (by rw [Units.val_pow_eq_pow_val, hOK, Units.val_one])
+    have hz := hindep (Pi.single i (j : ℤ)) (by rw [hprod, Pi.single_eq_same]; exact hu)
+    have := congrFun hz i
+    rw [Pi.single_eq_same] at this
+    simp only [Pi.zero_apply] at this
+    omega
+  refine eq_zero_of_local_tendsto_one v hv (ε i) hinf (a i) (fun n ↦ m n i) (hm i) ?_
+  have h := hlocal v hv
+  refine h.congr fun n ↦ ?_
+  congr 1
+  exact hprodK (m n)
+
+end Global
+
 end LeanFormalizations.Leopoldt
