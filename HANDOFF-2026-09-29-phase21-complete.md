@@ -1,5 +1,8 @@
 # HANDOFF 2026-09-29 — phase 21 COMPLETE (bedrock)
 
+Branch `main`, HEAD `63e8203` (this doc) on top of the phase-21 proof commit.
+Working tree clean; `lake build` green; treadmill stop sentinel written.
+
 `src/LeanFormalizations/NumberTheory/Transcendence/Bedrock.lean` is **sorry-free**; all eleven
 frozen statements are `#print axioms`-clean (`propext, Classical.choice, Quot.sound`).  Full
 `lake build` green; committed.
@@ -40,7 +43,19 @@ rational, so a `Transcendental ℚ` statement would not contradict them.
 * `algebraMap (integralClosure ℚ ℂ) ℂ (2 * x)`: `simp` leaves `↑2 = 2`; use
   `simp only [map_neg, map_mul, map_ofNat]; rfl`.
 
-## Next
+## Next (exact steps for a fresh session)
 
-`DIRECTION.md` phase-21 section is marked DONE; remaining uncovered Waldschmidt-2023 items are
-Leopoldt §2 (see `WALDSCHMIDT-2023.md`).  Nothing in `Bedrock.lean` is open.
+Nothing in `Bedrock.lean` is open — the phase-21 scope is finished, so the next session needs a
+NEW directive planted in `DIRECTION.md` (altitude lap owns that file).  Candidates, in order:
+
+1. **Leopoldt §2** — the last uncovered item of `WALDSCHMIDT-2023.md`.  Pattern to follow: put the
+   conjecture as a hypothesis `Prop` in `Literature/`, then derive consequences in a new
+   `NumberTheory/Transcendence/Leopoldt.lean` with frozen statement names.
+2. **More bedrock.**  The toolkit now in `Bedrock.lean` makes several further unconditional
+   classics cheap: `tan a` at nonzero algebraic real `a`; `sinh`/`cosh`; `e^{a}` for algebraic `a`
+   with `a ≠ 0` in the *real* form; Baker-style `α₁^{β₁}·α₂^{β₂}` once `Literature.Baker1966` is
+   used as input (it already exists, added in phase 17).
+3. `Maze.lean` rows whose `reopenIf` is now satisfied — grep it before planting anything.
+
+Before starting any of these: grep `src/LeanFormalizations/Maze.lean` (routes already walked and
+closed) and read the `Bedrock.lean` header for the toolkit inventory.
