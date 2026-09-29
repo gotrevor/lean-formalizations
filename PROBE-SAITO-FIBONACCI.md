@@ -71,3 +71,27 @@ Settled: 100% (kernel-checked).  Was 90% before the Lean phase.  The Lean phase 
   - 2-adic survivors: 2/32 classes mod 4.  3-adic survivors: 6/486 classes mod 9.
   - The union is non-empty, and Pisot cubics exist in every residue class (`x³ − ax² − bx − c` with `|b| + |c| < a − 1`).  So the trick is silent on some Pisot α, and it cannot give the "every α" that 1.7 asks for.
 - **Verdict**: needsNewIdea (Maze row).  To reopen, we need a non-reversible `R` for which the floor itself fails to be Frobenius-invariant, which no trace can do.  The alternative is a covering argument that works for every Pisot α, which is the same wall as the six Mills classes.
+
+## Phase 33 — the Lucas generalisation (`LucasTwoPow.lean`), DONE 2026-09-29
+
+Every step of phase 32 survives for `U(P,Q)`, `P, Q` odd.  Formalization notes:
+
+- Do **everything** through the companion matrix `A = !![P,-Q;1,0]`.  With the two scalar
+  recursions `u` (`0,1`) and `v` (`1,0`), `A^N = !![u(N+1), v(N+1); u N, v N]` (induction via
+  `pow_succ'`, i.e. `A * A^N`; `A^N * A` does **not** produce the recurrence).  `v N = u(N+1) − P u N`
+  needs a two-step induction — carried as a conjunction `⟨at N, at N+1⟩`.
+- `V m := u(m+1) + v m = tr(A^m)`.  Then `A^(2m) = (A^m)^2` gives, entrywise,
+  `U(2m) = U(m)·V(m)` and `V(2m) = V(m)² − 2Q^m` (the latter using `det(A^m) = Q^m`).
+  No addition formula, no Cassini identity needed — a real simplification over phase 32.
+- Oddness of `U(2^n)` is a **joint** induction with oddness of `V(2^n)`; the `Nat.fib_gcd`
+  route of phase 32 has no analogue.
+- `V(2^(n+1)) + 1 = (V−1)(V+1) + 2(1 − Q^(2^n))`: the extra term over phase 32 is killed by
+  `2^(n+1) ∣ Q^(2^n) − 1` (odd `Q`, induction on `(Q^(2^n)−1)(Q^(2^n)+1)`).
+  Base `n = 1`: `V(2)+1 = P²−2Q+1 ≡ 0 (mod 4)` from `P = 2a+1`, `Q = 2b+1`.
+- The growth hypothesis is only `|U(2^n)| → ∞`.  Monotonicity is gone, so the phase-32
+  contradiction (`p_n ∣ p_{n+j}`, both prime, `p_{n+j} > p_n`) is replaced by an **iteration**:
+  `p_n ∣ t_{n+j}` and `t_{n+j}` prime force `|t_{n+j}| = |t_n|`; the hypothesis
+  `v₂(glCard 2 p) ≤ m` is preserved (same `p`, larger `m`), so one repeats, producing
+  `|t_{n'}| = |t_n|` for arbitrarily large `n'` — impossible.
+- `p ∤ det A = Q` is free once `|t_n| > |Q|`, which growth supplies.
+- `exists_entry_pow_congr` in `SaitoFibonacci.lean` lost its `private` (only change there).

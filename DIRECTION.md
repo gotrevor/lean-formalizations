@@ -15,6 +15,23 @@ notes (Cassini, `Nat.fib_gcd` parity, `v₂|GL₂| = 2v₂(p−1)+v₂(p+1)`).
 
 ### original directive
 
+## ✅ DONE (phase 33, 1 lap, 2026-09-29): Problem 1.8 for every Lucas sequence `U(P,Q)`, `P,Q` odd
+
+`NumberTheory/Mills/LucasTwoPow.lean` is sorry-free; all five frozen statements are
+`#print axioms`-clean.  For every odd `P, Q` with `|U(2^n)| → ∞` and every integer `h`,
+`U(2^n) + h` fails to be prime for infinitely many `n`.  The whole Lucas toolkit comes from the
+companion matrix `A = !![P,-Q;1,0]`: `A^N = !![u(N+1), v(N+1); u N, v N]` with `v` the companion
+solution (`v 0 = 1, v 1 = 0`, `v N = u(N+1) − P u N`), so `V m := u(m+1) + v m = tr(A^m)`, and the
+two doubling identities are just `(A^m)^2`:
+`U(2m) = U(m) V(m)` (entry `(1,0)`) and `V(2m) = tr² − 2 det = V(m)^2 − 2 Q^m`.
+Sign flip: `2^(n+1) ∣ V(2^n)+1` by induction, using `2^(n+1) ∣ Q^(2^n) − 1` for odd `Q`.
+New over phase 32: with no monotonicity, the mechanism's conclusion `p ∣ t_(n+j)` only gives
+`|t_(n+j)| = |t_n|`; **iterate** it (the `v₂ glCard` hypothesis survives because the modulus is
+unchanged and the index grows) to get `|t_{n'}| = |t_n|` for arbitrarily large `n'`, contradicting
+`|t_n| → ∞`.  That replaces phase 32's "bigger prime divides smaller" step.
+
+### original directive
+
 ## 🎯 (phase 33): Problem 1.8 for every Lucas sequence `U(P,Q)`, `P, Q` odd — target `NumberTheory/Mills/LucasTwoPow.lean` (5 frozen statements, route in header; frozen also: SaitoFibonacci statements (only `exists_entry_pow_congr`'s `private` may be dropped), ThreeAdic, SharedConjecture, Projective, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 Phase 32 (`677d14a`) DONE: `SaitoFibonacci.lean` sorry-free, Saito Problem 1.8 answered for every `h`.  Problem 1.7 probed and parked (Maze row, `PROBE-SAITO-FIBONACCI.md` § Problem 1.7).
