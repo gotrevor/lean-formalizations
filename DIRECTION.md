@@ -2,6 +2,12 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 (phase 32): Saito's Problem 1.8, `F(2^n) + h` composite i.o. for every `h` — target `NumberTheory/Mills/SaitoFibonacci.lean` (5 frozen statements, route in header; frozen also: ThreeAdic, SharedConjecture, Projective, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+Read [PROBE-SAITO-FIBONACCI.md](PROBE-SAITO-FIBONACCI.md).  Unconditional: no `Literature/` hypothesis.  The phase-29 mechanism (Lagrange in `GL₂(𝔽_p)`, modulus = the prime) plus the 2-adic sign flip `F(2^(n+1)) ≡ −F(2^n) (mod 2^(n+1))`.  Adapt `exists_trace_pow_congr` to the matrix entry `(0,1)`.  Helper lemmas are free; the five statements are frozen.
+
+---
+
 ## ✅ DONE (phase 31, 1 lap, 2026-09-29): the projective-order lemma — `NumberTheory/Mills/Projective.lean` is sorry-free, all four statements `#print axioms`-clean
 
 Astra's argument, in Lean.  `K = AdjoinRoot` of the reduced charpoly is a field of `p³` elements;
