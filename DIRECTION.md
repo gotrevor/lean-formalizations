@@ -2,6 +2,12 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 19, 2026-09-29): Waldschmidt 2023, Conjecture 1 and its derivations
+
+Coverage map: `WALDSCHMIDT-2023.md`.  Target `NumberTheory/Transcendence/Waldschmidt2023.lean`, 5 frozen statements: Schanuel ⇒ Conj 1; Conj 1 ⇒ four exponentials (the survey's route, separate from phase 16's); Conj 1 ⇒ Baker homogeneous; Conj 1 ⇒ `log 2, π` algebraically independent; Conj 1 at `n = 1` from Lindemann–Weierstrass.  Inputs are `Literature/Waldschmidt2023.lean` plus the phase 15–17 toolkit.  Frozen: the five, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.
+
+---
+
 ## ✅ DONE (phase 18, 2026-09-29, 1 lap): Champernowne's constant is transcendental, via Roth
 
 **All four frozen statements are PROVED and `#print axioms`-clean; `Champernowne.lean` is
