@@ -10,6 +10,16 @@ Target `NumberTheory/Transcendence/Periods.lean`, 10 frozen statements (routes i
 
 ---
 
+## ⏳ QUEUED (phase 26, 2026-09-29): Leopoldt statement stress tests + the ℚ̄ shifted-six variant
+
+Phase-25 laps ignore this section.  Trevor 2026-09-29: *"I think I do want the statement.  This is math worth having in the world."*  `Literature.LeopoldtConjecture` is Ren's formulation, with no p-adic log (faithfulness argument in its header, ~75%).  Targets:
+- `NumberTheory/Leopoldt/StressTests.lean`: `leopoldt_of_rank_zero` (positive), `not_leopoldtNoIndep_rat` (negative: the independence clause bites).  Stretch: real quadratic.
+- `NumberTheory/Transcendence/SharpSixVariants.lean`: `shiftedAlg_of_sharp` (the ℚ̄ variant is true), `witness_not_algIndep`.
+
+If a test shows the Leopoldt statement is unfaithful, record the counterexample and STOP; do not repair `Literature/`.  Stop condition: both files sorry-free.
+
+---
+
 ## ✅ DONE (phase 24, 2026-09-29): weakest hypotheses — what follows from Conjecture 1
 
 Trevor 2026-09-29: *"Feed the treadmill w/ cheap consequences."*  Target `NumberTheory/Transcendence/WeakSchanuel.lean`, 5 frozen statements (routes in header): Conj 1 ⇒ Gelfond–Schneider, ⇒ Baker1966, ⇒ log-primes alg. indep., ⇒ π + log-primes alg. indep., ⇒ strong four exponentials (⚠️ the last is Ren's ~70% reading; refuting or failing it is an advance).  After the lap, run `scripts/fact-graph`.  Frozen: the 5, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.

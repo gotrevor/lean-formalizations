@@ -123,6 +123,9 @@ import LeanFormalizations.Literature.Ax1971
 import LeanFormalizations.Literature.Zeta5
 import LeanFormalizations.Literature.Periods
 import LeanFormalizations.NumberTheory.Transcendence.Periods
+import LeanFormalizations.NumberTheory.Transcendence.SharpSixVariants
+import LeanFormalizations.Literature.Leopoldt
+import LeanFormalizations.NumberTheory.Leopoldt.StressTests
 import LeanFormalizations.NumberTheory.Transcendence.Bedrock
 import LeanFormalizations.NumberTheory.Transcendence.BedrockBaker
 import LeanFormalizations.NumberTheory.Transcendence.SchanuelPi

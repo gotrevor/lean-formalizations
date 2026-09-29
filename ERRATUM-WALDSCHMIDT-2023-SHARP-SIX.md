@@ -29,7 +29,7 @@ In Lean: `Literature.SixExponentialsSharp` (`src/LeanFormalizations/Literature/P
 ## What the error is *not*
 
 - **Not a dropped overbar.**  The rendered page says ℚ, not ℚ̄.  A treadmill lap first diagnosed it as the same `pdftotext` overbar loss that bit our transcription of Roy's *strong* six exponentials theorem.  That was a different, genuinely ours, transcription error: `StrongSixExponentialsOverQ`, refuted by `ExponentialsKnown.not_strongSixExponentialsOverQ`.
-- **Not repairable by switching to ℚ̄.**  With ℚ̄-independence the counterexample above dies, but the resulting statement no longer contains the six exponentials theorem, whose hypotheses are over ℚ.  It would be a different, weaker theorem.  The fix is the exceptional clause.
+- **Not repairable by switching to ℚ̄.**  With ℚ̄-independence the counterexample above dies, but the resulting statement no longer contains the six exponentials theorem, whose hypotheses are over ℚ.  It would be a different, weaker theorem.  It is still **true**: the ℚ̄ version follows from the sharp theorem, because under ℚ̄-independence the exceptional case `xᵢyⱼ = βᵢⱼ` cannot occur.  It is recorded as `Periods.SixExponentialsShiftedAlg`, with `shiftedAlg_of_sharp` and the scope witness `witness_not_algIndep` (`NumberTheory/Transcendence/SharpSixVariants.lean`).  The fix to the survey is the exceptional clause.
 
 ## Context
 
