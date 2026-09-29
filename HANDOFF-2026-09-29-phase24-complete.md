@@ -139,3 +139,31 @@ Gotcha worth keeping: `linearIndependent_finSnoc` needs a `DivisionRing`, so the
 has to run over `algebraicClosure ℚ ℂ` (an `IntermediateField`, hence a field) and be
 transported to the `integralClosure ℚ ℂ` of the frozen statements by defeq — the same trick
 `StrongSix.strongSix` uses.  Also: this proof needs `maxHeartbeats 2000000`.
+
+## Addendum 5: the repaired shifted statement, and the overbar audit
+
+`Literature/` is frozen, so the false `SixExponentialsShifted` cannot be edited from here.  What
+*can* be supplied is the proof of its repaired form, so the operator's fix is a one-line swap:
+`sixExponentialsShifted_bar_of_algIndepLogs` is `SixExponentialsShifted` with `ℚ`-linear
+independence corrected to `ℚ̄`, derived from Conjecture 1.  Short proof — `exp (xᵢyⱼ − βᵢⱼ)`
+algebraic makes `xᵢyⱼ = βᵢⱼ + ℓᵢⱼ` an algebraic number plus a logarithm, hence a member of `𝓛̃`,
+so the shifts vanish into the definition of `𝓛̃` and strong six applies unchanged.  Same move
+that let addendum 4 route around the false statement.
+
+### Overbar audit (owed after two bugs in one file) — CLEAN
+
+Every remaining `LinearIndependent ℚ` in `Literature/` checked against its source:
+
+| file | statement | verdict |
+|---|---|---|
+| `Exponentials.lean` | `FourExponentialsConjecture`, `SixExponentials` | genuinely `ℚ` ✓ |
+| `Schanuel.lean` | `SchanuelConjecture` | genuinely `ℚ` ✓ |
+| `Waldschmidt2023.lean` | `AlgIndepLogsConjecture`, `BakerHomogeneous` | genuinely `ℚ` ✓ |
+| `StructuralRank.lean` | `IsStructRank` (basis of the span) | genuinely `ℚ` ✓ |
+| `Ax1971.lean` | `Ax1971` | genuinely `ℚ` ✓ |
+| `Roy2001.lean` | `RoyConjecture` | genuinely `ℚ` ✓ |
+
+The failure mode is specific to statements *about* `𝓛̃` — the "strong" and "shifted" family —
+where the source writes `ℚ̄` and the plain statements write `ℚ`.  Both instances lived in
+`ExponentialsKnown.lean` and are now refuted in the kernel
+(`not_strongSixExponentialsOverQ`, `not_sixExponentialsShifted`).

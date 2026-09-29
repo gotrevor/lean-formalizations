@@ -45,7 +45,7 @@ graph LR
 |---|---|---|
 | `SchanuelConjecture` | 🔮 conjecture | 50 |
 | `BakerHarmanPintz2001` | 📚 theorem | 17 |
-| `AlgIndepLogsConjecture` | 🔮 conjecture | 14 |
+| `AlgIndepLogsConjecture` | 🔮 conjecture | 15 |
 | `Matomaki2007` | 📚 theorem | 13 |
 | `LindemannWeierstrassAlgIndep` | 📚 theorem | 11 |
 | `Dubickas2022PisotGap` | 📚 theorem | 8 |
@@ -71,7 +71,7 @@ graph LR
 | `Roth1955` | 📚 theorem | 1 |
 | `Mahler1957` | 📚 theorem | 1 |
 
-Unconditional theorems in the scanned namespaces (no named hypothesis): 315.
+Unconditional theorems in the scanned namespaces (no named hypothesis): 316.
 
 ## Refuted
 

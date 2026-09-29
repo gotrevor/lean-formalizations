@@ -902,4 +902,51 @@ theorem fiveExponentials_of_algIndepLogs (h : AlgIndepLogsConjecture) : FiveExpo
     (baker1966_of_algIndepLogs h)
     fun _ _ hℓ hc hcq he => not_isAlgebraic_exp_mul_of_algIndepLogs h hℓ hc hcq he
 
+/-! ## The repaired shifted statement, proved
+
+`Literature/` is frozen, so the false `SixExponentialsShifted` cannot be edited here.  What can
+be supplied is the proof that its **repaired** form — `ℚ̄`-linear independence in place of `ℚ`,
+which is what Waldschmidt 1988 Cor. 2.1 actually says — follows from Conjecture 1.  If the
+operator repairs the frozen `Prop`, `sixExponentialsShifted_bar_of_algIndepLogs` is the
+drop-in.
+
+The proof is short once the shifts are seen for what they are: `exp (xᵢyⱼ − βᵢⱼ)` algebraic
+makes `xᵢyⱼ = βᵢⱼ + ℓᵢⱼ` the sum of an algebraic number and a logarithm, hence a member of
+`𝓛̃` — so the shifts vanish into the definition of `𝓛̃` and strong six exponentials applies
+unchanged.  This is the same move that let `fiveExponentials_of_strongSix_of_baker_of_gs`
+route around the false statement.
+
+**Audit (2026-09-29).**  Prompted by two dropped-overbar bugs in the same file, every remaining
+`LinearIndependent ℚ` in `Literature/` was checked against its source: `Exponentials.lean`
+(`FourExponentialsConjecture`, `SixExponentials`), `Schanuel.lean`, `Waldschmidt2023.lean`
+(`AlgIndepLogsConjecture`, `BakerHomogeneous`), `StructuralRank.lean`, `Ax1971.lean` and
+`Roy2001.lean` are all genuinely `ℚ`-statements and are correct as written.  The bug was
+confined to the two "strong"/"shifted" statements of `ExponentialsKnown.lean`, both now
+refuted in the kernel. -/
+
+/-- `β + ℓ ∈ 𝓛̃` for `β` algebraic and `ℓ` a logarithm of an algebraic number. -/
+theorem mem_logAlgSpan_add {β ℓ : ℂ} (hβ : IsAlgebraic ℚ β)
+    (hℓ : IsAlgebraic ℚ (Complex.exp ℓ)) : β + ℓ ∈ LogAlgSpan :=
+  ⟨1, ![β, 1], ![ℓ],
+    by intro k; fin_cases k; exacts [hβ, isAlgebraic_one],
+    by intro k; fin_cases k; simpa using hℓ, by simp⟩
+
+/-- **Conjecture 1 ⇒ the shifted six exponentials theorem, repaired.**  This is
+`Literature.SixExponentialsShifted` with `ℚ`-linear independence corrected to `ℚ̄`-linear
+independence, which is what Waldschmidt 1988 Cor. 2.1 states; the frozen `ℚ`-form is false
+(`not_sixExponentialsShifted`). -/
+theorem sixExponentialsShifted_bar_of_algIndepLogs (h : AlgIndepLogsConjecture)
+    (x : Fin 2 → ℂ) (y : Fin 3 → ℂ) (β : Fin 2 → Fin 3 → ℂ)
+    (hx : LinearIndependent (↥(integralClosure ℚ ℂ)) x)
+    (hy : LinearIndependent (↥(integralClosure ℚ ℂ)) y)
+    (hβ : ∀ i j, IsAlgebraic ℚ (β i j)) :
+    ∃ i j, Transcendental ℚ (Complex.exp (x i * y j - β i j)) := by
+  by_contra hcon
+  simp only [Transcendental, not_exists, not_not] at hcon
+  obtain ⟨i, j, hno⟩ := strongSix_of_algIndepLogs h x y hx hy
+  refine hno ?_
+  have hxy : x i * y j = β i j + (x i * y j - β i j) := by ring
+  rw [hxy]
+  exact mem_logAlgSpan_add (hβ i j) (hcon i j)
+
 end LeanFormalizations.Waldschmidt2023
