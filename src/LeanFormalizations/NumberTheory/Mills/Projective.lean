@@ -83,6 +83,28 @@ private lemma not_nine_dvd (p : ℕ) : ¬ (9 ∣ p ^ 2 + p + 1) := by
   decide
 
 
+private lemma trace_gt_of_mono {n : ℕ} (C : Matrix (Fin n) (Fin n) ℤ) {k₀ : ℕ}
+    (hmono : ∀ k ≥ k₀, (C ^ (3 ^ k)).trace < (C ^ (3 ^ (k + 1))).trace) (B : ℤ) :
+    ∃ K, k₀ ≤ K ∧ ∀ k ≥ K, B < (C ^ (3 ^ k)).trace := by
+  set t : ℕ → ℤ := fun k => (C ^ (3 ^ k)).trace with ht
+  have hmono' : ∀ k, k₀ ≤ k → t k < t (k + 1) := fun k hk => hmono k hk
+  have growth : ∀ k, k₀ ≤ k → t k₀ + ((k : ℤ) - (k₀ : ℤ)) ≤ t k := by
+    intro k hk
+    induction k, hk using Nat.le_induction with
+    | base => simp
+    | succ k hk ih =>
+        have := hmono' k hk
+        push_cast
+        push_cast at ih
+        omega
+  refine ⟨k₀ + (B - t k₀ + 1).toNat, by omega, ?_⟩
+  intro k hk
+  show B < t k
+  have := growth k (by omega)
+  have h2 : ((k₀ + (B - t k₀ + 1).toNat : ℕ) : ℤ) ≤ (k : ℤ) := by exact_mod_cast hk
+  push_cast at h2
+  omega
+
 /-! ### The projective-order lemma -/
 
 /-- **Astra's lemma.**  Irreducible reduction mod `p ≠ 3` plus `p ∣ tr C^(3^m)` with `m ≥ 1`
@@ -215,7 +237,58 @@ theorem not_irreducible_mod_eventually (C : Matrix (Fin 3) (Fin 3) ℤ) (hdet : 
     (hmono : ∀ k ≥ k₀, (C ^ (3 ^ k)).trace < (C ^ (3 ^ (k + 1))).trace) :
     ∀ᶠ k in atTop,
       ¬ Irreducible (C.map (Int.castRingHom (ZMod (C ^ (3 ^ k)).trace.toNat))).charpoly := by
-  sorry
+  set t : ℕ → ℤ := fun k => (C ^ (3 ^ k)).trace with ht
+  have hmono' : ∀ k, k₀ ≤ k → t k < t (k + 1) := fun k hk => hmono k hk
+  have hle : ∀ a, k₀ ≤ a → ∀ d, t a ≤ t (a + d) := by
+    intro a ha d
+    induction d with
+    | zero => simp
+    | succ d ih =>
+        have := hmono' (a + d) (by omega)
+        have he : a + (d + 1) = (a + d) + 1 := by omega
+        rw [he]; omega
+  obtain ⟨K, hK0, hKB⟩ := trace_gt_of_mono C hmono (|C.det| + 3)
+  rw [eventually_atTop]
+  refine ⟨max K 1, ?_⟩
+  intro k hk hirr
+  have hk1 : 1 ≤ k := le_trans (le_max_right _ _) hk
+  have hkK : K ≤ k := le_trans (le_max_left _ _) hk
+  have hk0 : k₀ ≤ k := le_trans hK0 hkK
+  have hbig : |C.det| + 3 < t k := hKB k hkK
+  have htpos : 0 < t k := by have := abs_nonneg C.det; omega
+  have htprime : Prime (t k) := hprime k hk0
+  obtain ⟨p, hpv⟩ : ∃ p : ℕ, (p : ℤ) = t k := ⟨(t k).toNat, Int.toNat_of_nonneg htpos.le⟩
+  have hpnat : p.Prime := by
+    rw [Int.prime_iff_natAbs_prime] at htprime
+    simpa [← hpv] using htprime
+  have hptoNat : (t k).toNat = p := by omega
+  have hp3 : p ≠ 3 := by
+    intro h; rw [h] at hpv; have := abs_nonneg C.det; omega
+  have hdvd : (p : ℤ) ∣ (C ^ (3 ^ k)).trace := by rw [hpv]
+  have hdetp : ¬ (p : ℤ) ∣ C.det := by
+    intro h
+    have h1 : (p : ℤ) ≤ |C.det| := Int.le_of_dvd (abs_pos.2 hdet) ((dvd_abs _ _).2 h)
+    omega
+  rw [hptoNat] at hirr
+  obtain ⟨j, hj1, hjd⟩ := dvd_trace_of_irreducible_mod C hpnat hp3 hirr hk1 hdvd hdetp
+  have hgt : t k < t (k + j) := by
+    have h1 := hmono' k hk0
+    have h2 := hle (k + 1) (by omega) (j - 1)
+    have he : k + 1 + (j - 1) = k + j := by omega
+    rw [he] at h2
+    omega
+  have hqpos : 0 < t (k + j) := lt_trans htpos hgt
+  have hqprime : Prime (t (k + j)) := hprime (k + j) (by omega)
+  obtain ⟨q, hqv⟩ : ∃ q : ℕ, (q : ℤ) = t (k + j) := ⟨(t (k+j)).toNat, Int.toNat_of_nonneg hqpos.le⟩
+  have hqnat : q.Prime := by
+    rw [Int.prime_iff_natAbs_prime] at hqprime
+    simpa [← hqv] using hqprime
+  have hdq : p ∣ q := by
+    have : (p : ℤ) ∣ (q : ℤ) := by rw [hqv]; exact hjd
+    exact_mod_cast this
+  rcases (Nat.Prime.eq_one_or_self_of_dvd hqnat p hdq) with h | h
+  · exact hpnat.one_lt.ne' h
+  · omega
 
 /-- **A one-prime certificate.**  If some prime `q ≠ 3` at which the charpoly stays irreducible
 divides a single `t_m` with `m ≥ 1`, then `t_k` is not prime for infinitely many `k`. -/
@@ -224,7 +297,36 @@ theorem composite_of_irreducible_divisor (C : Matrix (Fin 3) (Fin 3) ℤ) {q m :
     (hm : 1 ≤ m) (hdiv : (q : ℤ) ∣ (C ^ (3 ^ m)).trace) (hdet : ¬ (q : ℤ) ∣ C.det)
     (hgrow : Tendsto (fun k : ℕ => (C ^ (3 ^ k)).trace) atTop atTop) :
     ∃ᶠ k in atTop, ¬ Prime (C ^ (3 ^ k)).trace := by
-  sorry
+  set t : ℕ → ℤ := fun k => (C ^ (3 ^ k)).trace with ht
+  -- `q` divides `t` at arbitrarily late indices
+  have hrec : ∀ n : ℕ, ∃ k, n ≤ k ∧ 1 ≤ k ∧ (q : ℤ) ∣ t k := by
+    intro n
+    induction n with
+    | zero => exact ⟨m, Nat.zero_le _, hm, hdiv⟩
+    | succ n ih =>
+        obtain ⟨k, hkn, hk1, hkd⟩ := ih
+        obtain ⟨j, hj1, hjd⟩ := dvd_trace_of_irreducible_mod C hq hq3 hirr hk1 hkd hdet
+        exact ⟨k + j, by omega, by omega, hjd⟩
+  -- eventually the traces exceed `q`
+  have hgt : ∀ᶠ k in atTop, (q : ℤ) < t k := hgrow.eventually_gt_atTop (q : ℤ)
+  rw [eventually_atTop] at hgt
+  obtain ⟨N₁, hN₁⟩ := hgt
+  rw [frequently_atTop]
+  intro N
+  obtain ⟨k, hkN, hk1, hkd⟩ := hrec (max N N₁)
+  refine ⟨k, le_trans (le_max_left _ _) hkN, ?_⟩
+  intro hprime
+  have hbig : (q : ℤ) < t k := hN₁ k (le_trans (le_max_right _ _) hkN)
+  have hqpos : (0:ℤ) < q := by exact_mod_cast hq.pos
+  have htp : (t k).natAbs.Prime := Int.prime_iff_natAbs_prime.1 hprime
+  have hqd : q ∣ (t k).natAbs := by
+    have : (q:ℤ) ∣ ((t k).natAbs : ℤ) := by
+      rwa [Int.natAbs_of_nonneg (by omega : (0:ℤ) ≤ t k)]
+    exact_mod_cast this
+  have habs : ((t k).natAbs : ℤ) = t k := Int.natAbs_of_nonneg (by omega)
+  rcases htp.eq_one_or_self_of_dvd q hqd with h | h
+  · exact absurd h hq.one_lt.ne'
+  · rw [← h] at habs; omega
 
 /-- **Mills.**  If the least Mills constant `A` is algebraic, then (for the integer matrix whose
 charpoly has `A^(3^m)` as a root and whose `3^i`-th power traces are the Mills primes) the
