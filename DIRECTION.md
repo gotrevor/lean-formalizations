@@ -2,6 +2,17 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## ✅ DONE (phase 21, 2026-09-29, 1 lap): bedrock — unconditional consequences of LW, GS, Nesterenko
+
+**All eleven frozen statements are PROVED and `#print axioms`-clean; `Bedrock.lean` is
+sorry-free.**  No statement turned out to be false or underivable.  The one real design point:
+Hermite–Lindemann has to be stated *over the algebraic numbers* (`transcendental_algClosure_cexp`),
+not over `ℚ` — the `sin`/`cos` witness polynomials `X² − 2(cos a)X + 1` and `X² − 2i(sin a)X − 1`
+have algebraic, not rational, coefficients, so the `ℚ`-form is too weak to contradict.  Route and
+gotchas: the file header.
+
+### original directive
+
 ## 🎯 THE OBJECTIVE (phase 21, 2026-09-29): bedrock — unconditional consequences of LW, GS, Nesterenko
 
 Target `NumberTheory/Transcendence/Bedrock.lean`, 11 frozen statements (routes in the header): Hermite–Lindemann family (exp, log, sin, cos at algebraic points), Gelfond–Schneider (`2^√2`, `log 3/log 2`), Nesterenko (`e^π`, `π+e^π`, `π·e^π`, `Γ(1/4)`, `e^{−π/2}`).  Inputs: `Literature/Lindemann.lean`, `GelfondSchneider.lean`, `Nesterenko.lean`; reuse `Schanuel.lean`'s toolkit (e.g. `linearIndependent_log_primes`, `eq_zero_of_algebraicIndependent_linear`).  Frozen: the 11, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.
