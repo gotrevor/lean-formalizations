@@ -31,6 +31,10 @@ Write `A = [[1,1],[1,0]]`, so `A^N = [[F(N+1), F(N)], [F(N), F(N−1)]]` and `de
 
 4. **Contradiction.**  Add step 2 at `n` and at `n+1`, and use step 3: `s + s' ≡ 2h (mod 2^⌊n/2⌋)` with `s, s' ∈ {±1}`.  Since `h` is even, `2h ≡ 0 (mod 4)`, which rules out `s + s' = ±2`.  So `s + s' = 0`, and `2^⌊n/2⌋ ∣ 2h` for every large `n`.  That forces `h = 0`.  ∎
 
+## Relation to Saito's own tools
+
+Step 1 is close kin to the argument Saito uses for condition (C4) in the proof of Theorem 1.9(C) of [arXiv:2508.16068](https://arxiv.org/abs/2508.16068) (§2).  There, with `C_k = r^(3^k) − 1`, Euler's theorem with the term `C_m` itself as the modulus gives `C_m ∣ C_k` for `k = mφ(C_m) + m`.  That works because `3^m` is invertible mod `C_m`.  Here the exponent's prime (2) may divide the relevant group order, and that is the obstruction.  What is new is handling it: step 1 converts the obstruction into the 2-adic condition `p ≡ ±1`, and the sign flip (step 3) makes that condition contradictory.
+
 ## Why this does not reach Problem 1.1 / 1.7
 
 Step 1 is the general "the prime is the modulus" argument.  It applies to any sequence read off `C^(c^n)` for an integer matrix `C` and a prime `c`: a prime value `p` forces `v_c|GL(𝔽_p)|` to be large, hence `p ≡ ` a root of unity `c`-adically.
