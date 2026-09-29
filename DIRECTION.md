@@ -2,7 +2,13 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 THE OBJECTIVE (phase 20, 2026-09-29): Waldschmidt 2023 §5, rank of matrices of logarithms
+## 🎯 THE OBJECTIVE (phase 21, 2026-09-29): bedrock — unconditional consequences of LW, GS, Nesterenko
+
+Target `NumberTheory/Transcendence/Bedrock.lean`, 11 frozen statements (routes in the header): Hermite–Lindemann family (exp, log, sin, cos at algebraic points), Gelfond–Schneider (`2^√2`, `log 3/log 2`), Nesterenko (`e^π`, `π+e^π`, `π·e^π`, `Γ(1/4)`, `e^{−π/2}`).  Inputs: `Literature/Lindemann.lean`, `GelfondSchneider.lean`, `Nesterenko.lean`; reuse `Schanuel.lean`'s toolkit (e.g. `linearIndependent_log_primes`, `eq_zero_of_algebraicIndependent_linear`).  Frozen: the 11, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.
+
+---
+
+## ✅ DONE (phase 20, 2026-09-29, `56eee43`): Waldschmidt 2023 §5, rank of matrices of logarithms
 
 Target `NumberTheory/Transcendence/StructuralRank.lean` (header has the routes), 4 frozen statements: rk ≤ r_str; Conj 1 ⇒ rk = r_str; six exp ⇒ (r_str ≥ 3 ⇒ rk ≥ 2); structural-rank sanity example.  Definitions are in `Literature/StructuralRank.lean` (Definition 1 read off the rendered page).  If a definition turns out unfaithful or a statement false, record the counterexample; that is an advance.  Frozen: the four, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.
 
