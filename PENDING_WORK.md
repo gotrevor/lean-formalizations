@@ -1290,3 +1290,32 @@ step — use `div_le_div_of_nonneg_right` with an explicit `Real.log_nonneg`.  `
 `(R := ℝ)`, not `(α := ℝ)`.  A `set ... with h` does **not** fold occurrences created later by
 `refine`, so re-`rw [← h]` before `omega`.  A transient `failed to open file ... .ir: Bad file
 descriptor` from the mathlib build tree is spurious; rerun `lake build`.
+
+## Phase 14 (2026-09-29): Mills transcendental under RH
+
+- **`pisot_branch_otherConj_real` PROVED** (axiom-clean), i.e. Saito 2025 Thm 1.7's first half:
+  in the Pisot branch the cubic Pisot number `β = A^(3^m)` has no complex pair of conjugates.
+  Route actually used (all new, elementary, in `Mills/TranscendentalRH.lean`):
+  1. `cube_re`: `Re(w³) = 4(Re w)³ − 3‖w‖²(Re w)` — the triple-angle formula with no trig, which
+     turns the `×3` map on the circle into a *cubic recursion*.
+  2. `eq_neg_one_of_triple_orbit`: `c_{j+1} = 4c_j³ − 3c_j`, all `c_j ∈ [−1,0)` ⟹ `c_0 = −1`.
+     Mechanism: negativity forces `4c² > 3`, then `c+1 ↦ (c+1)(2c−1)²` with `(2c−1)² > 4`, so
+     `c_j + 1 ≥ 4ʲ(c_0+1)` while `≤ 1`.  (Cleaner than the `mod 1` interval argument in the
+     file header: no fractional parts, no `arg`.)
+  3. `pair_pow_sum_re_neg`: trace = Mills prime (`eq_floor_of_abs_lt_half`) + Newton's cubic
+     identity `p_k³ − p_{k+1} = 3s(x₁² + x₁s + x₂x₃)` ⟹ `s_i < 0` for all large `i`.
+  4. `pisot_pow_two_of_pow_eq`: **the step the header left open.**  Once `u^N = v^N = y ∈ ℝ`,
+     the *two* trace relations `β^N + 2y = t` and `β^{2N} + 2y² = T` give the explicit integer
+     quadratic `3x² − 2tx + (t² − 2T) = 0` killed by `x = β^N`, so `deg β^N ≤ 2`; with
+     `u^N ∈ otherConj(β^N)` that pins `deg = 2`, and `not_pisot_two_of_cube` (Saito 2024
+     Lemma 4.3, already proved) finishes.  This *avoids* any Galois/embedding machinery
+     (`range_eval_eq_rootSet_minpoly`, conjugate-transport of root sets) — worth remembering.
+
+- **OPEN (the phase-14 crux): `transcendental_of_RH`.**  What remains is step 5, the real case:
+  `|β₂| ≠ |β₃|`, `ρ = |β₂/β₃| > 1` ⟹ `p_{k+1} − p_k³ ≥ ρ^(N/2)·√(p_k³)`, against an RH gap
+  bound.  **The missing prerequisite is a Schoenfeld-based least-prime-gap bound**, not yet in
+  `Schoenfeld.lean`: `∃ C, ∀ y ≥ y₀, lpa y ≤ y + C·√y·(log y)²`.  Note the `log²`: with
+  `g/log(y+g)` against error `√y log y/(8π)` on *each* side, `g ≍ √y log y` is **not** enough —
+  one needs `g ≳ √y log²y/(4π)`.  That is still only polynomial in `N` (since
+  `log p_k³ ≍ 3N log β`), so `ρ^(N/2)` beats it.  Next lap: prove that gap bound by the same
+  route as `primeBetweenCubes_large`, then the `|β₂| ≠ |β₃|` dichotomy.
