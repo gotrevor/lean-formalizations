@@ -121,7 +121,13 @@ def register : List Row := [
     verdict := .noCommonField, tier := .frozen, anchor := some ``WrightLevelTwoTranscendental
     evidence := "PROBE-WRIGHT.md; scripts/wright-least.py"
     reopenIf := "control of frac(2^x) along a transcendental orbit, a transcendence measure \
-      for 2^(2^(a/b)), or a proof that uses minimality (the greedy prime chain) directly" }
+      for 2^(2^(a/b)), or a proof that uses minimality (the greedy prime chain) directly" },
+  { route := "Transcendence of Copeland–Erdős via consecutive primes in AP (Mahler/Ridout blocks)"
+    verdict := .needsNewIdea, tier := .cited, anchor := none
+    evidence := "PROBE-COPELAND-ERDOS.md: Ridout needs block length ≍ digit offset ≍ 10^k; \
+      consecutive-prime APs give O(k log k) digits even under Cramér"
+    reopenIf := "a prime-sequence block whose digit length is a positive fraction of its offset, \
+      or a criterion accepting approximation quality 1 + o(1)" }
 ]
 
 end LeanFormalizations.Maze
