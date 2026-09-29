@@ -1,3 +1,5 @@
+> 🗺️ **Before planting a phase, grep `src/LeanFormalizations/Maze.lean`**: it records the routes already walked and closed, and each row's `reopenIf` names the new idea needed to walk it again (2026-09-29).
+
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
 ## 🎯 THE OBJECTIVE (phase 14, 2026-09-29): Mills' constant is transcendental under RH

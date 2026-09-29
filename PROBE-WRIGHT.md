@@ -25,8 +25,12 @@ Every Mills/ST22/Saito argument runs on **algebraic structure that survives the 
 - If `A` is algebraic, then every `A^{3^k}` or `A^{C_k}` stays in one number field of bounded degree.  Then "`A^{3^k}` is within `p_k^{-c}` of an integer" meets Pisot, Liouville or Subspace machinery.
 - For ST22's minima, the approximants `p_k^{1/C_k}` are algebraic.
 
-For the tower, a rational `ω = a/b` makes only **level 1** algebraic: `g₁ = 2^{a/b}`.  Gelfond–Schneider already makes `g₂ = 2^{g₁}` transcendental, and every later level is transcendental too.
+For the tower, a rational `ω = a/b` makes only **level 1** algebraic: `g₁ = 2^{a/b}`.  Gelfond–Schneider already makes `g₂ = 2^{g₁}` transcendental.  Nothing is *known* about level 3 and beyond: `2^x` for transcendental `x` may be algebraic as far as current theory can say.  (An earlier draft of this note claimed every later level was transcendental; only Schanuel's conjecture would give that.)
 
 The only information is the asymptotic one, that `g_k` sits within about `q_{k+1}·2^{−q_k}` above the integer `q_k`, for all k.  The `g_k` carry no common field, so turning that into a contradiction means controlling fractional parts of `2^x` along a transcendental orbit.  That is strictly harder than Mahler's (3/2)^n problem.  The natural approximants `invtower(q_k, k)` are iterated logarithms, not algebraic numbers, so the ST22 Liouville route has nothing to bite on.
 
 Confidence that this is out of reach with known tools: ~85%.
+
+## Pinned
+
+Recorded in `src/LeanFormalizations/Maze.lean` as a `noCommonField` row, anchored on the frozen `Maze.WrightLevelTwoTranscendental` (with `Literature.GelfondSchneider1934`).  Its `reopenIf` field names the new idea required.
