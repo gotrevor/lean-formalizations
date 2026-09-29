@@ -113,6 +113,7 @@ import LeanFormalizations.Literature.Exponentials
 import LeanFormalizations.NumberTheory.Transcendence.Exponentials
 import LeanFormalizations.Literature.ExponentialsKnown
 import LeanFormalizations.NumberTheory.Transcendence.ExponentialsKnown
+import LeanFormalizations.NumberTheory.Transcendence.Champernowne
 import LeanFormalizations.NumberTheory.Transcendence.DubickasGrowth
 import LeanFormalizations.NumberTheory.Transcendence.DubickasPisot
 import LeanFormalizations.NumberTheory.Transcendence.Dubickas

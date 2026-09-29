@@ -2,6 +2,12 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 18, 2026-09-29): Champernowne's constant is transcendental, via Roth
+
+Planted: `NumberTheory/Transcendence/Champernowne.lean` (route + leaves in header; `scripts/champernowne-approx.py` checks the exponents).  Frozen: `champernowne_prefix`, `irrational_champernowne`, `transcendental_champernowne`, `transcendental_champernowne_of_stephan`, the two defs.  Stop condition: that file sorry-free.  Mahler 1937.  The run of consecutive k-digit integers is a small-denominator rational (≈ (10^k−1)²), which gives approximations far better than q^(−2−ε); then apply `roth1955_of_stephan`.  Check the approximation exponent numerically before freezing statements.  Normality of Champernowne belongs in normal-numbers.  After it, continue working through Waldschmidt 2023 statement by statement (theorems → Literature, conjectures → hypothesis Props, derived implications → proofs).
+
+---
+
 ## ✅ DONE (phase 16, 2026-09-29, 1 lap): four/six exponentials, more Schanuel
 
 Trevor 2026-09-29: *"Seems like there's a lot we can continue to chip away at along this vein?"*  Target file `NumberTheory/Transcendence/Exponentials.lean`, 6 frozen statements: Schanuel ⇒ four exponentials (the meaty one; the phase-15 note calling it *not* implied was wrong); four exp ⇒ `2^t` or `3^t` transcendental; six exponentials (a Literature theorem, Lang/Ramachandra) ⇒ `p^t ∈ ℤ` for three primes forces `t ∈ ℕ` (unconditional); `e, e^e, e^{e^e}`; `π` + log primes; `e + log 2`.  Inputs are `Literature/Exponentials.lean` and the phase-15 toolkit.  If a statement proves underivable, record why; that counts as an advance.  Frozen by name: the six, every earlier name, all of `Literature/`.  Stop condition: `Exponentials.lean` sorry-free.
@@ -13,13 +19,8 @@ header.  Route and reusable leaves: `HANDOFF-2026-09-29-phase16-complete.md`.
 
 ---
 
-## ⏳ QUEUED (phase 18, 2026-09-29): Champernowne's constant is transcendental, via Roth
 
-Not yet planted.  Mahler 1937.  The run of consecutive k-digit integers is a small-denominator rational (≈ (10^k−1)²), which gives approximations far better than q^(−2−ε); then apply `roth1955_of_stephan`.  Check the approximation exponent numerically before freezing statements.  Normality of Champernowne belongs in normal-numbers.  After it, continue working through Waldschmidt 2023 statement by statement (theorems → Literature, conjectures → hypothesis Props, derived implications → proofs).
-
----
-
-## 🎯 THE OBJECTIVE (phase 17, 2026-09-29): consequences of the KNOWN exponentials theorems
+## ✅ DONE (phase 17, 2026-09-29, `206efab`): consequences of the KNOWN exponentials theorems
 
 Operator fix 2026-09-29: `StrongSixExponentials` now takes `ℚ̄`-independence (the `ℚ` version is kept as `StrongSixExponentialsOverQ`, refuted); `Literature.Baker1966` was added, and `fiveExponentials_of_shifted` now takes `hB : Baker1966` (the lap showed that the reduction needs exactly Baker for two logs).  New frozen target: `strongSixExponentials_of_schanuel`.  Target `NumberTheory/Transcendence/ExponentialsKnown.lean`: unconditional `2^t, 3^t, 5^t` (six exp), and consistency edges among `Literature/ExponentialsKnown.lean` (five exp, shifted six exp, Roy's strong six exp).  Stop condition: that file sorry-free.
 
