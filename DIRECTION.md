@@ -1,5 +1,19 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 11, 2026-09-28): A003095's siblings — `PolyIteration/Siblings.lean`
+
+Phase 10 is green.  Phase 11 is `NumberTheory/PolyIteration/Siblings.lean`: Bala's general
+divisibility properties of polynomial iterations, then the elementary OEIS facts for Sylvester's
+sequence A000058 (Euclid-number product, pairwise coprimality, Egyptian fraction sum `= 1`,
+no squares, `−3` a QR mod every prime factor, residues mod 1000/3000/864, Mohanty's generalization),
+A003096, A002065, A004019.  Reuse `Sylvester.lean` (`sub_dvd_sub_shift`, `isStrongDivSeq_*`) and
+`A003095.lean`.  All statements checked numerically before freezing; `decide`/`native_decide` for
+small cases is fine.  Frozen by name: every phase-11 def/theorem plus every earlier name.
+Phase 9's two disclosed Corvaja–Zannier `sorry`s stay.  Stop condition: `NumberTheory/PolyIteration/`
+sorry-free.
+
+---
+
 ## 🎯 THE OBJECTIVE (phase 10, 2026-09-28): A003095's elementary facts — low-hanging fruit
 
 Phases 1–9 are merged (phase 9's two Corvaja–Zannier `sorry`s in `DubickasNoSubspace.lean` are
