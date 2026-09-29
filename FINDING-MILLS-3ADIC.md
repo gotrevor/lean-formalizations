@@ -47,6 +47,8 @@ These conditions are CRT-independent of the mod-3 condition.  So if ξ is algebr
 
 ## Extension: track the matrix up to scalars (Astra, 2026-09-29; checked by Ren)
 
+Full argument and limitations: [PROBE-MILLS-PROJECTIVE.md](PROBE-MILLS-PROJECTIVE.md), including the recurrent-divisor version and the growth hypothesis needed to conclude infinitely many composite terms.
+
 **Lemma (written proof, not yet Lean).**  Let q ≠ 3 be prime, and suppose the cubic f stays **irreducible** mod q, q divides `t_m` for some m ≥ 1, and q ∤ N(β).  Then q divides `t_(m+j)` for some j ≥ 1, and hence for infinitely many j.
 
 **Proof.**
