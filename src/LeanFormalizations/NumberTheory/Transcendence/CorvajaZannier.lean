@@ -121,6 +121,64 @@ theorem exists_dual_infinite_of_stephan (hSub : Stephan2026Subspace)
     show f (W.mkQ x) = 0
     rw [Submodule.mkQ_apply, (Submodule.Quotient.mk_eq_zero W).2 hxW, map_zero]
 
+/-!
+## Step 1 — `S`-units and the product formula restricted to `S`
+
+CZ work with `S` containing all archimedean places and stable under Galois; in mathlib's
+normalisation the infinite part is therefore `Finset.univ` and only the finite part `Sfin`
+carries information.  Everything CZ get "from the product formula" is the two lemmas below.
+-/
+
+namespace CZ
+
+open NumberField
+
+variable {K : Type*} [Field K] [NumberField K]
+
+/-- `u` is an `S`-unit: nonzero, with `|u|_v = 1` at every finite place outside `Sfin`. -/
+def IsSUnit (Sfin : Finset (FinitePlace K)) (u : K) : Prop :=
+  u ≠ 0 ∧ ∀ v : FinitePlace K, v ∉ Sfin → v u = 1
+
+/-- For an `S`-unit the infinite product over all finite places collapses to `Sfin`. -/
+theorem finprod_finitePlace_eq_prod {Sfin : Finset (FinitePlace K)} {u : K}
+    (hu : IsSUnit Sfin u) : (∏ᶠ v : FinitePlace K, v u) = ∏ v ∈ Sfin, v u := by
+  refine finprod_eq_prod_of_mulSupport_subset _ fun v hv ↦ ?_
+  simp only [Function.mem_mulSupport] at hv
+  by_contra h
+  exact hv (hu.2 v (by simpa using h))
+
+/-- **Product formula for an `S`-unit**, in the shape CZ use it: the product over `S` alone
+is `1`. -/
+theorem prod_places_eq_one_of_isSUnit {Sfin : Finset (FinitePlace K)} {u : K}
+    (hu : IsSUnit Sfin u) :
+    ((∏ v : InfinitePlace K, v u ^ v.mult) * ∏ v ∈ Sfin, v u) = 1 := by
+  rw [← finprod_finitePlace_eq_prod hu]
+  exact prod_abs_eq_one hu.1
+
+/-- Off `S` the `v`-norm of a tuple of `S`-units is `1`. -/
+theorem iSup_eq_one_of_isSUnit {ι : Type*} [Nonempty ι] {Sfin : Finset (FinitePlace K)}
+    {x : ι → K} (hx : ∀ i, IsSUnit Sfin (x i)) {v : FinitePlace K} (hv : v ∉ Sfin) :
+    (⨆ i, v (x i)) = 1 := by
+  have : ∀ i, v (x i) = 1 := fun i ↦ (hx i).2 v hv
+  simp [this]
+
+/-- **The height of a tuple of `S`-units is a product over `S` alone.** -/
+theorem mulHeight_eq_prod_S {ι : Type*} [Fintype ι] [Nonempty ι]
+    {Sfin : Finset (FinitePlace K)} {x : ι → K} (hx : ∀ i, IsSUnit Sfin (x i)) :
+    Height.mulHeight x =
+      (∏ v : InfinitePlace K, (⨆ i, v (x i)) ^ v.mult) * ∏ v ∈ Sfin, ⨆ i, v (x i) := by
+  have hx0 : x ≠ 0 := by
+    intro h
+    exact (hx (Classical.arbitrary ι)).1 (by rw [h]; rfl)
+  rw [NumberField.mulHeight_eq hx0]
+  congr 1
+  refine finprod_eq_prod_of_mulSupport_subset _ fun v hv ↦ ?_
+  simp only [Function.mem_mulSupport] at hv
+  by_contra h
+  exact hv (iSup_eq_one_of_isSUnit hx (by simpa using h))
+
+end CZ
+
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
 Theorem and Ridout.  Same conclusion as the phase-9 statement. -/
 theorem corvajaZannier_dichotomy_of_stephan (hSub : Stephan2026Subspace)
