@@ -283,6 +283,86 @@ theorem pow_char_ne_one_of_principal {θ : K} (hθ : W (θ - 1) < 1) (hθ1 : θ 
   · exact mul_ne_zero hWp hWx h
   · exact pow_ne_zero _ hWx h
 
+/-! ### The deep regime: exact growth, and genuine torsion-freeness
+
+The tie `W p = W x ^ (p−1)` (additively `e = (p−1) ν x`) can recur along the tower in ramified
+cases, so `pow_char_ne_one_of_principal` does not iterate unconditionally.  But **above** the tie —
+`ν x > e/(p−1)`, multiplicatively `W x ^ (p−1) < W p`, which is exactly the classical
+`log`/`exp` convergence range — the deep condition is self-propagating, the `x^p` term is
+永 dominated by the `p·x` term, and the growth is exact for every `j`:
+
+`W (θ ^ (p^j) − 1) = W p ^ j · W (θ − 1)`.
+
+Two consequences: `U^(m)` for `m > e/(p−1)` is **torsion-free** (`pow_pow_char_ne_one_of_deep`),
+and `θ ^ (p^j) → 1` at a *known* rate, which is the quantitative input `padicLog` and the
+`ℤ_p`-module structure need.
+-/
+
+/-- The deep condition `W (θ − 1) ^ (p − 1) < W p` propagates along `θ ↦ θ ^ p`, and the growth is
+exact: `W (θ ^ (p^j) − 1) = W p ^ j · W (θ − 1)`. -/
+theorem valuation_pow_pow_char_sub_one {θ : K} (hθ : W (θ - 1) < 1)
+    (hdeep : W (θ - 1) ^ (p - 1) < W ((p : ℕ) : K)) (j : ℕ) :
+    W (θ ^ (p ^ j) - 1) = W ((p : ℕ) : K) ^ j * W (θ - 1) := by
+  have hWp : W ((p : ℕ) : K) ≠ 0 := by
+    rw [Valuation.ne_zero_iff]
+    exact Nat.cast_ne_zero.mpr hp.out.pos.ne'
+  have hWple : W ((p : ℕ) : K) ≤ 1 := valuation_natCast_le_one v p
+  rcases eq_or_ne (θ - 1) 0 with hx0 | hx0
+  · have hθ1 : θ = 1 := sub_eq_zero.mp hx0
+    rw [hθ1]
+    simp
+  have hWx : W (θ - 1) ≠ 0 := by rwa [Valuation.ne_zero_iff]
+  induction j with
+  | zero => simp
+  | succ j ih =>
+      -- `ψ := θ ^ (p ^ j)` is principal, still deep, and one more `p`-th power applies the formula
+      have hψ : W (θ ^ (p ^ j) - 1) < 1 := by
+        rw [ih]
+        calc W ((p : ℕ) : K) ^ j * W (θ - 1) ≤ 1 * W (θ - 1) :=
+              mul_le_mul_right' (pow_le_one' hWple j) _
+          _ = W (θ - 1) := one_mul _
+          _ < 1 := hθ
+      have hψ0 : W (θ ^ (p ^ j) - 1) ≠ 0 := by
+        rw [ih]
+        exact mul_ne_zero (pow_ne_zero _ hWp) hWx
+      have hψdeep : W (θ ^ (p ^ j) - 1) ^ (p - 1) < W ((p : ℕ) : K) := by
+        rw [ih, mul_pow]
+        calc (W ((p : ℕ) : K) ^ j) ^ (p - 1) * W (θ - 1) ^ (p - 1)
+              < (W ((p : ℕ) : K) ^ j) ^ (p - 1) * W ((p : ℕ) : K) :=
+              mul_lt_mul_of_pos_left hdeep
+                (zero_lt_iff.mpr (pow_ne_zero _ (pow_ne_zero _ hWp)))
+          _ ≤ 1 * W ((p : ℕ) : K) :=
+              mul_le_mul_right' (pow_le_one' (pow_le_one' hWple j) _) _
+          _ = W ((p : ℕ) : K) := one_mul _
+      have hkey := valuation_pow_char_sub_one v hψ (ne_of_gt hψdeep)
+      have hsmall : W (θ ^ (p ^ j) - 1) ^ p
+          < W ((p : ℕ) : K) * W (θ ^ (p ^ j) - 1) := by
+        have hpow : W (θ ^ (p ^ j) - 1) ^ p
+            = W (θ ^ (p ^ j) - 1) ^ (p - 1) * W (θ ^ (p ^ j) - 1) := by
+          rw [← pow_succ]
+          congr 1
+          have := hp.out.pos
+          omega
+        rw [hpow]
+        exact mul_lt_mul_of_pos_right hψdeep (zero_lt_iff.mpr hψ0)
+      rw [pow_succ, pow_mul, hkey, max_eq_left (le_of_lt hsmall), ih]
+      simp [pow_succ, mul_comm, mul_left_comm]
+
+/-- **Torsion-freeness of the deep principal units.**  Above the tie there is no `p`-power
+torsion at all: the valuations `W p ^ j · W (θ − 1)` are never `0`. -/
+theorem pow_pow_char_ne_one_of_deep {θ : K} (hθ : W (θ - 1) < 1) (hθ1 : θ ≠ 1)
+    (hdeep : W (θ - 1) ^ (p - 1) < W ((p : ℕ) : K)) (j : ℕ) : θ ^ (p ^ j) ≠ 1 := by
+  intro hcon
+  have hWp : W ((p : ℕ) : K) ≠ 0 := by
+    rw [Valuation.ne_zero_iff]
+    exact Nat.cast_ne_zero.mpr hp.out.pos.ne'
+  have hWx : W (θ - 1) ≠ 0 := by
+    rw [Valuation.ne_zero_iff, sub_ne_zero]
+    exact hθ1
+  have h := valuation_pow_pow_char_sub_one v hθ hdeep j
+  rw [hcon, sub_self, map_zero] at h
+  exact mul_ne_zero (pow_ne_zero _ hWp) hWx h.symm
+
 /-! ### The heart of the rank-one case
 
 Only the `p`-part of the exponent can move `ε ^ m` towards `1` at `v`, and `a ≠ 0` in `ℤ_p`

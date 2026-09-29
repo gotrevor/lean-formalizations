@@ -1574,8 +1574,25 @@ genuine torsion-freeness need (`valuation_pow_sub_one_le` only gave the inequali
 it *is* a genuine `2`-torsion element of `U⁽¹⁾`.  So the hypothesis is sharp; it is automatic for
 `p` odd at an unramified `v` (`ν p = 1`, `ν x ≥ 1`, `1 = (p−1)ν x` impossible).
 
-**Next leaf**: iterate the formula to get `ν(θ^{p^j} − 1) = ν(θ−1) + j·e` for `p` odd unramified
-(needs a lemma extracting `e = 1`, i.e. that `p` is a uniformizer at `v` — the unramifiedness
-input that rank ≤ 1 managed to avoid).  That exact-growth statement is what makes
-`k ↦ θ^k` uniformly continuous for the `p`-adic topology on `k`, hence `padicLog` and the
-`ℤ_p`-module structure, hence Brumer and rank ≥ 2.
+### Phase 28 step (2) DONE (2026-09-29, same lap): the deep regime
+
+The iteration does **not** need unramifiedness — it needs only that `θ` sit *above* the tie, which
+is the classical `log`/`exp` convergence range `ν x > e/(p−1)` and is **self-propagating**:
+
+- `valuation_pow_pow_char_sub_one` — if `W (θ−1)^(p−1) < W p` then for every `j`,
+  `W (θ^(p^j) − 1) = W p ^ j · W (θ − 1)`.  Exact, all `j`, any `p`, any ramification.
+- `pow_pow_char_ne_one_of_deep` — hence `U^(m)` for `m > e/(p−1)` is genuinely **torsion-free**
+  (one of the two things the phase-26 plan wanted), and `θ^(p^j) → 1` at the *known* rate
+  `W p ^ j`, which is the quantitative input `padicLog` needs.
+
+Why the deep condition propagates: if `W x^(p−1) < W p` then `W x' = W p · W x` and
+`W x'^(p−1) = W p^(p−1) W x^(p−1) < W p^(p−1) · W p ≤ W p`, using `W p ≤ 1`.  The `x^p` binomial
+term is then dominated by `p·x` at every level, so the tie never recurs and the max in
+`valuation_pow_char_sub_one` is always the left one.
+
+**Next leaf (step 3)**: the `ℤ_p`-action.  With the exact rate in hand, `k ↦ θ^k` on a deep `θ` is
+uniformly continuous for the `p`-adic topology on `k` — `k ≡ k' mod p^j` gives
+`W (θ^k − θ^{k'}) = W (θ^{k−k'} − 1) ≤ W p^j · W (θ−1)` — so it extends to `ℤ_p → U`, and the
+extension is a continuous group hom, injective by `pow_pow_char_ne_one_of_deep`.  That is the
+`ℤ_p`-module structure; `padicLog` and Brumer follow.  **Entry point for the next lap.**  Note the
+rank-≤1 theorem needs none of this — it is pure phase-28 (rank ≥ 2) machinery.
