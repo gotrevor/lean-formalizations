@@ -1,3 +1,46 @@
+## PHASE 12 — CLOSED 2026-09-29: `Diophantine/StephanEdges.lean` sorry-free + axiom-clean
+
+All five phase-12 theorems derived from `Literature.Stephan2026Ridout` (Stephan's machine-checked
+Ridout, `{β | |ξ−β| ‖β.num‖_{S₁} ‖β.den‖_{S₂} ≤ H(β)^(−2−ε)}` finite); `lake build` green, each
+`#print axioms`-clean (`propext`/`Classical.choice`/`Quot.sound`).  `NumberTheory/Diophantine/`
+is sorry-free.
+
+* **New `S`-adic bookkeeping** (private, top of the file).  `toPrimes S hS : Finset Nat.Primes`
+  packages a `Finset ℕ` of primes, with `prod_toPrimes` transporting products back to `ℕ`.
+  `prod_zpow_of_subset`: `∏_{p∈S} p^(−v_p d) = 1/d` when `d.primeFactors ⊆ S`, from
+  `Nat.prod_factorization_pow_eq_self` plus `Finset.prod_subset` (terms off the support are `1`).
+  Hence `prod_padicNorm_nat` (`S`-unit ⇒ the factor is exactly `1/d`) and
+  `prod_padicNorm_int_le` (`d ∣ m` ⇒ the factor is `≤ 1/d`, per prime via
+  `padicNorm.dvd_iff_norm_le` at `Nat.ordProj_dvd`).
+* **`exists_height_threshold`**: the height comparison both one-dimensional edges need —
+  once `r.den > ⌈((|α|+1)^(2+δ/2))^(2/δ)⌉₊`, `r.den^(−2−δ) ≤ H(r)^(−2−δ/2)`, because
+  `H(r) ≤ (|α|+1) r.den`.  `roth1955_of_stephan` is then `S₁ = S₂ = ∅`;
+  `ridoutSUnitDen_of_stephan` is `S₂ = S`, which contributes exactly `1/q` and turns
+  `q^(−1−δ)` into `q^(−2−δ)`.
+* **`mahler_mul_of_stephan`** — the real content.  `β = P vⁿ / uⁿ` with `P = round(q αⁿ)`;
+  everything is read off the single cross-multiplication `β.num · uⁿ = P vⁿ · β.den`:
+  `vⁿ ∣ β.num` (coprime to `uⁿ`), `β.den ∣ uⁿ`, and `β.num ≤ 2q β.den` (from `P ≤ 2q αⁿ`).
+  So `‖β‖_{S₁} ≤ v^(−n)`, `‖β‖_{S₂} = 1/β.den`, `H(β) ≤ 2q β.den`, and the product is
+  `≤ e^(−εn)/(uⁿ β.den)`.  With `ε' = ε/(2 log u)` the target reduces to
+  `e^(−εn) (2q)^(2+ε') β.den^(1+ε') ≤ uⁿ`, and `β.den ≤ uⁿ` gives
+  `β.den^(ε') ≤ e^(nε/2)`, leaving the constant condition `(2q)^(2+ε') ≤ e^(nε/2)`.
+* **No injectivity needed.**  Unlike `mahler_mul_of_ridout1957` (which injects `n ↦ uⁿ`), reducing
+  `β` to lowest terms destroys the `n`-marker.  Instead: a *finite* set of rationals all `≠ q`
+  keeps a positive distance `m` from `q` (`Finset.min'` over the image of the `erase`), while
+  `|q − β| ≤ (v/u)ⁿ → 0`.  That is strictly cleaner than the Ridout-1957 route.
+* **Gotchas.**  `(max a b : ℝ)` with `a b : ℕ` elaborates as `max ↑a ↑b`, not `↑(max a b)` — no
+  `Nat.cast_max` needed (and it will *fail*).  `div_le_div_iff` is now `div_le_div_iff₀`.
+  `Nat.ord_proj_dvd` → `Nat.ordProj_dvd`; `Nat.pos_pow_of_pos` → `pow_pos`.
+  `set` for `A`/`P`/`N`/`U`/`β` blew the `isDefEq` heartbeat budget (the known let-valued-locals
+  trap) — all five are `obtain ⟨x, hx⟩ : ∃ y, y = e := ⟨_, rfl⟩` instead, plus
+  `set_option maxHeartbeats 1000000` on the one big theorem.
+* `Mills.irrational_of_stephan = irrational hB hM (mahler1957_of_stephan hS)`.
+
+Remaining open in the repo: only phase 9's two DISCLOSED Corvaja–Zannier leaves in
+`Transcendence/DubickasNoSubspace.lean`.
+
+---
+
 ## PHASE 11 — CLOSED 2026-09-29: `PolyIteration/Siblings.lean` sorry-free + axiom-clean
 
 All 25 phase-11 obligations discharged; `lake build` green, every headline `#print axioms`-clean
