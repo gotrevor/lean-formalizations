@@ -22,6 +22,18 @@ cited literature.
 * **Five exponentials ⇒** `e^{π²}` or `2^{√2}`-style corollaries: left to the lap to choose one
   (Waldschmidt 2023 §6 lists them); add as a new theorem.
 
+⚠️ **FAITHFULNESS BUG FOUND (2026-09-29): `Literature.StrongSixExponentials` is FALSE as
+stated**, and `not_strongSixExponentials` below is a machine-checked refutation.  Roy's theorem
+asks for `x` and `y` linearly independent over the field of *algebraic* numbers; the frozen
+`Prop` asks only for `ℚ`-linear independence, which is far too weak.  Witness:
+`x = (1, log 2)` and `y = (1, √2, i)` are `ℚ`-linearly independent, yet all six products
+`1, √2, i, log 2, √2·log 2, i·log 2` lie in `𝓛̃` — the first three because `𝓛̃ ⊇ ℚ̄`, the last
+three because they are `β·log 2` with `β` algebraic.  Over `ℚ̄` the triple `1, √2, i` is
+dependent, which is exactly what the real hypothesis rules out.  `Literature/` is frozen, so
+fixing the `Prop` (`LinearIndependent ℚ` ⟶ independence over `integralClosure ℚ ℂ`) is an
+operator decision; `sixExponentials_of_strong` above stays a valid implication, it just now has
+a hypothesis known to be unsatisfiable.
+
 Frozen: the statements below, every earlier name, all of `Literature/`.
 -/
 import LeanFormalizations.Literature.ExponentialsKnown
@@ -325,6 +337,114 @@ theorem two_or_three_cpow_I_pi (h5 : FiveExponentials) :
     show IsAlgebraic ℚ (Complex.exp ((1 : ℂ) * ((Real.log 3 : ℝ) : ℂ)))
     rw [one_mul, ← Complex.ofReal_exp, Real.exp_log (by norm_num : (0:ℝ) < 3)]
     simpa using isAlgebraic_algebraMap (R := ℚ) (A := ℂ) (3 : ℚ)
+
+
+
+/-- `log 2` is irrational, unconditionally: `log 2 = num/den` would make `e^num = 2^den`, so
+`e` would be a root of `X^num − 2^den`. -/
+theorem irrational_log_two : Irrational (Real.log 2) := by
+  rintro ⟨q, hq⟩
+  have h2 : Real.exp (q : ℝ) = 2 := by
+    rw [hq, Real.exp_log (by norm_num)]
+  have hqpos : 0 < (q : ℝ) := by
+    rw [hq]; exact Real.log_pos (by norm_num)
+  have hnum : 0 < q.num := by
+    have : 0 < q := by exact_mod_cast hqpos
+    exact Rat.num_pos.2 this
+  set N : ℕ := q.num.toNat with hN
+  have hNpos : 0 < N := by omega
+  have hmul : (q : ℝ) * (q.den : ℝ) = (N : ℝ) := by
+    have hd : ((q.den : ℝ)) ≠ 0 := by exact_mod_cast q.den_nz
+    have := congrArg (fun t : ℚ => (t : ℝ)) (Rat.mul_den_eq_num q)
+    push_cast at this ⊢
+    rw [this]
+    congr 1
+    omega
+  have hpow : (Real.exp 1) ^ N = (2 : ℝ) ^ (q.den) := by
+    have hA : Real.exp ((q.den : ℝ) * (q : ℝ)) = (2 : ℝ) ^ q.den := by
+      rw [Real.exp_nat_mul, h2]
+    have hB : ((q.den : ℝ) * (q : ℝ)) = (N : ℝ) * 1 := by
+      rw [mul_comm, hmul]; ring
+    rw [hB, Real.exp_nat_mul] at hA
+    exact hA
+  refine LeanFormalizations.Transcendence.e_transcendental ?_
+  refine ⟨Polynomial.X ^ N - Polynomial.C ((2 : ℚ) ^ (q.den)), ?_, ?_⟩
+  · exact (Polynomial.monic_X_pow_sub_C _ hNpos.ne').ne_zero
+  · simp [hpow]
+
+
+/-! ### `StrongSixExponentials` as frozen is FALSE -/
+
+/-- Every algebraic number lies in `𝓛̃` (take `n = 0`). -/
+theorem mem_logAlgSpan_of_isAlgebraic {z : ℂ} (hz : IsAlgebraic ℚ z) : z ∈ LogAlgSpan :=
+  ⟨0, ![z], ![], by intro i; fin_cases i; exact hz, fun i => i.elim0, by simp⟩
+
+/-- `β·ℓ` lies in `𝓛̃` for algebraic `β` and a logarithm `ℓ` of an algebraic number. -/
+theorem mem_logAlgSpan_mul {β ℓ : ℂ} (hβ : IsAlgebraic ℚ β)
+    (hℓ : IsAlgebraic ℚ (Complex.exp ℓ)) : β * ℓ ∈ LogAlgSpan :=
+  ⟨1, ![0, β], ![ℓ], by intro i; fin_cases i; exacts [isAlgebraic_zero, hβ],
+    by intro i; fin_cases i; exact hℓ, by simp⟩
+
+theorem isAlgebraic_sqrt_two : IsAlgebraic ℚ ((Real.sqrt 2 : ℝ) : ℂ) := by
+  refine ⟨Polynomial.X ^ 2 - Polynomial.C 2, ?_, ?_⟩
+  · exact (Polynomial.monic_X_pow_sub_C _ two_ne_zero).ne_zero
+  · have h : ((Real.sqrt 2 : ℝ) : ℂ) ^ 2 = (2 : ℂ) := by
+      norm_cast
+      rw [Real.sq_sqrt (by norm_num : (0:ℝ) ≤ 2)]
+    simp [h]
+
+theorem linearIndependent_one_sqrt_two_I :
+    LinearIndependent ℚ ![(1 : ℂ), ((Real.sqrt 2 : ℝ) : ℂ), Complex.I] := by
+  rw [Fintype.linearIndependent_iff]
+  intro g hg
+  rw [Fin.sum_univ_three] at hg
+  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+    Matrix.cons_val_two, Matrix.tail_cons, Rat.smul_def] at hg
+  have him := congrArg Complex.im hg
+  have hre := congrArg Complex.re hg
+  simp at him hre
+  have hg1 : g 1 = 0 := by
+    by_contra h1
+    refine irrational_sqrt_two.ne_rat (-(g 0) / g 1) ?_
+    have h1' : (g 1 : ℝ) ≠ 0 := by exact_mod_cast h1
+    push_cast
+    field_simp
+    linarith [hre]
+  have hg0 : g 0 = 0 := by
+    have h1' : ((g 1 : ℚ) : ℝ) = 0 := by exact_mod_cast hg1
+    rw [h1'] at hre
+    simp at hre
+    exact_mod_cast hre
+  intro i; fin_cases i
+  · exact hg0
+  · exact hg1
+  · exact him
+
+/-- **The frozen `Literature.StrongSixExponentials` is FALSE as stated** (2026-09-29).  Roy's
+strong six exponentials theorem requires `x` and `y` to be linearly independent over the field
+of *algebraic* numbers; the frozen statement asks only for `ℚ`-linear independence, and that is
+far too weak: `x = (1, log 2)` and `y = (1, √2, i)` are `ℚ`-linearly independent while all six
+products `1, √2, i, log 2, √2 log 2, i log 2` lie in `𝓛̃`.  (Over `ℚ̄` the triple `1, √2, i` is
+of course dependent, which is exactly what the real theorem rules out.) -/
+theorem not_strongSixExponentials : ¬ StrongSixExponentials := by
+  intro h
+  obtain ⟨i, j, hmem⟩ := h ![(1 : ℂ), ((Real.log 2 : ℝ) : ℂ)]
+    ![(1 : ℂ), ((Real.sqrt 2 : ℝ) : ℂ), Complex.I]
+    (linearIndependent_one_ofReal irrational_log_two) linearIndependent_one_sqrt_two_I
+  refine hmem ?_
+  have hlog : IsAlgebraic ℚ (Complex.exp ((Real.log 2 : ℝ) : ℂ)) := by
+    rw [← Complex.ofReal_exp, Real.exp_log (by norm_num : (0:ℝ) < 2)]
+    simpa using isAlgebraic_algebraMap (R := ℚ) (A := ℂ) (2 : ℚ)
+  fin_cases i <;> fin_cases j
+  · exact mem_logAlgSpan_of_isAlgebraic (by simpa using isAlgebraic_one)
+  · exact mem_logAlgSpan_of_isAlgebraic (by simpa using isAlgebraic_sqrt_two)
+  · exact mem_logAlgSpan_of_isAlgebraic (by simpa using isAlgebraic_I)
+  · show ((Real.log 2 : ℝ) : ℂ) * 1 ∈ LogAlgSpan
+    rw [mul_comm]; exact mem_logAlgSpan_mul isAlgebraic_one hlog
+  · show ((Real.log 2 : ℝ) : ℂ) * ((Real.sqrt 2 : ℝ) : ℂ) ∈ LogAlgSpan
+    rw [mul_comm]; exact mem_logAlgSpan_mul isAlgebraic_sqrt_two hlog
+  · show ((Real.log 2 : ℝ) : ℂ) * Complex.I ∈ LogAlgSpan
+    rw [mul_comm]; exact mem_logAlgSpan_mul isAlgebraic_I hlog
 
 
 end LeanFormalizations.ExponentialsKnown

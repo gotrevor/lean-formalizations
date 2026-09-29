@@ -1458,13 +1458,39 @@ transcendental one.  That leaves exactly the four numbers `e^{iπy₀}, e^{iπy�
 corollary at `y = (log 2, log 3)`: **one of `2^{iπ}`, `3^{iπ}` is transcendental**
 (`two_or_three_cpow_I_pi`), unconditional.
 
-**Next (a genuine multi-lap target): Schanuel ⇒ `StrongSixExponentials`.**  Roy's theorem from
+### ⚠️ JUDGE-FLAG (2026-09-29): `Literature.StrongSixExponentials` is FALSE as stated
+
+Found while setting up the Schanuel ⇒ Roy derivation below, and **machine-checked**:
+`ExponentialsKnown.not_strongSixExponentials` (axiom-clean).  Roy's strong six exponentials
+theorem requires `x` and `y` linearly independent over the field of **algebraic** numbers; the
+frozen `Prop` asks only for `ℚ`-linear independence.  Witness: `x = (1, log 2)`,
+`y = (1, √2, i)` are `ℚ`-linearly independent, but all six products `1, √2, i, log 2,
+√2·log 2, i·log 2` lie in `𝓛̃` — the first three because `𝓛̃ ⊇ ℚ̄`, the last three because they
+are `β·log 2` with `β` algebraic.  Over `ℚ̄` the triple `1, √2, i` is dependent, which is what
+the real hypothesis excludes.
+
+By-product proved on the way: `irrational_log_two`, **unconditionally** (`log 2 = num/den`
+would make `e^num = 2^den`, so `e` would be a root of `X^num − 2^den`, against
+`e_transcendental`).  Phase 16's `transcendental_log_two` needed Schanuel; this does not.
+
+**Operator decision needed** (`Literature/` is frozen): change `StrongSixExponentials` (and, if
+added later, any strong four exponentials) to take independence over `integralClosure ℚ ℂ`
+rather than `ℚ`.  `sixExponentials_of_strong` remains a valid implication — its hypothesis is
+now simply known to be unsatisfiable, so it carries no content until the `Prop` is fixed.
+The same question should be asked of `FiveExponentials` and `SixExponentialsShifted`, which use
+`ℚ`-independence too; there it is *correct* (those are not "strong" statements), but the
+contrast is worth stating in `Literature/ExponentialsKnown.lean`'s docstring.
+
+**Next (a genuine multi-lap target, now gated on the fix above): Schanuel ⇒ `StrongSixExponentials`.**  Roy's theorem from
 Schanuel.  Sketch: choose a ℚ-basis `ℓ₁,…,ℓₙ` of the ℚ-span of all logarithms occurring in the
 six `LogAlgSpan` witnesses; Schanuel (`algebraicIndependent_of_exp_isAlgebraic`) makes them
 algebraically independent over ℚ, and `AlgebraicIndependent.extendScalars` upgrades that to
 ℚ̄, so `ℚ̄[ℓ₁,…,ℓₙ]` is a genuine polynomial ring.  Each `xᵢyⱼ` is then a ℚ̄-linear form in the
 `ℓ`, the relation `λ₀₀λ₁₁ = λ₀₁λ₁₀` is an identity between degree-≤2 polynomials, and UFD
 factorisation of a product of linear forms forces the rank-1 shape that contradicts the
-ℚ-linear independence of `x` and `y`.  Decompose into named leaves: (1) the basis-of-logs
+ℚ̄-linear independence of `x` and `y`.  Decompose into named leaves: (1) the basis-of-logs
 reduction, (2) `extendScalars` to ℚ̄, (3) the polynomial-ring rank-1 lemma.  Step (3) is the
-only one with real content and should be attacked first.
+only one with real content and should be attacked first.  **Note the refutation above is
+exactly what the naive degree count predicts**: with only `ℚ`-independence, `λ = 1`, `s = √2`,
+`r = log 2` makes `λ, λs, λr, λrs` all of degree ≤ 1 in the logarithms, so no contradiction is
+available; the ℚ̄-independence hypothesis is what forces a degree-2 term and kills it.
