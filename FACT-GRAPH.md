@@ -44,12 +44,12 @@ graph LR
 | Hypothesis | Status | Theorems resting on it |
 |---|---|---|
 | `SchanuelConjecture` | 🔮 conjecture | 50 |
-| `BakerHarmanPintz2001` | 📚 theorem | 21 |
-| `Matomaki2007` | 📚 theorem | 17 |
+| `BakerHarmanPintz2001` | 📚 theorem | 22 |
+| `Matomaki2007` | 📚 theorem | 18 |
 | `AlgIndepLogsConjecture` | 🔮 conjecture | 15 |
-| `Dubickas2022PisotGap` | 📚 theorem | 12 |
+| `Dubickas2022PisotGap` | 📚 theorem | 13 |
+| `Dubickas2022` | 📚 theorem | 12 |
 | `LindemannWeierstrassAlgIndep` | 📚 theorem | 11 |
-| `Dubickas2022` | 📚 theorem | 11 |
 | `Schoenfeld1976` | 📚 theorem | 8 |
 | `RiemannHypothesis` | 🔮 conjecture | 8 |
 | `Stephan2026Ridout` | 📚 theorem | 6 |
@@ -73,7 +73,7 @@ graph LR
 | `Roth1955` | 📚 theorem | 1 |
 | `Mahler1957` | 📚 theorem | 1 |
 
-Unconditional theorems in the scanned namespaces (no named hypothesis): 333.
+Unconditional theorems in the scanned namespaces (no named hypothesis): 336.
 
 ## Refuted
 

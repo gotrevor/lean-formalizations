@@ -2,7 +2,27 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 THE OBJECTIVE (phase 31): the projective-order lemma — target `NumberTheory/Mills/Projective.lean` (4 frozen statements, route in header; frozen also: ThreeAdic, SharedConjecture, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## ✅ DONE (phase 31, 1 lap, 2026-09-29): the projective-order lemma — `NumberTheory/Mills/Projective.lean` is sorry-free, all four statements `#print axioms`-clean
+
+Astra's argument, in Lean.  `K = AdjoinRoot` of the reduced charpoly is a field of `p³` elements;
+every `Q`-th power (`Q = p²+p+1`) lands in the prime field (Frobenius/norm, using a
+roots-counting characterisation of `range (algebraMap (ZMod p) K)`); `9 ∤ Q` **for every** `p`
+(`decide` over `ZMod 9`), so with `m ≥ 1` the order `d` of the class of `x^(3^m)` in `Kˣ/𝔽_pˣ` is
+prime to 3; `j = φ(d)` gives `x^(3^(m+j)) = λ·x^(3^m)`, transferred to matrices via
+`F ∣ X^(3^(m+j)) − C λ · X^(3^m)` plus Cayley–Hamilton.
+
+Two hypotheses of the frozen statement turn out to be **unnecessary**: `p ≠ 3` (because `9` never
+divides `p²+p+1`, including at `p = 3`) and `p ∤ det C` (the root is nonzero by degree).  They are
+kept, the statements being frozen.
+
+`mills_reducible_mod_primes` needs the companion matrix's charpoly to have `A^(3^m)` as a root,
+which the frozen `exists_companion_of_algebraic_mills` does not expose; its construction is
+therefore reproved in `Projective.lean` as the private `exists_companion_root`, with the new
+`companion3_charpoly` and the Vieta relation giving the root.
+
+### original directive
+
+## 🎯 (phase 31): the projective-order lemma — target `NumberTheory/Mills/Projective.lean` (4 frozen statements, route in header; frozen also: ThreeAdic, SharedConjecture, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 Read [PROBE-MILLS-PROJECTIVE.md](PROBE-MILLS-PROJECTIVE.md) for the full argument and remaining gap; summary in `FINDING-MILLS-3ADIC.md` § Extension (Astra's idea).  For `composite_of_irreducible_divisor`, include trace growth (for example, `t_k → +∞`): recurrent divisibility alone does not exclude the value q itself.  New file `NumberTheory/Mills/Projective.lean`.  Frozen statements to write:
 - `dvd_trace_of_irreducible_mod`: `C : Matrix (Fin 3) (Fin 3) ℤ`, `p` prime, `p ≠ 3`, `Irreducible (C.charpoly.map (Int.castRingHom (ZMod p)))`, `1 ≤ m`, `(p:ℤ) ∣ (C^(3^m)).trace`, `¬ (p:ℤ) ∣ C.det` ⟹ `∃ j ≥ 1, (p:ℤ) ∣ (C^(3^(m+j))).trace`.
