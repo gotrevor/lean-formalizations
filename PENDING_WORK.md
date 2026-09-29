@@ -1,3 +1,43 @@
+## PHASE 13 (2026-09-29) — Corvaja–Zannier from Stephan's Subspace Theorem
+
+`NumberTheory/Transcendence/CorvajaZannier.lean`.  **CZ's Lemma 1 is PROVED** (both the
+archimedean and the finite distinguished-place forms), from `Literature.Stephan2026Subspace`
+alone.  The chain, all machine-checked:
+
+* `exists_dual_infinite_of_stephan` — Stephan's `Finset` of proper subspaces → *one* nontrivial
+  linear form vanishing on an infinite subset.  (Pigeonhole + a nonzero dual killing a proper
+  subspace, via the quotient; `Submodule.exists_dual_map_eq_bot_of_lt_top` is unusable here —
+  elaborating `⊥ : Submodule K K` blows instance search.)
+* `IsSUnit`, `prod_places_eq_one_of_isSUnit`, `mulHeight_eq_prod_S` — the product formula and the
+  height, restricted to `S`.  mathlib's `InfinitePlace`/`FinitePlace` normalisation (`v x ^ v.mult`
+  at infinite places) is **exactly** Stephan's `approxProd` normalisation, i.e. CZ's absolute
+  normalisation raised to `[K:ℚ]`; since the Subspace inequality is homogeneous in that power, no
+  exponent bookkeeping is needed.  (This settles the "check the exponent bookkeeping once, early"
+  worry in the file header.)
+* `approxProd_of_prod_eq` — the algebraic heart: if `∏ᵢ |L_{v,i}(x)|_v = c(v) · ∏ᵢ |xᵢ|_v` at every
+  place, then `approxProd = (∏_S c) / H(x)^n`.  Serves CZ Lemma 1 *and* Lemma 3.
+* `czForm` / `czFormFamily` / `linearIndependent_czFormFamily` — the forms and their independence
+  (only `lam i₀ ≠ 0` is needed).
+* `czL` / `czC` / `prod_czL` — the place-indexed family and its deviation factor.
+* `finitePlace_val_ne_infinitePlace_val` — a finite and an infinite place are never the same
+  absolute value (finite places are nonarchimedean at `1+1`; infinite ones give `2`).
+* **`czLemma1_arch`**, **`czLemma1_fin`** — CZ Lemma 1.
+
+**Deliberate restatement.** CZ bound `|Σλσ(u)|_w < max|σᵢ(u)|_w · H(u)^(−ε)`; we bound by
+`H(x)^(−ε)` for the *tuple* `x`.  A caller with CZ's hypothesis gets ours at `ε/C` from
+`H(x) ≤ H(u)^C`; that comparison is the next small leaf (`mulHeight_tuple_le`).
+
+### Next attack (in order)
+1. `mulHeight_tuple_le`: `H((σᵢ u)) ≤ H(u)^(card ι)` for automorphisms `σᵢ` (each `σ` permutes
+   places, so `H(σ u) = H(u)`), plus `Height.mulHeight_le_prod`-style subadditivity.
+2. CZ **Lemma 3**: same `approxProd_of_prod_eq` machinery with `d+1` variables, the point
+   `x = (p, q σ₁(u), …, q σ_d(u))` and the forms `x₀ − ρ_v(δ)xᵢ`.  The new ingredients are
+   (a) the archimedean factorisation (2.4) `∏_{v∈M∞} |ρ_v(δ)ρ_v(qu) − p|_v = ‖δqu‖`, and
+   (b) the `Claim` (eliminating `a₀`), which is pure Galois bookkeeping on top of Lemma 1.
+3. CZ **Lemma 2** (unit equation) — cited by CZ to [S, Ch. 4]; it is a *separate* Subspace
+   application, and is the one genuinely missing input.  Expect to state it as a named leaf.
+4. Main Theorem: descent along the finite subfield lattice of `K`.
+
 ## PHASE 12 — CLOSED 2026-09-29: `Diophantine/StephanEdges.lean` sorry-free + axiom-clean
 
 All five phase-12 theorems derived from `Literature.Stephan2026Ridout` (Stephan's machine-checked
