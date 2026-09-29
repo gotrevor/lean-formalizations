@@ -23,4 +23,6 @@ Fields (`ℚ` vs `ℚ̄`) are checked against the rendered PDF, never a pdftotex
 | Thm 5, Roy's strong six exponentials | `Literature.StrongSixExponentials` | stated; ✅ from Schanuel (phase 17) |
 | Strong four exponentials conjecture | `Literature.StrongFourExponentialsConjecture` | stated (phase 19) |
 | Conj 6, Schanuel | `Literature.SchanuelConjecture` | stated; 10 consequences ✅ (phase 15) |
-| Conj 7, Roy's conjecture, equivalent to Schanuel (Roy 2001) | none | ⏭️ not yet: a heavy statement (derivation `D`, height bounds); state it carefully from the rendered page |
+| Conj 7, Roy's conjecture; Roy 2001: Conj 7 ⇔ Schanuel | `Literature.RoyConjecture`, `Literature.royD`, `Literature.Roy2001Equivalence` | stated (read off rendered p. 10; bounds are powers `N^{t₀}` etc.); no derivation in the survey beyond the equivalence |
+
+**Coverage status 2026-09-29:** every numbered statement is covered except §2 Leopoldt (p-adic; out of scope for now).

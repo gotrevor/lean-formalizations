@@ -117,6 +117,7 @@ import LeanFormalizations.NumberTheory.Transcendence.Champernowne
 import LeanFormalizations.Literature.Waldschmidt2023
 import LeanFormalizations.NumberTheory.Transcendence.Waldschmidt2023
 import LeanFormalizations.Literature.StructuralRank
+import LeanFormalizations.Literature.Roy2001
 import LeanFormalizations.NumberTheory.Transcendence.StructuralRank
 import LeanFormalizations.NumberTheory.Transcendence.DubickasGrowth
 import LeanFormalizations.NumberTheory.Transcendence.DubickasPisot
