@@ -2,6 +2,12 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 24, 2026-09-29): weakest hypotheses — what follows from Conjecture 1
+
+Trevor 2026-09-29: *"Feed the treadmill w/ cheap consequences."*  Target `NumberTheory/Transcendence/WeakSchanuel.lean`, 5 frozen statements (routes in header): Conj 1 ⇒ Gelfond–Schneider, ⇒ Baker1966, ⇒ log-primes alg. indep., ⇒ π + log-primes alg. indep., ⇒ strong four exponentials (⚠️ the last is Ren's ~70% reading; refuting or failing it is an advance).  After the lap, run `scripts/fact-graph`.  Frozen: the 5, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.
+
+---
+
 ## ✅ DONE (phase 23, 2026-09-29, 1 lap): Schanuel ⇒ log π, π^e, π^π
 
 **All five frozen statements are PROVED and `#print axioms`-clean; `SchanuelPi.lean` is
