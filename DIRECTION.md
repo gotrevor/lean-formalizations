@@ -2,7 +2,17 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 THE OBJECTIVE (phase 23, 2026-09-29): Schanuel ⇒ log π, π^e, π^π
+## ✅ DONE (phase 23, 2026-09-29, 1 lap): Schanuel ⇒ log π, π^e, π^π
+
+**All five frozen statements are PROVED and `#print axioms`-clean; `SchanuelPi.lean` is
+sorry-free.**  Nothing turned out false or underivable.  The one real obstruction was step 0 —
+irrationality of `log π`, open unconditionally — obtained from Schanuel's own `e, π`
+independence via `π^d = e^n`.  Second design point: the step-2 linear independence is uniform in
+`c₀ ∈ {e, π}` (one lemma `linearIndependent_quad`), because the coefficient split
+`c + d·c₀ ≠ 0` / `= 0` only ever needs the *pair* `(c₀, log π)` from step 1 plus irrationality
+of `c₀`.  Route and gotchas: the file header.
+
+### original directive
 
 Target `NumberTheory/Transcendence/SchanuelPi.lean`, 5 frozen statements, two-step Schanuel bootstrap in the header.  Frozen: the 5, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.
 
