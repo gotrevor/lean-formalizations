@@ -559,6 +559,68 @@ theorem mulHeight_le_prod_mulHeight₁ {ι : Type*} [Fintype ι] [Nonempty ι]
   · exact Finset.prod_nonneg fun v _ ↦ pow_nonneg
       (Finset.prod_nonneg fun i _ ↦ le_trans (v.1.nonneg _) (le_max_left _ _)) _
 
+/-!
+## Step 7 — `S`-integral tuples: the inequality form of the `approxProd` evaluation
+
+CZ's Lemma 3 applies the Subspace Theorem to `x = (p, qσ₁(u), …, qσ_d(u))`, whose coordinates are
+only `S`-*integers*.  Then `∏_{v∈S} ‖x‖_v ≥ H(x)` (the places off `S` contribute `≤ 1`), which is
+the right direction for an upper bound on `approxProd`.
+-/
+
+/-- The `v`-norm of a nonzero tuple is `1` for all but finitely many finite places. -/
+theorem hasFiniteMulSupport_iSup {ι : Type*} [Fintype ι] [Nonempty ι] {x : ι → K} (hx : x ≠ 0) :
+    (fun v : FinitePlace K ↦ ⨆ i, v (x i)).HasFiniteMulSupport := by
+  classical
+  obtain ⟨i₁, hi₁'⟩ := Function.ne_iff.mp hx
+  have hi₁ : x i₁ ≠ 0 := by simpa using hi₁'
+  set J : Finset ι := Finset.univ.filter (fun i ↦ x i ≠ 0) with hJdef
+  have hi₁J : i₁ ∈ J := by simp [hJdef, hi₁]
+  refine Set.Finite.subset (Set.Finite.biUnion J.finite_toSet
+    (fun i hi ↦ NumberField.FinitePlace.hasFiniteMulSupport
+      (x := x i) (by simpa [hJdef] using hi))) ?_
+  intro v hv
+  simp only [Function.mem_mulSupport] at hv
+  by_contra hc
+  simp only [Set.mem_iUnion₂, Function.mem_mulSupport, not_exists, not_and, not_not] at hc
+  refine hv (le_antisymm (ciSup_le fun i ↦ ?_) ?_)
+  · by_cases hxi : x i = 0
+    · simp [hxi]
+    · exact le_of_eq (hc i (by simp [hJdef, hxi]))
+  · have h1 : v (x i₁) = 1 := hc i₁ (by simpa using hi₁J)
+    calc (1 : ℝ) = v (x i₁) := h1.symm
+      _ ≤ ⨆ i, v (x i) :=
+        le_ciSup (f := fun i ↦ v (x i)) (Set.Finite.bddAbove (Set.finite_range _)) i₁
+
+/-- For an `S`-integral tuple the height is at most the product of the `v`-norms over `S`. -/
+theorem mulHeight_le_prod_S_of_sIntegral {ι : Type*} [Fintype ι] [Nonempty ι]
+    {Sfin : Finset (FinitePlace K)} {x : ι → K} (hx : x ≠ 0)
+    (hint : ∀ v : FinitePlace K, v ∉ Sfin → (⨆ i, v (x i)) ≤ 1) :
+    Height.mulHeight x ≤
+      (∏ v : InfinitePlace K, (⨆ i, v (x i)) ^ v.mult) * ∏ v ∈ Sfin, ⨆ i, v (x i) := by
+  classical
+  have hnn : ∀ v : AbsoluteValue K ℝ, 0 ≤ ⨆ i, v (x i) := fun v ↦
+    Real.iSup_nonneg fun i ↦ v.nonneg _
+  rw [NumberField.mulHeight_eq hx]
+  refine mul_le_mul_of_nonneg_left ?_
+    (Finset.prod_nonneg fun v _ ↦ pow_nonneg (hnn v.1) _)
+  set f : FinitePlace K → ℝ := fun v ↦ ⨆ i, v (x i) with hf
+  set g : FinitePlace K → ℝ := fun v ↦ if v ∈ Sfin then f v else 1 with hg
+  have hgsupp : Function.mulSupport g ⊆ (Sfin : Set (FinitePlace K)) := by
+    intro v hv
+    simp only [Function.mem_mulSupport, hg] at hv
+    by_contra h
+    exact hv (if_neg (by simpa using h))
+  have hgprod : (∏ᶠ v : FinitePlace K, g v) = ∏ v ∈ Sfin, f v := by
+    rw [finprod_eq_prod_of_mulSupport_subset g hgsupp]
+    exact Finset.prod_congr rfl fun v hv ↦ if_pos hv
+  rw [← hgprod]
+  refine finprod_le_finprod (hasFiniteMulSupport_iSup hx) (fun v ↦ hnn v.1)
+    (Set.Finite.subset Sfin.finite_toSet hgsupp) fun v ↦ ?_
+  by_cases hv : v ∈ Sfin
+  · exact le_of_eq (if_pos hv).symm
+  · simp only [hg, if_neg hv]
+    exact hint v hv
+
 end CZ
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
