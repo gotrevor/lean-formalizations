@@ -768,6 +768,75 @@ theorem prod_S_int_mul_sUnit_le {Sfin : Finset (FinitePlace K)} (q : ℤ) {u : K
         exact mul_le_mul_of_nonneg_left hfin hnn
     _ = _ := mul_one _
 
+/-!
+## Step 11 — CZ's Lemma-3 forms
+
+Index the `d+1` coordinates by `Option ι` (`none ↦ x₀ = p`, `some i ↦ qσᵢ(u)`).  At an
+archimedean place `v ∈ S_i` the exceptional form is `x₀ − ρ_v(δ) x_i`; everywhere else the forms
+are the coordinates.  Independence again needs nothing but the shape.
+-/
+
+/-- The form `x ↦ x_none − c · x_(some i)`. -/
+noncomputable def czSubForm {ι : Type*} (i : ι) (c : K) : Module.Dual K (Option ι → K) :=
+  (LinearMap.proj none : Module.Dual K (Option ι → K)) -
+    c • (LinearMap.proj (some i) : Module.Dual K (Option ι → K))
+
+@[simp] theorem czSubForm_apply {ι : Type*} (i : ι) (c : K) (x : Option ι → K) :
+    czSubForm i c x = x none - c * x (some i) := rfl
+
+/-- CZ's Lemma-3 family at a place: coordinates, with the `none`-th replaced by
+`x_none − c · x_(some i)`. -/
+noncomputable def czSubFamily {ι : Type*} [DecidableEq ι] (i : ι) (c : K) :
+    Option ι → Module.Dual K (Option ι → K) :=
+  fun j ↦ match j with
+    | none => czSubForm i c
+    | some j' => LinearMap.proj (some j')
+
+/-- **Independence of CZ's Lemma-3 forms** — unconditional: the change of basis is unipotent. -/
+theorem linearIndependent_czSubFamily {ι : Type*} [Fintype ι] [DecidableEq ι] (i : ι) (c : K) :
+    LinearIndependent K (czSubFamily i c) := by
+  classical
+  rw [Fintype.linearIndependent_iff]
+  intro g hg
+  have hF : ∀ (j k : Option ι), (czSubFamily i c j) (Pi.single k (1 : K))
+      = (if j = none then (if k = none then (1 : K) else if k = some i then -c else 0)
+         else if j = k then 1 else 0) := by
+    rintro (_ | j') k
+    · simp only [czSubFamily, czSubForm_apply, if_pos rfl, Pi.single_apply]
+      rcases k with _ | k'
+      · simp
+      · by_cases hk : k' = i
+        · subst hk; simp
+        · simp [hk, Ne.symm hk]
+    · simp only [czSubFamily, reduceIte, LinearMap.proj_apply, Pi.single_apply]
+      by_cases hk : some j' = k
+      · subst hk; simp
+      · simp [hk]
+  have hsum : ∀ k : Option ι, ∑ j, g j * (czSubFamily i c j) (Pi.single k (1 : K)) = 0 := by
+    intro k
+    have h := DFunLike.congr_fun hg (Pi.single k (1 : K))
+    simpa only [LinearMap.coe_sum, Finset.sum_apply, LinearMap.smul_apply, smul_eq_mul,
+      LinearMap.zero_apply] using h
+  -- at `k = none` only the `none`-th form survives
+  have hnone : g none = 0 := by
+    have h := hsum none
+    rw [Finset.sum_congr rfl (g := fun j ↦ if j = none then g none else 0)
+      (fun j _ ↦ by rcases j with _ | j' <;> simp [hF])] at h
+    rwa [Finset.sum_ite_eq' Finset.univ (none : Option ι) (fun _ ↦ g none),
+      if_pos (Finset.mem_univ _)] at h
+  intro j
+  rcases j with _ | j'
+  · exact hnone
+  · have h := hsum (some j')
+    rw [Finset.sum_congr rfl (g := fun j ↦ if j = some j' then g (some j') else 0)
+      (fun j _ ↦ by
+        rcases j with _ | j''
+        · by_cases hj : j' = i <;> simp [hF, hnone, hj]
+        · by_cases hj : j'' = j' <;> simp [hF, hj]
+          )] at h
+    rwa [Finset.sum_ite_eq' Finset.univ (some j') (fun _ ↦ g (some j')),
+      if_pos (Finset.mem_univ _)] at h
+
 end CZ
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
