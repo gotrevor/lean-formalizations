@@ -505,10 +505,11 @@ nothing stops the shifts `βᵢⱼ` from being *equal* to the products `xᵢyⱼ
 products are algebraic — and `x`, `y` are only required to be `ℚ`-linearly independent, which
 algebraic numbers easily are.  Then every `exp (xᵢyⱼ − βᵢⱼ) = exp 0 = 1`.
 
-This is the same root cause as `Literature.StrongSixExponentialsOverQ` (refuted 2026-09-29 by
-`ExponentialsKnown.not_strongSixExponentialsOverQ`): a `ℚ̄` whose overbar `pdftotext` dropped.
-Waldschmidt 1988 Cor. 2.1 asks for `x` and `y` independent over the *algebraic* numbers, which
-is precisely what rules the witness below out — over `ℚ̄` the pair `1, √2` is dependent.
+⚠️ **Operator correction (2026-09-29):** this is NOT a dropped overbar.  The rendered survey page
+says `ℚ`: the survey misprints the *sharp* six exponentials theorem, dropping its exceptional
+clause "then `xᵢyⱼ = βᵢⱼ` for all `i, j`".  The correct statement keeps `ℚ`-independence
+(`Literature.SixExponentialsSharp`).  A `ℚ̄` repair would no longer contain the six exponentials
+theorem.  Full write-up: `ERRATUM-WALDSCHMIDT-2023-SHARP-SIX.md`.
 
 `Literature/` is frozen, so repairing the `Prop` is an operator decision.  Consequences for the
 fact graph: `ExponentialsKnown.sixExponentials_of_shifted` and `fiveExponentials_of_shifted`

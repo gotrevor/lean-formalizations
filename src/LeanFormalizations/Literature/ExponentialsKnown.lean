@@ -33,7 +33,7 @@ def FiveExponentials : Prop :=
     (∃ i j : Fin 2, Transcendental ℚ (exp (x i * y j))) ∨ Transcendental ℚ (exp (γ * x 0 / x 1))
 
 /-- ⚠️ **FALSE as printed** (Waldschmidt 2023, p. 8): it lacks the exceptional case
-`xᵢyⱼ = βᵢⱼ`.  Refuted in the kernel by `ExponentialsKnown.not_sixExponentialsShifted`.  This is a
+`xᵢyⱼ = βᵢⱼ`.  Refuted in the kernel by `Waldschmidt2023.not_sixExponentialsShifted`.  This is a
 misprint in the survey, not a dropped overbar (the rendered page says `ℚ`).  The correct theorem is
 `Literature.SixExponentialsSharp`.  Kept on purpose, with its refutation. -/
 def SixExponentialsShifted : Prop :=

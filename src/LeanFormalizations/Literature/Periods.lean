@@ -11,7 +11,7 @@ Authors: Trevor Morris
 
 Waldschmidt 2023 (p. 8, rendered page checked) prints the shifted six exponentials statement over
 `ℚ` with the conclusion "one at least of the six numbers `e^{xᵢyⱼ−βᵢⱼ}` is transcendental".  **That is
-false as printed**: `ExponentialsKnown.not_sixExponentialsShifted` refutes it in the kernel with
+false as printed**: `Waldschmidt2023.not_sixExponentialsShifted` refutes it in the kernel with
 `x = (1, √2)`, `y = (1, √2, i)`, `βᵢⱼ = xᵢyⱼ`, so all six exponentials equal `e⁰ = 1`.  This is a
 **misprint in the survey**, not a dropped overbar.  The rendered page really says `ℚ`.  The
 correct theorem is the *sharp* six exponentials theorem, with the exceptional case restored:
