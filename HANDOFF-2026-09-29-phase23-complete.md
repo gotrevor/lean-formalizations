@@ -45,3 +45,30 @@ split (`hc2 : c = Real.exp 1 ∨ c = Real.pi`).
 ## Nothing false or underivable
 
 Every statement was derivable as planted.
+
+## Checkpoint (treadmill stop, 2026-09-29)
+
+* **Branch:** `main`.  **HEAD at write time:** `60421f5` (this doc), proof commit `e08dfd7`.
+* **Working tree:** clean.  Full `lake build` green (8735 jobs), verified by the pre-commit hook.
+* **Scope status:** the phase-23 objective (`sorry-free:.../SchanuelPi.lean`) is **met**.
+  `grep -c sorry` on that file = 0; all five frozen statements `#print axioms`-clean.
+  `box done --green` was signalled.
+* Every other `sorry` in the repo is designated-open (audit surface / heroic holes) and was not
+  touched this lap.
+
+### Exact next steps (for whoever plants phase 24)
+
+1. **New names now available for reuse** (all in `LeanFormalizations.Schanuel`, `SchanuelPi.lean`):
+   `irrational_log_pi`, `cexp_ofReal_log_pi`,
+   `algebraicIndependent_exp_one_pi_log_pi_complex` / `_real`,
+   `algebraicIndependent_pair_exp_one_log_pi`, `algebraicIndependent_pair_pi_log_pi`,
+   `linearIndependent_quad`, `algebraicIndependent_pi_rpow`.
+2. **`algebraicIndependent_pi_rpow` generalizes cheaply.**  Its only `c`-specific hypothesis is
+   `hc2 : c = Real.exp 1 ∨ c = Real.pi`, used *once*, purely to place `c` inside
+   `ℚ(e, π, log π, π^c)`.  Replacing `hc2` by a direct membership hypothesis would give
+   `π^c` transcendental for any irrational real `c` alg.-independent from `log π` — e.g. a
+   `π^{log π}` or `e^{π^…}` extension, or the `(log π)`-tower analogue of
+   `algebraicIndependent_wright_tower`.
+3. **Uncovered Waldschmidt 2023 survey items still open** (see `WALDSCHMIDT-2023.md`):
+   Leopoldt §2 and Conjecture 7 (Roy's equivalent of Schanuel).  §5 structural rank was
+   phase 20.
