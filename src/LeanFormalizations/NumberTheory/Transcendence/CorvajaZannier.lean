@@ -716,6 +716,58 @@ theorem prod_infinitePlace_sub_ratCast [IsGalois ℚ K] (v₀ : InfinitePlace K)
   rw [Finset.prod_congr rfl (fun v _ ↦ by rw [key v]), Finset.prod_pow_eq_pow_sum,
     NumberField.InfinitePlace.sum_mult_eq]
 
+/-!
+## Step 10 — CZ's estimate (2.6): the `S`-unit coordinates contribute at most `|q|^[K:ℚ]`
+-/
+
+/-- An infinite place sends a rational to its absolute value. -/
+theorem infinitePlace_ratCast (v : InfinitePlace K) (c : ℚ) :
+    v (algebraMap ℚ K c) = |c| := by
+  have h := Rat.infinitePlace_apply (v.comap (algebraMap ℚ K)) c
+  rwa [NumberField.InfinitePlace.comap_apply] at h
+
+/-- A finite place sends a rational integer into the closed unit disc. -/
+theorem finitePlace_intCast_le_one (v : FinitePlace K) (q : ℤ) : v ((q : K)) ≤ 1 := by
+  have h : (algebraMap (𝓞 K) K (q : 𝓞 K)) = (q : K) := by push_cast [map_intCast]; rfl
+  have h2 := NumberField.FinitePlace.norm_le_one
+    (v := NumberField.FinitePlace.maximalIdeal v) (K := K) (R := 𝓞 K) (q : 𝓞 K)
+  rw [h, NumberField.FinitePlace.norm_embedding_eq] at h2
+  exact h2
+
+/-- **CZ (2.6).**  For `q` a nonzero rational integer and `u` an `S`-unit, the `S`-product of
+`|q u|` is at most `|q|^[K:ℚ]`. -/
+theorem prod_S_int_mul_sUnit_le {Sfin : Finset (FinitePlace K)} (q : ℤ) {u : K}
+    (hu : IsSUnit Sfin u) :
+    ((∏ v : InfinitePlace K, v ((q : K) * u) ^ v.mult) * ∏ v ∈ Sfin, v ((q : K) * u))
+      ≤ (|q| : ℝ) ^ (Module.finrank ℚ K) := by
+  have hsplit : ((∏ v : InfinitePlace K, v ((q : K) * u) ^ v.mult) * ∏ v ∈ Sfin, v ((q : K) * u))
+      = ((∏ v : InfinitePlace K, v ((q : K)) ^ v.mult) * ∏ v ∈ Sfin, v ((q : K))) *
+        ((∏ v : InfinitePlace K, v u ^ v.mult) * ∏ v ∈ Sfin, v u) := by
+    simp only [map_mul, mul_pow, Finset.prod_mul_distrib]
+    ring
+  rw [hsplit, prod_places_eq_one_of_isSUnit hu, mul_one]
+  have hfin : (∏ v ∈ Sfin, v ((q : K))) ≤ 1 := by
+    calc (∏ v ∈ Sfin, v ((q : K))) ≤ ∏ _v ∈ Sfin, (1 : ℝ) :=
+          Finset.prod_le_prod (fun v _ ↦ v.1.nonneg _) (fun v _ ↦ finitePlace_intCast_le_one v q)
+      _ = 1 := Finset.prod_const_one
+  have hinf : (∏ v : InfinitePlace K, v ((q : K)) ^ v.mult) = (|q| : ℝ) ^ Module.finrank ℚ K := by
+    have hq : ∀ v : InfinitePlace K, v ((q : K)) = (|q| : ℝ) := by
+      intro v
+      have : ((q : ℚ) : K) = (q : K) := by push_cast; ring
+      have h2 := infinitePlace_ratCast v (q : ℚ)
+      rw [show algebraMap ℚ K (q : ℚ) = ((q : ℚ) : K) from rfl, this] at h2
+      rw [h2]
+      push_cast
+      ring
+    rw [Finset.prod_congr rfl (fun v _ ↦ by rw [hq v]), Finset.prod_pow_eq_pow_sum,
+      NumberField.InfinitePlace.sum_mult_eq]
+  rw [hinf]
+  have hnn : (0 : ℝ) ≤ (|q| : ℝ) ^ Module.finrank ℚ K := by positivity
+  calc (|q| : ℝ) ^ Module.finrank ℚ K * ∏ v ∈ Sfin, v ((q : K))
+      ≤ (|q| : ℝ) ^ Module.finrank ℚ K * 1 := by
+        exact mul_le_mul_of_nonneg_left hfin hnn
+    _ = _ := mul_one _
+
 end CZ
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
