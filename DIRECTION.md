@@ -2,9 +2,14 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 THE OBJECTIVE (phase 16, 2026-09-29): four/six exponentials, more Schanuel
+## ✅ DONE (phase 16, 2026-09-29, 1 lap): four/six exponentials, more Schanuel
 
 Trevor 2026-09-29: *"Seems like there's a lot we can continue to chip away at along this vein?"*  Target file `NumberTheory/Transcendence/Exponentials.lean`, 6 frozen statements: Schanuel ⇒ four exponentials (the meaty one; the phase-15 note calling it *not* implied was wrong); four exp ⇒ `2^t` or `3^t` transcendental; six exponentials (a Literature theorem, Lang/Ramachandra) ⇒ `p^t ∈ ℤ` for three primes forces `t ∈ ℕ` (unconditional); `e, e^e, e^{e^e}`; `π` + log primes; `e + log 2`.  Inputs are `Literature/Exponentials.lean` and the phase-15 toolkit.  If a statement proves underivable, record why; that counts as an advance.  Frozen by name: the six, every earlier name, all of `Literature/`.  Stop condition: `Exponentials.lean` sorry-free.
+
+**Result: all six are PROVED and `#print axioms`-clean; `Exponentials.lean` is sorry-free.**
+No statement turned out to be underivable.  The meaty one (Schanuel ⇒ four exponentials) went
+through; the phase-15 note calling it *not* implied is now definitively retracted in the file
+header.  Route and reusable leaves: `HANDOFF-2026-09-29-phase16-complete.md`.
 
 ---
 
