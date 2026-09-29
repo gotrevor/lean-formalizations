@@ -1,3 +1,43 @@
+## PHASE 11 — CLOSED 2026-09-29: `PolyIteration/Siblings.lean` sorry-free + axiom-clean
+
+All 25 phase-11 obligations discharged; `lake build` green, every headline `#print axioms`-clean
+(`propext`/`Classical.choice`/`Quot.sound` only — no `sorryAx`, no `native_decide`).
+
+* **Bala's general divisibilities** rest on one new workhorse, `sub_dvd_sub_addMul`:
+  `u n − u k ∣ u (B + d·n) − u (B + d·k)` for every base `B` and multiplier `d`, by induction on `d`
+  splitting `u(B+dn+n) − u(B+dk+k)` into a `sub_dvd_sub_shift` of the IH plus a
+  `sub_dvd_sub_shift` of `u n − u k` itself.  `sub_dvd_sub_lin` is then `r = s + d` /
+  `s = r + d` case-split (the `r < s` branch is `.neg_right` of the other); `sub_dvd_sub_mul` is
+  `B = 0`; `sub_dvd_det` is the two-term telescope
+  `u(sk)(u(rn)−u(rk)) − u(rk)(u(sn)−u(sk))`.
+* **Sylvester A000058.** `a n ≥ n + 2` (hence `≥ 2`) is the workhorse for the field_simp'd
+  Egyptian-fraction induction.  `HasSum … 1` avoids any comparison test: nonneg terms +
+  `summable_of_sum_range_le` with `c = 1` from the closed form, then
+  `tendsto_nhds_unique … .tendsto_sum_nat` against `1 − 1/(a n − 1) → 1`
+  (`squeeze_zero` vs `1/(n+1)`).
+* **No squares**: `a 0 % 4 = 2`, `a n % 4 = 3` for `n ≥ 1`, killed by `∀ x : ZMod 4, x*x ≠ 2 ∧ ≠ 3`
+  via `decide`.  **`−3` a QR**: `4·a(n+1) = (2 a n − 1)² + 3`, so `(2 a n − 1)²  = −3` in `ZMod p`;
+  the `n = 0` leaf is `p = 2` and `IsSquare (-3 : ZMod 2)` — note `decide` on the *substituted*
+  goal trips "expected type must not contain free variables", so that fact lives in its own
+  private lemma `neg_three_isSquare_two`.
+* **The residue cycles** are `Int.ModEq` inductions through one step lemma
+  (`x ≡ y → x²−x+1 ≡ y²−y+1`).  mod 1000 is derived from mod 3000 by
+  `Int.emod_emod_of_dvd`.  mod 864 needs the genuinely non-trivial step
+  `864 ∣ 432·n·(1+3n)`, discharged by `n` even / odd (one of `n`, `1+3n` is even) — this is why the
+  progression has exactly 24 terms.
+* **Mohanty**: `IsCoprime m (b n)` for all `n` (via `IsCoprime.add_mul_left_right`, since
+  `b(n+1) = b n² + m(1 − b n)`), plus `b i ∣ b j − m` for `i < j`; then `intGcd_congr_of_dvd_sub`
+  transports `gcd(b i, b j) = gcd(b i, m) = 1`.  `0 < m` is not needed.
+* **A003096 non-primality**: `a(m+2) = (a(m+1)−1)(a(m+1)+1)` with `a(m+1) ≥ 3`, refuted through
+  `Prime.irreducible.isUnit_or_isUnit` + `Int.isUnit_iff` + `omega`.
+* **A002065 / A004019** are direct Sylvester/Bala instances (`X²+X+1`, `(X+1)²`);
+  `a004019 n = a003095 n ²` and `= a003095 (n+1) − 1` are one-line inductions.
+
+**Stop condition met**: `NumberTheory/PolyIteration/` is sorry-free.  Phase 9's two disclosed
+Corvaja–Zannier `sorry`s in `NumberTheory/Transcendence/DubickasNoSubspace.lean` remain, untouched.
+
+---
+
 # PENDING_WORK — lean-formalizations
 
 ## PHASE 10 — CLOSED 2026-09-28: `NumberTheory/PolyIteration/` sorry-free + axiom-clean
