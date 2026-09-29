@@ -57,9 +57,69 @@ import LeanFormalizations.Literature.Pisot
 import LeanFormalizations.NumberTheory.Diophantine.StephanEdges
 import LeanFormalizations.NumberTheory.Transcendence.DubickasNoSubspace
 
+set_option maxRecDepth 20000
+
 namespace LeanFormalizations.Transcendence.Dubickas
 
 open LeanFormalizations.Literature
+
+/-!
+## Step 0 — the Subspace Theorem in the shape Corvaja–Zannier actually use
+
+CZ apply "[S, Theorem 1D′]" and immediately read off *one* nontrivial linear relation satisfied
+by infinitely many of the points.  `Stephan2026Subspace` gives a `Finset` of proper subspaces
+instead; the bridge is pigeonhole plus "a proper subspace of a finite-dimensional space is cut
+out by a nonzero linear form".
+-/
+
+set_option maxRecDepth 8000 in
+set_option maxHeartbeats 1000000 in
+open Height in
+/-- **Subspace Theorem, CZ's usable form.**  An infinite set of nonzero solutions of the
+approximation inequality satisfies one fixed nontrivial linear relation along an infinite
+subset. -/
+theorem exists_dual_infinite_of_stephan (hSub : Stephan2026Subspace)
+    {K : Type} [Field K] [NumberField K] {ι : Type} [Fintype ι] [Nontrivial ι]
+    (Sinf : Finset (NumberField.InfinitePlace K)) (Sfin : Finset (NumberField.FinitePlace K))
+    (L : AbsoluteValue K ℝ → ι → Module.Dual K (ι → K))
+    (hLi : ∀ v ∈ Sinf, LinearIndependent K (L v.1))
+    (hLf : ∀ v ∈ Sfin, LinearIndependent K (L v.1))
+    {ε : ℝ} (hε : 0 < ε) (Ξ : Set (ι → K)) (hΞ : Ξ.Infinite) (h0 : ∀ x ∈ Ξ, x ≠ 0)
+    (hle : ∀ x ∈ Ξ, approxProd Sinf Sfin (fun v ↦ v) L x ≤
+      mulHeight x ^ (-(Fintype.card ι : ℝ) - ε)) :
+    ∃ a : Module.Dual K (ι → K), a ≠ 0 ∧ {x ∈ Ξ | a x = 0}.Infinite := by
+  classical
+  obtain ⟨T, hTne, hT⟩ := hSub Sinf Sfin L hLi hLf hε
+  -- pigeonhole: `Ξ` is covered by the finitely many `Ξ ∩ W`
+  have hcov : Ξ ⊆ ⋃ W ∈ T, {x ∈ Ξ | x ∈ W} := by
+    intro x hx
+    obtain ⟨W, hW, hxW⟩ := hT x (h0 x hx) (hle x hx)
+    exact Set.mem_biUnion hW ⟨hx, hxW⟩
+  have : ∃ W ∈ T, {x ∈ Ξ | x ∈ W}.Infinite := by
+    by_contra hcon
+    push Not at hcon
+    refine hΞ ?_
+    refine Set.Finite.subset (Set.Finite.biUnion T.finite_toSet ?_) hcov
+    intro W hW
+    exact hcon W hW
+  obtain ⟨W, hW, hWinf⟩ := this
+  obtain ⟨y, hy⟩ : ∃ y : ι → K, y ∉ W := by
+    by_contra hc
+    push Not at hc
+    exact hTne W hW (eq_top_iff.2 fun z _ ↦ hc z)
+  have hq : W.mkQ y ≠ 0 := by
+    rw [Ne, Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
+    exact hy
+  haveI : Module.Free K ((ι → K) ⧸ W) := Module.Free.of_divisionRing K _
+  haveI : Module.Projective K ((ι → K) ⧸ W) := Module.Projective.of_free
+  obtain ⟨f, hf⟩ := Module.Projective.exists_dual_ne_zero K hq
+  refine ⟨f ∘ₗ W.mkQ, ?_, hWinf.mono ?_⟩
+  · intro hzero
+    exact hf (by rw [show f (W.mkQ y) = (f ∘ₗ W.mkQ) y from rfl, hzero]; simp)
+  · rintro x ⟨hx, hxW⟩
+    refine ⟨hx, ?_⟩
+    show f (W.mkQ x) = 0
+    rw [Submodule.mkQ_apply, (Submodule.Quotient.mk_eq_zero W).2 hxW, map_zero]
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
 Theorem and Ridout.  Same conclusion as the phase-9 statement. -/
