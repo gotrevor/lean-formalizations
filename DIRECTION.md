@@ -2,6 +2,12 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 22, 2026-09-29): more bedrock, via LW and Baker
+
+Target `NumberTheory/Transcendence/BedrockBaker.lean`, 5 frozen statements (routes in the header): `tan`, `sinh`, `cosh` at nonzero algebraic reals (LW); `π + log 2` and `2^√2·3^√3` transcendental (Baker, homogeneous).  Frozen: the 5, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.
+
+---
+
 ## ✅ DONE (phase 21, 2026-09-29, 1 lap): bedrock — unconditional consequences of LW, GS, Nesterenko
 
 **All eleven frozen statements are PROVED and `#print axioms`-clean; `Bedrock.lean` is
@@ -13,7 +19,7 @@ gotchas: the file header.
 
 ### original directive
 
-## 🎯 THE OBJECTIVE (phase 21, 2026-09-29): bedrock — unconditional consequences of LW, GS, Nesterenko
+## ✅ DONE (phase 21, 2026-09-29, `5a2a8d7`): bedrock — unconditional consequences of LW, GS, Nesterenko
 
 Target `NumberTheory/Transcendence/Bedrock.lean`, 11 frozen statements (routes in the header): Hermite–Lindemann family (exp, log, sin, cos at algebraic points), Gelfond–Schneider (`2^√2`, `log 3/log 2`), Nesterenko (`e^π`, `π+e^π`, `π·e^π`, `Γ(1/4)`, `e^{−π/2}`).  Inputs: `Literature/Lindemann.lean`, `GelfondSchneider.lean`, `Nesterenko.lean`; reuse `Schanuel.lean`'s toolkit (e.g. `linearIndependent_log_primes`, `eq_zero_of_algebraicIndependent_linear`).  Frozen: the 11, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.
 
