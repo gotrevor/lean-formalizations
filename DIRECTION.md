@@ -2,7 +2,18 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 THE OBJECTIVE (phase 29): a 3-adic obstruction to an algebraic Mills constant — NEW MATH
+## 🎯 THE OBJECTIVE (phase 30): one conjecture behind Fermat and Mills
+
+Target `NumberTheory/Mills/SharedConjecture.lean`, three frozen statements (route in the header):
+- `fermat_of_doubleExpTraceComposite`;
+- `mills_transcendental_of_doubleExpTraceComposite` (factor phase 29's floor = trace glue out of `mills_threeAdic` into a reusable lemma first);
+- `lt_padicValNat_glCard_prime_base`.
+
+Frozen: those three statements, `DoubleExpTraceComposite`, everything in `ThreeAdic.lean`, all of `Literature/`.  Stop condition: that file sorry-free.  After the lap, run `scripts/fact-graph`.
+
+---
+
+## ✅ DONE (phase 29, `9fa5b21`): a 3-adic obstruction (was: THE OBJECTIVE): a 3-adic obstruction to an algebraic Mills constant — NEW MATH
 
 Read `PROBE-MILLS-3ADIC.md` first.  Target `NumberTheory/Mills/ThreeAdic.lean`, five frozen statements (route in the header):
 - `dvd_trace_pow_three_of_glCard` (group theory in `GL_n(𝔽_p)`), unconditional;
