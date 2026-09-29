@@ -312,6 +312,68 @@ theorem linearIndependent_czFormFamily {ι : Type*} [Fintype ι] [DecidableEq ι
     simp only [Finset.mem_univ, if_pos, hi0, zero_mul, zero_add] at h
     exact h
 
+/-- A finite place and an infinite place are never the same absolute value. -/
+theorem finitePlace_val_ne_infinitePlace_val (v : FinitePlace K) (w : InfinitePlace K) :
+    v.1 ≠ w.1 := by
+  intro h
+  obtain ⟨φ, hφ⟩ := w.2
+  have hw2 : w.1 ((1 : K) + 1) = 2 := by
+    rw [← hφ]
+    simp [NumberField.place_apply]
+    norm_num
+  have hv2 : v.1 ((1 : K) + 1) ≤ 1 := by
+    refine le_trans (FinitePlace.add_le v (1 : K) 1) ?_
+    simp [FinitePlace.coe_apply]
+  rw [h, hw2] at hv2
+  norm_num at hv2
+
+open scoped Classical in
+/-- CZ's family of linear forms: the coordinate forms everywhere, except that at the
+distinguished place `w` the `i₀`-th form is `Σ λⱼ xⱼ`. -/
+noncomputable def czL {ι : Type*} [Fintype ι] [DecidableEq ι] (w : AbsoluteValue K ℝ) (i₀ : ι)
+    (lam : ι → K) : AbsoluteValue K ℝ → ι → Module.Dual K (ι → K) :=
+  fun v i ↦ if v = w then czFormFamily i₀ lam i else LinearMap.proj i
+
+open scoped Classical in
+/-- The deviation factor of `czL` at a place: `1` away from `w`. -/
+noncomputable def czC {ι : Type*} [Fintype ι] (w : AbsoluteValue K ℝ) (i₀ : ι) (lam : ι → K)
+    (x : ι → K) : AbsoluteValue K ℝ → ℝ := fun v ↦
+  if v = w then w (∑ j, lam j * x j) / w (x i₀) else 1
+
+open scoped Classical in
+/-- `czL` realises `czC` as its deviation factor, in the sense `approxProd_of_prod_eq` wants. -/
+theorem prod_czL {ι : Type*} [Fintype ι] [DecidableEq ι] {w : AbsoluteValue K ℝ} {i₀ : ι}
+    {lam : ι → K} {x : ι → K} (hx0 : x i₀ ≠ 0) (v : AbsoluteValue K ℝ) :
+    ∏ i, v (czL w i₀ lam v i x) = czC w i₀ lam x v * ∏ i, v (x i) := by
+  by_cases hv : v = w
+  · subst hv
+    simp only [czL, czC, czFormFamily, eq_self_iff_true, if_true]
+    rw [← Finset.mul_prod_erase Finset.univ _ (Finset.mem_univ i₀),
+      ← Finset.mul_prod_erase Finset.univ (fun i ↦ v (x i)) (Finset.mem_univ i₀)]
+    have hrest : ∀ i ∈ Finset.univ.erase i₀,
+        v ((if i = i₀ then czForm lam else LinearMap.proj i) x) = v (x i) := by
+      intro i hi
+      rw [if_neg (Finset.mem_erase.mp hi).1]
+      rfl
+    rw [Finset.prod_congr rfl hrest, if_pos rfl, czForm_apply]
+    rw [div_mul_eq_mul_div, mul_comm (v (x i₀)), ← mul_assoc, mul_div_assoc,
+      div_self (v.pos hx0).ne', mul_one]
+  · simp [czL, czC, hv]
+
+/-- **Corvaja–Zannier, Lemma 1** (archimedean distinguished place), from Stephan's Subspace
+Theorem.  An infinite set of `S`-unit tuples on which `Σ λᵢ xᵢ` is smaller than the `w`-norm of
+the tuple times `H(x)^(−ε)` satisfies one fixed nontrivial linear relation infinitely often. -/
+theorem czLemma1_arch (hSub : Stephan2026Subspace) {K : Type} [Field K] [NumberField K]
+    {ι : Type} [Fintype ι] [Nontrivial ι] [DecidableEq ι]
+    (Sfin : Finset (FinitePlace K)) (w : InfinitePlace K) (lam : ι → K) (i₀ : ι)
+    (h0 : lam i₀ ≠ 0) (Ξ : Set (ι → K)) (hΞ : Ξ.Infinite)
+    (hS : ∀ x ∈ Ξ, ∀ i, IsSUnit Sfin (x i)) {ε : ℝ} (hε : 0 < ε)
+    (hineq : ∀ x ∈ Ξ, w (∑ i, lam i * x i) ≤ w (x i₀) * Height.mulHeight x ^ (-ε)) :
+    ∃ a : ι → K, a ≠ 0 ∧ {x ∈ Ξ | ∑ i, a i * x i = 0}.Infinite := by
+  classical
+  sorry
+
+
 end CZ
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
