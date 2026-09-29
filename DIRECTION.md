@@ -1,5 +1,19 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 12, 2026-09-28): Roth / Mahler / Mills from Stephan's machine-checked Ridout
+
+Roth is already formalized (R. Stephan, `rwst/Subspace-Theorems`, Lean 4, 2026; see
+`PROBE-ROTH.md`).  Do NOT prove Roth.  His `Rat.finite_setOf_ridout` is now
+`Literature.Stephan2026Ridout` (verbatim, frozen).  Phase 12 is
+`NumberTheory/Diophantine/StephanEdges.lean`: derive `Roth1955`, `Ridout1957SUnitDen`,
+`mahler_mul_of_stephan` (same statement as `mahler_mul_of_ridout1957`), `Mahler1957`, and
+`Mills.irrational_of_stephan`.  Proof sketches in the file header; reuse `Edges.lean`'s
+Mahler bookkeeping (lowest-terms reduction, `p* ≤ 2q αⁿ`, `β ≠ q`).  Frozen by name: the five
+phase-12 theorems plus every earlier name and all of `Literature/`.  Phase 9's two disclosed
+Corvaja–Zannier `sorry`s stay.  Stop condition: `NumberTheory/Diophantine/` sorry-free.
+
+---
+
 ## 🎯 THE OBJECTIVE (phase 11, 2026-09-28): A003095's siblings — `PolyIteration/Siblings.lean`
 
 Phase 10 is green.  Phase 11 is `NumberTheory/PolyIteration/Siblings.lean`: Bala's general

@@ -12,6 +12,8 @@ repo does not prove them.
   stated as its own `Prop`; `Ridout1957 → Ridout1957SUnitDen` is an edge.
 * `Ridout1957` — Ridout's 1957 Theorem, stated from the paper.  Mahler derives `Mahler1957`
   from it (Mahler 1957, §3).
+* `Stephan2026Ridout` — Ridout's theorem as machine-checked by R. Stephan (Lean 4, 2026),
+  verbatim; waits only on a toolchain match to be discharged.
 
 Wiring edges (proved in `NumberTheory/Diophantine/Edges.lean`): `Ridout1957 → Mahler1957`,
 `Ridout1957 → Ridout1957SUnitDen`, `Ridout1958 → Roth1955`.
@@ -93,5 +95,24 @@ def Ridout1957 : Prop :=
       (∃ qs b : ℕ, x.2 = qs * b ∧ (∀ r ∈ b.primeFactors, r ∈ Q) ∧
         0 < qs ∧ (qs : ℝ) ≤ c * (x.2 : ℝ) ^ ν) ∧
       0 < |α - (x.1 : ℝ) / x.2| ∧ |α - (x.1 : ℝ) / x.2| < 1 / (x.2 : ℝ) ^ κ}.Finite
+
+/-- **Ridout's theorem, as formalized by Ralf Stephan (2026)** — a *machine-checked* input, not
+a paper one.  For a real algebraic `ξ`, finite sets `S₁`, `S₂` of primes and `ε > 0`, only
+finitely many rationals `β = p/q` (lowest terms) satisfy
+`|ξ − p/q| · ∏_{l ∈ S₁} |p|_l · ∏_{l ∈ S₂} |q|_l ≤ max(|p|, q)^(−2−ε)`.
+
+Verbatim `Rat.finite_setOf_ridout`, R. Stephan, *Subspace-Theorems*,
+https://github.com/rwst/Subspace-Theorems at `ce289c64054c8ffcfb6fd37d5881312c6a5d577d`
+(2026-09-28), `DiophantineApproximation/Ridout.lean:188`, statement also in
+`Challenge/DiophantineApproximation/Ridout.lean` (comparator-certified per its `COMPARATOR.md`).
+Proved there sorry-free on Lean `v4.35.0-rc3`; this repo is on an older toolchain, so it enters
+as a `Prop` until the toolchains meet, then gets discharged by `require`-ing a fork at a SHA
+(see `PROBE-ROTH.md`).  Implies `Roth1955` (`S₁ = S₂ = ∅`), `Ridout1957SUnitDen` and
+`Mahler1957` (`NumberTheory/Diophantine/StephanEdges.lean`). -/
+def Stephan2026Ridout : Prop :=
+  ∀ {ξ : ℝ}, IsAlgebraic ℚ ξ → ∀ (S₁ S₂ : Finset Nat.Primes) {ε : ℝ}, 0 < ε →
+    {β : ℚ | |ξ - (β : ℝ)| * (∏ l ∈ S₁, ((padicNorm (l : ℕ) β.num : ℚ) : ℝ))
+        * ∏ l ∈ S₂, ((padicNorm (l : ℕ) β.den : ℚ) : ℝ)
+      ≤ (max β.num.natAbs β.den : ℝ) ^ (-2 - ε)}.Finite
 
 end LeanFormalizations.Literature
