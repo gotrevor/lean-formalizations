@@ -1,5 +1,20 @@
 # HANDOFF 2026-09-29 — phase 17 COMPLETE
 
+**Branch** `main`.  **Completion commit** `206efab` ("phase 17 COMPLETE: strong six
+exponentials under Schanuel"); this doc is the checkpoint on top of it.  Working tree clean,
+`lake build` green, nothing in flight (no Aristotle job, no open `ON-LINE-REQUEST`).
+
+**Lap commits** (oldest first): `30188dc` five exponentials via `Baker1966` · `b2aea43`
+`AffineRankOne.const_ratio` · `5bfdd29` `StrongSix` basis extraction · `206efab` the assembly.
+
+**Exact next step**: phase 18 as queued in `DIRECTION.md` — Champernowne's constant is
+transcendental (Mahler 1937) via `roth1955_of_stephan`.  Before freezing any statement, check
+the approximation exponent numerically: the run of consecutive k-digit integers gives a
+rational with denominator ≈ (10^k − 1)², and the claim is that this beats q^(−2−ε).  Normality
+of Champernowne is out of scope (that belongs in normal-numbers).  After it, continue through
+Waldschmidt 2023 statement by statement: theorems → `Literature/`, conjectures → hypothesis
+`Prop`s, derived implications → proofs.
+
 `src/LeanFormalizations/NumberTheory/Transcendence/ExponentialsKnown.lean` is **sorry-free**,
 and every theorem in it is `#print axioms`-clean (`propext, Classical.choice, Quot.sound`).
 
