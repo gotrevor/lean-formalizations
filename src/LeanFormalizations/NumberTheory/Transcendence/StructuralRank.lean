@@ -269,6 +269,38 @@ theorem two_le_rank_of_sixExponentials (h6 : SixExponentials) {m n : Type} [Fint
 
 theorem structRank_log_example :
     IsStructRank !![(Real.log 2 : ℂ), (Real.log 3 : ℂ); 2 * (Real.log 2 : ℂ), 2 * (Real.log 3 : ℂ)] 1 := by
-  sorry
+  classical
+  refine ⟨2, ![((Real.log 2 : ℝ) : ℂ), ((Real.log 3 : ℝ) : ℂ)],
+    ![!![1, 0; 2, 0], !![0, 1; 0, 2]], LeanFormalizations.Exponentials.linearIndependent_log_two_three,
+    ?_, ?_⟩
+  · refine Matrix.ext fun i j => ?_
+    fin_cases i <;> fin_cases j <;>
+      simp [Matrix.sum_apply, Fin.sum_univ_two]
+  · have hvm : (∑ k, (![!![(1 : ℚ), 0; 2, 0], !![0, 1; 0, 2]] k).map (fun q : ℚ ↦
+        algebraMap (MvPolynomial (Fin 2) ℚ) (FractionRing (MvPolynomial (Fin 2) ℚ))
+          (C q * X k)))
+        = Matrix.vecMulVec ![(1 : FractionRing (MvPolynomial (Fin 2) ℚ)), 2]
+            ![algebraMap (MvPolynomial (Fin 2) ℚ) (FractionRing (MvPolynomial (Fin 2) ℚ))
+                (X (0 : Fin 2)),
+              algebraMap (MvPolynomial (Fin 2) ℚ) (FractionRing (MvPolynomial (Fin 2) ℚ))
+                (X (1 : Fin 2))] := by
+      have hC2 : (C (2 : ℚ) : MvPolynomial (Fin 2) ℚ) = 2 := map_ofNat C 2
+      refine Matrix.ext fun i j => ?_
+      fin_cases i <;> fin_cases j <;>
+        (try simp [Matrix.sum_apply, Fin.sum_univ_two, Matrix.vecMulVec_apply, map_mul,
+          hC2, map_ofNat])
+    rw [hvm]
+    refine le_antisymm (Matrix.rank_vecMulVec_le _ _) ?_
+    refine le_rank_of_det_ne_zero _ ![0] ![0] ?_
+    rw [Matrix.det_fin_one]
+    have hX : algebraMap (MvPolynomial (Fin 2) ℚ) (FractionRing (MvPolynomial (Fin 2) ℚ))
+        (X (0 : Fin 2)) ≠ 0 := by
+      intro hcon
+      exact MvPolynomial.X_ne_zero (0 : Fin 2)
+        (IsFractionRing.injective (MvPolynomial (Fin 2) ℚ)
+          (FractionRing (MvPolynomial (Fin 2) ℚ)) (by rw [hcon, map_zero]))
+    simp only [Matrix.submatrix_apply, Matrix.vecMulVec_apply, Matrix.cons_val_zero, one_mul]
+    exact hX
+
 
 end LeanFormalizations.StructuralRank
