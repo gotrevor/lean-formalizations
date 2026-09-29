@@ -67,5 +67,4 @@ irrationality of the least Wright constant is untouched.
   `log 2, log 3, …` **with** `π` (`z = (iπ, log p₁, …)`), transcendence of `e + log 2`,
   and Baker's theorem (linear forms in logarithms) as the `n`-generator version of the
   `algebraicIndependent_log_primes` argument.
-* The four-exponentials conjecture is *not* a Schanuel consequence; if someone wants it, it needs
-  its own `Literature/` entry.
+* ⚠️ CORRECTED: The four-exponentials conjecture IS a Schanuel consequence (Waldschmidt 2000 Ex. 1.8; corrected 2026-09-29, the phase-15 note said otherwise) - phase 16 derives it.

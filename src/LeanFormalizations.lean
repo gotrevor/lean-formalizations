@@ -109,6 +109,8 @@ import LeanFormalizations.Literature.GelfondSchneider
 import LeanFormalizations.Maze
 import LeanFormalizations.Literature.Schanuel
 import LeanFormalizations.NumberTheory.Transcendence.Schanuel
+import LeanFormalizations.Literature.Exponentials
+import LeanFormalizations.NumberTheory.Transcendence.Exponentials
 import LeanFormalizations.NumberTheory.Transcendence.DubickasGrowth
 import LeanFormalizations.NumberTheory.Transcendence.DubickasPisot
 import LeanFormalizations.NumberTheory.Transcendence.Dubickas

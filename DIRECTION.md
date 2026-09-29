@@ -2,6 +2,12 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 16, 2026-09-29): four/six exponentials, more Schanuel
+
+Trevor 2026-09-29: *"Seems like there's a lot we can continue to chip away at along this vein?"*  Target file `NumberTheory/Transcendence/Exponentials.lean`, 6 frozen statements: Schanuel ⇒ four exponentials (the meaty one; the phase-15 note calling it *not* implied was wrong); four exp ⇒ `2^t` or `3^t` transcendental; six exponentials (a Literature theorem, Lang/Ramachandra) ⇒ `p^t ∈ ℤ` for three primes forces `t ∈ ℕ` (unconditional); `e, e^e, e^{e^e}`; `π` + log primes; `e + log 2`.  Inputs are `Literature/Exponentials.lean` and the phase-15 toolkit.  If a statement proves underivable, record why; that counts as an advance.  Frozen by name: the six, every earlier name, all of `Literature/`.  Stop condition: `Exponentials.lean` sorry-free.
+
+---
+
 ## ✅ DONE (phase 15, 2026-09-29, 1 lap): what follows from Schanuel's conjecture
 
 `NumberTheory/Transcendence/Schanuel.lean` is **sorry-free**; all ten frozen statements are
@@ -13,7 +19,7 @@ prime.  Cheap follow-ons are listed at the end of that handoff.
 
 ### original directive
 
-## 🎯 THE OBJECTIVE (phase 15, 2026-09-29): what follows from Schanuel's conjecture
+## ✅ DONE (phase 15, 2026-09-29, `c2a7e2d`): what follows from Schanuel's conjecture
 
 Trevor 2026-09-29: *"Since there are a lot of things that follow from it, I think it's worth writing those things down.  Maybe, just maybe, we'll bump into a contradiction, or notice something interesting."*  Hypothesis: `Literature.SchanuelConjecture` (verbatim from formal-conjectures).  Target file `NumberTheory/Transcendence/Schanuel.lean`: 10 frozen statements (consistency edges to Gelfond–Schneider, Lindemann–Weierstrass and Nesterenko; open consequences `e, π` algebraically independent, `e+π`, `eπ`, `e, e^e`, logs of primes; Wright towers).  Sketches are in the header.  Add further consequences as new theorems freely; a statement found underivable is an advance, so record it.  Frozen by name: the ten statements, every earlier name, all of `Literature/`.  Stop condition: `Schanuel.lean` sorry-free.
 

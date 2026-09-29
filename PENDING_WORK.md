@@ -9,8 +9,7 @@ Unconditional by-products for other threads: `linearIndependent_log_primes` (ℤ
 
 **Next attack (nothing blocked):** more Schanuel consequences are now cheap — `2^√2`, `e^{e^e}`,
 `π` together with logs of primes, `e + log 2`, Baker's theorem as the `n`-generator version of
-the log-primes argument.  The four-exponentials conjecture is *not* implied and would need its
-own `Literature/` entry.
+the log-primes argument.  The four-exponentials conjecture IS a Schanuel consequence (Waldschmidt 2000 Ex. 1.8; corrected 2026-09-29, the phase-15 note said otherwise) - phase 16 derives it.
 
 ---
 
