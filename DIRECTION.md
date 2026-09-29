@@ -8,6 +8,12 @@ Trevor 2026-09-29: *"Seems like there's a lot we can continue to chip away at al
 
 ---
 
+## ⏳ QUEUED (phase 18, 2026-09-29): Champernowne's constant is transcendental, via Roth
+
+Not yet planted.  Mahler 1937.  The run of consecutive k-digit integers is a small-denominator rational (≈ (10^k−1)²), which gives approximations far better than q^(−2−ε); then apply `roth1955_of_stephan`.  Check the approximation exponent numerically before freezing statements.  Normality of Champernowne belongs in normal-numbers.  After it, continue working through Waldschmidt 2023 statement by statement (theorems → Literature, conjectures → hypothesis Props, derived implications → proofs).
+
+---
+
 ## ⏳ QUEUED (phase 17, 2026-09-29): consequences of the KNOWN exponentials theorems
 
 Phase-16 laps ignore this section.  Target `NumberTheory/Transcendence/ExponentialsKnown.lean`: unconditional `2^t, 3^t, 5^t` (six exp), and consistency edges among `Literature/ExponentialsKnown.lean` (five exp, shifted six exp, Roy's strong six exp).  Stop condition: that file sorry-free.
