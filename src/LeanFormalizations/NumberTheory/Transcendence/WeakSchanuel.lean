@@ -759,4 +759,147 @@ theorem strongSix_of_algIndepLogs (h : AlgIndepLogsConjecture) : StrongSixExpone
   have : (-1 : (algebraicClosure ℚ ℂ)) = 0 := by simpa using hzero 1
   exact absurd this (by simp)
 
+/-! ## Restoring a live route to `FiveExponentials`
+
+The refutation above leaves the repo with no usable route to `FiveExponentials`.  This section
+supplies one, and in doing so records the honest hypothesis set.
+
+The shape of `ExponentialsKnown.fiveExponentials_of_shifted_of_baker` is kept — put
+`y₃ = γ/x₁`, so that `x₀y₃ = γx₀/x₁` is the fifth number and `x₁y₃ = γ` is algebraic — but
+"shifted six exponentials" is replaced by the *membership* form: assuming the five numbers are
+all non-transcendental, every one of the six `xᵢyⱼ` (`j ∈ {0,1,3}`) lies in `𝓛̃`, five because
+they are logarithms and the sixth because `𝓛̃ ⊇ ℚ̄`.  That is exactly the hypothesis of the
+strong six exponentials theorem, with no shifts anywhere.
+
+Three degenerate cases then have to be peeled off, and they are genuinely three different
+theorems — which is why the honest statement carries three hypotheses:
+
+* `x` is `ℚ̄`-dependent — Gelfond–Schneider, as in the four-exponentials repair;
+* `y₀, y₁` are `ℚ̄`-dependent — Gelfond–Schneider again;
+* `y₃ ∈ ℚ̄·y₀ + ℚ̄·y₁` — then `γ = x₁y₃` is a nonzero algebraic number equal to a `ℚ̄`-linear
+  combination of the two logarithms `x₁y₀, x₁y₁`, which is `Baker1966`.
+
+The last case is where this differs from the existing route: with only `ℚ`-independence
+available that case needed `BakerTwoLogs` (rational coefficients), but the `ℚ̄`-degenerate case
+produces *algebraic* coefficients, so full `Baker1966` is what is actually required. -/
+
+set_option maxHeartbeats 2000000 in
+/-- **The five exponentials theorem** from strong six exponentials, Baker (1966) and
+Gelfond–Schneider.  All three hypotheses are consequences of Conjecture 1. -/
+theorem fiveExponentials_of_strongSix_of_baker_of_gs
+    (h6 : StrongSixExponentials) (hB : Baker1966)
+    (hGS : ∀ ℓ c : ℂ, ℓ ≠ 0 → IsAlgebraic ℚ c → (∀ q : ℚ, c ≠ (q : ℂ)) →
+      IsAlgebraic ℚ (Complex.exp ℓ) → ¬ IsAlgebraic ℚ (Complex.exp (c * ℓ))) :
+    FiveExponentials := by
+  classical
+  intro x y γ hx hy hγ hγ0
+  by_contra hcon
+  rw [not_or] at hcon
+  obtain ⟨h4, h5⟩ := hcon
+  simp only [Transcendental, not_exists, not_not] at h4
+  rw [Transcendental, not_not] at h5
+  have hx0 : x 0 ≠ 0 := hx.ne_zero 0
+  have hx1 : x 1 ≠ 0 := hx.ne_zero 1
+  have hy0 : y 0 ≠ 0 := hy.ne_zero 0
+  have hl0 : x 0 * y 0 ≠ 0 := mul_ne_zero hx0 hy0
+  -- the rational-ratio test used by both Gelfond–Schneider cases
+  have hdeg : ∀ (z : Fin 2 → ℂ) (c : ℂ), LinearIndependent ℚ z → z 1 = c * z 0 →
+      (∀ q : ℚ, c ≠ (q : ℂ)) := by
+    intro z c hz hzc q hq
+    have := (LinearIndependent.pair_iff.1 (by
+      have he : ![z 0, z 1] = z := by funext i; fin_cases i <;> rfl
+      rw [he]; exact hz)) (-q) 1 (by
+        simp only [Rat.smul_def, hzc, hq]; push_cast; ring)
+    exact absurd this.2 (by simp)
+  set y₃ : ℂ := γ / x 1 with hy₃
+  set y' : Fin 3 → ℂ := ![y 0, y 1, y₃] with hy'
+  -- every `xᵢ y'ⱼ` lies in `𝓛̃`
+  have hm0 : x 0 * y₃ ∈ LogAlgSpan := by
+    have he : x 0 * y₃ = γ * x 0 / x 1 := by rw [hy₃]; field_simp
+    rw [he]; exact mem_logAlgSpan_of_exp_isAlgebraic h5
+  have hm1 : x 1 * y₃ ∈ LogAlgSpan := by
+    have he : x 1 * y₃ = γ := by rw [hy₃]; field_simp
+    rw [he]; exact LeanFormalizations.ExponentialsKnown.mem_logAlgSpan_of_isAlgebraic hγ
+  have hmem : ∀ i j, x i * y' j ∈ LogAlgSpan := by
+    intro i j
+    fin_cases j
+    · exact mem_logAlgSpan_of_exp_isAlgebraic (h4 i 0)
+    · exact mem_logAlgSpan_of_exp_isAlgebraic (h4 i 1)
+    · show x i * y₃ ∈ LogAlgSpan
+      fin_cases i
+      · exact hm0
+      · exact hm1
+  by_cases hxK : LinearIndependent (↥(integralClosure ℚ ℂ)) x
+  · by_cases hy01 : LinearIndependent (↥(integralClosure ℚ ℂ)) ![y 0, y 1]
+    · by_cases hyK : LinearIndependent (↥(integralClosure ℚ ℂ)) y'
+      · obtain ⟨i, j, hno⟩ := h6 x y' hxK hyK
+        exact hno (hmem i j)
+      · -- `y₃` is a `ℚ̄`-combination of `y₀, y₁`: a Baker relation for `γ`
+        have hsnoc : Fin.snoc ![y 0, y 1] y₃ = y' := by
+          rw [hy']; exact snoc3 _ _ _
+        have hy01' : LinearIndependent (↥(algebraicClosure ℚ ℂ)) ![y 0, y 1] := hy01
+        have hspan : y₃ ∈ Submodule.span (↥(integralClosure ℚ ℂ)) (Set.range ![y 0, y 1]) := by
+          by_contra hn
+          refine hyK ?_
+          have hn' : y₃ ∉ Submodule.span (↥(algebraicClosure ℚ ℂ)) (Set.range ![y 0, y 1]) := hn
+          have := linearIndependent_finSnoc.2 ⟨hy01', hn'⟩
+          rw [hsnoc] at this
+          exact this
+        obtain ⟨a, ha⟩ := (Submodule.mem_span_range_iff_exists_fun _).1 hspan
+        rw [Fin.sum_univ_two] at ha
+        simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+          Algebra.smul_def] at ha
+        refine hB 2 ![γ, -((a 0 : ℂ)), -((a 1 : ℂ))] ![x 1 * y 0, x 1 * y 1] ?_ ?_ hγ0 ?_
+        · intro i; fin_cases i
+          · exact hγ
+          · exact mem_algebraicClosure_iff.1
+              (neg_mem (mem_algebraicClosure_iff.2 ((a 0).2 : IsIntegral ℚ _).isAlgebraic))
+          · exact mem_algebraicClosure_iff.1
+              (neg_mem (mem_algebraicClosure_iff.2 ((a 1).2 : IsIntegral ℚ _).isAlgebraic))
+        · intro i; fin_cases i
+          · exact h4 1 0
+          · exact h4 1 1
+        · have hγx : γ = x 1 * y₃ := by rw [hy₃]; field_simp
+          rw [Fin.sum_univ_two]
+          simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+            Fin.succ_zero_eq_one, Fin.succ_one_eq_two, Matrix.cons_val_two, Matrix.tail_cons]
+          rw [hγx]
+          have hcoe : ∀ z : ↥(integralClosure ℚ ℂ),
+              (algebraMap (↥(integralClosure ℚ ℂ)) ℂ) z = (z : ℂ) := fun _ => rfl
+          simp only [hcoe] at ha
+          linear_combination -(x 1 * ha)
+    · -- `y₀, y₁` are `ℚ̄`-dependent: Gelfond–Schneider
+      obtain ⟨c, hc, hce⟩ := exists_algebraic_ratio hy0 hy01
+      have hy2 : LinearIndependent ℚ ![y 0, y 1] := by
+        have he : ![y 0, y 1] = y := by funext i; fin_cases i <;> rfl
+        rw [he]; exact hy
+      refine hGS (x 0 * y 0) c hl0 hc (hdeg ![y 0, y 1] c hy2 (by simpa using hce))
+        (h4 0 0) ?_
+      have : c * (x 0 * y 0) = x 0 * y 1 := by
+        have : y 1 = c * y 0 := by simpa using hce
+        rw [this]; ring
+      rw [this]; exact h4 0 1
+  · -- `x` is `ℚ̄`-dependent: Gelfond–Schneider
+    have hx' : ¬ LinearIndependent (↥(integralClosure ℚ ℂ)) ![x 0, x 1] := by
+      intro hcc; refine hxK ?_
+      have he : ![x 0, x 1] = x := by funext i; fin_cases i <;> rfl
+      rwa [he] at hcc
+    obtain ⟨c, hc, hce⟩ := exists_algebraic_ratio hx0 hx'
+    have hx2 : LinearIndependent ℚ ![x 0, x 1] := by
+      have he : ![x 0, x 1] = x := by funext i; fin_cases i <;> rfl
+      rw [he]; exact hx
+    refine hGS (x 0 * y 0) c hl0 hc (hdeg ![x 0, x 1] c hx2 (by simpa using hce))
+      (h4 0 0) ?_
+    have : c * (x 0 * y 0) = x 1 * y 0 := by
+      have : x 1 = c * x 0 := by simpa using hce
+      rw [this]; ring
+    rw [this]; exact h4 1 0
+
+/-- **Conjecture 1 ⇒ the five exponentials theorem.**  A live replacement for the route through
+the refuted `SixExponentialsShifted`. -/
+theorem fiveExponentials_of_algIndepLogs (h : AlgIndepLogsConjecture) : FiveExponentials :=
+  fiveExponentials_of_strongSix_of_baker_of_gs (strongSix_of_algIndepLogs h)
+    (baker1966_of_algIndepLogs h)
+    fun _ _ hℓ hc hcq he => not_isAlgebraic_exp_mul_of_algIndepLogs h hℓ hc hcq he
+
 end LeanFormalizations.Waldschmidt2023

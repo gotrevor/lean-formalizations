@@ -104,3 +104,38 @@ repo at present** — the one that looked live was resting on a false `Prop`.  R
 frozen statement (`LinearIndependent ℚ` ⟶ independence over `integralClosure ℚ ℂ`) is an
 operator decision; once repaired, the natural route is strong four + Gelfond–Schneider, as in
 addendum 2.
+
+## Addendum 4: `FiveExponentials` route restored, and its honest hypothesis set
+
+Addendum 3 left the repo with no live route to `FiveExponentials`.
+`fiveExponentials_of_algIndepLogs` supplies one; `FiveExponentials` itself is *not* vulnerable
+to the addendum-3 trick (it is about `exp` of the products, not of shifted products, and
+Hermite–Lindemann already kills the all-algebraic configuration).
+
+The shape of `ExponentialsKnown.fiveExponentials_of_shifted_of_baker` is kept — put
+`y₃ = γ/x₁`, so `x₀y₃ = γx₀/x₁` is the fifth number and `x₁y₃ = γ` — but "shifted six
+exponentials" is replaced by the **membership** form: if all five numbers are
+non-transcendental then every one of the six `xᵢyⱼ`, `j ∈ {0,1,3}`, lies in `𝓛̃`, five because
+they are logarithms and the sixth because `𝓛̃ ⊇ ℚ̄`.  That is the hypothesis of strong six
+exponentials, with no shifts anywhere — which is how the false `SixExponentialsShifted` gets
+cut out of the route entirely.
+
+Three degenerate cases remain, and they are three different theorems, which is why
+`fiveExponentials_of_strongSix_of_baker_of_gs` carries three hypotheses:
+
+| degenerate case | what closes it |
+|---|---|
+| `x` is `ℚ̄`-dependent | Gelfond–Schneider |
+| `y₀, y₁` are `ℚ̄`-dependent | Gelfond–Schneider |
+| `y₃ ∈ ℚ̄·y₀ + ℚ̄·y₁` | `Baker1966` — `γ ≠ 0` algebraic equals a `ℚ̄`-combination of the logarithms `x₁y₀, x₁y₁` |
+
+**Sharper than the old route in the third case.**  With only `ℚ`-independence available that
+case needed `BakerTwoLogs` (rational coefficients); the `ℚ̄`-degenerate case produces
+*algebraic* coefficients, so full `Baker1966` is what is actually required.  All three
+hypotheses are discharged from Conjecture 1 (`strongSix_of_algIndepLogs`,
+`baker1966_of_algIndepLogs`, `not_isAlgebraic_exp_mul_of_algIndepLogs`).
+
+Gotcha worth keeping: `linearIndependent_finSnoc` needs a `DivisionRing`, so the snoc/span step
+has to run over `algebraicClosure ℚ ℂ` (an `IntermediateField`, hence a field) and be
+transported to the `integralClosure ℚ ℂ` of the frozen statements by defeq — the same trick
+`StrongSix.strongSix` uses.  Also: this proof needs `maxHeartbeats 2000000`.
