@@ -2,7 +2,20 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 THE OBJECTIVE (phase 28, TBD): Leopoldt in unit rank ≥ 2 — the Baker–Brumer wall
+## 🎯 THE OBJECTIVE (phase 29): a 3-adic obstruction to an algebraic Mills constant — NEW MATH
+
+Read `PROBE-MILLS-3ADIC.md` first.  Target `NumberTheory/Mills/ThreeAdic.lean`, five frozen statements (route in the header):
+- `dvd_trace_pow_three_of_glCard` (group theory in `GL_n(𝔽_p)`), unconditional;
+- `lt_padicValNat_glCard`, unconditional;
+- `threeAdic_pm_one`, which uses `Literature.GaussCongruenceTrace`;
+- `mills_threeAdic`, glued to Saito's Pisot branch (`transcendental_or_pisot`, `pisot_branch_otherConj_real`, `pair_pow_sum_re_neg`);
+- `transcendental_of_not_pm_one`.
+
+Attack order: steps 1, then 2, then 3, then 4, then 5.  Step 4's glue (an integer matrix whose power traces equal `⌊A^(3^k)⌋`: the companion matrix of the integer minimal polynomial) is the one real infrastructure leaf.  Split it into named lemmas freely; a higher sorry count is fine.  If a frozen statement is false, record the counterexample and STOP.  Never edit `Literature/` and never weaken a frozen statement.  Stop condition: that file sorry-free.  After the lap, run `scripts/fact-graph`.
+
+---
+
+## ⏸️ PARKED (phase 28): Leopoldt in unit rank ≥ 2 — the Baker–Brumer wall
 
 Phase 27 closed rank ≤ 1 **unconditionally** (see below), and located the wall exactly.  For
 `r ≥ 2` the local lemma `eq_zero_of_local_tendsto_one` is genuinely false as stated: the

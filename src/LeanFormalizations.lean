@@ -125,6 +125,7 @@ import LeanFormalizations.Literature.Periods
 import LeanFormalizations.NumberTheory.Transcendence.Periods
 import LeanFormalizations.NumberTheory.Transcendence.SharpSixVariants
 import LeanFormalizations.Literature.Leopoldt
+import LeanFormalizations.Literature.GaussCongruence
 import LeanFormalizations.NumberTheory.Leopoldt.PrincipalUnits
 import LeanFormalizations.NumberTheory.Leopoldt.StressTests
 import LeanFormalizations.NumberTheory.Leopoldt.RankOne
@@ -150,6 +151,7 @@ import LeanFormalizations.NumberTheory.Diophantine.StephanEdges
 import LeanFormalizations.NumberTheory.Transcendence.CorvajaZannier
 import LeanFormalizations.NumberTheory.Transcendence.CorvajaZannierStephan
 import LeanFormalizations.NumberTheory.Mills.TranscendentalRH
+import LeanFormalizations.NumberTheory.Mills.ThreeAdic
 import LeanFormalizations.NumberTheory.Transcendence.MultisetGraeffe
 import LeanFormalizations.NumberTheory.Transcendence.MultisetNewton
 import LeanFormalizations.NumberTheory.Transcendence.DubickasBRec
