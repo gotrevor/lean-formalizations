@@ -1504,3 +1504,30 @@ only one with real content and should be attacked first.  **Note the refutation 
 exactly what the naive degree count predicts**: with only `ℚ`-independence, `λ = 1`, `s = √2`,
 `r = log 2` makes `λ, λs, λr, λrs` all of degree ≤ 1 in the logarithms, so no contradiction is
 available; the ℚ̄-independence hypothesis is what forces a degree-2 term and kills it.
+
+## Phase 26 (2026-09-29): Leopoldt stress tests — DONE; stretch recorded as blocked
+
+`NumberTheory/Leopoldt/StressTests.lean` and `NumberTheory/Transcendence/SharpSixVariants.lean`
+are sorry-free; `leopoldt_of_rank_zero`, `not_leopoldtNoIndep_rat`, `shiftedAlg_of_sharp`,
+`witness_not_algIndep` all `#print axioms`-clean (`propext/choice/Quot.sound` only).
+
+**No counterexample.**  The Leopoldt statement survived both tests, so the ~75% faithfulness
+argument in `Literature/Leopoldt.lean` stands unrefuted.  Two facts learned:
+- the rank-0 positive test is *degenerate* — the multiplicative-independence hypothesis forces
+  `r = 0` outright (via `isOfFinOrder_of_rank_zero`, Dirichlet with an empty fundamental system),
+  so it tests only that the statement is not accidentally false, not that it says anything.
+- the negative test is sharp: `ε = −1, mₙ ≡ 2, a = 2` over `ℚ` kills `LeopoldtNoIndep` for
+  *every* prime `p`, so the independence clause is load-bearing.
+
+**Stretch (real quadratic, unit rank 1) is BLOCKED on missing mathlib infrastructure, not on
+mathematics.**  It reduces to: `ε` the fundamental unit of `ℚ(√2)`, `mₙ → a` in `ℤ_7`,
+`ε^{mₙ} → 1` in `K_v` ⟹ `a = 0`.  The only known routes need the ℤ_p-module structure of the
+principal units `U₁ ⊂ (v.adicCompletion K)ˣ` — either the p-adic logarithm (`log_p ε ≠ 0`,
+i.e. Baker/Brumer in the rank-1 case) or `U₁ ≅ μ × ℤ_p^d` torsion-freeness.  At our pin mathlib
+has NEITHER: `Mathlib/NumberTheory/Padics/` has no `padicLog`, and there is no development of the
+unit group of `HeightOneSpectrum.adicCompletion`.  Next attack, in order:
+1. the `ℤ_p`-action `ℤ_p × U₁ → U₁` by continuity from `ℤ`-powers (needs `U₁` complete + the
+   `ε^{m} ≡ ε^{m'} mod p^k` congruence);
+2. torsion-freeness of `U₁` for `p` odd and unramified, via `(1+x)^p = 1 + px + … ` valuation;
+3. only then the rank-1 Leopoldt statement.
+This is a multi-lap infrastructure build and was explicitly "not frozen" in the phase-26 directive.
