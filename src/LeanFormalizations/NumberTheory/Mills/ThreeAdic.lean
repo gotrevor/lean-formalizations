@@ -133,6 +133,29 @@ theorem dvd_trace_pow_three_of_glCard {n : ℕ} (C : Matrix (Fin n) (Fin n) ℤ)
     exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).2 hdiv
   exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 this
 
+/-- The trace sequence, being strictly increasing from `k₀` on, exceeds any bound eventually. -/
+private lemma trace_eventually_gt {n : ℕ} (C : Matrix (Fin n) (Fin n) ℤ) {k₀ : ℕ}
+    (hmono : ∀ k ≥ k₀, (C ^ (3 ^ k)).trace < (C ^ (3 ^ (k + 1))).trace) (B : ℤ) :
+    ∃ K, k₀ ≤ K ∧ ∀ k ≥ K, B < (C ^ (3 ^ k)).trace := by
+  set t : ℕ → ℤ := fun k => (C ^ (3 ^ k)).trace with ht
+  have hmono' : ∀ k, k₀ ≤ k → t k < t (k + 1) := fun k hk => hmono k hk
+  have growth : ∀ k, k₀ ≤ k → t k₀ + ((k : ℤ) - (k₀ : ℤ)) ≤ t k := by
+    intro k hk
+    induction k, hk using Nat.le_induction with
+    | base => simp
+    | succ k hk ih =>
+        have := hmono' k hk
+        push_cast
+        push_cast at ih
+        omega
+  refine ⟨k₀ + (B - t k₀ + 1).toNat, by omega, ?_⟩
+  intro k hk
+  show B < t k
+  have := growth k (by omega)
+  have h2 : ((k₀ + (B - t k₀ + 1).toNat : ℕ) : ℤ) ≤ (k : ℤ) := by exact_mod_cast hk
+  push_cast at h2
+  omega
+
 /-- **Step 2 (unconditional).**  If `t_k = tr C^(3^k)` is prime and strictly increasing from some
 point on, then `v₃ |GL_n(𝔽_{t_k})| > k` for all large `k`. -/
 theorem lt_padicValNat_glCard {n : ℕ} (C : Matrix (Fin n) (Fin n) ℤ) (hdet : C.det ≠ 0)
@@ -151,24 +174,8 @@ theorem lt_padicValNat_glCard {n : ℕ} (C : Matrix (Fin n) (Fin n) ℤ) (hdet :
         have he : a + (d + 1) = (a + d) + 1 := by omega
         rw [he]; omega
   -- growth: the sequence increases by at least one per step
-  have growth : ∀ k, k₀ ≤ k → t k₀ + ((k : ℤ) - (k₀ : ℤ)) ≤ t k := by
-    intro k hk
-    induction k, hk using Nat.le_induction with
-    | base => simp
-    | succ k hk ih =>
-        have := hmono' k hk
-        push_cast
-        push_cast at ih
-        omega
-  have unbounded : ∀ B : ℤ, ∃ K, k₀ ≤ K ∧ ∀ k ≥ K, B < t k := by
-    intro B
-    refine ⟨k₀ + (B - t k₀ + 1).toNat, by omega, ?_⟩
-    intro k hk
-    have := growth k (by omega)
-    have h2 : ((k₀ + (B - t k₀ + 1).toNat : ℕ) : ℤ) ≤ (k : ℤ) := by exact_mod_cast hk
-    push_cast at h2
-    omega
-  obtain ⟨K, hK0, hKB⟩ := unbounded |C.det|
+  obtain ⟨K, hK0, hKB'⟩ := trace_eventually_gt C hmono |C.det|
+  have hKB : ∀ k ≥ K, |C.det| < t k := hKB'
   refine ⟨K, ?_⟩
   intro k hk
   have hk0 : k₀ ≤ k := le_trans hK0 hk
@@ -365,6 +372,64 @@ private lemma padicValNat_pow_sub_one_le {t s : ℕ} (ht : ¬ (3 ∣ t)) (ht2 : 
   omega
 
 end ThreeAdicValuation
+
+/-- **The `glCard` bound.**  If neither `t − 1` nor `t + 1` is divisible by `3 ^ e`, then
+`v₃ |GL_n(𝔽_t)|` is bounded by the constant `n * (2 * e + n)`. -/
+private lemma padicValNat_glCard_le {n t e : ℕ} (ht : ¬ (3 ∣ t)) (ht2 : 2 ≤ t)
+    (h1 : ¬ (3 ^ e ∣ (t - 1))) (h2 : ¬ (3 ^ e ∣ (t + 1))) :
+    padicValNat 3 (glCard n t) ≤ n * (2 * e + n) := by
+  haveI := fact_three
+  -- the 3-part of `t ^ 2 − 1`
+  have ht1 : 1 ≤ t - 1 := by omega
+  have hsq : t ^ 2 - 1 = (t - 1) * (t + 1) := by
+    have : t ^ 2 = (t - 1) * (t + 1) + 1 := by
+      obtain ⟨w, rfl⟩ : ∃ w, t = w + 2 := ⟨t - 2, by omega⟩
+      have hw : w + 2 - 1 = w + 1 := by omega
+      rw [hw]; ring
+    omega
+  have hv1 : padicValNat 3 (t - 1) < e := by
+    by_contra hc
+    exact h1 ((padicValNat_dvd_iff_le (by omega)).2 (by omega))
+  have hv2 : padicValNat 3 (t + 1) < e := by
+    by_contra hc
+    exact h2 ((padicValNat_dvd_iff_le (by omega)).2 (by omega))
+  have hsqv : padicValNat 3 (t ^ 2 - 1) ≤ 2 * e := by
+    rw [hsq, padicValNat.mul (by omega) (by omega)]
+    omega
+  -- each factor
+  have hfac : ∀ i : Fin n, padicValNat 3 (t ^ n - t ^ (i : ℕ)) ≤ 2 * e + n := by
+    intro i
+    obtain ⟨c, hc⟩ : ∃ c, n = (i : ℕ) + c := ⟨n - (i : ℕ), by omega⟩
+    have hc1 : 1 ≤ c := by have := i.isLt; omega
+    have hsplit : t ^ n - t ^ (i : ℕ) = t ^ (i : ℕ) * (t ^ c - 1) := by
+      rw [Nat.mul_sub, mul_one, ← pow_add, ← hc]
+    have hti : ¬ (3 ∣ t ^ (i : ℕ)) := by
+      intro h
+      exact ht (Nat.Prime.dvd_of_dvd_pow (by norm_num) h)
+    have htc : 1 ≤ t ^ c - 1 := by
+      have : t ^ 1 ≤ t ^ c := Nat.pow_le_pow_right (by omega) hc1
+      simp only [pow_one] at this
+      omega
+    rw [hsplit, padicValNat.mul (by positivity) (by omega),
+      padicValNat.eq_zero_of_not_dvd hti]
+    have hb := padicValNat_pow_sub_one_le ht ht2 hc1
+    have hlog : padicValNat 3 c ≤ n := by
+      refine le_trans (padicValNat_le_nat_log c) ?_
+      exact le_trans (Nat.log_le_self 3 c) (by omega)
+    omega
+  -- assemble the product
+  have hne : ∀ i ∈ (Finset.univ : Finset (Fin n)), t ^ n - t ^ (i : ℕ) ≠ 0 := by
+    intro i _
+    have : t ^ (i : ℕ) < t ^ n := Nat.pow_lt_pow_right (by omega) i.isLt
+    omega
+  have hprod : padicValNat 3 (glCard n t) = ∑ i : Fin n, padicValNat 3 (t ^ n - t ^ (i : ℕ)) := by
+    rw [glCard, ← Nat.factorization_def _ (by norm_num), Nat.factorization_prod hne,
+      Finset.sum_apply']
+    exact Finset.sum_congr rfl fun i _ => Nat.factorization_def _ (by norm_num)
+  rw [hprod]
+  calc ∑ i : Fin n, padicValNat 3 (t ^ n - t ^ (i : ℕ))
+      ≤ ∑ _i : Fin n, (2 * e + n) := Finset.sum_le_sum fun i _ => hfac i
+    _ = n * (2 * e + n) := by simp [mul_comm]
 
 /-- **Step 3.**  Under the Gauss congruence, a trace sequence `tr C^(3^k)` that is eventually prime
 and increasing converges to `±1` in `ℤ₃`. -/
