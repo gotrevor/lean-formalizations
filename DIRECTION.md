@@ -2,6 +2,19 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## ✅ DONE (phase 25, 2026-09-29, 1 lap): sharp-six repair + periods / zeta values
+
+**All ten frozen statements are PROVED and `#print axioms`-clean; `Periods.lean` is
+sorry-free.**  Nothing turned out false or underivable.  Three design points: the sharp form's
+conclusion `xᵢyⱼ = βᵢⱼ` collapses both six- and five-exponentials to `x₀y₀ = 0` vs. linear
+independence, so the phase-24 refutation of the *shifted* form really is repaired; the three
+zeta theorems (Apéry, ζ(5), Ball–Rivoal) are one lemma `irrational_zeta_odd` uniform in `k`,
+via mathlib's `riemannZeta_im_eq_zero_of_one_lt`; and `ζ(3)/π³` and `G/π²` are one lemma
+`transcendental_div_pi_pow`.  Route and gotchas: the file header.  `scripts/fact-graph` rerun
+(30 edges, 27 hypotheses).
+
+### original directive
+
 ## 🎯 THE OBJECTIVE (phase 25, 2026-09-29): sharp-six repair + periods / zeta values
 
 **Operator correction to the phase-24 handoff:** `SixExponentialsShifted` is NOT a dropped overbar.  The rendered survey page really says `ℚ`; the survey misprints the sharp six exponentials theorem, dropping the exceptional case `xᵢyⱼ = βᵢⱼ`.  The correct statement is now `Literature.SixExponentialsSharp` (Waldschmidt NCTS 2003 slide 23; Waldschmidt 2005 Thm 1.4), and it keeps `ℚ`-independence.  The ℚ̄ repair suggested in the handoff would NOT contain the six exponentials theorem, so do not use it.
