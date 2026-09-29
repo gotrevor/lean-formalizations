@@ -495,6 +495,151 @@ theorem strongFourExponentials_of_algIndepLogs (h : AlgIndepLogsConjecture) :
   have : (-1 : (algebraicClosure ℚ ℂ)) = 0 := by simpa using hzero 1
   exact absurd this (by simp)
 
+/-! ## Repairing the edge into `SixExponentials`
+
+`ExponentialsKnown.lean`'s header records that the only edge into `SixExponentials` from a
+"strong" hypothesis is `sixExponentials_of_strongOverQ`, whose hypothesis
+`StrongSixExponentialsOverQ` is *false* (`not_strongSixExponentialsOverQ` refutes it), so that
+edge is vacuous.  The correct strong statements ask for `ℚ̄`-linear independence while the four-
+and six-exponentials statements supply only `ℚ`-linear independence, and the gap is real: when
+`x` is `ℚ`-independent but `ℚ̄`-dependent we have `x₁ = c·x₀` with `c` algebraic irrational, and
+"all `exp (xᵢyⱼ)` algebraic" then says `exp ℓ` and `exp (c·ℓ)` are both algebraic for
+`ℓ = x₀y₀ ≠ 0`.  That is exactly Gelfond–Schneider, and no strong-exponentials hypothesis
+supplies it.  So the honest edge carries two hypotheses — and both are consequences of
+Conjecture 1, which is how `sixExponentials_of_algIndepLogs` discharges them.
+
+A second correction: the degenerate `y` case cannot be run against *strong six*, because a
+`ℚ̄`-dependent triple need not contain a `ℚ̄`-independent pair to feed back in.  Strong **four**
+is the right hypothesis — every pair of a `ℚ`-independent family is `ℚ`-independent, and if no
+pair of the `yⱼ` is `ℚ̄`-independent then they are all `ℚ̄`-multiples of `y₀`. -/
+
+/-- Conjecture 1 ⇒ Gelfond–Schneider in the branch-free complex form: `exp ℓ` and
+`exp (c·ℓ)` are not both algebraic for `ℓ ≠ 0` and `c` algebraic irrational. -/
+theorem not_isAlgebraic_exp_mul_of_algIndepLogs (h : AlgIndepLogsConjecture) {ℓ c : ℂ}
+    (hℓ : ℓ ≠ 0) (hc : IsAlgebraic ℚ c) (hcq : ∀ q : ℚ, c ≠ (q : ℂ))
+    (he : IsAlgebraic ℚ (Complex.exp ℓ)) : ¬ IsAlgebraic ℚ (Complex.exp (c * ℓ)) := by
+  intro hce
+  have hli : LinearIndependent ℚ ![ℓ, c * ℓ] := by
+    rw [LinearIndependent.pair_iff]
+    intro s t hst
+    simp only [Rat.smul_def] at hst
+    have hz : ((s : ℂ) + (t : ℂ) * c) * ℓ = 0 := by linear_combination hst
+    have hsum : (s : ℂ) + (t : ℂ) * c = 0 := (mul_eq_zero.1 hz).resolve_right hℓ
+    by_cases ht : t = 0
+    · subst ht
+      refine ⟨?_, rfl⟩
+      simpa using hsum
+    · refine absurd ?_ (hcq (-s / t))
+      have htc : ((t : ℚ) : ℂ) ≠ 0 := by exact_mod_cast ht
+      have hcv : c = -(s : ℂ) / (t : ℂ) := by field_simp; linear_combination hsum
+      rw [hcv]; push_cast; ring
+  have hind : AlgebraicIndependent ℚ ![ℓ, c * ℓ] := by
+    refine h 2 _ hli ?_
+    intro i; fin_cases i
+    · exact he
+    · exact hce
+  refine not_isAlgebraic_of_algebraicIndependent_pair hind ?_
+  exact isAlgebraic_mul_rat hc
+    (isAlgebraic_algebraMap (R := IntermediateField.adjoin ℚ ({ℓ} : Set ℂ)) (A := ℂ)
+      ⟨_, subset_adjoin _ _ rfl⟩)
+
+/-- A `ℚ̄`-linearly dependent pair with nonzero first entry has an algebraic ratio. -/
+theorem exists_algebraic_ratio {a b : ℂ} (ha : a ≠ 0)
+    (hdep : ¬ LinearIndependent (↥(integralClosure ℚ ℂ)) ![a, b]) :
+    ∃ c : ℂ, IsAlgebraic ℚ c ∧ b = c * a := by
+  rw [LinearIndependent.pair_iff] at hdep
+  push_neg at hdep
+  obtain ⟨s, t, hst, hne⟩ := hdep
+  simp only [Algebra.smul_def] at hst
+  have hstC : (s : ℂ) * a + (t : ℂ) * b = 0 := hst
+  have hsalg : IsAlgebraic ℚ ((s : ℂ)) := (s.2 : IsIntegral ℚ ((s : ℂ))).isAlgebraic
+  have htalg : IsAlgebraic ℚ ((t : ℂ)) := (t.2 : IsIntegral ℚ ((t : ℂ))).isAlgebraic
+  have ht0 : (t : ℂ) ≠ 0 := by
+    intro h0
+    have ht : t = 0 := Subtype.ext h0
+    have hs0 : s ≠ 0 := fun hs => (hne hs) ht
+    have hsa : (s : ℂ) * a = 0 := by linear_combination hstC - b * h0
+    rcases mul_eq_zero.1 hsa with hh | hh
+    · exact hs0 (Subtype.ext hh)
+    · exact ha hh
+  refine ⟨-(s : ℂ) / (t : ℂ), ?_, ?_⟩
+  · refine mem_algebraicClosure_iff.1 (div_mem (neg_mem ?_) ?_)
+    · exact mem_algebraicClosure_iff.2 hsalg
+    · exact mem_algebraicClosure_iff.2 htalg
+  · field_simp
+    linear_combination hstC
+
+/-- A logarithm of an algebraic number lies in `𝓛̃`. -/
+theorem mem_logAlgSpan_of_exp_isAlgebraic {z : ℂ} (h : IsAlgebraic ℚ (Complex.exp z)) :
+    z ∈ LogAlgSpan :=
+  ⟨1, ![0, 1], ![z],
+    by intro k; fin_cases k; exacts [isAlgebraic_zero, isAlgebraic_one],
+    by intro k; fin_cases k; simpa using h, by simp⟩
+
+/-- **The honest edge into four exponentials.**  Strong four exponentials alone does not give
+the `ℚ`-hypothesis form; the `ℚ̄`-degenerate cases need Gelfond–Schneider, as `hGS`. -/
+theorem fourExponentials_of_strongFour_of_gs
+    (h4 : StrongFourExponentialsConjecture)
+    (hGS : ∀ ℓ c : ℂ, ℓ ≠ 0 → IsAlgebraic ℚ c → (∀ q : ℚ, c ≠ (q : ℂ)) →
+      IsAlgebraic ℚ (Complex.exp ℓ) → ¬ IsAlgebraic ℚ (Complex.exp (c * ℓ))) :
+    FourExponentialsConjecture := by
+  classical
+  intro x y hx hy
+  by_contra hcon
+  simp only [Transcendental, not_exists, not_not] at hcon
+  have hx0 : x 0 ≠ 0 := hx.ne_zero 0
+  have hy0 : y 0 ≠ 0 := hy.ne_zero 0
+  have hl0 : x 0 * y 0 ≠ 0 := mul_ne_zero hx0 hy0
+  -- the two degenerate cases, both Gelfond–Schneider
+  have hdeg : ∀ (z : Fin 2 → ℂ) (c : ℂ), LinearIndependent ℚ z → IsAlgebraic ℚ c →
+      z 1 = c * z 0 → (∀ q : ℚ, c ≠ (q : ℂ)) := by
+    intro z c hz _ hzc q hq
+    refine absurd ?_ (by simpa using hz.ne_zero 0)
+    have := (LinearIndependent.pair_iff.1 (by
+      have he : ![z 0, z 1] = z := by funext i; fin_cases i <;> rfl
+      rw [he]; exact hz)) (-q) 1 (by
+        simp only [Rat.smul_def, hzc, hq]; push_cast; ring)
+    exact absurd this.2 (by simp)
+  by_cases hxK : LinearIndependent (↥(integralClosure ℚ ℂ)) x
+  · by_cases hyK : LinearIndependent (↥(integralClosure ℚ ℂ)) y
+    · obtain ⟨i, j, hmem⟩ := h4 x y hxK hyK
+      exact hmem (mem_logAlgSpan_of_exp_isAlgebraic (hcon i j))
+    · have hy' : ¬ LinearIndependent (↥(integralClosure ℚ ℂ)) ![y 0, y 1] := by
+        intro hc; refine hyK ?_
+        have he : ![y 0, y 1] = y := by funext i; fin_cases i <;> rfl
+        rwa [he] at hc
+      obtain ⟨c, hc, hce⟩ := exists_algebraic_ratio hy0 hy'
+      refine hGS (x 0 * y 0) c hl0 hc (hdeg y c hy hc hce) (hcon 0 0) ?_
+      have : c * (x 0 * y 0) = x 0 * y 1 := by rw [hce]; ring
+      rw [this]; exact hcon 0 1
+  · have hx' : ¬ LinearIndependent (↥(integralClosure ℚ ℂ)) ![x 0, x 1] := by
+      intro hc; refine hxK ?_
+      have he : ![x 0, x 1] = x := by funext i; fin_cases i <;> rfl
+      rwa [he] at hc
+    obtain ⟨c, hc, hce⟩ := exists_algebraic_ratio hx0 hx'
+    refine hGS (x 0 * y 0) c hl0 hc (hdeg x c hx hc hce) (hcon 0 0) ?_
+    have : c * (x 0 * y 0) = x 1 * y 0 := by rw [hce]; ring
+    rw [this]; exact hcon 1 0
+
+/-- Four exponentials ⇒ six exponentials: a pair of a `ℚ`-independent triple is
+`ℚ`-independent. -/
+theorem sixExponentials_of_fourExponentials (h4 : FourExponentialsConjecture) :
+    SixExponentials := by
+  intro x y hx hy
+  have hy2 : LinearIndependent ℚ ![y 0, y 1] := by
+    have he : ![y 0, y 1] = y ∘ ![0, 1] := by funext i; fin_cases i <;> rfl
+    rw [he]
+    exact hy.comp _ (by decide)
+  obtain ⟨i, j, htr⟩ := h4 x ![y 0, y 1] hx hy2
+  refine ⟨i, ![0, 1] j, ?_⟩
+  fin_cases j <;> simpa using htr
+
+/-- **Conjecture 1 ⇒ the six exponentials theorem**, along the repaired edge. -/
+theorem sixExponentials_of_algIndepLogs (h : AlgIndepLogsConjecture) : SixExponentials :=
+  sixExponentials_of_fourExponentials
+    (fourExponentials_of_strongFour_of_gs (strongFourExponentials_of_algIndepLogs h)
+      fun _ _ hℓ hc hcq he => not_isAlgebraic_exp_mul_of_algIndepLogs h hℓ hc hcq he)
+
 set_option maxHeartbeats 1000000 in
 /-- **Conjecture 1 ⇒ Roy's strong six exponentials theorem.**  A by-product of phase 24: the
 phase-17 proof `StrongSix.strongSix` uses `hS` in exactly one place, to make the logarithm basis

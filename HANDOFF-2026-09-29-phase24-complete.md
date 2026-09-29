@@ -53,3 +53,27 @@ not just four) is a one-line new edge that the graph should carry.
 `hS : SchanuelConjecture` in exactly one place — `algebraicIndependent_of_exp_isAlgebraic hS μ
 hμli hμexp`, which is `AlgIndepLogsConjecture` applied verbatim — so the whole of Roy's theorem
 rests on the weaker hypothesis.  Axiom-clean.  The fact graph carries the edge.
+
+## Addendum 2: the vacuous `SixExponentials` edge, repaired
+
+`ExponentialsKnown.lean`'s header flags that the only "strong ⇒ six exponentials" edge in the
+repo, `sixExponentials_of_strongOverQ`, has a hypothesis machine-refuted as FALSE
+(`not_strongSixExponentialsOverQ`), so the edge is vacuous.  It is now replaced by a real one.
+
+Two things had to be got right, and both are recorded as theorems rather than prose:
+
+1. **Strong four exponentials does not imply four exponentials.**  The strong forms hypothesise
+   `ℚ̄`-linear independence; the four/six exponentials statements supply only `ℚ`-linear
+   independence.  When `x` is `ℚ`-independent but `ℚ̄`-dependent, `x₁ = c·x₀` with `c` algebraic
+   irrational, and "all `exp (xᵢyⱼ)` algebraic" says `exp ℓ` and `exp (c·ℓ)` are both algebraic
+   at `ℓ = x₀y₀ ≠ 0` — Gelfond–Schneider, which no strong-exponentials hypothesis supplies.
+   Hence `fourExponentials_of_strongFour_of_gs` carries `hGS` as a second hypothesis.
+2. **Strong SIX is the wrong hypothesis for this repair.**  The degenerate `y` case cannot be
+   fed back to strong six: a `ℚ̄`-dependent triple need not contain a `ℚ̄`-independent pair.
+   Strong four is the right input — if no pair of the `yⱼ` is `ℚ̄`-independent then they are all
+   `ℚ̄`-multiples of `y₀`, which is again the Gelfond–Schneider case.
+
+`sixExponentials_of_algIndepLogs` then discharges both hypotheses from Conjecture 1
+(`strongFourExponentials_of_algIndepLogs` and `not_isAlgebraic_exp_mul_of_algIndepLogs`, the
+branch-free complex Gelfond–Schneider).  Axiom-clean.  New leaves: `exists_algebraic_ratio`,
+`mem_logAlgSpan_of_exp_isAlgebraic`, `sixExponentials_of_fourExponentials`.

@@ -13,35 +13,38 @@ graph LR
   n0["AlgIndepLogsConjecture"] --> n2["BakerHomogeneous"]
   n0["AlgIndepLogsConjecture"] --> n3["FourExponentialsConjecture"]
   n0["AlgIndepLogsConjecture"] --> n4["GelfondSchneider1934"]
-  n0["AlgIndepLogsConjecture"] --> n5["StrongFourExponentialsConjecture"]
-  n0["AlgIndepLogsConjecture"] --> n6["StrongSixExponentials"]
-  n1["Baker1966"] --> n7["ExponentialsKnown.BakerTwoLogs"]
-  n1["Baker1966"] --> n8["FiveExponentials"]
-  n7["ExponentialsKnown.BakerTwoLogs"] --> n8["FiveExponentials"]
-  n9["Ridout1957"] --> n10["Mahler1957"]
-  n9["Ridout1957"] --> n11["Ridout1957SUnitDen"]
-  n12["Ridout1958"] --> n13["Roth1955"]
-  n14["SchanuelConjecture"] --> n0["AlgIndepLogsConjecture"]
-  n14["SchanuelConjecture"] --> n7["ExponentialsKnown.BakerTwoLogs"]
-  n14["SchanuelConjecture"] --> n8["FiveExponentials"]
-  n14["SchanuelConjecture"] --> n3["FourExponentialsConjecture"]
-  n14["SchanuelConjecture"] --> n4["GelfondSchneider1934"]
-  n14["SchanuelConjecture"] --> n15["LindemannWeierstrassAlgIndep"]
-  n14["SchanuelConjecture"] --> n6["StrongSixExponentials"]
-  n16["SixExponentialsShifted"] --> n8["FiveExponentials"]
-  n16["SixExponentialsShifted"] --> n17["SixExponentials"]
-  n18["Stephan2026Ridout"] --> n10["Mahler1957"]
-  n18["Stephan2026Ridout"] --> n11["Ridout1957SUnitDen"]
-  n18["Stephan2026Ridout"] --> n13["Roth1955"]
-  n19["StrongSixExponentialsOverQ"] --> n17["SixExponentials"]
+  n0["AlgIndepLogsConjecture"] --> n5["SixExponentials"]
+  n0["AlgIndepLogsConjecture"] --> n6["StrongFourExponentialsConjecture"]
+  n0["AlgIndepLogsConjecture"] --> n7["StrongSixExponentials"]
+  n1["Baker1966"] --> n8["ExponentialsKnown.BakerTwoLogs"]
+  n1["Baker1966"] --> n9["FiveExponentials"]
+  n8["ExponentialsKnown.BakerTwoLogs"] --> n9["FiveExponentials"]
+  n3["FourExponentialsConjecture"] --> n5["SixExponentials"]
+  n10["Ridout1957"] --> n11["Mahler1957"]
+  n10["Ridout1957"] --> n12["Ridout1957SUnitDen"]
+  n13["Ridout1958"] --> n14["Roth1955"]
+  n15["SchanuelConjecture"] --> n0["AlgIndepLogsConjecture"]
+  n15["SchanuelConjecture"] --> n8["ExponentialsKnown.BakerTwoLogs"]
+  n15["SchanuelConjecture"] --> n9["FiveExponentials"]
+  n15["SchanuelConjecture"] --> n3["FourExponentialsConjecture"]
+  n15["SchanuelConjecture"] --> n4["GelfondSchneider1934"]
+  n15["SchanuelConjecture"] --> n16["LindemannWeierstrassAlgIndep"]
+  n15["SchanuelConjecture"] --> n7["StrongSixExponentials"]
+  n17["SixExponentialsShifted"] --> n9["FiveExponentials"]
+  n17["SixExponentialsShifted"] --> n5["SixExponentials"]
+  n18["Stephan2026Ridout"] --> n11["Mahler1957"]
+  n18["Stephan2026Ridout"] --> n12["Ridout1957SUnitDen"]
+  n18["Stephan2026Ridout"] --> n14["Roth1955"]
+  n6["StrongFourExponentialsConjecture"] --> n3["FourExponentialsConjecture"]
+  n19["StrongSixExponentialsOverQ"] --> n5["SixExponentials"]
 ```
 
 | Hypothesis | Status | Theorems resting on it |
 |---|---|---|
 | `SchanuelConjecture` | 🔮 conjecture | 50 |
 | `BakerHarmanPintz2001` | 📚 theorem | 17 |
+| `AlgIndepLogsConjecture` | 🔮 conjecture | 13 |
 | `Matomaki2007` | 📚 theorem | 13 |
-| `AlgIndepLogsConjecture` | 🔮 conjecture | 11 |
 | `LindemannWeierstrassAlgIndep` | 📚 theorem | 11 |
 | `Dubickas2022PisotGap` | 📚 theorem | 8 |
 | `Schoenfeld1976` | 📚 theorem | 8 |
@@ -49,10 +52,10 @@ graph LR
 | `Dubickas2022` | 📚 theorem | 7 |
 | `Stephan2026Ridout` | 📚 theorem | 6 |
 | `Nesterenko1996` | 📚 theorem | 6 |
+| `FourExponentialsConjecture` | 🔮 conjecture | 5 |
 | `Ridout1957` | 📚 theorem | 4 |
 | `SixExponentialsShifted` | 📚 theorem | 4 |
 | `SixExponentials` | 📚 theorem | 4 |
-| `FourExponentialsConjecture` | 🔮 conjecture | 4 |
 | `BakerHomogeneous` | 📚 theorem | 3 |
 | `Baker1966` | 📚 theorem | 2 |
 | `GelfondSchneider1934` | 📚 theorem | 2 |
@@ -61,10 +64,11 @@ graph LR
 | `Ridout1958` | 📚 theorem | 1 |
 | `ExponentialsKnown.BakerTwoLogs` | 📚 theorem | 1 |
 | `StrongSixExponentialsOverQ` | ❌ refuted | 1 |
+| `StrongFourExponentialsConjecture` | 🔮 conjecture | 1 |
 | `Roth1955` | 📚 theorem | 1 |
 | `Mahler1957` | 📚 theorem | 1 |
 
-Unconditional theorems in the scanned namespaces (no named hypothesis): 313.
+Unconditional theorems in the scanned namespaces (no named hypothesis): 315.
 
 ## Refuted
 
