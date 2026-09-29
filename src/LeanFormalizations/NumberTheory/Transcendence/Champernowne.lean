@@ -21,10 +21,30 @@ Let `N = L(10^{k−1} − 1)` be the number of digits used by the `(k−1)`-digi
 is `16.2, 15.0, 13.4` for `k = 2, 3, 4`, decreasing to Amou's irrationality measure `10` (1991).
 Anything above `2 + δ` for infinitely many distinct `p_k/q_k` contradicts `Roth1955`.
 
-Leaves: the tail identity (a finite geometric-arithmetic sum plus a tail bound), the denominator
-bound, the error bound `|C − p_k/q_k| ≤ q_k^{−3}` (say) for `k ≥ 2`, and distinctness of the
-`p_k/q_k`.  Note that Roth's set uses `r.den` in lowest terms, which is at most `q_k`, so the
-bound only improves.  Normality of `C₁₀` belongs in `normal-numbers`.
+## Result (phase 18): all four statements are PROVED and axiom-clean.
+
+The route walked, with `m := k − 1` so the block is the `(m+1)`-digit numbers, `a = 10^m`,
+`T = 10^{m+1}`, `B = 9·10^m`, `N = blockStart m = digitsUpTo (10^m − 1)`:
+
+* `digitsUpTo_block` — inside the block, `digitsUpTo (10^m + j) = N + (m+1)(j+1)`; hence
+  `blockStart_succ : N_{m+1} = N_m + (m+1)·9·10^m`.
+* `cterm_succ_lt : cterm (n+1) < 10^{−digitsUpTo n}` — the single estimate behind summability
+  and every tail bound (`n < 10^{len n}`).
+* `champApprox m = champNum m / champDen m` with `champDen m = 10^N (T−1)²`, where
+  `champNum` reuses `prefixNum` (the integer `123…K`) via `cpartial_eq`.
+* `champ_sub_approx` — the master identity `C − p_m/q_m = ctail (T−1) − gtail m`.
+* Bounds: `10^{−N_{m+1}} ≤ gtail m ≤ 2·10^{−N_{m+1}}` and `ctail (T−1) ≤ (1/5)·10^{−N_{m+1}}`.
+  The gap between the two leading terms (`10^{−N_{m+1}}` vs `10^{−N_{m+1}−1}`) is what makes
+  `C − p_m/q_m` *strictly negative*, which is where both irrationality and injectivity come from.
+* `champ_exponent : 3·(N_m + 2m + 2) + 1 ≤ N_{m+1}` (using `blockStart m ≤ m·10^m`) — the
+  quantitative heart; `δ = 1` in Roth, with room to spare (the true exponent tends to Amou's `10`).
+* Irrationality is *not* imported: if `C = q` then `|q − p_m/q_m| ≥ 1/(q.den·champDen m)` because
+  `(q − p_m/q_m)·q.den·champDen m` is a nonzero integer; taking `m = q.den` contradicts the
+  upper bound.  Roth needs `Irrational`, so this had to be proved first.
+* `champApprox` is injective (a repeat would force `4/5 ≤ 1/5`), so `Set.range champApprox` is
+  an infinite subset of Roth's finite exceptional set.
+
+Normality of `C₁₀` belongs in `normal-numbers`.
 
 Frozen: the statements below, every earlier name, all of `Literature/`.
 -/
@@ -661,7 +681,37 @@ theorem irrational_champernowne : Irrational champernowne := by
 /-- Sanity anchor for the definition: the first eleven digits are `12345678910`. -/
 theorem champernowne_prefix :
     ⌊champernowne * 10 ^ 11⌋ = 12345678910 := by
-  sorry
+  have hd10 : digitsUpTo 10 = 11 := by decide
+  have hd11 : digitsUpTo 11 = 13 := by decide
+  have hp10 : prefixNum 10 = 12345678910 := by decide
+  have hpart : cpartial 10 = 12345678910 / (10:ℝ) ^ 11 := by
+    rw [cpartial_eq, hd10, hp10]; norm_num
+  have hterm : cterm 11 = 11 / (10:ℝ) ^ 13 := by
+    unfold cterm; rw [hd11]; norm_num
+  have htail11 : ctail 11 ≤ (10/9) * (1 / (10:ℝ) ^ 13) := by
+    have := ctail_le 11; rwa [hd11] at this
+  have hsucc : ctail 10 = cterm 11 + ctail 11 := ctail_succ 10
+  have hpos : 0 < ctail 10 := ctail_pos 10
+  have hlt : ctail 10 < 1 / (10:ℝ) ^ 11 := by
+    rw [hsucc, hterm]
+    have : (10/9 : ℝ) * (1 / (10:ℝ) ^ 13) = 10 / (9 * 10 ^ 13) := by ring
+    norm_num at htail11 ⊢
+    linarith
+  have hsplit := champ_split 10
+  rw [hpart] at hsplit
+  have hb : (0:ℝ) < (10:ℝ) ^ 11 := by positivity
+  rw [Int.floor_eq_iff]
+  constructor
+  · rw [hsplit]
+    push_cast
+    nlinarith [hpos, hb]
+  · rw [hsplit]
+    push_cast
+    rw [add_mul, div_mul_cancel₀ _ (ne_of_gt hb)]
+    have : ctail 10 * (10:ℝ) ^ 11 < 1 := by
+      rw [← lt_div_iff₀ hb] at *
+      linarith [hlt]
+    linarith
 
 /-- **Mahler (1937)**: Champernowne's constant is transcendental, from Roth's theorem. -/
 theorem transcendental_champernowne (hR : Roth1955) : Transcendental ℚ champernowne := by

@@ -2,7 +2,15 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 THE OBJECTIVE (phase 18, 2026-09-29): Champernowne's constant is transcendental, via Roth
+## ✅ DONE (phase 18, 2026-09-29, 1 lap): Champernowne's constant is transcendental, via Roth
+
+**All four frozen statements are PROVED and `#print axioms`-clean; `Champernowne.lean` is
+sorry-free.**  `irrational_champernowne` is unconditional and was proved from the *same* block
+approximations (Roth needs `Irrational`, so it could not be assumed).  The numeric exponent check
+held: `δ = 1` works with room to spare.  Route, leaf names and the strictness trick that makes the
+whole thing go: the file header and `HANDOFF-2026-09-29-phase18-complete.md`.
+
+### original directive
 
 Planted: `NumberTheory/Transcendence/Champernowne.lean` (route + leaves in header; `scripts/champernowne-approx.py` checks the exponents).  Frozen: `champernowne_prefix`, `irrational_champernowne`, `transcendental_champernowne`, `transcendental_champernowne_of_stephan`, the two defs.  Stop condition: that file sorry-free.  Mahler 1937.  The run of consecutive k-digit integers is a small-denominator rational (≈ (10^k−1)²), which gives approximations far better than q^(−2−ε); then apply `roth1955_of_stephan`.  Check the approximation exponent numerically before freezing statements.  Normality of Champernowne belongs in normal-numbers.  After it, continue working through Waldschmidt 2023 statement by statement (theorems → Literature, conjectures → hypothesis Props, derived implications → proofs).
 
