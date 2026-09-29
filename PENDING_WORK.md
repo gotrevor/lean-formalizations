@@ -1669,3 +1669,19 @@ remain, and both are bookkeeping-or-Baker, not construction:
 
 **Next leaf**: gap (1) — `leopoldt_of_unique_level` in terms of `a`, i.e. replace the split-form
 hypothesis by `∀ i, a i ≠ 0 → (unique leading level)`.  Then gap (2) as `Literature/Brumer.lean`.
+
+---
+
+## ⚠️ Operator note on the phase-28 "tie" (2026-09-29, Ren)
+
+The phase-28 handoff proposes importing Brumer (the p-adic Baker theorem) as `Literature/Brumer.lean` to close the rank ≥ 2 tie.  **That does not close general Leopoldt.**
+- Brumer (1967) gives `ℚ̄`-linear independence of `ℚ`-independent p-adic logarithms of algebraic numbers, i.e. linear forms with *algebraic* coefficients.
+- Leopoldt's kernel condition is a linear form with arbitrary `ℤ_p` coefficients `a`.
+- In the abelian case the p-adic regulator factors (a Frobenius group determinant) into forms with algebraic coefficients, which is Ax's 1965 reduction.  That is the *only* reason Brumer proves the abelian case.
+- So the tie at rank ≥ 2 **is** the open conjecture.  A `Literature/Brumer.lean` would give general rank-≥2 Leopoldt only via a false implication.
+
+What is honest and tractable:
+- **Specific (K, p) instances by certificate.**  Leopoldt at a given `(K, p)` is certified by a finite computation: choose a unit basis whose local images have *separated* leading levels after a unimodular change of basis, then apply `false_of_unique_leading_level`.  A rank-2 instance, e.g. `ℚ(ζ₇)` or a totally real cubic at a small prime, is a finite, checkable test.
+- **The abelian theorem** as a Literature statement (Ax 1965 + Brumer 1967: Leopoldt holds for abelian `K/ℚ`), stated directly, with no fake derivation through the tie.
+
+Status: statement validated nontrivially (`leopoldt_of_rank_le_one`, all K, all p).  Leopoldt work is paused here pending Trevor's call.
