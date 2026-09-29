@@ -2,6 +2,12 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 20, 2026-09-29): Waldschmidt 2023 §5, rank of matrices of logarithms
+
+Target `NumberTheory/Transcendence/StructuralRank.lean` (header has the routes), 4 frozen statements: rk ≤ r_str; Conj 1 ⇒ rk = r_str; six exp ⇒ (r_str ≥ 3 ⇒ rk ≥ 2); structural-rank sanity example.  Definitions are in `Literature/StructuralRank.lean` (Definition 1 read off the rendered page).  If a definition turns out unfaithful or a statement false, record the counterexample; that is an advance.  Frozen: the four, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.
+
+---
+
 ## ✅ DONE (phase 19, 2026-09-29, 1 lap): Waldschmidt 2023, Conjecture 1 and its derivations
 
 All five frozen statements are PROVED and `#print axioms`-clean; `Waldschmidt2023.lean` is
@@ -13,7 +19,7 @@ Leopoldt §2, the structural-rank §5, and Conj 7 (Roy's equivalent of Schanuel)
 
 ### original directive
 
-## 🎯 THE OBJECTIVE (phase 19, 2026-09-29): Waldschmidt 2023, Conjecture 1 and its derivations
+## ✅ DONE (phase 19, 2026-09-29, `99f8e17`): Waldschmidt 2023, Conjecture 1 and its derivations
 
 Coverage map: `WALDSCHMIDT-2023.md`.  Target `NumberTheory/Transcendence/Waldschmidt2023.lean`, 5 frozen statements: Schanuel ⇒ Conj 1; Conj 1 ⇒ four exponentials (the survey's route, separate from phase 16's); Conj 1 ⇒ Baker homogeneous; Conj 1 ⇒ `log 2, π` algebraically independent; Conj 1 at `n = 1` from Lindemann–Weierstrass.  Inputs are `Literature/Waldschmidt2023.lean` plus the phase 15–17 toolkit.  Frozen: the five, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.
 
