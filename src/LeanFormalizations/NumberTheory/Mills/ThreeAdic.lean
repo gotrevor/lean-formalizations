@@ -609,13 +609,112 @@ lemma companion3_trace_pow {a b c : ℤ} {x y z : ℂ}
 
 end Companion
 
+/-- **Vieta for a cubic Pisot number.**  The minimal polynomial of `β` over `ℤ` is
+`X³ + aX² + bX + c`, whose complex roots are `β, u, v`.
+
+TODO: proved next lap.  Route: `minpoly.isIntegrallyClosed_eq_field_fractions'` puts the minimal
+polynomial over `ℤ`; it is monic of degree 3 and splits over `ℂ` with root multiset
+`β ::ₘ otherConj β = {β, u, v}` (`card_otherConj_add_one`), so
+`eq_prod_roots_of_monic_of_splits_id` expands it as `(X − β)(X − u)(X − v)` and the coefficients
+give the three relations.  `c ≠ 0` because an irreducible cubic has nonzero constant term. -/
+private lemma exists_vieta_of_cubic_pisot {β : ℝ} (hP : IsPisot β)
+    (h3 : (minpoly ℚ β).natDegree = 3) {u v : ℂ} (huv : otherConj β = {u, v}) :
+    ∃ a b c : ℤ, c ≠ 0 ∧ (β : ℂ) + u + v = -(a : ℂ) ∧
+      (β : ℂ) * u + (β : ℂ) * v + u * v = (b : ℂ) ∧ (β : ℂ) * u * v = -(c : ℂ) := by
+  sorry
+
 /-- **Step 4: if the least Mills constant is algebraic, its primes tend to `±1` in `ℤ₃`.** -/
 theorem mills_threeAdic (hGc : GaussCongruenceTrace)
     (hB : BakerHarmanPintz2001) (hM : Matomaki2007) (hD : Dubickas2022)
     (hG : Dubickas2022PisotGap) {A : ℝ} (hA : IsMinMills A) (halg : IsAlgebraic ℚ A) :
     ∀ e : ℕ, ∃ K, ∀ k ≥ K,
       (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ 1 [ZMOD 3 ^ e] ∨ (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ -1 [ZMOD 3 ^ e] := by
-  sorry
+  obtain ⟨⟨hA1, hAm⟩, hmin⟩ := hA
+  have hA : IsMinMills A := ⟨⟨hA1, hAm⟩, hmin⟩
+  -- Saito's dichotomy; the transcendental branch contradicts `halg`
+  rcases transcendental_or_pisot hB hM hD hG hA with htr | ⟨m, hm, hP, h3⟩
+  · exact absurd halg htr
+  set β : ℝ := A ^ ((3:ℕ) ^ m) with hβdef
+  have hint : IsIntegral ℚ β := hP.2.1.tower_top
+  -- the two other conjugates
+  have hc2 : Multiset.card (otherConj β) = 2 := by
+    have := card_otherConj_add_one hint; omega
+  obtain ⟨u, v, huv⟩ := Multiset.card_eq_two.1 hc2
+  obtain ⟨a, b, c, hcne, hvi1, hvi2, hvi3⟩ := exists_vieta_of_cubic_pisot hP h3 huv
+  obtain ⟨C, hCdef⟩ : ∃ C, C = companion3 a b c := ⟨_, rfl⟩
+  have hdet : C.det ≠ 0 := by rw [hCdef, companion3_det]; omega
+  have htrace : ∀ N : ℕ, (((C ^ N).trace : ℤ) : ℂ) = (β : ℂ) ^ N + u ^ N + v ^ N := by
+    intro N; rw [hCdef]; exact companion3_trace_pow hvi1 hvi2 hvi3 N
+  -- the Mills digit facts
+  have h36 := saito_lemma36C (c := 3) hB hM (by norm_num) hA
+  have hμ0 : (0:ℝ) < (19 * ((3:ℕ):ℝ)) / 40 - 1 := by norm_num
+  have hK0 : (0:ℝ) < (2:ℝ) ^ ((19 * ((3:ℕ):ℝ)) / 40) := Real.rpow_pos_of_pos (by norm_num) _
+  have hfrac : ∀ᶠ k : ℕ in atTop, A ^ ((3:ℕ) ^ k) - (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℝ) < 1 / 2 := by
+    filter_upwards [decay_of_lemma36C (c := 3) (by norm_num) hA1 hAm h36,
+      eventually_rpow_neg_lt (c := 3) hA1 (by norm_num) hμ0 hK0 (by norm_num : (0:ℝ) < 1 / 2)]
+      with k hk hk2
+    exact lt_of_le_of_lt hk.2 hk2
+  have hcube : ∀ k : ℕ, 1 ≤ k → (⌊A ^ ((3:ℕ) ^ k)⌋₊) ^ 3 < ⌊A ^ ((3:ℕ) ^ (k + 1))⌋₊ := by
+    intro k hk
+    obtain ⟨j, rfl⟩ : ∃ j, k = j + 1 := ⟨k - 1, by omega⟩
+    exact mdigitC_pow_lt (c := 3) (by norm_num) hA1 hAm j
+  -- the eventually negative conjugate power sum
+  obtain ⟨i₀, hi₀⟩ := pair_pow_sum_re_neg hA1 hP huv hcube hfrac hm
+  -- identify `tr C^(3^i)` with the Mills prime `⌊A^(3^(m+i))⌋₊`
+  have hfloor : ∀ i ≥ i₀, ((C ^ ((3:ℕ) ^ i)).trace : ℤ) = (⌊A ^ ((3:ℕ) ^ (m + i))⌋₊ : ℤ) := by
+    intro i hi
+    obtain ⟨σ, hsu, hσneg, hσabs, hA2, -⟩ := hi₀ i hi
+    have hbeta : (β : ℝ) ^ ((3:ℕ) ^ i) = A ^ ((3:ℕ) ^ (m + i)) := by
+      rw [hβdef, ← pow_mul, ← pow_add]
+    have hreal : (((C ^ ((3:ℕ) ^ i)).trace : ℤ) : ℝ) = A ^ ((3:ℕ) ^ (m + i)) + σ := by
+      have h := htrace ((3:ℕ) ^ i)
+      rw [add_assoc, hsu] at h
+      have h2 : (((C ^ ((3:ℕ) ^ i)).trace : ℤ) : ℂ) =
+          (((A ^ ((3:ℕ) ^ (m + i)) + σ : ℝ)) : ℂ) := by
+        rw [h, ← hbeta]
+        push_cast
+        ring
+      exact_mod_cast h2
+    -- `σ ∈ (−1/2, 0)`, so the floor of `A^(3^(m+i))` is the trace
+    have hTpos : (0:ℝ) < ((C ^ ((3:ℕ) ^ i)).trace : ℤ) := by
+      rw [hreal]
+      have : |σ| < 1 / 2 := hσabs
+      have := abs_lt.1 this
+      linarith
+    obtain ⟨T, hT⟩ : ∃ T : ℕ, (T : ℤ) = ((C ^ ((3:ℕ) ^ i)).trace : ℤ) :=
+      ⟨((C ^ ((3:ℕ) ^ i)).trace).toNat, Int.toNat_of_nonneg (by exact_mod_cast hTpos.le)⟩
+    have hTr : (T : ℝ) = A ^ ((3:ℕ) ^ (m + i)) + σ := by
+      rw [← hreal]; exact_mod_cast congrArg (fun z : ℤ => (z : ℝ)) hT
+    have habs := abs_lt.1 hσabs
+    have hfl : ⌊A ^ ((3:ℕ) ^ (m + i))⌋₊ = T := by
+      rw [Nat.floor_eq_iff (by positivity)]
+      constructor <;> [linarith; linarith]
+    rw [hfl, ← hT]
+  -- primality and monotonicity of the trace sequence
+  have hprime : ∀ k ≥ i₀, Prime ((C ^ ((3:ℕ) ^ k)).trace) := by
+    intro k hk
+    rw [hfloor k hk]
+    have : Prime ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ := hAm ⟨m + k, by omega⟩
+    exact_mod_cast Nat.prime_iff_prime_int.1 (Nat.prime_iff.2 this)
+  have hmono : ∀ k ≥ i₀, (C ^ ((3:ℕ) ^ k)).trace < (C ^ ((3:ℕ) ^ (k + 1))).trace := by
+    intro k hk
+    rw [hfloor k hk, hfloor (k + 1) (by omega)]
+    have hcu := hcube (m + k) (by omega)
+    have hk2 : 2 ≤ ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ := (Nat.prime_iff.2 (hAm ⟨m + k, by omega⟩)).two_le
+    have hmk : m + (k + 1) = (m + k) + 1 := by omega
+    rw [hmk]
+    have : ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ < ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ ^ 3 := by
+      calc ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ = ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ ^ 1 := (pow_one _).symm
+        _ < ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ ^ 3 := Nat.pow_lt_pow_right (by omega) (by omega)
+    exact_mod_cast lt_trans this hcu
+  -- apply step 3
+  intro e
+  obtain ⟨K, hK⟩ := threeAdic_pm_one hGc C hdet hprime hmono e
+  refine ⟨m + max K i₀, fun k hk => ?_⟩
+  obtain ⟨i, rfl⟩ : ∃ i, k = m + i := ⟨k - m, by omega⟩
+  have hi : i ≥ max K i₀ := by omega
+  have := hK i (by omega)
+  rwa [hfloor i (by omega)] at this
 
 /-- **Step 5.**  If for some `e` infinitely many Mills primes avoid `±1 mod 3^e`, the least Mills
 constant is transcendental. -/
@@ -625,6 +724,12 @@ theorem transcendental_of_not_pm_one (hGc : GaussCongruenceTrace)
     (h : ∃ᶠ k in atTop, ¬ ((⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ 1 [ZMOD 3 ^ e] ∨
       (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ -1 [ZMOD 3 ^ e])) :
     Transcendental ℚ A := by
-  sorry
+  by_contra hc
+  rw [Transcendental, not_not] at hc
+  obtain ⟨K, hK⟩ := mills_threeAdic hGc hB hM hD hG hA hc e
+  have hev : ∀ᶠ k : ℕ in atTop, ((⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ 1 [ZMOD 3 ^ e] ∨
+      (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ -1 [ZMOD 3 ^ e]) := eventually_atTop.2 ⟨K, hK⟩
+  obtain ⟨k, hk1, hk2⟩ := (h.and_eventually hev).exists
+  exact hk1 hk2
 
 end LeanFormalizations.Mills.ThreeAdic
