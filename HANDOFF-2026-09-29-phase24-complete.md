@@ -167,3 +167,32 @@ The failure mode is specific to statements *about* `𝓛̃` — the "strong" and
 where the source writes `ℚ̄` and the plain statements write `ℚ`.  Both instances lived in
 `ExponentialsKnown.lean` and are now refuted in the kernel
 (`not_strongSixExponentialsOverQ`, `not_sixExponentialsShifted`).
+
+## Addendum 6: a hard limit on the rank consequence of Conjecture 1
+
+`StructuralRank.rank_eq_structRank_of_algIndepLogs` gives `rk M = r_str,ℚ(M)` from Conjecture 1
+for matrices of **logarithms**.  The natural next question — does it extend to entries in `𝓛̃`,
+where the strong exponentials statements live and where Roy's conjecture is usually posed? —
+has answer **no**, and the obstruction is *unconditional*.  `not_rank_eq_structRank_of_mem_logAlgSpan`
+is the kernel-checked refutation, so this is a wall, not an open problem.
+
+The witness contains no logarithm at all.  `𝓛̃ ⊇ ℚ̄`, and algebraic numbers are `ℚ`-linearly
+rich:
+
+* `M = !![1, √2; √2, 2] = (1, √2)ᵀ(1, √2)` has rank `1` (`rank_sqrt_two_example`);
+* a `ℚ`-basis of the span of its entries is `(1, √2)`, so the generic matrix is
+  `!![X₀, X₁; X₁, 2X₀]`, of determinant `2X₀² − X₁² ≠ 0`, giving `r_str,ℚ(M) = 2`
+  (`structRank_sqrt_two_example`).
+
+So `IsLogMatrix` (entries are logarithms, not members of `𝓛̃`) is **sharp** in the frozen
+statement, and Definition 1's `K = ℚ` is load-bearing: over `𝓛̃` the structural rank has to be
+taken over `ℚ̄`, because `ℚ̄`-scalars are invisible to a `ℚ`-basis.  For `2×2` matrices the
+correct `ℚ̄`-statement is exactly `strongFourExponentials_of_algIndepLogs`, via
+`AffTwo.constRatioTwo`.
+
+This also records why the *converse* half of Roy's equivalence (rank conjecture ⇒ Conjecture 1)
+was not attempted this lap: the determinantal route needs matrices of affine-linear forms
+(Valiant), whose constant entries are not logarithms — `exp c` is transcendental for rational
+`c ≠ 0` — so it cannot be run against `IsLogMatrix`, and the `𝓛̃` version where constants are
+available is the one just refuted for `K = ℚ`.  A correct converse would need `r_str` over `ℚ̄`,
+which the frozen `IsStructRank` does not provide.

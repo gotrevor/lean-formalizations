@@ -51,6 +51,7 @@ Frozen: the statements below, every earlier name, all of `Literature/`.
 import LeanFormalizations.NumberTheory.Transcendence.Waldschmidt2023
 import LeanFormalizations.NumberTheory.Transcendence.Exponentials
 import LeanFormalizations.NumberTheory.Transcendence.StrongSix
+import LeanFormalizations.NumberTheory.Transcendence.StructuralRank
 
 namespace LeanFormalizations.Waldschmidt2023
 
@@ -948,5 +949,115 @@ theorem sixExponentialsShifted_bar_of_algIndepLogs (h : AlgIndepLogsConjecture)
   have hxy : x i * y j = β i j + (x i * y j - β i j) := by ring
   rw [hxy]
   exact mem_logAlgSpan_add (hβ i j) (hcon i j)
+
+/-! ## How far the rank consequence of Conjecture 1 reaches — a hard limit
+
+`StructuralRank.rank_eq_structRank_of_algIndepLogs` derives `rk M = r_str,ℚ(M)` from
+Conjecture 1 for matrices whose entries are **logarithms** of algebraic numbers.  The obvious
+next question is whether it extends to entries in `𝓛̃` (which is where the strong exponentials
+statements live, and where Roy's conjecture is usually posed).  **It does not**, and the
+obstruction is unconditional — no conjecture is involved, so this is a wall rather than an open
+problem.
+
+The witness needs no logarithm at all.  `𝓛̃ ⊇ ℚ̄`, and algebraic numbers are `ℚ`-linearly rich:
+
+  `M = !![1, √2; √2, 2] = (1, √2)ᵀ (1, √2)`
+
+has rank `1`, while a `ℚ`-basis of the span of its entries is `(1, √2)`, giving the generic
+matrix `!![X₀, X₁; X₁, 2X₀]` of determinant `2X₀² − X₁² ≠ 0`, so `r_str,ℚ(M) = 2`.
+
+This is exactly why `Literature/StructuralRank.lean`'s `IsLogMatrix` asks for entries that are
+logarithms rather than members of `𝓛̃`, and why Definition 1 fixes `K = ℚ`: over `𝓛̃` the
+structural rank has to be taken over `ℚ̄`, since `ℚ̄`-scalars are invisible to a `ℚ`-basis.  For
+`2×2` matrices the correct `ℚ̄`-statement is the content of
+`strongFourExponentials_of_algIndepLogs` (via `AffTwo.constRatioTwo`). -/
+
+theorem sq_sub_ne_zero :
+    (2 * MvPolynomial.X (0 : Fin 2) ^ 2 - MvPolynomial.X (1 : Fin 2) ^ 2 :
+      MvPolynomial (Fin 2) ℚ) ≠ 0 := by
+  intro hcon
+  have := congrArg (MvPolynomial.eval ![(0 : ℚ), 1]) hcon
+  simp at this
+
+set_option maxHeartbeats 2000000 in
+/-- The `ℚ`-structural rank of `!![1, √2; √2, 2]` is `2`. -/
+theorem structRank_sqrt_two_example :
+    IsStructRank !![(1 : ℂ), ((Real.sqrt 2 : ℝ) : ℂ); ((Real.sqrt 2 : ℝ) : ℂ), 2] 2 := by
+  classical
+  set φ := algebraMap (MvPolynomial (Fin 2) ℚ) (FractionRing (MvPolynomial (Fin 2) ℚ)) with hφ
+  refine ⟨2, ![(1 : ℂ), ((Real.sqrt 2 : ℝ) : ℂ)], ![!![1, 0; 0, 2], !![0, 1; 1, 0]],
+    linearIndependent_one_ofReal irrational_sqrt_two, ?_, ?_⟩
+  · refine Matrix.ext fun i j => ?_
+    fin_cases i <;> fin_cases j <;> simp [Matrix.sum_apply, Fin.sum_univ_two]
+  · have hC2 : (MvPolynomial.C (2 : ℚ) : MvPolynomial (Fin 2) ℚ) = 2 := map_ofNat _ 2
+    have hG : (∑ k, (![!![(1 : ℚ), 0; 0, 2], !![0, 1; 1, 0]] k).map (fun q : ℚ ↦
+        φ (MvPolynomial.C q * MvPolynomial.X k)))
+        = !![φ (MvPolynomial.X (0 : Fin 2)), φ (MvPolynomial.X (1 : Fin 2));
+             φ (MvPolynomial.X (1 : Fin 2)), φ (2 * MvPolynomial.X (0 : Fin 2))] := by
+      refine Matrix.ext fun i j => ?_
+      fin_cases i <;> fin_cases j <;>
+        simp [Matrix.sum_apply, Fin.sum_univ_two, hC2]
+    rw [hG]
+    refine le_antisymm ((Matrix.rank_le_card_width _).trans (by simp)) ?_
+    refine LeanFormalizations.StructuralRank.le_rank_of_det_ne_zero _ ![0, 1] ![0, 1] ?_
+    have hsub : (Matrix.submatrix
+        (!![φ (MvPolynomial.X (0 : Fin 2)), φ (MvPolynomial.X (1 : Fin 2));
+            φ (MvPolynomial.X (1 : Fin 2)), φ (2 * MvPolynomial.X (0 : Fin 2))])
+        ![0, 1] ![0, 1]).det
+        = φ (2 * MvPolynomial.X (0 : Fin 2) ^ 2 - MvPolynomial.X (1 : Fin 2) ^ 2) := by
+      rw [Matrix.det_fin_two]
+      simp only [Matrix.submatrix_apply, Matrix.cons_val_zero, Matrix.cons_val_one,
+        Matrix.head_cons, Matrix.of_apply, Matrix.cons_val', Matrix.empty_val',
+        Matrix.cons_val_fin_one]
+      simp only [map_sub, map_mul, map_pow, map_ofNat]
+      ring
+    rw [hsub]
+    intro hcon
+    exact sq_sub_ne_zero (IsFractionRing.injective (MvPolynomial (Fin 2) ℚ)
+      (FractionRing (MvPolynomial (Fin 2) ℚ)) (by rw [hcon, map_zero]))
+
+
+/-- The witness matrix has rank `1`: it is `(1, √2)ᵀ (1, √2)`. -/
+theorem rank_sqrt_two_example :
+    (!![(1 : ℂ), ((Real.sqrt 2 : ℝ) : ℂ); ((Real.sqrt 2 : ℝ) : ℂ), 2]).rank = 1 := by
+  classical
+  have hsq : ((Real.sqrt 2 : ℝ) : ℂ) * ((Real.sqrt 2 : ℝ) : ℂ) = 2 := by
+    rw [← Complex.ofReal_mul, Real.mul_self_sqrt (by norm_num : (0:ℝ) ≤ 2)]
+    norm_num
+  have hvm : (!![(1 : ℂ), ((Real.sqrt 2 : ℝ) : ℂ); ((Real.sqrt 2 : ℝ) : ℂ), 2])
+      = Matrix.vecMulVec ![(1 : ℂ), ((Real.sqrt 2 : ℝ) : ℂ)]
+          ![(1 : ℂ), ((Real.sqrt 2 : ℝ) : ℂ)] := by
+    refine Matrix.ext fun i j => ?_
+    fin_cases i <;> fin_cases j <;> simp [Matrix.vecMulVec_apply, hsq]
+  refine le_antisymm (hvm ▸ Matrix.rank_vecMulVec_le _ _) ?_
+  refine LeanFormalizations.StructuralRank.le_rank_of_det_ne_zero _ ![0] ![0] ?_
+  rw [Matrix.det_fin_one]
+  simp
+
+/-- **The rank consequence of Conjecture 1 does not extend from logarithms to `𝓛̃`.**
+Unconditional: `!![1, √2; √2, 2]` has all entries in `𝓛̃` (indeed in `ℚ̄ ⊆ 𝓛̃`), rank `1`, and
+`ℚ`-structural rank `2`.  So `StructuralRank.rank_eq_structRank_of_algIndepLogs` is sharp in
+asking for `IsLogMatrix`, and over `𝓛̃` the structural rank must be taken over `ℚ̄`. -/
+theorem not_rank_eq_structRank_of_mem_logAlgSpan :
+    ¬ ∀ (M : Matrix (Fin 2) (Fin 2) ℂ) (r : ℕ),
+        (∀ i j, M i j ∈ LogAlgSpan) → IsStructRank M r → M.rank = r := by
+  intro h
+  have halg2 : IsAlgebraic ℚ ((2 : ℂ)) := by
+    simpa using isAlgebraic_algebraMap (R := ℚ) (A := ℂ) (2 : ℚ)
+  have hmem : ∀ i j, (!![(1 : ℂ), ((Real.sqrt 2 : ℝ) : ℂ); ((Real.sqrt 2 : ℝ) : ℂ), 2]) i j
+      ∈ LogAlgSpan := by
+    intro i j
+    fin_cases i <;> fin_cases j <;>
+      simp only [Matrix.cons_val', Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+        Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.of_apply, Matrix.head_fin_const]
+    · exact LeanFormalizations.ExponentialsKnown.mem_logAlgSpan_of_isAlgebraic isAlgebraic_one
+    · exact LeanFormalizations.ExponentialsKnown.mem_logAlgSpan_of_isAlgebraic
+        LeanFormalizations.ExponentialsKnown.isAlgebraic_sqrt_two
+    · exact LeanFormalizations.ExponentialsKnown.mem_logAlgSpan_of_isAlgebraic
+        LeanFormalizations.ExponentialsKnown.isAlgebraic_sqrt_two
+    · exact LeanFormalizations.ExponentialsKnown.mem_logAlgSpan_of_isAlgebraic halg2
+  have heq := h _ 2 hmem structRank_sqrt_two_example
+  rw [rank_sqrt_two_example] at heq
+  exact absurd heq (by decide)
 
 end LeanFormalizations.Waldschmidt2023
