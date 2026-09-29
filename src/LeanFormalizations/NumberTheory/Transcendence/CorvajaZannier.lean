@@ -510,6 +510,55 @@ theorem czLemma1_fin (hSub : Stephan2026Subspace) {K : Type} [Field K] [NumberFi
     refine Eq.trans ?_ hax
     exact Finset.sum_congr rfl fun i _ ↦ by rw [smul_eq_mul, mul_comm]
 
+/-- At any place, the `v`-norm of a tuple is at most the product of the local heights. -/
+theorem iSup_le_prod_max_one {ι : Type*} [Fintype ι] [Nonempty ι] (f : ι → ℝ)
+    (hf : ∀ i, 0 ≤ f i) : (⨆ i, f i) ≤ ∏ i, max (f i) 1 := by
+  classical
+  have h1 : ∀ j : ι, (1 : ℝ) ≤ max (f j) 1 := fun j ↦ le_max_right _ _
+  refine ciSup_le fun i ↦ le_trans (le_max_left (f i) 1) ?_
+  rw [← Finset.prod_erase_mul Finset.univ (fun j ↦ max (f j) 1) (Finset.mem_univ i)]
+  refine le_mul_of_one_le_left (le_trans zero_le_one (h1 i)) ?_
+  calc (1 : ℝ) = ∏ _j ∈ Finset.univ.erase i, (1 : ℝ) := by rw [Finset.prod_const_one]
+    _ ≤ _ := Finset.prod_le_prod (fun j _ ↦ zero_le_one) (fun j _ ↦ h1 j)
+
+/-- For an `S`-unit the `mulHeight₁` product over finite places collapses to `Sfin`. -/
+theorem mulHeight₁_eq_prod_S {Sfin : Finset (FinitePlace K)} {u : K} (hu : IsSUnit Sfin u) :
+    Height.mulHeight₁ u
+      = (∏ v : InfinitePlace K, max (v u) 1 ^ v.mult) * ∏ v ∈ Sfin, max (v u) 1 := by
+  rw [NumberField.mulHeight₁_eq]
+  congr 1
+  refine finprod_eq_prod_of_mulSupport_subset _ fun v hv ↦ ?_
+  simp only [Function.mem_mulSupport] at hv
+  by_contra h
+  exact hv (by rw [hu.2 v (by simpa using h)]; simp)
+
+/-- **`H(x) ≤ ∏ᵢ H(xᵢ)`** for a tuple of `S`-units.  This is how CZ compare the height of
+`(σ₁(u), …, σₙ(u))` with that of `u`; combined with `mulHeight₁_mul_le` it gives the exponential
+bound the applications need, with no place-permutation argument. -/
+theorem mulHeight_le_prod_mulHeight₁ {ι : Type*} [Fintype ι] [Nonempty ι]
+    {Sfin : Finset (FinitePlace K)} {x : ι → K} (hx : ∀ i, IsSUnit Sfin (x i)) :
+    Height.mulHeight x ≤ ∏ i, Height.mulHeight₁ (x i) := by
+  classical
+  have hregroup : (∏ i, Height.mulHeight₁ (x i))
+      = (∏ v : InfinitePlace K, (∏ i, max (v (x i)) 1) ^ v.mult) *
+        ∏ v ∈ Sfin, ∏ i, max (v (x i)) 1 := by
+    rw [Finset.prod_congr rfl (fun i _ ↦ mulHeight₁_eq_prod_S (hx i)), Finset.prod_mul_distrib]
+    congr 1
+    · rw [Finset.prod_comm]
+      exact Finset.prod_congr rfl fun v _ ↦ Finset.prod_pow _ _ _
+    · exact Finset.prod_comm
+  rw [mulHeight_eq_prod_S hx, hregroup]
+  have hnn : ∀ (v : AbsoluteValue K ℝ), (⨆ i, v (x i)) ≤ ∏ i, max (v (x i)) 1 := fun v ↦
+    iSup_le_prod_max_one _ fun i ↦ v.nonneg _
+  refine mul_le_mul ?_ ?_ ?_ ?_
+  · exact Finset.prod_le_prod (fun v _ ↦ pow_nonneg (le_of_lt (iSup_pos_of_isSUnit hx v.1)) _)
+      (fun v _ ↦ pow_le_pow_left₀ (le_of_lt (iSup_pos_of_isSUnit hx v.1)) (hnn v.1) _)
+  · exact Finset.prod_le_prod (fun v _ ↦ le_of_lt (iSup_pos_of_isSUnit hx v.1))
+      (fun v _ ↦ hnn v.1)
+  · exact Finset.prod_nonneg fun v _ ↦ le_of_lt (iSup_pos_of_isSUnit hx v.1)
+  · exact Finset.prod_nonneg fun v _ ↦ pow_nonneg
+      (Finset.prod_nonneg fun i _ ↦ le_trans (v.1.nonneg _) (le_max_left _ _)) _
+
 end CZ
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
