@@ -242,11 +242,258 @@ theorem fourExponentials_of_schanuel (hS : SchanuelConjecture) : FourExponential
     (hcon 0 0) (hcon 0 1) (hcon 1 0) (hcon 1 1)
 
 
+/-- Schanuel ⇒ `log 2` is transcendental (the `n = 1` case of the prime logarithms). -/
+theorem transcendental_log_two (hS : SchanuelConjecture) : Transcendental ℚ (Real.log 2) := by
+  have h := (algebraicIndependent_log_primes hS ![(⟨2, Nat.prime_two⟩ : Nat.Primes)]
+    (fun i j _ => Subsingleton.elim i j)).transcendental 0
+  simpa using h
+
+/-- Schanuel ⇒ `e` and `log 2` are algebraically independent, complex form: `z = (1, log 2)`,
+exponentials `e` and `2`. -/
+theorem algebraicIndependent_exp_one_log_two_complex (hS : SchanuelConjecture) :
+    AlgebraicIndependent ℚ ![Complex.exp 1, ((Real.log 2 : ℝ) : ℂ)] := by
+  refine algebraicIndependent_of_schanuel hS ![1, ((Real.log 2 : ℝ) : ℂ)]
+    (linearIndependent_one_ofReal (transcendental_log_two hS).irrational) _ ?_
+  set L := IntermediateField.adjoin ℚ
+    (Set.range ![Complex.exp 1, ((Real.log 2 : ℝ) : ℂ)]) with hL
+  have hmE : Complex.exp 1 ∈ L := subset_adjoin _ _ ⟨0, rfl⟩
+  have hmG : ((Real.log 2 : ℝ) : ℂ) ∈ L := subset_adjoin _ _ ⟨1, rfl⟩
+  rintro w (⟨i, rfl⟩ | ⟨i, rfl⟩)
+  · fin_cases i
+    · exact isAlgebraic_one
+    · exact isAlgebraic_algebraMap (R := L) (A := ℂ) ⟨_, hmG⟩
+  · fin_cases i
+    · exact isAlgebraic_algebraMap (R := L) (A := ℂ) ⟨_, hmE⟩
+    · show IsAlgebraic _ (Complex.exp ((Real.log 2 : ℝ) : ℂ))
+      have h2 : Complex.exp ((Real.log 2 : ℝ) : ℂ) = (2 : ℂ) := by
+        rw [← Complex.ofReal_exp, Real.exp_log (by norm_num)]; norm_num
+      rw [h2]
+      exact (isAlgebraic_algebraMap (R := ℚ) (A := ℂ) 2).tower_top _
+
+/-- Schanuel ⇒ `e + log 2` is transcendental. -/
+theorem transcendental_exp_one_add_log_two' (hS : SchanuelConjecture) :
+    Transcendental ℚ (Real.exp 1 + Real.log 2) := by
+  intro h
+  refine not_isAlgebraic_of_algebraicIndependent_pair
+    (algebraicIndependent_exp_one_log_two_complex hS) ?_
+  have hC : IsAlgebraic ℚ (Complex.exp 1 + ((Real.log 2 : ℝ) : ℂ)) := by
+    simpa [Complex.ofReal_exp] using isAlgebraic_complex_of_real h
+  have hrw : ((Real.log 2 : ℝ) : ℂ)
+      = (Complex.exp 1 + ((Real.log 2 : ℝ) : ℂ)) - Complex.exp 1 := by ring
+  rw [hrw]
+  exact isAlgebraic_sub_rat hC isAlgebraic_adjoin_exp_one
+
+
+/-- `1, e, e^e` are `ℚ`-linearly independent: `e, e^e` are algebraically independent, so they
+admit no nontrivial affine relation over `ℚ`. -/
+theorem linearIndependent_one_exp_exp_exp (hS : SchanuelConjecture) :
+    LinearIndependent ℚ ![(1 : ℂ), ((Real.exp 1 : ℝ) : ℂ), ((Real.exp (Real.exp 1) : ℝ) : ℂ)] := by
+  have hind : AlgebraicIndependent ℚ
+      ![((Real.exp 1 : ℝ) : ℂ), ((Real.exp (Real.exp 1) : ℝ) : ℂ)] := by
+    have h := algebraicIndependent_exp_one_exp_exp_one_complex hS
+    have he : Complex.exp ((Real.exp 1 : ℝ) : ℂ) = ((Real.exp (Real.exp 1) : ℝ) : ℂ) := by
+      rw [← Complex.ofReal_exp]
+    rwa [he] at h
+  rw [Fintype.linearIndependent_iff]
+  intro g hg
+  rw [Fin.sum_univ_three] at hg
+  have hrel : (algebraMap ℚ ℂ) (g 0) + ∑ i, (algebraMap ℚ ℂ) (![g 1, g 2] i) *
+      ![((Real.exp 1 : ℝ) : ℂ), ((Real.exp (Real.exp 1) : ℝ) : ℂ)] i = 0 := by
+    rw [Fin.sum_univ_two]
+    simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+      Matrix.cons_val_two, Matrix.tail_cons, Rat.smul_def, eq_ratCast] at hg ⊢
+    linear_combination hg
+  obtain ⟨h0, hrest⟩ := eq_zero_of_algebraicIndependent_linear hind (g 0) ![g 1, g 2] hrel
+  intro i
+  fin_cases i
+  · exact h0
+  · simpa using hrest 0
+  · simpa using hrest 1
+
+/-- Schanuel ⇒ `e, e^e, e^{e^e}` algebraically independent, complex form: `z = (1, e, e^e)`. -/
+theorem algebraicIndependent_exp_tower_three_complex (hS : SchanuelConjecture) :
+    AlgebraicIndependent ℚ ![((Real.exp 1 : ℝ) : ℂ), ((Real.exp (Real.exp 1) : ℝ) : ℂ),
+      ((Real.exp (Real.exp (Real.exp 1)) : ℝ) : ℂ)] := by
+  refine algebraicIndependent_of_schanuel hS _ (linearIndependent_one_exp_exp_exp hS) _ ?_
+  set L := IntermediateField.adjoin ℚ (Set.range
+    ![((Real.exp 1 : ℝ) : ℂ), ((Real.exp (Real.exp 1) : ℝ) : ℂ),
+      ((Real.exp (Real.exp (Real.exp 1)) : ℝ) : ℂ)]) with hL
+  have m0 : ((Real.exp 1 : ℝ) : ℂ) ∈ L := subset_adjoin _ _ ⟨0, rfl⟩
+  have m1 : ((Real.exp (Real.exp 1) : ℝ) : ℂ) ∈ L := subset_adjoin _ _ ⟨1, rfl⟩
+  have m2 : ((Real.exp (Real.exp (Real.exp 1)) : ℝ) : ℂ) ∈ L := subset_adjoin _ _ ⟨2, rfl⟩
+  have e0 : Complex.exp 1 = ((Real.exp 1 : ℝ) : ℂ) := by simp
+  have e1 : Complex.exp ((Real.exp 1 : ℝ) : ℂ) = ((Real.exp (Real.exp 1) : ℝ) : ℂ) := by
+    rw [← Complex.ofReal_exp]
+  have e2 : Complex.exp ((Real.exp (Real.exp 1) : ℝ) : ℂ)
+      = ((Real.exp (Real.exp (Real.exp 1)) : ℝ) : ℂ) := by rw [← Complex.ofReal_exp]
+  rintro w (⟨i, rfl⟩ | ⟨i, rfl⟩)
+  · fin_cases i
+    · exact isAlgebraic_one
+    · exact isAlgebraic_algebraMap (R := L) (A := ℂ) ⟨_, m0⟩
+    · exact isAlgebraic_algebraMap (R := L) (A := ℂ) ⟨_, m1⟩
+  · fin_cases i
+    · show IsAlgebraic _ (Complex.exp 1)
+      rw [e0]; exact isAlgebraic_algebraMap (R := L) (A := ℂ) ⟨_, m0⟩
+    · show IsAlgebraic _ (Complex.exp ((Real.exp 1 : ℝ) : ℂ))
+      rw [e1]; exact isAlgebraic_algebraMap (R := L) (A := ℂ) ⟨_, m1⟩
+    · show IsAlgebraic _ (Complex.exp ((Real.exp (Real.exp 1) : ℝ) : ℂ))
+      rw [e2]; exact isAlgebraic_algebraMap (R := L) (A := ℂ) ⟨_, m2⟩
+
+theorem algebraicIndependent_exp_tower_three' (hS : SchanuelConjecture) :
+    AlgebraicIndependent ℚ
+      ![Real.exp 1, Real.exp (Real.exp 1), Real.exp (Real.exp (Real.exp 1))] := by
+  refine algebraicIndependent_real_of_complex ?_
+  have h := algebraicIndependent_exp_tower_three_complex hS
+  have hcomp : (fun i => ((![Real.exp 1, Real.exp (Real.exp 1),
+      Real.exp (Real.exp (Real.exp 1))] i : ℝ) : ℂ))
+      = ![((Real.exp 1 : ℝ) : ℂ), ((Real.exp (Real.exp 1) : ℝ) : ℂ),
+        ((Real.exp (Real.exp (Real.exp 1)) : ℝ) : ℂ)] := by
+    funext i; fin_cases i <;> rfl
+  rw [hcomp]; exact h
+
+
+section PiLogPrimes
+
+variable {n : ℕ} (p : Fin n → Nat.Primes)
+
+/-- The Schanuel input for `π` and prime logarithms: `z = (iπ, log p₁, …, log pₙ)`. -/
+noncomputable def zPiLog : Fin (n + 1) → ℂ :=
+  Fin.cons (Complex.I * (Real.pi : ℂ)) fun i => ((Real.log ((p i : ℕ) : ℝ) : ℝ) : ℂ)
+
+/-- The target family: `π, log p₁, …, log pₙ`, as complex numbers. -/
+noncomputable def yPiLog : Fin (n + 1) → ℂ :=
+  Fin.cons ((Real.pi : ℝ) : ℂ) fun i => ((Real.log ((p i : ℕ) : ℝ) : ℝ) : ℂ)
+
+/-- `iπ` together with the logarithms of distinct primes is `ℚ`-linearly independent: the
+imaginary part isolates the `iπ` coefficient, and unique factorisation does the rest. -/
+theorem linearIndependent_zPiLog (hp : Function.Injective p) :
+    LinearIndependent ℚ (zPiLog p) := by
+  rw [Fintype.linearIndependent_iff]
+  intro g hg
+  rw [Fin.sum_univ_succ] at hg
+  simp only [zPiLog, Fin.cons_zero, Fin.cons_succ, Rat.smul_def] at hg
+  have hsum : ∑ i : Fin n, ((g i.succ : ℚ) : ℂ) * ((Real.log ((p i : ℕ) : ℝ) : ℝ) : ℂ)
+      = ((∑ i : Fin n, (g i.succ : ℝ) * Real.log ((p i : ℕ) : ℝ) : ℝ) : ℂ) := by
+    rw [Complex.ofReal_sum]
+    exact Finset.sum_congr rfl fun i _ => by push_cast; ring
+  rw [hsum] at hg
+  set R : ℝ := ∑ i : Fin n, (g i.succ : ℝ) * Real.log ((p i : ℕ) : ℝ) with hR
+  have him := congrArg Complex.im hg
+  have hre := congrArg Complex.re hg
+  simp at him hre
+  have h0 : g 0 = 0 := him
+  have hRzero : R = 0 := hre
+  have hrest : ∀ i : Fin n, g i.succ = 0 := by
+    have := Fintype.linearIndependent_iff.1 (linearIndependent_log_primes p hp)
+      (fun i => g i.succ) (by simpa [Rat.smul_def, hR] using hRzero)
+    exact this
+  intro i
+  refine Fin.cases ?_ (fun j => hrest j) i
+  exact h0
+
+
+/-- Schanuel ⇒ `π` and the logarithms of distinct primes are algebraically independent,
+complex form: `z = (iπ, log p₁, …, log pₙ)`, exponentials `−1, p₁, …, pₙ`. -/
+theorem algebraicIndependent_yPiLog (hS : SchanuelConjecture) (hp : Function.Injective p) :
+    AlgebraicIndependent ℚ (yPiLog p) := by
+  refine algebraicIndependent_of_schanuel hS _ (linearIndependent_zPiLog p hp) (yPiLog p) ?_
+  set L := IntermediateField.adjoin ℚ (Set.range (yPiLog p)) with hL
+  have mpi : ((Real.pi : ℝ) : ℂ) ∈ L := subset_adjoin _ _ ⟨0, rfl⟩
+  have mlog : ∀ i : Fin n, ((Real.log ((p i : ℕ) : ℝ) : ℝ) : ℂ) ∈ L :=
+    fun i => subset_adjoin _ _ ⟨i.succ, rfl⟩
+  rintro w (⟨i, rfl⟩ | ⟨i, rfl⟩)
+  · refine Fin.cases ?_ (fun j => ?_) i
+    · show IsAlgebraic _ (Complex.I * (Real.pi : ℂ))
+      exact isAlgebraic_mul_rat isAlgebraic_I
+        (isAlgebraic_algebraMap (R := L) (A := ℂ) ⟨_, mpi⟩)
+    · show IsAlgebraic _ ((Real.log ((p j : ℕ) : ℝ) : ℂ))
+      exact isAlgebraic_algebraMap (R := L) (A := ℂ) ⟨_, mlog j⟩
+  · refine Fin.cases ?_ (fun j => ?_) i
+    · show IsAlgebraic _ (Complex.exp (Complex.I * (Real.pi : ℂ)))
+      rw [show Complex.I * (Real.pi : ℂ) = (Real.pi : ℂ) * Complex.I by ring, Complex.exp_mul_I]
+      simpa using (isAlgebraic_algebraMap (R := L) (A := ℂ) (-1))
+    · show IsAlgebraic _ (Complex.exp ((Real.log ((p j : ℕ) : ℝ) : ℂ)))
+      have hpos : (0 : ℝ) < ((p j : ℕ) : ℝ) := by exact_mod_cast (p j).2.pos
+      have hx : Complex.exp ((Real.log ((p j : ℕ) : ℝ) : ℂ)) = (((p j : ℕ) : ℝ) : ℂ) := by
+        rw [← Complex.ofReal_exp, Real.exp_log hpos]
+      rw [hx]
+      exact (isAlgebraic_complex_of_real
+        (isAlgebraic_algebraMap (R := ℚ) (A := ℝ) ((p j : ℕ) : ℚ))).tower_top _
+
+/-- Schanuel ⇒ `π` together with the logarithms of distinct primes are algebraically
+independent. -/
+theorem algebraicIndependent_pi_log_primes' (hS : SchanuelConjecture)
+    (hp : Function.Injective p) :
+    AlgebraicIndependent ℚ
+      (Fin.cons Real.pi fun i ↦ Real.log ((p i : ℕ) : ℝ) : Fin (n + 1) → ℝ) := by
+  refine algebraicIndependent_real_of_complex ?_
+  have hcomp : (fun i => (((Fin.cons Real.pi fun i ↦ Real.log ((p i : ℕ) : ℝ) :
+      Fin (n + 1) → ℝ) i : ℝ) : ℂ)) = yPiLog p := by
+    funext i
+    refine Fin.cases ?_ (fun j => ?_) i <;> rfl
+  rw [hcomp]
+  exact algebraicIndependent_yPiLog p hS hp
+
+end PiLogPrimes
+
+
+/-- Transcendence transfers back along `ℝ → ℂ`. -/
+theorem transcendental_real_of_complex {r : ℝ} (h : Transcendental ℚ ((r : ℝ) : ℂ)) :
+    Transcendental ℚ r := fun hr => h (isAlgebraic_complex_of_real hr)
+
+theorem cexp_mul_ofReal_log {q t : ℝ} (hq : 0 < q) :
+    Complex.exp ((t : ℂ) * ((Real.log q : ℝ) : ℂ)) = ((q ^ t : ℝ) : ℂ) := by
+  rw [show ((t : ℂ) * ((Real.log q : ℝ) : ℂ)) = ((Real.log q * t : ℝ) : ℂ) by push_cast; ring,
+    ← Complex.ofReal_exp, Real.rpow_def_of_pos hq]
+
+theorem linearIndependent_log_two_three :
+    LinearIndependent ℚ ![((Real.log 2 : ℝ) : ℂ), ((Real.log 3 : ℝ) : ℂ)] := by
+  have hp : Function.Injective
+      (![(⟨2, Nat.prime_two⟩ : Nat.Primes), ⟨3, Nat.prime_three⟩]) := by decide
+  have h := (linearIndependent_log_primes _ hp).map'
+    ((IsScalarTower.toAlgHom ℚ ℝ ℂ).toLinearMap)
+    (by rw [LinearMap.ker_eq_bot]; exact (IsScalarTower.toAlgHom ℚ ℝ ℂ).injective)
+  simp only [Function.comp_def] at h
+  have he : (fun i => ((IsScalarTower.toAlgHom ℚ ℝ ℂ).toLinearMap)
+      (Real.log (((![(⟨2, Nat.prime_two⟩ : Nat.Primes), ⟨3, Nat.prime_three⟩] i : Nat.Primes)
+        : ℕ) : ℝ)))
+      = ![((Real.log 2 : ℝ) : ℂ), ((Real.log 3 : ℝ) : ℂ)] := by
+    funext i; fin_cases i <;> norm_num
+  rwa [he] at h
+
+/-- Four exponentials ⇒ for irrational `t`, `2^t` or `3^t` is transcendental: take
+`x = (1, t)` and `y = (log 2, log 3)`.  The two exponentials in the `x = 1` row are `2` and `3`,
+so the transcendental one is `2^t` or `3^t`. -/
+theorem two_rpow_or_three_rpow_transcendental' (h4 : FourExponentialsConjecture) {t : ℝ}
+    (ht : Irrational t) :
+    Transcendental ℚ ((2 : ℝ) ^ t) ∨ Transcendental ℚ ((3 : ℝ) ^ t) := by
+  obtain ⟨i, j, htr⟩ := h4 ![(1 : ℂ), ((t : ℝ) : ℂ)]
+    ![((Real.log 2 : ℝ) : ℂ), ((Real.log 3 : ℝ) : ℂ)]
+    (linearIndependent_one_ofReal ht) linearIndependent_log_two_three
+  fin_cases i <;> fin_cases j <;>
+    simp only [Fin.zero_eta, Fin.mk_one, Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one,
+      Matrix.head_cons, one_mul] at htr
+  · exfalso
+    refine htr ?_
+    rw [← Complex.ofReal_exp, Real.exp_log (by norm_num : (0:ℝ) < 2)]
+    simpa using (isAlgebraic_algebraMap (R := ℚ) (A := ℂ) (2 : ℚ))
+  · exfalso
+    refine htr ?_
+    rw [← Complex.ofReal_exp, Real.exp_log (by norm_num : (0:ℝ) < 3)]
+    simpa using (isAlgebraic_algebraMap (R := ℚ) (A := ℂ) (3 : ℚ))
+  · left
+    refine transcendental_real_of_complex ?_
+    rwa [cexp_mul_ofReal_log (by norm_num : (0:ℝ) < 2)] at htr
+  · right
+    refine transcendental_real_of_complex ?_
+    rwa [cexp_mul_ofReal_log (by norm_num : (0:ℝ) < 3)] at htr
+
+
 /-- Four exponentials ⇒ for irrational `t`, `2^t` or `3^t` is transcendental. -/
 theorem two_rpow_or_three_rpow_transcendental (h4 : FourExponentialsConjecture) {t : ℝ}
     (ht : Irrational t) :
-    Transcendental ℚ ((2 : ℝ) ^ t) ∨ Transcendental ℚ ((3 : ℝ) ^ t) := by
-  sorry
+    Transcendental ℚ ((2 : ℝ) ^ t) ∨ Transcendental ℚ ((3 : ℝ) ^ t) :=
+  two_rpow_or_three_rpow_transcendental' h4 ht
 
 /-- **Unconditional**, from the six exponentials theorem: if `pᵢ^t` is an integer for three
 distinct primes `pᵢ`, then `t` is a natural number. -/
@@ -258,21 +505,21 @@ theorem eq_nat_of_three_primes_rpow (h6 : SixExponentials) {t : ℝ} {p : Fin 3 
 /-- Schanuel ⇒ `e, e^e, e^{e^e}` are algebraically independent: take `z = (1, e, e^e)`. -/
 theorem algebraicIndependent_exp_tower_three (hS : SchanuelConjecture) :
     AlgebraicIndependent ℚ
-      ![Real.exp 1, Real.exp (Real.exp 1), Real.exp (Real.exp (Real.exp 1))] := by
-  sorry
+      ![Real.exp 1, Real.exp (Real.exp 1), Real.exp (Real.exp (Real.exp 1))] :=
+  algebraicIndependent_exp_tower_three' hS
 
 /-- Schanuel ⇒ `π` together with the logarithms of distinct primes are algebraically
 independent: take `z = (iπ, log p₁, …, log pₙ)`. -/
 theorem algebraicIndependent_pi_log_primes (hS : SchanuelConjecture) {n : ℕ}
     (p : Fin n → Nat.Primes) (hp : Function.Injective p) :
     AlgebraicIndependent ℚ
-      (Fin.cons Real.pi fun i ↦ Real.log (p i : ℕ) : Fin (n + 1) → ℝ) := by
-  sorry
+      (Fin.cons Real.pi fun i ↦ Real.log (p i : ℕ) : Fin (n + 1) → ℝ) :=
+  algebraicIndependent_pi_log_primes' p hS hp
 
 /-- Schanuel ⇒ `e + log 2` is transcendental: `e` and `log 2` are algebraically independent,
 by taking `z = (1, log 2)`. -/
 theorem transcendental_exp_one_add_log_two (hS : SchanuelConjecture) :
-    Transcendental ℚ (Real.exp 1 + Real.log 2) := by
-  sorry
+    Transcendental ℚ (Real.exp 1 + Real.log 2) :=
+  transcendental_exp_one_add_log_two' hS
 
 end LeanFormalizations.Exponentials
