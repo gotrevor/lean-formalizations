@@ -134,7 +134,15 @@ def register : List Row := [
       conjugates' 3-parts differ, so the modulus-is-the-prime trick is silent; \
       small-prime covering removes density → 1 of cubics, not all"
     reopenIf := "an argument that uses the Pisot/size structure (Saito's (1.3)) together with \
-      the 3-adic constraint, or a covering theorem valid for every cubic Pisot number" }
+      the 3-adic constraint, or a covering theorem valid for every cubic Pisot number" },
+  { route := "Saito arXiv:2504.14968 Problem 1.7 (non-reversible R with ⌊α^R(n)⌋ composite i.o. \
+      for every Pisot α) via the phase-32 prime-as-modulus trick"
+    verdict := .needsNewIdea, tier := .cited, anchor := none
+    evidence := "PROBE-SAITO-FIBONACCI.md § Problem 1.7; scripts/saito-problem17-probe.py: the floor \
+      is a trace (Frobenius-invariant), so it converges c-adically; R = 2^n+3^n leaves 2/32 classes \
+      mod 4 and 6/486 mod 9"
+    reopenIf := "an exponent sequence under which tr C^R(n) has non-±1 limit points for EVERY \
+      Pisot C, or a covering theorem valid for every Pisot number" }
 ]
 
 end LeanFormalizations.Maze

@@ -60,3 +60,14 @@ Settled: 100% (kernel-checked).  Was 90% before the Lean phase.  The Lean phase 
 - No `Literature/` hypothesis is needed; the result is unconditional.
 - Reuse `glCard` from `ThreeAdic.lean`.
 - Adapt `exists_trace_pow_congr` (in `SharedConjecture.lean`) to a matrix entry.  Its proof already shows `D^(c^(m+j)) = D^(c^m)` over `ZMod p`.
+
+## Problem 1.7 (same paper): the trick leaves residual classes (probe, 2026-09-29)
+
+*"Find a non-reversible ILRS R(n) such that for every Pisot α (esp. degree 3), ⌊α^R(n)⌋ is composite for infinitely many n."*
+
+- **Why 1.8 fell and 1.7 does not.**  Problem 1.8 tracks an *entry* of `A^(2^n)`, and `A mod 2` has order 3, so `A^(2^n)` alternates between two 2-adic limit points.  The floor `⌊α^N⌋ = tr C^N + e_N` (with `e_N ∈ {0, −1}`) is a *trace*, which is invariant under Frobenius.  So for `R(n) = c^n` the Gauss congruence makes it converge `c`-adically: this is the Mills picture, with residual classes at `±1`.
+- **Mixed bases.**  With `R(n) = 2^n + 3^n` (`a₀ = −6`, non-reversible), the trick bites whenever `v₂` and `v₃` of the order of `C mod p` are both `≤ n`.  So a survivor needs `p_n ≡ ±1` 2-adically or 3-adically.
+  - `scripts/saito-problem17-probe.py` checks the cubic charpoly classes with `e ∈ {0, −1}`.
+  - 2-adic survivors: 2/32 classes mod 4.  3-adic survivors: 6/486 classes mod 9.
+  - The union is non-empty, and Pisot cubics exist in every residue class (`x³ − ax² − bx − c` with `|b| + |c| < a − 1`).  So the trick is silent on some Pisot α, and it cannot give the "every α" that 1.7 asks for.
+- **Verdict**: needsNewIdea (Maze row).  To reopen, we need a non-reversible `R` for which the floor itself fails to be Frobenius-invariant, which no trace can do.  The alternative is a covering argument that works for every Pisot α, which is the same wall as the six Mills classes.
