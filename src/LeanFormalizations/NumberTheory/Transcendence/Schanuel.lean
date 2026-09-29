@@ -521,13 +521,102 @@ theorem algebraicIndependent_exp_one_exp_exp_one (hS : SchanuelConjecture) :
     funext i; fin_cases i <;> simp [Complex.ofReal_exp]
   rw [hcomp]; exact h
 
+open Finset in
+/-- Reading off one exponent from a product of distinct prime powers. -/
+theorem factorization_prod_primes {n : ℕ} (p : Fin n → Nat.Primes)
+    (hp : Function.Injective p) (e : Fin n → ℕ) (j : Fin n) :
+    (∏ i, (p i : ℕ) ^ e i).factorization (p j) = e j := by
+  rw [Nat.factorization_prod (fun i _ => pow_ne_zero _ (p i).2.ne_zero)]
+  rw [Finsupp.finsetSum_apply]
+  rw [Finset.sum_eq_single j]
+  · rw [Nat.Prime.factorization_pow (p := (p j : ℕ)) (hp := (p j).2)]
+    simp
+  · intro i _ hij
+    rw [Nat.Prime.factorization_pow (p := (p i : ℕ)) (hp := (p i).2)]
+    simp only [Finsupp.single_apply]
+    exact if_neg (fun h => hij (hp (Subtype.ext h)))
+  · simp
+
+open Real in
+/-- **Unique factorization as linear independence**: the logarithms of distinct primes are
+`ℤ`-linearly independent.  Splitting an integer relation into its positive and negative parts
+turns it into an equality of two products of prime powers. -/
+theorem linearIndependent_log_primes_int {n : ℕ} (p : Fin n → Nat.Primes)
+    (hp : Function.Injective p) :
+    LinearIndependent ℤ (fun i => Real.log ((p i : ℕ) : ℝ)) := by
+  rw [Fintype.linearIndependent_iff]
+  intro g hg j
+  set ep : Fin n → ℕ := fun i => (g i).toNat with hep
+  set em : Fin n → ℕ := fun i => (-g i).toNat with hem
+  have hgi : ∀ i, (ep i : ℤ) - (em i : ℤ) = g i := by
+    intro i; simp only [hep, hem]; omega
+  set A : ℕ := ∏ i, (p i : ℕ) ^ ep i with hA
+  set B : ℕ := ∏ i, (p i : ℕ) ^ em i with hB
+  have hApos : 0 < A := Finset.prod_pos (fun i _ => pow_pos (p i).2.pos _)
+  have hBpos : 0 < B := Finset.prod_pos (fun i _ => pow_pos (p i).2.pos _)
+  have hlogA : Real.log A = ∑ i, (ep i : ℝ) * Real.log (p i : ℕ) := by
+    rw [hA]
+    push_cast
+    rw [Real.log_prod (fun i _ => pow_ne_zero _ (by exact_mod_cast (p i).2.pos.ne'))]
+    simp [Real.log_pow]
+  have hlogB : Real.log B = ∑ i, (em i : ℝ) * Real.log (p i : ℕ) := by
+    rw [hB]
+    push_cast
+    rw [Real.log_prod (fun i _ => pow_ne_zero _ (by exact_mod_cast (p i).2.pos.ne'))]
+    simp [Real.log_pow]
+  have hlogeq : Real.log A = Real.log B := by
+    rw [hlogA, hlogB, ← sub_eq_zero, ← Finset.sum_sub_distrib]
+    have hterm : ∀ i : Fin n, (ep i : ℝ) * Real.log (p i : ℕ) - (em i : ℝ) * Real.log (p i : ℕ)
+        = (g i : ℝ) * Real.log (p i : ℕ) := by
+      intro i
+      rw [← sub_mul]
+      congr 1
+      exact_mod_cast congrArg (fun z : ℤ => (z : ℝ)) (hgi i)
+    rw [Finset.sum_congr rfl (fun i _ => hterm i)]
+    simpa [zsmul_eq_mul] using hg
+  have hAB : A = B := by
+    have := Real.log_injOn_pos (Set.mem_Ioi.2 (by exact_mod_cast hApos))
+      (Set.mem_Ioi.2 (by exact_mod_cast hBpos)) hlogeq
+    exact_mod_cast this
+  have h1 := factorization_prod_primes p hp ep j
+  have h2 := factorization_prod_primes p hp em j
+  rw [← hA] at h1
+  rw [← hB] at h2
+  have hej : ep j = em j := by rw [← h1, ← h2, hAB]
+  have := hgi j
+  omega
+
+/-- The `ℚ`-form of the previous lemma (`ℚ` is the fraction field of `ℤ`). -/
+theorem linearIndependent_log_primes {n : ℕ} (p : Fin n → Nat.Primes)
+    (hp : Function.Injective p) :
+    LinearIndependent ℚ (fun i => Real.log ((p i : ℕ) : ℝ)) :=
+  (linearIndependent_log_primes_int p hp).localization ℚ (nonZeroDivisors ℤ)
+
+open Complex IntermediateField Algebra Set in
 /-- Schanuel ⇒ logarithms of distinct primes are algebraically independent: take
 `z = (log p₁, …, log pₙ)`, which are `ℚ`-linearly independent by unique factorization, with
 exponentials `pᵢ ∈ ℚ`. -/
 theorem algebraicIndependent_log_primes (hS : SchanuelConjecture) {n : ℕ}
     (p : Fin n → Nat.Primes) (hp : Function.Injective p) :
     AlgebraicIndependent ℚ fun i ↦ Real.log (p i : ℕ) := by
-  sorry
+  refine algebraicIndependent_real_of_complex ?_
+  have hzli : LinearIndependent ℚ (fun i => ((Real.log ((p i : ℕ) : ℝ) : ℝ) : ℂ)) :=
+    (linearIndependent_log_primes p hp).map'
+      ((IsScalarTower.toAlgHom ℚ ℝ ℂ).toLinearMap)
+      (by rw [LinearMap.ker_eq_bot]; exact (IsScalarTower.toAlgHom ℚ ℝ ℂ).injective)
+  refine algebraicIndependent_of_schanuel hS _ hzli _ ?_
+  rintro w (⟨i, rfl⟩ | ⟨i, rfl⟩)
+  · exact isAlgebraic_algebraMap
+      (R := IntermediateField.adjoin ℚ
+        (Set.range fun i => ((Real.log ((p i : ℕ) : ℝ) : ℝ) : ℂ))) (A := ℂ)
+      ⟨_, subset_adjoin _ _ ⟨i, rfl⟩⟩
+  · show IsAlgebraic _ (Complex.exp (((Real.log ((p i : ℕ) : ℝ) : ℝ) : ℂ)))
+    have hpos : (0 : ℝ) < ((p i : ℕ) : ℝ) := by exact_mod_cast (p i).2.pos
+    have : Complex.exp (((Real.log ((p i : ℕ) : ℝ) : ℝ) : ℂ)) = (((p i : ℕ) : ℝ) : ℂ) := by
+      rw [← Complex.ofReal_exp, Real.exp_log hpos]
+    rw [this]
+    exact (isAlgebraic_complex_of_real (isAlgebraic_algebraMap (R := ℚ) (A := ℝ)
+      ((p i : ℕ) : ℚ))).tower_top _
 
 /-! ## Wright towers -/
 
