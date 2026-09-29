@@ -1311,7 +1311,20 @@ descriptor` from the mathlib build tree is spurious; rerun `lake build`.
      Lemma 4.3, already proved) finishes.  This *avoids* any Galois/embedding machinery
      (`range_eval_eq_rootSet_minpoly`, conjugate-transport of root sets) — worth remembering.
 
-- **OPEN (the phase-14 crux): `transcendental_of_RH`.**  What remains is step 5, the real case:
+- **CLOSED (same lap): `transcendental_of_RH`.**  (Superseded text below kept for the route.)
+  Both phase-14 theorems are proved and `#print axioms`-clean; `TranscendentalRH.lean` is
+  sorry-free.  Final leaves: `digits_eq_gseq`, `gap_le_of_RH`, `real_case_contradiction`,
+  `equal_norm_contradiction`.  Two notes worth keeping:
+  * `equal_norm_contradiction` is *cheap*: equal moduli + real + distinct forces `v = −u`, and
+    then `s_i = u^N + (−u)^N = 0` for the **odd** exponent `N = 3ⁱ`, contradicting `s_i < 0`
+    straight from `pair_pow_sum_re_neg`.  No extra machinery at all.
+  * `real_case_contradiction` works entirely with **squares** to dodge half-integer powers:
+    `gap² ≥ (9/16)(‖u‖²)^N X⁴`, `gap² ≤ Y (log Y)⁴ ≤ X³ · 81 N⁴ L⁴`, divide by `X³` and fold
+    `(‖u‖²)^N X = (β‖u‖²)^N ≥ ρ^N`.  Needs `set_option maxHeartbeats 1600000` and opaque
+    `obtain`-introduced locals (not `set`) — `set`'s let-values blow the `isDefEq`/linarith
+    budget in a context this large.
+
+- **(superseded) the phase-14 crux: `transcendental_of_RH`.**  What remains is step 5, the real case:
   `|β₂| ≠ |β₃|`, `ρ = |β₂/β₃| > 1` ⟹ `p_{k+1} − p_k³ ≥ ρ^(N/2)·√(p_k³)`, against an RH gap
   bound.  **The missing prerequisite is a Schoenfeld-based least-prime-gap bound**, not yet in
   `Schoenfeld.lean`: `∃ C, ∀ y ≥ y₀, lpa y ≤ y + C·√y·(log y)²`.  Note the `log²`: with

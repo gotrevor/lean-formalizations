@@ -168,9 +168,12 @@ theorem pair_pow_sum_re_neg {A : ℝ} (hA1 : 1 < A) {m : ℕ}
     (hcube : ∀ k : ℕ, 1 ≤ k → (⌊A ^ ((3:ℕ) ^ k)⌋₊) ^ 3 < ⌊A ^ ((3:ℕ) ^ (k + 1))⌋₊)
     (hfrac : ∀ᶠ k : ℕ in atTop, A ^ ((3:ℕ) ^ k) - (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℝ) < 1 / 2)
     (hm : 1 ≤ m) :
-    ∃ i₀ : ℕ, ∀ i ≥ i₀,
-      (u ^ ((3:ℕ) ^ i) + v ^ ((3:ℕ) ^ i)).im = 0 ∧
-      (u ^ ((3:ℕ) ^ i) + v ^ ((3:ℕ) ^ i)).re < 0 := by
+    ∃ i₀ : ℕ, ∀ i ≥ i₀, ∃ σ : ℝ,
+      u ^ ((3:ℕ) ^ i) + v ^ ((3:ℕ) ^ i) = ((σ : ℝ) : ℂ) ∧ σ < 0 ∧ |σ| < 1 / 2 ∧
+      (2:ℝ) ≤ A ^ ((3:ℕ) ^ (m + i)) ∧
+      (⌊A ^ ((3:ℕ) ^ (m + i))⌋₊ : ℝ) ^ 3 - (⌊A ^ ((3:ℕ) ^ (m + i + 1))⌋₊ : ℝ)
+        = 3 * σ * ((A ^ ((3:ℕ) ^ (m + i))) ^ 2 + (A ^ ((3:ℕ) ^ (m + i))) * σ
+            + (u ^ ((3:ℕ) ^ i) * v ^ ((3:ℕ) ^ i)).re) := by
   have hA0 : (0:ℝ) ≤ A := by linarith
   set β : ℝ := A ^ ((3:ℕ) ^ m) with hβdef
   have hβ1 : 1 < β := hβ.1
@@ -245,10 +248,6 @@ theorem pair_pow_sum_re_neg {A : ℝ} (hA1 : 1 < A) {m : ℕ}
   set b : ℝ := β ^ ((3:ℕ) ^ i) with hbdef
   set σ : ℝ := (t : ℝ) - b with hσdef
   have hsu : u ^ ((3:ℕ) ^ i) + v ^ ((3:ℕ) ^ i) = ((σ : ℝ) : ℂ) := ht
-  have him : (u ^ ((3:ℕ) ^ i) + v ^ ((3:ℕ) ^ i)).im = 0 := by rw [hsu]; simp
-  refine ⟨him, ?_⟩
-  have hre : (u ^ ((3:ℕ) ^ i) + v ^ ((3:ℕ) ^ i)).re = σ := by rw [hsu]; simp
-  rw [hre]
   -- the Newton identity, in `ℂ`
   have hx3 : ∀ w : ℂ, w ^ (3 * (3:ℕ) ^ i) = (w ^ ((3:ℕ) ^ i)) ^ 3 := by
     intro w; rw [mul_comm, pow_mul]
@@ -301,7 +300,12 @@ theorem pair_pow_sum_re_neg {A : ℝ} (hA1 : 1 < A) {m : ℕ}
   have habs1 := abs_lt.1 hσabs
   have habs2 := abs_le.1 hPre
   have hquad : 0 < b ^ 2 + b * σ + (u ^ ((3:ℕ) ^ i) * v ^ ((3:ℕ) ^ i)).re := by nlinarith
-  nlinarith [hreal, hlt, hquad]
+  have hσneg : σ < 0 := by nlinarith [hreal, hlt, hquad]
+  have hbA : b = A ^ ((3:ℕ) ^ (m + i)) := by rw [hbdef]; exact hpow i
+  refine ⟨σ, hsu, hσneg, hσabs, by rw [← hbA]; exact hb2, ?_⟩
+  rw [htv, hTv, hbA] at hreal
+  push_cast at hreal
+  exact hreal
 
 
 /-! ### Step 4: the `×3` orbit kills a complex pair
@@ -540,6 +544,295 @@ theorem exists_prime_short_interval (hS : Schoenfeld1976) (hRH : RiemannHypothes
     rw [hbdef] at h1
     linarith
 
+/-! ### Step 5b: the Mills gap is RH-small
+
+Under RH the least Mills number's digits *are* the greedy chain `gseq` (`gseq_le_digits` gives
+`gseq k ≤ p_{k+1}`, minimality against `exists_greedy_mills` gives `≤`), so `p_{k+1}` is the least
+prime above `p_k³` and Step 5a caps the gap by `√Y (log Y)²`, `Y = p_k³`. -/
+
+/-- Under RH the digits of the least Mills number are exactly the greedy chain. -/
+theorem digits_eq_gseq (h : PrimeBetweenCubesFrom 1) {A : ℝ} (hA : IsMinMills A) (k : ℕ) :
+    ⌊A ^ ((3:ℕ) ^ (k + 1))⌋₊ = gseq k := by
+  obtain ⟨A₀, hA₀1, hA₀m, hA₀fl⟩ := exists_greedy_mills h
+  obtain ⟨⟨hA1, hAm⟩, hAmin⟩ := hA
+  have hAle : A ≤ A₀ := hAmin ⟨hA₀1, hA₀m⟩
+  have h1 := gseq_le_digits hA1 hAm k
+  have h2 : ⌊A ^ ((3:ℕ) ^ (k + 1))⌋₊ ≤ ⌊A₀ ^ ((3:ℕ) ^ (k + 1))⌋₊ :=
+    Nat.floor_le_floor (pow_le_pow_left₀ (by linarith) hAle _)
+  rw [hA₀fl k] at h2
+  omega
+
+/-- **Step 5b**: under RH, `p_{k+1} ≤ p_k³ + √(p_k³) (log p_k³)²`. -/
+theorem gap_le_of_RH (hS : Schoenfeld1976) (hRH : RiemannHypothesis) {A : ℝ}
+    (hA : IsMinMills A) {k : ℕ} (hk : 1 ≤ k)
+    (hY : (41000:ℝ) ≤ ((⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℝ)) ^ 3) :
+    ((⌊A ^ ((3:ℕ) ^ (k + 1))⌋₊ : ℝ))
+      ≤ ((⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℝ)) ^ 3
+        + Real.sqrt (((⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℝ)) ^ 3)
+          * Real.log (((⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℝ)) ^ 3) ^ 2 := by
+  have hPB := primeBetweenCubes_of_schoenfeld hS hRH
+  obtain ⟨j, rfl⟩ : ∃ j, k = j + 1 := ⟨k - 1, by omega⟩
+  have e1 : ⌊A ^ ((3:ℕ) ^ (j + 1))⌋₊ = gseq j := digits_eq_gseq hPB hA j
+  have e2 : ⌊A ^ ((3:ℕ) ^ (j + 1 + 1))⌋₊ = gseq (j + 1) := digits_eq_gseq hPB hA (j + 1)
+  rw [e1] at hY
+  have hcast : ((gseq j ^ 3 : ℕ) : ℝ) = ((gseq j : ℝ)) ^ 3 := by push_cast; ring
+  have hy : (41000:ℝ) ≤ ((gseq j ^ 3 : ℕ) : ℝ) := by rw [hcast]; exact hY
+  obtain ⟨q, hq, hq1, hq2⟩ := exists_prime_short_interval hS hRH hy
+  have hq1n : gseq j ^ 3 < q := by exact_mod_cast hq1
+  have hlpa : lpa (gseq j ^ 3) ≤ q := lpa_le hq hq1n
+  have hle : ((lpa (gseq j ^ 3) : ℕ) : ℝ) ≤ (q : ℝ) := by exact_mod_cast hlpa
+  rw [e1, e2, gseq_succ]
+  rw [hcast] at hq2
+  linarith
+
+/-! ### Step 5c: the real case dies under RH
+
+With both other conjugates real and `‖v‖ < ‖u‖`, put `ρ = ‖u‖/‖v‖ > 1`.  Then
+`|s| ≥ ‖u‖^N/2` for large `N = 3ⁱ`, so the Newton gap identity gives
+`gap ≥ (3/4) ‖u‖^N X²` with `X = β^N`.  Squaring and using `gap ≤ √Y (log Y)²`,
+`Y = p_k³ ≤ X³`, `log Y ≤ 3N log β`:
+
+    (9/16) (β‖u‖²)^N ≤ 81 N⁴ (log β)⁴,   and   β‖u‖² ≥ ρ > 1,
+
+so `N⁴/ρ^N ≥ 1/(144 (log β)⁴)`, contradicting `N⁴/ρ^N → 0`. -/
+set_option maxHeartbeats 1600000 in
+theorem real_case_contradiction (hS : Schoenfeld1976) (hRH : RiemannHypothesis)
+    {A : ℝ} (hA : IsMinMills A) {m : ℕ} (hm : 1 ≤ m)
+    (hP : IsPisot (A ^ ((3:ℕ) ^ m))) {u v : ℂ}
+    (huv : otherConj (A ^ ((3:ℕ) ^ m)) = {u, v})
+    (hcube : ∀ k : ℕ, 1 ≤ k → (⌊A ^ ((3:ℕ) ^ k)⌋₊) ^ 3 < ⌊A ^ ((3:ℕ) ^ (k + 1))⌋₊)
+    (hfrac : ∀ᶠ k : ℕ in atTop, A ^ ((3:ℕ) ^ k) - (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℝ) < 1 / 2)
+    (hui : u.im = 0) (hvi : v.im = 0) (hnorm : ‖v‖ < ‖u‖) : False := by
+  have hA1 : 1 < A := hA.1.1
+  obtain ⟨i₀, hi₀⟩ := pair_pow_sum_re_neg hA1 hP huv hcube hfrac hm
+  obtain ⟨β, hβdef⟩ : ∃ β : ℝ, β = A ^ ((3:ℕ) ^ m) := ⟨_, rfl⟩
+  rw [← hβdef] at hP huv
+  have hβ1 : 1 < β := hP.1
+  have hβ0 : (0:ℝ) < β := by linarith
+  obtain ⟨L, hLdef⟩ : ∃ L : ℝ, L = Real.log β := ⟨_, rfl⟩
+  have hL0 : 0 < L := by rw [hLdef]; exact Real.log_pos hβ1
+  have hL4 : (0:ℝ) < L ^ 4 := pow_pos hL0 4
+  -- the conjugates are real numbers
+  have hure : u = ((u.re : ℝ) : ℂ) := Complex.ext (by simp) (by simp [hui])
+  have hvre : v = ((v.re : ℝ) : ℂ) := Complex.ext (by simp) (by simp [hvi])
+  have hun : ‖u‖ = |u.re| := by
+    conv_lhs => rw [hure]
+    rw [Complex.norm_real, Real.norm_eq_abs]
+  have hvn : ‖v‖ = |v.re| := by
+    conv_lhs => rw [hvre]
+    rw [Complex.norm_real, Real.norm_eq_abs]
+  -- the field norm keeps `‖u‖` large
+  have hprod : 1 ≤ β * (‖u‖ * ‖v‖) := by
+    have h := pisot_one_le_prod_norm hP
+    rw [huv] at h
+    simpa [mul_assoc] using h
+  have hv0 : 0 < ‖v‖ := by
+    rcases (norm_nonneg v).lt_or_eq with h | h
+    · exact h
+    · exfalso; rw [← h] at hprod; simp at hprod; nlinarith [hprod]
+  have hu0 : 0 < ‖u‖ := lt_trans hv0 hnorm
+  have hu1 : ‖u‖ < 1 :=
+    lt_of_le_of_lt (norm_le_conjMax (by rw [huv]; simp)) (conjMax_lt_one hP)
+  have hv1 : ‖v‖ < 1 := lt_trans hnorm hu1
+  obtain ⟨ρ, hρdef⟩ : ∃ ρ : ℝ, ρ = ‖u‖ / ‖v‖ := ⟨_, rfl⟩
+  have hρ1 : 1 < ρ := by rw [hρdef, lt_div_iff₀ hv0]; linarith
+  have hρβ : ρ ≤ β * ‖u‖ ^ 2 := by
+    rw [hρdef, div_le_iff₀ hv0]
+    nlinarith [mul_le_mul_of_nonneg_right hprod hu0.le]
+  -- thresholds
+  obtain ⟨n₁, hn₁⟩ : ∃ n₁ : ℕ, ∀ n ≥ n₁, ‖v‖ ^ n ≤ ‖u‖ ^ n / 2 := by
+    have hq1 : ‖v‖ / ‖u‖ < 1 := by rw [div_lt_one hu0]; exact hnorm
+    have htend : Filter.Tendsto (fun n : ℕ => (‖v‖ / ‖u‖) ^ n) atTop (nhds 0) :=
+      tendsto_pow_atTop_nhds_zero_of_lt_one (by positivity) hq1
+    obtain ⟨n₁, hn₁⟩ :=
+      eventually_atTop.1 (htend.eventually (gt_mem_nhds (by norm_num : (0:ℝ) < 1 / 2)))
+    refine ⟨n₁, fun n hn => ?_⟩
+    have h := (hn₁ n hn).le
+    rw [div_pow, div_le_div_iff₀ (by positivity) (by norm_num)] at h
+    rw [le_div_iff₀ (by norm_num : (0:ℝ) < 2)]
+    nlinarith [h, pow_pos hu0 n]
+  obtain ⟨n₂, hn₂⟩ : ∃ n₂ : ℕ, ∀ n ≥ n₂, (41000:ℝ) ≤ β ^ n := by
+    obtain ⟨n₂, hn₂⟩ := pow_unbounded_of_one_lt (41000:ℝ) hβ1
+    exact ⟨n₂, fun n hn => le_of_lt (lt_of_lt_of_le hn₂ (pow_le_pow_right₀ hβ1.le hn))⟩
+  obtain ⟨n₃, hn₃⟩ : ∃ n₃ : ℕ, ∀ n ≥ n₃, (n:ℝ) ^ 4 / ρ ^ n < 1 / (144 * L ^ 4) := by
+    have htend := tendsto_pow_const_div_const_pow_of_one_lt 4 hρ1
+    obtain ⟨n₃, hn₃⟩ :=
+      eventually_atTop.1 (htend.eventually
+        (gt_mem_nhds (show (0:ℝ) < 1 / (144 * L ^ 4) by
+          exact div_pos one_pos (by linarith))))
+    exact ⟨n₃, hn₃⟩
+  -- pick `i` beyond every threshold
+  obtain ⟨i, hii₀, hin₁, hin₂, hin₃⟩ :
+      ∃ i : ℕ, i₀ ≤ i ∧ n₁ ≤ (3:ℕ) ^ i ∧ n₂ ≤ (3:ℕ) ^ i ∧ n₃ ≤ (3:ℕ) ^ i := by
+    have h : max (max i₀ n₁) (max n₂ n₃) ≤ (3:ℕ) ^ (max (max i₀ n₁) (max n₂ n₃)) :=
+      (Nat.lt_pow_self (by norm_num)).le
+    refine ⟨max (max i₀ n₁) (max n₂ n₃), le_trans (le_max_left _ _) (le_max_left _ _), ?_, ?_, ?_⟩
+    · have h2 : n₁ ≤ max (max i₀ n₁) (max n₂ n₃) :=
+        le_trans (le_max_right _ _) (le_max_left _ _)
+      omega
+    · have h2 : n₂ ≤ max (max i₀ n₁) (max n₂ n₃) :=
+        le_trans (le_max_left _ _) (le_max_right _ _)
+      omega
+    · have h2 : n₃ ≤ max (max i₀ n₁) (max n₂ n₃) :=
+        le_trans (le_max_right _ _) (le_max_right _ _)
+      omega
+  obtain ⟨σ, hsu, hσneg, hσabs, hx2, hident⟩ := hi₀ i hii₀
+  obtain ⟨N, hNdef⟩ : ∃ N : ℕ, N = (3:ℕ) ^ i := ⟨_, rfl⟩
+  rw [← hNdef] at hsu hident hin₁ hin₂ hin₃
+  obtain ⟨p, hpdef⟩ : ∃ p : ℕ, p = ⌊A ^ ((3:ℕ) ^ (m + i))⌋₊ := ⟨_, rfl⟩
+  obtain ⟨P, hPdef⟩ : ∃ P : ℕ, P = ⌊A ^ ((3:ℕ) ^ (m + i + 1))⌋₊ := ⟨_, rfl⟩
+  obtain ⟨X, hXdef⟩ : ∃ X : ℝ, X = A ^ ((3:ℕ) ^ (m + i)) := ⟨_, rfl⟩
+  rw [← hpdef, ← hPdef, ← hXdef] at hident
+  rw [← hXdef] at hx2
+  have hXβ : X = β ^ N := by rw [hXdef, hNdef, hβdef, ← pow_mul, ← pow_add]
+  have hX41 : (41000:ℝ) ≤ X := by rw [hXβ]; exact hn₂ N hin₂
+  have hX0 : (0:ℝ) < X := by linarith
+  -- `σ = u.re^N + v.re^N`, so `−σ ≥ ‖u‖^N / 2`
+  have hupow : u ^ N = ((u.re ^ N : ℝ) : ℂ) := by rw [Complex.ofReal_pow, ← hure]
+  have hvpow : v ^ N = ((v.re ^ N : ℝ) : ℂ) := by rw [Complex.ofReal_pow, ← hvre]
+  have hσval : σ = u.re ^ N + v.re ^ N := by
+    have h : ((σ : ℝ) : ℂ) = ((u.re ^ N + v.re ^ N : ℝ) : ℂ) := by
+      rw [← hsu, hupow, hvpow]; push_cast; ring
+    exact Complex.ofReal_injective h
+  have hulow : ‖u‖ ^ N / 2 ≤ -σ := by
+    have hA' : |u.re ^ N| = ‖u‖ ^ N := by rw [hun, abs_pow]
+    have hB' : |v.re ^ N| = ‖v‖ ^ N := by rw [hvn, abs_pow]
+    have h1 : |u.re ^ N| - |v.re ^ N| ≤ |σ| := by
+      have h2 := abs_sub_abs_le_abs_sub (u.re ^ N) (-(v.re ^ N))
+      rw [abs_neg, sub_neg_eq_add, ← hσval] at h2
+      exact h2
+    have h3 := hn₁ N hin₁
+    have h4 : |σ| = -σ := abs_of_neg hσneg
+    rw [hA', hB', h4] at h1
+    linarith
+  -- the quadratic factor
+  have hPre : |(u ^ N * v ^ N).re| ≤ 1 := by
+    have h1 : (u ^ N * v ^ N).re = u.re ^ N * v.re ^ N := by
+      rw [hupow, hvpow, ← Complex.ofReal_mul, Complex.ofReal_re]
+    rw [h1, abs_mul, abs_pow, abs_pow, ← hun, ← hvn]
+    have h2 : ‖u‖ ^ N ≤ 1 := pow_le_one₀ hu0.le hu1.le
+    have h3 : ‖v‖ ^ N ≤ 1 := pow_le_one₀ hv0.le hv1.le
+    nlinarith [pow_nonneg hu0.le N, pow_nonneg hv0.le N]
+  have habs1 := abs_lt.1 hσabs
+  have habs2 := abs_le.1 hPre
+  have hquad : X ^ 2 / 2 ≤ X ^ 2 + X * σ + (u ^ N * v ^ N).re := by
+    nlinarith [hx2, mul_nonneg (show (0:ℝ) ≤ X - 2 by linarith) (show (0:ℝ) ≤ X + 1 by linarith)]
+  -- the gap lower bound
+  have hgapid : (P : ℝ) - (p : ℝ) ^ 3 = 3 * (-σ) * (X ^ 2 + X * σ + (u ^ N * v ^ N).re) := by
+    linear_combination -hident
+  have hgaplow : 3 / 4 * ‖u‖ ^ N * X ^ 2 ≤ (P : ℝ) - (p : ℝ) ^ 3 := by
+    rw [hgapid]
+    have h1 : ‖u‖ ^ N / 2 * (X ^ 2 / 2) ≤ (-σ) * (X ^ 2 + X * σ + (u ^ N * v ^ N).re) :=
+      mul_le_mul hulow hquad (by positivity) (by linarith)
+    linarith [h1]
+  -- the gap upper bound
+  have hpX : (p : ℝ) ≤ X := by rw [hpdef, hXdef]; exact Nat.floor_le (by positivity)
+  have hp41 : (41000:ℝ) ≤ (p : ℝ) := by
+    have h : (41000:ℕ) ≤ p := by
+      rw [hpdef]
+      refine Nat.le_floor ?_
+      rw [← hXdef]
+      exact_mod_cast hX41
+    exact_mod_cast h
+  obtain ⟨Y, hYdef⟩ : ∃ Y : ℝ, Y = (p : ℝ) ^ 3 := ⟨_, rfl⟩
+  have hY0 : (0:ℝ) < Y := by rw [hYdef]; positivity
+  have hY41 : (41000:ℝ) ≤ Y := by
+    rw [hYdef]
+    have h1 : (41000:ℝ) ^ 3 ≤ (p:ℝ) ^ 3 := pow_le_pow_left₀ (by norm_num) hp41 3
+    have h2 : (41000:ℝ) ≤ (41000:ℝ) ^ 3 := by norm_num
+    exact le_trans h2 h1
+  have hgapup := gap_le_of_RH hS hRH hA (k := m + i) (by omega)
+    (by rw [← hpdef, ← hYdef]; exact hY41)
+  rw [← hpdef, ← hPdef, ← hYdef] at hgapup
+  have hsqY : Real.sqrt Y ^ 2 = Y := Real.sq_sqrt hY0.le
+  have hlogY0 : 0 ≤ Real.log Y := Real.log_nonneg (by linarith)
+  have hlogY : Real.log Y ≤ 3 * (N:ℝ) * L := by
+    have h1 : Real.log Y = 3 * Real.log (p:ℝ) := by
+      rw [hYdef, Real.log_pow]; push_cast; ring
+    have h2 : Real.log (p:ℝ) ≤ Real.log X := Real.log_le_log (by linarith) hpX
+    have h3 : Real.log X = (N:ℝ) * L := by rw [hXβ, Real.log_pow, hLdef]
+    rw [h3] at h2
+    linarith
+  have hYX : Y ≤ X ^ 3 := by rw [hYdef]; exact pow_le_pow_left₀ (by linarith) hpX 3
+  have hgapnn : (0:ℝ) ≤ (P : ℝ) - Y := by
+    rw [hYdef]
+    nlinarith [hgaplow, pow_pos hu0 N, sq_nonneg X, hX0]
+  have hsq1 : ((P:ℝ) - Y) ^ 2 ≤ Y * Real.log Y ^ 4 := by
+    have h1 : (P:ℝ) - Y ≤ Real.sqrt Y * Real.log Y ^ 2 := by linarith [hgapup]
+    have h3 : ((P:ℝ) - Y) ^ 2 ≤ (Real.sqrt Y * Real.log Y ^ 2) ^ 2 :=
+      pow_le_pow_left₀ hgapnn h1 2
+    calc ((P:ℝ) - Y) ^ 2 ≤ (Real.sqrt Y * Real.log Y ^ 2) ^ 2 := h3
+      _ = Y * Real.log Y ^ 4 := by rw [mul_pow, hsqY]; ring
+  have hsq2 : (3 / 4 * ‖u‖ ^ N * X ^ 2) ^ 2 ≤ ((P:ℝ) - Y) ^ 2 := by
+    have h2 : 3 / 4 * ‖u‖ ^ N * X ^ 2 ≤ (P:ℝ) - Y := by rw [hYdef]; exact hgaplow
+    exact pow_le_pow_left₀ (by positivity) h2 2
+  -- assemble the numeric contradiction
+  have hlog4 : Real.log Y ^ 4 ≤ 81 * (N:ℝ) ^ 4 * L ^ 4 := by
+    have h := pow_le_pow_left₀ hlogY0 hlogY 4
+    calc Real.log Y ^ 4 ≤ (3 * (N:ℝ) * L) ^ 4 := h
+      _ = 81 * (N:ℝ) ^ 4 * L ^ 4 := by ring
+  have hmain : 9 / 16 * (‖u‖ ^ 2) ^ N * X ^ 4 ≤ X ^ 3 * (81 * (N:ℝ) ^ 4 * L ^ 4) := by
+    have h1 : (3 / 4 * ‖u‖ ^ N * X ^ 2) ^ 2 = 9 / 16 * (‖u‖ ^ 2) ^ N * X ^ 4 := by
+      rw [← pow_mul, mul_comm 2 N, pow_mul]; ring
+    have hLN : (0:ℝ) ≤ 81 * (N:ℝ) ^ 4 * L ^ 4 := by positivity
+    have h2 : Y * Real.log Y ^ 4 ≤ X ^ 3 * (81 * (N:ℝ) ^ 4 * L ^ 4) :=
+      le_trans (mul_le_mul_of_nonneg_left hlog4 hY0.le)
+        (mul_le_mul_of_nonneg_right hYX hLN)
+    rw [← h1]
+    linarith [hsq1, hsq2]
+  have hX3 : (0:ℝ) < X ^ 3 := by positivity
+  have hfold : 9 / 16 * (β * ‖u‖ ^ 2) ^ N ≤ 81 * (N:ℝ) ^ 4 * L ^ 4 := by
+    have h1 : (β * ‖u‖ ^ 2) ^ N = (‖u‖ ^ 2) ^ N * X := by rw [mul_pow, hXβ]; ring
+    rw [h1]
+    refine le_of_mul_le_mul_right ?_ hX3
+    calc 9 / 16 * ((‖u‖ ^ 2) ^ N * X) * X ^ 3
+        = 9 / 16 * (‖u‖ ^ 2) ^ N * X ^ 4 := by ring
+      _ ≤ X ^ 3 * (81 * (N:ℝ) ^ 4 * L ^ 4) := hmain
+      _ = 81 * (N:ℝ) ^ 4 * L ^ 4 * X ^ 3 := by ring
+  have hρN : ρ ^ N ≤ (β * ‖u‖ ^ 2) ^ N := pow_le_pow_left₀ (by linarith) hρβ N
+  have hfinal : 9 / 16 * ρ ^ N ≤ 81 * (N:ℝ) ^ 4 * L ^ 4 := by linarith [hρN, hfold]
+  have hρpos : (0:ℝ) < ρ ^ N := pow_pos (by linarith) N
+  have hlast := hn₃ N hin₃
+  rw [div_lt_div_iff₀ hρpos (by linarith)] at hlast
+  nlinarith [hlast, hfinal, hρpos, hL4]
+
+/-- **Step 5d**: two *real* other conjugates of equal modulus must be `w, −w`, and then
+`s_i = w^N + (−w)^N = 0` for the odd exponent `N = 3ⁱ` — contradicting `s_i < 0`. -/
+theorem equal_norm_contradiction {A : ℝ} (hA1 : 1 < A) {m : ℕ} (hm : 1 ≤ m)
+    (hP : IsPisot (A ^ ((3:ℕ) ^ m))) {u v : ℂ}
+    (huv : otherConj (A ^ ((3:ℕ) ^ m)) = {u, v})
+    (hcube : ∀ k : ℕ, 1 ≤ k → (⌊A ^ ((3:ℕ) ^ k)⌋₊) ^ 3 < ⌊A ^ ((3:ℕ) ^ (k + 1))⌋₊)
+    (hfrac : ∀ᶠ k : ℕ in atTop, A ^ ((3:ℕ) ^ k) - (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℝ) < 1 / 2)
+    (hui : u.im = 0) (hvi : v.im = 0) (hne : u ≠ v) (hnorm : ‖u‖ = ‖v‖) : False := by
+  have hure : u = ((u.re : ℝ) : ℂ) := Complex.ext (by simp) (by simp [hui])
+  have hvre : v = ((v.re : ℝ) : ℂ) := Complex.ext (by simp) (by simp [hvi])
+  have hun : ‖u‖ = |u.re| := by
+    conv_lhs => rw [hure]
+    rw [Complex.norm_real, Real.norm_eq_abs]
+  have hvn : ‖v‖ = |v.re| := by
+    conv_lhs => rw [hvre]
+    rw [Complex.norm_real, Real.norm_eq_abs]
+  -- `u.re = −v.re`
+  have habs : |u.re| = |v.re| := by rw [← hun, ← hvn, hnorm]
+  have hneg : u.re = -v.re := by
+    rcases abs_eq_abs.1 habs with h | h
+    · exact absurd (by rw [hure, hvre, h]) hne
+    · exact h
+  obtain ⟨i₀, hi₀⟩ := pair_pow_sum_re_neg hA1 hP huv hcube hfrac hm
+  obtain ⟨σ, hsu, hσneg, -⟩ := hi₀ i₀ le_rfl
+  have hodd : Odd ((3:ℕ) ^ i₀) := Odd.pow (by decide)
+  have hzero : u ^ ((3:ℕ) ^ i₀) + v ^ ((3:ℕ) ^ i₀) = 0 := by
+    rw [hure, hvre, hneg]
+    push_cast
+    rw [hodd.neg_pow]
+    ring
+  rw [hzero] at hsu
+  have : σ = 0 := by
+    have h := congrArg Complex.re hsu.symm
+    simpa using h
+  rw [this] at hσneg
+  exact absurd hσneg (lt_irrefl 0)
+
 /-- **Saito (2025), Theorem 1.7, first half**: in the Pisot branch of Mills' constant, the two
 other conjugates of the cubic Pisot number are real (no complex pair).  Unconditional beyond the
 hypotheses of Saito 2024 Thm 1.2. -/
@@ -601,7 +894,9 @@ theorem pisot_branch_otherConj_real (hB : BakerHarmanPintz2001) (hM : Matomaki20
   obtain ⟨i₀, hi₀⟩ := pair_pow_sum_re_neg hA1 hP huv hcube hfrac hm
   have hzneg : ∀ i ≥ i₀, (z ^ ((3:ℕ) ^ i)).re < 0 := by
     intro i hi
-    have h := (hi₀ i hi).2
+    obtain ⟨σ, hsσ, hσneg, -⟩ := hi₀ i hi
+    have h : (z ^ ((3:ℕ) ^ i) + ((starRingEnd ℂ) z) ^ ((3:ℕ) ^ i)).re < 0 := by
+      rw [hsσ]; simpa using hσneg
     rw [show ((starRingEnd ℂ) z) ^ ((3:ℕ) ^ i) = (starRingEnd ℂ) (z ^ ((3:ℕ) ^ i)) from
       (map_pow _ _ _).symm] at h
     simp only [Complex.add_re, Complex.conj_re] at h
@@ -629,6 +924,47 @@ Theorem 1.8; RH via Schoenfeld's explicit prime-counting bound). -/
 theorem transcendental_of_RH (hS : Schoenfeld1976) (hRH : RiemannHypothesis)
     (hB : BakerHarmanPintz2001) (hM : Matomaki2007) (hD : Dubickas2022)
     (hG : Dubickas2022PisotGap) {A : ℝ} (hA : IsMinMills A) : Transcendental ℚ A := by
-  sorry
+  rcases transcendental_or_pisot hB hM hD hG hA with h | ⟨m, hm, hP, h3⟩
+  · exact h
+  exfalso
+  have hA1 : 1 < A := hA.1.1
+  have hAm : IsMills A := hA.1.2
+  -- the Mills digit facts
+  have h36 := saito_lemma36C (c := 3) hB hM (by norm_num) hA
+  have hμ0 : (0:ℝ) < (19 * ((3:ℕ):ℝ)) / 40 - 1 := by norm_num
+  have hK0 : (0:ℝ) < (2:ℝ) ^ ((19 * ((3:ℕ):ℝ)) / 40) := Real.rpow_pos_of_pos (by norm_num) _
+  have hfrac : ∀ᶠ k : ℕ in atTop, A ^ ((3:ℕ) ^ k) - (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℝ) < 1 / 2 := by
+    filter_upwards [decay_of_lemma36C (c := 3) (by norm_num) hA1 hAm h36,
+      eventually_rpow_neg_lt (c := 3) hA1 (by norm_num) hμ0 hK0 (by norm_num : (0:ℝ) < 1 / 2)]
+      with k hk hk2
+    exact lt_of_le_of_lt hk.2 hk2
+  have hcube : ∀ k : ℕ, 1 ≤ k → (⌊A ^ ((3:ℕ) ^ k)⌋₊) ^ 3 < ⌊A ^ ((3:ℕ) ^ (k + 1))⌋₊ := by
+    intro k hk
+    obtain ⟨j, rfl⟩ : ∃ j, k = j + 1 := ⟨k - 1, by omega⟩
+    exact mdigitC_pow_lt (c := 3) (by norm_num) hA1 hAm j
+  -- the two other conjugates, both real
+  have halg : IsIntegral ℚ (A ^ ((3:ℕ) ^ m)) := hP.2.1.tower_top
+  have hc2 : Multiset.card (otherConj (A ^ ((3:ℕ) ^ m))) = 2 := by
+    have := card_otherConj_add_one halg
+    omega
+  obtain ⟨u, v, huv⟩ := Multiset.card_eq_two.1 hc2
+  have hreal := pisot_branch_otherConj_real hB hM hA hm hP h3
+  have hui : u.im = 0 := hreal u (by rw [huv]; simp)
+  have hvi : v.im = 0 := hreal v (by rw [huv]; simp)
+  -- the conjugates are distinct
+  have hnd : ((minpoly ℚ (A ^ ((3:ℕ) ^ m))).aroots ℂ).Nodup :=
+    nodup_roots ((Polynomial.separable_map _).mpr (minpoly.irreducible halg).separable)
+  have hndo : (otherConj (A ^ ((3:ℕ) ^ m))).Nodup := Multiset.Nodup.erase _ hnd
+  have hne : u ≠ v := by
+    rw [huv] at hndo
+    simpa using (Multiset.nodup_cons.1 hndo).1
+  -- trichotomy on the two moduli
+  rcases lt_trichotomy ‖u‖ ‖v‖ with hlt | heq | hgt
+  · -- swap the pair
+    have huv' : otherConj (A ^ ((3:ℕ) ^ m)) = {v, u} := by
+      rw [huv]; exact Multiset.cons_swap u v 0
+    exact real_case_contradiction hS hRH hA hm hP huv' hcube hfrac hvi hui hlt
+  · exact equal_norm_contradiction hA1 hm hP huv hcube hfrac hui hvi hne heq
+  · exact real_case_contradiction hS hRH hA hm hP huv hcube hfrac hui hvi hgt
 
 end LeanFormalizations.Mills
