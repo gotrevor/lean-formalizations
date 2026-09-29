@@ -39,6 +39,7 @@ import LeanFormalizations.Literature.Schanuel
 import LeanFormalizations.Literature.GelfondSchneider
 import LeanFormalizations.Literature.Lindemann
 import LeanFormalizations.NumberTheory.Mills.Wright
+import LeanFormalizations.NumberTheory.Transcendence.ETranscendental
 
 namespace LeanFormalizations.Schanuel
 
@@ -249,11 +250,76 @@ theorem lindemannWeierstrassAlgIndep_of_schanuel (hS : SchanuelConjecture) :
     LindemannWeierstrassAlgIndep := by
   sorry
 
+open Complex IntermediateField Algebra Set in
+/-- `iπ` and `π` are `ℚ`-linearly independent. -/
+theorem linearIndependent_I_mul_pi_pi :
+    LinearIndependent ℚ ![Complex.I * (Real.pi:ℂ), (Real.pi : ℂ)] := by
+  rw [LinearIndependent.pair_iff]
+  intro s t hst
+  simp only [Rat.smul_def] at hst
+  have him := congrArg Complex.im hst
+  have hre := congrArg Complex.re hst
+  simp [Real.pi_ne_zero] at him hre
+  exact ⟨him, hre⟩
+
+open Complex IntermediateField Algebra Set in
+/-- `1` and an irrational real are `ℚ`-linearly independent in `ℂ`. -/
+theorem linearIndependent_one_ofReal {x : ℝ} (hx : Irrational x) :
+    LinearIndependent ℚ ![(1:ℂ), (x : ℂ)] := by
+  rw [LinearIndependent.pair_iff]
+  intro s t hst
+  simp only [Rat.smul_def] at hst
+  have hre := congrArg Complex.re hst
+  simp at hre
+  by_cases ht : t = 0
+  · subst ht; simp at hre ⊢; exact hre
+  · exfalso
+    apply hx.ne_rat (-s/t)
+    push_cast
+    field_simp at hre ⊢
+    linarith [hre]
+
+open Complex IntermediateField Algebra Set in
+/-- Schanuel ⇒ `π` and `e^π` are algebraically independent, complex form: take `z = (iπ, π)`,
+whose exponentials are `−1` and `e^π`. -/
+theorem algebraicIndependent_pi_exp_pi_complex (hS : SchanuelConjecture) :
+    AlgebraicIndependent ℚ ![(Real.pi : ℂ), Complex.exp (Real.pi : ℂ)] := by
+  refine algebraicIndependent_of_schanuel hS _ linearIndependent_I_mul_pi_pi
+    ![(Real.pi : ℂ), Complex.exp (Real.pi : ℂ)] ?_
+  have hmemP : ((Real.pi : ℝ) : ℂ) ∈
+      IntermediateField.adjoin ℚ (Set.range ![(Real.pi : ℂ), Complex.exp (Real.pi : ℂ)]) :=
+    subset_adjoin _ _ ⟨0, rfl⟩
+  have hmemX : Complex.exp (Real.pi : ℂ) ∈
+      IntermediateField.adjoin ℚ (Set.range ![(Real.pi : ℂ), Complex.exp (Real.pi : ℂ)]) :=
+    subset_adjoin _ _ ⟨1, rfl⟩
+  rintro w (⟨i, rfl⟩ | ⟨i, rfl⟩)
+  · fin_cases i
+    · exact isAlgebraic_mul_rat isAlgebraic_I (isAlgebraic_algebraMap
+        (R := IntermediateField.adjoin ℚ
+          (Set.range ![(Real.pi : ℂ), Complex.exp (Real.pi : ℂ)])) (A := ℂ) ⟨_, hmemP⟩)
+    · exact isAlgebraic_algebraMap
+        (R := IntermediateField.adjoin ℚ
+          (Set.range ![(Real.pi : ℂ), Complex.exp (Real.pi : ℂ)])) (A := ℂ) ⟨_, hmemP⟩
+  · fin_cases i
+    · show IsAlgebraic _ (Complex.exp (Complex.I * (Real.pi : ℂ)))
+      rw [show Complex.I * (Real.pi:ℂ) = (Real.pi:ℂ) * Complex.I by ring, Complex.exp_mul_I]
+      simpa using (isAlgebraic_algebraMap
+        (R := IntermediateField.adjoin ℚ
+          (Set.range ![(Real.pi : ℂ), Complex.exp (Real.pi : ℂ)])) (A := ℂ) (-1))
+    · exact isAlgebraic_algebraMap
+        (R := IntermediateField.adjoin ℚ
+          (Set.range ![(Real.pi : ℂ), Complex.exp (Real.pi : ℂ)])) (A := ℂ) ⟨_, hmemX⟩
+
 /-- Schanuel ⇒ `π` and `e^π` are algebraically independent: take `z = (iπ, π)`.  Proved
 unconditionally by Nesterenko (1996). -/
 theorem algebraicIndependent_pi_exp_pi (hS : SchanuelConjecture) :
     AlgebraicIndependent ℚ ![Real.pi, Real.exp Real.pi] := by
-  sorry
+  refine algebraicIndependent_real_of_complex ?_
+  have h := algebraicIndependent_pi_exp_pi_complex hS
+  have hcomp : (fun i => ((![Real.pi, Real.exp Real.pi] i : ℝ) : ℂ))
+      = ![(Real.pi : ℂ), Complex.exp (Real.pi : ℂ)] := by
+    funext i; fin_cases i <;> simp [Complex.ofReal_exp]
+  rw [hcomp]; exact h
 
 /-! ## Open consequences -/
 
@@ -345,10 +411,53 @@ theorem transcendental_exp_one_mul_pi (hS : SchanuelConjecture) :
   rw [hrw]
   exact isAlgebraic_div_rat hC isAlgebraic_adjoin_exp_one
 
+open Complex IntermediateField Algebra Set in
+/-- Schanuel ⇒ `e` and `e^e` are algebraically independent, complex form: take `z = (1, e)`,
+which is `ℚ`-linearly independent because `e` is irrational (`e_transcendental`), with
+exponentials `e` and `e^e`. -/
+theorem algebraicIndependent_exp_one_exp_exp_one_complex (hS : SchanuelConjecture) :
+    AlgebraicIndependent ℚ
+      ![((Real.exp 1 : ℝ) : ℂ), Complex.exp ((Real.exp 1 : ℝ) : ℂ)] := by
+  refine algebraicIndependent_of_schanuel hS _
+    (linearIndependent_one_ofReal (LeanFormalizations.Transcendence.e_transcendental.irrational))
+    ![((Real.exp 1 : ℝ) : ℂ), Complex.exp ((Real.exp 1 : ℝ) : ℂ)] ?_
+  have hmemE : ((Real.exp 1 : ℝ) : ℂ) ∈ IntermediateField.adjoin ℚ
+      (Set.range ![((Real.exp 1 : ℝ) : ℂ), Complex.exp ((Real.exp 1 : ℝ) : ℂ)]) :=
+    subset_adjoin _ _ ⟨0, rfl⟩
+  have hmemX : Complex.exp ((Real.exp 1 : ℝ) : ℂ) ∈ IntermediateField.adjoin ℚ
+      (Set.range ![((Real.exp 1 : ℝ) : ℂ), Complex.exp ((Real.exp 1 : ℝ) : ℂ)]) :=
+    subset_adjoin _ _ ⟨1, rfl⟩
+  rintro w (⟨i, rfl⟩ | ⟨i, rfl⟩)
+  · fin_cases i
+    · exact isAlgebraic_one
+    · exact isAlgebraic_algebraMap
+        (R := IntermediateField.adjoin ℚ
+          (Set.range ![((Real.exp 1 : ℝ) : ℂ), Complex.exp ((Real.exp 1 : ℝ) : ℂ)]))
+        (A := ℂ) ⟨_, hmemE⟩
+  · fin_cases i
+    · show IsAlgebraic _ (Complex.exp 1)
+      have heq : Complex.exp 1 = ((Real.exp 1 : ℝ) : ℂ) := by
+        simp
+      rw [heq]
+      exact isAlgebraic_algebraMap
+        (R := IntermediateField.adjoin ℚ
+          (Set.range ![((Real.exp 1 : ℝ) : ℂ), Complex.exp ((Real.exp 1 : ℝ) : ℂ)]))
+        (A := ℂ) ⟨_, hmemE⟩
+    · show IsAlgebraic _ (Complex.exp ((Real.exp 1 : ℝ) : ℂ))
+      exact isAlgebraic_algebraMap
+        (R := IntermediateField.adjoin ℚ
+          (Set.range ![((Real.exp 1 : ℝ) : ℂ), Complex.exp ((Real.exp 1 : ℝ) : ℂ)]))
+        (A := ℂ) ⟨_, hmemX⟩
+
 /-- Schanuel ⇒ `e` and `e^e` are algebraically independent: take `z = (1, e)`. -/
 theorem algebraicIndependent_exp_one_exp_exp_one (hS : SchanuelConjecture) :
     AlgebraicIndependent ℚ ![Real.exp 1, Real.exp (Real.exp 1)] := by
-  sorry
+  refine algebraicIndependent_real_of_complex ?_
+  have h := algebraicIndependent_exp_one_exp_exp_one_complex hS
+  have hcomp : (fun i => ((![Real.exp 1, Real.exp (Real.exp 1)] i : ℝ) : ℂ))
+      = ![((Real.exp 1 : ℝ) : ℂ), Complex.exp ((Real.exp 1 : ℝ) : ℂ)] := by
+    funext i; fin_cases i <;> simp [Complex.ofReal_exp]
+  rw [hcomp]; exact h
 
 /-- Schanuel ⇒ logarithms of distinct primes are algebraically independent: take
 `z = (log p₁, …, log pₙ)`, which are `ℚ`-linearly independent by unique factorization, with
