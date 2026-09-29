@@ -44,14 +44,14 @@ graph LR
 | Hypothesis | Status | Theorems resting on it |
 |---|---|---|
 | `SchanuelConjecture` | 🔮 conjecture | 50 |
-| `BakerHarmanPintz2001` | 📚 theorem | 17 |
+| `BakerHarmanPintz2001` | 📚 theorem | 19 |
 | `AlgIndepLogsConjecture` | 🔮 conjecture | 15 |
-| `Matomaki2007` | 📚 theorem | 13 |
+| `Matomaki2007` | 📚 theorem | 15 |
 | `LindemannWeierstrassAlgIndep` | 📚 theorem | 11 |
-| `Dubickas2022PisotGap` | 📚 theorem | 8 |
+| `Dubickas2022PisotGap` | 📚 theorem | 10 |
+| `Dubickas2022` | 📚 theorem | 9 |
 | `Schoenfeld1976` | 📚 theorem | 8 |
 | `RiemannHypothesis` | 🔮 conjecture | 8 |
-| `Dubickas2022` | 📚 theorem | 7 |
 | `Stephan2026Ridout` | 📚 theorem | 6 |
 | `Nesterenko1996` | 📚 theorem | 6 |
 | `FourExponentialsConjecture` | 🔮 conjecture | 5 |
@@ -60,6 +60,7 @@ graph LR
 | `SixExponentials` | 📚 theorem | 4 |
 | `Baker1966` | 📚 theorem | 3 |
 | `BakerHomogeneous` | 📚 theorem | 3 |
+| `GaussCongruenceTrace` | 📚 theorem | 3 |
 | `GelfondSchneider1934` | 📚 theorem | 2 |
 | `FiveExponentials` | 📚 theorem | 2 |
 | `Dudek2016` | 📚 theorem | 2 |
@@ -71,7 +72,7 @@ graph LR
 | `Roth1955` | 📚 theorem | 1 |
 | `Mahler1957` | 📚 theorem | 1 |
 
-Unconditional theorems in the scanned namespaces (no named hypothesis): 320.
+Unconditional theorems in the scanned namespaces (no named hypothesis): 331.
 
 ## Refuted
 
