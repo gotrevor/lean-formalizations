@@ -198,9 +198,23 @@ not missing**: `bakerTwoLogs_of_schanuel` below proves `BakerTwoLogs`, so
 `fiveExponentials_of_shifted_of_schanuel` closes the five exponentials theorem from the shifted
 six exponentials theorem plus Schanuel.  What stays open is only the *unconditional* form.
 -/
+/-- `Baker1966` (the inhomogeneous linear forms theorem) specialises to `BakerTwoLogs`: take
+`n = 2`, `β = (γ, -r₀, -r₁)`. -/
+theorem bakerTwoLogs_of_baker1966 (hB : Baker1966) : BakerTwoLogs := by
+  intro ℓ r γ hexp hγ hγ0 heq
+  refine hB 2 ![γ, -((r 0 : ℚ) : ℂ), -((r 1 : ℚ) : ℂ)] ℓ ?_ hexp (by simpa using hγ0) ?_
+  · intro i; fin_cases i
+    · exact hγ
+    · exact (isAlgebraic_ratCast (r 0)).neg
+    · exact (isAlgebraic_ratCast (r 1)).neg
+  · rw [Fin.sum_univ_two]
+    simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons, Fin.succ_zero_eq_one,
+      Fin.succ_one_eq_two, Matrix.cons_val_two, Matrix.tail_cons]
+    rw [heq]; ring
+
 theorem fiveExponentials_of_shifted (h : SixExponentialsShifted) (hB : Baker1966) :
-    FiveExponentials := by
-  sorry
+    FiveExponentials :=
+  fiveExponentials_of_shifted_of_baker h (bakerTwoLogs_of_baker1966 hB)
 
 theorem sixExponentials_of_strongOverQ (h : StrongSixExponentialsOverQ) : SixExponentials := by
   intro x y hx hy
