@@ -432,6 +432,114 @@ theorem pisot_pow_two_of_pow_eq {β : ℝ} (hβ : IsPisot β) {u v : ℂ}
   rw [hzu, norm_pow]
   exact pow_lt_one₀ (norm_nonneg u) hu1 (by omega)
 
+/-! ### Step 5a: an RH short-interval bound on the least prime above `y`
+
+Schoenfeld's bound gives `π(y + g) − π(y) > g/log(y+g) − (√y log y + √b log b)/(8π)`, so a prime
+exists in `(y, y + g]` as soon as `g/log(y+g)` beats the two error terms.  With
+`g = √y (log y)²` the main term is `≥ √y log y / 2` and the errors are `≤ √y log y / (2π)`:
+comfortable.  Note the `log²`, not `log`: with `g ≍ √y log y` the main term would be only
+`≍ √y`, which does *not* beat the `√y log y` error. -/
+
+/-- `(log y)² ≤ √y` for `y ≥ 41000`: apply `9 log²m < 32 √m` at `m = √y` and use
+`y^(1/4) ≥ 128/9`. -/
+theorem log_sq_le_sqrt {y : ℝ} (hy : (41000:ℝ) ≤ y) : Real.log y ^ 2 ≤ Real.sqrt y := by
+  have hy0 : (0:ℝ) < y := by linarith
+  have hsy : (1:ℝ) ≤ Real.sqrt y := by
+    rw [show (1:ℝ) = Real.sqrt 1 by simp]
+    exact Real.sqrt_le_sqrt (by linarith)
+  have h := nine_log_sq_lt_sqrt hsy
+  have hlog : Real.log (Real.sqrt y) = Real.log y / 2 := Real.log_sqrt hy0.le
+  rw [hlog] at h
+  set w : ℝ := Real.sqrt (Real.sqrt y) with hw
+  have hwsq : w ^ 2 = Real.sqrt y := Real.sq_sqrt (Real.sqrt_nonneg y)
+  have hwge : (128/9 : ℝ) ≤ w := by
+    rw [hw, show (128/9 : ℝ) = Real.sqrt ((128/9 : ℝ) ^ 2) by
+      rw [Real.sqrt_sq (by norm_num)]]
+    refine Real.sqrt_le_sqrt ?_
+    rw [show ((128/9 : ℝ)) ^ 2 = Real.sqrt (((128/9 : ℝ)) ^ 2 ^ 2) by
+      rw [show ((128/9 : ℝ)) ^ 2 ^ 2 = (((128/9 : ℝ)) ^ 2) ^ 2 by ring,
+        Real.sqrt_sq (by positivity)]]
+    exact Real.sqrt_le_sqrt (by norm_num; linarith)
+  nlinarith [h, hwsq, hwge]
+
+/-- **Step 5a**: under RH (via Schoenfeld) there is a prime in `(y, y + √y (log y)²]` for every
+`y ≥ 41000`. -/
+theorem exists_prime_short_interval (hS : Schoenfeld1976) (hRH : RiemannHypothesis)
+    {y : ℝ} (hy : (41000:ℝ) ≤ y) :
+    ∃ p : ℕ, p.Prime ∧ y < p ∧ (p : ℝ) ≤ y + Real.sqrt y * Real.log y ^ 2 := by
+  obtain ⟨C, hC⟩ := hS hRH
+  have hy0 : (0:ℝ) < y := by linarith
+  have hy1 : (1:ℝ) < y := by linarith
+  have hlogy : 0 < Real.log y := Real.log_pos hy1
+  set g : ℝ := Real.sqrt y * Real.log y ^ 2 with hgdef
+  have hsq : Real.sqrt y ^ 2 = y := Real.sq_sqrt hy0.le
+  have hsy0 : 0 < Real.sqrt y := Real.sqrt_pos.2 hy0
+  have hgpos : 0 < g := by positivity
+  have hgy : g ≤ y := by
+    have h := log_sq_le_sqrt hy
+    calc g ≤ Real.sqrt y * Real.sqrt y := by
+          rw [hgdef]; exact mul_le_mul_of_nonneg_left h hsy0.le
+      _ = y := by rw [← pow_two, hsq]
+  set b : ℝ := y + g with hbdef
+  have hab : y ≤ b := by rw [hbdef]; linarith
+  have hb2y : b ≤ 2 * y := by rw [hbdef]; linarith
+  have hbpos : (0:ℝ) < b := by linarith
+  have hlogb : 0 < Real.log b := Real.log_pos (by linarith)
+  have hlogb2 : Real.log b ≤ 2 * Real.log y := by
+    have h1 : Real.log b ≤ Real.log (2 * y) := Real.log_le_log hbpos hb2y
+    rw [Real.log_mul (by norm_num) (ne_of_gt hy0)] at h1
+    have h2 : Real.log 2 ≤ Real.log y := Real.log_le_log (by norm_num) (by linarith)
+    linarith
+  have hsb : Real.sqrt b ≤ 2 * Real.sqrt y := by
+    have h1 : Real.sqrt b ≤ Real.sqrt (2 * y) := Real.sqrt_le_sqrt hb2y
+    have h2 : Real.sqrt (2 * y) ≤ 2 * Real.sqrt y := by
+      rw [show (2:ℝ) * Real.sqrt y = Real.sqrt (4 * y) by
+        rw [show (4:ℝ) * y = 2 ^ 2 * y by ring, Real.sqrt_mul (by positivity),
+          Real.sqrt_sq (by norm_num)]]
+      exact Real.sqrt_le_sqrt (by linarith)
+    linarith
+  -- the main term beats the errors
+  have hpi : (3.14:ℝ) < Real.pi := Real.pi_gt_d2
+  have hJ : Real.sqrt y * Real.log y / (8 * Real.pi) + Real.sqrt b * Real.log b / (8 * Real.pi)
+      < ∫ t in y..b, 1 / Real.log t := by
+    rw [← add_div]
+    refine lt_of_lt_of_le ?_ (le_log_integral (by linarith) hab)
+    rw [div_lt_div_iff₀ (by positivity) hlogb]
+    have hmain : Real.sqrt y * Real.log y * Real.log b ≤ 2 * g := by
+      rw [hgdef]
+      nlinarith [hlogb2, hsy0, hlogy]
+    have herr : Real.sqrt b * Real.log b ≤ 4 * (Real.sqrt y * Real.log y) := by
+      nlinarith [hsb, hlogb2, Real.sqrt_nonneg b, hsy0, hlogy]
+    have hbma : b - y = g := by rw [hbdef]; ring
+    rw [hbma]
+    nlinarith [hpi, hmain, herr, hgpos, mul_pos hsy0 hlogy, Real.pi_pos]
+  -- Schoenfeld at both ends, and the integral splits
+  have hy2657 : (2657:ℝ) ≤ y := by linarith
+  have hb2657 : (2657:ℝ) ≤ b := by linarith
+  have hCa := hC y hy2657
+  have hCb := hC b hb2657
+  have hsplit : (∫ t in (2:ℝ)..y, 1 / Real.log t) + (∫ t in y..b, 1 / Real.log t)
+      = ∫ t in (2:ℝ)..b, 1 / Real.log t :=
+    intervalIntegral.integral_add_adjacent_intervals
+      (one_div_log_intervalIntegrable le_rfl (by linarith))
+      (one_div_log_intervalIntegrable (by linarith) hab)
+  have hlt : (Nat.primeCounting ⌊y⌋₊ : ℝ) < (Nat.primeCounting ⌊b⌋₊ : ℝ) := by
+    have h1 := abs_lt.1 hCa
+    have h2 := abs_lt.1 hCb
+    nlinarith [h1.1, h1.2, h2.1, h2.2, hJ, hsplit]
+  have hltn : Nat.primeCounting ⌊y⌋₊ < Nat.primeCounting ⌊b⌋₊ := by exact_mod_cast hlt
+  obtain ⟨p, hp, hp1, hp2⟩ := exists_prime_of_primeCounting_lt hltn
+  refine ⟨p, hp, ?_, ?_⟩
+  · have h1 : y < (⌊y⌋₊ : ℝ) + 1 := Nat.lt_floor_add_one y
+    have h2 : (⌊y⌋₊ : ℝ) + 1 ≤ (p : ℝ) := by
+      have : (⌊y⌋₊ : ℕ) + 1 ≤ p := by omega
+      exact_mod_cast this
+    linarith
+  · have h1 : ((⌊b⌋₊ : ℕ) : ℝ) ≤ b := Nat.floor_le hbpos.le
+    have h2 : ((p : ℕ) : ℝ) ≤ ((⌊b⌋₊ : ℕ) : ℝ) := by exact_mod_cast hp2
+    rw [hbdef] at h1
+    linarith
+
 /-- **Saito (2025), Theorem 1.7, first half**: in the Pisot branch of Mills' constant, the two
 other conjugates of the cubic Pisot number are real (no complex pair).  Unconditional beyond the
 hypotheses of Saito 2024 Thm 1.2. -/

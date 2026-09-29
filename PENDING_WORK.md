@@ -1319,3 +1319,20 @@ descriptor` from the mathlib build tree is spurious; rerun `lake build`.
   one needs `g ≳ √y log²y/(4π)`.  That is still only polynomial in `N` (since
   `log p_k³ ≍ 3N log β`), so `ρ^(N/2)` beats it.  Next lap: prove that gap bound by the same
   route as `primeBetweenCubes_large`, then the `|β₂| ≠ |β₃|` dichotomy.
+
+- **DONE (same lap): the gap bound.**  `exists_prime_short_interval` is proved: under
+  `Schoenfeld1976 + RiemannHypothesis` there is a prime in `(y, y + √y (log y)²]` for every
+  `y ≥ 41000`.  Helper `log_sq_le_sqrt` (`(log y)² ≤ √y` for `y ≥ 41000`, from
+  `nine_log_sq_lt_sqrt` at `m = √y` plus `y^(1/4) ≥ 128/9`).  Margin is comfortable: main term
+  `≥ √y log y / 2`, errors `≤ √y log y / (2π)`.
+  **Next (the remaining crux of `transcendental_of_RH`):**
+  1. `digits_eq_gseq`: for `A = minMills` under RH, `⌊A^(3^(k+1))⌋₊ = gseq k` — combine
+     `gseq_le_digits` with `A ≤ A₀` from `exists_greedy_mills` + minimality.  Hence
+     `p_{k+2} = lpa (p_{k+1}³)`, so `exists_prime_short_interval` caps the gap.
+  2. `|u| ≠ |v|`: if `v = −u` then `s_N = 0` for odd `N = 3ⁱ`, contradicting
+     `pair_pow_sum_re_neg` (`s_i < 0`).  So WLOG `|u| > |v|`, `ρ = |u|/|v| > 1`.
+  3. Lower bound: `|s| ≥ |u|^N/2` for large `N`, and `|u|² ≥ ρ/β` from
+     `pisot_one_le_prod_norm` (`β|u||v| ≥ 1`), so
+     `gap = 3|s|(x₁² + x₁s + (uv)^N) ≥ (3/4) ρ^(N/2) β^(3N/2)`.
+  4. Against step 5a's `√y log²y` at `y = p_k³ ≍ β^(3N)`: `ρ^(N/2)` exponential in `N` beats
+     `(3N log β)²` polynomial.  Contradiction.
