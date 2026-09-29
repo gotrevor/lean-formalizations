@@ -54,7 +54,84 @@ theorem dvd_trace_pow_three_of_glCard {n : ℕ} (C : Matrix (Fin n) (Fin n) ℤ)
     (hp : p.Prime) (hdiv : (p : ℤ) ∣ (C ^ (3 ^ m)).trace) (hdet : ¬ (p : ℤ) ∣ C.det)
     (h3 : padicValNat 3 (glCard n p) ≤ m) :
     ∃ j, 1 ≤ j ∧ (p : ℤ) ∣ (C ^ (3 ^ (m + j))).trace := by
-  sorry
+  haveI : Fact p.Prime := ⟨hp⟩
+  -- reduce mod `p`
+  set f : ℤ →+* ZMod p := Int.castRingHom (ZMod p) with hf
+  set D : Matrix (Fin n) (Fin n) (ZMod p) := f.mapMatrix C with hD
+  have htr : ∀ N : ℕ, ((C ^ N).trace : ZMod p) = (D ^ N).trace := by
+    intro N
+    rw [hD, ← map_pow]
+    simp [Matrix.trace, Matrix.diag, RingHom.mapMatrix_apply, Matrix.map_apply, hf]
+  -- `D` is a unit
+  have hdetD : IsUnit D.det := by
+    have hmd : D.det = f C.det := by
+      rw [hD]; exact (RingHom.map_det f C).symm
+    rw [hmd]
+    refine Ne.isUnit ?_
+    simpa [hf, ZMod.intCast_zmod_eq_zero_iff_dvd] using hdet
+  obtain ⟨u, hu⟩ := (Matrix.isUnit_iff_isUnit_det D).2 hdetD
+  -- the order of the general linear group
+  have hcard : Nat.card (GL (Fin n) (ZMod p)) = glCard n p := by
+    rw [Matrix.card_GL_field]
+    simp [glCard, ZMod.card]
+  obtain ⟨N, hN⟩ : ∃ N, N = glCard n p := ⟨_, rfl⟩
+  have hNpos : 0 < N := by
+    rw [hN, ← hcard]; exact Nat.card_pos
+  have hNne : N ≠ 0 := hNpos.ne'
+  have huN : u ^ N = 1 := by
+    rw [hN, ← hcard]; exact pow_card_eq_one'
+  -- split off the 3-part
+  obtain ⟨v, hv⟩ : ∃ v, v = padicValNat 3 N := ⟨_, rfl⟩
+  have hvm : v ≤ m := by rw [hv, hN]; exact h3
+  obtain ⟨M, hM⟩ : ∃ M, M = N / 3 ^ v := ⟨_, rfl⟩
+  have hp3 : Nat.Prime 3 := by norm_num
+  have hfac : N.factorization 3 = v := by
+    rw [hv, Nat.factorization_def _ hp3]
+  have hsplit : 3 ^ v * M = N := by
+    have := Nat.ordProj_mul_ordCompl_eq_self N 3
+    rw [hfac] at this
+    rw [hM, hfac] at *
+    exact this
+  have hMdvd : ¬ (3 ∣ M) := by
+    have := Nat.not_dvd_ordCompl hp3 hNne
+    rw [hfac] at this
+    rwa [hM]
+  have hMpos : 0 < M := by
+    rcases Nat.eq_zero_or_pos M with h | h
+    · rw [h, mul_zero] at hsplit; exact absurd hsplit.symm hNne
+    · exact h
+  -- `g := u ^ 3 ^ m` satisfies `g ^ M = 1`
+  set g := u ^ (3 ^ m) with hg
+  have hgM : g ^ M = 1 := by
+    rw [hg, ← pow_mul]
+    have : N ∣ 3 ^ m * M := by
+      rw [← hsplit]
+      exact Nat.mul_dvd_mul_right (pow_dvd_pow 3 hvm) M
+    obtain ⟨c, hc⟩ := this
+    rw [hc, pow_mul, huN, one_pow]
+  -- `3 ^ j ≡ 1 [MOD M]` for `j = φ M`
+  set j := Nat.totient M with hj
+  have hjpos : 1 ≤ j := Nat.totient_pos.2 hMpos
+  have hcop : Nat.Coprime 3 M := (Nat.Prime.coprime_iff_not_dvd hp3).2 hMdvd
+  have hmod : 3 ^ j ≡ 1 [MOD M] := Nat.ModEq.pow_totient hcop
+  obtain ⟨s, hs⟩ : ∃ s, 3 ^ j = 1 + M * s := by
+    have h1 : 1 ≤ 3 ^ j := Nat.one_le_pow _ _ (by norm_num)
+    obtain ⟨c, hc⟩ := (Nat.modEq_iff_dvd' h1).1 hmod.symm
+    exact ⟨c, by omega⟩
+  have hgfix : g ^ (3 ^ j) = g := by
+    rw [hs, pow_add, pow_one, pow_mul, hgM, one_pow, mul_one]
+  refine ⟨j, hjpos, ?_⟩
+  have key : D ^ (3 ^ (m + j)) = D ^ (3 ^ m) := by
+    have : (u : Matrix (Fin n) (Fin n) (ZMod p)) ^ (3 ^ (m + j)) =
+        (u : Matrix (Fin n) (Fin n) (ZMod p)) ^ (3 ^ m) := by
+      rw [← Units.val_pow_eq_pow_val, ← Units.val_pow_eq_pow_val]
+      congr 1
+      rw [pow_add, pow_mul, ← hg, hgfix]
+    rwa [hu] at this
+  have : ((C ^ (3 ^ (m + j))).trace : ZMod p) = 0 := by
+    rw [htr, key, ← htr]
+    exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).2 hdiv
+  exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 this
 
 /-- **Step 2 (unconditional).**  If `t_k = tr C^(3^k)` is prime and strictly increasing from some
 point on, then `v₃ |GL_n(𝔽_{t_k})| > k` for all large `k`. -/
