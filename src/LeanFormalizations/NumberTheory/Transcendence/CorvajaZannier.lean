@@ -927,6 +927,96 @@ theorem czLemma3_subspace (hSub : Stephan2026Subspace) {K : Type} [Field K] [Num
     refine Eq.trans ?_ hax
     exact Finset.sum_congr rfl fun j _ ↦ by rw [smul_eq_mul, mul_comm]
 
+/-!
+## Step 13 — CZ's Lemma 2 (the unit equation) and the Skolem–Mahler–Lech replacement
+
+CZ prove Lemma 1 but *cite* Lemma 2 (Evertse, van der Poorten–Schlickewei; [S, Ch. 4]).  It is a
+separate application of the Subspace Theorem and is the only Subspace input of the paper not
+discharged here; it enters as the named leaf `czLemma2`.
+
+Its value beyond Lemma 3 is that it **replaces Skolem–Mahler–Lech** in CZ's Lemma 4: a two-term
+relation `bβᵢ^m + cβⱼ^m = 0` holding at two different exponents forces `(βᵢ/βⱼ)^(m−m′) = 1`
+outright.  mathlib has no SML, so this route is strictly cheaper.
+-/
+
+/-- Powers of `S`-units are `S`-units. -/
+theorem IsSUnit.pow {Sfin : Finset (FinitePlace K)} {u : K} (hu : IsSUnit Sfin u) (m : ℕ) :
+    IsSUnit Sfin (u ^ m) :=
+  ⟨pow_ne_zero _ hu.1, fun v hv ↦ by rw [map_pow, hu.2 v hv, one_pow]⟩
+
+/-- **Corvaja–Zannier, Lemma 2** (the unit-equation theorem of Evertse and
+van der Poorten–Schlickewei, CZ's reference [S, Chapter 4]).  An infinite set of `S`-unit tuples
+satisfying a fixed nontrivial linear relation satisfies a *two-term* relation along an infinite
+subset.
+
+DISCLOSED LEAF: this is the one Subspace-Theorem application of the paper that is not derived
+here.  It is a genuine second theorem (finiteness of nondegenerate solutions of the `S`-unit
+equation, up to scaling, plus induction on vanishing subsums), not a corollary of `czLemma1_*`. -/
+theorem czLemma2 (hSub : Stephan2026Subspace) {K : Type} [Field K] [NumberField K]
+    {ι : Type} [Fintype ι] [DecidableEq ι] (Sfin : Finset (FinitePlace K))
+    (Ξ : Set (ι → K)) (hΞ : Ξ.Infinite) (hS : ∀ x ∈ Ξ, ∀ i, IsSUnit Sfin (x i))
+    (a : ι → K) (ha : ∀ i, a i ≠ 0) (hrel : ∀ x ∈ Ξ, ∑ i, a i * x i = 0) :
+    ∃ i j : ι, i ≠ j ∧ ∃ b c : K, b ≠ 0 ∧ c ≠ 0 ∧ {x ∈ Ξ | b * x i + c * x j = 0}.Infinite := by
+  sorry
+
+/-- **The Skolem–Mahler–Lech step, from CZ's Lemma 2.**  If a fixed nontrivial linear combination
+of the `m`-th powers of `S`-units vanishes for infinitely many `m`, then two of them have a ratio
+that is a root of unity.  (This is what CZ get from SML in the proof of Lemma 4; Lemma 2 gives it
+directly, which matters because mathlib has no Skolem–Mahler–Lech.) -/
+theorem exists_pow_ratio_eq_one (hSub : Stephan2026Subspace) {K : Type} [Field K] [NumberField K]
+    {ι : Type} [Fintype ι] [DecidableEq ι] [Nontrivial ι] (Sfin : Finset (FinitePlace K))
+    (β : ι → K) (hβ : ∀ i, IsSUnit Sfin (β i)) (a : ι → K) (ha : ∀ i, a i ≠ 0)
+    (M : Set ℕ) (hM : M.Infinite) (hrel : ∀ m ∈ M, ∑ i, a i * β i ^ m = 0) :
+    ∃ i j : ι, i ≠ j ∧ ∃ N : ℕ, 0 < N ∧ (β i / β j) ^ N = 1 := by
+  classical
+  set f : ℕ → (ι → K) := fun m i ↦ β i ^ m with hf
+  by_cases hinj : Set.InjOn f M
+  · have hΞ : (f '' M).Infinite := hM.image hinj
+    obtain ⟨i, j, hij, b, c, hb, hc, hinf⟩ :=
+      czLemma2 hSub Sfin (f '' M) hΞ
+        (fun x hx i ↦ by obtain ⟨m, _, rfl⟩ := hx; exact (hβ i).pow m)
+        a ha (fun x hx ↦ by obtain ⟨m, hm, rfl⟩ := hx; exact hrel m hm)
+    obtain ⟨x, hx, y, hy, hxy⟩ := hinf.nontrivial
+    obtain ⟨⟨m, hm, hxm⟩, hxrel⟩ := hx
+    obtain ⟨⟨n, hn, hyn⟩, hyrel⟩ := hy
+    have hmn : m ≠ n := by rintro rfl; exact hxy (hxm.symm.trans hyn)
+    have hkey : ∀ k : ℕ, b * β i ^ k + c * β j ^ k = 0 → (β i / β j) ^ k = -c / b := by
+      intro k hk
+      have hbj : β j ^ k ≠ 0 := pow_ne_zero _ (hβ j).1
+      rw [div_pow, div_eq_div_iff hbj hb]
+      linear_combination hk
+    have h1 : (β i / β j) ^ m = -c / b := by
+      refine hkey m ?_
+      rw [← hxm] at hxrel
+      simpa [hf] using hxrel
+    have h2 : (β i / β j) ^ n = -c / b := by
+      refine hkey n ?_
+      rw [← hyn] at hyrel
+      simpa [hf] using hyrel
+    have hr : β i / β j ≠ 0 := div_ne_zero (hβ i).1 (hβ j).1
+    rcases lt_or_gt_of_ne hmn with h | h
+    · refine ⟨i, j, hij, n - m, by omega, ?_⟩
+      refine mul_left_cancel₀ (pow_ne_zero m hr) ?_
+      rw [← pow_add, mul_one, show m + (n - m) = n by omega, h2, h1]
+    · refine ⟨i, j, hij, m - n, by omega, ?_⟩
+      refine mul_left_cancel₀ (pow_ne_zero n hr) ?_
+      rw [← pow_add, mul_one, show n + (m - n) = m by omega, h1, h2]
+  · -- the power map is not injective on `M`: then *every* ratio is already a root of unity
+    rw [Set.InjOn] at hinj
+    push Not at hinj
+    obtain ⟨m, hm, n, hn, hfe, hmn⟩ := hinj
+    have hall : ∀ i, β i ^ m = β i ^ n := fun i ↦ congrFun hfe i
+    obtain ⟨i, j, hij⟩ := exists_pair_ne ι
+    have hr : β i / β j ≠ 0 := div_ne_zero (hβ i).1 (hβ j).1
+    have hdiv : ∀ k : ℕ, (β i / β j) ^ k = β i ^ k / β j ^ k := fun k ↦ div_pow _ _ _
+    rcases lt_or_gt_of_ne hmn with h | h
+    · refine ⟨i, j, hij, n - m, by omega, ?_⟩
+      refine mul_left_cancel₀ (pow_ne_zero m hr) ?_
+      rw [← pow_add, mul_one, show m + (n - m) = n by omega, hdiv, hdiv, hall i, hall j]
+    · refine ⟨i, j, hij, m - n, by omega, ?_⟩
+      refine mul_left_cancel₀ (pow_ne_zero n hr) ?_
+      rw [← pow_add, mul_one, show n + (m - n) = m by omega, hdiv, hdiv, hall i, hall j]
+
 end CZ
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
