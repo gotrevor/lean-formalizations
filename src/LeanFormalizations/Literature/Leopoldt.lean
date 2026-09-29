@@ -15,21 +15,30 @@ math worth having in the world."*
 ## Formulation (avoids the p-adic logarithm, which mathlib at our pin lacks)
 
 The classical statement (Washington, *Cyclotomic Fields*, §5.5) is: the `ℤ_p`-rank of the closure
-of the global units in `∏_{v | p} U_v` equals their `ℤ`-rank.  Equivalently, the map
-`ℤ_p ⊗ E → ∏_{v|p} K_v^×` is injective.  We phrase injectivity through **integer exponent
-sequences**.  For multiplicatively independent units `ε₁, …, ε_r`, if integer vectors `m⁽ⁿ⁾`
-converge `p`-adically to `a ∈ ℤ_p^r` and `∏ εᵢ^{mᵢ⁽ⁿ⁾} → 1` in every completion `K_v` with
-`v | p`, then `a = 0`.
+of the global units in `∏_{v | p} U_v⁽¹⁾` equals their `ℤ`-rank.  Equivalently, the map
+`ℤ_p ⊗ E → ∏_{v|p} U_v⁽¹⁾` is injective, after projecting each local unit to its principal part
+(`π : U_v → U_v⁽¹⁾`, killing prime-to-`p` torsion; `U_v⁽¹⁾` is pro-`p`).  We phrase injectivity through
+**integer exponent sequences**.  For multiplicatively independent units `ε₁, …, ε_r`, if integer
+vectors `m⁽ⁿ⁾` converge `p`-adically to `a ∈ ℤ_p^r` and `∏ εᵢ^{mᵢ⁽ⁿ⁾} → 1` in every completion `K_v`
+with `v | p`, then `a = 0`.
 
-Why this is faithful (Ren's argument, about 75%; the stress tests in
-`NumberTheory/Leopoldt/` are there to catch a mistake):
-- Let `N` be prime to `p` with every `εᵢ^N` a principal unit at every `v | p`; `N` is the order of
-  the residue-field unit groups.  Pass to a subsequence with `m⁽ⁿ⁾ ≡ c (mod N)` constant.  Then
-  `ε^{m⁽ⁿ⁾} = ε^c·(ε^N)^{(m⁽ⁿ⁾−c)/N} → ε^c·(ε^N)^b` with `b = (a−c)/N ∈ ℤ_p^r`, which is the image of
-  `a ⊗ ε` under the classical map.
-- So the hypothesis says `a` lies in the kernel, and the conclusion `a = 0` is injectivity.
-- Independent families suffice.  `ℤ_p` is flat, so injectivity for a basis of `E`/torsion gives
-  injectivity for every independent subfamily, and conversely a basis is one.
+**Faithfulness.**  Ren's argument; an independent adversarial review on 2026-09-29 judged it faithful
+at 88% and supplied the converse direction.
+- *Classical ⇒ Lean.*  Let `N` be the lcm of `q_v − 1` over `v | p`, where `q_v` is the residue field
+  size.  `N` is prime to `p` (true also for ramified `v` and for `p = 2`), and every `εᵢ^N` is
+  principal.  Some residue class `c mod N` occurs infinitely often among the `m⁽ⁿ⁾`; pass to that
+  subsequence.  `(m⁽ⁿ⁾ − c)/N → (a − c)/N` in `ℤ_p`, since `N` is a `p`-adic unit.  `U_v⁽¹⁾` is pro-`p`, so
+  `k ↦ (ε^N)^k` extends continuously to `ℤ_p`.  Applying `π`, the limit gives `π(ε)^a = 1`.  So
+  `a ⊗ ε` is in the kernel, and flatness of `ℤ_p` (`ℤ_p ⊗ ℤ^r ↪ ℤ_p ⊗ E`) gives `a = 0`.  Note that the
+  prime-to-`p` part of `ε^c` need not be 1 on its own; it is 1 here only because the limit is 1.
+- *Lean ⇒ classical.*  Write `E = μ(K) × ⟨η₁, …, η_s⟩`.  A nonzero kernel element is `ζ·η^a`, with `ζ`
+  a `p`-power root of unity, and `a ≠ 0` because the map is injective on `μ_{p^∞}`.  Multiply by
+  `p^k = ord ζ` to get `a' = p^k·a ≠ 0` with `π(η)^{a'} = 1`.  Choose `m⁽ⁿ⁾ = N·(integer truncations of
+  a'/N)`: the factor `N` kills the prime-to-`p` parts.  Then `η^{m⁽ⁿ⁾} → 1` at every `v | p` while
+  `m⁽ⁿ⁾ → a' ≠ 0`, contradicting the Lean statement.  (Naive truncations of `a'` do not work; the
+  `m ≡ 0 mod N` choice is needed.)
+- Quantifying over all independent families is equivalent to a basis, by flatness.  Some `v` lies
+  over `p`, because `p` is a nonunit in `𝓞 K`.
 -/
 import Mathlib
 
