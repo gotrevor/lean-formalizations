@@ -2,6 +2,17 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## ✅ DONE (phase 19, 2026-09-29, 1 lap): Waldschmidt 2023, Conjecture 1 and its derivations
+
+All five frozen statements are PROVED and `#print axioms`-clean; `Waldschmidt2023.lean` is
+sorry-free.  No statement was underivable.  The one real content: Conjecture 1 alone (not full
+Schanuel) suffices for four exponentials — phase 16's heart lemma uses `hS` only through
+`algebraicIndependent_of_exp_isAlgebraic`, so weakening the hypothesis is exact.  Route and
+gotchas: the file header.  Remaining uncovered survey items (see `WALDSCHMIDT-2023.md`):
+Leopoldt §2, the structural-rank §5, and Conj 7 (Roy's equivalent of Schanuel).
+
+### original directive
+
 ## 🎯 THE OBJECTIVE (phase 19, 2026-09-29): Waldschmidt 2023, Conjecture 1 and its derivations
 
 Coverage map: `WALDSCHMIDT-2023.md`.  Target `NumberTheory/Transcendence/Waldschmidt2023.lean`, 5 frozen statements: Schanuel ⇒ Conj 1; Conj 1 ⇒ four exponentials (the survey's route, separate from phase 16's); Conj 1 ⇒ Baker homogeneous; Conj 1 ⇒ `log 2, π` algebraically independent; Conj 1 at `n = 1` from Lindemann–Weierstrass.  Inputs are `Literature/Waldschmidt2023.lean` plus the phase 15–17 toolkit.  Frozen: the five, every earlier name, all of `Literature/`.  Stop condition: that file sorry-free.
