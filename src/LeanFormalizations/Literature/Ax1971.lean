@@ -17,9 +17,10 @@ slides 1 and 21.  If `y₁, …, yₙ ∈ tℂ[[t]]` are `ℚ`-linearly independ
 `trdeg_{ℂ(t)} ℂ(t)(y, e^y) ≥ n`.
 
 `n ≥ 1` is needed: for `n = 0` the field is `ℂ` itself and the bound `1` fails.  The hypothesis
-"`yᵢ ∈ tℂ[[t]]`" is essential too: with constant `y₁ = 1`, `ℂ(1, e) = ℂ` has transcendence degree 0.
-Wikipedia's phrasing ("power series … linearly independent over ℚ", with no zero-constant
-condition) omits it.
+"`yᵢ ∈ tℂ[[t]]`" (no constant term) is essential: with constant `y₁ = 1`, `ℂ(1, e) = ℂ` has
+transcendence degree 0.  Wikipedia states it correctly ("in tℂ[[t]]", raw wikitext checked
+2026-09-29); an earlier note here claiming otherwise came from a web-fetch summary that dropped
+the `t`.
 
 The ambient field is `FractionRing ℂ⟦X⟧`, and `e^{y}` is `(PowerSeries.exp ℂ).subst y`.
 -/
