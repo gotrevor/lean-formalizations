@@ -561,13 +561,106 @@ lemma champApprox_injective : Function.Injective champApprox := by
   · exact heq
   · exact absurd h.symm (key m' m hgt)
 
+
+/-! ## Leaf 7: irrationality -/
+
+lemma champApprox_mul_den (m : ℕ) : champApprox m * (champDen m : ℚ) = (champNum m : ℚ) := by
+  have h : ((champDen m : ℚ)) ≠ 0 := by
+    have := champDen_pos m; positivity
+  unfold champApprox
+  field_simp
+
+/-- A nonzero rational distance to `champApprox m` is at least `1/(q.den · champDen m)`. -/
+lemma rat_approx_lower (q : ℚ) (m : ℕ) (h : q ≠ champApprox m) :
+    (1 : ℚ) / ((q.den : ℚ) * (champDen m : ℚ)) ≤ |q - champApprox m| := by
+  have hqd : (0:ℚ) < (q.den : ℚ) := by exact_mod_cast q.pos
+  have hDd : (0:ℚ) < (champDen m : ℚ) := by exact_mod_cast champDen_pos m
+  set z : ℤ := q.num * (champDen m : ℤ) - (champNum m : ℤ) * (q.den : ℤ) with hzdef
+  have hq : (q.num : ℚ) = q * (q.den : ℚ) := by
+    exact (Rat.mul_den_eq_num q).symm
+  have hz : (q - champApprox m) * ((q.den : ℚ) * (champDen m : ℚ)) = (z : ℚ) := by
+    rw [hzdef]
+    push_cast
+    rw [hq]
+    linear_combination (-(q.den : ℚ)) * champApprox_mul_den m
+  have hne : (z : ℚ) ≠ 0 := by
+    rw [← hz]
+    exact mul_ne_zero (sub_ne_zero.mpr h) (by positivity)
+  have hz1 : (1:ℚ) ≤ |(z:ℚ)| := by
+    have hz0 : z ≠ 0 := by exact_mod_cast hne
+    have h1 : (1:ℤ) ≤ |z| := Int.one_le_abs (by omega)
+    have hcast : ((|z| : ℤ) : ℚ) = |(z:ℚ)| := by push_cast; ring
+    rw [← hcast]; exact_mod_cast h1
+  rw [div_le_iff₀ (mul_pos hqd hDd)]
+  calc (1:ℚ) ≤ |(z:ℚ)| := hz1
+    _ = |q - champApprox m| * ((q.den : ℚ) * (champDen m : ℚ)) := by
+        rw [← hz, abs_mul, abs_of_pos (mul_pos hqd hDd)]
+
+lemma two_mul_lt_pow (d : ℕ) : 2 * d < 10 ^ (4 * d + 5) := by
+  have h1 : d < 2 ^ d := Nat.lt_two_pow_self
+  have h2 : (2:ℕ) ^ d ≤ 10 ^ d := Nat.pow_le_pow_left (by norm_num) d
+  have h3 : (10:ℕ) ^ d ≤ 10 ^ (4 * d + 4) := Nat.pow_le_pow_right (by norm_num) (by omega)
+  have h4 : (10:ℕ) ^ (4 * d + 5) = 10 * 10 ^ (4 * d + 4) := by ring
+  omega
+
+theorem irrational_champernowne : Irrational champernowne := by
+  rintro ⟨q, hq⟩
+  set m := q.den with hm
+  have hne : q ≠ champApprox m := by
+    intro hcon
+    have h1 := (champ_err m).1
+    have : (0:ℝ) < 4 / 5 * (1 / 10 ^ blockStart (m + 1)) := by positivity
+    rw [← hq, hcon, sub_self, abs_zero] at h1
+    have hp : (0:ℝ) < 4 / 5 * (1 / 10 ^ blockStart (m + 1)) := by positivity
+    linarith
+  have hlow := rat_approx_lower q m hne
+  have hlowR : (1 : ℝ) / ((q.den : ℝ) * (champDen m : ℝ)) ≤
+      |champernowne - (champApprox m : ℝ)| := by
+    rw [← hq]
+    have := (Rat.cast_le (K := ℝ)).mpr hlow
+    push_cast at this
+    exact this
+  have hup := (champ_err m).2
+  have hqd : (0:ℝ) < (q.den : ℝ) := by exact_mod_cast q.pos
+  have hDd : (0:ℝ) < (champDen m : ℝ) := by exact_mod_cast champDen_pos m
+  have hbs : (0:ℝ) < 10 ^ blockStart (m + 1) := by positivity
+  -- 10^{N_{m+1}} ≤ 2 · q.den · champDen m
+  have hkey : (10:ℝ) ^ blockStart (m + 1) ≤ 2 * ((q.den : ℝ) * (champDen m : ℝ)) := by
+    have h := le_trans hlowR hup
+    rw [div_le_iff₀ (mul_pos hqd hDd)] at h
+    have e : 2 * (1 / (10:ℝ) ^ blockStart (m + 1)) * ((q.den : ℝ) * (champDen m : ℝ))
+        = (2 * ((q.den : ℝ) * (champDen m : ℝ))) / 10 ^ blockStart (m + 1) := by
+      field_simp
+    rw [e, le_div_iff₀ hbs] at h
+    linarith
+  -- and champDen m ≤ 10^E with 3E+1 ≤ N_{m+1}
+  set E := blockStart m + 2 * m + 2 with hE
+  have hDen : (champDen m : ℝ) ≤ (10:ℝ) ^ E := by exact_mod_cast champDen_le m
+  have hexp := champ_exponent m
+  have hpow : (10:ℝ) ^ (3 * E + 1) ≤ 10 ^ blockStart (m + 1) :=
+    pow_le_pow_right₀ (by norm_num) hexp
+  have hE0 : (0:ℝ) < (10:ℝ) ^ E := by positivity
+  have hsplit : (10:ℝ) ^ (3 * E + 1) = 10 ^ (2 * E + 1) * 10 ^ E := by
+    rw [← pow_add]; ring_nf
+  have hfinal : (10:ℝ) ^ (2 * E + 1) ≤ 2 * (q.den : ℝ) := by
+    have h := le_trans hpow hkey
+    rw [hsplit] at h
+    have h2 : (10:ℝ) ^ (2 * E + 1) * 10 ^ E ≤ 2 * (q.den : ℝ) * 10 ^ E := by
+      refine le_trans h ?_
+      nlinarith [hDen, hqd]
+    exact le_of_mul_le_mul_right h2 hE0
+  -- but E ≥ 2m+2 = 2 q.den + 2, so 2E+1 ≥ 4 q.den + 5, and 10^(4d+5) > 2d
+  have hEge : 4 * q.den + 5 ≤ 2 * E + 1 := by rw [hE, hm]; omega
+  have hmono : (10:ℝ) ^ (4 * q.den + 5) ≤ 10 ^ (2 * E + 1) :=
+    pow_le_pow_right₀ (by norm_num) hEge
+  have hnat : (2 * q.den : ℝ) < (10:ℝ) ^ (4 * q.den + 5) := by
+    have := two_mul_lt_pow q.den
+    exact_mod_cast this
+  linarith
+
 /-- Sanity anchor for the definition: the first eleven digits are `12345678910`. -/
 theorem champernowne_prefix :
     ⌊champernowne * 10 ^ 11⌋ = 12345678910 := by
-  sorry
-
-/-- Champernowne's constant is irrational (unconditional). -/
-theorem irrational_champernowne : Irrational champernowne := by
   sorry
 
 /-- **Mahler (1937)**: Champernowne's constant is transcendental, from Roth's theorem. -/
