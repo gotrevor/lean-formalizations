@@ -73,7 +73,7 @@ graph LR
 | `Roth1955` | 📚 theorem | 1 |
 | `Mahler1957` | 📚 theorem | 1 |
 
-Unconditional theorems in the scanned namespaces (no named hypothesis): 336.
+Unconditional theorems in the scanned namespaces (no named hypothesis): 341.
 
 ## Refuted
 

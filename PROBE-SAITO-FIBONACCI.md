@@ -35,8 +35,26 @@ The proof is elementary.  It is the phase-29 mechanism (Lagrange in `GL_2(𝔽_p
 - For `h = 2`, `F(8) + 2 = 23` is prime and `23 ∣ F(16) + 2 = 989`, as the `j = 1` mechanism predicts.
 - For `h = 4`, `F(16) + 4 = 991` is prime and divides `F(2^(4+30)) + 4`.
 
+## Status: PROVED IN LEAN (phase 32, 2026-09-29)
+
+`src/LeanFormalizations/NumberTheory/Mills/SaitoFibonacci.lean` is sorry-free and all five
+statements are `#print axioms`-clean (`propext`/`Classical.choice`/`Quot.sound` only).  The
+argument above went through unchanged; no step failed.  Notes from the formalization:
+
+- The sign flip was cleanest via a private `lucas m = 2 F(m+1) − F(m)` over `ℤ`, with
+  `lucas (2m) = lucas m ^ 2 − 2(−1)^m` derived from `Nat.fib_two_mul_add_one` plus a Cassini
+  identity `F(m+1)² − F(m+1)F(m) − F(m)² = (−1)^m` (two-line induction).  Only `≥ n+1` is needed,
+  so the exact valuation never has to be computed.
+- `F(2^n)` odd: `Nat.fib_gcd` with `gcd (2^n) 3 = 1` and `F 3 = 2`, no parity induction.
+- `v₂|GL₂(𝔽_p)| = 2 v₂(p−1) + v₂(p+1)` via `Nat.factorization_mul`; `min = 1` from the `p % 4`
+  split, and `k/2 ≤ max` in both branches (`k ≤ 2a` when `b = 1`; `k ≤ b+1 ≤ 2b` when `a = 1`).
+- The mechanism needed an *entrywise* copy of `SharedConjecture.exists_trace_pow_congr`
+  (`exists_entry_pow_congr`, same proof, reading `(0,1)` of `!![1,1;1,0]^N = !![F(N+1), F N; F N,
+  F(N+1) − F N]`).  `det = −1` makes the `p ∤ det C` hypothesis free.
+- Final contradiction instantiated at `n = 4|h| + N + 4`, so `2^(n/2) > |2h|`.
+
 ## Confidence
-90% that the argument is right.  The Lean phase settles it.  Nothing here is Fermat-hard.  The only external input is Lagrange in a finite group, which phase 29 already has.
+Settled: 100% (kernel-checked).  Was 90% before the Lean phase.  The Lean phase settles it.  Nothing here is Fermat-hard.  The only external input is Lagrange in a finite group, which phase 29 already has.
 
 ## Lean plan: phase 32, `NumberTheory/Mills/SaitoFibonacci.lean`
 - No `Literature/` hypothesis is needed; the result is unconditional.

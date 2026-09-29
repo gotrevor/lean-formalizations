@@ -2,6 +2,19 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## ✅ DONE (phase 32, 1 lap, 2026-09-29): Saito's Problem 1.8 — ANSWERED (new math)
+
+`NumberTheory/Mills/SaitoFibonacci.lean` is sorry-free; all five frozen statements are
+`#print axioms`-clean.  For **every** integer `h`, `F(2^n) + h` fails to be prime for infinitely
+many `n` — Saito's Problem 1.8 (arXiv:2504.14968) resolved affirmatively, unconditionally, with no
+`Literature/` hypothesis.  Route exactly as in `PROBE-SAITO-FIBONACCI.md`: odd `h` by parity,
+`h = 0` by `F(2^n) ∣ F(2^(n+1))`, even `h ≠ 0` by the phase-30 `GL₂(𝔽_p)` Lagrange mechanism
+(entrywise copy `exists_entry_pow_congr`) against the 2-adic **sign flip**
+`F(2^(n+1)) ≡ −F(2^n) (mod 2^(n+1))`.  See the probe file's new § Status for the formalization
+notes (Cassini, `Nat.fib_gcd` parity, `v₂|GL₂| = 2v₂(p−1)+v₂(p+1)`).
+
+### original directive
+
 ## 🎯 (phase 32): Saito's Problem 1.8, `F(2^n) + h` composite i.o. for every `h` — target `NumberTheory/Mills/SaitoFibonacci.lean` (5 frozen statements, route in header; frozen also: ThreeAdic, SharedConjecture, Projective, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 Read [PROBE-SAITO-FIBONACCI.md](PROBE-SAITO-FIBONACCI.md).  Unconditional: no `Literature/` hypothesis.  The phase-29 mechanism (Lagrange in `GL₂(𝔽_p)`, modulus = the prime) plus the 2-adic sign flip `F(2^(n+1)) ≡ −F(2^n) (mod 2^(n+1))`.  Adapt `exists_trace_pow_congr` to the matrix entry `(0,1)`.  Helper lemmas are free; the five statements are frozen.

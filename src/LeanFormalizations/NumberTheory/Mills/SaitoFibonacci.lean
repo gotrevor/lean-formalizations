@@ -349,10 +349,196 @@ theorem two_pow_dvd_sub_or_add_of_lt_padicValNat {p k : ℕ} (hp : p.Prime) (hp2
     rw [← hcast1]
     exact_mod_cast Int.natCast_dvd_natCast.2 this
 
+/-! ### Helper: growth of `F(2^n)`, and elementary primality obstructions -/
+
+private lemma fib_two_pow_lt {m n : ℕ} (hm : 1 ≤ m) (hmn : m < n) :
+    Nat.fib (2 ^ m) < Nat.fib (2 ^ n) := by
+  have h2m : 2 ≤ 2 ^ m := Nat.one_lt_two_pow_iff.2 (by omega)
+  have h2n : 2 ≤ 2 ^ n := Nat.one_lt_two_pow_iff.2 (by omega)
+  exact Nat.fib_strictMonoOn (Set.mem_Ici.2 h2m) (Set.mem_Ici.2 h2n)
+    (Nat.pow_lt_pow_right (by norm_num) hmn)
+
+private lemma le_fib_two_pow {n : ℕ} (hn : 5 ≤ n) : n ≤ Nat.fib (2 ^ n) := by
+  have h1 : n ≤ 2 ^ n := Nat.le_of_lt Nat.lt_two_pow_self
+  exact le_trans (Nat.le_fib_self hn) (Nat.fib_mono h1)
+
+private lemma not_prime_of_two_dvd {x : ℤ} (hd : (2 : ℤ) ∣ x) (hx : 2 < x) : ¬ Prime x := by
+  intro hpx
+  have hn : x.natAbs.Prime := Int.prime_iff_natAbs_prime.1 hpx
+  have hd' : (2 : ℕ) ∣ x.natAbs := by
+    have := Int.natAbs_dvd_natAbs.2 hd
+    simpa using this
+  rcases hn.eq_one_or_self_of_dvd 2 hd' with hh | hh
+  · omega
+  · have := Int.natAbs_eq x
+    omega
+
 /-- **Saito's Problem 1.8 (arXiv:2504.14968), answered.**  For every integer `h`, `F(2^n) + h`
 is not prime for infinitely many `n`. -/
 theorem fib_two_pow_add_not_prime (h : ℤ) :
     ∃ᶠ n in atTop, ¬ Prime ((Nat.fib (2 ^ n) : ℤ) + h) := by
-  sorry
+  set t : ℕ → ℤ := fun n => (Nat.fib (2 ^ n) : ℤ) + h with ht
+  rcases Int.even_or_odd h with hev | hodd
+  swap
+  · -- `h` odd: `F(2^n) + h` is even and eventually `> 2`
+    refine Filter.Eventually.frequently ?_
+    refine eventually_atTop.2 ⟨max 5 (3 - h).toNat, fun n hn => ?_⟩
+    have hn5 : 5 ≤ n := le_trans (le_max_left _ _) hn
+    have hnh : (3 - h).toNat ≤ n := le_trans (le_max_right _ _) hn
+    have hnh' : 3 - h ≤ (n : ℤ) := by
+      have : ((3 - h).toNat : ℤ) ≤ (n : ℤ) := by exact_mod_cast hnh
+      omega
+    have hfib : (n : ℤ) ≤ (Nat.fib (2 ^ n) : ℤ) := by exact_mod_cast le_fib_two_pow hn5
+    refine not_prime_of_two_dvd ?_ (by omega)
+    obtain ⟨a, hafib⟩ := fib_two_pow_odd n
+    obtain ⟨b, hb⟩ := hodd
+    refine ⟨(a : ℤ) + b + 1, ?_⟩
+    have : (Nat.fib (2 ^ n) : ℤ) = 2 * a + 1 := by rw [hafib]; push_cast; ring
+    rw [this, hb]; ring
+  -- `h` even
+  rcases eq_or_ne h 0 with h0 | h0
+  · -- `h = 0`: `F(2^n) ∣ F(2^(n+1))` with `1 < F(2^n) < F(2^(n+1))`
+    refine Filter.Eventually.frequently ?_
+    refine eventually_atTop.2 ⟨4, fun n hn => ?_⟩
+    obtain ⟨m, hm⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+    have hm3 : 3 ≤ m := by omega
+    have hdvd : Nat.fib (2 ^ m) ∣ Nat.fib (2 ^ n) := by
+      refine Nat.fib_dvd _ _ ?_
+      rw [hm]
+      exact pow_dvd_pow 2 (by omega)
+    have hlt : Nat.fib (2 ^ m) < Nat.fib (2 ^ n) := fib_two_pow_lt (by omega) (by omega)
+    have hone : 1 < Nat.fib (2 ^ m) := by
+      have h8 : 8 ≤ 2 ^ m := by
+        calc (8 : ℕ) = 2 ^ 3 := by norm_num
+        _ ≤ 2 ^ m := Nat.pow_le_pow_right (by norm_num) hm3
+      have : Nat.fib 8 ≤ Nat.fib (2 ^ m) := Nat.fib_mono h8
+      have h21 : Nat.fib 8 = 21 := by decide
+      omega
+    intro hpr
+    rw [h0, add_zero] at hpr
+    have hnp : (Nat.fib (2 ^ n)).Prime := Nat.prime_iff_prime_int.2 hpr
+    rcases hnp.eq_one_or_self_of_dvd _ hdvd with hh | hh <;> omega
+  -- `h` even and nonzero: the main argument
+  by_contra hcon
+  rw [Filter.not_frequently] at hcon
+  simp only [not_not] at hcon
+  obtain ⟨n₀, hn₀⟩ := eventually_atTop.1 hcon
+  set H : ℕ := h.natAbs with hH
+  -- a threshold past which `t` is a strictly increasing sequence of primes `> 2`
+  set N : ℕ := max (max 5 n₀) (3 - h).toNat with hNdef
+  have hN5 : 5 ≤ N := le_trans (le_max_left _ _) (le_max_left _ _)
+  have hNn₀ : n₀ ≤ N := le_trans (le_max_right _ _) (le_max_left _ _)
+  have hNh : (3 - h).toNat ≤ N := le_max_right _ _
+  have hbig : ∀ n ≥ N, 2 < t n := by
+    intro n hn
+    have hn5 : 5 ≤ n := le_trans hN5 hn
+    have hnh' : 3 - h ≤ (n : ℤ) := by
+      have h1 : ((3 - h).toNat : ℤ) ≤ (N : ℤ) := by exact_mod_cast hNh
+      have h2 : (N : ℤ) ≤ (n : ℤ) := by exact_mod_cast hn
+      omega
+    have hfib : (n : ℤ) ≤ (Nat.fib (2 ^ n) : ℤ) := by exact_mod_cast le_fib_two_pow hn5
+    simp only [ht]; omega
+  have hprime : ∀ n ≥ N, Prime (t n) := fun n hn => hn₀ n (le_trans hNn₀ hn)
+  have htmono : ∀ {m n : ℕ}, N ≤ m → m < n → t m < t n := by
+    intro m n hm hmn
+    have := fib_two_pow_lt (show 1 ≤ m by omega) hmn
+    have : (Nat.fib (2 ^ m) : ℤ) < (Nat.fib (2 ^ n) : ℤ) := by exact_mod_cast this
+    simp only [ht]; omega
+  -- `t n` is an odd prime, as a natural number
+  have hnat : ∀ n ≥ N, ∃ p : ℕ, p.Prime ∧ p ≠ 2 ∧ (p : ℤ) = t n := by
+    intro n hn
+    have hb := hbig n hn
+    refine ⟨(t n).toNat, ?_, ?_, by omega⟩
+    · have := hprime n hn
+      rw [Int.prime_iff_natAbs_prime] at this
+      have hEq : (t n).natAbs = (t n).toNat := by omega
+      rwa [hEq] at this
+    · -- `t n` is odd: `F(2^n)` is odd and `h` is even
+      obtain ⟨a, hafib⟩ := fib_two_pow_odd n
+      obtain ⟨b, hb2⟩ := hev
+      have hfz : (Nat.fib (2 ^ n) : ℤ) = 2 * a + 1 := by rw [hafib]; push_cast; ring
+      have : t n = 2 * ((a : ℤ) + b) + 1 := by simp only [ht]; rw [hfz, hb2]; ring
+      omega
+  -- step 2: the `2`-part of `|GL₂(𝔽_{t n})|` exceeds `n`
+  have hstep2 : ∀ n ≥ N, ∀ p : ℕ, p.Prime → (p : ℤ) = t n →
+      ¬ (padicValNat 2 (glCard 2 p) ≤ n) := by
+    intro n hn p hp hpv hv
+    obtain ⟨j, hj1, hj⟩ := exists_fib_two_pow_congr hp hv
+    have hdvd : (p : ℤ) ∣ t (n + j) := by
+      have h1 : (p : ℤ) ∣ t n := by rw [hpv]
+      have h2 : t (n + j) - t n = (Nat.fib (2 ^ (n + j)) : ℤ) - Nat.fib (2 ^ n) := by
+        simp only [ht]; ring
+      have := dvd_add hj h1
+      rw [← h2] at this
+      simpa using this
+    have hgt : t n < t (n + j) := htmono hn (by omega)
+    have hq := hprime (n + j) (by omega)
+    have hqpos : 0 < t (n + j) := by have := hbig n hn; omega
+    obtain ⟨q, hqv⟩ : ∃ q : ℕ, (q : ℤ) = t (n + j) := ⟨(t (n + j)).toNat, by omega⟩
+    have hqnat : q.Prime := by
+      rw [Int.prime_iff_natAbs_prime] at hq
+      have hEq : (t (n + j)).natAbs = q := by omega
+      rwa [hEq] at hq
+    have hdq : p ∣ q := by
+      have : (p : ℤ) ∣ (q : ℤ) := by rw [hqv]; exact hdvd
+      exact_mod_cast this
+    have hp1 : 1 < p := hp.one_lt
+    rcases hqnat.eq_one_or_self_of_dvd p hdq with hh | hh <;> omega
+  -- step 3: `t n ≡ ±1` modulo `2 ^ (n / 2)`
+  have hstep3 : ∀ n ≥ N, ∃ s : ℤ, (s = 1 ∨ s = -1) ∧ (2 : ℤ) ^ (n / 2) ∣ t n - s := by
+    intro n hn
+    obtain ⟨p, hp, hp2, hpv⟩ := hnat n hn
+    have hlt : n < padicValNat 2 (glCard 2 p) := by
+      by_contra hle
+      exact hstep2 n hn p hp hpv (by omega)
+    rcases two_pow_dvd_sub_or_add_of_lt_padicValNat hp hp2 hlt with hd | hd
+    · exact ⟨1, Or.inl rfl, by rw [← hpv]; exact hd⟩
+    · refine ⟨-1, Or.inr rfl, ?_⟩
+      rw [← hpv]
+      simpa using hd
+  -- step 4: pick `n` large and contradict `h ≠ 0`
+  set n : ℕ := 4 * H + N + 4 with hn
+  set e : ℕ := n / 2 with he
+  have hnN : N ≤ n := by omega
+  have he2 : 2 ≤ e := by omega
+  have heH : 2 * H ≤ e := by omega
+  have hbnd : (2 * H : ℤ) < (2 : ℤ) ^ e := by
+    have h1 : e < 2 ^ e := Nat.lt_two_pow_self
+    have h2 : (2 * H : ℕ) < 2 ^ e := by omega
+    exact_mod_cast h2
+  obtain ⟨s, hs, hsd⟩ := hstep3 n hnN
+  obtain ⟨s', hs', hsd'⟩ := hstep3 (n + 1) (by omega)
+  have hdvd' : (2 : ℤ) ^ e ∣ t (n + 1) - s' := by
+    refine dvd_trans (pow_dvd_pow 2 ?_) hsd'
+    omega
+  -- the sign flip
+  have hflip : (2 : ℤ) ^ e ∣ (Nat.fib (2 ^ (n + 1)) : ℤ) + Nat.fib (2 ^ n) := by
+    refine dvd_trans (pow_dvd_pow 2 ?_) (two_pow_dvd_fib_two_pow_succ_add n (by omega))
+    omega
+  have hsum : (2 : ℤ) ^ e ∣ s + s' - 2 * h := by
+    have h1 : (s + s' - 2 * h) =
+        ((Nat.fib (2 ^ (n + 1)) : ℤ) + Nat.fib (2 ^ n)) - ((t n - s) + (t (n + 1) - s')) := by
+      simp only [ht]; ring
+    rw [h1]
+    exact dvd_sub hflip (dvd_add hsd hdvd')
+  -- `h` even forces `s + s' = 0`
+  obtain ⟨b, hb⟩ := hev
+  have h4 : (4 : ℤ) ∣ s + s' - 2 * h := by
+    refine dvd_trans ?_ hsum
+    have : (4 : ℤ) = 2 ^ 2 := by norm_num
+    rw [this]
+    exact pow_dvd_pow 2 he2
+  have hss : s + s' = 0 := by
+    obtain ⟨c, hc⟩ := h4
+    rcases hs with rfl | rfl <;> rcases hs' with rfl | rfl <;> omega
+  have hfin : (2 : ℤ) ^ e ∣ 2 * h := by
+    have : (2 * h : ℤ) = -(s + s' - 2 * h) := by omega
+    rw [this]
+    exact dvd_neg.2 hsum
+  have hh0 : (2 : ℤ) * h ≠ 0 := by omega
+  have hle : (2 : ℤ) ^ e ≤ |2 * h| := Int.le_of_dvd (abs_pos.2 hh0) ((dvd_abs _ _).2 hfin)
+  have habs : |2 * h| = 2 * (H : ℤ) := by
+    rw [abs_mul, abs_two, hH, Int.abs_eq_natAbs]
+  omega
 
 end LeanFormalizations.Mills.SaitoFibonacci
