@@ -665,7 +665,43 @@ theorem champernowne_prefix :
 
 /-- **Mahler (1937)**: Champernowne's constant is transcendental, from Roth's theorem. -/
 theorem transcendental_champernowne (hR : Roth1955) : Transcendental ℚ champernowne := by
-  sorry
+  intro halg
+  have hfin := hR champernowne halg irrational_champernowne 1 one_pos
+  have hsub : Set.range champApprox ⊆
+      {r : ℚ | |champernowne - (r:ℝ)| < 1 / (r.den : ℝ) ^ (2 + (1:ℝ))} := by
+    rintro r ⟨m, rfl⟩
+    set E := blockStart m + 2 * m + 2 with hE
+    have hd1 : (1:ℕ) ≤ (champApprox m).den := (champApprox m).pos
+    have hdle : (champApprox m).den ≤ 10 ^ E :=
+      le_trans (Nat.le_of_dvd (champDen_pos m) (champApprox_den_dvd m)) (champDen_le m)
+    have hdR : ((champApprox m).den : ℝ) ≤ (10:ℝ) ^ E := by exact_mod_cast hdle
+    have hd0 : (0:ℝ) < ((champApprox m).den : ℝ) := by exact_mod_cast (champApprox m).pos
+    -- rewrite the rpow as a natural power
+    have hrpow : ((champApprox m).den : ℝ) ^ (2 + (1:ℝ)) = ((champApprox m).den : ℝ) ^ (3:ℕ) := by
+      rw [show (2 + (1:ℝ)) = ((3:ℕ) : ℝ) by norm_num, Real.rpow_natCast]
+    have hcube : ((champApprox m).den : ℝ) ^ (3:ℕ) ≤ ((10:ℝ) ^ E) ^ (3:ℕ) :=
+      pow_le_pow_left₀ hd0.le hdR 3
+    have hE3 : ((10:ℝ) ^ E) ^ (3:ℕ) = (10:ℝ) ^ (3 * E) := by rw [← pow_mul]; ring_nf
+    have hEpos : (0:ℝ) < (10:ℝ) ^ (3 * E) := by positivity
+    have hup := (champ_err m).2
+    have hexp := champ_exponent m
+    have hpow : (10:ℝ) ^ (3 * E + 1) ≤ 10 ^ blockStart (m + 1) :=
+      pow_le_pow_right₀ (by norm_num) hexp
+    have hbs : (0:ℝ) < (10:ℝ) ^ blockStart (m + 1) := by positivity
+    have hsucc : (10:ℝ) ^ (3 * E + 1) = 10 * 10 ^ (3 * E) := by rw [pow_succ]; ring
+    -- |C − r| ≤ 2/10^{N} ≤ 2/(10·10^{3E}) < 1/10^{3E} ≤ 1/den^3
+    have hstep : |champernowne - (champApprox m : ℝ)| < 1 / (10:ℝ) ^ (3 * E) := by
+      refine lt_of_le_of_lt hup ?_
+      rw [show (2:ℝ) * (1 / 10 ^ blockStart (m + 1))
+            = 2 / 10 ^ blockStart (m + 1) by ring,
+        div_lt_div_iff₀ hbs hEpos]
+      nlinarith [hpow, hsucc, hEpos, hbs]
+    refine lt_of_lt_of_le hstep ?_
+    rw [hrpow]
+    apply one_div_le_one_div_of_le (by positivity)
+    rw [← hE3] at *
+    exact hcube
+  exact (Set.infinite_range_of_injective champApprox_injective) (hfin.subset hsub)
 
 /-- The same, from Stephan's machine-checked Ridout theorem (`roth1955_of_stephan`). -/
 theorem transcendental_champernowne_of_stephan (h : Stephan2026Ridout) :
