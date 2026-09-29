@@ -1612,3 +1612,36 @@ transfer, (4) injectivity from `pow_pow_char_ne_one_of_deep`.  Then `padicLog` (
 `ℤ_p`-module structure alone, which is all Ax's reduction needs) and Brumer.
 
 Note the rank-≤1 theorem needs **none** of this — steps 1–3 are pure phase-28 (rank ≥ 2) machinery.
+
+### Phase 28 step (4) (2026-09-29, same lap): the rank-≥2 wall is a residue-field cancellation
+
+Two new axiom-clean lemmas in `PrincipalUnits.lean` give the tool that reaches past rank 1:
+
+- `valuation_prod_one_add_sub_one_lt` — a product of principal units `∏ (1 + xᵢ)` stays strictly
+  inside any ball `W · < c ≤ 1` containing all the `xᵢ`.
+- `valuation_prod_one_add_sub_one` — **the leading term survives**: if `W (x i₀)` is strictly the
+  largest (additively, `ν xᵢ₀` strictly the smallest), then `W (∏ (1 + xᵢ) − 1) = W (x i₀)`
+  *exactly*, because every cross term `xᵢxⱼ` is strictly smaller.
+
+**What this settles about the wall.**  Put `θᵢ = εᵢ^N`, deep, with levels `tᵢ = ν(θᵢ − 1)`.  By the
+step-2 exact growth plus the prime-to-`p` invariance of step 1,
+`ν(θᵢ^{mᵢ} − 1) = tᵢ + v_p(mᵢ)·e` **exactly**.  If `aᵢ ≠ 0` then `v_p(mₙᵢ) = v_p(aᵢ)` eventually;
+if `aᵢ = 0` then `v_p(mₙᵢ) → ∞`.  So eventually the minimum of the levels is attained inside
+`S = {i : aᵢ ≠ 0}` at the fixed value `M = min_{i∈S} (tᵢ + v_p(aᵢ)·e)`.  **If that minimum is
+uniquely attained**, `valuation_prod_one_add_sub_one` gives
+`ν(∏ θᵢ^{mₙᵢ} − 1) = M` for all large `n` — a fixed finite value, contradicting `→ 1`.  Hence
+Leopoldt holds for every `r` whenever the minimum is unique.
+
+So the **entire** remaining content of Leopoldt is the *tie* case: two or more leading terms at the
+same level `M`, whose residue-field leading coefficients may cancel, letting `ν` jump.  That is
+exactly the linear-forms-in-`p`-adic-logarithms problem, i.e. Baker/Brumer.  **The wall is a
+residue-field cancellation problem, not a missing construction** — which is worth knowing, because
+it means no amount of further valuation-theoretic infrastructure will close it.
+
+**Next leaf**: formalize `leopoldt_of_unique_level` — the `r`-general theorem under the
+unique-minimum hypothesis.  Needs: (a) the exact level formula `ν(θ^m − 1) = t + v_p(m)·e` as a
+standalone lemma (combine `valuation_pow_pow_char_sub_one` with `valuation_zpow_sub_one` for the
+prime-to-`p` part — both already proved), (b) the "eventually `v_p(mₙᵢ)` is constant on `S` and
+→ ∞ off `S`" bookkeeping (the `S = {i}` case is already in `eq_zero_of_local_tendsto_one`),
+(c) plugging into `valuation_prod_one_add_sub_one`.  Then state the tie case as the `Literature/`
+Brumer statement.

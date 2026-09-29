@@ -432,6 +432,72 @@ theorem valuation_zpow_sub_zpow_le {θ : K} (hθ : W (θ - 1) < 1)
   rw [hfac, map_mul, hWl, one_mul]
   exact valuation_zpow_sub_one_le_of_dvd v hθ hdeep j hkl
 
+/-! ### Beyond rank one: the ultrametric leading term of a product of principal units
+
+This is the tool that reaches past rank `1`, and it makes the shape of the rank-`≥ 2` wall exact.
+For principal units `1 + xᵢ`, if one `xᵢ₀` is *strictly closest to `0`'s complement* — i.e. `W xᵢ₀`
+strictly the largest, additively `ν xᵢ₀` strictly the smallest — then
+
+`W (∏ (1 + xᵢ) − 1) = W xᵢ₀`
+
+**exactly**: the cross terms `xᵢxⱼ` are strictly smaller, so the leading term survives.  Combined
+with the exact growth of step 2, this proves Leopoldt for `r ≥ 2` **whenever the levels
+`ν(εᵢ^N − 1) + v_p(aᵢ)·e` have a unique minimum**.  What is left is precisely the *tie* case, where
+two or more leading terms sit at the same level and can cancel in the residue field — and that
+cancellation problem is exactly Baker/Brumer.  So the wall is a residue-field cancellation
+problem, not a missing construction.
+-/
+
+/-- A product of principal units stays strictly inside any ball that contains all the `xᵢ`. -/
+theorem valuation_prod_one_add_sub_one_lt {ι : Type*} (x : ι → K)
+    {c : WithZero (Multiplicative ℤ)} (hc : c ≠ 0) (hc1 : c ≤ 1) :
+    ∀ s : Finset ι, (∀ i ∈ s, W (x i) < c) → W (∏ i ∈ s, (1 + x i) - 1) < c := by
+  classical
+  intro s
+  induction s using Finset.induction_on with
+  | empty => intro _; simpa using zero_lt_iff.mpr hc
+  | insert a t ha ih =>
+      intro hall
+      have hQ : W (∏ i ∈ t, (1 + x i) - 1) < c :=
+        ih fun i hi ↦ hall i (Finset.mem_insert_of_mem hi)
+      have hxa : W (x a) < c := hall a (Finset.mem_insert_self a t)
+      set Q : K := ∏ i ∈ t, (1 + x i) - 1 with hQdef
+      have hrw : ∏ i ∈ insert a t, (1 + x i) - 1 = x a + Q + x a * Q := by
+        rw [Finset.prod_insert ha, hQdef]
+        ring
+      rw [hrw]
+      refine lt_of_le_of_lt (Valuation.map_add _ _ _) (max_lt ?_ ?_)
+      · exact lt_of_le_of_lt (Valuation.map_add _ _ _) (max_lt hxa hQ)
+      · rw [map_mul]
+        calc W (x a) * W Q ≤ 1 * W Q :=
+              mul_le_mul_right' (le_of_lt (lt_of_lt_of_le hxa hc1)) _
+          _ = W Q := one_mul _
+          _ < c := hQ
+
+/-- **The leading term survives.**  If `W (x i₀)` is strictly the largest, the product of the
+principal units `1 + xᵢ` sits at exactly the level of `xᵢ₀`. -/
+theorem valuation_prod_one_add_sub_one {ι : Type*} [DecidableEq ι] (x : ι → K) (s : Finset ι)
+    {i₀ : ι} (hi₀ : i₀ ∈ s) (hne : W (x i₀) ≠ 0) (hlt : W (x i₀) < 1)
+    (hmax : ∀ i ∈ s, i ≠ i₀ → W (x i) < W (x i₀)) :
+    W (∏ i ∈ s, (1 + x i) - 1) = W (x i₀) := by
+  have hsplit : s = insert i₀ (s.erase i₀) := (Finset.insert_erase hi₀).symm
+  have hnotmem : i₀ ∉ s.erase i₀ := Finset.notMem_erase i₀ s
+  set Q : K := ∏ i ∈ s.erase i₀, (1 + x i) - 1 with hQdef
+  have hQ : W Q < W (x i₀) := by
+    rw [hQdef]
+    refine valuation_prod_one_add_sub_one_lt v x hne (le_of_lt hlt) _ fun i hi ↦ ?_
+    exact hmax i (Finset.mem_of_mem_erase hi) (Finset.ne_of_mem_erase hi)
+  have hrw : ∏ i ∈ s, (1 + x i) - 1 = x i₀ + (Q + x i₀ * Q) := by
+    rw [hsplit, Finset.prod_insert hnotmem, hQdef]
+    ring
+  rw [hrw]
+  refine Valuation.map_add_eq_of_lt_left _ ?_
+  refine lt_of_le_of_lt (Valuation.map_add _ _ _) (max_lt hQ ?_)
+  rw [map_mul]
+  calc W (x i₀) * W Q ≤ 1 * W Q := mul_le_mul_right' (le_of_lt hlt) _
+    _ = W Q := one_mul _
+    _ < W (x i₀) := hQ
+
 /-! ### The heart of the rank-one case
 
 Only the `p`-part of the exponent can move `ε ^ m` towards `1` at `v`, and `a ≠ 0` in `ℤ_p`
