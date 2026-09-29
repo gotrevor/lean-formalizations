@@ -156,7 +156,7 @@ private lemma fibMat_det : fibMat.det = -1 := by
 
 /-- Entrywise version of `SharedConjecture.exists_trace_pow_congr` (same proof, reading off a
 matrix entry instead of the trace). -/
-private lemma exists_entry_pow_congr {n : ℕ} (C : Matrix (Fin n) (Fin n) ℤ) {p m c : ℕ}
+lemma exists_entry_pow_congr {n : ℕ} (C : Matrix (Fin n) (Fin n) ℤ) {p m c : ℕ}
     (hp : p.Prime) (hc : c.Prime) (hdet : ¬ (p : ℤ) ∣ C.det)
     (hv : padicValNat c (glCard n p) ≤ m) :
     ∃ j, 1 ≤ j ∧ ∀ a b : Fin n,
