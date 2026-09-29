@@ -1,5 +1,18 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 14, 2026-09-29): Mills' constant is transcendental under RH
+
+Trevor 2026-09-29: formalize Saito 2025 Thm 1.8.  Target file
+`NumberTheory/Mills/TranscendentalRH.lean`: `pisot_branch_otherConj_real` (unconditional complex-case
+kill, ×3 circle dynamics) and `transcendental_of_RH`.  Route and leaves in the file header; paper
+`papers/saito-2025-transcendency-variants-mills.txt`, probe `PROBE-MILLS-TRANSCENDENCE.md`.  Build on
+`Transcendental.lean` (`transcendental_or_pisot`), `SaitoDegreeTwo.lean`, `RH.lean` (`gseq`, `lpa`,
+Schoenfeld).  New literature inputs: none (RH enters via `Schoenfeld1976`).  Split into named leaves
+freely.  Frozen by name: the two phase-14 theorems, every earlier name, all of `Literature/`.
+Stop condition: `TranscendentalRH.lean` sorry-free.
+
+---
+
 ## ⏸️ PARKED (phase 13b, 2026-09-29): Dubickas Lemma 6 from Stephan's machine-checked CZ
 
 **Parked by Trevor 2026-09-29**: *"Why bother with 13b?  That's filling a hole that we're no longer
