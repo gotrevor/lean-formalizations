@@ -15,7 +15,13 @@ notes (Cassini, `Nat.fib_gcd` parity, `v₂|GL₂| = 2v₂(p−1)+v₂(p+1)`).
 
 ### original directive
 
-## 🎯 (phase 32): Saito's Problem 1.8, `F(2^n) + h` composite i.o. for every `h` — target `NumberTheory/Mills/SaitoFibonacci.lean` (5 frozen statements, route in header; frozen also: ThreeAdic, SharedConjecture, Projective, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 33): Problem 1.8 for every Lucas sequence `U(P,Q)`, `P, Q` odd — target `NumberTheory/Mills/LucasTwoPow.lean` (5 frozen statements, route in header; frozen also: SaitoFibonacci statements (only `exists_entry_pow_congr`'s `private` may be dropped), ThreeAdic, SharedConjecture, Projective, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+Phase 32 (`677d14a`) DONE: `SaitoFibonacci.lean` sorry-free, Saito Problem 1.8 answered for every `h`.  Problem 1.7 probed and parked (Maze row, `PROBE-SAITO-FIBONACCI.md` § Problem 1.7).
+
+---
+
+## ✅ DONE (phase 32): Saito's Problem 1.8, `F(2^n) + h` composite i.o. for every `h` — target `NumberTheory/Mills/SaitoFibonacci.lean` (5 frozen statements, route in header; frozen also: ThreeAdic, SharedConjecture, Projective, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 Read [PROBE-SAITO-FIBONACCI.md](PROBE-SAITO-FIBONACCI.md).  Unconditional: no `Literature/` hypothesis.  The phase-29 mechanism (Lagrange in `GL₂(𝔽_p)`, modulus = the prime) plus the 2-adic sign flip `F(2^(n+1)) ≡ −F(2^n) (mod 2^(n+1))`.  Adapt `exists_trace_pow_congr` to the matrix entry `(0,1)`.  Helper lemmas are free; the five statements are frozen.
 
