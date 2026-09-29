@@ -486,6 +486,81 @@ lemma ctail_block_le (m : ℕ) :
   rw [hsucc, hterm]
   linarith [htail, hmono, hbpos]
 
+
+/-! ## Leaf 6: putting the approximation quality together -/
+
+lemma blockStart_le (m : ℕ) : blockStart m ≤ m * 10 ^ m := by
+  induction m with
+  | zero => show digitsUpTo (10 ^ 0 - 1) ≤ 0 * 10 ^ 0; norm_num
+  | succ m ih =>
+    rw [blockStart_succ]
+    have : (10:ℕ) ^ (m + 1) = 10 * 10 ^ m := by ring
+    nlinarith [ih, Nat.one_le_pow m 10 (by norm_num : 0 < 10)]
+
+lemma blockStart_strictMono : StrictMono fun m => blockStart (m + 1) := by
+  apply strictMono_nat_of_lt_succ
+  intro m
+  rw [blockStart_succ (m + 1)]
+  have h : 0 < (m + 2) * (9 * 10 ^ (m + 1)) := by positivity
+  exact Nat.lt_add_of_pos_right h
+
+/-- Error bounds for the `m`-th block approximation: it is off by roughly `10^{-N_{m+1}}`. -/
+lemma champ_err (m : ℕ) :
+    (4/5) * (1 / 10 ^ blockStart (m + 1)) ≤ |champernowne - (champApprox m : ℝ)| ∧
+      |champernowne - (champApprox m : ℝ)| ≤ 2 * (1 / 10 ^ blockStart (m + 1)) := by
+  have hid : champernowne - (champApprox m : ℝ) = ctail (10 ^ (m + 1) - 1) - gtail m := by
+    rw [champApprox_cast]; exact champ_sub_approx m
+  have h1 := gtail_ge m
+  have h2 := gtail_le m
+  have h3 := ctail_block_le m
+  have h4 := ctail_nonneg (10 ^ (m + 1) - 1)
+  have hb : (0:ℝ) < 1 / 10 ^ blockStart (m + 1) := by positivity
+  rw [hid, abs_of_nonpos (by linarith)]
+  constructor <;> linarith
+
+lemma champDen_le (m : ℕ) : champDen m ≤ 10 ^ (blockStart m + 2 * m + 2) := by
+  have h1 : (10:ℕ) ^ (m + 1) - 1 ≤ 10 ^ (m + 1) := Nat.sub_le _ _
+  have h2 : ((10:ℕ) ^ (m + 1) - 1) ^ 2 ≤ (10 ^ (m + 1)) ^ 2 := Nat.pow_le_pow_left h1 2
+  calc champDen m ≤ 10 ^ blockStart m * (10 ^ (m + 1)) ^ 2 := by
+        unfold champDen; exact Nat.mul_le_mul_left _ h2
+    _ = 10 ^ (blockStart m + 2 * m + 2) := by rw [← pow_mul, ← pow_add]; ring_nf
+
+/-- The quantitative heart: the approximation exponent exceeds `3`. -/
+lemma champ_exponent (m : ℕ) : 3 * (blockStart m + 2 * m + 2) + 1 ≤ blockStart (m + 1) := by
+  rw [blockStart_succ]
+  have hb := blockStart_le m
+  have hp : (1:ℕ) ≤ 10 ^ m := Nat.one_le_pow _ _ (by norm_num)
+  nlinarith [hb, hp]
+
+lemma champApprox_injective : Function.Injective champApprox := by
+  have key : ∀ m m' : ℕ, m < m' → champApprox m ≠ champApprox m' := by
+    intro m m' hlt heq
+    have h1 := (champ_err m).1
+    have h2 := (champ_err m').2
+    have hmono : blockStart (m + 1) + 1 ≤ blockStart (m' + 1) :=
+      blockStart_strictMono hlt
+    have hpow : (10:ℝ) ^ (blockStart (m + 1) + 1) ≤ 10 ^ blockStart (m' + 1) :=
+      pow_le_pow_right₀ (by norm_num) hmono
+    have hb : (0:ℝ) < 10 ^ blockStart (m + 1) := by positivity
+    have hb' : (0:ℝ) < 10 ^ blockStart (m' + 1) := by positivity
+    rw [heq] at h1
+    have hstep : (1:ℝ) / 10 ^ blockStart (m' + 1) ≤ (1/10) * (1 / 10 ^ blockStart (m + 1)) := by
+      rw [pow_succ] at hpow
+      rw [div_le_iff₀ hb']
+      have : (1:ℝ)/10 * (1 / 10 ^ blockStart (m+1)) * 10 ^ blockStart (m' + 1)
+          ≥ 1/10 * (1 / 10 ^ blockStart (m+1)) * (10 ^ blockStart (m+1) * 10) := by
+        apply mul_le_mul_of_nonneg_left hpow (by positivity)
+      have he : (1:ℝ)/10 * (1 / 10 ^ blockStart (m+1)) * (10 ^ blockStart (m+1) * 10) = 1 := by
+        field_simp
+      linarith [this, he]
+    have hbp : (0:ℝ) < 1 / 10 ^ blockStart (m + 1) := by positivity
+    linarith
+  intro m m' h
+  rcases lt_trichotomy m m' with hlt | heq | hgt
+  · exact absurd h (key m m' hlt)
+  · exact heq
+  · exact absurd h.symm (key m' m hgt)
+
 /-- Sanity anchor for the definition: the first eleven digits are `12345678910`. -/
 theorem champernowne_prefix :
     ⌊champernowne * 10 ^ 11⌋ = 12345678910 := by
