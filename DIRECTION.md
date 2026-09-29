@@ -2,6 +2,16 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 26, 2026-09-29): Leopoldt statement stress tests + the ℚ̄ shifted-six variant
+
+Trevor 2026-09-29: *"I think I do want the statement.  This is math worth having in the world."*  `Literature.LeopoldtConjecture` is Ren's formulation, with no p-adic log (faithfulness argument in its header, ~75%).  Targets:
+- `NumberTheory/Leopoldt/StressTests.lean`: `leopoldt_of_rank_zero` (positive), `not_leopoldtNoIndep_rat` (negative: the independence clause bites).  Stretch: real quadratic.
+- `NumberTheory/Transcendence/SharpSixVariants.lean`: `shiftedAlg_of_sharp` (the ℚ̄ variant is true), `witness_not_algIndep`.
+
+If a test shows the Leopoldt statement is unfaithful, record the counterexample and STOP; do not repair `Literature/`.  Stop condition: both files sorry-free.
+
+---
+
 ## ✅ DONE (phase 25, 2026-09-29, 1 lap): sharp-six repair + periods / zeta values
 
 **All ten frozen statements are PROVED and `#print axioms`-clean; `Periods.lean` is
@@ -15,7 +25,7 @@ via mathlib's `riemannZeta_im_eq_zero_of_one_lt`; and `ζ(3)/π³` and `G/π²` 
 
 ### original directive
 
-## 🎯 THE OBJECTIVE (phase 25, 2026-09-29): sharp-six repair + periods / zeta values
+## ✅ DONE (phase 25, 2026-09-29, `564ae0a`): sharp-six repair + periods / zeta values
 
 **Operator correction to the phase-24 handoff:** `SixExponentialsShifted` is NOT a dropped overbar.  The rendered survey page really says `ℚ`; the survey misprints the sharp six exponentials theorem, dropping the exceptional case `xᵢyⱼ = βᵢⱼ`.  The correct statement is now `Literature.SixExponentialsSharp` (Waldschmidt NCTS 2003 slide 23; Waldschmidt 2005 Thm 1.4), and it keeps `ℚ`-independence.  The ℚ̄ repair suggested in the handoff would NOT contain the six exponentials theorem, so do not use it.
 
@@ -23,15 +33,6 @@ Target `NumberTheory/Transcendence/Periods.lean`, 10 frozen statements (routes i
 
 ---
 
-## ⏳ QUEUED (phase 26, 2026-09-29): Leopoldt statement stress tests + the ℚ̄ shifted-six variant
-
-Phase-25 laps ignore this section.  Trevor 2026-09-29: *"I think I do want the statement.  This is math worth having in the world."*  `Literature.LeopoldtConjecture` is Ren's formulation, with no p-adic log (faithfulness argument in its header, ~75%).  Targets:
-- `NumberTheory/Leopoldt/StressTests.lean`: `leopoldt_of_rank_zero` (positive), `not_leopoldtNoIndep_rat` (negative: the independence clause bites).  Stretch: real quadratic.
-- `NumberTheory/Transcendence/SharpSixVariants.lean`: `shiftedAlg_of_sharp` (the ℚ̄ variant is true), `witness_not_algIndep`.
-
-If a test shows the Leopoldt statement is unfaithful, record the counterexample and STOP; do not repair `Literature/`.  Stop condition: both files sorry-free.
-
----
 
 ## ✅ DONE (phase 24, 2026-09-29): weakest hypotheses — what follows from Conjecture 1
 
