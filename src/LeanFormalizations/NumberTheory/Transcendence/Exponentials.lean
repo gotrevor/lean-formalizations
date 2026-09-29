@@ -692,4 +692,51 @@ theorem exists_prime_rpow_transcendental (h4 : FourExponentialsConjecture) {t : 
     rwa [cexp_mul_ofReal_log hpos] at htr
 
 
+
+/-- The `ℚ`-algebraic complex numbers form a field: closure under `/`. -/
+theorem isAlgebraic_div_base {a b : ℂ} (ha : IsAlgebraic ℚ a) (hb : IsAlgebraic ℚ b) :
+    IsAlgebraic ℚ (a / b) :=
+  mem_algebraicClosure_iff.1
+    (div_mem (mem_algebraicClosure_iff.2 ha) (mem_algebraicClosure_iff.2 hb))
+
+theorem isAlgebraic_ratCast (q : ℚ) : IsAlgebraic ℚ ((q : ℚ) : ℂ) := by
+  simpa using isAlgebraic_algebraMap (R := ℚ) (A := ℂ) q
+
+/-- Closure of `IsAlgebraic L` under `-`, `*` and `/` for an intermediate field `L`. -/
+theorem isAlgebraic_sub_left {L : IntermediateField ℚ ℂ} {a b : ℂ}
+    (ha : IsAlgebraic L a) (hb : IsAlgebraic L b) : IsAlgebraic L (a - b) :=
+  mem_algebraicClosure_iff.1
+    (sub_mem (mem_algebraicClosure_iff.2 ha) (mem_algebraicClosure_iff.2 hb))
+
+theorem isAlgebraic_div_left {L : IntermediateField ℚ ℂ} {a b : ℂ}
+    (ha : IsAlgebraic L a) (hb : IsAlgebraic L b) : IsAlgebraic L (a / b) :=
+  mem_algebraicClosure_iff.1
+    (div_mem (mem_algebraicClosure_iff.2 ha) (mem_algebraicClosure_iff.2 hb))
+
+/-- Schanuel ⇒ **Hermite–Lindemann**: a nonzero algebraic number is not a logarithm of an
+algebraic number.  Schanuel at the one-element family `z = (ℓ)`, which is `ℚ`-linearly
+independent as soon as `ℓ ≠ 0`, says `ℓ` is transcendental. -/
+theorem false_of_isAlgebraic_log (hS : SchanuelConjecture) {ℓ : ℂ} (hℓ : ℓ ≠ 0)
+    (halg : IsAlgebraic ℚ ℓ) (hexp : IsAlgebraic ℚ (Complex.exp ℓ)) : False := by
+  have hli : LinearIndependent ℚ ![ℓ] := by
+    rw [linearIndependent_unique_iff]; simpa using hℓ
+  have ht := (algebraicIndependent_of_exp_isAlgebraic hS ![ℓ] hli
+    (by intro i; fin_cases i; simpa using hexp)).transcendental 0
+  exact ht (by simpa using halg)
+
+/-- Schanuel ⇒ a nonzero algebraic number is not a rational multiple of a logarithm of an
+algebraic number. -/
+theorem false_of_ratCast_smul_log (hS : SchanuelConjecture) {ℓ γ : ℂ} {c : ℚ}
+    (hexp : IsAlgebraic ℚ (Complex.exp ℓ)) (hγ : IsAlgebraic ℚ γ) (hγ0 : γ ≠ 0)
+    (heq : γ = (c : ℂ) * ℓ) : False := by
+  have hc : (c : ℂ) ≠ 0 := by
+    intro h; exact hγ0 (by rw [heq, h, zero_mul])
+  have hℓ0 : ℓ ≠ 0 := by
+    intro h; exact hγ0 (by rw [heq, h, mul_zero])
+  refine false_of_isAlgebraic_log hS hℓ0 ?_ hexp
+  have : ℓ = γ / (c : ℂ) := by rw [eq_div_iff hc, heq]; ring
+  rw [this]
+  exact isAlgebraic_div_base hγ (isAlgebraic_ratCast c)
+
+
 end LeanFormalizations.Exponentials

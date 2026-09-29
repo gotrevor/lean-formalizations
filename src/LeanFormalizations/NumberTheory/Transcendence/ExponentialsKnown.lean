@@ -181,7 +181,10 @@ which is strictly deeper than the six exponentials theorem and is not among this
 
 So the honest content of Waldschmidt's remark that Cor. 2.1 "covers both" theorems is that his
 Cor. 2.1 is applied alongside Baker, or is stated with a weaker independence hypothesis than
-the one frozen here.  The reduction is fully proved above; only `BakerTwoLogs` is missing.
+the one frozen here.  The reduction is fully proved above; only `BakerTwoLogs` is missing.  **Under Schanuel it is
+not missing**: `bakerTwoLogs_of_schanuel` below proves `BakerTwoLogs`, so
+`fiveExponentials_of_shifted_of_schanuel` closes the five exponentials theorem from the shifted
+six exponentials theorem plus Schanuel.  What stays open is only the *unconditional* form.
 -/
 theorem fiveExponentials_of_shifted (h : SixExponentialsShifted) : FiveExponentials := by
   sorry
@@ -193,5 +196,81 @@ theorem sixExponentials_of_strong (h : StrongSixExponentials) : SixExponentials 
   exact ⟨1, ![0, 1], ![x i * y j],
     by intro k; fin_cases k; exacts [isAlgebraic_zero, isAlgebraic_one],
     by intro k; fin_cases k; simpa using halg, by simp⟩
+
+
+/-- Schanuel ⇒ **Baker's theorem for two logarithms** (inhomogeneous, rational coefficients).
+If `ℓ₀, ℓ₁` are `ℚ`-linearly independent, Schanuel makes them algebraically independent, and
+`γ = r₀ℓ₀ + r₁ℓ₁` with `γ` algebraic then makes `ℓ₁` algebraic over `ℚ(ℓ₀)` — or, when
+`r₁ = 0`, makes `ℓ₀` algebraic over `ℚ(ℓ₁)`.  If they are `ℚ`-linearly dependent, the relation
+collapses to a rational multiple of a single logarithm, which is Hermite–Lindemann
+(`false_of_ratCast_smul_log`). -/
+theorem bakerTwoLogs_of_schanuel (hS : SchanuelConjecture) : BakerTwoLogs := by
+  intro ℓ r γ hexp hγ hγ0 heq
+  by_cases hli : LinearIndependent ℚ ![ℓ 0, ℓ 1]
+  · by_cases hr1 : r 1 = 0
+    · -- `γ = r₀ℓ₀`: make `ℓ₀` algebraic over `ℚ(ℓ₁)`
+      have hli' : LinearIndependent ℚ ![ℓ 1, ℓ 0] := by
+        have he : ![ℓ 1, ℓ 0] = ![ℓ 0, ℓ 1] ∘ ⇑(Equiv.swap (0 : Fin 2) 1) := by
+          funext i; fin_cases i <;> simp [Equiv.swap_apply_of_ne_of_ne]
+        rw [he]
+        exact hli.comp _ (Equiv.swap (0 : Fin 2) 1).injective
+      have hind : AlgebraicIndependent ℚ ![ℓ 1, ℓ 0] :=
+        algebraicIndependent_of_exp_isAlgebraic hS _ hli'
+          (by intro i; fin_cases i; exacts [hexp 1, hexp 0])
+      refine not_isAlgebraic_of_algebraicIndependent_pair hind ?_
+      have hr0 : ((r 0 : ℚ) : ℂ) ≠ 0 := by
+        intro h0
+        refine hγ0 ?_
+        rw [heq, h0, hr1]; push_cast; ring
+      have hval : ℓ 0 = γ / ((r 0 : ℚ) : ℂ) := by
+        rw [eq_div_iff hr0, heq, hr1]; push_cast; ring
+      rw [hval]
+      exact isAlgebraic_div_left (hγ.tower_top _)
+        ((isAlgebraic_ratCast (r 0)).tower_top _)
+    · -- `ℓ₁ = (γ − r₀ℓ₀)/r₁` is algebraic over `ℚ(ℓ₀)`
+      have hind : AlgebraicIndependent ℚ ![ℓ 0, ℓ 1] :=
+        algebraicIndependent_of_exp_isAlgebraic hS _ hli
+          (by intro i; fin_cases i; exacts [hexp 0, hexp 1])
+      refine not_isAlgebraic_of_algebraicIndependent_pair hind ?_
+      have hr1' : ((r 1 : ℚ) : ℂ) ≠ 0 := by exact_mod_cast hr1
+      have hm0 : ℓ 0 ∈ IntermediateField.adjoin ℚ ({ℓ 0} : Set ℂ) := subset_adjoin _ _ rfl
+      have hval : ℓ 1 = (γ - ((r 0 : ℚ) : ℂ) * ℓ 0) / ((r 1 : ℚ) : ℂ) := by
+        rw [eq_div_iff hr1']; linear_combination -heq
+      rw [hval]
+      refine isAlgebraic_div_left (isAlgebraic_sub_left (hγ.tower_top _) ?_)
+        ((isAlgebraic_ratCast (r 1)).tower_top _)
+      exact isAlgebraic_mul_rat (isAlgebraic_ratCast (r 0))
+        (isAlgebraic_algebraMap (R := IntermediateField.adjoin ℚ ({ℓ 0} : Set ℂ)) (A := ℂ)
+          ⟨_, hm0⟩)
+  · -- dependent: the relation collapses to a rational multiple of one logarithm
+    rw [LinearIndependent.pair_iff] at hli
+    push_neg at hli
+    obtain ⟨a, b, hab, hne⟩ := hli
+    simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+      Rat.smul_def] at hab
+    by_cases hb : b = 0
+    · subst hb
+      have ha : a ≠ 0 := by
+        by_contra ha; exact (hne ha) rfl
+      have hℓ0 : ℓ 0 = 0 := by
+        have ha' : ((a : ℚ) : ℂ) ≠ 0 := by exact_mod_cast ha
+        have : ((a : ℚ) : ℂ) * ℓ 0 = 0 := by push_cast at hab ⊢; linear_combination hab
+        exact (mul_eq_zero.1 this).resolve_left ha'
+      exact false_of_ratCast_smul_log hS (c := r 1) (hexp 1) hγ hγ0
+        (by rw [heq, hℓ0]; ring)
+    · have hb' : ((b : ℚ) : ℂ) ≠ 0 := by exact_mod_cast hb
+      have hval : ℓ 1 = -((a : ℚ) : ℂ) / ((b : ℚ) : ℂ) * ℓ 0 := by
+        field_simp
+        linear_combination hab
+      exact false_of_ratCast_smul_log hS (c := r 0 - r 1 * a / b) (hexp 0) hγ hγ0
+        (by rw [heq, hval]; push_cast; field_simp; ring)
+
+/-- Schanuel ⇒ the five exponentials theorem from the shifted six exponentials theorem: the one
+missing ingredient of `fiveExponentials_of_shifted_of_baker` is Baker's theorem for two
+logarithms, and Schanuel supplies it. -/
+theorem fiveExponentials_of_shifted_of_schanuel (h : SixExponentialsShifted)
+    (hS : SchanuelConjecture) : FiveExponentials :=
+  fiveExponentials_of_shifted_of_baker h (bakerTwoLogs_of_schanuel hS)
+
 
 end LeanFormalizations.ExponentialsKnown
