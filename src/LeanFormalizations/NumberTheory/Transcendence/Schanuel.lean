@@ -167,6 +167,77 @@ theorem algebraicIndependent_of_le_trdeg_of_isAlgebraic {n : ℕ} (y : Fin n →
 
 end Toolkit
 
+/-! ## The Schanuel front-end and small helpers -/
+
+open Complex IntermediateField Algebra Cardinal Set in
+/-- **The form in which Schanuel's conjecture is used below.**  If `z` is `ℚ`-linearly
+independent and every generator of `ℚ(z, e^z)` is algebraic over `ℚ(y)` for a family `y` of the
+same size `n`, then `y` is algebraically independent. -/
+theorem algebraicIndependent_of_schanuel (hS : SchanuelConjecture) {n : ℕ} (z : Fin n → ℂ)
+    (hz : LinearIndependent ℚ z) (y : Fin n → ℂ)
+    (halg : ∀ w ∈ Set.range z ∪ Set.range (Complex.exp ∘ z),
+        IsAlgebraic (IntermediateField.adjoin ℚ (Set.range y)) w) :
+    AlgebraicIndependent ℚ y := by
+  have hsch := hS n z hz
+  refine algebraicIndependent_of_le_trdeg_of_isAlgebraic y
+    (IntermediateField.adjoin ℚ (Set.range z ∪ Set.range (Complex.exp ∘ z))) ?_
+    (forall_isAlgebraic_adjoin halg)
+  convert hsch using 2 <;> rfl
+
+open Complex IntermediateField Algebra Set in
+theorem isAlgebraic_I : IsAlgebraic ℚ Complex.I := by
+  have hm : (Polynomial.X ^ 2 + 1 : Polynomial ℚ).Monic := by monicity!
+  exact ⟨_, hm.ne_zero, by simp⟩
+
+open IntermediateField Algebra in
+theorem isAlgebraic_mul_rat {L : IntermediateField ℚ ℂ} {a b : ℂ}
+    (ha : IsAlgebraic ℚ a) (hb : IsAlgebraic L b) : IsAlgebraic L (a * b) :=
+  mem_algebraicClosure_iff.1
+    (mul_mem (mem_algebraicClosure_iff.2 (ha.tower_top L)) (mem_algebraicClosure_iff.2 hb))
+
+open IntermediateField Algebra in
+theorem isAlgebraic_sub_rat {L : IntermediateField ℚ ℂ} {a b : ℂ}
+    (ha : IsAlgebraic ℚ a) (hb : IsAlgebraic L b) : IsAlgebraic L (a - b) :=
+  mem_algebraicClosure_iff.1
+    (sub_mem (mem_algebraicClosure_iff.2 (ha.tower_top L)) (mem_algebraicClosure_iff.2 hb))
+
+open IntermediateField Algebra in
+theorem isAlgebraic_div_rat {L : IntermediateField ℚ ℂ} {a b : ℂ}
+    (ha : IsAlgebraic ℚ a) (hb : IsAlgebraic L b) : IsAlgebraic L (a / b) :=
+  mem_algebraicClosure_iff.1
+    (div_mem (mem_algebraicClosure_iff.2 (ha.tower_top L)) (mem_algebraicClosure_iff.2 hb))
+
+open Complex IntermediateField Algebra Cardinal Set in
+/-- Two algebraically independent numbers: the second is transcendental over `ℚ` adjoin the
+first.  (Used to turn algebraic independence of `e, π` into transcendence of `e + π`, `eπ`.) -/
+theorem not_isAlgebraic_of_algebraicIndependent_pair {a b : ℂ}
+    (h : AlgebraicIndependent ℚ ![a, b]) :
+    ¬ IsAlgebraic (IntermediateField.adjoin ℚ ({a} : Set ℂ)) b := by
+  intro hb
+  have hrange : Set.range ![a, a] = ({a} : Set ℂ) := by ext w; simp
+  have halg : ∀ w ∈ IntermediateField.adjoin ℚ (Set.range ![a, b]),
+      IsAlgebraic (IntermediateField.adjoin ℚ (Set.range ![a, a])) w := by
+    refine forall_isAlgebraic_adjoin ?_
+    rintro w ⟨i, rfl⟩
+    rw [hrange]
+    fin_cases i
+    · exact isAlgebraic_algebraMap (R := IntermediateField.adjoin ℚ ({a} : Set ℂ)) (A := ℂ)
+        ⟨a, subset_adjoin _ _ rfl⟩
+    · exact hb
+  have h2 := (AlgebraicIndependent.le_trdeg_adjoin h).trans
+    (trdeg_le_adjoin_of_forall_isAlgebraic halg)
+  have hii := (algebraicIndependent_of_le_trdeg_adjoin ![a, a] h2).injective
+  have : (0 : Fin 2) = 1 := hii (by simp)
+  simp at this
+
+/-- Transfer along `ℝ → ℂ`: a real family is algebraically independent iff its image is. -/
+theorem algebraicIndependent_real_of_complex {n : ℕ} {y : Fin n → ℝ}
+    (h : AlgebraicIndependent ℚ fun i => ((y i : ℝ) : ℂ)) : AlgebraicIndependent ℚ y :=
+  AlgebraicIndependent.of_comp (IsScalarTower.toAlgHom ℚ ℝ ℂ) h
+
+theorem isAlgebraic_complex_of_real {r : ℝ} (h : IsAlgebraic ℚ r) : IsAlgebraic ℚ ((r : ℝ) : ℂ) :=
+  h.algHom (IsScalarTower.toAlgHom ℚ ℝ ℂ)
+
 /-! ## Consistency edges (known unconditionally) -/
 
 /-- Schanuel ⇒ Gelfond–Schneider (real form): take `z = (log a, b log a)`. -/
@@ -186,20 +257,93 @@ theorem algebraicIndependent_pi_exp_pi (hS : SchanuelConjecture) :
 
 /-! ## Open consequences -/
 
+open Complex IntermediateField Algebra Set in
+/-- `1` and `iπ` are `ℚ`-linearly independent (one is real, the other purely imaginary). -/
+theorem linearIndependent_one_I_mul_pi :
+    LinearIndependent ℚ ![(1:ℂ), Complex.I * (Real.pi : ℂ)] := by
+  rw [LinearIndependent.pair_iff]
+  intro s t hst
+  simp only [Rat.smul_def] at hst
+  have him := congrArg Complex.im hst
+  have hre := congrArg Complex.re hst
+  simp at him hre
+  exact ⟨hre, him⟩
+
+open Complex IntermediateField Algebra Set in
+/-- Schanuel ⇒ `e` and `π` are algebraically independent, complex form.  Apply Schanuel to
+`z = (1, iπ)`: the exponentials are `e` and `−1`, so `ℚ(1, iπ, e, −1)` has transcendence degree
+`≥ 2`, and that field is algebraic over `ℚ(e, π)` (only `i` is missing, and it is algebraic). -/
+theorem algebraicIndependent_exp_one_pi_complex (hS : SchanuelConjecture) :
+    AlgebraicIndependent ℚ ![Complex.exp 1, (Real.pi : ℂ)] := by
+  refine algebraicIndependent_of_schanuel hS _ linearIndependent_one_I_mul_pi
+    ![Complex.exp 1, (Real.pi : ℂ)] ?_
+  have hmemE : Complex.exp 1 ∈
+      IntermediateField.adjoin ℚ (Set.range ![Complex.exp 1, (Real.pi : ℂ)]) :=
+    subset_adjoin _ _ ⟨0, rfl⟩
+  have hmemP : ((Real.pi : ℝ) : ℂ) ∈
+      IntermediateField.adjoin ℚ (Set.range ![Complex.exp 1, (Real.pi : ℂ)]) :=
+    subset_adjoin _ _ ⟨1, rfl⟩
+  rintro w (⟨i, rfl⟩ | ⟨i, rfl⟩)
+  · fin_cases i
+    · exact isAlgebraic_one
+    · exact isAlgebraic_mul_rat isAlgebraic_I (isAlgebraic_algebraMap
+        (R := IntermediateField.adjoin ℚ (Set.range ![Complex.exp 1, (Real.pi : ℂ)]))
+        (A := ℂ) ⟨_, hmemP⟩)
+  · fin_cases i
+    · exact isAlgebraic_algebraMap
+        (R := IntermediateField.adjoin ℚ (Set.range ![Complex.exp 1, (Real.pi : ℂ)]))
+        (A := ℂ) ⟨_, hmemE⟩
+    · show IsAlgebraic _ (Complex.exp (Complex.I * (Real.pi : ℂ)))
+      rw [show Complex.I * (Real.pi:ℂ) = (Real.pi:ℂ) * Complex.I by ring, Complex.exp_mul_I]
+      simpa using (isAlgebraic_algebraMap
+        (R := IntermediateField.adjoin ℚ (Set.range ![Complex.exp 1, (Real.pi : ℂ)]))
+        (A := ℂ) (-1))
+
 /-- Schanuel ⇒ `e` and `π` are algebraically independent: take `z = (1, iπ)`. -/
 theorem algebraicIndependent_exp_one_pi (hS : SchanuelConjecture) :
     AlgebraicIndependent ℚ ![Real.exp 1, Real.pi] := by
-  sorry
+  refine algebraicIndependent_real_of_complex ?_
+  have h := algebraicIndependent_exp_one_pi_complex hS
+  have hcomp : (fun i => ((![Real.exp 1, Real.pi] i : ℝ) : ℂ))
+      = ![Complex.exp 1, (Real.pi : ℂ)] := by
+    funext i; fin_cases i <;> simp [Complex.ofReal_exp]
+  rw [hcomp]; exact h
 
-/-- Schanuel ⇒ `e + π` is transcendental. -/
+open Complex IntermediateField Algebra Set in
+theorem isAlgebraic_adjoin_exp_one :
+    IsAlgebraic (IntermediateField.adjoin ℚ ({Complex.exp 1} : Set ℂ)) (Complex.exp 1) :=
+  isAlgebraic_algebraMap (R := IntermediateField.adjoin ℚ ({Complex.exp 1} : Set ℂ)) (A := ℂ)
+    ⟨_, subset_adjoin _ _ rfl⟩
+
+open Complex IntermediateField Algebra Set in
+/-- Schanuel ⇒ `e + π` is transcendental: otherwise `π = (e + π) − e` would be algebraic over
+`ℚ(e)`, contradicting the algebraic independence of `e` and `π`. -/
 theorem transcendental_exp_one_add_pi (hS : SchanuelConjecture) :
     Transcendental ℚ (Real.exp 1 + Real.pi) := by
-  sorry
+  intro h
+  refine not_isAlgebraic_of_algebraicIndependent_pair
+    (algebraicIndependent_exp_one_pi_complex hS) ?_
+  have hC : IsAlgebraic ℚ (Complex.exp 1 + (Real.pi : ℂ)) := by
+    simpa [Complex.ofReal_exp] using isAlgebraic_complex_of_real h
+  have hrw : ((Real.pi : ℝ) : ℂ) = (Complex.exp 1 + (Real.pi : ℂ)) - Complex.exp 1 := by ring
+  rw [hrw]
+  exact isAlgebraic_sub_rat hC isAlgebraic_adjoin_exp_one
 
-/-- Schanuel ⇒ `e · π` is transcendental. -/
+open Complex IntermediateField Algebra Set in
+/-- Schanuel ⇒ `e · π` is transcendental: otherwise `π = (eπ)/e` would be algebraic over
+`ℚ(e)`. -/
 theorem transcendental_exp_one_mul_pi (hS : SchanuelConjecture) :
     Transcendental ℚ (Real.exp 1 * Real.pi) := by
-  sorry
+  intro h
+  refine not_isAlgebraic_of_algebraicIndependent_pair
+    (algebraicIndependent_exp_one_pi_complex hS) ?_
+  have hC : IsAlgebraic ℚ (Complex.exp 1 * (Real.pi : ℂ)) := by
+    simpa [Complex.ofReal_exp] using isAlgebraic_complex_of_real h
+  have hne : Complex.exp 1 ≠ 0 := Complex.exp_ne_zero 1
+  have hrw : ((Real.pi : ℝ) : ℂ) = (Complex.exp 1 * (Real.pi : ℂ)) / Complex.exp 1 := by
+    field_simp
+  rw [hrw]
+  exact isAlgebraic_div_rat hC isAlgebraic_adjoin_exp_one
 
 /-- Schanuel ⇒ `e` and `e^e` are algebraically independent: take `z = (1, e)`. -/
 theorem algebraicIndependent_exp_one_exp_exp_one (hS : SchanuelConjecture) :
