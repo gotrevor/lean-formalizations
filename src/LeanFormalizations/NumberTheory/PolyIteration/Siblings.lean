@@ -1,6 +1,9 @@
 /-
 # The siblings of A003095: Sylvester's sequence, A003096, A002065, A004019
 
+⚓ **Linked from OEIS by path on `main`** (A000058).  Do not move or rename this file, and keep
+it building on current mathlib.
+
 Elementary facts recorded on the OEIS entries (checked 2026-09-28), plus Bala's general
 divisibility properties of polynomial iterations (A000058 formula section, Jul 19 2026).  The
 growth constants of these sequences are transcendental: `NumberTheory/Transcendence/Dubickas.lean`.
