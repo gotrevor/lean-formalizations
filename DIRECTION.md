@@ -2,7 +2,42 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 THE OBJECTIVE (phase 27, 2026-09-29): Leopoldt in unit rank 1, ℚ(ζ₈) at p = 7
+## 🎯 THE OBJECTIVE (phase 28, TBD): Leopoldt in unit rank ≥ 2 — the Baker–Brumer wall
+
+Phase 27 closed rank ≤ 1 **unconditionally** (see below), and located the wall exactly.  For
+`r ≥ 2` the local lemma `eq_zero_of_local_tendsto_one` is genuinely false as stated: the
+valuation argument controls one unit's `p`-part, not a linear combination of `r` of them.  The
+next real target is Ax's reduction: Leopoldt for `K/ℚ` abelian follows from the `p`-adic Baker
+theorem (Brumer 1967) — `ℚ_p`-linear independence of `log_p α₁, …, log_p αₙ` for multiplicatively
+independent algebraic `αᵢ`.  Two prerequisites mathlib lacks at our pin: a `p`-adic logarithm on
+principal units, and the `ℚ_p`-linear-forms machinery.  Attack order: (1) build `padicLog` on
+`U⁽¹⁾` of `v.adicCompletion K` as the limit of `((1+x)^{p^n} - 1)/p^n` or via the power series,
+(2) state Brumer as a `Literature/` axiom with a faithfulness argument, (3) derive rank-2
+Leopoldt for a concrete abelian field (ℚ(ζ₇), rank 2) from it.  Step (1) is the only one with
+real content and should go first.
+
+---
+
+## ✅ DONE (phase 27, `50514ad`, 2026-09-29, 1 lap): Leopoldt in unit rank ≤ 1, ℚ(ζ₈) at p = 7
+
+**Both frozen statements proved and `#print axioms`-clean; `RankOne.lean` is sorry-free.**  The
+phase-26 plan (a `ℤ_p`-action on principal units by continuity, plus torsion-freeness of `U⁽¹⁾` for
+odd unramified `p`) turned out to be unnecessary, and what landed is far stronger:
+`leopoldt_of_rank_le_one : Units.rank K ≤ 1 → LeopoldtConjecture K p` for **every** number field
+and **every** prime — no abelian hypothesis, no `p` odd, no unramifiedness, no `p`-adic log.
+
+Two observations collapse it (details in the `RankOne.lean` header):
+- the principalising exponent `N` is prime to `p`, hence a `ℤ_p`-unit, so it suffices to kill
+  `N·a` and one may use the exponents `N · m n` throughout — no residue-class subsequence;
+- on a principal unit, an exponent prime to `p` does not move the valuation at all
+  (`valuation_zpow_sub_one : W (θ^t − 1) = W (θ − 1)`), so only the `p`-part of the exponent can
+  push `ε^m` towards `1`, and `a ≠ 0` bounds that `p`-part.
+
+Rank `≤ 1` enters only via `card_le_rank` (multiplicative independence ⟹ `ℤ`-linear independence
+in `Additive (𝓞 K)ˣ`, of `ℤ`-rank `rank K`).  Infrastructure lives in
+`NumberTheory/Leopoldt/PrincipalUnits.lean`.
+
+### original directive
 
 The first nontrivial test of `Literature.LeopoldtConjecture` (adversarial review: faithful, 88%; header updated).  Target `NumberTheory/Leopoldt/RankOne.lean`: `rank_cyclotomic_eight`, `leopoldt_cyclotomic_eight_seven`.  This is multi-lap infrastructure: principal units of `adicCompletion`, a `ℤ_p`-action by continuity, torsion-freeness for odd unramified `p` (plan in the header).  Infrastructure leaves are progress.  If the statement proves unfaithful, record the counterexample and stop; never edit `Literature/`.  Stop condition: that file sorry-free.
 

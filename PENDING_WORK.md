@@ -1531,3 +1531,28 @@ unit group of `HeightOneSpectrum.adicCompletion`.  Next attack, in order:
 2. torsion-freeness of `U₁` for `p` odd and unramified, via `(1+x)^p = 1 + px + … ` valuation;
 3. only then the rank-1 Leopoldt statement.
 This is a multi-lap infrastructure build and was explicitly "not frozen" in the phase-26 directive.
+
+
+## Phase 27 (2026-09-29): Leopoldt in unit rank ≤ 1 — DONE; the rank-2 wall located
+
+`NumberTheory/Leopoldt/RankOne.lean` is sorry-free; `rank_cyclotomic_eight` and
+`leopoldt_cyclotomic_eight_seven` are `#print axioms`-clean.  The phase-26 "blocked on missing
+mathlib infrastructure" verdict was **wrong**: neither the `ℤ_p`-action on `U⁽¹⁾` nor a `p`-adic
+logarithm is needed in rank `≤ 1`.  What landed instead, in
+`NumberTheory/Leopoldt/PrincipalUnits.lean`:
+
+- `valuation_zpow_sub_one` — on a principal unit at `v` (`W (θ−1) < 1`), an exponent prime to the
+  residue characteristic leaves `W (θ − 1)` **exactly** unchanged.  This is the whole engine.
+- `exists_principal_exponent` — `N = card (𝓞 K ⧸ v)ˣ` is prime to `p` (Cauchy + freshman's dream
+  in a finite domain of char `p`) and makes any unit principal.  Since `N` is a `ℤ_p`-unit,
+  proving `N·a = 0` suffices, so the header's residue-class subsequence is avoidable.
+- `eq_zero_of_local_tendsto_one` — the rank-one local obstruction, unconditional in `K` and `p`.
+- `card_le_rank`, `exists_prime_above`, `leopoldt_of_rank_le_one`.
+
+**Where the wall actually is.**  For `r ≥ 2` the local argument fails for a structural reason
+worth recording: it bounds the `p`-part of *one* exponent, while a relation among `r` units mixes
+the `p`-parts.  There is no valuation-only substitute — the statement for `r ≥ 2` really does
+imply `ℚ_p`-linear independence of `p`-adic logarithms, i.e. Baker–Brumer.  Next attack, in
+order: (1) `padicLog` on the principal units of `v.adicCompletion K` (the only step with real
+content), (2) Brumer's `p`-adic Baker theorem as a `Literature/` axiom with a faithfulness
+argument, (3) rank-2 Leopoldt for ℚ(ζ₇) from it.
