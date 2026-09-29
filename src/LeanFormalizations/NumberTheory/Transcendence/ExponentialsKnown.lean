@@ -273,4 +273,58 @@ theorem fiveExponentials_of_shifted_of_schanuel (h : SixExponentialsShifted)
   fiveExponentials_of_shifted_of_baker h (bakerTwoLogs_of_schanuel hS)
 
 
+
+/-- `iπ` and `1` are `ℚ`-linearly independent. -/
+theorem linearIndependent_I_mul_pi_one :
+    LinearIndependent ℚ ![Complex.I * (Real.pi : ℂ), (1 : ℂ)] := by
+  rw [LinearIndependent.pair_iff]
+  intro s t hst
+  simp only [Rat.smul_def] at hst
+  have him := congrArg Complex.im hst
+  have hre := congrArg Complex.re hst
+  simp [Real.pi_ne_zero] at him hre
+  exact ⟨him, hre⟩
+
+/-- **Unconditional, from the five exponentials theorem: a special case of the four
+exponentials conjecture.**  For any `ℚ`-linearly independent `y₀, y₁`, one of the four numbers
+`e^{iπy₀}, e^{iπy₁}, e^{y₀}, e^{y₁}` is transcendental.  The five exponentials theorem is
+applied with `x = (iπ, 1)` and `γ = 1`, so that its fifth number is
+`e^{γx₀/x₁} = e^{iπ} = −1`, which is algebraic and therefore cannot be the transcendental
+one. -/
+theorem exists_transcendental_I_pi_row (h5 : FiveExponentials) {y : Fin 2 → ℂ}
+    (hy : LinearIndependent ℚ y) :
+    ∃ i j : Fin 2,
+      Transcendental ℚ (Complex.exp (![Complex.I * (Real.pi : ℂ), (1 : ℂ)] i * y j)) := by
+  rcases h5 ![Complex.I * (Real.pi : ℂ), (1 : ℂ)] y 1 linearIndependent_I_mul_pi_one hy
+    isAlgebraic_one one_ne_zero with hcase | hcase
+  · exact hcase
+  · exfalso
+    refine hcase ?_
+    have hval : (1 : ℂ) * (![Complex.I * (Real.pi : ℂ), (1 : ℂ)] 0)
+        / (![Complex.I * (Real.pi : ℂ), (1 : ℂ)] 1) = Complex.I * (Real.pi : ℂ) := by
+      simp
+    rw [hval, show Complex.I * (Real.pi : ℂ) = (Real.pi : ℂ) * Complex.I by ring,
+      Complex.exp_mul_I]
+    simpa using (isAlgebraic_algebraMap (R := ℚ) (A := ℂ) (-1))
+
+/-- **Unconditional**: one of `2^{iπ}`, `3^{iπ}` is transcendental.  Apply the previous theorem
+to `y = (log 2, log 3)`: its other two numbers are `e^{log 2} = 2` and `e^{log 3} = 3`, both
+algebraic. -/
+theorem two_or_three_cpow_I_pi (h5 : FiveExponentials) :
+    Transcendental ℚ (Complex.exp (Complex.I * (Real.pi : ℂ) * ((Real.log 2 : ℝ) : ℂ))) ∨
+      Transcendental ℚ (Complex.exp (Complex.I * (Real.pi : ℂ) * ((Real.log 3 : ℝ) : ℂ))) := by
+  obtain ⟨i, j, htr⟩ := exists_transcendental_I_pi_row h5 linearIndependent_log_two_three
+  fin_cases i <;> fin_cases j
+  · exact Or.inl (by simpa [mul_assoc] using htr)
+  · exact Or.inr (by simpa [mul_assoc] using htr)
+  · refine absurd ?_ htr
+    show IsAlgebraic ℚ (Complex.exp ((1 : ℂ) * ((Real.log 2 : ℝ) : ℂ)))
+    rw [one_mul, ← Complex.ofReal_exp, Real.exp_log (by norm_num : (0:ℝ) < 2)]
+    simpa using isAlgebraic_algebraMap (R := ℚ) (A := ℂ) (2 : ℚ)
+  · refine absurd ?_ htr
+    show IsAlgebraic ℚ (Complex.exp ((1 : ℂ) * ((Real.log 3 : ℝ) : ℂ)))
+    rw [one_mul, ← Complex.ofReal_exp, Real.exp_log (by norm_num : (0:ℝ) < 3)]
+    simpa using isAlgebraic_algebraMap (R := ℚ) (A := ℂ) (3 : ℚ)
+
+
 end LeanFormalizations.ExponentialsKnown

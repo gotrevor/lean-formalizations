@@ -1445,6 +1445,26 @@ open.
 **Next:** the operator call is whether to add Baker to `Literature/` (then
 `fiveExponentials_of_shifted` closes in one line from the reduction already proved), or to
 restate the frozen `SixExponentialsShifted` with Waldschmidt's actual weaker independence
-hypothesis.  Either is a one-line unblock; neither is this run's to make.  Meanwhile the fifth
-bullet of the file header — a five-exponentials corollary such as `e^{π²}` or `2^{√2}` — is
-open and needs no Baker.
+hypothesis.  Either is a one-line unblock; neither is this run's to make.  The fifth
+bullet of the file header — a five-exponentials corollary — is now DONE, and the choice is worth
+recording because the obvious candidates do not work.  `e^{π²}` and `2^{√2}` both come out as
+*disjunctions already known by other means* (Gelfond gives `e^π`, Gelfond–Schneider gives
+`2^{√2}`), so they are not new information.  What the five exponentials theorem actually buys
+is a **special case of the four exponentials conjecture**: apply it with `x = (iπ, 1)` and
+`γ = 1`, so its fifth number is `e^{γx₀/x₁} = e^{iπ} = −1`, algebraic, hence not the
+transcendental one.  That leaves exactly the four numbers `e^{iπy₀}, e^{iπy₁}, e^{y₀}, e^{y₁}`
+(`exists_transcendental_I_pi_row`).  The general recipe: the fifth number is killed whenever
+`x₀/x₁` is a logarithm of an algebraic number divided by an algebraic `γ`.  Concrete
+corollary at `y = (log 2, log 3)`: **one of `2^{iπ}`, `3^{iπ}` is transcendental**
+(`two_or_three_cpow_I_pi`), unconditional.
+
+**Next (a genuine multi-lap target): Schanuel ⇒ `StrongSixExponentials`.**  Roy's theorem from
+Schanuel.  Sketch: choose a ℚ-basis `ℓ₁,…,ℓₙ` of the ℚ-span of all logarithms occurring in the
+six `LogAlgSpan` witnesses; Schanuel (`algebraicIndependent_of_exp_isAlgebraic`) makes them
+algebraically independent over ℚ, and `AlgebraicIndependent.extendScalars` upgrades that to
+ℚ̄, so `ℚ̄[ℓ₁,…,ℓₙ]` is a genuine polynomial ring.  Each `xᵢyⱼ` is then a ℚ̄-linear form in the
+`ℓ`, the relation `λ₀₀λ₁₁ = λ₀₁λ₁₀` is an identity between degree-≤2 polynomials, and UFD
+factorisation of a product of linear forms forces the rank-1 shape that contradicts the
+ℚ-linear independence of `x` and `y`.  Decompose into named leaves: (1) the basis-of-logs
+reduction, (2) `extendScalars` to ℚ̄, (3) the polynomial-ring rank-1 lemma.  Step (3) is the
+only one with real content and should be attacked first.
