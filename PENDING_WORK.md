@@ -27,15 +27,41 @@ alone.  The chain, all machine-checked:
 `H(x)^(−ε)` for the *tuple* `x`.  A caller with CZ's hypothesis gets ours at `ε/C` from
 `H(x) ≤ H(u)^C`; that comparison is the next small leaf (`mulHeight_tuple_le`).
 
+### Also proved this lap (steps 7–12)
+
+* `hasFiniteMulSupport_iSup`, `mulHeight_le_prod_S_of_sIntegral`, **`approxProd_le_of_prod_le`** —
+  the *inequality* interface for `S`-**integral** tuples (CZ's Lemma-3 point `(p, qσᵢ(u))` is not a
+  tuple of units): places off `S` contribute `≤ 1`, so `∏_{v∈S}‖x‖_v ≥ H(x)`.
+* `exists_smul_infinitePlace`, **`prod_infinitePlace_sub_ratCast`** — CZ's (2.3)–(2.4).  The
+  Galois group acts transitively on the infinite places of a Galois `K/ℚ` (all lie over ℚ's unique
+  infinite place, and `Subsingleton (InfinitePlace ℚ)` is in mathlib), so `v = σ_v • v₀`; since
+  `p` is *rational* and hence Galois-fixed, every archimedean factor is the **same** real number
+  `|y − p|_{v₀}`, and `∑_v mult = [K:ℚ]` collapses the product.  This is the whole content of
+  (2.4) and it is three lines once the transitivity is available.
+* `infinitePlace_ratCast`, `finitePlace_intCast_le_one`, **`prod_S_int_mul_sUnit_le`** — CZ's
+  (2.6): `∏_S |q u|_v ≤ |q|^[K:ℚ]` for `u` an `S`-unit and `q ∈ ℤ`.
+* `czSubForm` / `czSubFamily` / **`linearIndependent_czSubFamily`** — the Lemma-3 forms
+  `x₀ − ρ_v(δ)x_i` indexed by `Option ι`; independence is *unconditional* (unipotent change of
+  basis), unlike the Lemma-1 family.
+* **`czLemma3_subspace`** — CZ (2.7): an infinite family of nonzero `S`-integral points whose
+  Lemma-3 double product is `≤ H(x)^(−ε)` satisfies one fixed nontrivial relation
+  `a₀p + Σ aⱼ q σⱼ(u) = 0` infinitely often.
+
+So **every Subspace-Theorem application in Corvaja–Zannier's paper is now discharged** except
+Lemma 2 (the unit-equation theorem, which CZ cite to [S, Ch. 4] rather than prove).
+
 ### Next attack (in order)
-1. `mulHeight_tuple_le`: `H((σᵢ u)) ≤ H(u)^(card ι)` for automorphisms `σᵢ` (each `σ` permutes
-   places, so `H(σ u) = H(u)`), plus `Height.mulHeight_le_prod`-style subadditivity.
-2. CZ **Lemma 3**: same `approxProd_of_prod_eq` machinery with `d+1` variables, the point
-   `x = (p, q σ₁(u), …, q σ_d(u))` and the forms `x₀ − ρ_v(δ)xᵢ`.  The new ingredients are
-   (a) the archimedean factorisation (2.4) `∏_{v∈M∞} |ρ_v(δ)ρ_v(qu) − p|_v = ‖δqu‖`, and
-   (b) the `Claim` (eliminating `a₀`), which is pure Galois bookkeeping on top of Lemma 1.
-3. CZ **Lemma 2** (unit equation) — cited by CZ to [S, Ch. 4]; it is a *separate* Subspace
-   application, and is the one genuinely missing input.  Expect to state it as a named leaf.
+1. **Assemble CZ Lemma 3** from `czLemma3_subspace` + `prod_infinitePlace_sub_ratCast` +
+   `prod_S_int_mul_sUnit_le`: feed the numerator hypothesis of `czLemma3_subspace` using
+   `‖δqu‖ < q^(−d−ε)H(u)^(−ε)`, then run CZ's **Claim** (eliminate `a₀` by applying `σⱼ`/`τ` and
+   subtracting — pure Galois bookkeeping) and land in `czLemma1_arch`.
+2. CZ **Lemma 2** (unit equation) — cited by CZ to [S, Ch. 4]; a *separate* Subspace application
+   and the one genuinely missing input.  State it as a named leaf; note it also **replaces
+   Skolem–Mahler–Lech** in Lemma 4 (two-term relation `aβᵢ^m + bβⱼ^m = 0` at two exponents forces
+   `(βᵢ/βⱼ)^(m−m') = 1`), and mathlib has no SML, so routing Lemma 4 through Lemma 2 is strictly
+   cheaper than through SML.
+3. **Lemma 4** from `czLemma1_fin` + Lemma 2 — the finite-place form of Lemma 1 is exactly what
+   CZ use there, and it is already proved.
 4. Main Theorem: descent along the finite subfield lattice of `K`.
 
 ## PHASE 12 — CLOSED 2026-09-29: `Diophantine/StephanEdges.lean` sorry-free + axiom-clean
