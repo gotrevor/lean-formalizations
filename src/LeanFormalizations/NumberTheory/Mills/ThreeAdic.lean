@@ -677,12 +677,18 @@ private lemma exists_vieta_of_cubic_pisot {β : ℝ} (hP : IsPisot β)
   exact ⟨g.coeff 2, g.coeff 1, g.coeff 0, hc0, by linear_combination c2, by linear_combination -c1,
     by linear_combination c0⟩
 
-/-- **Step 4: if the least Mills constant is algebraic, its primes tend to `±1` in `ℤ₃`.** -/
-theorem mills_threeAdic (hGc : GaussCongruenceTrace)
-    (hB : BakerHarmanPintz2001) (hM : Matomaki2007) (hD : Dubickas2022)
-    (hG : Dubickas2022PisotGap) {A : ℝ} (hA : IsMinMills A) (halg : IsAlgebraic ℚ A) :
-    ∀ e : ℕ, ∃ K, ∀ k ≥ K,
-      (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ 1 [ZMOD 3 ^ e] ∨ (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ -1 [ZMOD 3 ^ e] := by
+/-- **The companion-matrix glue for an algebraic Mills constant** (factored out of
+`mills_threeAdic`, phase 30).  If the least Mills constant `A` is algebraic, there are a
+nonsingular integer `3 x 3` matrix `C`, a shift `m` and a threshold `i₀` such that
+`tr C^(3^i) = ⌊A^(3^(m+i))⌋` for all `i ≥ i₀`; in particular that trace sequence is prime and
+strictly increasing from `i₀` on. -/
+theorem exists_companion_of_algebraic_mills (hB : BakerHarmanPintz2001) (hM : Matomaki2007)
+    (hD : Dubickas2022) (hG : Dubickas2022PisotGap) {A : ℝ} (hA : IsMinMills A)
+    (halg : IsAlgebraic ℚ A) :
+    ∃ (C : Matrix (Fin 3) (Fin 3) ℤ) (m i₀ : ℕ), C.det ≠ 0 ∧
+      (∀ i ≥ i₀, ((C ^ ((3:ℕ) ^ i)).trace) = (⌊A ^ ((3:ℕ) ^ (m + i))⌋₊ : ℤ)) ∧
+      (∀ k ≥ i₀, Prime ((C ^ ((3:ℕ) ^ k)).trace)) ∧
+      (∀ k ≥ i₀, (C ^ ((3:ℕ) ^ k)).trace < (C ^ ((3:ℕ) ^ (k + 1))).trace) := by
   obtain ⟨⟨hA1, hAm⟩, hmin⟩ := hA
   have hA : IsMinMills A := ⟨⟨hA1, hAm⟩, hmin⟩
   -- Saito's dichotomy; the transcendental branch contradicts `halg`
@@ -761,6 +767,16 @@ theorem mills_threeAdic (hGc : GaussCongruenceTrace)
       calc ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ = ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ ^ 1 := (pow_one _).symm
         _ < ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ ^ 3 := Nat.pow_lt_pow_right (by omega) (by omega)
     exact_mod_cast lt_trans this hcu
+  exact ⟨C, m, i₀, hdet, hfloor, hprime, hmono⟩
+
+/-- **Step 4: if the least Mills constant is algebraic, its primes tend to `±1` in `ℤ₃`.** -/
+theorem mills_threeAdic (hGc : GaussCongruenceTrace)
+    (hB : BakerHarmanPintz2001) (hM : Matomaki2007) (hD : Dubickas2022)
+    (hG : Dubickas2022PisotGap) {A : ℝ} (hA : IsMinMills A) (halg : IsAlgebraic ℚ A) :
+    ∀ e : ℕ, ∃ K, ∀ k ≥ K,
+      (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ 1 [ZMOD 3 ^ e] ∨ (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ -1 [ZMOD 3 ^ e] := by
+  obtain ⟨C, m, i₀, hdet, hfloor, hprime, hmono⟩ :=
+    exists_companion_of_algebraic_mills hB hM hD hG hA halg
   -- apply step 3
   intro e
   obtain ⟨K, hK⟩ := threeAdic_pm_one hGc C hdet hprime hmono e

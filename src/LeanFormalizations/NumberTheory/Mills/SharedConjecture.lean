@@ -49,6 +49,125 @@ def DoubleExpTraceComposite : Prop :=
     Tendsto (fun k : ℕ => |(C ^ (c ^ k)).trace + h|) atTop atTop →
     ∃ᶠ k in atTop, ¬ Prime ((C ^ (c ^ k)).trace + h)
 
+/-! ### Sequence growth helpers -/
+
+private lemma seq_growth {t : ℕ → ℤ} {k₀ : ℕ} (hmono : ∀ k ≥ k₀, t k < t (k + 1)) :
+    ∀ k, k₀ ≤ k → t k₀ + ((k : ℤ) - (k₀ : ℤ)) ≤ t k := by
+  intro k hk
+  induction k, hk using Nat.le_induction with
+  | base => simp
+  | succ k hk ih =>
+      have := hmono k hk
+      push_cast
+      push_cast at ih
+      omega
+
+private lemma seq_le {t : ℕ → ℤ} {k₀ : ℕ} (hmono : ∀ k ≥ k₀, t k < t (k + 1)) :
+    ∀ a, k₀ ≤ a → ∀ d, t a ≤ t (a + d) := by
+  intro a ha d
+  induction d with
+  | zero => simp
+  | succ d ih =>
+      have := hmono (a + d) (by omega)
+      have he : a + (d + 1) = (a + d) + 1 := by omega
+      rw [he]; omega
+
+private lemma seq_eventually_gt {t : ℕ → ℤ} {k₀ : ℕ} (hmono : ∀ k ≥ k₀, t k < t (k + 1))
+    (B : ℤ) : ∃ K, k₀ ≤ K ∧ ∀ k ≥ K, B < t k := by
+  refine ⟨k₀ + (B - t k₀ + 1).toNat, by omega, ?_⟩
+  intro k hk
+  have h1 := seq_growth hmono k (by omega)
+  have h2 : ((k₀ + (B - t k₀ + 1).toNat : ℕ) : ℤ) ≤ (k : ℤ) := by exact_mod_cast hk
+  push_cast at h2
+  omega
+
+private lemma tendsto_abs_atTop_of_mono {t : ℕ → ℤ} {k₀ : ℕ}
+    (hmono : ∀ k ≥ k₀, t k < t (k + 1)) : Tendsto (fun k => |t k|) atTop atTop := by
+  rw [tendsto_atTop]
+  intro B
+  obtain ⟨K, -, hK⟩ := seq_eventually_gt hmono B
+  exact eventually_atTop.2 ⟨K, fun k hk => le_trans (hK k hk).le (le_abs_self _)⟩
+
+/-! ### Step 1 for a general prime base: the trace sequence is periodic mod `p` -/
+
+/-- **Generalised phase-29 step 1.**  If the prime `p` does not divide `det C` and
+`v_c |GL_n(𝔽_p)| ≤ m`, then `tr C^(c^(m+j)) ≡ tr C^(c^m) (mod p)` for some `j ≥ 1`.
+
+The shift `h` of `DoubleExpTraceComposite` is invisible here: the conclusion is a congruence
+between two traces, so `+ h` cancels. -/
+theorem exists_trace_pow_congr {n : ℕ} (C : Matrix (Fin n) (Fin n) ℤ) {p m c : ℕ}
+    (hp : p.Prime) (hc : c.Prime) (hdet : ¬ (p : ℤ) ∣ C.det)
+    (hv : padicValNat c (glCard n p) ≤ m) :
+    ∃ j, 1 ≤ j ∧ (p : ℤ) ∣ ((C ^ (c ^ (m + j))).trace - (C ^ (c ^ m)).trace) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  set f : ℤ →+* ZMod p := Int.castRingHom (ZMod p) with hf
+  set D : Matrix (Fin n) (Fin n) (ZMod p) := f.mapMatrix C with hD
+  have htr : ∀ N : ℕ, ((C ^ N).trace : ZMod p) = (D ^ N).trace := by
+    intro N
+    rw [hD, ← map_pow]
+    simp [Matrix.trace, Matrix.diag, RingHom.mapMatrix_apply, Matrix.map_apply, hf]
+  have hdetD : IsUnit D.det := by
+    have hmd : D.det = f C.det := by rw [hD]; exact (RingHom.map_det f C).symm
+    rw [hmd]
+    refine Ne.isUnit ?_
+    simpa [hf, ZMod.intCast_zmod_eq_zero_iff_dvd] using hdet
+  obtain ⟨u, hu⟩ := (Matrix.isUnit_iff_isUnit_det D).2 hdetD
+  have hcard : Nat.card (GL (Fin n) (ZMod p)) = glCard n p := by
+    rw [Matrix.card_GL_field]
+    simp [glCard, ZMod.card]
+  obtain ⟨N, hN⟩ : ∃ N, N = glCard n p := ⟨_, rfl⟩
+  have hNpos : 0 < N := by rw [hN, ← hcard]; exact Nat.card_pos
+  have hNne : N ≠ 0 := hNpos.ne'
+  have huN : u ^ N = 1 := by rw [hN, ← hcard]; exact pow_card_eq_one'
+  obtain ⟨v, hvdef⟩ : ∃ v, v = padicValNat c N := ⟨_, rfl⟩
+  have hvm : v ≤ m := by rw [hvdef, hN]; exact hv
+  obtain ⟨M, hM⟩ : ∃ M, M = N / c ^ v := ⟨_, rfl⟩
+  have hfac : N.factorization c = v := by rw [hvdef, Nat.factorization_def _ hc]
+  have hsplit : c ^ v * M = N := by
+    have := Nat.ordProj_mul_ordCompl_eq_self N c
+    rw [hfac] at this
+    rw [hM, hfac] at *
+    exact this
+  have hMdvd : ¬ (c ∣ M) := by
+    have := Nat.not_dvd_ordCompl hc hNne
+    rw [hfac] at this
+    rwa [hM]
+  have hMpos : 0 < M := by
+    rcases Nat.eq_zero_or_pos M with h | h
+    · rw [h, mul_zero] at hsplit; exact absurd hsplit.symm hNne
+    · exact h
+  set g := u ^ (c ^ m) with hg
+  have hgM : g ^ M = 1 := by
+    rw [hg, ← pow_mul]
+    have : N ∣ c ^ m * M := by
+      rw [← hsplit]
+      exact Nat.mul_dvd_mul_right (pow_dvd_pow c hvm) M
+    obtain ⟨d, hd⟩ := this
+    rw [hd, pow_mul, huN, one_pow]
+  set j := Nat.totient M with hj
+  have hjpos : 1 ≤ j := Nat.totient_pos.2 hMpos
+  have hcop : Nat.Coprime c M := (Nat.Prime.coprime_iff_not_dvd hc).2 hMdvd
+  have hmod : c ^ j ≡ 1 [MOD M] := Nat.ModEq.pow_totient hcop
+  obtain ⟨s, hs⟩ : ∃ s, c ^ j = 1 + M * s := by
+    have h1 : 1 ≤ c ^ j := Nat.one_le_pow _ _ hc.pos
+    obtain ⟨d, hd⟩ := (Nat.modEq_iff_dvd' h1).1 hmod.symm
+    exact ⟨d, by omega⟩
+  have hgfix : g ^ (c ^ j) = g := by
+    rw [hs, pow_add, pow_one, pow_mul, hgM, one_pow, mul_one]
+  refine ⟨j, hjpos, ?_⟩
+  have key : D ^ (c ^ (m + j)) = D ^ (c ^ m) := by
+    have : (u : Matrix (Fin n) (Fin n) (ZMod p)) ^ (c ^ (m + j)) =
+        (u : Matrix (Fin n) (Fin n) (ZMod p)) ^ (c ^ m) := by
+      rw [← Units.val_pow_eq_pow_val, ← Units.val_pow_eq_pow_val]
+      congr 1
+      rw [pow_add, pow_mul, ← hg, hgfix]
+    rwa [hu] at this
+  have hz : (((C ^ (c ^ (m + j))).trace - (C ^ (c ^ m)).trace : ℤ) : ZMod p) = 0 := by
+    push_cast
+    rw [htr, htr, key]
+    ring
+  exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 hz
+
 /-- The conjecture implies infinitely many composite Fermat numbers. -/
 theorem fermat_of_doubleExpTraceComposite (hC : DoubleExpTraceComposite) :
     ∃ᶠ k in atTop, ¬ (Nat.fermatNumber k).Prime := by
@@ -68,6 +187,51 @@ theorem lt_padicValNat_glCard_prime_base {n c : ℕ} (hc : c.Prime) (C : Matrix 
     (hprime : ∀ k ≥ k₀, Prime ((C ^ (c ^ k)).trace + h))
     (hmono : ∀ k ≥ k₀, (C ^ (c ^ k)).trace + h < (C ^ (c ^ (k + 1))).trace + h) :
     ∃ K, ∀ k ≥ K, k < padicValNat c (glCard n ((C ^ (c ^ k)).trace + h).toNat) := by
-  sorry
+  set t : ℕ → ℤ := fun k => (C ^ (c ^ k)).trace + h with ht
+  have hmono' : ∀ k, k₀ ≤ k → t k < t (k + 1) := fun k hk => hmono k hk
+  obtain ⟨K, hK0, hKB⟩ := seq_eventually_gt hmono' |C.det|
+  refine ⟨K, ?_⟩
+  intro k hk
+  have hk0 : k₀ ≤ k := le_trans hK0 hk
+  by_contra hcon
+  push_neg at hcon
+  have htpos : 0 < t k := lt_of_le_of_lt (abs_nonneg _) (hKB k hk)
+  have htprime : Prime (t k) := hprime k hk0
+  obtain ⟨p, hpv⟩ : ∃ p : ℕ, (p : ℤ) = t k := ⟨(t k).toNat, Int.toNat_of_nonneg htpos.le⟩
+  have hpnat : p.Prime := by
+    rw [Int.prime_iff_natAbs_prime] at htprime
+    simpa [← hpv] using htprime
+  have hptoNat : (t k).toNat = p := by omega
+  have hdetp : ¬ (p : ℤ) ∣ C.det := by
+    intro hdd
+    have h1 : (p : ℤ) ≤ |C.det| := Int.le_of_dvd (abs_pos.2 hdet) ((dvd_abs _ _).2 hdd)
+    have := hKB k hk
+    omega
+  have hvle : padicValNat c (glCard n p) ≤ k := by rw [← hptoNat]; exact hcon
+  obtain ⟨j, hj1, hjd⟩ := exists_trace_pow_congr C hpnat hc hdetp hvle
+  have hjd' : (p : ℤ) ∣ t (k + j) - t k := by
+    rw [ht]; simpa using hjd
+  have hdq0 : (p : ℤ) ∣ t (k + j) := by
+    have : (p : ℤ) ∣ t k := by rw [hpv]
+    simpa using dvd_add hjd' this
+  have hgt : t k < t (k + j) := by
+    have h1 := hmono' k hk0
+    have h2 := seq_le hmono' (k + 1) (by omega) (j - 1)
+    have he : k + 1 + (j - 1) = k + j := by omega
+    rw [he] at h2
+    omega
+  have hqpos : 0 < t (k + j) := lt_trans htpos hgt
+  have hqprime : Prime (t (k + j)) := hprime (k + j) (by omega)
+  obtain ⟨q, hqv⟩ : ∃ q : ℕ, (q : ℤ) = t (k + j) :=
+    ⟨(t (k + j)).toNat, Int.toNat_of_nonneg hqpos.le⟩
+  have hqnat : q.Prime := by
+    rw [Int.prime_iff_natAbs_prime] at hqprime
+    simpa [← hqv] using hqprime
+  have hdq : p ∣ q := by
+    have : (p : ℤ) ∣ (q : ℤ) := by rw [hqv]; exact hdq0
+    exact_mod_cast this
+  rcases (Nat.Prime.eq_one_or_self_of_dvd hqnat p hdq) with hh | hh
+  · exact hpnat.one_lt.ne' hh
+  · omega
 
 end LeanFormalizations.Mills.SharedConjecture
