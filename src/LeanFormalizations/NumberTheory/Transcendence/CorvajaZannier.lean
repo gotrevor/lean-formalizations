@@ -837,6 +837,96 @@ theorem linearIndependent_czSubFamily {ι : Type*} [Fintype ι] [DecidableEq ι]
     rwa [Finset.sum_ite_eq' Finset.univ (some j') (fun _ ↦ g (some j')),
       if_pos (Finset.mem_univ _)] at h
 
+/-!
+## Step 12 — the Lemma-3 Subspace application, packaged
+
+The three ingredients are now in place, so the Subspace step of CZ's Lemma 3 becomes a single
+statement: an infinite family of `S`-integral points whose Lemma-3 double product is small lies
+on one nontrivial hyperplane, i.e. satisfies `a₀p + Σ aⱼ q σⱼ(u) = 0` infinitely often.
+
+`czL3` is the place-indexed family: at the archimedean place `v` the exceptional form uses the
+index `idx v` and the coefficient `coef v` (CZ's `i` with `v ∈ S_i`, and `ρ_v(δ)`); at every
+finite place the forms are the coordinates.
+-/
+
+open scoped Classical in
+/-- CZ's Lemma-3 family of linear forms, place by place. -/
+noncomputable def czL3 {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (idx : AbsoluteValue K ℝ → ι) (coef : AbsoluteValue K ℝ → K)
+    (arch : AbsoluteValue K ℝ → Prop) :
+    AbsoluteValue K ℝ → Option ι → Module.Dual K (Option ι → K) :=
+  fun v j ↦ if arch v then czSubFamily (idx v) (coef v) j else LinearMap.proj j
+
+/-- **The Subspace step of CZ's Lemma 3.**  An infinite set of nonzero `S`-integral points whose
+Lemma-3 double product over `S` is at most `H(x)^(−ε)` satisfies one fixed nontrivial linear
+relation `Σ_j a_j x_j = 0` infinitely often. -/
+theorem czLemma3_subspace (hSub : Stephan2026Subspace) {K : Type} [Field K] [NumberField K]
+    {ι : Type} [Fintype ι] [Nonempty ι] [DecidableEq ι]
+    (Sfin : Finset (FinitePlace K)) (idx : InfinitePlace K → ι) (coef : InfinitePlace K → K)
+    (Ξ : Set (Option ι → K)) (hΞ : Ξ.Infinite) (hne : ∀ x ∈ Ξ, x ≠ 0)
+    (hint : ∀ x ∈ Ξ, ∀ v : FinitePlace K, v ∉ Sfin → (⨆ j, v (x j)) ≤ 1)
+    {ε : ℝ} (hε : 0 < ε)
+    (hnum : ∀ x ∈ Ξ,
+      ((∏ v : InfinitePlace K,
+          (∏ j, v (czSubFamily (idx v) (coef v) j x)) ^ v.mult) *
+        ∏ v ∈ Sfin, ∏ j, v (x j))
+        ≤ Height.mulHeight x ^ (-ε)) :
+    ∃ a : Option ι → K, a ≠ 0 ∧ {x ∈ Ξ | ∑ j, a j * x j = 0}.Infinite := by
+  classical
+  -- the place-indexed family: exceptional exactly at the infinite places
+  set L : AbsoluteValue K ℝ → Option ι → Module.Dual K (Option ι → K) :=
+    fun v j ↦ if h : ∃ w : InfinitePlace K, w.1 = v then
+      czSubFamily (idx h.choose) (coef h.choose) j else LinearMap.proj j with hL
+  have hLinf : ∀ v : InfinitePlace K, L v.1 = czSubFamily (idx v) (coef v) := by
+    intro v
+    have hex : ∃ w : InfinitePlace K, w.1 = v.1 := ⟨v, rfl⟩
+    have hch : hex.choose = v := Subtype.ext hex.choose_spec
+    funext j
+    simp only [hL, dif_pos hex, hch]
+  have hLfin : ∀ v : FinitePlace K, L v.1 = fun j ↦ (LinearMap.proj j :
+      Module.Dual K (Option ι → K)) := by
+    intro v
+    have hex : ¬ ∃ w : InfinitePlace K, w.1 = v.1 := by
+      rintro ⟨w, hw⟩
+      exact finitePlace_val_ne_infinitePlace_val v w hw.symm
+    funext j
+    simp only [hL, dif_neg hex]
+  have hLi : ∀ v ∈ (Finset.univ : Finset (InfinitePlace K)), LinearIndependent K (L v.1) := by
+    intro v _
+    rw [hLinf v]
+    exact linearIndependent_czSubFamily _ _
+  have hLf : ∀ v ∈ Sfin, LinearIndependent K (L v.1) := by
+    intro v _
+    rw [hLfin v]
+    exact linearIndependent_proj
+  have hbound : ∀ x ∈ Ξ, approxProd (Finset.univ : Finset (InfinitePlace K)) Sfin (fun v ↦ v) L x
+      ≤ Height.mulHeight x ^ (-(Fintype.card (Option ι) : ℝ) - ε) := by
+    intro x hx
+    have hHpos : (0 : ℝ) < Height.mulHeight x := Height.mulHeight_pos x
+    have hnumL : ((∏ v : InfinitePlace K, (∏ j, v.1 (L v.1 j x)) ^ v.mult) *
+        ∏ v ∈ Sfin, ∏ j, v.1 (L v.1 j x)) ≤ Height.mulHeight x ^ (-ε) := by
+      have h := hnum x hx
+      simp only [hLinf, hLfin, LinearMap.proj_apply]
+      exact h
+    refine le_trans (approxProd_le_of_prod_le (hne x hx) (hint x hx) L hnumL) ?_
+    rw [div_le_iff₀ (pow_pos hHpos _), ← Real.rpow_natCast (Height.mulHeight x)
+      (Fintype.card (Option ι)), ← Real.rpow_add hHpos]
+    exact le_of_eq (by ring_nf)
+  obtain ⟨a, ha, hainf⟩ := exists_dual_infinite_of_stephan hSub (Finset.univ) Sfin L hLi hLf
+    hε Ξ hΞ hne hbound
+  refine ⟨fun j ↦ a (fun k ↦ if j = k then (1 : K) else 0), ?_, hainf.mono ?_⟩
+  · intro hA
+    refine ha (LinearMap.ext fun x ↦ ?_)
+    rw [LinearMap.pi_apply_eq_sum_univ a x]
+    refine Finset.sum_eq_zero fun j _ ↦ ?_
+    rw [congrFun hA j]
+    simp
+  · rintro x ⟨hx, hax⟩
+    refine ⟨hx, ?_⟩
+    rw [LinearMap.pi_apply_eq_sum_univ a x] at hax
+    refine Eq.trans ?_ hax
+    exact Finset.sum_congr rfl fun j _ ↦ by rw [smul_eq_mul, mul_comm]
+
 end CZ
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
