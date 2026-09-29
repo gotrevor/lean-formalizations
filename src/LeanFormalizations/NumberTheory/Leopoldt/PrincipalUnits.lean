@@ -179,6 +179,105 @@ theorem exists_principal_exponent (hv : ((p : ℕ) : 𝓞 K) ∈ v.asIdeal) (ε 
     (v := v) ((ε : 𝓞 K) ^ N - 1)).mpr hmem
   simpa using h
 
+/-! ### The heart of the rank-one case
+
+Only the `p`-part of the exponent can move `ε ^ m` towards `1` at `v`, and `a ≠ 0` in `ℤ_p`
+bounds that `p`-part.  So the valuations stay bounded away from `0`.
+-/
+
+/-- **The rank-one local obstruction.**  If `ε` has infinite order, `m n → a` in `ℤ_p` and
+`ε ^ (m n) → 1` in one completion `K_v` with `v ∣ p`, then `a = 0`. -/
+theorem eq_zero_of_local_tendsto_one (hv : ((p : ℕ) : 𝓞 K) ∈ v.asIdeal) (ε : (𝓞 K)ˣ)
+    (hinf : ∀ j : ℕ, 0 < j → ((ε : 𝓞 K) : K) ^ j ≠ 1)
+    (a : ℤ_[p]) (m : ℕ → ℤ)
+    (hm : Tendsto (fun n ↦ ((m n : ℤ) : ℤ_[p])) atTop (𝓝 a))
+    (hloc : Tendsto (fun n ↦ algebraMap K (v.adicCompletion K) (((ε : 𝓞 K) : K) ^ (m n)))
+      atTop (𝓝 1)) :
+    a = 0 := by
+  by_contra ha
+  obtain ⟨N, hN, hpN, hxN⟩ := exists_principal_exponent v hv ε
+  set x : K := ((ε : 𝓞 K) : K) with hxdef
+  -- `θ j := x ^ (N * p ^ j)` is principal, and `j ↦ W (θ j - 1)` is antitone and never `0`.
+  have hθp : ∀ j : ℕ, W (x ^ (N * p ^ j) - 1) < 1 := by
+    intro j
+    have h : x ^ (N * p ^ j) = (x ^ N) ^ (p ^ j) := by rw [← pow_mul]
+    rw [h]
+    exact lt_of_le_of_lt (valuation_pow_sub_one_le v hxN _) hxN
+  have hanti : Antitone (fun j : ℕ ↦ W (x ^ (N * p ^ j) - 1)) := by
+    refine antitone_nat_of_succ_le fun j ↦ ?_
+    have h : x ^ (N * p ^ (j + 1)) = (x ^ (N * p ^ j)) ^ p := by
+      rw [← pow_mul]; ring_nf
+    rw [h]
+    exact valuation_pow_sub_one_le v (hθp j) _
+  -- extract the bound on the `p`-part of `m n`
+  have hna : 0 < ‖a‖ := norm_pos_iff.mpr ha
+  obtain ⟨k, hk⟩ := PadicInt.exists_pow_neg_lt p hna
+  have hev : ∀ᶠ n in atTop, ¬ ((p : ℤ) ^ k ∣ m n) := by
+    have hball : ∀ᶠ n in atTop, ‖((m n : ℤ) : ℤ_[p]) - a‖ < ‖a‖ := by
+      have h := hm (Metric.ball_mem_nhds a hna)
+      simpa [Metric.mem_ball, dist_eq_norm] using h
+    filter_upwards [hball] with n hn
+    intro hdvd
+    have h1 : ‖((m n : ℤ) : ℤ_[p])‖ ≤ (p : ℝ) ^ (-(k : ℤ)) := by
+      rw [PadicInt.norm_int_le_pow_iff_dvd]
+      exact_mod_cast hdvd
+    have h2 : ‖a‖ ≤ max ‖((m n : ℤ) : ℤ_[p])‖ ‖((m n : ℤ) : ℤ_[p]) - a‖ := by
+      have h3 := PadicInt.nonarchimedean ((m n : ℤ) : ℤ_[p]) (-(((m n : ℤ) : ℤ_[p]) - a))
+      rw [show ((m n : ℤ) : ℤ_[p]) + (-(((m n : ℤ) : ℤ_[p]) - a)) = a from by ring,
+        norm_neg] at h3
+      exact h3
+    exact absurd h2 (not_le.mpr (max_lt (lt_of_le_of_lt h1 hk) hn))
+  -- hence the valuations are bounded below by the (nonzero) value at `j = k`
+  have hlow : ∀ᶠ n in atTop,
+      W (x ^ (N * p ^ k) - 1) ≤ W (x ^ ((N : ℤ) * m n) - 1) := by
+    filter_upwards [hev] with n hn
+    obtain ⟨j, t, hjk, hmt, hpt⟩ := exists_pow_split p hp.out.one_lt k (m n) hn
+    have hrw : x ^ ((N : ℤ) * m n) = (x ^ (N * p ^ j)) ^ t := by
+      rw [hmt, ← zpow_natCast x (N * p ^ j), ← zpow_mul]
+      congr 1
+      push_cast
+      ring
+    rw [hrw, valuation_zpow_sub_one v (hθp j) (valuation_intCast_eq_one v hv hpt)]
+    exact hanti (le_of_lt hjk)
+  -- the local limit forces the valuations to shrink past that bound
+  have hne : W (x ^ (N * p ^ k) - 1) ≠ 0 := by
+    rw [Valuation.ne_zero_iff, sub_ne_zero]
+    exact hinf _ (Nat.mul_pos hN (pow_pos hp.out.pos k))
+  set L := v.adicCompletion K with hL
+  set F : ℕ → L := fun n ↦ algebraMap K L (x ^ ((N : ℤ) * m n)) with hFdef
+  have hF : Tendsto F atTop (𝓝 1) := by
+    have h := hloc.pow N
+    simp only [one_pow] at h
+    refine h.congr fun n ↦ ?_
+    rw [hFdef]
+    rw [← map_pow, ← zpow_natCast (x ^ (m n)) N, ← zpow_mul]
+    congr 2
+    ring
+  set c := Valued.v.restrict (algebraMap K L (x ^ (N * p ^ k) - 1)) with hc
+  have hcemb : MonoidWithZeroHom.ValueGroup₀.embedding c = W (x ^ (N * p ^ k) - 1) := by
+    rw [hc, Valuation.embedding_restrict]
+    exact IsDedekindDomain.HeightOneSpectrum.valuedAdicCompletion_eq_valuation' v _
+  have hcne : c ≠ 0 := by
+    intro h
+    apply hne
+    rw [← hcemb, h, map_zero]
+  have hzero : (0 : L) ∈ {y : L | Valued.v.restrict y < c} := by
+    simp only [Set.mem_setOf_eq, map_zero]
+    exact zero_lt_iff.mpr hcne
+  have hsub : Tendsto (fun n ↦ F n - 1) atTop (𝓝 0) := by
+    simpa using hF.sub (tendsto_const_nhds (x := (1 : L)) (f := atTop))
+  have hfin : ∀ᶠ n in atTop, Valued.v.restrict (F n - 1) < c :=
+    hsub ((Valued.isOpen_ball L c).mem_nhds hzero)
+  obtain ⟨n, hn1, hn2⟩ := (hlow.and hfin).exists
+  have hval : Valued.v (F n - 1) = W (x ^ ((N : ℤ) * m n) - 1) := by
+    rw [hFdef]
+    rw [show (algebraMap K L (x ^ ((N : ℤ) * m n)) - 1)
+        = algebraMap K L (x ^ ((N : ℤ) * m n) - 1) by rw [map_sub, map_one]]
+    exact IsDedekindDomain.HeightOneSpectrum.valuedAdicCompletion_eq_valuation' v _
+  have := MonoidWithZeroHom.ValueGroup₀.embedding_strictMono hn2
+  rw [Valuation.embedding_restrict, hval, hcemb] at this
+  exact absurd hn1 (not_le.mpr this)
+
 end Valuation
 
 end LeanFormalizations.Leopoldt
