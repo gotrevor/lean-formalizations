@@ -46,3 +46,10 @@ theorem is *also* a consequence of Conjecture 1 alone — worth recording in the
 Run `scripts/fact-graph`.  Uncovered Waldschmidt-2023 items remain: Leopoldt §2 and Conj 7
 (Roy's equivalent of Schanuel).  The observation above (Conj 1 ⇒ strong *six* exponentials,
 not just four) is a one-line new edge that the graph should carry.
+
+## Addendum (same lap): Conj 1 ⇒ strong SIX exponentials
+
+`strongSix_of_algIndepLogs` is now a theorem, not a remark.  `StrongSix.strongSix` touches
+`hS : SchanuelConjecture` in exactly one place — `algebraicIndependent_of_exp_isAlgebraic hS μ
+hμli hμexp`, which is `AlgIndepLogsConjecture` applied verbatim — so the whole of Roy's theorem
+rests on the weaker hypothesis.  Axiom-clean.  The fact graph carries the edge.

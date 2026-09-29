@@ -14,24 +14,25 @@ graph LR
   n0["AlgIndepLogsConjecture"] --> n3["FourExponentialsConjecture"]
   n0["AlgIndepLogsConjecture"] --> n4["GelfondSchneider1934"]
   n0["AlgIndepLogsConjecture"] --> n5["StrongFourExponentialsConjecture"]
-  n1["Baker1966"] --> n6["ExponentialsKnown.BakerTwoLogs"]
-  n1["Baker1966"] --> n7["FiveExponentials"]
-  n6["ExponentialsKnown.BakerTwoLogs"] --> n7["FiveExponentials"]
-  n8["Ridout1957"] --> n9["Mahler1957"]
-  n8["Ridout1957"] --> n10["Ridout1957SUnitDen"]
-  n11["Ridout1958"] --> n12["Roth1955"]
-  n13["SchanuelConjecture"] --> n0["AlgIndepLogsConjecture"]
-  n13["SchanuelConjecture"] --> n6["ExponentialsKnown.BakerTwoLogs"]
-  n13["SchanuelConjecture"] --> n7["FiveExponentials"]
-  n13["SchanuelConjecture"] --> n3["FourExponentialsConjecture"]
-  n13["SchanuelConjecture"] --> n4["GelfondSchneider1934"]
-  n13["SchanuelConjecture"] --> n14["LindemannWeierstrassAlgIndep"]
-  n13["SchanuelConjecture"] --> n15["StrongSixExponentials"]
-  n16["SixExponentialsShifted"] --> n7["FiveExponentials"]
+  n0["AlgIndepLogsConjecture"] --> n6["StrongSixExponentials"]
+  n1["Baker1966"] --> n7["ExponentialsKnown.BakerTwoLogs"]
+  n1["Baker1966"] --> n8["FiveExponentials"]
+  n7["ExponentialsKnown.BakerTwoLogs"] --> n8["FiveExponentials"]
+  n9["Ridout1957"] --> n10["Mahler1957"]
+  n9["Ridout1957"] --> n11["Ridout1957SUnitDen"]
+  n12["Ridout1958"] --> n13["Roth1955"]
+  n14["SchanuelConjecture"] --> n0["AlgIndepLogsConjecture"]
+  n14["SchanuelConjecture"] --> n7["ExponentialsKnown.BakerTwoLogs"]
+  n14["SchanuelConjecture"] --> n8["FiveExponentials"]
+  n14["SchanuelConjecture"] --> n3["FourExponentialsConjecture"]
+  n14["SchanuelConjecture"] --> n4["GelfondSchneider1934"]
+  n14["SchanuelConjecture"] --> n15["LindemannWeierstrassAlgIndep"]
+  n14["SchanuelConjecture"] --> n6["StrongSixExponentials"]
+  n16["SixExponentialsShifted"] --> n8["FiveExponentials"]
   n16["SixExponentialsShifted"] --> n17["SixExponentials"]
-  n18["Stephan2026Ridout"] --> n9["Mahler1957"]
-  n18["Stephan2026Ridout"] --> n10["Ridout1957SUnitDen"]
-  n18["Stephan2026Ridout"] --> n12["Roth1955"]
+  n18["Stephan2026Ridout"] --> n10["Mahler1957"]
+  n18["Stephan2026Ridout"] --> n11["Ridout1957SUnitDen"]
+  n18["Stephan2026Ridout"] --> n13["Roth1955"]
   n19["StrongSixExponentialsOverQ"] --> n17["SixExponentials"]
 ```
 
@@ -40,8 +41,8 @@ graph LR
 | `SchanuelConjecture` | 🔮 conjecture | 50 |
 | `BakerHarmanPintz2001` | 📚 theorem | 17 |
 | `Matomaki2007` | 📚 theorem | 13 |
+| `AlgIndepLogsConjecture` | 🔮 conjecture | 11 |
 | `LindemannWeierstrassAlgIndep` | 📚 theorem | 11 |
-| `AlgIndepLogsConjecture` | 🔮 conjecture | 10 |
 | `Dubickas2022PisotGap` | 📚 theorem | 8 |
 | `Schoenfeld1976` | 📚 theorem | 8 |
 | `RiemannHypothesis` | 🔮 conjecture | 8 |
