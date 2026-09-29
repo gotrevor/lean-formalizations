@@ -2,7 +2,13 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 THE OBJECTIVE (phase 26, 2026-09-29): Leopoldt statement stress tests + the ℚ̄ shifted-six variant
+## 🎯 THE OBJECTIVE (phase 27, 2026-09-29): Leopoldt in unit rank 1, ℚ(ζ₈) at p = 7
+
+The first nontrivial test of `Literature.LeopoldtConjecture` (adversarial review: faithful, 88%; header updated).  Target `NumberTheory/Leopoldt/RankOne.lean`: `rank_cyclotomic_eight`, `leopoldt_cyclotomic_eight_seven`.  This is multi-lap infrastructure: principal units of `adicCompletion`, a `ℤ_p`-action by continuity, torsion-freeness for odd unramified `p` (plan in the header).  Infrastructure leaves are progress.  If the statement proves unfaithful, record the counterexample and stop; never edit `Literature/`.  Stop condition: that file sorry-free.
+
+---
+
+## ✅ DONE (phase 26, `374eea7`, 2026-09-29): Leopoldt statement stress tests + the ℚ̄ shifted-six variant
 
 Trevor 2026-09-29: *"I think I do want the statement.  This is math worth having in the world."*  `Literature.LeopoldtConjecture` is Ren's formulation, with no p-adic log (faithfulness argument in its header, ~75%).  Targets:
 - `NumberTheory/Leopoldt/StressTests.lean`: `leopoldt_of_rank_zero` (positive), `not_leopoldtNoIndep_rat` (negative: the independence clause bites).  Stretch: real quadratic.
