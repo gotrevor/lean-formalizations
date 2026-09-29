@@ -307,10 +307,77 @@ theorem gelfondSchneider_of_schanuel (hS : SchanuelConjecture) : GelfondSchneide
   refine le_trans ?_ (trdeg_le_adjoin_of_forall_isAlgebraic (forall_isAlgebraic_adjoin hgen))
   convert hsch using 2 <;> rfl
 
-/-- Schanuel ⇒ Lindemann–Weierstrass, algebraic-independence form: take `z = u`. -/
+open Finsupp in
+/-- `ℕ`-linear independence upgrades to `ℤ`-linear independence in a group: split an integer
+relation into its positive and negative parts and use injectivity of the `ℕ`-combination. -/
+theorem linearIndependent_int_of_nat {ι M : Type} [AddCommGroup M] {u : ι → M}
+    (h : LinearIndependent ℕ u) : LinearIndependent ℤ u := by
+  rw [linearIndependent_iff]
+  intro l hl
+  set lp : ι →₀ ℕ := l.mapRange Int.toNat rfl with hlp
+  set lm : ι →₀ ℕ := (-l).mapRange Int.toNat rfl with hlm
+  have hsupp_p : lp.support ⊆ l.support := by
+    intro i hi
+    simp only [hlp, Finsupp.mapRange_apply, Finsupp.mem_support_iff] at hi ⊢
+    intro hc; simp [hc] at hi
+  have hsupp_m : lm.support ⊆ l.support := by
+    intro i hi
+    simp only [hlm, Finsupp.mapRange_apply, Finsupp.mem_support_iff] at hi ⊢
+    intro hc; simp [hc] at hi
+  have key : Finsupp.linearCombination ℕ u lp = Finsupp.linearCombination ℕ u lm := by
+    rw [Finsupp.linearCombination_apply, Finsupp.linearCombination_apply]
+    rw [Finsupp.sum_of_support_subset lp hsupp_p _ (by intros; simp),
+        Finsupp.sum_of_support_subset lm hsupp_m _ (by intros; simp)]
+    have hterm : ∀ i ∈ l.support, (lp i) • u i - (lm i) • u i = (l i) • u i := by
+      intro i _
+      simp only [hlp, hlm, Finsupp.mapRange_apply, Finsupp.neg_apply]
+      rw [← natCast_zsmul, ← natCast_zsmul, ← sub_smul]
+      congr 1
+      omega
+    rw [← sub_eq_zero, ← Finset.sum_sub_distrib, Finset.sum_congr rfl hterm]
+    rw [Finsupp.linearCombination_apply, Finsupp.sum] at hl
+    exact hl
+  have hpm : lp = lm := h key
+  ext i
+  have hi := congrArg (fun f => f i) hpm
+  simp only [hlp, hlm, Finsupp.mapRange_apply, Finsupp.neg_apply] at hi
+  simp only [Finsupp.coe_zero, Pi.zero_apply]
+  omega
+
+open Complex IntermediateField Algebra Set in
+/-- Schanuel ⇒ Lindemann–Weierstrass, algebraic-independence form: take `z = u`.  Since the
+`u i` are algebraic, `ℚ(u, e^u)` is algebraic over `ℚ(e^u)`, so Schanuel's bound
+`trdeg ≥ n` says exactly that the `n` numbers `e^{u i}` are algebraically independent; the base
+is then enlarged from `ℚ` to the algebraic numbers, and the infinite index set is handled one
+finite subfamily at a time. -/
 theorem lindemannWeierstrassAlgIndep_of_schanuel (hS : SchanuelConjecture) :
     LindemannWeierstrassAlgIndep := by
-  sorry
+  intro ι u hu
+  have hQ : LinearIndependent ℚ u :=
+    (linearIndependent_int_of_nat hu).localization ℚ (nonZeroDivisors ℤ)
+  refine algebraicIndependent_of_finite_type ?_
+  intro t ht
+  haveI : Fintype t := ht.fintype
+  set n := Fintype.card t with hn
+  set e : t ≃ Fin n := Fintype.equivFin t with he
+  have hfinQ : AlgebraicIndependent ℚ (fun k : Fin n => Complex.exp ((u (e.symm k) : ℂ))) := by
+    refine algebraicIndependent_of_schanuel hS (fun k : Fin n => ((u (e.symm k) : ℂ))) ?_ _ ?_
+    · have h1 : LinearIndependent ℚ (fun k : Fin n => u (e.symm k)) :=
+        hQ.comp _ (fun a b hab => e.symm.injective (Subtype.ext hab))
+      exact h1.map' ((Subalgebra.val (integralClosure ℚ ℂ)).toLinearMap)
+        (by rw [LinearMap.ker_eq_bot]; exact Subtype.val_injective)
+    · rintro w (⟨k, rfl⟩ | ⟨k, rfl⟩)
+      · exact ((u (e.symm k)).2.isAlgebraic).tower_top _
+      · exact isAlgebraic_algebraMap
+          (R := IntermediateField.adjoin ℚ
+            (Set.range fun k : Fin n => Complex.exp ((u (e.symm k) : ℂ)))) (A := ℂ)
+          ⟨_, subset_adjoin _ _ ⟨k, rfl⟩⟩
+  haveI : Algebra.IsAlgebraic ℚ (integralClosure ℚ ℂ) := Algebra.IsIntegral.isAlgebraic
+  have hfin := hfinQ.extendScalars (integralClosure ℚ ℂ)
+  have hcomp := hfin.comp e e.injective
+  convert hcomp using 1
+  funext i
+  simp [he]
 
 open Complex IntermediateField Algebra Set in
 /-- `iπ` and `π` are `ℚ`-linearly independent. -/
