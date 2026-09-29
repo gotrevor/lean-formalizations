@@ -44,3 +44,21 @@ For a prime `q ≠ 3`, `t_k mod q` is eventually periodic, and whether the cycle
 | 13 | 1033/2197 | 0.022 |
 
 These conditions are CRT-independent of the mod-3 condition.  So if ξ is algebraic, `minpoly β` avoids a set of residue classes whose density tends to 1.  This excludes almost every cubic, but not every one.  (It kills `2·3^(3^k) + 1`: 5 divides it for every odd k.)  A survivor must have its orbit avoid 0 modulo every prime, which is Fermat-like behaviour.  Nothing in this toolkit rules out a Pisot survivor.
+
+## Extension: track the matrix up to scalars (Astra, 2026-09-29; checked by Ren)
+
+**Lemma (written proof, not yet Lean).**  Let q ≠ 3 be prime, and suppose the cubic f stays **irreducible** mod q, q divides `t_m` for some m ≥ 1, and q ∤ N(β).  Then q divides `t_(m+j)` for some j ≥ 1, and hence for infinitely many j.
+
+**Proof.**
+1. Mod q, `α = β^(3^m)` lives in `𝔽_(q³)`.  Its image in `𝔽_(q³)^× / 𝔽_q^×` has order d dividing `q² + q + 1`.
+2. `v₃(q² + q + 1)` is 1 if q ≡ 1 (mod 3) and 0 if q ≡ 2 (mod 3).  This holds even when q is 3-adically very close to 1, which is exactly where the `GL₃` argument fails.
+3. β's projective 3-part is at most 3, and m ≥ 1 kills it, so 3 ∤ d.
+4. Take `j = ord_d(3)`.  Then `α^(3^j) = λα` with λ ∈ `𝔽_q^×`, so `Tr α^(3^j) = λ Tr α ≡ 0`.
+
+**Consequences.**
+- If Mills' constant is algebraic, f has a root mod `p_k` for every large k.  Equivalently, Frobenius at the Mills primes eventually avoids the 3-cycles.
+- **Sharper target.**  One prime q at which f is irreducible and which divides a single `t_m` (m ≥ 1) makes `t_k` composite infinitely often.  So the six classes are eliminated for any β that has such a q.  Chebotarev supplies plenty of irreducible primes, but nothing forces one to divide this sparse sequence: the same Fermat-type wall as before, only narrower.
+
+**Numerics.**  The `projective` check (`scripts/mills-3adic-probe.py`) found 47 irreducible prime moduli q | `t_m`, and all 47 divide `t_(m+j)` for the predicted j.  In 5 of them the `GL₃` argument is silent, because the 3-part is too big.
+
+**Status.**  Correct, 95%.  It does not eliminate the six classes.  It restricts which primes can be Mills primes, and it gives a one-prime certificate for each individual β.

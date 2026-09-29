@@ -11,7 +11,7 @@ Claims checked:
   chain  the full argument on cases where p_m is PRIME: p_m | p_{m+j} for that j.
   tau    tau mod 3 classes: the argument needs tau + h not in {1, -1} (h = floor offset).
 
-Usage: mills-3adic-probe.py {gauss|mech|tau|chain|covering|all}
+Usage: mills-3adic-probe.py {gauss|mech|tau|chain|covering|projective|all}
 """
 import sys
 from math import lcm
@@ -228,6 +228,48 @@ def covering(qs=(2, 5, 7, 11, 13)):
     return True
 
 
+def irreducible_mod(c, q):
+    c2, c1, c0 = c
+    return all((x**3 + c2 * x * x + c1 * x + c0) % q for x in range(q))
+
+
+def projective():
+    """Astra's lemma: if f is irreducible mod a prime q > 3, q | t_m (m >= 1), q not dividing N(beta),
+    then q | t_(m+j) for j = ord_d(3), d = order of beta^(3^m) in F_(q^3)^* / F_q^* (divides
+    q^2+q+1, 3-part <= 3).  Tests exactly the moduli where the GL_3 3-part argument is silent."""
+    tested = hits = 0
+    for c in POLYS + [(-4, 1, -1), (-6, 3, 1), (-5, -2, 1), (-7, 2, -1)]:
+        C = comp(c)
+        for m in range(1, 5):
+            pm = tr(matpow(C, 3**m))
+            for r in small_prime_factors(abs(pm), 10**5):
+                if c[2] % r == 0 or not irreducible_mod(c, r):
+                    continue
+                A = matpow(C, 3**m, r)
+                # projective order: least d | r^2+r+1 with A^d scalar
+                N = r * r + r + 1
+                d = N
+                for p_, e in factorint(N).items():
+                    for _ in range(e):
+                        X = matpow(A, d // p_, r)
+                        if X[0][1] == X[0][2] == X[1][0] == X[1][2] == X[2][0] == X[2][1] == 0 \
+                                and X[0][0] == X[1][1] == X[2][2]:
+                            d //= p_
+                        else:
+                            break
+                assert d % 3, (c, m, r, d)
+                j = n_order(3, d)
+                L0 = matorder([[x % r for x in row] for row in C], r)
+                ok = tr(matpow(C, pow(3, m + j, L0), r)) % r == 0
+                big3 = max(v3(r**f - 1) for f in (1, 2, 3)) > m
+                tested += 1
+                hits += ok
+                print(f"  f={c} m={m} q={r} irreducible, GL-argument {'silent' if big3 else 'also works'}, "
+                      f"q | t_(m+j) {ok}")
+    print(f"projective: {hits}/{tested}")
+    return tested > 0 and hits == tested
+
+
 if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 else "all"
     res = []
@@ -235,6 +277,8 @@ if __name__ == "__main__":
         res.append(gauss())
     if what in ("mech", "all"):
         res.append(mech())
+    if what == "projective":
+        res.append(projective())
     if what == "covering":
         res.append(covering())
     if what in ("tau", "all"):

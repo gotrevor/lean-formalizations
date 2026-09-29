@@ -2,6 +2,16 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## ⏭️ QUEUED (phase 31, plant after phase 30 lands): the projective-order lemma
+
+From `FINDING-MILLS-3ADIC.md` § Extension (Astra's idea).  New file `NumberTheory/Mills/Projective.lean`.  Frozen statements to write:
+- `dvd_trace_of_irreducible_mod`: `C : Matrix (Fin 3) (Fin 3) ℤ`, `p` prime, `p ≠ 3`, `Irreducible (C.charpoly.map (Int.castRingHom (ZMod p)))`, `1 ≤ m`, `(p:ℤ) ∣ (C^(3^m)).trace`, `¬ (p:ℤ) ∣ C.det` ⟹ `∃ j ≥ 1, (p:ℤ) ∣ (C^(3^(m+j))).trace`.
+- `not_irreducible_mod_eventually`: eventually prime and increasing ⟹ for all large `k`, the charpoly is reducible mod `t_k`.
+- `composite_of_irreducible_divisor`: a prime `q ≠ 3` with the charpoly irreducible mod `q` dividing some `t_m` (`m ≥ 1`) ⟹ `∃ᶠ k, ¬ Prime t_k`.
+- Mills corollary via phase 30's floor = trace lemma.
+
+---
+
 ## 🎯 THE OBJECTIVE (phase 30): one conjecture behind Fermat and Mills
 
 Target `NumberTheory/Mills/SharedConjecture.lean`, three frozen statements (route in the header):
