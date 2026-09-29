@@ -630,4 +630,66 @@ theorem transcendental_exp_one_add_log_two (hS : SchanuelConjecture) :
     Transcendental ℚ (Real.exp 1 + Real.log 2) :=
   transcendental_exp_one_add_log_two' hS
 
+
+/-- **Conditional strengthening of `eq_nat_of_three_primes_rpow`.**  The three primes there are
+needed only to feed the six exponentials *theorem*, whose `y` must have length three.  The four
+exponentials *conjecture* does the same job with two, so under it two distinct primes already
+force `t ∈ ℕ`.  (The rational branch never needed more than one prime:
+`rat_eq_nat_of_prime_rpow`.) -/
+theorem eq_nat_of_two_primes_rpow (h4 : FourExponentialsConjecture) {t : ℝ}
+    {p : Fin 2 → Nat.Primes} (hp : Function.Injective p)
+    (h : ∀ i, ∃ n : ℕ, ((p i : ℕ) : ℝ) ^ t = n) :
+    ∃ n : ℕ, t = n := by
+  by_cases ht : Irrational t
+  · exfalso
+    have hy : LinearIndependent ℚ (fun i => ((Real.log ((p i : ℕ) : ℝ) : ℝ) : ℂ)) :=
+      (linearIndependent_log_primes p hp).map'
+        ((IsScalarTower.toAlgHom ℚ ℝ ℂ).toLinearMap)
+        (by rw [LinearMap.ker_eq_bot]; exact (IsScalarTower.toAlgHom ℚ ℝ ℂ).injective)
+    obtain ⟨i, j, htr⟩ := h4 ![(1 : ℂ), ((t : ℝ) : ℂ)] _ (linearIndependent_one_ofReal ht) hy
+    have hpos : (0 : ℝ) < ((p j : ℕ) : ℝ) := by exact_mod_cast (p j).2.pos
+    fin_cases i <;>
+      simp only [Fin.zero_eta, Fin.mk_one, Fin.isValue, Matrix.cons_val_zero,
+        Matrix.cons_val_one, one_mul] at htr
+    · refine htr ?_
+      rw [← Complex.ofReal_exp, Real.exp_log hpos]
+      exact isAlgebraic_complex_of_real
+        (by simpa using isAlgebraic_algebraMap (R := ℚ) (A := ℝ) (((p j : ℕ) : ℚ)))
+    · obtain ⟨m, hm⟩ := h j
+      refine htr ?_
+      rw [cexp_mul_ofReal_log hpos, hm]
+      exact isAlgebraic_complex_of_real
+        (by simpa using isAlgebraic_algebraMap (R := ℚ) (A := ℝ) ((m : ℚ)))
+  · rw [Irrational, not_not] at ht
+    obtain ⟨q, hq⟩ := ht
+    obtain ⟨m, hm⟩ := h 0
+    rw [← hq] at hm
+    obtain ⟨N, hN⟩ := rat_eq_nat_of_prime_rpow hm
+    exact ⟨N, by rw [← hq, hN]; push_cast; ring⟩
+
+
+/-- **Four exponentials ⇒ for irrational `t` and any two distinct primes, `p^t` or `q^t` is
+transcendental.**  The `{2,3}` case is `two_rpow_or_three_rpow_transcendental`; nothing about
+the primes is used beyond `linearIndependent_log_primes`. -/
+theorem exists_prime_rpow_transcendental (h4 : FourExponentialsConjecture) {t : ℝ}
+    (ht : Irrational t) {p : Fin 2 → Nat.Primes} (hp : Function.Injective p) :
+    ∃ i, Transcendental ℚ ((((p i : ℕ) : ℝ)) ^ t) := by
+  have hy : LinearIndependent ℚ (fun i => ((Real.log ((p i : ℕ) : ℝ) : ℝ) : ℂ)) :=
+    (linearIndependent_log_primes p hp).map'
+      ((IsScalarTower.toAlgHom ℚ ℝ ℂ).toLinearMap)
+      (by rw [LinearMap.ker_eq_bot]; exact (IsScalarTower.toAlgHom ℚ ℝ ℂ).injective)
+  obtain ⟨i, j, htr⟩ := h4 ![(1 : ℂ), ((t : ℝ) : ℂ)] _ (linearIndependent_one_ofReal ht) hy
+  have hpos : (0 : ℝ) < ((p j : ℕ) : ℝ) := by exact_mod_cast (p j).2.pos
+  fin_cases i <;>
+    simp only [Fin.zero_eta, Fin.mk_one, Fin.isValue, Matrix.cons_val_zero,
+      Matrix.cons_val_one, one_mul] at htr
+  · exfalso
+    refine htr ?_
+    rw [← Complex.ofReal_exp, Real.exp_log hpos]
+    exact isAlgebraic_complex_of_real
+      (by simpa using isAlgebraic_algebraMap (R := ℚ) (A := ℝ) (((p j : ℕ) : ℚ)))
+  · refine ⟨j, transcendental_real_of_complex ?_⟩
+    rwa [cexp_mul_ofReal_log hpos] at htr
+
+
 end LeanFormalizations.Exponentials
