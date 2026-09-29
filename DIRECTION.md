@@ -1,5 +1,21 @@
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 THE OBJECTIVE (phase 13, 2026-09-29): Corvaja–Zannier from Stephan's Subspace Theorem
+
+Phase 12 is green (`StephanEdges.lean`).  R. Stephan's Subspace Theorem with several places is
+now `Literature.Stephan2026Subspace` (verbatim, frozen, with his `approxProd`).  Phase 13 is
+`NumberTheory/Transcendence/CorvajaZannier.lean`: derive the two phase-9 disclosed statements
+(`corvajaZannier_dichotomy_of_stephan`, `corvajaZannier_lemma4_of_stephan`) and then
+`dubickas2022_of_stephan : Dubickas2022` from `Stephan2026Subspace` + `Stephan2026Ridout`.  Source:
+`papers/corvaja-zannier-2004-powers-algebraic.txt` (12 pp.); route in the file header.  Do NOT prove
+the Subspace Theorem.  This is moonshot-sized: decompose into named leaves freely (more `sorry`s is
+progress); a precise obstruction in `PROBE-DUBICKAS-NOSUBSPACE.md` is also a result.  Frozen by
+name: the three phase-13 theorems, every earlier name, all of `Literature/`.  Leave the phase-9
+`sorry`s in `DubickasNoSubspace.lean` alone (this file supersedes them).  Stop condition:
+`CorvajaZannier.lean` sorry-free.
+
+---
+
 ## 🎯 THE OBJECTIVE (phase 12, 2026-09-28): Roth / Mahler / Mills from Stephan's machine-checked Ridout
 
 Roth is already formalized (R. Stephan, `rwst/Subspace-Theorems`, Lean 4, 2026; see

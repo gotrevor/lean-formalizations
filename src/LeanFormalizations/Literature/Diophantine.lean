@@ -14,6 +14,8 @@ repo does not prove them.
   from it (Mahler 1957, §3).
 * `Stephan2026Ridout` — Ridout's theorem as machine-checked by R. Stephan (Lean 4, 2026),
   verbatim; waits only on a toolchain match to be discharged.
+* `Stephan2026Subspace` — Stephan's Subspace Theorem with several places (Schlickewei form),
+  verbatim, same status.
 
 Wiring edges (proved in `NumberTheory/Diophantine/Edges.lean`): `Ridout1957 → Mahler1957`,
 `Ridout1957 → Ridout1957SUnitDen`, `Ridout1958 → Roth1955`.
@@ -114,5 +116,38 @@ def Stephan2026Ridout : Prop :=
     {β : ℚ | |ξ - (β : ℝ)| * (∏ l ∈ S₁, ((padicNorm (l : ℕ) β.num : ℚ) : ℝ))
         * ∏ l ∈ S₂, ((padicNorm (l : ℕ) β.den : ℚ) : ℝ)
       ≤ (max β.num.natAbs β.den : ℝ) ^ (-2 - ε)}.Finite
+
+/-- R. Stephan's `approxProd` (verbatim, `Challenge/DiophantineApproximation/ApproxProd.lean` at
+`ce289c64`): `∏_{v ∈ S} ∏_i |L_{v,i}(x)|_v / max_j |x_j|_v`, archimedean factors raised to the
+place's multiplicity.  Only needed to state `Stephan2026Subspace`. -/
+noncomputable def approxProd {K F : Type*} [Field K] [NumberField K] [Field F] [NumberField F]
+    [Algebra K F] {ι : Type*} [Fintype ι]
+    (Sinf : Finset (NumberField.InfinitePlace K)) (Sfin : Finset (NumberField.FinitePlace K))
+    (w : AbsoluteValue K ℝ → AbsoluteValue F ℝ)
+    (L : AbsoluteValue K ℝ → ι → Module.Dual F (ι → F)) (x : ι → K) : ℝ :=
+  (∏ v ∈ Sinf, (∏ i, w v.1 (L v.1 i fun j ↦ algebraMap K F (x j)) / ⨆ j, v (x j)) ^ v.mult) *
+    ∏ v ∈ Sfin, ∏ i, w v.1 (L v.1 i fun j ↦ algebraMap K F (x j)) / ⨆ j, v (x j)
+
+/-- **Schmidt's Subspace Theorem with finitely many places (Schlickewei's form, coefficients in
+`K`), as formalized by Ralf Stephan (2026)**, machine-checked, verbatim up to the universe of `K`
+and `ι`.  For linearly independent linear forms `L_{v,1..n}` at each place `v ∈ S`, the nonzero
+`x ∈ Kⁿ` with `∏_{v∈S} ∏_i |L_{v,i}(x)|_v / |x|_v ≤ H(x)^(−n−ε)` lie in finitely many proper
+subspaces.  This is the form Corvaja–Zannier (2004) use ("[S, Theorem 1D′]").
+
+`NumberField.exists_finset_submodule_of_approxProd_le`, R. Stephan, *Subspace-Theorems*,
+https://github.com/rwst/Subspace-Theorems at `ce289c64054c8ffcfb6fd37d5881312c6a5d577d`,
+`Challenge/DiophantineApproximation/SubspaceTheorem.lean:54` (COMPARATOR.md item 6.2).  Enters as a
+`Prop` until the toolchains meet (`PROBE-ROTH.md`). -/
+def Stephan2026Subspace : Prop :=
+  ∀ {K : Type} [Field K] [NumberField K] {ι : Type} [Fintype ι] [Nontrivial ι]
+    (Sinf : Finset (NumberField.InfinitePlace K)) (Sfin : Finset (NumberField.FinitePlace K))
+    (L : AbsoluteValue K ℝ → ι → Module.Dual K (ι → K)),
+    (∀ v ∈ Sinf, LinearIndependent K (L v.1)) → (∀ v ∈ Sfin, LinearIndependent K (L v.1)) →
+    ∀ {ε : ℝ}, 0 < ε →
+    ∃ T : Finset (Submodule K (ι → K)), (∀ W ∈ T, W ≠ ⊤) ∧
+      ∀ x : ι → K, x ≠ 0 →
+        approxProd Sinf Sfin (fun v ↦ v) L x ≤
+          Height.mulHeight x ^ (-(Fintype.card ι : ℝ) - ε) →
+        ∃ W ∈ T, x ∈ W
 
 end LeanFormalizations.Literature
