@@ -2,7 +2,13 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 THE OBJECTIVE (phase 14, 2026-09-29): Mills' constant is transcendental under RH
+## 🎯 THE OBJECTIVE (phase 15, 2026-09-29): what follows from Schanuel's conjecture
+
+Trevor 2026-09-29: *"Since there are a lot of things that follow from it, I think it's worth writing those things down.  Maybe, just maybe, we'll bump into a contradiction, or notice something interesting."*  Hypothesis: `Literature.SchanuelConjecture` (verbatim from formal-conjectures).  Target file `NumberTheory/Transcendence/Schanuel.lean`: 10 frozen statements (consistency edges to Gelfond–Schneider, Lindemann–Weierstrass and Nesterenko; open consequences `e, π` algebraically independent, `e+π`, `eπ`, `e, e^e`, logs of primes; Wright towers).  Sketches are in the header.  Add further consequences as new theorems freely; a statement found underivable is an advance, so record it.  Frozen by name: the ten statements, every earlier name, all of `Literature/`.  Stop condition: `Schanuel.lean` sorry-free.
+
+---
+
+## ✅ DONE (phase 14, 2026-09-29, `01af4c1`, 1 lap): Mills' constant is transcendental under RH
 
 Trevor 2026-09-29: formalize Saito 2025 Thm 1.8.  Target file
 `NumberTheory/Mills/TranscendentalRH.lean`: `pisot_branch_otherConj_real` (unconditional complex-case
@@ -12,11 +18,6 @@ kill, ×3 circle dynamics) and `transcendental_of_RH`.  Route and leaves in the 
 Schoenfeld).  New literature inputs: none (RH enters via `Schoenfeld1976`).  Split into named leaves
 freely.  Frozen by name: the two phase-14 theorems, every earlier name, all of `Literature/`.
 Stop condition: `TranscendentalRH.lean` sorry-free.
-
----
-## ⏳ QUEUED (phase 15, 2026-09-29): what follows from Schanuel's conjecture
-
-Launches after phase 14 exits; phase-14 laps ignore this section.  Trevor 2026-09-29: *"Since there are a lot of things that follow from it, I think it's worth writing those things down.  Maybe, just maybe, we'll bump into a contradiction, or notice something interesting."*  Hypothesis: `Literature.SchanuelConjecture` (verbatim from formal-conjectures).  Target file `NumberTheory/Transcendence/Schanuel.lean`: 10 frozen statements (consistency edges to Gelfond–Schneider, Lindemann–Weierstrass and Nesterenko; open consequences `e, π` algebraically independent, `e+π`, `eπ`, `e, e^e`, logs of primes; Wright towers).  Sketches are in the header.  Add further consequences as new theorems freely; a statement found underivable is an advance, so record it.  Frozen by name: the ten statements, every earlier name, all of `Literature/`.  Stop condition: `Schanuel.lean` sorry-free.
 
 ---
 

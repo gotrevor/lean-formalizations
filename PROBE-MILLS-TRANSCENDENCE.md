@@ -41,3 +41,7 @@ sparse for a density statement to exclude.  Closing it needs a new idea tying th
 Lean: `NumberTheory/Mills/Transcendental.lean` has Saito 2024 Thm 1.2 (`transcendental_or_pisot`).
 Saito 2025 is not formalized here, and per the 2026-09-29 direction it would enter only as a
 hypothesis `Prop` when something consumes it.
+
+## Formalized (2026-09-29)
+
+Phase 14, one lap (`01af4c1`): `Mills.transcendental_of_RH` and `Mills.pisot_branch_otherConj_real` in `NumberTheory/Mills/TranscendentalRH.lean`, from Schoenfeld1976 + RH + BHP + Matomäki + Dubickas2022 (+PisotGap).  The unconditional totally real cubic case stays open (`Maze.lean` row).
