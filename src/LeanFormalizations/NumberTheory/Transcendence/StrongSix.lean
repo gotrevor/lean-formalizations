@@ -127,4 +127,91 @@ theorem exists_logBasis {ι : Type} [Fintype ι] (z : ι → ℂ) (hz : ∀ i, z
     rw [hrange]
     exact hzS i
 
+
+/-- Affine coordinates for a member of the `ℚ̄`-affine span of `μ`. -/
+theorem exists_aff_of_mem {n : ℕ} {μ : Fin n → ℂ} {z : ℂ}
+    (hz : z ∈ Submodule.span 𝔸 (insert (1 : ℂ) (Set.range μ))) :
+    ∃ (a : 𝔸) (b : Fin n → 𝔸), z = (a : ℂ) + ∑ k, (b k : ℂ) * μ k := by
+  rw [Submodule.mem_span_insert] at hz
+  obtain ⟨a, w, hw, rfl⟩ := hz
+  obtain ⟨b, hb⟩ := (Submodule.mem_span_range_iff_exists_fun 𝔸).1 hw
+  refine ⟨a, b, ?_⟩
+  rw [← hb]
+  simp [Algebra.smul_def]
+
+/-- `aeval μ` sends the affine polynomial `aff a b` to `a + ∑ bₖμₖ`. -/
+theorem aeval_aff {n : ℕ} (μ : Fin n → ℂ) (a : 𝔸) (b : Fin n → 𝔸) :
+    aeval μ (aff a b) = (a : ℂ) + ∑ k, (b k : ℂ) * μ k := by
+  simp [aff]
+
+set_option maxHeartbeats 1000000 in
+/-- **Roy's strong six exponentials theorem, under Schanuel's conjecture.** -/
+theorem strongSix (hS : SchanuelConjecture) : StrongSixExponentials := by
+  classical
+  intro x y hx hy
+  have hx' : LinearIndependent (↥(algebraicClosure ℚ ℂ)) x := hx
+  have hy' : LinearIndependent (↥(algebraicClosure ℚ ℂ)) y := hy
+  by_contra hcon
+  push_neg at hcon
+  obtain ⟨n, μ, hμli, hμexp, hμmem⟩ :=
+    exists_logBasis (fun p : Fin 2 × Fin 3 => x p.1 * y p.2) (fun p => hcon p.1 p.2)
+  have hind : AlgebraicIndependent ℚ μ := algebraicIndependent_of_exp_isAlgebraic hS μ hμli hμexp
+  have halg : Algebra.IsAlgebraic ℚ (↥(algebraicClosure ℚ ℂ)) :=
+    algebraicClosure.isAlgebraic ℚ ℂ
+  have hindK : AlgebraicIndependent (↥(algebraicClosure ℚ ℂ)) μ :=
+    hind.extendScalars (↥(algebraicClosure ℚ ℂ))
+  have hinj : Function.Injective (aeval μ : MvPolynomial (Fin n) 𝔸 →ₐ[𝔸] ℂ) := hindK
+  choose a b hab using fun p : Fin 2 × Fin 3 => exists_aff_of_mem (hμmem p)
+  set pa : Fin 3 → 𝔸 := fun j => a (0, j) with hpa
+  set pb : Fin 3 → Fin n → 𝔸 := fun j => b (0, j) with hpb
+  set qa : Fin 3 → 𝔸 := fun j => a (1, j) with hqa
+  set qb : Fin 3 → Fin n → 𝔸 := fun j => b (1, j) with hqb
+  have hPval : ∀ j, aeval μ (aff (pa j) (pb j)) = x 0 * y j := fun j => by
+    rw [aeval_aff]; exact (hab (0, j)).symm
+  have hQval : ∀ j, aeval μ (aff (qa j) (qb j)) = x 1 * y j := fun j => by
+    rw [aeval_aff]; exact (hab (1, j)).symm
+  -- the cross relations
+  have hcross : ∀ i j : Fin 3, aff (qa i) (qb i) * aff (pa j) (pb j)
+      = aff (qa j) (qb j) * aff (pa i) (pb i) := by
+    intro i j
+    refine hinj ?_
+    rw [map_mul, map_mul, hPval, hPval, hQval, hQval]
+    ring
+  -- `P` is `ℚ̄`-linearly independent
+  have hx0 : x 0 ≠ 0 := hx'.ne_zero 0
+  have hPind : LinearIndependent 𝔸 (fun j => aff (pa j) (pb j)) := by
+    rw [Fintype.linearIndependent_iff]
+    intro g hg
+    have h0 : ∑ j, (g j : ℂ) * (x 0 * y j) = 0 := by
+      have := congrArg (aeval μ) hg
+      rw [map_sum, map_zero] at this
+      simpa [Algebra.smul_def, hPval] using this
+    have h1 : ∑ j, g j • y j = 0 := by
+      have hx0' : x 0 ≠ 0 := hx0
+      have : x 0 * ∑ j, (g j : ℂ) * y j = 0 := by
+        rw [Finset.mul_sum]; rw [← h0]; apply Finset.sum_congr rfl; intro j _; ring
+      have h2 : ∑ j, (g j : ℂ) * y j = 0 := (mul_eq_zero.1 this).resolve_left hx0'
+      simpa [Algebra.smul_def] using h2
+    exact Fintype.linearIndependent_iff.1 hy' g h1
+  obtain ⟨c, hc⟩ := const_ratio pa qa pb qb hPind hcross
+  -- `x₁ = c·x₀`, contradicting the `ℚ̄`-independence of `x`
+  have hxc : x 1 = (c : ℂ) * x 0 := by
+    have h := congrArg (aeval μ) (hc 0)
+    rw [hQval, map_mul, hPval, aeval_C] at h
+    have h' : x 1 * y 0 = (c : ℂ) * (x 0 * y 0) := h
+    have hy0 : y 0 ≠ 0 := hy'.ne_zero 0
+    have hz : (x 1 - (c : ℂ) * x 0) * y 0 = 0 := by linear_combination h'
+    exact sub_eq_zero.1 ((mul_eq_zero.1 hz).resolve_right hy0)
+  have hsum : ∑ i, (![c, -1] : Fin 2 → 𝔸) i • x i = 0 := by
+    rw [Fin.sum_univ_two]
+    simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons, Algebra.smul_def]
+    have h1 : (algebraMap (↥𝔸) ℂ) c = (c : ℂ) := rfl
+    have h2 : (algebraMap (↥𝔸) ℂ) (-1 : 𝔸) = (-1 : ℂ) := by
+      rw [map_neg, map_one]
+    rw [h1, h2, hxc]
+    ring
+  have hzero := Fintype.linearIndependent_iff.1 hx' _ hsum
+  have : (-1 : 𝔸) = 0 := by simpa using hzero 1
+  exact absurd this (by simp)
+
 end LeanFormalizations.StrongSix

@@ -40,6 +40,7 @@ import LeanFormalizations.Literature.ExponentialsKnown
 import LeanFormalizations.Literature.Exponentials
 import LeanFormalizations.NumberTheory.Transcendence.Schanuel
 import LeanFormalizations.NumberTheory.Transcendence.Exponentials
+import LeanFormalizations.NumberTheory.Transcendence.StrongSix
 
 namespace LeanFormalizations.ExponentialsKnown
 
@@ -463,9 +464,13 @@ theorem not_strongSixExponentialsOverQ : ¬ StrongSixExponentialsOverQ := by
 
 
 /-- Schanuel ⇒ **Roy's strong six exponentials theorem** (with the corrected `ℚ̄`-independence
-hypothesis).  A multi-lap target: the phase-16 handoff sketches the basis-of-logarithms
-decomposition, and the `OverQ` refutation shows exactly where `ℚ̄`-independence is used. -/
-theorem strongSixExponentials_of_schanuel (hS : SchanuelConjecture) : StrongSixExponentials := by
-  sorry
+hypothesis).  Route in `Transcendence/StrongSix.lean`: extract a `ℚ`-linearly independent family
+`μ` of logarithms whose `ℚ̄`-affine span holds all six products; Schanuel makes `μ` algebraically
+independent over `ℚ`, hence over `ℚ̄`, so `aeval μ` is injective and the six products lift to
+*affine polynomials* of rank one; `AffineRankOne.const_ratio` then forces `x₁ = c·x₀` with
+`c` algebraic, contradicting the `ℚ̄`-independence of `x`.  The `OverQ` refutation above shows
+exactly where `ℚ̄`-independence (rather than `ℚ`) is indispensable. -/
+theorem strongSixExponentials_of_schanuel (hS : SchanuelConjecture) : StrongSixExponentials :=
+  LeanFormalizations.StrongSix.strongSix hS
 
 end LeanFormalizations.ExponentialsKnown

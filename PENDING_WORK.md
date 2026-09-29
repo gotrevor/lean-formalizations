@@ -1,3 +1,13 @@
+## phase 17 (2026-09-29) — CLOSED
+
+`ExponentialsKnown.lean` is sorry-free and axiom-clean.  Both open statements closed:
+`fiveExponentials_of_shifted` (via the new `Literature.Baker1966`) and
+`strongSixExponentials_of_schanuel` (Roy's strong six exponentials under Schanuel, through the
+new `AffineRankOne.const_ratio` derivation argument + `StrongSix.exists_logBasis`).  See
+`HANDOFF-2026-09-29-phase17-complete.md`.
+
+---
+
 ## PHASE 15 (2026-09-29) — CLOSED: consequences of Schanuel's conjecture
 
 `NumberTheory/Transcendence/Schanuel.lean` sorry-free, all ten frozen statements axiom-clean.
