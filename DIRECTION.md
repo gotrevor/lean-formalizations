@@ -8,6 +8,12 @@ Trevor 2026-09-29: *"Seems like there's a lot we can continue to chip away at al
 
 ---
 
+## ⏳ QUEUED (phase 17, 2026-09-29): consequences of the KNOWN exponentials theorems
+
+Phase-16 laps ignore this section.  Target `NumberTheory/Transcendence/ExponentialsKnown.lean`: unconditional `2^t, 3^t, 5^t` (six exp), and consistency edges among `Literature/ExponentialsKnown.lean` (five exp, shifted six exp, Roy's strong six exp).  Stop condition: that file sorry-free.
+
+---
+
 ## ✅ DONE (phase 15, 2026-09-29, 1 lap): what follows from Schanuel's conjecture
 
 `NumberTheory/Transcendence/Schanuel.lean` is **sorry-free**; all ten frozen statements are
