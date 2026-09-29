@@ -129,9 +129,91 @@ theorem transcendental_tan_of_algebraic (hL : LindemannWeierstrassAlgIndep) {a :
   · exact (Schanuel.isAlgebraic_I.isIntegral.sub htalg.isIntegral).isAlgebraic
   · exact (htalg.isIntegral.add Schanuel.isAlgebraic_I.isIntegral).isAlgebraic
 
+/-! ## Baker -/
+
+/-! ### Leaves -/
+
+/-- Repackaged `BakerHomogeneous`: any `ℚ̄`-linear relation `c₀·1 + c₁λ₁ + ⋯ + cₙλₙ = 0` among
+`1` and `ℚ`-independent logarithms of algebraic numbers is trivial. -/
+theorem baker_relation (hB : BakerHomogeneous) {n : ℕ} (ℓ : Fin n → ℂ)
+    (hli : LinearIndependent ℚ ℓ) (halg : ∀ i, IsAlgebraic ℚ (Complex.exp (ℓ i)))
+    (c : Fin (n + 1) → integralClosure ℚ ℂ)
+    (hsum : ∑ i, (c i : ℂ) * (Fin.cons (1 : ℂ) ℓ : Fin (n + 1) → ℂ) i = 0) :
+    ∀ i, c i = 0 := by
+  refine Fintype.linearIndependent_iff.1 (hB n ℓ hli halg) c ?_
+  simpa [Algebra.smul_def] using hsum
+
+/-- The two logarithms of `2` used by the survey's own Baker example: `log 2` and `log 2 + 2πi`. -/
+noncomputable def logTwoPair : Fin 2 → ℂ :=
+  ![((Real.log 2 : ℝ) : ℂ), ((Real.log 2 : ℝ) : ℂ) + ((2 * Real.pi : ℝ) : ℂ) * Complex.I]
+
+theorem exp_logTwoPair (i : Fin 2) : Complex.exp (logTwoPair i) = 2 := by
+  have h2 : Complex.exp ((Real.log 2 : ℝ) : ℂ) = 2 := by
+    rw [← Complex.ofReal_exp, Real.exp_log (by norm_num)]; norm_num
+  fin_cases i
+  · exact h2
+  · show Complex.exp (((Real.log 2 : ℝ) : ℂ) + ((2 * Real.pi : ℝ) : ℂ) * Complex.I) = 2
+    rw [Complex.exp_add, h2, show ((2 * Real.pi : ℝ) : ℂ) * Complex.I
+      = 2 * (Real.pi : ℂ) * Complex.I by push_cast; ring, Complex.exp_two_pi_mul_I, mul_one]
+
+theorem linearIndependent_logTwoPair : LinearIndependent ℚ logTwoPair := by
+  have hlog2 : Real.log 2 ≠ 0 := by
+    have := Real.log_pos (by norm_num : (1:ℝ) < 2); linarith
+  have hpi : (2 : ℝ) * Real.pi ≠ 0 := by
+    have := Real.pi_pos; positivity
+  rw [linearIndependent_fin2]
+  constructor
+  · show ((Real.log 2 : ℝ) : ℂ) + ((2 * Real.pi : ℝ) : ℂ) * Complex.I ≠ 0
+    intro hcon
+    have h := congrArg Complex.im hcon
+    simp only [Complex.add_im, Complex.ofReal_im, Complex.mul_I_im, Complex.ofReal_re,
+      zero_add, Complex.zero_im] at h
+    exact hpi h
+  · rintro q hq
+    have hq' : q • (((Real.log 2 : ℝ) : ℂ) + ((2 * Real.pi : ℝ) : ℂ) * Complex.I)
+        = ((Real.log 2 : ℝ) : ℂ) := hq
+    have him := congrArg Complex.im hq'
+    simp only [Rat.smul_def, Complex.mul_im, Complex.ratCast_im, Complex.ratCast_re,
+      Complex.add_im, Complex.add_re, Complex.ofReal_im, Complex.ofReal_re, Complex.mul_I_im,
+      Complex.mul_I_re, Complex.I_im, Complex.I_re, neg_zero, zero_add, add_zero, zero_mul,
+      mul_zero, mul_one, sub_zero] at him
+    have hq0 : (q : ℝ) = 0 := by
+      rcases mul_eq_zero.1 him with h | h
+      · exact h
+      · exact absurd h hpi
+    have hre := congrArg Complex.re hq'
+    simp only [Rat.smul_def, Complex.mul_re, Complex.ratCast_im, Complex.ratCast_re,
+      Complex.add_im, Complex.add_re, Complex.ofReal_im, Complex.ofReal_re, Complex.mul_I_im,
+      Complex.mul_I_re, Complex.I_im, Complex.I_re, neg_zero, zero_add, add_zero, zero_mul,
+      mul_zero, mul_one, sub_zero, hq0] at hre
+    exact hlog2 hre.symm
+
+/-! ### The statements -/
+
 theorem transcendental_pi_add_log_two (hB : BakerHomogeneous) :
     Transcendental ℚ (Real.pi + Real.log 2) := by
-  sorry
+  intro h
+  have hβalg : IsAlgebraic ℚ ((Real.pi + Real.log 2 : ℝ) : ℂ) :=
+    Schanuel.isAlgebraic_complex_of_real h
+  have hI : IsAlgebraic ℚ Complex.I := Schanuel.isAlgebraic_I
+  have h2mem : (2 : ℂ) ∈ integralClosure ℚ ℂ := by
+    exact_mod_cast Subalgebra.natCast_mem (integralClosure ℚ ℂ) 2
+  -- `-2β·1 + (2+i)·log 2 + (-i)·(log 2 + 2πi) = 0`
+  have hc0 : (-2 * ((Real.pi + Real.log 2 : ℝ) : ℂ)) ∈ integralClosure ℚ ℂ :=
+    Subalgebra.mul_mem _ (Subalgebra.neg_mem _ (h2mem)) hβalg.isIntegral
+  have hc1 : ((2 : ℂ) + Complex.I) ∈ integralClosure ℚ ℂ :=
+    Subalgebra.add_mem _ (h2mem) hI.isIntegral
+  have hc2 : (-Complex.I) ∈ integralClosure ℚ ℂ := Subalgebra.neg_mem _ hI.isIntegral
+  have hzero := baker_relation hB logTwoPair linearIndependent_logTwoPair
+    (fun i => by rw [exp_logTwoPair]; exact isAlgebraic_algebraMap (R := ℚ) (A := ℂ) 2)
+    ![⟨_, hc0⟩, ⟨_, hc1⟩, ⟨_, hc2⟩] ?_ 2
+  · have hI0 : (-Complex.I) = 0 := congrArg Subtype.val hzero
+    simp [Complex.I_ne_zero] at hI0
+  · simp only [Fin.sum_univ_succ, Fin.sum_univ_zero, add_zero, Fin.cons_zero, Fin.cons_succ,
+      Matrix.cons_val_zero, Matrix.cons_val_succ, logTwoPair, Matrix.cons_val_one,
+      Matrix.head_cons, mul_one]
+    push_cast
+    linear_combination (-2 * (Real.pi : ℂ)) * Complex.I_sq
 
 theorem transcendental_two_rpow_sqrt_two_mul_three_rpow_sqrt_three (hB : BakerHomogeneous) :
     Transcendental ℚ ((2 : ℝ) ^ Real.sqrt 2 * (3 : ℝ) ^ Real.sqrt 3) := by
