@@ -495,12 +495,109 @@ theorem two_rpow_or_three_rpow_transcendental (h4 : FourExponentialsConjecture) 
     Transcendental ℚ ((2 : ℝ) ^ t) ∨ Transcendental ℚ ((3 : ℝ) ^ t) :=
   two_rpow_or_three_rpow_transcendental' h4 ht
 
+/-- `(b^q)^den = b^num` for a positive real base and a rational exponent. -/
+theorem rpow_rat_pow_den {b : ℝ} (hb : 0 < b) (q : ℚ) :
+    (b ^ (q : ℝ)) ^ (q.den : ℕ) = b ^ (q.num : ℤ) := by
+  rw [← Real.rpow_natCast (b ^ (q : ℝ)) q.den, ← Real.rpow_mul hb.le]
+  have hmul : (q : ℝ) * ((q.den : ℕ) : ℝ) = (q.num : ℝ) := by
+    have hd : ((q.den : ℝ)) ≠ 0 := by exact_mod_cast q.den_nz
+    field_simp
+    exact_mod_cast congrArg (fun t : ℚ => (t : ℝ)) (Rat.mul_den_eq_num q)
+  rw [hmul, Real.rpow_intCast]
+
+/-- **Unique factorisation half**: for a single prime `P`, if `P^q` is a natural number for a
+rational `q`, then `q` is a natural number. -/
+theorem rat_eq_nat_of_prime_rpow {P : Nat.Primes} {q : ℚ} {m : ℕ}
+    (hm : ((P : ℕ) : ℝ) ^ (q : ℝ) = m) : ∃ N : ℕ, q = N := by
+  have hP : (1 : ℝ) < ((P : ℕ) : ℝ) := by exact_mod_cast P.2.one_lt
+  have hPpos : (0 : ℝ) < ((P : ℕ) : ℝ) := by linarith
+  have hpow := rpow_rat_pow_den hPpos q
+  rw [hm] at hpow
+  -- `m ≥ 1`
+  have hm1 : 1 ≤ m := by
+    by_contra hlt
+    have : m = 0 := by omega
+    subst this
+    have := Real.rpow_pos_of_pos hPpos (q : ℝ)
+    rw [hm] at this
+    simp at this
+  -- the exponent is nonnegative
+  have hnum : 0 ≤ q.num := by
+    by_contra hneg
+    rw [not_le] at hneg
+    have h1 : ((P : ℕ) : ℝ) ^ (q.num : ℤ) < 1 := by
+      apply zpow_lt_one_of_neg₀ hP hneg
+    have h2 : (1 : ℝ) ≤ ((m : ℕ) : ℝ) ^ (q.den : ℕ) := by
+      apply one_le_pow₀
+      exact_mod_cast hm1
+    rw [← hpow] at h1
+    linarith
+  set N : ℕ := q.num.toNat with hN
+  have hnumN : (q.num : ℤ) = (N : ℤ) := by omega
+  have hnatpow : (m : ℕ) ^ (q.den : ℕ) = (P : ℕ) ^ N := by
+    have : ((m : ℕ) : ℝ) ^ (q.den : ℕ) = (((P : ℕ) : ℝ)) ^ (N : ℕ) := by
+      rw [hpow, hnumN, zpow_natCast]
+    exact_mod_cast this
+  have hfac := congrArg (fun k : ℕ => k.factorization (P : ℕ)) hnatpow
+  simp only [Nat.factorization_pow, Finsupp.smul_apply, smul_eq_mul,
+    Nat.Prime.factorization P.2, Finsupp.single_eq_same, mul_one] at hfac
+  -- `hfac : q.den * m.factorization P = N`
+  have hdvd : q.den ∣ N := ⟨_, hfac.symm⟩
+  have hden : q.den = 1 := by
+    have : q.den ∣ q.num.natAbs := by
+      have : N = q.num.natAbs := by omega
+      rwa [this] at hdvd
+    exact Nat.Coprime.eq_one_of_dvd q.reduced.symm this
+  refine ⟨N, ?_⟩
+  have : q = (q.num : ℚ) := by
+    rw [← Rat.num_div_den q, hden]; simp
+  rw [this, hnumN]
+  push_cast
+  ring
+
+
+/-- **Unconditional**, from the six exponentials theorem: if `pᵢ^t` is an integer for three
+distinct primes `pᵢ`, then `t` is a natural number.  For irrational `t` the six numbers
+`e^{x_i y_j}` with `x = (1, t)`, `y = (log p₁, log p₂, log p₃)` are `p₁, p₂, p₃` and the three
+given integers, all algebraic — contradicting the theorem.  For rational `t` one prime and
+unique factorisation suffice. -/
+theorem eq_nat_of_three_primes_rpow' (h6 : SixExponentials) {t : ℝ} {p : Fin 3 → Nat.Primes}
+    (hp : Function.Injective p) (h : ∀ i, ∃ n : ℕ, ((p i : ℕ) : ℝ) ^ t = n) :
+    ∃ n : ℕ, t = n := by
+  by_cases ht : Irrational t
+  · exfalso
+    have hy : LinearIndependent ℚ (fun i => ((Real.log ((p i : ℕ) : ℝ) : ℝ) : ℂ)) :=
+      (linearIndependent_log_primes p hp).map'
+        ((IsScalarTower.toAlgHom ℚ ℝ ℂ).toLinearMap)
+        (by rw [LinearMap.ker_eq_bot]; exact (IsScalarTower.toAlgHom ℚ ℝ ℂ).injective)
+    obtain ⟨i, j, htr⟩ := h6 ![(1 : ℂ), ((t : ℝ) : ℂ)] _ (linearIndependent_one_ofReal ht) hy
+    have hpos : (0 : ℝ) < ((p j : ℕ) : ℝ) := by exact_mod_cast (p j).2.pos
+    fin_cases i <;>
+      simp only [Fin.zero_eta, Fin.mk_one, Fin.isValue, Matrix.cons_val_zero,
+        Matrix.cons_val_one, one_mul] at htr
+    · refine htr ?_
+      rw [← Complex.ofReal_exp, Real.exp_log hpos]
+      exact isAlgebraic_complex_of_real
+        (by simpa using isAlgebraic_algebraMap (R := ℚ) (A := ℝ) (((p j : ℕ) : ℚ)))
+    · obtain ⟨m, hm⟩ := h j
+      refine htr ?_
+      rw [cexp_mul_ofReal_log hpos, hm]
+      exact isAlgebraic_complex_of_real
+        (by simpa using isAlgebraic_algebraMap (R := ℚ) (A := ℝ) ((m : ℚ)))
+  · rw [Irrational, not_not] at ht
+    obtain ⟨q, hq⟩ := ht
+    obtain ⟨m, hm⟩ := h 0
+    rw [← hq] at hm
+    obtain ⟨N, hN⟩ := rat_eq_nat_of_prime_rpow hm
+    exact ⟨N, by rw [← hq, hN]; push_cast; ring⟩
+
+
 /-- **Unconditional**, from the six exponentials theorem: if `pᵢ^t` is an integer for three
 distinct primes `pᵢ`, then `t` is a natural number. -/
 theorem eq_nat_of_three_primes_rpow (h6 : SixExponentials) {t : ℝ} {p : Fin 3 → Nat.Primes}
     (hp : Function.Injective p) (h : ∀ i, ∃ n : ℕ, ((p i : ℕ) : ℝ) ^ t = n) :
-    ∃ n : ℕ, t = n := by
-  sorry
+    ∃ n : ℕ, t = n :=
+  eq_nat_of_three_primes_rpow' h6 hp h
 
 /-- Schanuel ⇒ `e, e^e, e^{e^e}` are algebraically independent: take `z = (1, e, e^e)`. -/
 theorem algebraicIndependent_exp_tower_three (hS : SchanuelConjecture) :
