@@ -1017,6 +1017,38 @@ theorem exists_pow_ratio_eq_one (hSub : Stephan2026Subspace) {K : Type} [Field K
       refine mul_left_cancel₀ (pow_ne_zero n hr) ?_
       rw [← pow_add, mul_one, show n + (m - n) = m by omega, hdiv, hdiv, hall i, hall j]
 
+/-!
+## Step 14 — CZ's Claim: eliminating the `a₀ p` term
+
+From the relation `a₀p + Σⱼ aⱼ q σⱼ(u) = 0` CZ produce a relation among the `σⱼ(u)` alone, by
+applying an automorphism and subtracting (this kills `p`, which is rational).  The algebra is
+the same in both of their cases, so it is isolated here: if a linear functional `F` on `K` and
+an automorphism `τ` satisfy `F (τ • ·) ≠ F`, then `p = F(y)` and `p = τ(F(y))` combine into a
+nontrivial relation.
+
+The concrete form we need: from `p = Σⱼ cⱼ σⱼ(u)` with `p` rational and `τ` an automorphism,
+`Σⱼ (cⱼ σⱼ(u) − τ(cⱼ) τ(σⱼ(u))) = 0`.
+-/
+
+/-- **CZ's elimination step.**  Applying `τ` to `p = Σⱼ cⱼ zⱼ` and subtracting kills the rational
+`p`, leaving a relation between the `zⱼ` and their `τ`-images. -/
+theorem sub_apply_eq_zero_of_ratCast {ι : Type*} [Fintype ι] (τ : K ≃ₐ[ℚ] K)
+    (c z : ι → K) (p : ℚ) (hp : algebraMap ℚ K p = ∑ j, c j * z j) :
+    ∑ j, (c j * z j - τ (c j) * τ (z j)) = 0 := by
+  have h1 : ∑ j, τ (c j) * τ (z j) = algebraMap ℚ K p := by
+    rw [← AlgEquiv.commutes τ p, hp, map_sum]
+    exact Finset.sum_congr rfl fun j _ ↦ (map_mul τ _ _).symm
+  rw [Finset.sum_sub_distrib, h1, ← hp, sub_self]
+
+/-- Variant with the sum written out: `Σⱼ cⱼ zⱼ = Σⱼ τ(cⱼ) τ(zⱼ)` whenever the common value is
+rational. -/
+theorem sum_eq_sum_apply_of_ratCast {ι : Type*} [Fintype ι] (τ : K ≃ₐ[ℚ] K)
+    (c z : ι → K) (p : ℚ) (hp : algebraMap ℚ K p = ∑ j, c j * z j) :
+    ∑ j, c j * z j = ∑ j, τ (c j) * τ (z j) := by
+  have := sub_apply_eq_zero_of_ratCast τ c z p hp
+  rw [Finset.sum_sub_distrib, sub_eq_zero] at this
+  exact this
+
 end CZ
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
