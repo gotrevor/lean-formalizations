@@ -11,7 +11,7 @@ Claims checked:
   chain  the full argument on cases where p_m is PRIME: p_m | p_{m+j} for that j.
   tau    tau mod 3 classes: the argument needs tau + h not in {1, -1} (h = floor offset).
 
-Usage: mills-3adic-probe.py {gauss|mech|tau|chain|all}
+Usage: mills-3adic-probe.py {gauss|mech|tau|chain|covering|all}
 """
 import sys
 from math import lcm
@@ -202,6 +202,32 @@ def tau():
     return bad == 0
 
 
+def covering(qs=(2, 5, 7, 11, 13)):
+    """Fraction of monic cubics f mod q whose eventual orbit t_k = tr C^(3^k) mod q hits 0.
+    Such f cannot give eventually-prime t_k (t_k -> infinity).  CRT-independent of the mod-3 class."""
+    surv = 1.0
+    for q in qs:
+        killed = tot = 0
+        for c2 in range(q):
+            for c1 in range(q):
+                for c0 in range(q):
+                    X = [[x % q for x in r] for r in comp((c2, c1, c0))]
+                    seen, seq = {}, []
+                    while True:
+                        key = tuple(map(tuple, X))
+                        if key in seen:
+                            break
+                        seen[key] = len(seq)
+                        seq.append(tr(X) % q)
+                        X = matmul(matmul(X, X, q), X, q)
+                    cyc = seq[seen[key]:]
+                    tot += 1
+                    killed += 0 in cyc
+        surv *= 1 - killed / tot
+        print(f"  q={q}: {killed}/{tot} cubics mod q killed; surviving fraction so far {surv:.3f}")
+    return True
+
+
 if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 else "all"
     res = []
@@ -209,6 +235,8 @@ if __name__ == "__main__":
         res.append(gauss())
     if what in ("mech", "all"):
         res.append(mech())
+    if what == "covering":
+        res.append(covering())
     if what in ("tau", "all"):
         res.append(tau())
     if what in ("chain", "all"):

@@ -127,7 +127,14 @@ def register : List Row := [
     evidence := "PROBE-COPELAND-ERDOS.md: Ridout needs block length ≍ digit offset ≍ 10^k; \
       consecutive-prime APs give O(k log k) digits even under Cramér"
     reopenIf := "a prime-sequence block whose digit length is a positive fraction of its offset, \
-      or a criterion accepting approximation quality 1 + o(1)" }
+      or a criterion accepting approximation quality 1 + o(1)" },
+  { route := "Burn down the six residual mod-3 classes left by phase 29 (Mills 3-adic)"
+    verdict := .needsNewIdea, tier := .cited, anchor := none
+    evidence := "FINDING-MILLS-3ADIC.md: in the residual classes p_m ≡ ±1 mod 3^(m+1), the \
+      conjugates' 3-parts differ, so the modulus-is-the-prime trick is silent; \
+      small-prime covering removes density → 1 of cubics, not all"
+    reopenIf := "an argument that uses the Pisot/size structure (Saito's (1.3)) together with \
+      the 3-adic constraint, or a covering theorem valid for every cubic Pisot number" }
 ]
 
 end LeanFormalizations.Maze
