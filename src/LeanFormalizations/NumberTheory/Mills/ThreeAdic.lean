@@ -513,6 +513,102 @@ theorem threeAdic_pm_one (hG : GaussCongruenceTrace) {n : ℕ}
   · exact Or.inl (this.trans h)
   · exact Or.inr (this.trans h)
 
+/-! ### The integer companion matrix of a monic cubic (infrastructure for step 4) -/
+
+section Companion
+
+/-- The companion matrix of `X³ + aX² + bX + c`, acting on `ℤ[X]/(f)` in the basis `1, X, X²`. -/
+def companion3 (a b c : ℤ) : Matrix (Fin 3) (Fin 3) ℤ :=
+  !![0, 0, -c; 1, 0, -b; 0, 1, -a]
+
+@[simp] lemma companion3_det (a b c : ℤ) : (companion3 a b c).det = -c := by
+  simp [companion3, Matrix.det_fin_three]
+
+@[simp] lemma companion3_trace (a b c : ℤ) : (companion3 a b c).trace = -a := by
+  simp [companion3, Matrix.trace_fin_three]
+
+lemma companion3_sq (a b c : ℤ) :
+    companion3 a b c ^ 2 = !![0, -c, c * a; 0, -b, -c + b * a; 1, -a, -b + a * a] := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [companion3, pow_two, Matrix.mul_apply, Fin.sum_univ_three] <;> ring
+
+@[simp] lemma companion3_trace_sq (a b c : ℤ) :
+    (companion3 a b c ^ 2).trace = a ^ 2 - 2 * b := by
+  rw [companion3_sq, Matrix.trace_fin_three]
+  simp
+  ring
+
+/-- Cayley–Hamilton for the companion matrix, by direct computation. -/
+lemma companion3_cube (a b c : ℤ) :
+    companion3 a b c ^ 3 =
+      -(a • companion3 a b c ^ 2) - b • companion3 a b c - c • (1 : Matrix (Fin 3) (Fin 3) ℤ) := by
+  rw [pow_succ, companion3_sq]
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [companion3, Matrix.mul_apply, Fin.sum_univ_three, Matrix.one_apply, Matrix.smul_apply,
+      Matrix.sub_apply, Matrix.neg_apply, Matrix.intCast_apply, Matrix.diagonal_apply,
+      companion3_sq] <;> ring
+
+/-- The trace sequence of the companion matrix satisfies the defining linear recurrence. -/
+lemma companion3_trace_rec (a b c : ℤ) (N : ℕ) :
+    ((companion3 a b c) ^ (N + 3)).trace =
+      -a * ((companion3 a b c) ^ (N + 2)).trace - b * ((companion3 a b c) ^ (N + 1)).trace
+        - c * ((companion3 a b c) ^ N).trace := by
+  set C := companion3 a b c with hC
+  have h : C ^ (N + 3) = -(a • C ^ (N + 2)) - b • C ^ (N + 1) - c • C ^ N := by
+    have h3 : C ^ (N + 3) = C ^ N * C ^ 3 := by rw [← pow_add]
+    rw [h3, hC, companion3_cube]
+    simp only [mul_sub, Matrix.mul_smul, mul_neg, ← hC]
+    rw [show C ^ N * C ^ 2 = C ^ (N + 2) by rw [← pow_add], show C ^ N * C = C ^ (N + 1) by
+      rw [← pow_succ]]
+    simp
+  rw [h]
+  simp only [Matrix.trace_sub, Matrix.trace_smul, Matrix.trace_neg, smul_eq_mul]
+  ring
+
+/-- **The key identity.**  If `x, y, z` are the roots of `X³ + aX² + bX + c` (given by their Vieta
+relations), then `tr (companion3 a b c)^N = xᴺ + yᴺ + zᴺ`. -/
+lemma companion3_trace_pow {a b c : ℤ} {x y z : ℂ}
+    (h1 : x + y + z = -(a : ℂ)) (h2 : x * y + x * z + y * z = (b : ℂ))
+    (h3 : x * y * z = -(c : ℂ)) (N : ℕ) :
+    (((companion3 a b c) ^ N).trace : ℂ) = x ^ N + y ^ N + z ^ N := by
+  have hroot : ∀ w : ℂ, w = x ∨ w = y ∨ w = z →
+      w ^ 3 = -(a : ℂ) * w ^ 2 - (b : ℂ) * w - (c : ℂ) := by
+    rintro w (rfl | rfl | rfl)
+    · linear_combination w ^ 2 * h1 - w * h2 + h3
+    · linear_combination w ^ 2 * h1 - w * h2 + h3
+    · linear_combination w ^ 2 * h1 - w * h2 + h3
+  have hstep : ∀ (w : ℂ), w = x ∨ w = y ∨ w = z → ∀ N : ℕ,
+      w ^ (N + 3) = -(a : ℂ) * w ^ (N + 2) - (b : ℂ) * w ^ (N + 1) - (c : ℂ) * w ^ N := by
+    intro w hw N
+    have hc := hroot w hw
+    have he : w ^ (N + 3) = w ^ N * w ^ 3 := by ring
+    rw [he, hc]; ring
+  induction N using Nat.strong_induction_on with
+  | _ N ih =>
+    match N with
+    | 0 => simp; norm_num
+    | 1 =>
+        rw [pow_one, companion3_trace]
+        push_cast
+        linear_combination -h1
+    | 2 =>
+        rw [companion3_trace_sq]
+        push_cast
+        linear_combination ((a : ℂ) - x - y - z) * h1 + 2 * h2
+    | (N + 3) =>
+        have e0 := ih N (by omega)
+        have e1 := ih (N + 1) (by omega)
+        have e2 := ih (N + 2) (by omega)
+        rw [companion3_trace_rec]
+        push_cast
+        rw [e0, e1, e2, hstep x (Or.inl rfl) N, hstep y (Or.inr (Or.inl rfl)) N,
+          hstep z (Or.inr (Or.inr rfl)) N]
+        ring
+
+end Companion
+
 /-- **Step 4: if the least Mills constant is algebraic, its primes tend to `±1` in `ℤ₃`.** -/
 theorem mills_threeAdic (hGc : GaussCongruenceTrace)
     (hB : BakerHarmanPintz2001) (hM : Matomaki2007) (hD : Dubickas2022)
