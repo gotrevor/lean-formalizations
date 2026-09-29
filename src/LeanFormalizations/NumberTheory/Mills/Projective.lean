@@ -328,6 +328,178 @@ theorem composite_of_irreducible_divisor (C : Matrix (Fin 3) (Fin 3) ℤ) {q m :
   · exact absurd h hq.one_lt.ne'
   · rw [← h] at habs; omega
 
+/-! ### The Mills corollary -/
+
+private lemma companion3_charpoly (a b c : ℤ) :
+    (companion3 a b c).charpoly
+      = X ^ 3 + Polynomial.C a * X ^ 2 + Polynomial.C b * X + Polynomial.C c := by
+  simp [Matrix.charpoly, Matrix.charmatrix, companion3, Matrix.det_fin_three,
+    Matrix.diagonal, Matrix.of_apply]
+  ring
+
+private lemma exists_vieta_of_cubic_pisot' {β : ℝ} (hP : IsPisot β)
+    (h3 : (minpoly ℚ β).natDegree = 3) {u v : ℂ} (huv : otherConj β = {u, v}) :
+    ∃ a b c : ℤ, c ≠ 0 ∧ (β : ℂ) + u + v = -(a : ℂ) ∧
+      (β : ℂ) * u + (β : ℂ) * v + u * v = (b : ℂ) ∧ (β : ℂ) * u * v = -(c : ℂ) := by
+  classical
+  have hZ : IsIntegral ℤ β := hP.2.1
+  have hQ : IsIntegral ℚ β := hZ.tower_top
+  obtain ⟨g, hg⟩ : ∃ g, g = minpoly ℤ β := ⟨_, rfl⟩
+  have hmap : minpoly ℚ β = g.map (algebraMap ℤ ℚ) := by
+    rw [hg]; exact minpoly.isIntegrallyClosed_eq_field_fractions' ℚ hZ
+  -- the split form over `ℂ`
+  have hmonic : ((minpoly ℚ β).map (algebraMap ℚ ℂ)).Monic := (minpoly.monic hQ).map _
+  have hsplit : ((minpoly ℚ β).map (algebraMap ℚ ℂ)).Splits := IsAlgClosed.splits _
+  have hroots : ((minpoly ℚ β).map (algebraMap ℚ ℂ)).roots = (β : ℂ) ::ₘ u ::ₘ {v} := by
+    have hcons : (minpoly ℚ β).aroots ℂ = (β : ℂ) ::ₘ otherConj β :=
+      (Multiset.cons_erase (beta_mem_aroots hQ)).symm
+    have : (minpoly ℚ β).aroots ℂ = ((minpoly ℚ β).map (algebraMap ℚ ℂ)).roots := rfl
+    rw [← this, hcons, huv]
+    rfl
+  have hfC : (minpoly ℚ β).map (algebraMap ℚ ℂ)
+      = (X - C (β : ℂ)) * (X - C u) * (X - C v) := by
+    rw [hsplit.eq_prod_roots_of_monic hmonic, hroots]
+    simp only [Multiset.map_cons, Multiset.prod_cons, Multiset.map_singleton,
+      Multiset.prod_singleton]
+    ring
+  have hexp : ((X - C (β : ℂ)) * (X - C u) * (X - C v))
+      = X ^ 3 - C ((β : ℂ) + u + v) * X ^ 2 + C ((β : ℂ) * u + (β : ℂ) * v + u * v) * X
+        - C ((β : ℂ) * u * v) := by
+    simp only [map_add, map_mul]
+    ring
+  have hcoeff : ∀ k, ((g.coeff k : ℤ) : ℂ) =
+      (X ^ 3 - C ((β : ℂ) + u + v) * X ^ 2 + C ((β : ℂ) * u + (β : ℂ) * v + u * v) * X
+        - C ((β : ℂ) * u * v)).coeff k := by
+    intro k
+    rw [← hexp, ← hfC, hmap, Polynomial.coeff_map, Polynomial.coeff_map]
+    simp
+  have c2 := hcoeff 2
+  have c1 := hcoeff 1
+  have c0 := hcoeff 0
+  simp only [Polynomial.coeff_sub, Polynomial.coeff_add, Polynomial.coeff_X_pow,
+    Polynomial.coeff_C_mul, Polynomial.coeff_C, Polynomial.coeff_X] at c2 c1 c0
+  norm_num at c2 c1 c0
+  -- the constant term is nonzero
+  have hc0 : g.coeff 0 ≠ 0 := by
+    intro h0
+    have hq0 : (minpoly ℚ β).coeff 0 = 0 := by rw [hmap, Polynomial.coeff_map, h0]; simp
+    obtain ⟨q, hq⟩ : (X : ℚ[X]) ∣ minpoly ℚ β := Polynomial.X_dvd_iff.2 hq0
+    have hirr := minpoly.irreducible hQ
+    rcases hirr.isUnit_or_isUnit hq with hu' | hu'
+    · exact Polynomial.not_isUnit_X hu'
+    · have hqne : q ≠ 0 := by
+        intro h; rw [h, mul_zero] at hq; exact minpoly.ne_zero hQ hq
+      have hdeg : (minpoly ℚ β).natDegree = 1 := by
+        rw [hq, Polynomial.natDegree_mul Polynomial.X_ne_zero hqne, Polynomial.natDegree_X,
+          Polynomial.natDegree_eq_zero_of_isUnit hu']
+      omega
+  exact ⟨g.coeff 2, g.coeff 1, g.coeff 0, hc0, by linear_combination c2, by linear_combination -c1,
+    by linear_combination c0⟩
+
+/-- **The companion-matrix glue for an algebraic Mills constant** (factored out of
+`mills_threeAdic`, phase 30).  If the least Mills constant `A` is algebraic, there are a
+nonsingular integer `3 x 3` matrix `C`, a shift `m` and a threshold `i₀` such that
+`tr C^(3^i) = ⌊A^(3^(m+i))⌋` for all `i ≥ i₀`; in particular that trace sequence is prime and
+strictly increasing from `i₀` on. -/
+private theorem exists_companion_root (hB : BakerHarmanPintz2001) (hM : Matomaki2007)
+    (hD : Dubickas2022) (hG : Dubickas2022PisotGap) {A : ℝ} (hA : IsMinMills A)
+    (halg : IsAlgebraic ℚ A) :
+    ∃ (C : Matrix (Fin 3) (Fin 3) ℤ) (m i₀ : ℕ), C.det ≠ 0 ∧
+      (C.charpoly.map (Int.castRingHom ℝ)).IsRoot (A ^ ((3:ℕ) ^ m)) ∧
+      (∀ i ≥ i₀, ((C ^ ((3:ℕ) ^ i)).trace) = (⌊A ^ ((3:ℕ) ^ (m + i))⌋₊ : ℤ)) ∧
+      (∀ k ≥ i₀, Prime ((C ^ ((3:ℕ) ^ k)).trace)) ∧
+      (∀ k ≥ i₀, (C ^ ((3:ℕ) ^ k)).trace < (C ^ ((3:ℕ) ^ (k + 1))).trace) := by
+  obtain ⟨⟨hA1, hAm⟩, hmin⟩ := hA
+  have hA : IsMinMills A := ⟨⟨hA1, hAm⟩, hmin⟩
+  -- Saito's dichotomy; the transcendental branch contradicts `halg`
+  rcases transcendental_or_pisot hB hM hD hG hA with htr | ⟨m, hm, hP, h3⟩
+  · exact absurd halg htr
+  set β : ℝ := A ^ ((3:ℕ) ^ m) with hβdef
+  have hint : IsIntegral ℚ β := hP.2.1.tower_top
+  -- the two other conjugates
+  have hc2 : Multiset.card (otherConj β) = 2 := by
+    have := card_otherConj_add_one hint; omega
+  obtain ⟨u, v, huv⟩ := Multiset.card_eq_two.1 hc2
+  obtain ⟨a, b, c, hcne, hvi1, hvi2, hvi3⟩ := exists_vieta_of_cubic_pisot' hP h3 huv
+  obtain ⟨C, hCdef⟩ : ∃ C, C = companion3 a b c := ⟨_, rfl⟩
+  have hdet : C.det ≠ 0 := by rw [hCdef, companion3_det]; omega
+  have htrace : ∀ N : ℕ, (((C ^ N).trace : ℤ) : ℂ) = (β : ℂ) ^ N + u ^ N + v ^ N := by
+    intro N; rw [hCdef]; exact companion3_trace_pow hvi1 hvi2 hvi3 N
+  -- the Mills digit facts
+  have h36 := saito_lemma36C (c := 3) hB hM (by norm_num) hA
+  have hμ0 : (0:ℝ) < (19 * ((3:ℕ):ℝ)) / 40 - 1 := by norm_num
+  have hK0 : (0:ℝ) < (2:ℝ) ^ ((19 * ((3:ℕ):ℝ)) / 40) := Real.rpow_pos_of_pos (by norm_num) _
+  have hfrac : ∀ᶠ k : ℕ in atTop, A ^ ((3:ℕ) ^ k) - (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℝ) < 1 / 2 := by
+    filter_upwards [decay_of_lemma36C (c := 3) (by norm_num) hA1 hAm h36,
+      eventually_rpow_neg_lt (c := 3) hA1 (by norm_num) hμ0 hK0 (by norm_num : (0:ℝ) < 1 / 2)]
+      with k hk hk2
+    exact lt_of_le_of_lt hk.2 hk2
+  have hcube : ∀ k : ℕ, 1 ≤ k → (⌊A ^ ((3:ℕ) ^ k)⌋₊) ^ 3 < ⌊A ^ ((3:ℕ) ^ (k + 1))⌋₊ := by
+    intro k hk
+    obtain ⟨j, rfl⟩ : ∃ j, k = j + 1 := ⟨k - 1, by omega⟩
+    exact mdigitC_pow_lt (c := 3) (by norm_num) hA1 hAm j
+  -- the eventually negative conjugate power sum
+  obtain ⟨i₀, hi₀⟩ := pair_pow_sum_re_neg hA1 hP huv hcube hfrac hm
+  -- identify `tr C^(3^i)` with the Mills prime `⌊A^(3^(m+i))⌋₊`
+  have hfloor : ∀ i ≥ i₀, ((C ^ ((3:ℕ) ^ i)).trace : ℤ) = (⌊A ^ ((3:ℕ) ^ (m + i))⌋₊ : ℤ) := by
+    intro i hi
+    obtain ⟨σ, hsu, hσneg, hσabs, hA2, -⟩ := hi₀ i hi
+    have hbeta : (β : ℝ) ^ ((3:ℕ) ^ i) = A ^ ((3:ℕ) ^ (m + i)) := by
+      rw [hβdef, ← pow_mul, ← pow_add]
+    have hreal : (((C ^ ((3:ℕ) ^ i)).trace : ℤ) : ℝ) = A ^ ((3:ℕ) ^ (m + i)) + σ := by
+      have h := htrace ((3:ℕ) ^ i)
+      rw [add_assoc, hsu] at h
+      have h2 : (((C ^ ((3:ℕ) ^ i)).trace : ℤ) : ℂ) =
+          (((A ^ ((3:ℕ) ^ (m + i)) + σ : ℝ)) : ℂ) := by
+        rw [h, ← hbeta]
+        push_cast
+        ring
+      exact_mod_cast h2
+    -- `σ ∈ (−1/2, 0)`, so the floor of `A^(3^(m+i))` is the trace
+    have hTpos : (0:ℝ) < ((C ^ ((3:ℕ) ^ i)).trace : ℤ) := by
+      rw [hreal]
+      have : |σ| < 1 / 2 := hσabs
+      have := abs_lt.1 this
+      linarith
+    obtain ⟨T, hT⟩ : ∃ T : ℕ, (T : ℤ) = ((C ^ ((3:ℕ) ^ i)).trace : ℤ) :=
+      ⟨((C ^ ((3:ℕ) ^ i)).trace).toNat, Int.toNat_of_nonneg (by exact_mod_cast hTpos.le)⟩
+    have hTr : (T : ℝ) = A ^ ((3:ℕ) ^ (m + i)) + σ := by
+      rw [← hreal]; exact_mod_cast congrArg (fun z : ℤ => (z : ℝ)) hT
+    have habs := abs_lt.1 hσabs
+    have hfl : ⌊A ^ ((3:ℕ) ^ (m + i))⌋₊ = T := by
+      rw [Nat.floor_eq_iff (by positivity)]
+      constructor <;> [linarith; linarith]
+    rw [hfl, ← hT]
+  -- primality and monotonicity of the trace sequence
+  have hprime : ∀ k ≥ i₀, Prime ((C ^ ((3:ℕ) ^ k)).trace) := by
+    intro k hk
+    rw [hfloor k hk]
+    have : Prime ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ := hAm ⟨m + k, by omega⟩
+    exact_mod_cast Nat.prime_iff_prime_int.1 (Nat.prime_iff.2 this)
+  have hmono : ∀ k ≥ i₀, (C ^ ((3:ℕ) ^ k)).trace < (C ^ ((3:ℕ) ^ (k + 1))).trace := by
+    intro k hk
+    rw [hfloor k hk, hfloor (k + 1) (by omega)]
+    have hcu := hcube (m + k) (by omega)
+    have hk2 : 2 ≤ ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ := (Nat.prime_iff.2 (hAm ⟨m + k, by omega⟩)).two_le
+    have hmk : m + (k + 1) = (m + k) + 1 := by omega
+    rw [hmk]
+    have : ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ < ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ ^ 3 := by
+      calc ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ = ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ ^ 1 := (pow_one _).symm
+        _ < ⌊A ^ ((3:ℕ) ^ (m + k))⌋₊ ^ 3 := Nat.pow_lt_pow_right (by omega) (by omega)
+    exact_mod_cast lt_trans this hcu
+  have hrootC : (C.charpoly.map (Int.castRingHom ℝ)).IsRoot (A ^ ((3:ℕ) ^ m)) := by
+    have hcx : ((β:ℂ)) ^ 3 + (a:ℂ) * (β:ℂ) ^ 2 + (b:ℂ) * (β:ℂ) + (c:ℂ) = 0 := by
+      linear_combination (β:ℂ) ^ 2 * hvi1 - (β:ℂ) * hvi2 + hvi3
+    have hrx : (β:ℝ) ^ 3 + (a:ℝ) * (β:ℝ) ^ 2 + (b:ℝ) * (β:ℝ) + (c:ℝ) = 0 := by
+      exact_mod_cast hcx
+    rw [hCdef, companion3_charpoly]
+    simp only [Polynomial.IsRoot, Polynomial.eval_map, Polynomial.eval₂_add, Polynomial.eval₂_mul,
+      Polynomial.eval₂_pow, Polynomial.eval₂_X, Polynomial.eval₂_C]
+    rw [← hβdef]
+    simpa using hrx
+  exact ⟨C, m, i₀, hdet, hrootC, hfloor, hprime, hmono⟩
+
+
 /-- **Mills.**  If the least Mills constant `A` is algebraic, then (for the integer matrix whose
 charpoly has `A^(3^m)` as a root and whose `3^i`-th power traces are the Mills primes) the
 charpoly has a root mod every sufficiently late Mills prime. -/
@@ -339,6 +511,14 @@ theorem mills_reducible_mod_primes (hB : BakerHarmanPintz2001) (hM : Matomaki200
       (∀ᶠ i in atTop, (C ^ ((3:ℕ) ^ i)).trace = (⌊A ^ ((3:ℕ) ^ (m + i))⌋₊ : ℤ)) ∧
       ∀ᶠ i in atTop,
         ¬ Irreducible (C.map (Int.castRingHom (ZMod ⌊A ^ ((3:ℕ) ^ (m + i))⌋₊))).charpoly := by
-  sorry
+  obtain ⟨C, m, i₀, hdet, hroot, hfloor, hprime, hmono⟩ :=
+    exists_companion_root hB hM hD hG hA halg
+  have hfl : ∀ᶠ i in atTop, ((C ^ ((3:ℕ) ^ i)).trace) = (⌊A ^ ((3:ℕ) ^ (m + i))⌋₊ : ℤ) :=
+    eventually_atTop.2 ⟨i₀, hfloor⟩
+  refine ⟨C, m, hroot, hfl, ?_⟩
+  have h2 := not_irreducible_mod_eventually C hdet (k₀ := i₀) hprime hmono
+  filter_upwards [h2, hfl] with k hk hfk
+  rw [hfk, Int.toNat_natCast] at hk
+  exact hk
 
 end LeanFormalizations.Mills.Projective
