@@ -683,6 +683,39 @@ theorem approxProd_le_of_prod_le {ι : Type*} [Fintype ι] [Nonempty ι]
   calc _ ≤ B / P ^ n := by gcongr
     _ ≤ B / Height.mulHeight x ^ n := by gcongr
 
+/-!
+## Step 9 — CZ's identity (2.4)
+
+For `K` Galois over `ℚ` the Galois group acts transitively on the infinite places (they all lie
+over the unique infinite place of `ℚ`), so every `v` is `σ_v • v₀`.  CZ's (2.3)–(2.4) then say:
+each archimedean factor `|ρ_v(δqu) − p|_v` equals `‖δqu‖` raised to `v`'s weight, because `p` is
+rational and therefore fixed.  In mathlib's normalisation the product is `v₀(y − p)^[K:ℚ]`.
+-/
+
+/-- The Galois group of `K/ℚ` acts transitively on the infinite places of `K`. -/
+theorem exists_smul_infinitePlace [IsGalois ℚ K] (v₀ v : InfinitePlace K) :
+    ∃ σ : K ≃ₐ[ℚ] K, σ • v₀ = v :=
+  NumberField.InfinitePlace.exists_smul_eq_of_comap_eq (k := ℚ) (Subsingleton.elim _ _)
+
+/-- **Corvaja–Zannier (2.4)** in mathlib's normalisation: the archimedean double product of
+`|σ_v(y) − c|_v` collapses to `|y − c|_{v₀}^{[K:ℚ]}`, for `c` rational. -/
+theorem prod_infinitePlace_sub_ratCast [IsGalois ℚ K] (v₀ : InfinitePlace K) (y : K) (c : ℚ)
+    (σ : InfinitePlace K → (K ≃ₐ[ℚ] K)) (hσ : ∀ v, σ v • v₀ = v) :
+    (∏ v : InfinitePlace K, v ((σ v) y - algebraMap ℚ K c) ^ v.mult)
+      = v₀ (y - algebraMap ℚ K c) ^ (Module.finrank ℚ K) := by
+  have key0 : ∀ τ : K ≃ₐ[ℚ] K,
+      (τ • v₀) (τ y - algebraMap ℚ K c) = v₀ (y - algebraMap ℚ K c) := by
+    intro τ
+    rw [NumberField.InfinitePlace.smul_apply, map_sub, AlgEquiv.symm_apply_apply,
+      AlgEquiv.commutes]
+  have key : ∀ v : InfinitePlace K,
+      v ((σ v) y - algebraMap ℚ K c) = v₀ (y - algebraMap ℚ K c) := by
+    intro v
+    have h := key0 (σ v)
+    rwa [hσ v] at h
+  rw [Finset.prod_congr rfl (fun v _ ↦ by rw [key v]), Finset.prod_pow_eq_pow_sum,
+    NumberField.InfinitePlace.sum_mult_eq]
+
 end CZ
 
 /-- `corvajaZannier_dichotomy` (CZ Main Theorem, Dubickas's Lemma 3), from Stephan's Subspace
