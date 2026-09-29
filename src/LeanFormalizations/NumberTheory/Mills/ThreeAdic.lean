@@ -139,7 +139,77 @@ theorem lt_padicValNat_glCard {n : ℕ} (C : Matrix (Fin n) (Fin n) ℤ) (hdet :
     {k₀ : ℕ} (hprime : ∀ k ≥ k₀, Prime (C ^ (3 ^ k)).trace)
     (hmono : ∀ k ≥ k₀, (C ^ (3 ^ k)).trace < (C ^ (3 ^ (k + 1))).trace) :
     ∃ K, ∀ k ≥ K, k < padicValNat 3 (glCard n (C ^ (3 ^ k)).trace.toNat) := by
-  sorry
+  set t : ℕ → ℤ := fun k => (C ^ (3 ^ k)).trace with ht
+  have hmono' : ∀ k, k₀ ≤ k → t k < t (k + 1) := fun k hk => hmono k hk
+  -- weak monotonicity from `k₀` on
+  have hle : ∀ a, k₀ ≤ a → ∀ d, t a ≤ t (a + d) := by
+    intro a ha d
+    induction d with
+    | zero => simp
+    | succ d ih =>
+        have := hmono' (a + d) (by omega)
+        have he : a + (d + 1) = (a + d) + 1 := by omega
+        rw [he]; omega
+  -- growth: the sequence increases by at least one per step
+  have growth : ∀ k, k₀ ≤ k → t k₀ + ((k : ℤ) - (k₀ : ℤ)) ≤ t k := by
+    intro k hk
+    induction k, hk using Nat.le_induction with
+    | base => simp
+    | succ k hk ih =>
+        have := hmono' k hk
+        push_cast
+        push_cast at ih
+        omega
+  have unbounded : ∀ B : ℤ, ∃ K, k₀ ≤ K ∧ ∀ k ≥ K, B < t k := by
+    intro B
+    refine ⟨k₀ + (B - t k₀ + 1).toNat, by omega, ?_⟩
+    intro k hk
+    have := growth k (by omega)
+    have h2 : ((k₀ + (B - t k₀ + 1).toNat : ℕ) : ℤ) ≤ (k : ℤ) := by exact_mod_cast hk
+    push_cast at h2
+    omega
+  obtain ⟨K, hK0, hKB⟩ := unbounded |C.det|
+  refine ⟨K, ?_⟩
+  intro k hk
+  have hk0 : k₀ ≤ k := le_trans hK0 hk
+  by_contra hcon
+  push_neg at hcon
+  -- `p := t k` is a prime exceeding `|det C|`
+  have htpos : 0 < t k := lt_of_le_of_lt (abs_nonneg _) (hKB k hk)
+  have htprime : Prime (t k) := hprime k hk0
+  obtain ⟨p, hpv⟩ : ∃ p : ℕ, (p : ℤ) = t k := ⟨(t k).toNat, Int.toNat_of_nonneg htpos.le⟩
+  have hpnat : p.Prime := by
+    rw [Int.prime_iff_natAbs_prime] at htprime
+    simpa [← hpv] using htprime
+  have hptoNat : (t k).toNat = p := by omega
+  have hdvd : (p : ℤ) ∣ (C ^ (3 ^ k)).trace := by rw [hpv]
+  have hdetp : ¬ (p : ℤ) ∣ C.det := by
+    intro h
+    have h1 : (p : ℤ) ≤ |C.det| := Int.le_of_dvd (abs_pos.2 hdet) ((dvd_abs _ _).2 h)
+    have := hKB k hk
+    omega
+  have h3 : padicValNat 3 (glCard n p) ≤ k := by
+    rw [← hptoNat]; exact hcon
+  obtain ⟨j, hj1, hjd⟩ := dvd_trace_pow_three_of_glCard C hpnat hdvd hdetp h3
+  -- `t (k+j)` is a strictly larger prime divisible by `p`: contradiction
+  have hgt : t k < t (k + j) := by
+    have h1 := hmono' k hk0
+    have h2 := hle (k + 1) (by omega) (j - 1)
+    have he : k + 1 + (j - 1) = k + j := by omega
+    rw [he] at h2
+    omega
+  have hqpos : 0 < t (k + j) := lt_trans htpos hgt
+  have hqprime : Prime (t (k + j)) := hprime (k + j) (by omega)
+  obtain ⟨q, hqv⟩ : ∃ q : ℕ, (q : ℤ) = t (k + j) := ⟨(t (k + j)).toNat, Int.toNat_of_nonneg hqpos.le⟩
+  have hqnat : q.Prime := by
+    rw [Int.prime_iff_natAbs_prime] at hqprime
+    simpa [← hqv] using hqprime
+  have hdq : p ∣ q := by
+    have : (p : ℤ) ∣ (q : ℤ) := by rw [hqv]; exact hjd
+    exact_mod_cast this
+  rcases (Nat.Prime.eq_one_or_self_of_dvd hqnat p hdq) with h | h
+  · exact hpnat.one_lt.ne' h
+  · omega
 
 /-- **Step 3.**  Under the Gauss congruence, a trace sequence `tr C^(3^k)` that is eventually prime
 and increasing converges to `±1` in `ℤ₃`. -/
