@@ -211,6 +211,161 @@ theorem lt_padicValNat_glCard {n : ℕ} (C : Matrix (Fin n) (Fin n) ℤ) (hdet :
   · exact hpnat.one_lt.ne' h
   · omega
 
+/-! ### 3-adic valuation of `t^s − 1` (infrastructure for step 3) -/
+
+section ThreeAdicValuation
+
+private lemma fact_three : Fact (Nat.Prime 3) := ⟨by norm_num⟩
+
+attribute [local instance] fact_three
+
+/-- The geometric sum identity in `ℕ`, subtraction-free. -/
+private lemma geom_nat (v m : ℕ) :
+    (v + 1) ^ m = (∑ i ∈ Finset.range m, (v + 1) ^ i) * v + 1 := by
+  induction m with
+  | zero => simp
+  | succ m ih => rw [Finset.sum_range_succ, pow_succ, ih]; ring
+
+/-- If `u ≡ 1 [MOD 3]` and `3 ∤ m`, then `v₃(u^m − 1) = v₃(u − 1)`. -/
+private lemma padicValNat_pow_sub_one_of_not_dvd {u m : ℕ} (hu : 1 ≤ u) (h1 : 3 ∣ u - 1)
+    (hm : ¬ (3 ∣ m)) : padicValNat 3 (u ^ m - 1) = padicValNat 3 (u - 1) := by
+  obtain ⟨v, rfl⟩ : ∃ v, u = v + 1 := ⟨u - 1, by omega⟩
+  simp only [Nat.add_sub_cancel] at h1 ⊢
+  set S := ∑ i ∈ Finset.range m, (v + 1) ^ i with hS
+  have hgeom := geom_nat v m
+  rw [← hS] at hgeom
+  have hsub : (v + 1) ^ m - 1 = S * v := by omega
+  rcases Nat.eq_zero_or_pos v with hv | hv
+  · simp [hsub, hv]
+  have hSm : S % 3 = m % 3 := by
+    have : ∀ i, (v + 1) ^ i % 3 = 1 % 3 := by
+      intro i
+      induction i with
+      | zero => simp
+      | succ i ih =>
+          rw [pow_succ, Nat.mul_mod, ih]
+          omega
+    rw [hS, Finset.sum_nat_mod]
+    simp only [this]
+    rw [← Finset.sum_nat_mod]
+    simp [Finset.sum_const, Finset.card_range, Nat.mul_mod]
+  have hS3 : ¬ (3 ∣ S) := by
+    intro h
+    exact hm (by omega)
+  have hSne : S ≠ 0 := by
+    intro h; rw [h] at hS3; exact hS3 ⟨0, rfl⟩
+  rw [hsub, padicValNat.mul hSne hv.ne', padicValNat.eq_zero_of_not_dvd hS3]
+  omega
+
+/-- The cube step of lifting the exponent at `3`. -/
+private lemma padicValNat_cube_le {z : ℕ} (hz : ¬ (3 ∣ z)) :
+    padicValNat 3 (z ^ 3 - 1) ≤ padicValNat 3 (z - 1) + 1 := by
+  rcases Nat.lt_or_ge z 2 with h | h
+  · interval_cases z
+    · simp at hz
+    · simp
+  obtain ⟨w, rfl⟩ : ∃ w, z = w + 1 := ⟨z - 1, by omega⟩
+  simp only [Nat.add_sub_cancel]
+  have hw : w ≠ 0 := by omega
+  have hid : (w + 1) ^ 3 - 1 = w * ((w + 1) ^ 2 + (w + 1) + 1) := by
+    have : (w + 1) ^ 3 = w * ((w + 1) ^ 2 + (w + 1) + 1) + 1 := by ring
+    omega
+  set Q := (w + 1) ^ 2 + (w + 1) + 1 with hQ
+  have hQne : Q ≠ 0 := by positivity
+  have hQ9 : ¬ (9 ∣ Q) := by
+    have hkey : ∀ r < 9, r % 3 ≠ 0 → ((r ^ 2 + r + 1) % 9) ≠ 0 := by decide
+    have hz9 : (w + 1) % 9 < 9 := Nat.mod_lt _ (by norm_num)
+    have hz3 : ((w + 1) % 9) % 3 ≠ 0 := by
+      rw [Nat.mod_mod_of_dvd _ (by norm_num : (3:ℕ) ∣ 9)]
+      omega
+    have := hkey _ hz9 hz3
+    intro hdvd
+    apply this
+    have hbase : (w + 1) ≡ (w + 1) % 9 [MOD 9] := (Nat.mod_modEq (w + 1) 9).symm
+    have hmod : Q % 9 = (((w + 1) % 9) ^ 2 + ((w + 1) % 9) + 1) % 9 :=
+      ((hbase.pow 2).add hbase).add_right 1
+    omega
+  have hQle : padicValNat 3 Q ≤ 1 := by
+    by_contra hc
+    push_neg at hc
+    have : (3:ℕ) ^ 2 ∣ Q := (padicValNat_dvd_iff_le hQne).2 hc
+    exact hQ9 (by norm_num at this ⊢; exact this)
+  rw [hid, padicValNat.mul hw hQne]
+  omega
+
+/-- Iterating the cube step: `v₃(y^(3^w) − 1) ≤ v₃(y − 1) + w`. -/
+private lemma padicValNat_pow_three_pow_le {y : ℕ} (hy : ¬ (3 ∣ y)) (w : ℕ) :
+    padicValNat 3 (y ^ 3 ^ w - 1) ≤ padicValNat 3 (y - 1) + w := by
+  induction w with
+  | zero => simp
+  | succ w ih =>
+      have hz : ¬ (3 ∣ y ^ 3 ^ w) := by
+        intro h
+        exact hy (Nat.Prime.dvd_of_dvd_pow (by norm_num) h)
+      have := padicValNat_cube_le hz
+      have he : y ^ 3 ^ (w + 1) = (y ^ 3 ^ w) ^ 3 := by
+        rw [← pow_mul, pow_succ]
+      rw [he]
+      omega
+
+/-- **The bound.**  For `3 ∤ t` and `s ≥ 1`, `v₃(t^s − 1) ≤ v₃(t^2 − 1) + v₃(s)`. -/
+private lemma padicValNat_pow_sub_one_le {t s : ℕ} (ht : ¬ (3 ∣ t)) (ht2 : 2 ≤ t)
+    (hs : 1 ≤ s) :
+    padicValNat 3 (t ^ s - 1) ≤ padicValNat 3 (t ^ 2 - 1) + padicValNat 3 s := by
+  -- first pass to the even exponent `2s`
+  have hA : 1 ≤ t ^ s := Nat.one_le_pow _ _ (by omega)
+  have hstep : padicValNat 3 (t ^ s - 1) ≤ padicValNat 3 (t ^ (2 * s) - 1) := by
+    obtain ⟨a, ha⟩ : ∃ a, t ^ s = a + 1 := ⟨t ^ s - 1, by omega⟩
+    have hid : t ^ (2 * s) - 1 = a * (a + 2) := by
+      have h1 : t ^ (2 * s) = (t ^ s) ^ 2 := by rw [← pow_mul, mul_comm]
+      have h2 : (a + 1) ^ 2 = a * (a + 2) + 1 := by ring
+      rw [h1, ha]; omega
+    rcases Nat.eq_zero_or_pos a with h | h
+    · simp [hid, h, ha]
+    · rw [hid, ha]
+      simp only [Nat.add_sub_cancel]
+      rw [padicValNat.mul h.ne' (by omega)]
+      omega
+  -- write `2 * s = 3 ^ w * m` with `3 ∤ m`; note `m` is even, so the base `t ^ m` is `≡ 1 mod 3`
+  set w := padicValNat 3 s with hw
+  have hspos : s ≠ 0 := by omega
+  have hdvd : 3 ^ w ∣ s := pow_padicValNat_dvd
+  obtain ⟨m₀, hm₀⟩ := hdvd
+  have hm₀3 : ¬ (3 ∣ m₀) := by
+    intro ⟨c, hc⟩
+    have : 3 ^ (w + 1) ∣ s := ⟨c, by rw [hm₀, hc]; ring⟩
+    have := (padicValNat_dvd_iff_le hspos).1 this
+    omega
+  have h2s : 2 * s = 3 ^ w * (2 * m₀) := by rw [hm₀]; ring
+  have hm3 : ¬ (3 ∣ 2 * m₀) := by
+    intro h
+    exact hm₀3 ((Nat.Coprime.dvd_of_dvd_mul_left (by norm_num) h))
+  set u := t ^ (2 * m₀) with hu
+  have hune : ¬ (3 ∣ u) := by
+    intro h
+    exact ht (Nat.Prime.dvd_of_dvd_pow (by norm_num) h)
+  have hu1 : 1 ≤ u := Nat.one_le_pow _ _ (by omega)
+  have hpow : t ^ (2 * s) = u ^ 3 ^ w := by
+    rw [hu, ← pow_mul, h2s]; ring_nf
+  have hkey := padicValNat_pow_three_pow_le hune w
+  rw [← hpow] at hkey
+  -- `v₃(u − 1) ≤ v₃(t^2 − 1)`
+  have hdvd3 : 3 ∣ t ^ 2 - 1 := by
+    have : t % 3 = 1 ∨ t % 3 = 2 := by omega
+    have h2 : t ^ 2 % 3 = 1 := by
+      rw [Nat.pow_mod]
+      rcases this with h | h <;> rw [h] <;> norm_num
+    have : 1 ≤ t ^ 2 := Nat.one_le_pow _ _ (by omega)
+    omega
+  have hfin : padicValNat 3 (u - 1) = padicValNat 3 (t ^ 2 - 1) := by
+    rw [hu]
+    have he : t ^ (2 * m₀) = (t ^ 2) ^ m₀ := by rw [← pow_mul]
+    rw [he]
+    exact padicValNat_pow_sub_one_of_not_dvd (Nat.one_le_pow _ _ (by omega)) hdvd3 hm₀3
+  omega
+
+end ThreeAdicValuation
+
 /-- **Step 3.**  Under the Gauss congruence, a trace sequence `tr C^(3^k)` that is eventually prime
 and increasing converges to `±1` in `ℤ₃`. -/
 theorem threeAdic_pm_one (hG : GaussCongruenceTrace) {n : ℕ}
