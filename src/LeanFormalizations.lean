@@ -153,6 +153,7 @@ import LeanFormalizations.NumberTheory.Transcendence.CorvajaZannierStephan
 import LeanFormalizations.NumberTheory.Mills.TranscendentalRH
 import LeanFormalizations.NumberTheory.Mills.ThreeAdic
 import LeanFormalizations.NumberTheory.Mills.SharedConjecture
+import LeanFormalizations.NumberTheory.Mills.Projective
 import LeanFormalizations.NumberTheory.Transcendence.MultisetGraeffe
 import LeanFormalizations.NumberTheory.Transcendence.MultisetNewton
 import LeanFormalizations.NumberTheory.Transcendence.DubickasBRec

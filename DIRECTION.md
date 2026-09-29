@@ -2,7 +2,7 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## ⏭️ QUEUED (phase 31, plant after phase 30 lands): the projective-order lemma
+## 🎯 THE OBJECTIVE (phase 31): the projective-order lemma — target `NumberTheory/Mills/Projective.lean` (4 frozen statements, route in header; frozen also: ThreeAdic, SharedConjecture, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 Read [PROBE-MILLS-PROJECTIVE.md](PROBE-MILLS-PROJECTIVE.md) for the full argument and remaining gap; summary in `FINDING-MILLS-3ADIC.md` § Extension (Astra's idea).  For `composite_of_irreducible_divisor`, include trace growth (for example, `t_k → +∞`): recurrent divisibility alone does not exclude the value q itself.  New file `NumberTheory/Mills/Projective.lean`.  Frozen statements to write:
 - `dvd_trace_of_irreducible_mod`: `C : Matrix (Fin 3) (Fin 3) ℤ`, `p` prime, `p ≠ 3`, `Irreducible (C.charpoly.map (Int.castRingHom (ZMod p)))`, `1 ≤ m`, `(p:ℤ) ∣ (C^(3^m)).trace`, `¬ (p:ℤ) ∣ C.det` ⟹ `∃ j ≥ 1, (p:ℤ) ∣ (C^(3^(m+j))).trace`.
@@ -12,7 +12,7 @@ Read [PROBE-MILLS-PROJECTIVE.md](PROBE-MILLS-PROJECTIVE.md) for the full argumen
 
 ---
 
-## 🎯 THE OBJECTIVE (phase 30): one conjecture behind Fermat and Mills
+## ✅ DONE (phase 30, `2df929e`, 1 lap): one conjecture behind Fermat and Mills
 
 Target `NumberTheory/Mills/SharedConjecture.lean`, three frozen statements (route in the header):
 - `fermat_of_doubleExpTraceComposite`;
