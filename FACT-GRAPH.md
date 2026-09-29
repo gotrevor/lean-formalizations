@@ -44,12 +44,12 @@ graph LR
 | Hypothesis | Status | Theorems resting on it |
 |---|---|---|
 | `SchanuelConjecture` | 🔮 conjecture | 50 |
-| `BakerHarmanPintz2001` | 📚 theorem | 19 |
+| `BakerHarmanPintz2001` | 📚 theorem | 21 |
+| `Matomaki2007` | 📚 theorem | 17 |
 | `AlgIndepLogsConjecture` | 🔮 conjecture | 15 |
-| `Matomaki2007` | 📚 theorem | 15 |
+| `Dubickas2022PisotGap` | 📚 theorem | 12 |
 | `LindemannWeierstrassAlgIndep` | 📚 theorem | 11 |
-| `Dubickas2022PisotGap` | 📚 theorem | 10 |
-| `Dubickas2022` | 📚 theorem | 9 |
+| `Dubickas2022` | 📚 theorem | 11 |
 | `Schoenfeld1976` | 📚 theorem | 8 |
 | `RiemannHypothesis` | 🔮 conjecture | 8 |
 | `Stephan2026Ridout` | 📚 theorem | 6 |
@@ -63,6 +63,7 @@ graph LR
 | `GaussCongruenceTrace` | 📚 theorem | 3 |
 | `GelfondSchneider1934` | 📚 theorem | 2 |
 | `FiveExponentials` | 📚 theorem | 2 |
+| `Mills.SharedConjecture.DoubleExpTraceComposite` | 📚 theorem | 2 |
 | `Dudek2016` | 📚 theorem | 2 |
 | `Ridout1958` | 📚 theorem | 1 |
 | `ExponentialsKnown.BakerTwoLogs` | 📚 theorem | 1 |
@@ -72,7 +73,7 @@ graph LR
 | `Roth1955` | 📚 theorem | 1 |
 | `Mahler1957` | 📚 theorem | 1 |
 
-Unconditional theorems in the scanned namespaces (no named hypothesis): 331.
+Unconditional theorems in the scanned namespaces (no named hypothesis): 333.
 
 ## Refuted
 

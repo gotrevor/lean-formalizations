@@ -171,13 +171,52 @@ theorem exists_trace_pow_congr {n : ℕ} (C : Matrix (Fin n) (Fin n) ℤ) {p m c
 /-- The conjecture implies infinitely many composite Fermat numbers. -/
 theorem fermat_of_doubleExpTraceComposite (hC : DoubleExpTraceComposite) :
     ∃ᶠ k in atTop, ¬ (Nat.fermatNumber k).Prime := by
-  sorry
+  set C : Matrix (Fin 2) (Fin 2) ℤ := Matrix.diagonal ![2, 1] with hCdef
+  have htr : ∀ N : ℕ, (C ^ N).trace = 2 ^ N + 1 := by
+    intro N
+    rw [hCdef, Matrix.diagonal_pow]
+    simp [Matrix.trace, Matrix.diag, Fin.sum_univ_two]
+  have hgrow : Tendsto (fun k : ℕ => |(C ^ ((2:ℕ) ^ k)).trace + (0:ℤ)|) atTop atTop := by
+    rw [tendsto_atTop]
+    intro B
+    refine eventually_atTop.2 ⟨B.toNat, fun k hk => ?_⟩
+    have h1 : B ≤ (k : ℤ) := by
+      have : (B.toNat : ℤ) ≤ (k : ℤ) := by exact_mod_cast hk
+      omega
+    have h2 : k < 2 ^ k := Nat.lt_two_pow_self
+    have h3 : k ≤ 2 ^ ((2:ℕ) ^ k) := by
+      have : k < 2 ^ k := h2
+      exact le_trans this.le (Nat.pow_le_pow_right (by norm_num) h2.le)
+    have h4 : (k : ℤ) ≤ 2 ^ ((2:ℕ) ^ k) := by exact_mod_cast h3
+    rw [htr]
+    rw [abs_of_nonneg (by positivity)]
+    omega
+  have := hC 2 C 2 0 (by norm_num) hgrow
+  refine this.mono fun k hk hfp => hk ?_
+  rw [htr, add_zero]
+  have : ((Nat.fermatNumber k : ℕ) : ℤ) = 2 ^ ((2:ℕ) ^ k) + 1 := by
+    simp [Nat.fermatNumber]
+  rw [← this]
+  exact Nat.prime_iff_prime_int.1 hfp
 
 /-- The conjecture implies that the least Mills constant is transcendental. -/
 theorem mills_transcendental_of_doubleExpTraceComposite (hC : DoubleExpTraceComposite)
     (hB : BakerHarmanPintz2001) (hM : Matomaki2007) (hD : Dubickas2022)
     (hG : Dubickas2022PisotGap) {A : ℝ} (hA : IsMinMills A) : Transcendental ℚ A := by
-  sorry
+  by_contra hcon
+  rw [Transcendental, not_not] at hcon
+  obtain ⟨C, m, i₀, hdet, hfloor, hprime, hmono⟩ :=
+    exists_companion_of_algebraic_mills hB hM hD hG hA hcon
+  have hmono0 : ∀ k ≥ i₀, (C ^ ((3:ℕ) ^ k)).trace + (0:ℤ) <
+      (C ^ ((3:ℕ) ^ (k + 1))).trace + (0:ℤ) := by
+    intro k hk; simpa using hmono k hk
+  have hgrow : Tendsto (fun k : ℕ => |(C ^ ((3:ℕ) ^ k)).trace + (0:ℤ)|) atTop atTop :=
+    tendsto_abs_atTop_of_mono hmono0
+  have hfreq := hC 3 C 3 0 (by norm_num) hgrow
+  have hev : ∀ᶠ k : ℕ in atTop, Prime ((C ^ ((3:ℕ) ^ k)).trace + (0:ℤ)) :=
+    eventually_atTop.2 ⟨i₀, fun k hk => by simpa using hprime k hk⟩
+  obtain ⟨k, hk1, hk2⟩ := (hfreq.and_eventually hev).exists
+  exact hk1 hk2
 
 /-- Phase 29's unconditional step for any prime base `c` and shift `h`: if `tr C^(c^k) + h` is
 prime and strictly increasing from some point on, then `v_c |GL_n(𝔽_{t_k})| > k` for all large
