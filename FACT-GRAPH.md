@@ -54,7 +54,7 @@ graph LR
 | `Nesterenko1996` | 📚 theorem | 6 |
 | `FourExponentialsConjecture` | 🔮 conjecture | 5 |
 | `Ridout1957` | 📚 theorem | 4 |
-| `SixExponentialsShifted` | 📚 theorem | 4 |
+| `SixExponentialsShifted` | ❌ refuted | 4 |
 | `SixExponentials` | 📚 theorem | 4 |
 | `BakerHomogeneous` | 📚 theorem | 3 |
 | `Baker1966` | 📚 theorem | 2 |
@@ -72,4 +72,5 @@ Unconditional theorems in the scanned namespaces (no named hypothesis): 315.
 
 ## Refuted
 
+- `SixExponentialsShifted`
 - `StrongSixExponentialsOverQ`

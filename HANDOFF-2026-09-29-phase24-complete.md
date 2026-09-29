@@ -77,3 +77,30 @@ Two things had to be got right, and both are recorded as theorems rather than pr
 (`strongFourExponentials_of_algIndepLogs` and `not_isAlgebraic_exp_mul_of_algIndepLogs`, the
 branch-free complex Gelfond–Schneider).  Axiom-clean.  New leaves: `exists_algebraic_ratio`,
 `mem_logAlgSpan_of_exp_isAlgebraic`, `sixExponentials_of_fourExponentials`.
+
+## Addendum 3: ⚠️ `Literature.SixExponentialsShifted` is FALSE — a second dropped overbar
+
+Found while trying to route `Conjecture 1 ⇒ FiveExponentials` through the repo's existing
+`ExponentialsKnown.fiveExponentials_of_shifted`.  The degenerate-case analysis would not close,
+and the reason is that the hypothesis `Prop` is false.  `not_sixExponentialsShifted` is the
+kernel-checked refutation.
+
+**Witness.**  `x = (1, √2)` and `y = (1, √2, i)`, each `ℚ`-linearly independent (the second is
+the repo's `linearIndependent_one_sqrt_two_I`, already on hand from the earlier refutation),
+with the shifts taken to be `βᵢⱼ := xᵢyⱼ` — legitimate, since `x` and `y` consist of algebraic
+numbers, so the products are algebraic.  Then all six `exp (xᵢyⱼ − βᵢⱼ) = exp 0 = 1`.
+
+**Root cause: identical to `StrongSixExponentialsOverQ`** (refuted earlier the same day) — a
+`ℚ̄` whose overbar `pdftotext` dropped.  Waldschmidt 1988 Cor. 2.1 asks for `x` and `y`
+independent over the *algebraic* numbers; over `ℚ̄` the pair `1, √2` is dependent, which is
+exactly what kills the witness.  That makes two instances of the same transcription failure in
+`Literature/ExponentialsKnown.lean`; the KB gotcha `pdftotext-drops-overbars` is doing real work
+and every remaining `LinearIndependent ℚ` in a "strong"/"shifted" statement deserves an audit.
+
+**Fact-graph consequence.**  `sixExponentials_of_shifted` and `fiveExponentials_of_shifted`
+stay valid implications but now have a hypothesis known to be unsatisfiable, exactly like
+`sixExponentials_of_strongOverQ`.  So **there is no live route to `FiveExponentials` in the
+repo at present** — the one that looked live was resting on a false `Prop`.  Repairing the
+frozen statement (`LinearIndependent ℚ` ⟶ independence over `integralClosure ℚ ℂ`) is an
+operator decision; once repaired, the natural route is strong four + Gelfond–Schneider, as in
+addendum 2.

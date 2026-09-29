@@ -495,6 +495,52 @@ theorem strongFourExponentials_of_algIndepLogs (h : AlgIndepLogsConjecture) :
   have : (-1 : (algebraicClosure ℚ ℂ)) = 0 := by simpa using hzero 1
   exact absurd this (by simp)
 
+/-! ## ⚠️ A second dropped-overbar bug: `SixExponentialsShifted` is FALSE
+
+Found while trying to route `Conjecture 1 ⇒ FiveExponentials` through the repo's existing
+`ExponentialsKnown.fiveExponentials_of_shifted`.  The degenerate-case analysis for
+`SixExponentialsShifted` does not close, and the reason is that the statement is false:
+nothing stops the shifts `βᵢⱼ` from being *equal* to the products `xᵢyⱼ`, provided those
+products are algebraic — and `x`, `y` are only required to be `ℚ`-linearly independent, which
+algebraic numbers easily are.  Then every `exp (xᵢyⱼ − βᵢⱼ) = exp 0 = 1`.
+
+This is the same root cause as `Literature.StrongSixExponentialsOverQ` (refuted 2026-09-29 by
+`ExponentialsKnown.not_strongSixExponentialsOverQ`): a `ℚ̄` whose overbar `pdftotext` dropped.
+Waldschmidt 1988 Cor. 2.1 asks for `x` and `y` independent over the *algebraic* numbers, which
+is precisely what rules the witness below out — over `ℚ̄` the pair `1, √2` is dependent.
+
+`Literature/` is frozen, so repairing the `Prop` is an operator decision.  Consequences for the
+fact graph: `ExponentialsKnown.sixExponentials_of_shifted` and `fiveExponentials_of_shifted`
+remain valid implications but now have a hypothesis known to be unsatisfiable, exactly like
+`sixExponentials_of_strongOverQ`.  In particular **there is currently no live route to
+`FiveExponentials`** in the repo. -/
+
+/-- **The frozen `Literature.SixExponentialsShifted` is FALSE as stated** (2026-09-29).
+Witness: `x = (1, √2)`, `y = (1, √2, i)` — each `ℚ`-linearly independent — with the shifts
+`βᵢⱼ := xᵢyⱼ`, which are algebraic because `x` and `y` are.  Every one of the six numbers
+`exp (xᵢyⱼ − βᵢⱼ)` is then `exp 0 = 1`, which is not transcendental. -/
+theorem not_sixExponentialsShifted : ¬ SixExponentialsShifted := by
+  intro hsh
+  set x : Fin 2 → ℂ := ![(1 : ℂ), ((Real.sqrt 2 : ℝ) : ℂ)] with hx
+  set y : Fin 3 → ℂ := ![(1 : ℂ), ((Real.sqrt 2 : ℝ) : ℂ), Complex.I] with hy
+  have hxalg : ∀ i, IsAlgebraic ℚ (x i) := by
+    intro i; fin_cases i
+    · exact isAlgebraic_one
+    · exact LeanFormalizations.ExponentialsKnown.isAlgebraic_sqrt_two
+  have hyalg : ∀ j, IsAlgebraic ℚ (y j) := by
+    intro j; fin_cases j
+    · exact isAlgebraic_one
+    · exact LeanFormalizations.ExponentialsKnown.isAlgebraic_sqrt_two
+    · exact isAlgebraic_I
+  obtain ⟨i, j, htr⟩ := hsh x y (fun i j => x i * y j)
+    (linearIndependent_one_ofReal irrational_sqrt_two)
+    LeanFormalizations.ExponentialsKnown.linearIndependent_one_sqrt_two_I
+    (fun i j => mem_algebraicClosure_iff.1
+      (mul_mem (mem_algebraicClosure_iff.2 (hxalg i)) (mem_algebraicClosure_iff.2 (hyalg j))))
+  refine htr ?_
+  rw [sub_self, Complex.exp_zero]
+  exact isAlgebraic_one
+
 /-! ## Repairing the edge into `SixExponentials`
 
 `ExponentialsKnown.lean`'s header records that the only edge into `SixExponentials` from a
