@@ -37,6 +37,11 @@ One page, one row per theorem.  Everything here was proved 2026-09-29/30, uncond
 - `ShiftedWindow` (the 3-adic window sub-node), `TeichmullerCongruence` (`A^(c^n)` eventually periodic `c`-adically), `UnipotentTrace` (the mod-3 kill, sub-node R4).
 - **`GaussCongruenceProof.gaussCongruenceTrace_holds`: the Gauss/Dold congruence for traces, PROVED.**  This discharges `Literature.GaussCongruenceTrace`, so phase 29 (`mills_threeAdic'`) no longer rests on it.
 
+## Theorem A route (phases 50–52)
+- `ExteriorDold` (phase 50): `χ_(A^(p^(k+1))) ≡ χ_(A^(p^k)) (mod p^(k+1))` coefficientwise, via compound matrices; plus `χ_B(B^p) ≡ 0`.
+- `OrbitSum` (phase 51): for `χ_A` irreducible mod `c`, `A^(c^(n+d)) ≡ A^(c^n)` and **`Σ_(k<d) A^(c^(n+k)) ≡ tr(A^(c^n))·I (mod c^(n+1))`**, exact even when `c ∣ d` (factorization over the Galois ring).
+- `TheoremA` (phase 52, in progress): order-`d` entries at inert primes; Tribonacci `T(3^n) + h`, `T(5^n) + h`.
+
 ## Paper theorems, not yet in Lean
 - **Theorem D** (`PROOF-THEOREM-D.md`): Saito's Problem 1.7 for `R(n) = c^n + s`; every Pisot `α` outside `f ≡ X^d (mod c)` (draft 2 removes the abelian-field exception by a one-automorphism size argument).  Referee pass: Lemmas OK.
 - **Theorem E / E+** (`PROOF-THEOREM-E.md`): the least `A` with `⌊A^(3^k + s)⌋` prime `∀k` is **transcendental** for **every `s ≠ 0`** (draft 3e; odd `s` via `g = 2`).  Unshifted Mills (`s = 0`) fails both steps.  Three referee passes, patches applied; ≈72–80%.
