@@ -411,6 +411,32 @@ attackable statement rather than "the index set might be a tower".
 `tracePowSum_int_of_near_int_of_den_lt` (the cofiniteness dichotomy), and the capstone
 `isIntegral_of_tie_le_two_of_den_lt`.  `src/` went 3 disclosed `sorry`s → 2.
 
+**Lap 9 (2026-09-30) — the doubling-closure frontier is now SHARP.**  Three new axiom-clean
+theorems in `DubickasNoSubspace.lean`:
+
+* `valuation_factorial_mul_esymm_le_of_closed` — the **refined Newton step**.  Only *some* power
+  sums need to be small.  With `D = {j | v(p_j) ≤ ε}` and any `G` closed under
+  `j ∈ G → j ∈ D ∧ ∀ 1 ≤ i < j, (i ∈ G ∨ j − i ∈ D)`, every `j ∈ G` has `v(j! e_j) ≤ ε`.
+  (`valuation_factorial_mul_esymm_le` is the case `D = G = [1,k]`.)  This is the general machine
+  for *sparse* exponent sets; it turns "which tie sizes does closure under `⋅2` kill?" into a
+  finite combinatorial reachability question with `D = {1,2,4,…,2^s}`.
+* `valuation_sum_unit_pow_card_four` — **tie size 4 closes from doubling alone.**  At `j = 4` the
+  unavailable `p_3` is multiplied by `e_1 = p_1`, which is small; run `G = D = {1,2,4}`.
+* `valuation_sum_unit_pow_of_common_pow` — if all `u ∈ U` share an `M`-th power and `M ∣ N` for
+  `N ∈ S`, then `Σ u_i^N = |U| · w^(N/M)` has the fixed nonzero valuation `v(|U|)`: no decay.
+  This is the **second half of attack (b)**: once the tie ratios are known to be `2^t`-th roots of
+  unity, the tie closes immediately (no Graeffe tower needed).  Attack (b) is therefore reduced to
+  its first half only: *are the p-adic tie ratios 2-power roots of unity?*
+
+⚠ **REFUTED this lap**: the lap-8 hope "*if the tie size is a power of `2` the Graeffe tower closes
+it*".  Running the reachability criterion with `D = {1,2,4,8}` at `k = 8`: `1, 2, 4 ∈ G` but
+`3 ∉ G` (`3 ∉ D`) and then `j = 8` fails at `i = 3`, since `8 − 3 = 5 ∉ D` and `3 ∉ G`.  Equivalently
+`p_3` multiplies `e_5` and `p_5` multiplies `e_3`, and neither `e_3` nor `e_5` is controlled by
+`p_1, p_2, p_4`.  So the doubling-closed tie sizes that provably close are exactly `1, 2, 4`
+(`k = 3` is *realized* by `u_i = ζ₃^i c`; `k = 5, 6, 7, 8` are open, and `6 = 2·3` is realized by
+two `ζ₃`-triples).  **Any route through "the tie size is small" must therefore bound the tie size
+by 4 — not by a power of 2.**
+
 ⚠ New hard fact (the `ζ₃` witness, PROBE eighth lap part 2): doubling closure canNOT be pushed past
 tie size 2 — `u_i = ζ₃^i c` has `Σ u_i^(2^n) = 0` for every `n`.  So the residual is now exactly:
 (a) `D ≥ min(α, ρ⁻¹)`, or (b) a triple tie at some prime, or (c) the sparsity of CZ Lemma 3's index

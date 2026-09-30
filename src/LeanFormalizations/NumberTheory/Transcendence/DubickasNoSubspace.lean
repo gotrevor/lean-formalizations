@@ -1589,6 +1589,227 @@ theorem valuation_sum_unit_pow_card_two {L : Type*} [Field L] [NumberField L]
   have := hsum N hN
   simpa using this
 
+/-- Power sums of `v`-units have valuation `≤ 1`. -/
+theorem valuation_psum_le_one {L : Type*} [Field L] [NumberField L]
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers L))
+    {x : Multiset L} (hx : ∀ u ∈ x, v.valuation L u = 1) (n : ℕ) :
+    v.valuation L (x.psum n) ≤ 1 := by
+  rw [Multiset.psum_def]
+  refine valuation_multiset_sum_le v _ ?_
+  intro y hy
+  obtain ⟨u, hu, rfl⟩ := Multiset.mem_map.1 hy
+  rw [map_pow, hx u hu, one_pow]
+
+/-- **Refined Newton step.**  Only *some* power sums need to be small.  Let `D` be the set of
+indices `j` with `v(p_j) ≤ ε`, and let `G` be any set of indices closed under the rule
+
+> `j ∈ G → j ∈ D ∧ ∀ 1 ≤ i < j, (i ∈ G ∨ j − i ∈ D)`.
+
+Then `v(j! · e_j) ≤ ε` for every `j ∈ G`.  (With `D = G = [1, k]` this is
+`valuation_factorial_mul_esymm_le`.)  In Newton's identity the `i = 0` term is `p_j`, which is why
+`j ∈ D` is needed; for `i ≥ 1` the term is `[(j−1)!/i!] · (i! e_i) · p_(j−i)`, small either because
+`i ∈ G` or because `j − i ∈ D`. -/
+theorem valuation_factorial_mul_esymm_le_of_closed {L : Type*} [Field L] [NumberField L]
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers L))
+    {x : Multiset L} (hx : ∀ u ∈ x, v.valuation L u = 1)
+    {ε : WithZero (Multiplicative ℤ)} {D G : Set ℕ}
+    (hD : ∀ j ∈ D, 0 < j → j ≤ x.card → v.valuation L (x.psum j) ≤ ε)
+    (hG : ∀ j ∈ G, j ∈ D ∧ ∀ i, 1 ≤ i → i < j → (i ∈ G ∨ (j - i) ∈ D)) :
+    ∀ j ∈ G, 0 < j → j ≤ x.card → v.valuation L ((j.factorial : L) * x.esymm j) ≤ ε := by
+  classical
+  intro j
+  induction j using Nat.strong_induction_on with
+  | _ j ih =>
+    intro hjG hj hjk
+    obtain ⟨hjD, hisplit⟩ := hG j hjG
+    obtain ⟨m, hm⟩ : ∃ m, j = m + 1 := ⟨j - 1, by omega⟩
+    subst hm
+    set F : Finset (ℕ × ℕ) := {a ∈ Finset.antidiagonal (m + 1) | a.1 < m + 1} with hF
+    have hN := multiset_mul_esymm_eq_sum x (m + 1)
+    have hfac : (((m + 1).factorial : ℕ) : L) = (m.factorial : L) * (((m + 1 : ℕ)) : L) := by
+      rw [Nat.factorial_succ]; push_cast; ring
+    have hkey : (((m + 1).factorial : ℕ) : L) * x.esymm (m + 1)
+        = (-1 : L) ^ (m + 1 + 1) *
+          ∑ a ∈ F, (m.factorial : L) * ((-1 : L) ^ a.1 * x.esymm a.1 * x.psum a.2) := by
+      rw [← Finset.mul_sum, hfac]
+      calc (m.factorial : L) * (((m + 1 : ℕ)) : L) * x.esymm (m + 1)
+          = (m.factorial : L) * ((((m + 1 : ℕ)) : L) * x.esymm (m + 1)) := by ring
+        _ = (m.factorial : L) * ((-1 : L) ^ (m + 1 + 1) *
+              ∑ a ∈ F, (-1 : L) ^ a.1 * x.esymm a.1 * x.psum a.2) := by rw [hN]
+        _ = _ := by ring
+    rw [hkey, Valuation.map_mul, map_pow, Valuation.map_neg, map_one, one_pow, one_mul]
+    refine valuation_finset_sum_le v _ _ ?_
+    intro a ha
+    rw [hF, Finset.mem_filter, Finset.mem_antidiagonal] at ha
+    obtain ⟨ha1, ha2⟩ := ha
+    have ha2pos : 0 < a.2 := by omega
+    have ha2le : a.2 ≤ x.card := by omega
+    rcases Nat.eq_zero_or_pos a.1 with h0 | hpos
+    · -- `i = 0`: the term is `m! · p_j`, small because `j ∈ D`
+      have hre : (m.factorial : L) * ((-1 : L) ^ a.1 * x.esymm a.1 * x.psum a.2)
+          = (m.factorial : L) * x.psum a.2 := by
+        rw [h0]; simp [Multiset.esymm]
+      have ha2j : a.2 = m + 1 := by omega
+      rw [hre, Valuation.map_mul]
+      calc v.valuation L ((m.factorial : L)) * v.valuation L (x.psum a.2)
+          ≤ 1 * v.valuation L (x.psum a.2) := mul_le_mul_right' (valuation_natCast_le_one v _) _
+        _ = v.valuation L (x.psum a.2) := one_mul _
+        _ ≤ ε := by rw [ha2j]; exact hD _ hjD (by omega) hjk
+    · rcases hisplit a.1 hpos ha2 with hiG | hiD
+      · -- `i ∈ G`: peel off `i! · e_i`, which the induction hypothesis bounds
+        obtain ⟨C, hC⟩ : (a.1.factorial) ∣ m.factorial :=
+          Nat.factorial_dvd_factorial (by omega)
+        have hre : (m.factorial : L) * ((-1 : L) ^ a.1 * x.esymm a.1 * x.psum a.2)
+            = ((C : L) * (-1 : L) ^ a.1 * x.psum a.2)
+              * ((a.1.factorial : L) * x.esymm a.1) := by
+          have : ((m.factorial : ℕ) : L) = (a.1.factorial : L) * (C : L) := by
+            rw [hC]; push_cast; ring
+          rw [this]; ring
+        rw [hre, Valuation.map_mul]
+        have hleft : v.valuation L ((C : L) * (-1 : L) ^ a.1 * x.psum a.2) ≤ 1 := by
+          rw [Valuation.map_mul, Valuation.map_mul, map_pow, Valuation.map_neg, map_one,
+            one_pow, mul_one]
+          calc v.valuation L ((C : L)) * v.valuation L (x.psum a.2)
+              ≤ 1 * v.valuation L (x.psum a.2) :=
+                mul_le_mul_right' (valuation_natCast_le_one v _) _
+            _ = v.valuation L (x.psum a.2) := one_mul _
+            _ ≤ 1 := valuation_psum_le_one v hx _
+        calc v.valuation L ((C : L) * (-1 : L) ^ a.1 * x.psum a.2)
+              * v.valuation L ((a.1.factorial : L) * x.esymm a.1)
+            ≤ 1 * v.valuation L ((a.1.factorial : L) * x.esymm a.1) :=
+              mul_le_mul_right' hleft _
+          _ = v.valuation L ((a.1.factorial : L) * x.esymm a.1) := one_mul _
+          _ ≤ ε := ih a.1 (by omega) hiG hpos (by omega)
+      · -- `j − i ∈ D`: the power sum itself is small
+        have ha2eq : a.2 = m + 1 - a.1 := by omega
+        have hre : (m.factorial : L) * ((-1 : L) ^ a.1 * x.esymm a.1 * x.psum a.2)
+            = ((m.factorial : L) * (-1 : L) ^ a.1 * x.esymm a.1) * x.psum a.2 := by ring
+        rw [hre, Valuation.map_mul]
+        have hleft : v.valuation L ((m.factorial : L) * (-1 : L) ^ a.1 * x.esymm a.1) ≤ 1 := by
+          rw [Valuation.map_mul, Valuation.map_mul, map_pow, Valuation.map_neg, map_one,
+            one_pow, mul_one]
+          calc v.valuation L ((m.factorial : L)) * v.valuation L (x.esymm a.1)
+              ≤ 1 * v.valuation L (x.esymm a.1) :=
+                mul_le_mul_right' (valuation_natCast_le_one v _) _
+            _ = v.valuation L (x.esymm a.1) := one_mul _
+            _ ≤ 1 := valuation_esymm_le_one v hx _
+        calc v.valuation L ((m.factorial : L) * (-1 : L) ^ a.1 * x.esymm a.1)
+              * v.valuation L (x.psum a.2)
+            ≤ 1 * v.valuation L (x.psum a.2) := mul_le_mul_right' hleft _
+          _ = v.valuation L (x.psum a.2) := one_mul _
+          _ ≤ ε := hD _ (by rw [ha2eq]; exact hiD) ha2pos ha2le
+
+/-- **The tie case at tie size 4, from DOUBLING closure alone.**  `k = 4` closes even though
+`p_3` is unavailable: in Newton's identity at `j = 4` the unknown `p_3` is multiplied by `e_1`,
+which is itself `p_1` and hence small.  (`k = 3` genuinely does *not* close — `u_i = ζ₃^i c` has
+`Σ u_i^(2^n) = 0` for every `n` — and neither does `k = 8`: there `p_3` multiplies `e_5` and `p_5`
+multiplies `e_3`, and neither `e_3` nor `e_5` is controlled by `p_1, p_2, p_4`.  So "tie size a
+power of 2" is *not* enough; see `PENDING_WORK.md`.) -/
+theorem valuation_sum_unit_pow_card_four {L : Type*} [Field L] [NumberField L]
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers L))
+    {U : Multiset L} (hU : ∀ u ∈ U, v.valuation L u = 1) (hcard : U.card = 4)
+    {S : Set ℕ} (hS : S.Infinite) (hdbl : ∀ N ∈ S, 2 * N ∈ S)
+    {B r : WithZero (Multiplicative ℤ)} (hB : B ≠ 0) (hr : r < 1)
+    (hsum : ∀ N ∈ S, v.valuation L ((U.map (· ^ N)).sum) ≤ B * r ^ N) : False := by
+  classical
+  set c : WithZero (Multiplicative ℤ) := v.valuation L (((4 : ℕ).factorial : L)) with hc
+  have hc0 : c ≠ 0 := by
+    rw [hc]
+    simp only [ne_eq, Valuation.zero_iff, Nat.cast_eq_zero]
+    exact Nat.factorial_ne_zero _
+  obtain ⟨n, hn⟩ := exists_mul_pow_lt (B := B) (r := r) (c := c) hr hc0 hB
+  obtain ⟨N, hNS, hNn⟩ := hS.exists_gt n
+  have hNge : n ≤ N := hNn.le
+  set x : Multiset L := U.map (· ^ N) with hx
+  have hxcard : x.card = 4 := by rw [hx, Multiset.card_map, hcard]
+  have hxu : ∀ u ∈ x, v.valuation L u = 1 := by
+    intro u hu'
+    obtain ⟨w, hw, rfl⟩ := Multiset.mem_map.1 hu'
+    rw [map_pow, hU w hw, one_pow]
+  have hmem : ∀ j : ℕ, j = 1 ∨ j = 2 ∨ j = 4 → j * N ∈ S := by
+    rintro j (rfl | rfl | rfl)
+    · simpa using hNS
+    · exact hdbl N hNS
+    · have := hdbl _ (hdbl N hNS)
+      simpa [show 2 * (2 * N) = 4 * N by ring] using this
+  have hD : ∀ j ∈ ({1, 2, 4} : Set ℕ), 0 < j → j ≤ x.card →
+      v.valuation L (x.psum j) ≤ B * r ^ n := by
+    intro j hj hjpos _
+    have hjmem : j = 1 ∨ j = 2 ∨ j = 4 := by simpa using hj
+    have hrw : x.psum j = (U.map (· ^ (j * N))).sum := by
+      rw [Multiset.psum_def, hx, Multiset.map_map]
+      congr 1
+      refine Multiset.map_congr rfl ?_
+      intro w _
+      simp only [Function.comp_apply, ← pow_mul]
+      rw [Nat.mul_comm]
+    rw [hrw]
+    refine le_trans (hsum _ (hmem j hjmem)) (mul_le_mul_left' ?_ B)
+    refine pow_le_pow_of_le_one (by simp) hr.le ?_
+    calc n ≤ N := hNge
+      _ = 1 * N := (one_mul N).symm
+      _ ≤ j * N := Nat.mul_le_mul_right N hjpos
+  have hG : ∀ j ∈ ({1, 2, 4} : Set ℕ), j ∈ ({1, 2, 4} : Set ℕ) ∧
+      ∀ i, 1 ≤ i → i < j → (i ∈ ({1, 2, 4} : Set ℕ) ∨ (j - i) ∈ ({1, 2, 4} : Set ℕ)) := by
+    intro j hj
+    refine ⟨hj, ?_⟩
+    have hjmem : j = 1 ∨ j = 2 ∨ j = 4 := by simpa using hj
+    intro i hi1 hij
+    rcases hjmem with rfl | rfl | rfl
+    · omega
+    · have : i = 1 := by omega
+      subst this; left; simp
+    · interval_cases i
+      · left; simp
+      · left; simp
+      · right; simp
+  have hmain := valuation_factorial_mul_esymm_le_of_closed v hxu hD hG 4 (by simp)
+    (by omega) (by omega)
+  rw [show (4 : ℕ) = x.card from hxcard.symm, multiset_esymm_card, Valuation.map_mul,
+    valuation_multiset_prod_eq_one v hxu, mul_one, hxcard, ← hc] at hmain
+  exact absurd hmain (not_le.2 hn)
+
+/-- **A tie whose ratios are roots of unity of order dividing the tower step closes at once.**
+If every `u ∈ U` has the same `M`-th power and the exponent set consists of multiples of `M`, then
+`Σ_i u_i^N = |U| · w^(N/M)` has the *fixed* nonzero valuation `v(|U|)`, so it cannot decay.
+
+This is the second half of the "tie ratios are `2`-power roots of unity" attack: with `M = 2^t`
+and `S ⊆ {2^n : n ≥ t}` the hypothesis `hw` says exactly that all the ratios `u_i/u_1` are
+`2^t`-th roots of unity. -/
+theorem valuation_sum_unit_pow_of_common_pow {L : Type*} [Field L] [NumberField L]
+    (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers L))
+    {U : Multiset L} (hU : ∀ u ∈ U, v.valuation L u = 1) (hcard : 1 ≤ U.card)
+    {M : ℕ} {w : L} (hw : ∀ u ∈ U, u ^ M = w)
+    {S : Set ℕ} (hS : S.Infinite) (hSM : ∀ N ∈ S, M ∣ N)
+    {B r : WithZero (Multiplicative ℤ)} (hB : B ≠ 0) (hr : r < 1)
+    (hsum : ∀ N ∈ S, v.valuation L ((U.map (· ^ N)).sum) ≤ B * r ^ N) : False := by
+  classical
+  obtain ⟨u₀, hu₀⟩ : ∃ u₀, u₀ ∈ U := Multiset.card_pos_iff_exists_mem.1 (by omega)
+  have hwv : v.valuation L w = 1 := by
+    rw [← hw u₀ hu₀, map_pow, hU u₀ hu₀, one_pow]
+  set c : WithZero (Multiplicative ℤ) := v.valuation L ((U.card : L)) with hc
+  have hc0 : c ≠ 0 := by
+    rw [hc]
+    simp only [ne_eq, Valuation.zero_iff, Nat.cast_eq_zero]
+    omega
+  obtain ⟨n, hn⟩ := exists_mul_pow_lt (B := B) (r := r) (c := c) hr hc0 hB
+  obtain ⟨N, hNS, hNn⟩ := hS.exists_gt n
+  obtain ⟨e, he⟩ := hSM N hNS
+  have hconst : U.map (· ^ N) = Multiset.replicate U.card (w ^ e) := by
+    rw [← Multiset.map_const']
+    refine Multiset.map_congr rfl ?_
+    intro u hu
+    show u ^ N = w ^ e
+    rw [he, pow_mul, hw u hu]
+  have hval : v.valuation L ((U.map (· ^ N)).sum) = c := by
+    rw [hconst, Multiset.sum_replicate, nsmul_eq_mul, Valuation.map_mul, map_pow, hwv, one_pow,
+      mul_one, hc]
+  have hle := hsum N hNS
+  rw [hval] at hle
+  have hmono : B * r ^ N ≤ B * r ^ n :=
+    mul_le_mul_left' (pow_le_pow_of_le_one (by simp) hr.le hNn.le) B
+  exact absurd (le_trans hle hmono) (not_le.2 hn)
+
 /-- **Corvaja–Zannier (2004), main theorem, p. 177** (`δ = 1`, `u = α^(s n)`, `Γ = {α^t}`) —
 Dubickas (2022), Lemma 3.  If `q α^(s n)` is pseudo-Pisot for only finitely many `n`, then
 `‖q α^(s n)‖` is eventually larger than `e^(−ε s n)`.
