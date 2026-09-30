@@ -18,11 +18,13 @@ K. Saito, *Intervals without primes near an iterated linear recurrence sequence*
 - **Prime-free intervals** (Dubickas's (D1) from your §1, for the non-reversible tower `c^n`): for every `H`, `[F(c^n) − H, F(c^n) + H]` contains no prime for infinitely many `n` ([`CoveringInstances`](src/LeanFormalizations/NumberTheory/Mills/CoveringInstances.lean)).
 - **Order 3:** Tribonacci `T(3^n) + h` is composite i.o. for every `h` ([`TheoremA`](src/LeanFormalizations/NumberTheory/Mills/TheoremA.lean)).
 
-## Problem 1.7: partial
+## Problem 1.7: answered outside one residue class
 
 > Find a non-reversible ILRS `R(n)` such that for every Pisot number `α`, especially of degree 3, `⌊α^(R(n))⌋` is composite for infinitely many `n`.
 
-`R(n) = c^n + s`, with `s` large enough in terms of the degree, works for every Pisot `α` whose minimal polynomial is not `≡ X^d (mod c)` (paper proof).  The **quadratic case is Lean-checked**, for `c ∤ b·disc` and `s ≥ 4`: [`TheoremDQuadratic.floor_pow_prime_pow_add_not_prime`](src/LeanFormalizations/NumberTheory/Mills/TheoremDQuadratic.lean).  The excluded class is out of reach for this method with *any* non-reversible `R`: a quadratic example such as `α = 2 + √2` at `c = 2` makes every value `≡ −1` to growing `c`-adic precision.  Details: [PROOF-THEOREM-D.md](PROOF-THEOREM-D.md).
+`R(n) = c^n + s` works for every Pisot `α` of degree `d` whose minimal polynomial `f` has `c ∤ f(0)`, as soon as `α^s > d + 1`.  This is **Lean-checked**: [`TheoremDGeneral.floor_pow_prime_pow_add_not_prime_general`](src/LeanFormalizations/NumberTheory/Mills/TheoremDGeneral.lean).
+- **Degree 3:** since `κ^5 > 4` for the smallest Pisot number `κ`, `R(n) = c^n + 5` works for **every cubic Pisot `α` with `c ∤ N(α)`**.  For example, `⌊ρ^(c^n + 5)⌋` is composite i.o. for the plastic number `ρ` and every prime `c` (Lean).
+- The paper proof extends this to `f ≢ X^d (mod c)`, where some but not all roots are `c`-units: [PROOF-THEOREM-D.md](PROOF-THEOREM-D.md).  The remaining class `f ≡ X^d (mod c)` is out of reach for this method with *any* non-reversible `R`: `α = 2 + √2` at `c = 2` makes every value `≡ −1` to growing `c`-adic precision.
 
 ## Problem 1.1: not solved
 
