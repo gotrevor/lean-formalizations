@@ -269,6 +269,39 @@ theorem lucasV_stuck_period (a b : ℤ) {p : ℕ} (hp : p.Prime) (hpb : ¬ (p : 
   rw [hNN, ← hsplit]
   exact Nat.mul_dvd_mul (pow_dvd_pow c hA) hoY
 
+/-! ### Step 1c (Lemma 3): good indices are unbounded
+
+Purely combinatorial.  `Stuck n` is any predicate such that a stuck `n` forces the offset `ε` to
+*alternate* along an arithmetic progression starting at `n`; `TheoremDGround.not_stuck_twice`
+then says two consecutive stuck indices `n`, `n + j n` are impossible, so non-stuck ("good")
+indices occur arbitrarily late. -/
+theorem good_unbounded {ε : ℕ → Bool} {Stuck : ℕ → Prop} {n₀ : ℕ}
+    (halt : ∀ n, n₀ ≤ n → Stuck n → ∃ j, 1 ≤ j ∧ ∀ k, 1 ≤ k → ε (n + k * j) ≠ ε n) :
+    ∀ m, ∃ n, n₀ ≤ n ∧ m ≤ n ∧ ¬ Stuck n := by
+  classical
+  intro m
+  by_contra hcon
+  push_neg at hcon
+  set N := max n₀ m with hN
+  have hstuck : ∀ x, N ≤ x → Stuck x := fun x hx =>
+    hcon x (le_trans (le_max_left _ _) hx) (le_trans (le_max_right _ _) hx)
+  -- a global choice of periods
+  set j : ℕ → ℕ := fun x =>
+    if h : ∃ i, 1 ≤ i ∧ ∀ k, 1 ≤ k → ε (x + k * i) ≠ ε x then h.choose else 1 with hjdef
+  have hj1 : ∀ x, 1 ≤ j x := by
+    intro x
+    by_cases h : ∃ i, 1 ≤ i ∧ ∀ k, 1 ≤ k → ε (x + k * i) ≠ ε x
+    · simp only [hjdef, dif_pos h]; exact h.choose_spec.1
+    · simp only [hjdef, dif_neg h]
+      exact le_rfl
+  have hjspec : ∀ x, N ≤ x → ∀ k, 1 ≤ k → ε (x + k * j x) ≠ ε x := by
+    intro x hx
+    have h := halt x (le_trans (le_max_left _ _) hx) (hstuck x hx)
+    simp only [hjdef, dif_pos h]
+    exact h.choose_spec.2
+  refine TheoremDGround.not_stuck_twice ε j hj1 N (hjspec N le_rfl) ?_
+  exact hjspec (N + j N) (by omega)
+
 /-! ### Step 5 (size): the archimedean obstruction
 
 These two lemmas are the endgame of the proof and are **fully proved**: once the number-theoretic
