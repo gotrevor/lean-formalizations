@@ -115,6 +115,122 @@ theorem pow_card_pow_dim_congr (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : 
 
 end Period
 
+
+section Integral
+
+open Matrix Polynomial
+
+variable {d : ℕ} {c : ℕ}
+
+/-- Chained Dold: the charpoly coefficients along the Frobenius tower are constant mod `c ^ (n+1)`
+from step `n` on. -/
+theorem charpoly_coeff_tower_congr (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : c.Prime)
+    (n k j : ℕ) :
+    (c : ℤ) ^ (n + 1) ∣ (A ^ (c ^ (n + k))).charpoly.coeff j - (A ^ (c ^ n)).charpoly.coeff j := by
+  induction k with
+  | zero => simp
+  | succ m ih =>
+    have h := ExteriorDold.charpoly_coeff_prime_pow_congr A hc (n + m) j
+    have h' : (c : ℤ) ^ (n + 1) ∣
+        (A ^ (c ^ (n + m + 1))).charpoly.coeff j - (A ^ (c ^ (n + m))).charpoly.coeff j :=
+      dvd_trans (pow_dvd_pow _ (by omega)) h
+    have := dvd_add h' ih
+    simpa [show n + (m + 1) = n + m + 1 by omega] using this
+
+/-- Mod `c` the whole Frobenius tower has the same characteristic polynomial. -/
+theorem charpolyBar_tower (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : c.Prime) (k : ℕ) :
+    (A ^ (c ^ k)).charpoly.map (Int.castRingHom (ZMod c)) =
+      A.charpoly.map (Int.castRingHom (ZMod c)) := by
+  ext j
+  simp only [Polynomial.coeff_map, eq_intCast]
+  have h := charpoly_coeff_tower_congr A hc 0 k j
+  simp only [pow_zero, pow_one, Nat.zero_add] at h
+  have : (((A ^ (c ^ k)).charpoly.coeff j - A.charpoly.coeff j : ℤ) : ZMod c) = 0 :=
+    (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).2 (by simpa using h)
+  rw [Int.cast_sub, sub_eq_zero] at this
+  exact this
+
+/-- With `χ̄_B` irreducible, no nonzero polynomial of degree `< d` over `ZMod c` annihilates `B̄`:
+`χ̄_B` is the minimal polynomial of `B̄`. -/
+theorem eq_zero_of_aeval_mapMatrix_eq_zero (B : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : c.Prime)
+    (hirr : Irreducible (B.charpoly.map (Int.castRingHom (ZMod c))))
+    {r : (ZMod c)[X]} (hdeg : r.natDegree < d)
+    (hr : Polynomial.aeval ((Int.castRingHom (ZMod c)).mapMatrix B) r = 0) : r = 0 := by
+  haveI : Fact c.Prime := ⟨hc⟩
+  by_contra hne
+  set Bbar := (Int.castRingHom (ZMod c)).mapMatrix B with hBbar
+  set f := B.charpoly.map (Int.castRingHom (ZMod c)) with hf
+  have hfB : Polynomial.aeval Bbar f = 0 := by
+    have : Bbar.charpoly = f := by rw [hBbar, hf, RingHom.mapMatrix_apply, Matrix.charpoly_map]
+    rw [← this]; exact Matrix.aeval_self_charpoly Bbar
+  have hnd : f.natDegree = d := charpolyBar_natDegree B c
+  have hnotdvd : ¬ f ∣ r := fun hdvd => by
+    have := Polynomial.natDegree_le_of_dvd hdvd hne
+    omega
+  have hcop : IsCoprime f r := (dvd_or_isCoprime f r hirr).resolve_left hnotdvd
+  obtain ⟨u, v, huv⟩ := hcop
+  have key := congrArg (Polynomial.aeval Bbar) huv
+  haveI : Nonempty (Fin d) := ⟨⟨0, by omega⟩⟩
+  simp only [map_add, map_mul, hfB, hr, mul_zero, add_zero, map_one, zero_add] at key
+  exact zero_ne_one key
+
+/-- **Integral injectivity:** if `χ̄_B` is irreducible mod `c` and a polynomial `r ∈ ℤ[X]` of degree
+`< d` has `r(B) ≡ 0 (mod c ^ m)` entrywise, then all coefficients of `r` are divisible by `c ^ m`. -/
+theorem coeff_dvd_of_aeval_dvd (B : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : c.Prime)
+    (hirr : Irreducible (B.charpoly.map (Int.castRingHom (ZMod c)))) :
+    ∀ (m : ℕ) (r : Polynomial ℤ), r.natDegree < d →
+      (∀ i j, (c : ℤ) ^ m ∣ (Polynomial.aeval B r) i j) → ∀ i, (c : ℤ) ^ m ∣ r.coeff i := by
+  haveI : Fact c.Prime := ⟨hc⟩
+  intro m
+  induction m with
+  | zero => intro r _ _ i; simp
+  | succ m ih =>
+    intro r hdeg hdvd
+    -- step 1: every coefficient of `r` is divisible by `c`
+    have h1 : ∀ i, (c : ℤ) ∣ r.coeff i := by
+      have hmap : Polynomial.aeval ((Int.castRingHom (ZMod c)).mapMatrix B)
+          (r.map (Int.castRingHom (ZMod c))) = 0 := by
+        ext i j
+        have h0 : ((((Polynomial.aeval B r) i j : ℤ)) : ZMod c) = 0 := by
+          refine (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).2 ?_
+          exact dvd_trans (dvd_pow_self _ (Nat.succ_ne_zero m)) (hdvd i j)
+        have hcomm : (Int.castRingHom (ZMod c)).mapMatrix (Polynomial.aeval B r)
+            = Polynomial.aeval ((Int.castRingHom (ZMod c)).mapMatrix B)
+              (r.map (Int.castRingHom (ZMod c))) := by
+          rw [Polynomial.aeval_def, Polynomial.aeval_def, Polynomial.eval₂_map,
+            Polynomial.hom_eval₂]
+          congr 1
+          exact RingHom.ext_int _ _
+        rw [← hcomm]
+        simpa [RingHom.mapMatrix_apply, Matrix.map_apply] using h0
+      have hz : r.map (Int.castRingHom (ZMod c)) = 0 := by
+        refine eq_zero_of_aeval_mapMatrix_eq_zero B hc hirr ?_ hmap
+        exact lt_of_le_of_lt (Polynomial.natDegree_map_le) hdeg
+      intro i
+      have := congrArg (fun p => Polynomial.coeff p i) hz
+      simp only [Polynomial.coeff_map, Polynomial.coeff_zero, eq_intCast] at this
+      exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 this
+    obtain ⟨r₁, hr₁⟩ := (Polynomial.C_dvd_iff_dvd_coeff (c : ℤ) r).2 h1
+    have hcne : (c : ℤ) ≠ 0 := by exact_mod_cast hc.ne_zero
+    have hdeg₁ : r₁.natDegree < d := by
+      have : r.natDegree = r₁.natDegree := by rw [hr₁, Polynomial.natDegree_C_mul hcne]
+      omega
+    have hdvd₁ : ∀ i j, (c : ℤ) ^ m ∣ (Polynomial.aeval B r₁) i j := by
+      intro i j
+      have hev : Polynomial.aeval B r = (c : ℤ) • Polynomial.aeval B r₁ := by
+        rw [hr₁, map_mul, Polynomial.aeval_C, Algebra.smul_def]
+      have := hdvd i j
+      rw [hev] at this
+      simp only [Matrix.smul_apply, smul_eq_mul, pow_succ'] at this
+      exact (mul_dvd_mul_iff_left hcne).1 this
+    intro i
+    have := ih r₁ hdeg₁ hdvd₁ i
+    rw [hr₁]
+    simp only [Polynomial.coeff_C_mul, pow_succ']
+    exact mul_dvd_mul_left _ this
+
+end Integral
+
 /-- **Period:** with `χ_A` irreducible mod `c`, `A^(c^(n+d)) ≡ A^(c^n) (mod c^(n+1))`. -/
 theorem pow_prime_pow_add_card_congr {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ}
     (hc : c.Prime) (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c)))) (n : ℕ)
