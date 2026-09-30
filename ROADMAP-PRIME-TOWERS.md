@@ -30,7 +30,7 @@ For `C ∈ M_2(ℤ)`, an odd prime `c` with `det C ≡ ε = ±1 (mod c)`, and `c
 - Generalizes phase 35 (`Q = −1` exactly).  About 1 phase.
 - **Consequence for the conjecture graph:** `DoubleExpTraceComposite` is folklore for `n = 1`.  Theorem B proves it for `n = 2`, every odd `c` with `det ≡ ±1`, except the `Φ₃`/`Φ₆` classes, which are provably survivors.  For `n = 3, c = 3` the residual classes are Mills.  That is a clean staircase for the paper.
 
-### Theorem C: prime-free intervals for the non-reversible tower `c^n`  ✅ numerics, ✅ Lean for `c = 2` (phase 40, 2026-09-30)
+### Theorem C: prime-free intervals for the non-reversible tower `c^n`  ✅ numerics, ✅ Lean for EVERY prime `c ≠ 5` (phases 40–41, 2026-09-30)
 This is Saito's actual wish in arXiv:2504.14968: *"We desire to remove the reversibility."*
 
 **Statement (Fibonacci first).**  For every prime `c ≠ 5` and every `H`, there are `m`, `L` and primes `p_h` (`|h| ≤ H`) with `p_h ∣ F(c^(Lk+m)) + h` for all `k ≥ 0`.  Hence `[F(c^n) − H, F(c^n) + H]` contains no prime for all large `n ≡ m (mod L)`.  At `c = 5` the shifts `h = ±1` are always composite, via `F(4k+1) ± 1` factorizations.
@@ -60,8 +60,25 @@ This is Saito's actual wish in arXiv:2504.14968: *"We desire to remove the rever
     an lcm — `Finset.dvd_prod_of_mem` and `Finset.one_le_prod'` are cheaper than
     `Finset.lcm_eq_zero_iff`).  Step 5 compares the values at `k = K` and `k = K+1`: a prime
     `p_h` dividing both, with `0 < A_K < A_(K+1)`, forces `p_h = A_(K+1) ≤ A_K`.
-- Next: phase 41, Fibonacci at every prime `c` (`Φ_j` with `2j+1 = c²`; `c = 5` via the
-  `F(4k+1) ± 1` factorizations).
+- **Phase 41 DONE the same day** (`NumberTheory/Mills/FibonacciCoveringAllPrimes.lean`,
+  sorry-free, axiom-clean): `fib_prime_pow_covering` and `fib_prime_pow_prime_free` for every odd
+  prime `c ≠ 5`.  Two corrections to this section's plan:
+  - The `Φ_j` certificate as described here is **two-index**, and naive two-index comparison only
+    shows the bad set is exponentially sparse (`|Φ_J(x)| ≍ φ^(c^d)` forces the threshold on `n` to
+    grow like `c^d`).  It does not give `∀ᶠ n`, and does not give one index good for all `|h| ≤ H`.
+  - What repairs it is a **`c`-adic convergence** theorem, `exists_shift_pow_congr`: for any
+    integer matrix `A` with `c ∤ det A` there are `d ≥ 1` and `s ≤ v_c|GLₙ(𝔽_c)|` with
+    `c^(n−s+1) ∣ (A^(c^(n+d)))ᵢⱼ − (A^(c^n))ᵢⱼ` for `n ≥ s`.  Contrary to expectation this needs
+    **no Teichmüller/Witt lifting and no binomial coefficients**: `A^T ≡ 1 (mod c)` for
+    `T = |GLₙ(𝔽_c)|`; then `Z^c − 1 = (∑_{i<c} Z^i)(Z − 1)` with `∑_{i<c} Z^i ≡ c·1 ≡ 0 (mod c)`,
+    so the geometric sum itself supplies the extra power of `c`; then `e ∣ c^d − 1` with
+    `d = φ(e)`, `e` the `c`-free part of `T`.  A general shift `d` in place of the guessed `d = 2`
+    is what makes this elementary, and it costs nothing (`c^d` is still odd, so `fib_odd_mul`
+    applies with `2J + 1 = c^d`, and `d` depends only on `c`).
+  - The odd-`c` `GL₂` bound (`pow_dvd_sub_or_add_of_lt_padicValNat_odd`) is *easier* than `c = 2`:
+    an odd `c` divides at most one of `p ∓ 1`, so one of the two valuations is `0`.
+- Remaining: **`c = 5`** only, via the `F(4k+1) ± 1` factorizations (`5 ∣ disc`, so the
+  `Φ_J ≡ ε x^c (mod c)` Frobenius congruence degenerates: `Φ_2 = 25x⁵ − 25x³ + 5x ≡ 0 (mod 5)`).
 
 ### Theorem C′: non-integrality of limit points for `d ≥ 3` (paper math, written 2026-09-30 01:30)
 The obstacle for Theorem C at `d ≥ 3` is that no exact composition is available.  Galois theory replaces it.
