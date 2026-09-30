@@ -1100,6 +1100,42 @@ theorem stuck_alternation_general (f : ℤ[X]) {α : ℝ} (hα : 1 < α) {c : �
   rw [← hfl n, ← hfl (n + k * j), heqPQ] at hlt
   exact lt_irrefl _ hlt
 
+
+/-! ### Step 1f: pigeonhole over a finite type -/
+
+/-- If arbitrarily late `n` carry *some* value of a finite type, one value carries arbitrarily
+late `n`. -/
+theorem exists_val_frequently {T : Type*} [Fintype T] {Q : ℕ → T → Prop}
+    (h : ∀ m : ℕ, ∃ n, m ≤ n ∧ ∃ t, Q n t) : ∃ t, ∀ m : ℕ, ∃ n, m ≤ n ∧ Q n t := by
+  classical
+  by_contra hcon
+  push_neg at hcon
+  choose bd hbd using hcon
+  obtain ⟨n, hn, t, hQ⟩ := h (Finset.univ.sup bd)
+  exact hbd t n (le_trans (Finset.le_sup (Finset.mem_univ t)) hn) hQ
+
+/-- Reading the real root of `f` as a root of `f` over `ℂ`. -/
+theorem eval_map_complex_of_aeval {f : ℤ[X]} {α : ℝ} (hroot : aeval α f = 0) :
+    (f.map (Int.castRingHom ℂ)).eval ((α : ℝ) : ℂ) = 0 := by
+  have h1 : Polynomial.eval₂ (Int.castRingHom ℝ) α f = 0 := by
+    simpa [Polynomial.aeval_def] using hroot
+  have h2 := Polynomial.hom_eval₂ f (Int.castRingHom ℝ) Complex.ofRealHom α
+  rw [h1, map_zero] at h2
+  have hcomp : (Complex.ofRealHom).comp (Int.castRingHom ℝ) = Int.castRingHom ℂ :=
+    RingHom.ext fun n => by simp
+  rw [Polynomial.eval_map, ← hcomp]
+  exact h2.symm
+
+/-- `det C ≠ 0` when `f(0) ≠ 0`. -/
+theorem compM_det_ne_zero_int (f : ℤ[X]) (hd : 1 ≤ f.natDegree) (h0 : f.coeff 0 ≠ 0) :
+    (compM ℤ f).det ≠ 0 := by
+  intro h
+  refine compM_det_ne_zero (K := ℚ) f hd (by simpa using h0) ?_
+  have hmap : (compM ℤ f).map (Int.castRingHom ℚ) = compM ℚ f := compM_map _ f
+  have := RingHom.map_det (Int.castRingHom ℚ) (compM ℤ f)
+  rw [RingHom.mapMatrix_apply, hmap] at this
+  rw [← this, h, map_zero]
+
 /-- **Theorem D, every degree** (all roots `c`-units). -/
 theorem floor_pow_prime_pow_add_not_prime_general (f : ℤ[X]) (hmon : f.Monic)
     (hirr : Irreducible f) (hdeg : 2 ≤ f.natDegree) {α : ℝ} (hroot : aeval α f = 0)
@@ -1108,7 +1144,117 @@ theorem floor_pow_prime_pow_add_not_prime_general (f : ℤ[X]) (hmon : f.Monic)
     {c : ℕ} (hc : c.Prime) (hc0 : ¬ (c : ℤ) ∣ f.coeff 0)
     {s : ℕ} (hs : (f.natDegree : ℝ) + 1 < α ^ s) :
     ∃ᶠ n in atTop, ¬ (⌊α ^ (c ^ n + s)⌋₊).Prime := by
-  sorry
+  classical
+  by_contra hcon
+  rw [Filter.not_frequently] at hcon
+  obtain ⟨n₁, hn₁⟩ := Filter.eventually_atTop.1 hcon
+  set d := f.natDegree with hdd
+  have hd : 1 ≤ d := by omega
+  have hα0 : (0 : ℝ) ≤ α := by linarith
+  have hfl : ∀ m : ℕ, ((⌊α ^ (c ^ m + s)⌋₊ : ℕ) : ℤ) = ⌊α ^ (c ^ m + s)⌋ := fun m =>
+    Int.natCast_floor_eq_floor (by positivity)
+  have hcoeff0 : f.coeff 0 ≠ 0 := by
+    intro h; rw [h] at hc0; exact hc0 (dvd_zero _)
+  have hdet0 : (compM ℤ f).det ≠ 0 := compM_det_ne_zero_int f hd hcoeff0
+  -- the root enumeration, with `α` distinguished
+  have hrootC := eval_map_complex_of_aeval hroot
+  obtain ⟨e, hinj, he, hsurj⟩ := exists_root_enum f hmon hirr
+  obtain ⟨i₀, hi₀⟩ := hsurj _ hrootC
+  have hfC0 : (f.map (Int.castRingHom ℂ)) ≠ 0 := (hmon.map (Int.castRingHom ℂ)).ne_zero
+  have hsmall : ∀ k, k ≠ i₀ → ‖e k‖ < 1 := by
+    intro k hk
+    refine hpisot (e k) ((Polynomial.mem_roots hfC0).2 (he k)) ?_
+    rw [← hi₀]
+    exact fun hh => hk (hinj hh)
+  -- thresholds
+  obtain ⟨N₁, hN₁⟩ := Filter.eventually_atTop.1
+    (eventually_floor_eq_traceSeq f hmon e he hinj hi₀ hsmall)
+  obtain ⟨N₂, hN₂⟩ := exists_floor_strictMono hα
+  obtain ⟨N₃, hN₃⟩ := exists_floor_gt hα hc.two_le s (|(compM ℤ f).det| + (c : ℤ) + 1)
+  have hcm : ∀ m : ℕ, m ≤ c ^ m + s := by
+    intro m
+    have h1 : m < 2 ^ m := Nat.lt_two_pow_self
+    have h2 : (2 : ℕ) ^ m ≤ c ^ m := Nat.pow_le_pow_left hc.two_le m
+    omega
+  set n₀ := max (max n₁ N₃) (max N₁ N₂) with hn₀def
+  have hprime : ∀ m, n₀ ≤ m → (⌊α ^ (c ^ m + s)⌋₊).Prime := by
+    intro m hm
+    have := hn₁ m (le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) hm)
+    simpa using this
+  have hbig : ∀ m, n₀ ≤ m → |(compM ℤ f).det| + (c : ℤ) + 1 < ⌊α ^ (c ^ m + s)⌋ := fun m hm =>
+    hN₃ m (le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hm)
+  have hpdet : ∀ m, n₀ ≤ m → ¬ ((⌊α ^ (c ^ m + s)⌋₊ : ℕ) : ℤ) ∣ (compM ℤ f).det := by
+    intro m hm hdvd
+    have h1 := Int.le_of_dvd (abs_pos.2 hdet0) ((dvd_abs _ _).2 hdvd)
+    have h2 := hbig m hm
+    rw [← hfl m] at h2
+    omega
+  have hnec : ∀ m, n₀ ≤ m → (⌊α ^ (c ^ m + s)⌋₊) ≠ c := by
+    intro m hm heq
+    have h2 := hbig m hm
+    rw [← hfl m, heq] at h2
+    have : (0 : ℤ) ≤ |(compM ℤ f).det| := abs_nonneg _
+    omega
+  have hgrow : ∀ m m', n₀ ≤ m → m < m' → ⌊α ^ (c ^ m + s)⌋ < ⌊α ^ (c ^ m' + s)⌋ := by
+    intro m m' hm hmm
+    refine hN₂ _ _ ?_ ?_
+    · exact le_trans (le_trans (le_trans (le_max_right _ _) (le_max_right _ _)) hm) (hcm m)
+    · have : c ^ m < c ^ m' := Nat.pow_lt_pow_right hc.one_lt hmm
+      omega
+  -- the offset
+  set εf : ℕ → Bool := fun m => decide (⌊α ^ (c ^ m + s)⌋ = traceSeq f (c ^ m + s)) with hεfdef
+  set off : Bool → ℤ := fun b => if b then 0 else -1 with hoffdef
+  have hoff : ∀ m, n₀ ≤ m → ⌊α ^ (c ^ m + s)⌋ = traceSeq f (c ^ m + s) + off (εf m) := by
+    intro m hm
+    have hNm : N₁ ≤ c ^ m + s :=
+      le_trans (le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) hm) (hcm m)
+    rcases hN₁ (c ^ m + s) hNm with h | h
+    · have hεt : εf m = true := by rw [hεfdef]; exact decide_eq_true h
+      have hz : off (εf m) = 0 := by rw [hεt, hoffdef]; simp
+      rw [hz]; omega
+    · have hne : ⌊α ^ (c ^ m + s)⌋ ≠ traceSeq f (c ^ m + s) := by omega
+      have hεt : εf m = false := by rw [hεfdef]; exact decide_eq_false hne
+      have hz : off (εf m) = -1 := by rw [hεt, hoffdef]; simp
+      rw [hz]; omega
+  -- good indices are unbounded
+  have hgood := TheoremDQuadratic.good_unbounded (ε := εf)
+    (Stuck := fun n => padicValNat c (glCard d (⌊α ^ (c ^ n + s)⌋₊)) ≤ n) (n₀ := n₀)
+    (fun n hn hstuck =>
+      stuck_alternation_general f hα hc εf off hoff hprime hpdet hgrow hn hstuck)
+  -- the window at each good index, with datum in a fixed finite set
+  have hwin : ∀ m : ℕ, ∃ n, m ≤ n ∧ ∃ t : Fin (d + 1) × Bool,
+      1 ≤ (t.1 : ℕ) ∧ (c : ℤ) ^ (n / d) ∣ ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ) ^ (t.1 : ℕ) - 1
+        ∧ εf n = t.2 ∧ n₀ ≤ n := by
+    intro m
+    obtain ⟨n, hn0, hnm, hns⟩ := hgood m
+    obtain ⟨i, hi1, hid, hidvd⟩ := TheoremDGround.exists_pow_sub_one_of_lt_padicValNat_glCard
+      hc (hprime n hn0) (hnec n hn0) hd (not_le.1 hns)
+    exact ⟨n, hnm, (⟨i, by omega⟩, εf n), by simpa using hi1, by simpa using hidvd, rfl, hn0⟩
+  obtain ⟨t, hfreq⟩ := exists_val_frequently hwin
+  -- the congruence hypothesis, at every level
+  have hcong : ∀ k : ℕ, ∃ n, k ≤ n ∧ ∃ w : ℤ, (c : ℤ) ^ k ∣ w ^ (t.1 : ℕ) - 1 ∧
+      (c : ℤ) ^ k ∣ traceSeq f (c ^ n + s) - (w - off t.2) := by
+    intro k
+    obtain ⟨n, hn, h1, hdvd, hε, hn0⟩ := hfreq (k * d + k)
+    refine ⟨n, by omega, ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ), ?_, ?_⟩
+    · refine dvd_trans (pow_dvd_pow (c : ℤ) ?_) hdvd
+      have : k * d ≤ n := by omega
+      exact Nat.le_div_iff_mul_le (by omega) |>.2 (by omega)
+    · have hh := hoff n hn0
+      rw [hε] at hh
+      have hzero : traceSeq f (c ^ n + s) - (((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ) - off t.2) = 0 := by
+        rw [hfl n]
+        omega
+      rw [hzero]
+      exact dvd_zero _
+  -- the spectral solution, and the size contradiction
+  obtain ⟨x, w, hT, hw, htr⟩ := exists_spectral_solution f hd hc hc0 hcong
+  exact not_exists_spectral_of_large f hmon hirr hdeg hα hrootC hpisot hc hs
+    (by have : 1 ≤ (t.1 : ℕ) := by
+          obtain ⟨n, _, h1, _⟩ := hfreq 0
+          exact h1
+        exact this)
+    (by rw [hoffdef]; rcases t.2 with _ | _ <;> simp) x w hT hw htr
 
 /-- **Degree 3 (Saito's "especially"):** the plastic number, every prime `c`, shift `5`. -/
 theorem plastic_floor_pow_prime_pow_add_not_prime {ρ : ℝ} (hρ : ρ ^ 3 = ρ + 1) (hρ1 : 1 < ρ)
