@@ -2,7 +2,9 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 (phase 58, CURRENT): **`ξ(3^k + s)` transcendental for even `s ≥ 8`, `3 ∤ s`**, conditional only on `Literature.Saito2025TypeBTrace` + new `Literature.Siegel1944SmallestPisot` (no rigidity node): Saito Type B → `g = 1` → `ξ` cubic Pisot → contradiction with phase 57 Theorem D (`ξ^s ≥ κ^8 > 4`) or with 3-divisibility if `f ≡ X³ mod 3` — target `NumberTheory/Mills/ShiftedMillsLarge.lean` (1 frozen statement, route in header; frozen also: all earlier statements, Literature/ incl. the new Siegel def; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 59, CURRENT): **drop `3 ∤ s` from phase 58**: `ξ(3^k + 3^a s′)` transcendental for even `s′ ≥ 8`, `3 ∤ s′`, any `a`, same two Literature hypotheses: `(B5′)` via `D_m = C_m / 3^a`, Saito `g = 3^b`, then phase 58's argument for `β = ξ^g` with shift `3^(a−b) s′` — target `NumberTheory/Mills/ShiftedMillsThreePow.lean` (1 frozen statement, route in header; reuse phase 58 lemmas, generalizing them in the NEW file if needed; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+## ✅ DONE (phase 58): **`ξ(3^k + s)` transcendental for even `s ≥ 8`, `3 ∤ s`**, conditional only on `Literature.Saito2025TypeBTrace` + new `Literature.Siegel1944SmallestPisot` (no rigidity node): Saito Type B → `g = 1` → `ξ` cubic Pisot → contradiction with phase 57 Theorem D (`ξ^s ≥ κ^8 > 4`) or with 3-divisibility if `f ≡ X³ mod 3` — target `NumberTheory/Mills/ShiftedMillsLarge.lean` (1 frozen statement, route in header; frozen also: all earlier statements, Literature/ incl. the new Siegel def; stop: that file sorry-free, then `scripts/fact-graph`)
 
 ## ✅ DONE (phase 57): **Theorem D in full**: some root a `c`-unit (`f ≢ X^d mod c`), via `T^(Q+1) = T`, `tr T^Q = m ≥ 1`, and one automorphism of ℂ — target `NumberTheory/Mills/TheoremDMixed.lean` (1 frozen statement, route in header; frozen also: all earlier statements, Literature/; stop: that file sorry-free)
 

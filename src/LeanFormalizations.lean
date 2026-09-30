@@ -189,6 +189,7 @@ import LeanFormalizations.NumberTheory.Mills.TheoremDQuadratic
 import LeanFormalizations.NumberTheory.Mills.TheoremDGeneral
 import LeanFormalizations.NumberTheory.Mills.TheoremDMixed
 import LeanFormalizations.NumberTheory.Mills.ShiftedMillsLarge
+import LeanFormalizations.NumberTheory.Mills.ShiftedMillsThreePow
 import LeanFormalizations.NumberTheory.Mills.FibonacciCoveringAllPrimes
 import LeanFormalizations.NumberTheory.Mills.LucasCoveringAllPrimes
 import LeanFormalizations.NumberTheory.Transcendence.MultisetGraeffe
