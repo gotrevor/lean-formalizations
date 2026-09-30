@@ -180,3 +180,60 @@ first attempt there is the same odd-index Cayley–Hamilton composition: for odd
 `det(A_N) = (−Q)^N = −Q^N`, so the doubling coefficient `tr(A_N)² − 2det(A_N)` is a polynomial in
 `U(N)` *and* `Q^N`, not in `U(N)` alone.  That extra `Q^N` is the whole difficulty; for `Q = ±1` it
 is a sign and the phase-37 route should transfer verbatim.
+
+---
+
+## Phase 36 (2026-09-30) — `U_(c^n)(P,Q) + h` composite i.o. at every odd inert prime `c`: CLOSED
+
+`src/LeanFormalizations/NumberTheory/Mills/LucasInert.lean` is sorry-free; all three frozen
+statements (`lucasU_frobenius_inert`, `lucasU_prime_pow_succ_add`,
+`lucasU_prime_pow_add_not_prime`) are `#print axioms`-clean.
+
+**Result.**  Let `c` be an odd prime, `P, Q` integers with `P² − 4Q` a non-square mod `c` (i.e. `c`
+inert in `ℚ(√(P²−4Q))`), `c ∤ Q`, and `|U(c^n)| → ∞`.  Then for **every** integer `h`,
+`U_(c^n)(P,Q) + h` fails to be prime for infinitely many `n`.  This subsumes phase 34
+(`P = 1, Q = −1`) and is the odd-`c` companion of phase 33 (`c = 2`).
+
+**The one real obstruction, and how it was removed.**  Phase 34 lifted `A^(c+1) ≡ −I (mod c)` to
+`A^(c^n(c+1)) ≡ −I (mod c^(n+1))` and then *divided by* `A^(c^n)` using an explicit integer inverse
+`fibMinv`, which exists only because `det(fibM) = −1` is a unit.  For general `Q`,
+`det(A) = Q` is **not** a unit, so no integer inverse exists and the phase-34 step has no analogue.
+Replacement: the **adjugate**.  With `N = c^n`,
+
+    A^N · adj(A^N) = det(A^N) • 1 = Q^N • 1,
+
+so multiplying `A^(c^n(c+1)) = Q^(c^n)·I + c^(n+1)·B` on the right by `adj(A^N)` gives
+
+    Q^N • A^(c^(n+1)) = Q^N • adj(A^N) + c^(n+1) • (B · adj(A^N)).
+
+Entry `(1,0)` of `adj` is `−(A^N)_(1,0) = −U(c^n)` (`Matrix.adjugate_fin_two`), so
+
+    Q^N · (U(c^(n+1)) + U(c^n)) = c^(n+1) · W,
+
+and `IsCoprime (c^(n+1)) (Q^N)` (from `c ∤ Q`) cancels the `Q^N`.  **The adjugate is strictly
+better than an inverse here: it never needs the determinant to be a unit, only coprime to the
+modulus.**  This is the reusable idea of the phase.
+
+**Other differences from phase 34.**
+- The Frobenius step is now `A^(c+1) ≡ Q·I (mod c)`, not `≡ −I`.  In `K = (ZMod c)[X]/(X²−PX+Q)`,
+  the root `x` satisfies `x^c = P − x` (the conjugate), hence `x^(c+1) = x(P−x) = Q`.  Reading off
+  the basis `(x, 1)` via `x^(N+1) = U(N+1)·x − Q·U(N)` gives `c ∣ U(c+1)` and
+  `c ∣ Q(U(c)+1)`; `c ∤ Q` then gives `c ∣ U(c)+1`.
+- `hD` alone forces `c ≠ 2` (every element of `ZMod 2` is a square), `c ∤ Q` and `Q ≠ 0`
+  (else `D ≡ P²`) — so the frozen statement 1 needs no extra hypotheses.
+- The binomial lift is packaged as `scalar_add_pow_expand`: in **any** ring, if `c ∣ a` then
+  `(q + a·B)^c ≡ q^c (mod c·a)`.  Proved by transporting the two-term expansion
+  `(C q + X)^(k+1) = C(q^(k+1)) + C((k+1)q^k)·X + X²·D` from the *commutative* ring `ℤ[X]` along
+  `Polynomial.aeval`, which is the standard way to get a binomial identity in a noncommutative ring.
+- Tower divisibility `U(c^m) ∣ U(c^n)` (needed for `h = 0`) is proved by the invariant
+  "`U(m)` divides **both** off-diagonal entries of `A^(mk)`" — an induction that needs no
+  diagonalisation, because `(XY)_(1,0) = X_(1,0)Y_(0,0) + X_(1,1)Y_(1,0)` and
+  `(XY)_(0,1) = X_(0,0)Y_(0,1) + X_(0,1)Y_(1,1)` each keep one off-diagonal factor.
+- Values are negative and non-monotone, so the endgame is phase 33's `natAbs` + **iterated return**
+  (`chain`), not phase 34's monotone "bigger prime divides smaller".
+- `h = ±1` is a separate elementary case (`U(c^n) ≡ (−1)^n (mod c)`), because the filter endgame
+  only contradicts `|h| ≥ 2`.
+
+**Still open beyond this phase.**  `Q = 0` and split/ramified `c` (i.e. `P²−4Q` a square mod `c`)
+for general `U(P,Q)`; the phase-37 route (odd-index Cayley–Hamilton composition) is the natural
+attack, with the `Q^N` in `det(A_N) = −Q^N` as the obstruction recorded above.
