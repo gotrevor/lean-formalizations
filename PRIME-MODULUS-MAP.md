@@ -38,7 +38,7 @@ One page, one row per theorem.  Everything here was proved 2026-09-29/30, uncond
 - **`GaussCongruenceProof.gaussCongruenceTrace_holds`: the Gauss/Dold congruence for traces, PROVED.**  This discharges `Literature.GaussCongruenceTrace`, so phase 29 (`mills_threeAdic'`) no longer rests on it.
 
 ## Paper theorems, not yet in Lean
-- **Theorem D** (`PROOF-THEOREM-D.md`): Saito's Problem 1.7 for `R(n) = c^n + s`; every Pisot `α` outside `f ≡ X^d (mod c)` and finitely many abelian fields.  Referee pass: Lemmas OK.
+- **Theorem D** (`PROOF-THEOREM-D.md`): Saito's Problem 1.7 for `R(n) = c^n + s`; every Pisot `α` outside `f ≡ X^d (mod c)` (draft 2 removes the abelian-field exception by a one-automorphism size argument).  Referee pass: Lemmas OK.
 - **Theorem E / E+** (`PROOF-THEOREM-E.md`): the least `A` with `⌊A^(3^k + s)⌋` prime `∀k` is **transcendental** for **every `s ≠ 0`** (draft 3e; odd `s` via `g = 2`).  Unshifted Mills (`s = 0`) fails both steps.  Three referee passes, patches applied; ≈72–80%.
 
 ## Where it stops (Maze rows, `src/LeanFormalizations/Maze.lean`)

@@ -5,7 +5,7 @@
 ---
 
 ## Abstract (draft)
-Saito (arXiv:2504.14968) asked whether `F(2^n) + h` is composite for infinitely many `n`, for every integer `h` (Problem 1.8).  He also asked for a non-reversible inhomogeneous linear recurrence `R` such that `⌊α^(R(n))⌋` is composite infinitely often for every Pisot number `α` (Problem 1.7).  We answer Problem 1.8 affirmatively and extend it to every prime base and to all Lucas sequences with unit parameter.  We obtain Dubickas-type covering systems, and hence prime-free intervals of every fixed length, along the non-reversible tower `c^n`.  We classify the traces of `2×2` integer matrices at odd prime towers.  For `R(n) = c^n + s` we answer Problem 1.7 for every Pisot number outside an explicit "Mersenne-type" class, and we show that class cannot be handled by the method for any non-reversible `R`.  Combined with Saito's reduction theorems, this yields the transcendence of the least constant `ξ` with `⌊ξ^(3^k + s)⌋` prime for all `k`, for every `s ≠ 0`.  The unshifted case `s = 0` is Mills' constant, and the method identifies exactly why it fails there.
+Saito (arXiv:2504.14968) asked whether `F(2^n) + h` is composite for infinitely many `n`, for every integer `h` (Problem 1.8).  He also asked for a non-reversible inhomogeneous linear recurrence `R` such that `⌊α^(R(n))⌋` is composite infinitely often for every Pisot number `α` (Problem 1.7).  We answer Problem 1.8 affirmatively and extend it to every prime base and to all Lucas sequences with unit parameter.  We obtain Dubickas-type covering systems, and hence prime-free intervals of every fixed length, along the non-reversible tower `c^n`.  We classify the traces of `2×2` integer matrices at odd prime towers.  For `R(n) = c^n + s` we answer Problem 1.7 for every Pisot number outside an explicit "Mersenne-type" class `f ≡ X^d (mod c)`, and we show that class cannot be handled by the method for any non-reversible `R`.  Combined with Saito's reduction theorems, this yields the transcendence of the least constant `ξ` with `⌊ξ^(3^k + s)⌋` prime for all `k`, for every `s ≠ 0`.  The unshifted case `s = 0` is Mills' constant, and the method identifies exactly why it fails there.
 
 ## 1. Introduction
 - Mills' constant and Saito's programme: irrationality (Saito 2024); transcendence under RH/DH (Saito 2025); the cubic Pisot obstruction.
@@ -43,12 +43,11 @@ Saito (arXiv:2504.14968) asked whether `F(2^n) + h` is composite for infinitely 
 *Remark (higher order).*  For order `d ≥ 3` entries (Tribonacci), the needed non-integrality of the limit points follows from linear disjointness of `ℚ(α)` and `ℚ(ζ_n)` [paper, `ROADMAP` Theorem C′].
 
 ## 7. Saito's Problem 1.7 for `R(n) = c^n + s`  **[paper]** `PROOF-THEOREM-D.md`
-**Theorem 7.1.**  Let `c` be prime and `s ≥ s₀(d)`.  For every Pisot `α` of degree `d` whose minimal polynomial is irreducible over the relevant cyclotomic field, and with `f ≢ X^d (mod c)`, the number `⌊α^(c^n + s)⌋` is composite for infinitely many `n`.
+**Theorem 7.1.**  Let `c` be prime and `s ≥ s₀(d) = ⌈log(d+1)/log κ⌉`.  For every Pisot `α` of degree `d` with `f ≢ X^d (mod c)`, the number `⌊α^(c^n + s)⌋` is composite for infinitely many `n`.
 *Key steps.*
 - the floor offset `ε ∈ {0, −1}` and a combinatorial "stuck-index" lemma;
 - Teichmüller limit points `Λ_r = Σ_k ζ_k α_k^s`;
-- Galois rigidity via Pisot dominance, which forces the `ζ_k` to be equal;
-- then `|tr C^s| > 2` contradicts the window.
+- one automorphism moving a unit root onto `α`, after which the dominant term `α^s` exceeds everything else in the limit identity (`α^s < d + 1`, a contradiction).  No Galois rigidity is needed; rigidity is used only in §8, where the shift is negative.
 *Numerics.*  Degrees 2–4, `c ∈ {2, 3, 5, 7}`: with `s = 0`, 27–73 survivors per box (the Mills-type residual classes); with `s ≥ 2`, **none**.
 **Proposition 7.2 (the obstruction).**  If `f ≡ X^d (mod c)` and the conjugate contribution stays positive (e.g. `α = 2 + √2`, `c = 2`), the values are `≡ −1` modulo growing powers of `c`, and the filter is silent.  For **any** non-reversible ILRS `R` there is a quadratic Pisot `α` of this type, so Problem 1.7 in full needs an idea beyond this method.
 

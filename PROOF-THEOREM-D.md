@@ -1,4 +1,4 @@
-# Theorem D — Saito's Problem 1.7 for `R(n) = c^n + s` (proof write-up, draft 1)
+# Theorem D — Saito's Problem 1.7 for `R(n) = c^n + s` (proof write-up, draft 2)
 
 Ren, 2026-09-30.  Status: **paper proof, not yet in Lean; not yet refereed by anyone.**  The numerics are in `ROADMAP-PRIME-TOWERS.md` §1 (Theorem D) and `scripts/saito-17-shift-probe.py`.
 
@@ -7,8 +7,9 @@ Ren, 2026-09-30.  Status: **paper proof, not yet in Lean; not yet refereed by an
 > Find a non-reversible ILRS `(R(n))` such that for every Pisot number `α`, especially of degree 3, the numbers `⌊α^(R(n))⌋` are composite for infinitely many `n`.
 
 **Theorem D.**  Let `c` be a prime, `d ≥ 1`, and `s ≥ s₀(d) := ⌈log(d + 1)/log κ⌉`, where `κ ≈ 1.3247` is the smallest Pisot number.  Put `R(n) = c^n + s`; this is an ILRS of order 1, `R(n+1) = c R(n) − (c − 1)s`, and non-reversible since `a₀ = c`.  Let `α` be a Pisot number of degree `d` with minimal polynomial `f`, and assume:
-- **(i)** `f` is irreducible over `ℚ(ζ_M)`, where `M` is defined in Lemma 5;
 - **(ii)** `f ≢ X^d (mod c)`.
+
+*(Draft 1 also assumed **(i)** `f` irreducible over `ℚ(ζ_M)`.  Draft 2 removes it: step 3–5 below replace Galois rigidity by a direct size argument after one automorphism.  Lemma 6 is no longer used in Theorem D; it is kept for Theorem E, where the shift is negative and size alone fails.)*
 
 Then `⌊α^(R(n))⌋` is composite for infinitely many `n`.
 
@@ -67,9 +68,15 @@ So `η_(k₀) = 0`, hence `η = 0`.  (The Pisot property concerns the root set, 
 ## Proof of Theorem D
 1. Assume every `p_n` is prime for `n ≥ n₀`.  Lemma 3 gives infinitely many good `n`; choose a residue class `r (mod D)`, an `ω ∈ W` and an `ε ∈ {0, −1}` such that infinitely many good `n ≡ r` have `ω_n = ω` and `ε_(R(n)) = ε`.
 2. By Lemma 4, `tr C^(R(n)) + ε ≡ ω (mod c^(e_n))` along that subsequence.  By Lemma 5, `λ_r + ε = ω` in `ℤ_c`.  Pull back: `Λ_r = t := ι⁻¹(ω) − ε ∈ ℚ(ζ_M)`, with `|t| ≤ 2` in every complex embedding.
-3. Apply `σ ∈ G`.  It fixes `t` and the `ζ_k`, so `Σ_k ζ_k^(c^r) α_(σk)^s = t` for all `σ`.
-4. `α^s > d + 1 ≥ d − 1` by the choice of `s`, and `T = tr C^s ≥ α^s − (d − 1) > 2 > 0`.  Lemma 6 gives `ζ_k^(c^r) = t/T` for every `k`.
-5. The `ζ_k^(c^r)` are all equal: either all `0`, which means every root is a non-unit, i.e. `f ≡ X^d (mod c)`, excluded by (ii); or all equal to a root of unity `z`.  In the second case `|t| = |z|·|T| = |T| > 2`, contradicting `|t| ≤ 2`.  ∎
+3. **(Draft 2.)**  `f ≢ X^d (mod c)`, so some root is a `c`-adic unit under `ι`: choose `k*` with `ζ_(k*) ≠ 0`.  Let `N` be the Galois closure of `K(ζ_M)` over `ℚ`.  `f` is irreducible over `ℚ`, so some `τ ∈ Gal(N/ℚ)` has `τ(α_(k*)) = α_1 = α`.  Apply `τ` to `Λ_r = t`:
+   `Σ_k τ(ζ_k)^(c^r) · α_(π(k))^s = τ(t)`, where `π` is the permutation that `τ` induces on the roots.
+   - Each `τ(ζ_k)` is a root of unity or `0`, and `τ(ζ_(k*)) ≠ 0`.
+   - `τ(t) = τ(ι⁻¹ω) − ε` has modulus `≤ 2` in every complex embedding.
+4. Fix the complex embedding in which `α_1 = α > 1` and `|α_j| < 1` for `j ≥ 2`.  Isolate the `k*` term:
+   `α^s = |τ(ζ_(k*))^(c^r) α^s| ≤ |τ(t)| + Σ_(k≠k*) |α_(π(k))|^s < 2 + (d − 1) = d + 1`.
+5. But `s ≥ s₀(d)` gives `α^s ≥ κ^s ≥ d + 1`.  **Contradiction.**  ∎
+   - No Galois rigidity and no hypothesis on `ℚ(ζ_M)` are needed.  The abelian exception fields of draft 1 (conductor 7 at `c = 2`; conductor 13 at `c = 3`; e.g. `c = 7` with conductor 19, where 7 splits) are covered.
+   - *(Draft 1's steps 3–5 used Lemma 6 to force all `ζ_k^(c^r)` equal, then `|t| = |T| > 2`.  That is correct under (i), but it is a detour.)*
 
 ## Proof of Proposition D′
 If `f ≡ X^d (mod c)`, every `ι(α_k)` is a non-unit, so `tr C^N ≡ 0 (mod c^(e′(N)))` with `e′ → ∞`.  (Non-unit powers go to 0; their integer sum has growing valuation.)  Then `⌊α^N⌋ = tr C^N + ε_N` gives both claims.
@@ -77,7 +84,7 @@ If `f ≡ X^d (mod c)`, every `ι(α_k)` is a non-unit, so `tr C^N ≡ 0 (mod c^
 For the "any ILRS" remark: `f = X² − MX + N` with `M, N ≡ 0 (mod rad a₀)` and `0 < N < M − 1`, with real conjugates in `(0, 1)`.  Then `α` is Pisot, `ε ≡ −1`, and the value is `≡ −1` modulo growing powers of every prime of `a₀`.  The method needs a prime of `a₀` to act as the base; each such prime sees the value in its window.  ∎
 
 ## Open points
-1. **Remove (i).**  The numerics find no survivors in the abelian exception fields (conductor 7 at `c = 2`; `c = 3` inert in conductor 13).  A decomposition-group version of Lemma 6 should work: use `Gal(K(ζ_M)/ℚ(ζ_M))` when it is transitive, and otherwise the inertness of `c` in those fields.
+1. ~~Remove (i).~~  **Done in draft 2** (2026-09-30) by the one-automorphism size argument.  This matches the numerics, which found no survivors in the abelian exception fields.
 2. **`δ_N = 0` degenerate case** in Lemma 1 (only if some power `α^N` is an integer).  For Pisot `α` of degree ≥ 2 this never happens: `α^N ∈ ℤ` would make the conjugates `α_j^N = α^N` of modulus `> 1`.  So it is fine; record this in the paper.
 3. **Uniform `s₀`.**  `⌈log(d + 1)/log κ⌉` (Siegel).  Numerics show `s ≥ 2` already suffices for `d ≤ 4` at `c ∈ {2, 3, 5, 7}`.
 4. **Freshness before any outward use:** re-run `papers followups 2504.14968` and search for "Problem 1.7" solutions.

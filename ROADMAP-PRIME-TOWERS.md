@@ -214,7 +214,7 @@ A reasonable first Lean target: **Theorem D for quadratic Pisot `α`**.
 Combine the engine (phase 41) with Theorem D's Galois step.  For `(D1)` with half-width `H`, each window must be visited only finitely often for every `|h| ≤ H`, i.e. `Λ_r ∉ {ζ′ − h − ε}`.
 - If `Λ_r ∈ ℚ(ζ)`, step 4 of Theorem D forces all `ζ_k` equal, and then `Λ_r = z·tr C^s` with `z ∈ {0, ±1}`.
 - So outside the **unipotent classes** `f ≡ (X ∓ 1)^d` or `X^d (mod c)`, `Λ_r ∉ ℚ(ζ)` and every shift is eventually outside its window.
-- Hence **for Pisot `α` outside the unipotent classes (and the abelian exceptions (i)), there are prime-free intervals of every fixed length around `⌊α^(c^n + s)⌋`, infinitely often.**
+- Hence **for Pisot `α` outside the unipotent classes (and the abelian exceptions (i); the draft-2 size argument for Theorem D should remove these too once `α^s > d + H + 1`, unchecked), there are prime-free intervals of every fixed length around `⌊α^(c^n + s)⌋`, infinitely often.**
 - Inside a unipotent class exactly one shift, `h = z·tr C^s ± 1 − ε`, is a survivor, so intervals fail by construction for that `h`.
 - Lean: needs the Galois step, so it goes with Theorem D (paper first).
 
@@ -326,7 +326,7 @@ Working title: *Composite values of linear recurrences along prime-power towers.
 3. Binary recurrences: the sign flip (inert), exact composition (all primes), and Theorem B's classification for traces.
 4. Theorem A: order `d`, inert primes (Tribonacci).
 5. Theorem C: prime-free intervals for non-reversible towers (engine; Fibonacci/Lucas at every prime; C′ Galois for `d ≥ 3`; C_D for Pisot floors).
-5b. **Theorem D: Saito's Problem 1.7 for `R(n) = c^n + s`**, every Pisot `α` outside the unipotent/Mersenne class and the abelian exceptions; plus the proof that congruence methods cannot reach the Mersenne class (so 1.7 in full needs a new idea).
+5b. **Theorem D: Saito's Problem 1.7 for `R(n) = c^n + s`**, every Pisot `α` outside the unipotent/Mersenne class (the abelian exceptions were removed 2026-09-30, `PROOF-THEOREM-D.md` draft 2); plus the proof that congruence methods cannot reach the Mersenne class (so 1.7 in full needs a new idea).
 5c. **Theorem E: transcendence of `ξ(3^k − 2)`** outside E1–E3 (Saito Type C + Theorem D).  Also the template for `ξ(r·3^k − 1)` at every `r`.
 6. Survivors: Fermat, `L(2^n)`, Mills; the fixed-point picture; open problems.
 
