@@ -1796,3 +1796,14 @@ What is honest and tractable:
 - **The abelian theorem** as a Literature statement (Ax 1965 + Brumer 1967: Leopoldt holds for abelian `K/ℚ`), stated directly, with no fake derivation through the tie.
 
 Status: statement validated nontrivially (`leopoldt_of_rank_le_one`, all K, all p).  Leopoldt work is paused here pending Trevor's call.
+
+## Phase 41 (CoveringEngine.lean) — CLOSED 2026-09-30 (`be4d97a`)
+All four frozen statements proved, file sorry-free, axiom-clean.  Notes for the next lap:
+* The route's suggested Gauss-type descent `V(c^(k+1)) ≡ V(c^k) (mod c^(k+1))` was **not needed**:
+  `lucasV_mul_odd` at `m = c^n` gives the exact composition `V(c^(n+d)) = V_(c^d)(V(c^n))`, and
+  `lucasV_neg_one_growth` applies verbatim with `c` replaced by `c^d` (it only ever used
+  *odd and ≥ 3*).  The single-index certificate closes in one comparison.
+* `covering_of_mech` is the assembly with the `glCard 2` hard-coding removed (abstract predicate
+  `G : ℕ → ℕ → Prop`); `dvd_linearMap_of_entries` is what lets entries and the trace share one
+  proof.  Both are ready for roadmap §1 Theorems A and B — only the certificate is missing there.
+* `DIRECTION.md` still lists phase 41 as CURRENT; an altitude lap owns marking it DONE.
