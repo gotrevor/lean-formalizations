@@ -423,6 +423,49 @@ theorem good_window (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α *
           = ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ) + 1 := by ring
       rw [this]; exact h
 
+/-! ### Step 1f: pigeonhole and growth -/
+
+/-- **Pigeonhole.**  If arbitrarily late `n` carry *some* value `t` from a finite set `T`, then one
+residue class `r (mod f)` and one value `t` carry arbitrarily late `n`. -/
+theorem exists_class_frequently {T : Finset ℤ} {Q : ℕ → ℤ → Prop} {f : ℕ} (hf : 1 ≤ f)
+    (h : ∀ m : ℕ, ∃ n, m ≤ n ∧ ∃ t ∈ T, Q n t) :
+    ∃ r t, t ∈ T ∧ ∀ m : ℕ, ∃ n, m ≤ n ∧ n % f = r ∧ Q n t := by
+  classical
+  by_contra hcon
+  push_neg at hcon
+  -- `hcon : ∀ r, ∀ t ∈ T, ∃ m, ∀ n, m ≤ n → n % f = r → ¬ Q n t`
+  set bd : ℕ → ℤ → ℕ := fun r t =>
+    if hh : ∃ m, ∀ n, m ≤ n → n % f = r → ¬ Q n t then hh.choose else 0 with hbdef
+  have hbd : ∀ r, ∀ t ∈ T, ∀ n, bd r t ≤ n → n % f = r → ¬ Q n t := by
+    intro r t htT n hn hr
+    have hex : ∃ m, ∀ n, m ≤ n → n % f = r → ¬ Q n t := hcon r t htT
+    simp only [hbdef, dif_pos hex] at hn
+    exact hex.choose_spec n hn hr
+  obtain ⟨n, hn, t, htT, hQ⟩ := h ((Finset.range f ×ˢ T).sup fun p => bd p.1 p.2)
+  have hr : n % f ∈ Finset.range f := Finset.mem_range.2 (Nat.mod_lt _ hf)
+  have hle : bd (n % f) t ≤ (Finset.range f ×ˢ T).sup fun p => bd p.1 p.2 :=
+    Finset.le_sup (f := fun p : ℕ × ℤ => bd p.1 p.2)
+      (Finset.mem_product.2 ⟨hr, htT⟩ : ((n % f, t) : ℕ × ℤ) ∈ Finset.range f ×ˢ T)
+  exact hbd (n % f) t htT n (le_trans hle hn) rfl hQ
+
+/-- The floors grow at least linearly in the index. -/
+theorem index_le_floor (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α * β = b)
+    (hα : 1 < α) (hβ : |β| < 1) {c : ℕ} (hc : c.Prime) (s m : ℕ) :
+    (m : ℤ) ≤ ⌊α ^ (c ^ m + s)⌋ := by
+  have hcpos : ∀ x : ℕ, 1 ≤ c ^ x + s := fun x => by
+    have := Nat.one_le_pow x c hc.pos; omega
+  induction m with
+  | zero =>
+      have : (0 : ℝ) ≤ α ^ (c ^ 0 + s) := by positivity
+      simpa using Int.floor_nonneg.2 this
+  | succ m ih =>
+      have hlt : c ^ m + s < c ^ (m + 1) + s := by
+        have : c ^ m < c ^ (m + 1) := Nat.pow_lt_pow_right hc.one_lt (by omega)
+        omega
+      have := floor_pow_strictMono a b hsum hprod hα hβ (hcpos m) hlt
+      push_cast
+      omega
+
 /-! ### Step 5 (size): the archimedean obstruction
 
 These two lemmas are the endgame of the proof and are **fully proved**: once the number-theoretic
