@@ -2,7 +2,9 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 (phase 48, CURRENT): traces in the unipotent class mod 3 (sub-node R4 of `ShiftedTraceRigidity`) — target `NumberTheory/Mills/UnipotentTrace.lean` (3 frozen statements, route in header; statements checked on 3000 random cases; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 49, CURRENT): PROVE the Gauss (Dold) congruence for matrix traces (discharge `Literature.GaussCongruenceTrace`) and restate phase 29 without it — target `NumberTheory/Mills/GaussCongruenceProof.lean` (3 frozen statements, necklace route in header; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+## ✅ DONE (phase 48): traces in the unipotent class mod 3 (sub-node R4 of `ShiftedTraceRigidity`) — target `NumberTheory/Mills/UnipotentTrace.lean` (3 frozen statements, route in header; statements checked on 3000 random cases; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 ## ✅ DONE (phase 47): `A^(c^n)` eventually periodic `c`-adically (integer Teichmüller congruence) — target `NumberTheory/Mills/TeichmullerCongruence.lean` (1 frozen statement, route in header; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 

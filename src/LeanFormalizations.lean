@@ -172,6 +172,7 @@ import LeanFormalizations.NumberTheory.Mills.ShiftedMills
 import LeanFormalizations.NumberTheory.Mills.ShiftedWindow
 import LeanFormalizations.NumberTheory.Mills.TeichmullerCongruence
 import LeanFormalizations.NumberTheory.Mills.UnipotentTrace
+import LeanFormalizations.NumberTheory.Mills.GaussCongruenceProof
 import LeanFormalizations.NumberTheory.Mills.FibonacciCoveringAllPrimes
 import LeanFormalizations.NumberTheory.Mills.LucasCoveringAllPrimes
 import LeanFormalizations.NumberTheory.Transcendence.MultisetGraeffe
