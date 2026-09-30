@@ -744,7 +744,43 @@ theorem torsion_congr_levels (a b : ℤ) {c : ℕ} (hc : c.Prime) (hcb : ¬ (c :
       (c : ℤ) ^ k ∣ (torsionPair a b x y Q).1 - 1 ∧
       (c : ℤ) ^ k ∣ (torsionPair a b x y Q).2 ∧
       (c : ℤ) ^ k ∣ x * V s + y * V (s + 1) - t := by
-  sorry
+  refine ⟨glCard 2 c, glCard_two_pos hc, fun k => ?_⟩
+  obtain ⟨n, hnk, _, hdvd⟩ := hcong k
+  have hcoord : (compMat a b ^ glCard 2 c) ^ (c ^ n) - 1 =
+      ((torsionPair a b (torsionPair a b 0 1 (c ^ n)).1 (torsionPair a b 0 1 (c ^ n)).2
+          (glCard 2 c)).1 - 1) • (1 : Matrix (Fin 2) (Fin 2) ℤ) +
+        (torsionPair a b (torsionPair a b 0 1 (c ^ n)).1 (torsionPair a b 0 1 (c ^ n)).2
+          (glCard 2 c)).2 • compMat a b := by
+    have h1 : (compMat a b ^ glCard 2 c) ^ (c ^ n)
+        = ((torsionPair a b 0 1 (c ^ n)).1 • (1 : Matrix (Fin 2) (Fin 2) ℤ)
+            + (torsionPair a b 0 1 (c ^ n)).2 • compMat a b) ^ glCard 2 c := by
+      rw [← compMat_pow_eq, ← pow_mul, ← pow_mul, mul_comm]
+    rw [h1, torsionPair_matrix, sub_smul, one_smul]
+    abel
+  refine ⟨(torsionPair a b 0 1 (c ^ n)).1, (torsionPair a b 0 1 (c ^ n)).2, ?_, ?_, ?_⟩
+  -- the torsion equations, read off the entries of `C^(Q·c^n) - I`
+  · have hmat := compMat_pow_congr_one a b hc hcb n 0 0
+    rw [hcoord] at hmat
+    have := (entry_of_coords a b ((torsionPair a b
+      (torsionPair a b 0 1 (c ^ n)).1 (torsionPair a b 0 1 (c ^ n)).2 (glCard 2 c)).1 - 1)
+      (torsionPair a b
+      (torsionPair a b 0 1 (c ^ n)).1 (torsionPair a b 0 1 (c ^ n)).2 (glCard 2 c)).2).2
+    rw [this] at hmat
+    exact dvd_trans (pow_dvd_pow (c : ℤ) (by omega)) hmat
+  · have hmat := compMat_pow_congr_one a b hc hcb n 1 0
+    rw [hcoord] at hmat
+    have := (entry_of_coords a b ((torsionPair a b
+      (torsionPair a b 0 1 (c ^ n)).1 (torsionPair a b 0 1 (c ^ n)).2 (glCard 2 c)).1 - 1)
+      (torsionPair a b
+      (torsionPair a b 0 1 (c ^ n)).1 (torsionPair a b 0 1 (c ^ n)).2 (glCard 2 c)).2).1
+    rw [this] at hmat
+    exact dvd_trans (pow_dvd_pow (c : ℤ) (by omega)) hmat
+  · -- the linear equation, from the trace
+    have htr := trace_coords_mul a b (torsionPair a b 0 1 (c ^ n)).1
+      (torsionPair a b 0 1 (c ^ n)).2 s
+    rw [← compMat_pow_eq, ← pow_add, trace_compMat_pow] at htr
+    rw [hV s, hV (s + 1), ← htr, ← hV (c ^ n + s)]
+    exact hdvd
 
 /-- **Step 3 (transfer).**  A system of integer polynomial equations solvable modulo `c^k` for
 every `k` has a complex solution — by the Nullstellensatz: otherwise `1` is in the ideal over `ℚ`,
