@@ -50,12 +50,95 @@ namespace LeanFormalizations.Mills.OrbitSum
 
 open Matrix Polynomial
 
+section Period
+
+open Matrix Polynomial
+
+variable {d : ℕ} {c : ℕ}
+
+/-- The reduction mod `c` of the characteristic polynomial is monic. -/
+theorem charpolyBar_monic (A : Matrix (Fin d) (Fin d) ℤ) (c : ℕ) :
+    (A.charpoly.map (Int.castRingHom (ZMod c))).Monic :=
+  A.charpoly_monic.map _
+
+theorem charpolyBar_natDegree (A : Matrix (Fin d) (Fin d) ℤ) (c : ℕ) [Fact c.Prime] :
+    (A.charpoly.map (Int.castRingHom (ZMod c))).natDegree = d := by
+  rw [(A.charpoly_monic).natDegree_map, A.charpoly_natDegree_eq_dim]
+  simp
+
+/-- `AdjoinRoot χ̄_A` is a `ZMod c`-module of rank `d`, hence has `c ^ d` elements. -/
+theorem adjoinRoot_card (A : Matrix (Fin d) (Fin d) ℤ) (c : ℕ) [Fact c.Prime]
+    [Fintype (AdjoinRoot (A.charpoly.map (Int.castRingHom (ZMod c))))] :
+    Fintype.card (AdjoinRoot (A.charpoly.map (Int.castRingHom (ZMod c)))) = c ^ d := by
+  have hfr : Module.finrank (ZMod c)
+      (AdjoinRoot (A.charpoly.map (Int.castRingHom (ZMod c)))) = d := by
+    rw [(AdjoinRoot.powerBasis' (charpolyBar_monic A c)).finrank, AdjoinRoot.powerBasis'_dim,
+      charpolyBar_natDegree]
+  rw [Module.card_eq_pow_finrank (K := ZMod c), hfr, ZMod.card]
+
+/-- **Frobenius period mod `c`:** if `χ̄_A` is irreducible then `Ā ^ (c ^ d) = Ā` over `ZMod c`,
+because `Ā` generates a copy of the field `AdjoinRoot χ̄_A` of order `c ^ d`. -/
+theorem mapMatrix_pow_card_pow_dim (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : c.Prime)
+    (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c)))) :
+    ((Int.castRingHom (ZMod c)).mapMatrix A) ^ (c ^ d) =
+      (Int.castRingHom (ZMod c)).mapMatrix A := by
+  haveI : Fact c.Prime := ⟨hc⟩
+  haveI : Fact (Irreducible (A.charpoly.map (Int.castRingHom (ZMod c)))) := ⟨hirr⟩
+  set f := A.charpoly.map (Int.castRingHom (ZMod c)) with hf
+  set Abar := (Int.castRingHom (ZMod c)).mapMatrix A with hAbar
+  have hchar : Abar.charpoly = f := by
+    rw [hAbar, hf, RingHom.mapMatrix_apply, Matrix.charpoly_map]
+  have hCH : Polynomial.aeval Abar f = 0 := by
+    rw [← hchar]; exact Matrix.aeval_self_charpoly Abar
+  haveI : Module.Finite (ZMod c) (AdjoinRoot f) :=
+    Module.Finite.of_basis (AdjoinRoot.powerBasis' (charpolyBar_monic A c)).basis
+  haveI : Finite (AdjoinRoot f) := Module.finite_of_finite (ZMod c)
+  haveI : Fintype (AdjoinRoot f) := Fintype.ofFinite _
+  have hcard : Fintype.card (AdjoinRoot f) = c ^ d := adjoinRoot_card A c
+  have hroot : (AdjoinRoot.root f) ^ (c ^ d) = AdjoinRoot.root f := by
+    rw [← hcard]; exact FiniteField.pow_card _
+  have hdvd : f ∣ (Polynomial.X ^ (c ^ d) - Polynomial.X : (ZMod c)[X]) := by
+    rw [← AdjoinRoot.mk_eq_zero, map_sub, map_pow, AdjoinRoot.mk_X, sub_eq_zero]
+    exact hroot
+  obtain ⟨q, hq⟩ := hdvd
+  have := congrArg (Polynomial.aeval Abar) hq
+  simp only [map_sub, map_pow, Polynomial.aeval_X, map_mul, hCH, zero_mul] at this
+  exact sub_eq_zero.1 this
+
+/-- **Period, statement 1's engine:** `A ^ (c ^ d) ≡ A (mod c)` entrywise. -/
+theorem pow_card_pow_dim_congr (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : c.Prime)
+    (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c)))) (i j : Fin d) :
+    (c : ℤ) ∣ (A ^ (c ^ d) - A) i j := by
+  refine TeichmullerCongruence.dvd_of_mapMatrix_eq ?_ i j
+  rw [map_pow]
+  exact mapMatrix_pow_card_pow_dim A hc hirr
+
+end Period
+
 /-- **Period:** with `χ_A` irreducible mod `c`, `A^(c^(n+d)) ≡ A^(c^n) (mod c^(n+1))`. -/
 theorem pow_prime_pow_add_card_congr {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ}
     (hc : c.Prime) (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c)))) (n : ℕ)
     (i j : Fin d) :
     (c : ℤ) ^ (n + 1) ∣ (A ^ (c ^ (n + d))) i j - (A ^ (c ^ n)) i j := by
-  sorry
+  have key : ∀ n : ℕ, ∀ i j : Fin d,
+      (c : ℤ) ^ (n + 1) ∣ (A ^ (c ^ (n + d)) - A ^ (c ^ n)) i j := by
+    intro n
+    induction n with
+    | zero => intro i j; simpa using pow_card_pow_dim_congr A hc hirr i j
+    | succ m ih =>
+      intro i j
+      have hcomm : Commute (A ^ (c ^ (m + d))) (A ^ (c ^ m)) :=
+        (Commute.refl A).pow_pow _ _
+      have h := TeichmullerCongruence.pow_congr_lift hcomm (c := c) (e := m + 1)
+        (by omega) ih i j
+      have e1 : (A ^ (c ^ (m + d))) ^ c = A ^ (c ^ (m + 1 + d)) := by
+        rw [← pow_mul, ← pow_succ]
+        ring_nf
+      have e2 : (A ^ (c ^ m)) ^ c = A ^ (c ^ (m + 1)) := by
+        rw [← pow_mul, ← pow_succ]
+      rw [e1, e2] at h
+      exact h
+  simpa [Matrix.sub_apply] using key n i j
 
 /-- **Orbit sum is scalar:** `Σ_(k<d) A^(c^(n+k)) ≡ tr(A^(c^n))·I (mod c^(n+1))`. -/
 theorem orbit_sum_congr {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : c.Prime)
