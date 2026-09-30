@@ -54,7 +54,7 @@ Saito (arXiv:2504.14968) asked whether `F(2^n) + h` is composite for infinitely 
 
 ## 8. Transcendence of shifted Mills constants  **[paper]** `PROOF-THEOREM-E.md`
 **Theorem 8.1.**  For every even `s ≠ 0`, the least `ξ > 1` such that `⌊ξ^(3^k + s)⌋` is prime for every `k ≥ k₀(s)` is transcendental.  (`3 ∣ s` reduces to the shift `s/3^a` for `β = ξ^(3^a)`.)
-**Theorem 8.2 (odd `s`, partial).**  The same holds for odd `s`, except possibly when `ξ²` is a cubic Pisot number in the cyclic cubic field of conductor 13.  The new ingredient for `g = 2` is a trace-zero argument over `ℚ(μ₂₀₈)`, since odd powers of `±√β` cancel.  The Kummer-degenerate case `ξ = √d·γ` gives `|tr γ^s| = d^(−s/2) ∉ ℚ`.  E.g. `ξ(3^k − 2)` (`k ≥ 1`) and `ξ(3^k + 2)` (`k ≥ 1`).
+**Theorem 8.2 (odd `s`).**  The same holds for every odd `s > 0`, and for odd `s < 0` except possibly when `ξ = √d·γ` with `γ` in the cyclic cubic field of conductor 13 and `d ∈ {2, 13, 26}`.  The new ingredient for `g = 2` is a trace-zero argument over `ℚ(μ₂₀₈)`, since odd powers of `±√β` cancel.  The Kummer-degenerate case `ξ = √d·γ` gives `|tr γ^s| = d^(−s/2) ∉ ℚ`.  E.g. `ξ(3^k − 2)` (`k ≥ 1`) and `ξ(3^k + 2)` (`k ≥ 1`).
 *Proof outline.*
 - Saito's Theorem 2.3 reduces to `ξ` a cubic Pisot number.  His extra hypothesis `(B6)` is exactly what non-reversibility breaks.
 - His Proposition 3.1(iv) gives floor = trace.
