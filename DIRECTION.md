@@ -910,6 +910,7 @@ Do NOT stop because a leaf landed, "to take stock", or because N3 is hard.  Clos
   `grep -rl <keyword>` it before re-deriving any tactic/API friction.
 - Blocked needing the open web?  First check `ON-LINE-FINDINGS-*.md`; else append a dated, specific
   item to `ON-LINE-REQUEST.md` and continue on another leaf.  Do not block.
+- **Don't mark new declarations `private`.**  Helpers are reusable facts, and hiding them has already caused duplication: phase 31 reproved a companion-matrix construction, phase 32 copied `exists_trace_pow_congr`, and phase 33 needed a visibility edit to a frozen file.  Give helpers specific, namespaced names instead.  Existing `private` declarations may be made public whenever something needs them.  (Trevor, 2026-09-29: *"Why would you keep something true private?"*)
 - Keep `HANDOFF.md` current (thin pointer) and write a dated `HANDOFF-<date>-<desc>.md` at lap end;
   on the governor's budget signal, `/handoff` and end the lap.
 
