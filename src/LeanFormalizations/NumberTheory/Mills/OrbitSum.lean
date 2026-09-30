@@ -229,6 +229,93 @@ theorem coeff_dvd_of_aeval_dvd (B : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : 
     simp only [Polynomial.coeff_C_mul, pow_succ']
     exact mul_dvd_mul_left _ this
 
+/-- Irreducibility of `χ̄_A` forces the dimension to be positive. -/
+theorem pos_of_irreducible {A : Matrix (Fin d) (Fin d) ℤ} {c : ℕ} [Fact c.Prime]
+    (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c)))) : 0 < d := by
+  by_contra h
+  have hd : d = 0 := by omega
+  have hdeg : (A.charpoly.map (Int.castRingHom (ZMod c))).natDegree = 0 := by
+    rw [charpolyBar_natDegree]; omega
+  have h1 : (A.charpoly.map (Int.castRingHom (ZMod c))) = 1 := by
+    have := Polynomial.eq_C_of_natDegree_eq_zero hdeg
+    rw [this]
+    have hlc := charpolyBar_monic A c
+    rw [Polynomial.Monic, Polynomial.leadingCoeff, hdeg] at hlc
+    rw [hlc, map_one]
+  exact hirr.not_isUnit (h1 ▸ isUnit_one)
+
+/-- **The Frobenius orbit consists of roots:** `χ_B(B^(c^k)) ≡ 0 (mod c^(n+1))` for `B = A^(c^n)`
+and every `k`. -/
+theorem aeval_charpoly_tower (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : c.Prime) (n k : ℕ)
+    (i j : Fin d) :
+    (c : ℤ) ^ (n + 1) ∣
+      (Polynomial.aeval (A ^ (c ^ (n + k))) (A ^ (c ^ n)).charpoly) i j := by
+  match k with
+  | 0 => simp [Matrix.aeval_self_charpoly]
+  | (m + 1) =>
+    have h1 : (c : ℤ) ^ (n + 1) ∣
+        (Polynomial.aeval (A ^ (c ^ (n + m + 1))) (A ^ (c ^ (n + m))).charpoly) i j :=
+      dvd_trans (pow_dvd_pow _ (by omega))
+        (ExteriorDold.aeval_charpoly_prime_pow_congr A hc (n + m) i j)
+    have h2 : (c : ℤ) ^ (n + 1) ∣
+        (Polynomial.aeval (A ^ (c ^ (n + m + 1)))
+          ((A ^ (c ^ n)).charpoly - (A ^ (c ^ (n + m))).charpoly)) i j := by
+      refine ExteriorDold.dvd_aeval_entry _ _ _ (fun t => ?_) i j
+      rw [Polynomial.coeff_sub]
+      simpa using (charpoly_coeff_tower_congr A hc n m t).neg_right
+    have h3 := dvd_add h1 h2
+    rw [map_sub] at h3
+    simp only [Matrix.sub_apply] at h3
+    have heq : n + (m + 1) = n + m + 1 := by omega
+    rw [heq]
+    simpa using h3
+
+/-- The Frobenius substitution `X ↦ X^(c^k)` sends `χ̄_B` into the ideal it generates, over
+`ZMod (c^(n+1))`: this is what makes `x^(c^k)` a root of `χ̄_B` in `AdjoinRoot χ̄_B`. -/
+theorem charpoly_comp_dvd (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : c.Prime)
+    (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c)))) (n k : ℕ) :
+    ((A ^ (c ^ n)).charpoly.map (Int.castRingHom (ZMod (c ^ (n + 1))))) ∣
+      (((A ^ (c ^ n)).charpoly.comp (Polynomial.X ^ (c ^ k))).map
+        (Int.castRingHom (ZMod (c ^ (n + 1))))) := by
+  haveI : Fact c.Prime := ⟨hc⟩
+  have hd : 0 < d := pos_of_irreducible hirr
+  set B := A ^ (c ^ n) with hB
+  have hirrB : Irreducible (B.charpoly.map (Int.castRingHom (ZMod c))) := by
+    rw [hB, charpolyBar_tower A hc]; exact hirr
+  set g := B.charpoly with hg
+  have hgm : g.Monic := B.charpoly_monic
+  set G := g.comp (Polynomial.X ^ (c ^ k)) with hG
+  have hdiv : G %ₘ g + g * (G /ₘ g) = G := Polynomial.modByMonic_add_div G g
+  have hdegg : g.natDegree = d := by rw [hg, B.charpoly_natDegree_eq_dim]; simp
+  have hdeg : (G %ₘ g).natDegree < d := by
+    rcases eq_or_ne (G %ₘ g) 0 with h | h
+    · rw [h]; simpa using hd
+    · have := Polynomial.natDegree_lt_natDegree h (Polynomial.degree_modByMonic_lt G hgm)
+      omega
+  have hev : ∀ i j, (c : ℤ) ^ (n + 1) ∣ (Polynomial.aeval B (G %ₘ g)) i j := by
+    intro i j
+    have hap := congrArg (Polynomial.aeval B) hdiv
+    rw [map_add, map_mul] at hap
+    have hCH : Polynomial.aeval B g = 0 := by rw [hg]; exact Matrix.aeval_self_charpoly B
+    rw [hCH, zero_mul, add_zero] at hap
+    have hGB : Polynomial.aeval B G = Polynomial.aeval (A ^ (c ^ (n + k))) g := by
+      rw [hG, Polynomial.aeval_comp]
+      congr 1
+      rw [hB, map_pow, Polynomial.aeval_X, ← pow_mul, ← pow_add]
+    rw [hap, hGB]
+    exact aeval_charpoly_tower A hc n k i j
+  have hco := coeff_dvd_of_aeval_dvd B hc hirrB (n + 1) (G %ₘ g) hdeg hev
+  have hzero : (G %ₘ g).map (Int.castRingHom (ZMod (c ^ (n + 1)))) = 0 := by
+    ext t
+    simp only [Polynomial.coeff_map, Polynomial.coeff_zero, eq_intCast]
+    refine (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).2 ?_
+    have := hco t
+    push_cast
+    exact_mod_cast this
+  have := congrArg (Polynomial.map (Int.castRingHom (ZMod (c ^ (n + 1))))) hdiv
+  rw [Polynomial.map_add, Polynomial.map_mul, hzero, zero_add] at this
+  exact ⟨_, this.symm⟩
+
 end Integral
 
 /-- **Period:** with `χ_A` irreducible mod `c`, `A^(c^(n+d)) ≡ A^(c^n) (mod c^(n+1))`. -/
