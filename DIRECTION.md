@@ -32,7 +32,13 @@ unchanged and the index grows) to get `|t_{n'}| = |t_n|` for arbitrarily large `
 
 ### original directive
 
-## 🎯 (phase 33): Problem 1.8 for every Lucas sequence `U(P,Q)`, `P, Q` odd — target `NumberTheory/Mills/LucasTwoPow.lean` (5 frozen statements, route in header; frozen also: SaitoFibonacci statements (only `exists_entry_pow_congr`'s `private` may be dropped), ThreeAdic, SharedConjecture, Projective, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 34): `F(c^n) + h` composite i.o. for every inert prime `c` and for `c = 5` — target `NumberTheory/Mills/FibonacciPrimePow.lean` (6 frozen statements, route in header; frozen also: SaitoFibonacci, LucasTwoPow, ThreeAdic, SharedConjecture, Projective, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+From the sweep `SWEEP-PRIME-MODULUS.md`.  Phase 33 (`78fd009`) DONE.
+
+---
+
+## ✅ DONE (phase 33): Problem 1.8 for every Lucas sequence `U(P,Q)`, `P, Q` odd — target `NumberTheory/Mills/LucasTwoPow.lean` (5 frozen statements, route in header; frozen also: SaitoFibonacci statements (only `exists_entry_pow_congr`'s `private` may be dropped), ThreeAdic, SharedConjecture, Projective, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 Phase 32 (`677d14a`) DONE: `SaitoFibonacci.lean` sorry-free, Saito Problem 1.8 answered for every `h`.  Problem 1.7 probed and parked (Maze row, `PROBE-SAITO-FIBONACCI.md` § Problem 1.7).
 

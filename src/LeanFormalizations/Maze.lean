@@ -142,7 +142,13 @@ def register : List Row := [
       is a trace (Frobenius-invariant), so it converges c-adically; R = 2^n+3^n leaves 2/32 classes \
       mod 4 and 6/486 mod 9"
     reopenIf := "an exponent sequence under which tr C^R(n) has non-±1 limit points for EVERY \
-      Pisot C, or a covering theorem valid for every Pisot number" }
+      Pisot C, or a covering theorem valid for every Pisot number" },
+  { route := "F(c^n) + h composite i.o. at SPLIT primes c (c ≡ ±1 mod 5) via the prime-modulus filter"
+    verdict := .needsNewIdea, tier := .cited, anchor := none
+    evidence := "SWEEP-PRIME-MODULUS.md: one c-adic limit point; survivor h looks non-integral \
+      numerically (c = 11..41) but no proof that the limit is not an integer"
+    reopenIf := "an algebraic proof that lim F(c^n) (= (ω(φ)-ω(ψ))/√5 in ℤ_c) is not ±1 - h for any \
+      integer h, e.g. via a polynomial it satisfies with no suitable integer root" }
 ]
 
 end LeanFormalizations.Maze
