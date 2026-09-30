@@ -48,20 +48,123 @@ def ShiftedTraceRigidity : Prop :=
   ∀ β : ℝ, IsPisot β → (minpoly ℚ β).natDegree = 3 →
     ¬ ∀ᶠ k in atTop, ∃ p : ℕ, p.Prime ∧ powTrace β (shiftedC k) = (p : ℂ)
 
+/-- For `k ≥ 1`, `2 ≤ 3 ^ k`. -/
+theorem two_le_three_pow {k : ℕ} (hk : 1 ≤ k) : 2 ≤ 3 ^ k :=
+  le_trans (by norm_num) (Nat.pow_le_pow_right (by norm_num) hk)
+
+/-- The defining identity, with `ℕ`-subtraction discharged. -/
+theorem shiftedC_add_two {k : ℕ} (hk : 1 ≤ k) : shiftedC k + 2 = 3 ^ k :=
+  Nat.sub_add_cancel (two_le_three_pow hk)
+
+theorem shiftedC_pos {k : ℕ} (hk : 1 ≤ k) : 0 < shiftedC k := by
+  have h := shiftedC_add_two hk
+  have h3 : 3 ≤ 3 ^ k := le_trans (by norm_num) (Nat.pow_le_pow_right (by norm_num) hk)
+  omega
+
+theorem shiftedC_odd {k : ℕ} (hk : 1 ≤ k) : Odd (shiftedC k) := by
+  have h := shiftedC_add_two hk
+  have ho : Odd (3 ^ k) := Odd.pow (by decide)
+  rw [Nat.odd_iff] at ho ⊢
+  omega
+
+theorem three_not_dvd_shiftedC {k : ℕ} (hk : 1 ≤ k) : ¬ (3 ∣ shiftedC k) := by
+  intro hd
+  have h := shiftedC_add_two hk
+  have h3 : (3 : ℕ) ∣ 3 ^ k := dvd_pow_self 3 (by omega)
+  obtain ⟨a, ha⟩ := hd
+  obtain ⟨b, hb⟩ := h3
+  omega
+
+theorem shiftedC_succ {k : ℕ} (hk : 1 ≤ k) : shiftedC (k + 1) = 3 * shiftedC k + 4 := by
+  have h1 := shiftedC_add_two hk
+  have h2 := shiftedC_add_two (show 1 ≤ k + 1 by omega)
+  have h3 : (3 : ℕ) ^ (k + 1) = 3 * 3 ^ k := by ring
+  have h4 : 3 ≤ 3 ^ k := le_trans (by norm_num) (Nat.pow_le_pow_right (by norm_num) hk)
+  omega
+
+/-- `C m ∣ C (m + φ (C m))`, by Euler's theorem in base `3`. -/
+theorem shiftedC_dvd_totient_shift {m : ℕ} (hm : 1 ≤ m) :
+    shiftedC m ∣ shiftedC (m + Nat.totient (shiftedC m)) := by
+  set n := shiftedC m with hn
+  have hnpos : 0 < n := shiftedC_pos hm
+  have hcop : Nat.Coprime 3 n := by
+    rw [Nat.Prime.coprime_iff_not_dvd (by norm_num)]
+    exact three_not_dvd_shiftedC hm
+  have heuler : 3 ^ n.totient ≡ 1 [MOD n] := Nat.ModEq.pow_totient hcop
+  have hbase : 3 ^ m ≡ 2 [MOD n] := by
+    have h := shiftedC_add_two hm
+    have : n ∣ 3 ^ m - 2 := dvd_refl _
+    exact ((Nat.modEq_iff_dvd' (two_le_three_pow hm)).mpr this).symm
+  have hkey : 3 ^ (m + n.totient) ≡ 2 [MOD n] := by
+    calc 3 ^ (m + n.totient) = 3 ^ m * 3 ^ n.totient := by ring
+      _ ≡ 2 * 1 [MOD n] := Nat.ModEq.mul hbase heuler
+      _ = 2 := by ring
+  exact (Nat.modEq_iff_dvd' (two_le_three_pow (by omega))).mp hkey.symm
+
 theorem shiftedC_hyps :
     1 ≤ shiftedC 1 ∧ (∀ k ≥ 1, 2 * shiftedC k ≤ shiftedC (k + 1)) ∧
       (∀ k ≥ 1, (29 : ℝ) / 10 * shiftedC k ≤ shiftedC (k + 1)) ∧
       (∀ m ≥ 1, ∃ k > m, shiftedC m ∣ shiftedC k) := by
-  sorry
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · simp [shiftedC]
+  · intro k hk
+    rw [shiftedC_succ hk]; omega
+  · intro k hk
+    have h1 : ((shiftedC k : ℝ)) + 2 = 3 ^ k := by
+      exact_mod_cast congrArg (Nat.cast : ℕ → ℝ) (shiftedC_add_two hk)
+    have h2 : ((shiftedC (k + 1) : ℝ)) = 3 * shiftedC k + 4 := by
+      exact_mod_cast congrArg (Nat.cast : ℕ → ℝ) (shiftedC_succ hk)
+    have h3 : (3 : ℝ) ≤ 3 ^ k := by
+      have : (3 : ℕ) ≤ 3 ^ k := le_trans (by norm_num) (Nat.pow_le_pow_right (by norm_num) hk)
+      exact_mod_cast this
+    linarith
+  · intro m hm
+    refine ⟨m + Nat.totient (shiftedC m), ?_, shiftedC_dvd_totient_shift hm⟩
+    have := Nat.totient_pos.mpr (shiftedC_pos hm)
+    omega
 
 theorem eq_one_of_eventually_dvd {g : ℕ} (hg : ∀ᶠ k in atTop, g ∣ shiftedC k) : g = 1 := by
-  sorry
+  obtain ⟨N, hN⟩ := eventually_atTop.mp hg
+  set k := max N 1 with hk
+  have hk1 : 1 ≤ k := le_max_right _ _
+  have h1 : g ∣ shiftedC k := hN k (le_max_left _ _)
+  have h2 : g ∣ shiftedC (k + 1) := hN (k + 1) (le_trans (le_max_left _ _) (Nat.le_succ _))
+  have hsucc := shiftedC_succ hk1
+  have hg4 : g ∣ 4 := by
+    have : g ∣ shiftedC (k + 1) - 3 * shiftedC k := Nat.dvd_sub h2 (Dvd.dvd.mul_left h1 3)
+    simpa [hsucc] using this
+  have hgodd : Odd g := (shiftedC_odd hk1).of_dvd_nat h1
+  have hle : g ≤ 4 := Nat.le_of_dvd (by norm_num) hg4
+  rw [Nat.odd_iff] at hgodd
+  interval_cases g <;> simp_all
 
 /-- **Theorem E, conditional form**: the least `A > 1` with `⌊A^(3^k − 2)⌋` prime for all `k ≥ 1`
 is transcendental, given Saito's Type B/Prop 3.1 and our rigidity node. -/
 theorem xi_shifted_transcendental (hS : Saito2025TypeBTrace) (hR : ShiftedTraceRigidity)
     {ξ : ℝ} (hξ : IsLeast {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ shiftedC k⌋₊).Prime} ξ) :
     Transcendental ℚ ξ := by
-  sorry
+  obtain ⟨h1, h2, h3, h5⟩ := shiftedC_hyps
+  obtain ⟨ξ', hleast, hdisj⟩ :=
+    hS shiftedC h1 h2 (fun K => ⟨max K 1, le_max_left _ _, h3 _ (le_max_right _ _)⟩)
+      (fun m hm => by
+        obtain ⟨k, hk, hdvd⟩ := h5 m hm
+        exact ⟨k, hk, hdvd, h3 k (by omega)⟩)
+  have hxi : ξ' = ξ := hleast.unique hξ
+  rw [hxi] at hdisj hleast
+  rcases hdisj with htr | ⟨g, hg1, hpisot, hdeg, K, hK⟩
+  · exact htr
+  -- Pisot branch: the asymptotic gcd forces `g = 1`, and then every large trace is prime.
+  have hgone : g = 1 := by
+    refine eq_one_of_eventually_dvd (g := g) ?_
+    filter_upwards [eventually_ge_atTop (max K 1)] with k hk
+    exact (hK k (le_trans (le_max_left _ _) hk) (h3 k (le_trans (le_max_right _ _) hk))).1
+  subst hgone
+  rw [pow_one] at hpisot hdeg
+  refine absurd ?_ (hR ξ hpisot hdeg)
+  filter_upwards [eventually_ge_atTop (max K 1)] with k hk
+  have hk1 : 1 ≤ k := le_trans (le_max_right _ _) hk
+  have htrace := (hK k (le_trans (le_max_left _ _) hk) (h3 k hk1)).2
+  refine ⟨⌊ξ ^ shiftedC k⌋₊, hleast.1.2 k hk1, ?_⟩
+  simpa using htrace
 
 end LeanFormalizations.Mills.ShiftedMills

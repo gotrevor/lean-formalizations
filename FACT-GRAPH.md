@@ -71,9 +71,11 @@ graph LR
 | `StrongSixExponentials` | 📚 theorem | 1 |
 | `StrongFourExponentialsConjecture` | 🔮 conjecture | 1 |
 | `Roth1955` | 📚 theorem | 1 |
+| `Saito2025TypeBTrace` | 📚 theorem | 1 |
+| `Mills.ShiftedMills.ShiftedTraceRigidity` | 📚 theorem | 1 |
 | `Mahler1957` | 📚 theorem | 1 |
 
-Unconditional theorems in the scanned namespaces (no named hypothesis): 613.
+Unconditional theorems in the scanned namespaces (no named hypothesis): 623.
 
 ## Refuted
 
