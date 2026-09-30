@@ -169,6 +169,7 @@ import LeanFormalizations.NumberTheory.Mills.QuadraticPisotFloor
 import LeanFormalizations.NumberTheory.Mills.TheoremDGround
 import LeanFormalizations.Literature.Saito2025
 import LeanFormalizations.NumberTheory.Mills.ShiftedMills
+import LeanFormalizations.NumberTheory.Mills.ShiftedWindow
 import LeanFormalizations.NumberTheory.Mills.FibonacciCoveringAllPrimes
 import LeanFormalizations.NumberTheory.Mills.LucasCoveringAllPrimes
 import LeanFormalizations.NumberTheory.Transcendence.MultisetGraeffe
