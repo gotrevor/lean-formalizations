@@ -370,6 +370,52 @@ theorem not_dvd_lucasU_prime_pow {P Q : ℤ} (hQ : Q = 1 ∨ Q = -1) {c : ℕ} (
     have := hc.two_le
     omega
 
+/-! ### Step 4: the main theorem -/
+
+/-- **The mechanism** (prime as modulus), read off entry `(1,0)` of `A = !![P, −Q; 1, 0]`. -/
+theorem exists_lucasU_prime_pow_congr {P Q : ℤ} (hQ : Q = 1 ∨ Q = -1) {c p m : ℕ}
+    (hp : p.Prime) (hc : c.Prime) (hv : padicValNat c (glCard 2 p) ≤ m) :
+    ∃ j, 1 ≤ j ∧ (p : ℤ) ∣ lucasU P Q (c ^ (m + j)) - lucasU P Q (c ^ m) := by
+  have hdet : ¬ (p : ℤ) ∣ (lucasA P Q).det := by
+    rw [lucasA_det]; exact not_dvd_of_unit hQ hp
+  obtain ⟨jj, hj1, hjj⟩ := SaitoFibonacci.exists_entry_pow_congr (lucasA P Q) hp hc hdet hv
+  refine ⟨jj, hj1, ?_⟩
+  have hh := hjj 1 0
+  rwa [lucasA_pow_apply_one_zero, lucasA_pow_apply_one_zero] at hh
+
+/-- `Φ_j` respects congruences: it is a polynomial with integer coefficients. -/
+theorem dvd_lucasOddPoly_sub {D ε M a b : ℤ} (hM : M ∣ a - b) (j : ℕ) :
+    M ∣ lucasOddPoly D ε a j - lucasOddPoly D ε b j := by
+  induction j using Nat.twoStepInduction with
+  | zero => simpa [lucasOddPoly] using hM
+  | one =>
+      simp only [lucasOddPoly]
+      have e : D * a ^ 3 + 3 * ε * a - (D * b ^ 3 + 3 * ε * b)
+          = (a - b) * (D * (a ^ 2 + a * b + b ^ 2) + 3 * ε) := by ring
+      rw [e]
+      exact hM.mul_right _
+  | more j ih1 ih2 =>
+      simp only [lucasOddPoly]
+      have e : (D * a ^ 2 + 2 * ε) * lucasOddPoly D ε a (j + 1) - lucasOddPoly D ε a j
+            - ((D * b ^ 2 + 2 * ε) * lucasOddPoly D ε b (j + 1) - lucasOddPoly D ε b j)
+          = (a - b) * (D * (a + b) * lucasOddPoly D ε b (j + 1))
+            + (D * a ^ 2 + 2 * ε)
+              * (lucasOddPoly D ε a (j + 1) - lucasOddPoly D ε b (j + 1))
+            - (lucasOddPoly D ε a j - lucasOddPoly D ε b j) := by ring
+      rw [e]
+      exact dvd_sub (dvd_add (hM.mul_right _) (ih2.mul_left _)) ih1
+
+/-- A prime `p` dividing a prime `x` pins `|x| = p`. -/
+theorem abs_eq_of_prime_dvd_prime {p : ℕ} (hp : p.Prime) {x : ℤ} (hd : (p : ℤ) ∣ x)
+    (hx : Prime x) : |x| = (p : ℤ) := by
+  have hn : x.natAbs.Prime := Int.prime_iff_natAbs_prime.1 hx
+  have hd' : p ∣ x.natAbs := by
+    have := Int.natAbs_dvd_natAbs.2 hd
+    simpa using this
+  rcases hn.eq_one_or_self_of_dvd p hd' with hh | hh
+  · exact absurd hh hp.one_lt.ne'
+  · rw [Int.abs_eq_natAbs, hh]
+
 /-- **`U_(c^n)(P, ±1) + h` is composite infinitely often**, for every odd prime `c ∤ D`,
 `D = P² − 4Q ≥ 5`, and every integer `h`. -/
 theorem lucasU_unit_prime_pow_add_not_prime {P Q : ℤ} (hQ : Q = 1 ∨ Q = -1)
@@ -377,6 +423,175 @@ theorem lucasU_unit_prime_pow_add_not_prime {P Q : ℤ} (hQ : Q = 1 ∨ Q = -1)
     (hD : ¬ (c : ℤ) ∣ P ^ 2 - 4 * Q)
     (hgrow : Tendsto (fun n : ℕ => |lucasU P Q (c ^ n)|) atTop atTop) (h : ℤ) :
     ∃ᶠ n in atTop, ¬ Prime (lucasU P Q (c ^ n) + h) := by
-  sorry
+  have hcodd : Odd c := hc.odd_of_ne_two hc2
+  have hcodd' : Odd c := hcodd
+  obtain ⟨j, hj⟩ := hcodd
+  have hcle : 2 ≤ c := hc.two_le
+  have hj1 : 1 ≤ j := by omega
+  by_contra hcon
+  rw [Filter.not_frequently] at hcon
+  simp only [not_not] at hcon
+  obtain ⟨n₀, hn₀⟩ := eventually_atTop.1 hcon
+  set U : ℕ → ℤ := fun n => lucasU P Q (c ^ n) with hUdef
+  set t : ℕ → ℤ := fun n => U n + h with htdef
+  set H : ℕ := h.natAbs with hH
+  have hhabs : |h| = (H : ℤ) := Int.abs_eq_natAbs h
+  have hH0 : (0 : ℤ) ≤ (H : ℤ) := Int.natCast_nonneg _
+  have hprime : ∀ n ≥ n₀, Prime (t n) := fun n hn => hn₀ n hn
+  have hgr : ∀ B : ℤ, ∃ N : ℕ, ∀ n ≥ N, B ≤ |U n| := by
+    intro B
+    obtain ⟨N, hN⟩ := eventually_atTop.1 (tendsto_atTop.1 hgrow B)
+    exact ⟨N, hN⟩
+  have hlowabs : ∀ n : ℕ, |U n| - (H : ℤ) ≤ |t n| := by
+    intro n
+    have hab := abs_sub_abs_le_abs_add' (a := U n) (b := h)
+    simp only [htdef]
+    omega
+  -- ### the no-return step
+  have hstep2 : ∀ n ≥ n₀, ∀ p : ℕ, p.Prime → (p : ℤ) = |t n| →
+      ¬ (padicValNat c (glCard 2 p) ≤ n) := by
+    intro n hn p hp hpv hv
+    have hiter : ∀ k : ℕ, ∃ m, n + k ≤ m ∧ (p : ℤ) = |t m| ∧
+        padicValNat c (glCard 2 p) ≤ m := by
+      intro k
+      induction k with
+      | zero => exact ⟨n, by omega, hpv, hv⟩
+      | succ k ih =>
+          obtain ⟨m, hm, hpm, hvm⟩ := ih
+          obtain ⟨jj, hjj1, hjj⟩ := exists_lucasU_prime_pow_congr hQ hp hc hvm
+          have hpt : (p : ℤ) ∣ t m := by
+            have hda : (p : ℤ) ∣ |t m| := by rw [← hpm]
+            exact (dvd_abs _ _).mp hda
+          have hdvd : (p : ℤ) ∣ t (m + jj) := by
+            have e : t (m + jj) = (U (m + jj) - U m) + t m := by
+              simp only [htdef, hUdef]; ring
+            rw [e]
+            exact dvd_add hjj hpt
+          have hq := hprime (m + jj) (by omega)
+          have habs := abs_eq_of_prime_dvd_prime hp hdvd hq
+          exact ⟨m + jj, by omega, habs.symm, by omega⟩
+    obtain ⟨K, hK⟩ := hgr ((p : ℤ) + (H : ℤ) + 1)
+    obtain ⟨m, hm, hpm, -⟩ := hiter K
+    have h1 := hK m (by omega)
+    have h2 := hlowabs m
+    omega
+  -- ### the filter output
+  obtain ⟨Na, hNa⟩ := hgr ((c : ℤ) + (H : ℤ) + 1)
+  set N : ℕ := max n₀ Na with hNdef
+  have hstep3 : ∀ n ≥ N, ∃ x : ℤ, (x = 1 - h ∨ x = -1 - h) ∧ (c : ℤ) ^ (n / 2) ∣ U n - x := by
+    intro n hn
+    have hn₀' : n₀ ≤ n := le_trans (le_max_left _ _) hn
+    have hNa' : Na ≤ n := le_trans (le_max_right _ _) hn
+    have hUb := hNa n hNa'
+    have hlow := hlowabs n
+    have htp := hprime n hn₀'
+    obtain ⟨p, hpv⟩ : ∃ p : ℕ, (p : ℤ) = |t n| := ⟨(t n).natAbs, (Int.abs_eq_natAbs _).symm⟩
+    have hp : p.Prime := by
+      have hn' : (t n).natAbs.Prime := Int.prime_iff_natAbs_prime.1 htp
+      have : p = (t n).natAbs := by
+        have := Int.abs_eq_natAbs (t n)
+        omega
+      rwa [this]
+    have hpc : p ≠ c := by
+      intro hEq
+      rw [hEq] at hpv
+      omega
+    have hlt : n < padicValNat c (glCard 2 p) := by
+      by_contra hle
+      exact hstep2 n hn₀' p hp hpv (by omega)
+    have hsgn : (p : ℤ) = t n ∨ (p : ℤ) = -t n := by
+      rcases abs_cases (t n) with ⟨e1, _⟩ | ⟨e1, _⟩
+      · left; omega
+      · right; omega
+    have hout : (c : ℤ) ^ (n / 2) ∣ t n - 1 ∨ (c : ℤ) ^ (n / 2) ∣ t n + 1 := by
+      rcases pow_dvd_sub_or_add_of_lt_padicValNat hc hc2 hp hpc hlt with hdd | hdd
+      · rcases hsgn with he | he
+        · left; rw [he] at hdd; exact hdd
+        · right
+          rw [he] at hdd
+          have hne : (c : ℤ) ^ (n / 2) ∣ -(t n + 1) := by
+            have e : -(t n + 1) = -t n - 1 := by ring
+            rw [e]; exact hdd
+          exact dvd_neg.mp hne
+      · rcases hsgn with he | he
+        · right; rw [he] at hdd; exact hdd
+        · left
+          rw [he] at hdd
+          have hne : (c : ℤ) ^ (n / 2) ∣ -(t n - 1) := by
+            have e : -(t n - 1) = -t n + 1 := by ring
+            rw [e]; exact hdd
+          exact dvd_neg.mp hne
+    rcases hout with hdd | hdd
+    · refine ⟨1 - h, Or.inl rfl, ?_⟩
+      have e : U n - (1 - h) = t n - 1 := by simp only [htdef]; ring
+      rw [e]; exact hdd
+    · refine ⟨-1 - h, Or.inr rfl, ?_⟩
+      have e : U n - (-1 - h) = t n + 1 := by simp only [htdef]; ring
+      rw [e]; exact hdd
+  -- ### the endgame: compare levels `n` and `n + 1`
+  set D : ℤ := P ^ 2 - 4 * Q with hDdef
+  set B : ℕ := (lucasOddPoly D Q (1 - h) j).natAbs + (lucasOddPoly D Q (-1 - h) j).natAbs
+    + 2 * H + 8 with hB
+  obtain ⟨n, hnN, hne⟩ : ∃ n, N ≤ n ∧ B + 1 ≤ n / 2 :=
+    ⟨2 * (B + 1) + 2 * N, by omega, by omega⟩
+  set e : ℕ := n / 2 with hedef
+  have hcpow : ((B : ℤ) + 1) < (c : ℤ) ^ e := by
+    have h1 : e < 2 ^ e := Nat.lt_two_pow_self
+    have h2 : (2 : ℕ) ^ e ≤ c ^ e := Nat.pow_le_pow_left hcle e
+    have h3 : B + 1 < c ^ e := by omega
+    exact_mod_cast h3
+  obtain ⟨x, hx, hxd⟩ := hstep3 n hnN
+  obtain ⟨y, hy, hyd⟩ := hstep3 (n + 1) (by omega)
+  have hyd' : (c : ℤ) ^ e ∣ U (n + 1) - y := dvd_trans (pow_dvd_pow _ (by omega)) hyd
+  have hcomp : U (n + 1) = lucasOddPoly D Q (U n) j := by
+    have hoddn : Odd (c ^ n) := hcodd'.pow
+    have hidx : c ^ (n + 1) = (2 * j + 1) * c ^ n := by rw [pow_succ, mul_comm, ← hj]
+    simp only [hUdef]
+    rw [hidx]
+    exact lucasU_odd_mul hQ j hoddn
+  have hphi : (c : ℤ) ^ e ∣ lucasOddPoly D Q (U n) j - lucasOddPoly D Q x j :=
+    dvd_lucasOddPoly_sub hxd j
+  have hkey : (c : ℤ) ^ e ∣ y - lucasOddPoly D Q x j := by
+    have ee : y - lucasOddPoly D Q x j
+        = (lucasOddPoly D Q (U n) j - lucasOddPoly D Q x j) - (U (n + 1) - y) := by
+      rw [hcomp]; ring
+    rw [ee]
+    exact dvd_sub hphi hyd'
+  have hxb : |x| ≤ (H : ℤ) + 1 := by rcases hx with rfl | rfl <;> rw [abs_le] <;> omega
+  have hbnd : |y - lucasOddPoly D Q x j| ≤ (B : ℤ) := by
+    have hBz : ((lucasOddPoly D Q (1 - h) j).natAbs : ℤ)
+        + ((lucasOddPoly D Q (-1 - h) j).natAbs : ℤ) + 2 * (H : ℤ) + 8 = (B : ℤ) := by
+      rw [hB]; push_cast; ring
+    have hyb : |y| ≤ (H : ℤ) + 1 := by rcases hy with rfl | rfl <;> rw [abs_le] <;> omega
+    have hz1 : (0 : ℤ) ≤ ((lucasOddPoly D Q (1 - h) j).natAbs : ℤ) := Int.natCast_nonneg _
+    have hz2 : (0 : ℤ) ≤ ((lucasOddPoly D Q (-1 - h) j).natAbs : ℤ) := Int.natCast_nonneg _
+    have hxb2 : |lucasOddPoly D Q x j| ≤ ((lucasOddPoly D Q (1 - h) j).natAbs : ℤ)
+        + ((lucasOddPoly D Q (-1 - h) j).natAbs : ℤ) := by
+      rcases hx with rfl | rfl
+      · rw [Int.abs_eq_natAbs]; omega
+      · rw [Int.abs_eq_natAbs]; omega
+    rcases abs_cases y with ⟨e1, _⟩ | ⟨e1, _⟩ <;>
+      rcases abs_cases (lucasOddPoly D Q x j) with ⟨e2, _⟩ | ⟨e2, _⟩ <;>
+      rcases abs_cases (y - lucasOddPoly D Q x j) with ⟨e3, _⟩ | ⟨e3, _⟩ <;> omega
+  have hzero : y - lucasOddPoly D Q x j = 0 := by
+    by_contra hnz
+    have hle := Int.le_of_dvd (abs_pos.2 hnz) ((dvd_abs _ _).2 hkey)
+    omega
+  have hdiff : lucasOddPoly D Q x j - x = 0 ∨ lucasOddPoly D Q x j - x = 2 ∨
+      lucasOddPoly D Q x j - x = -2 := by
+    have hyx : lucasOddPoly D Q x j = y := by omega
+    rw [hyx]
+    rcases hx with rfl | rfl <;> rcases hy with rfl | rfl <;> omega
+  have hx0 : x = 0 := by
+    by_contra hxn
+    obtain ⟨g1, g2, g3⟩ := lucasOddPoly_far (P := P) hQ hD5 hxn hj1
+    rw [← hDdef] at g1 g2 g3
+    rcases hdiff with hh | hh | hh
+    · exact g1 hh
+    · exact g2 hh
+    · exact g3 hh
+  rw [hx0, sub_zero] at hxd
+  have hc1 : (c : ℤ) ∣ U n := dvd_trans (dvd_pow_self (c : ℤ) (show e ≠ 0 by omega)) hxd
+  exact not_dvd_lucasU_prime_pow hQ hc hc2 hD n hc1
 
 end LeanFormalizations.Mills.LucasUnitAllPrimes

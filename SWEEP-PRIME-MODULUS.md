@@ -237,3 +237,53 @@ modulus.**  This is the reusable idea of the phase.
 **Still open beyond this phase.**  `Q = 0` and split/ramified `c` (i.e. `P²−4Q` a square mod `c`)
 for general `U(P,Q)`; the phase-37 route (odd-index Cayley–Hamilton composition) is the natural
 attack, with the `Q^N` in `det(A_N) = −Q^N` as the obstruction recorded above.
+
+---
+
+## Phase 38 — `U_(c^n)(P, ±1) + h` composite i.o. at EVERY odd prime `c ∤ D` (DONE)
+
+`NumberTheory/Mills/LucasUnitAllPrimes.lean` is sorry-free; all four frozen statements are
+`#print axioms`-clean.  Split and inert `c` alike, with no case split on the Legendre symbol
+in the endgame.
+
+**Step 1 (`lucasU_odd_mul`) — the `Q^N` obstruction dissolves for `Q = ±1`.**  The phase-37
+insight transfers verbatim once one notices that all that matters is `det(A^N) = Q^N`, and for
+`Q = ±1` and **odd** `N` this is the constant `Q`.  With `A = (lucasA P Q)^N`, `L = tr A`,
+Cayley–Hamilton gives `A² = L·A − Q·I`, hence `tr(A²) = L² − 2Q = D U_N² + 2Q =: T` (using
+`L² = D U_N² + 4Q^N`, proved entrywise from
+`tr² − 4 det = (M₀₀ − M₁₁)² + 4 M₀₁M₁₀`, `M₀₀ − M₁₁ = P U_N`, `M₀₁ = −Q U_N`), and
+`det(A²) = Q² = 1`, hence `A⁴ = T·A² − I`.  Reading entry `(1,0)`:
+`U((2j+1)N) = Φ_j(U_N)` with `Φ` exactly the frozen `lucasOddPoly`.  The `(1,0)` entry of `A³`
+is `(L² − Q)U_N = D U_N³ + 3Q U_N`, which is where the `3ε` comes from.
+
+**Step 2 (`lucasOddPoly_far`).**  `Φ_j(x) = x · Aux(t, j)` with `t = D x² + 2ε`, `Aux₀ = 1`,
+`Aux₁ = t + ε`, `Aux_(j+2) = t·Aux_(j+1) − Aux_j`.  `D ≥ 5` and `x ≠ 0` give `t ≥ 3`, so `Aux`
+is `≥ 1` and strictly increasing, and `Φ_j(x) − x = x(Aux_j − 1) ≥ 1` for `j ≥ 1`.  The only
+way to hit `2` would be `|x| = 1` with `Aux_j = 3`, i.e. `t = 4`, i.e. `D = 6`, `ε = −1`.  **That
+abstract exception is real but unreachable**: for `ε = −1`, `D = P² + 4`, and `P² = 2` is
+impossible over `ℤ`.  (For `ε = +1`, `t = D + 2 ≥ 7` already.)  The residual `t = 3` case
+(`D = 5, ε = −1`, i.e. Fibonacci) is fine: `Aux = 1, 2, 5, 13, …` never takes the value `3`.
+
+**Step 3 (`not_dvd_lucasU_prime_pow`) — the clean route, and it is a Legendre split.**
+The header's suggested binomial/rank-of-apparition routes are *not* needed.  Split on whether
+`D` is a square in `ZMod c`:
+- **non-square**: phase 36's `lucasU_prime_pow_mod` already gives `U(c^n) ≡ (−1)^n (mod c)`;
+- **square** `D = d²`, `d ≠ 0` (because `c ∤ D`): build the two roots in `ZMod c` by hand,
+  `α = (P + d)/2`, `β = P − α` (`2` is a unit as `c ≠ 2`; `α² = Pα − Q` follows from `d² = D`
+  after clearing `4`).  Then `z^(c^n) = z` for **every** `z : ZMod c` (iterated `ZMod.pow_card`),
+  and phase 36's `pow_eq_lucasU` read at `α` and at `β` and subtracted gives
+  `(α − β)(U(c^n) − 1) = 0`, so `U(c^n) ≡ 1 (mod c)`.
+
+  So in fact `U(c^n) ≡ ±1 (mod c)` always — a stronger statement than needed, and the
+  split half costs about twenty lines.
+
+**Step 4.**  Phase 37's endgame with two changes forced by `U` being negative and non-monotone:
+- the filter's `p := |t n|` (a `natAbs`), so `c^(n/2) ∣ p ∓ 1` has to be converted to
+  `c^(n/2) ∣ t n ∓ 1` through `dvd_neg` — the two candidate residues `{1 − h, −1 − h}` are
+  closed under that sign flip, so nothing is lost;
+- monotonicity is replaced by phase 33's **iterated return**: `padicValNat c (glCard 2 p) ≤ m`
+  survives the step `m ↦ m + j` because the modulus `p` is unchanged, so one gets `|t m| = p`
+  for arbitrarily large `m`, contradicting `|U(c^n)| → ∞`.
+
+**Still open beyond this phase.**  `|Q| ≥ 2` at split `c` (the `Q^N` in `det(A^N)` is then a
+genuine extra variable, and the composition polynomial acquires a second argument), and `Q = 0`.
