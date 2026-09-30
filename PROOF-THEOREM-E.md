@@ -61,7 +61,15 @@ Let `G = Gal(K(ζ_M)/ℚ(ζ_M))`.  It is transitive on the three roots unless `�
 - **E2 with `T = ±2` is impossible** (`t = zT = ω − ε` with `|t| = 2` needs `ε = −1`).
 - What remains of E2: `T = tr(ξ^(−2)) = ±1`, `ξ` complex, and `δ_(C_k) = 2r^(C_k) cos(C_k θ) < 0` for **all** large `k`, with `r = |β₂| < ξ^(−0.425 + o(1))`.  That is a trapped orbit of `x ↦ 3x + 4θ/2π (mod 1)` in a half-circle plus a size condition.
 
-**Refined Theorem E.**  `ξ(3^k − 2)` is transcendental unless `ξ` is a complex cubic Pisot number with `f ≡ (X ∓ 1)³ (mod 3)`, `tr(ξ^(−2)) = ±1`, conjugate modulus `< ξ^(−0.425)`, and argument `θ` with `cos((3^k − 2)θ) < 0` for all large `k`; or `ξ` lies in the conductor-13 cyclic cubic field (E1, probably removable).  Unconditional (BHP + MTY24).
+**E2 is impossible outright (mod-3 congruence).**  In E2, `f ≡ (X − z)³ ≡ X³ − z (mod 3)`, so `σ₁ ≡ σ₂ ≡ 0` and `σ₃ ≡ ±1 (mod 3)`.  Hence `T = tr(ξ^(−2)) = (σ₂² − 2σ₁σ₃)/σ₃²` has `v₃(T) ≥ 1`, and `T ∉ {±1, ±2}`.  With `ε = 0` (minimality), `t = zT = ω ∈ {±1}` forces `T = ±1`, which is impossible; and `T = 0` gives `t = 0 = ω`, also impossible.  (This supersedes the complex/trapped-orbit residue below; kept for provenance.)
+
+**E1, numerics:** all 6 cyclic cubic Pisot `f` with `13² ∣ disc` in `[−15, 15]³` — `(−14, 9, −1)`, `(−12, 9, 1)`, `(−11, −4, 1)`, `(−10, 3, 1)`, `(−6, −1, 5)`, `(−4, 1, 1)` — **fail the window test outright**.  `3` is inert in the conductor-13 field, so the Teichmüller roots form one Frobenius orbit of primitive 13th/26th roots of unity.  Expected proof: the `C′` support argument in `ℚ(ζ₂₆)`, with the `α_k` written in Gaussian periods.
+
+**Final form (draft 1).**  **`ξ(3^k − 2)` is transcendental, unconditionally (BHP + MTY24 + Saito's Theorem 2.6), unless `ℚ(ξ)` is the cyclic cubic field of conductor 13.**  Numerically that field contributes no survivors.
+
+**Same template, other sequences.**  `ξ(r·3^k − 1)` for **every even `r ≥ 2`** (`agcd = 1`, shift `s = −1`, `T = σ₂/σ₃`, `σ₂ ≡ 0 ⇒ 3 ∣ T` in the `(X − z)³` class; minimality is identical).  Saito's Theorem 1.9(C) needs `r ≥ 4.003·10¹⁴`.  Odd `r` has `agcd = 2`, so `ξ²` is the Pisot number: redo Lemma 5 with exponent `(r·3^n − 1)/2` (half-integral 3-adic powers; the Galois step then needs consistent square roots).
+
+**Refined Theorem E (superseded by the final form above).**  `ξ(3^k − 2)` is transcendental unless `ξ` is a complex cubic Pisot number with `f ≡ (X ∓ 1)³ (mod 3)`, `tr(ξ^(−2)) = ±1`, conjugate modulus `< ξ^(−0.425)`, and argument `θ` with `cos((3^k − 2)θ) < 0` for all large `k`; or `ξ` lies in the conductor-13 cyclic cubic field (E1, probably removable).  Unconditional (BHP + MTY24).
 
 This parallels Saito's Theorem 1.7 for Mills (a size window `(1.3)` on a totally real cubic).  Here the survivor must be **complex**, sit in two residue classes mod 3, satisfy a trace equation, **and** have a trapped rotation orbit.
 
