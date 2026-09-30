@@ -196,10 +196,16 @@ So `ξ := ξ(3^k − 2)` is transcendental or itself a cubic Pisot number with `
 
 **Exceptional classes that remain:**
 - **E1.** `ξ` in the cyclic cubic field of conductor 13 (the only abelian cubic field inside `ℚ(ζ_(lcm(26, 8)))`).  Probably an artifact, as the conductor-7 check suggests.
-- **E2.** `f ≡ (X ∓ 1)³ (mod 3)` and `tr(ξ^(−2)) ∈ {±1, ±2}`.  **Impossible for totally real `ξ`**, where `β₂^(−2) + β₃^(−2) > 2`; only complex cubics with `2|β₂|^(−2) cos 2θ + ξ^(−2)` small remain.
+- **E2.** `f ≡ (X ∓ 1)³ (mod 3)` and `tr(ξ^(−2)) ∈ {0, ±1, ±2}`.  (`T = 0` forces `t = 0`, i.e. value `≡ ε`, so it behaves like E3 and dies whenever `ε = 0`.  Numerics found `(−9, −6, −2)`: `σ₂² = 2σ₁σ₃`, `T = 0`, complex, and killed by `ε`.)  **Impossible for totally real `ξ`**, where `β₂^(−2) + β₃^(−2) > 2`; only complex cubics with `2|β₂|^(−2) cos 2θ + ξ^(−2)` small remain.
 - **E3.** `f ≡ X³ (mod 3)` with the floor offset `ε = −1` for all large `n` (if `ε_n = 0`, then `3 ∣ ⌊⌋`, which is composite).  For totally real `ξ` this needs a positive dominant conjugate; for complex `ξ`, an orbit of `x ↦ 3x + 4θ/2π` trapped in a half-circle.
 
-**Candidate statement:** `ξ(3^k − 2)` is transcendental unless `ξ ∈ E1 ∪ E2 ∪ E3`.  The same template works for `ξ(r·3^k − 1)` at every `r ≥ 1` (`s = −1`, `T = σ₂/σ₃`), which would extend Saito's Theorem 1.9(C) from `r ≥ 4·10¹⁴` to all `r`, up to congruence-defined exceptions.
+**Candidate statement:** `ξ(3^k − 2)` is transcendental unless `ξ ∈ E1 ∪ E2 ∪ E3`.
+
+**Numerics (02:15):** all irreducible cubic Pisot `f` with coefficients in `[−9, 9]` (867 of them), at `c = 3`, `R = 3^n − 2`, precision `3^10`, with the true floor offset `ε_n` computed from the conjugates (`n = 4..15`).
+- 41 pass the window test.
+- 37 of those are killed by `ε_n = 0 ⇒ 3 ∣ value`.
+- **The 4 genuine-looking survivors are all E3 with a positive dominant conjugate**: `x³ − 9x² + 3`, `x³ − 9x² + 6`, `x³ − 9x² + 3x + 3`, `x³ − 6x² + 3` (coefficient tuples `(−9,0,3)`, `(−9,0,6)`, `(−9,3,3)`, `(−6,0,3)`).
+- So the exception set in practice is exactly the Mersenne-type class.  The same template works for `ξ(r·3^k − 1)` at every `r ≥ 1` (`s = −1`, `T = σ₂/σ₃`), which would extend Saito's Theorem 1.9(C) from `r ≥ 4·10¹⁴` to all `r`, up to congruence-defined exceptions.
 
 **Honest weight.**
 - Saito's own Mills exceptions are a size window (`(1.3)`); ours are congruence classes mod 3 plus a trace condition.  Neither is empty, so this is a *different* partial result, not a completion.
