@@ -49,7 +49,7 @@ One page, one row per theorem.  Everything here was proved 2026-09-29/30, uncond
 
 - ✅ **`TheoremDGeneral` (phase 56): Theorem D in every degree, PROVED** (`floor_pow_prime_pow_add_not_prime_general`).  Pisot `α` of degree `d`, `c ∤ f(0)`, `α^s > d + 1` ⇒ `⌊α^(c^n + s)⌋` is not prime i.o.  Plastic-number corollary, `s = 5`, every prime `c`.  
 - ✅ **`TheoremDMixed` (phase 57): Theorem D in full** (`floor_pow_prime_pow_add_not_prime_full`): it suffices that some root is a `c`-unit (`f ≢ X^d (mod c)`), using one automorphism of ℂ.  This is the method's full reach (Proposition D′).
-- `ShiftedMillsLarge` (phase 58, running): `ξ(3^k + s)` is transcendental for even `s ≥ 8`, `3 ∤ s`, conditional on Saito Type B + Siegel 1944 only.
+- ✅ **`ShiftedMillsLarge` (phase 58): `ξ(3^(k+j) + s)` transcendental for even `s ≥ 8`, `3 ∤ s`** (`xi_shifted_large_transcendental`), from `Literature.Saito2025TypeBTrace` + `Literature.Siegel1944SmallestPisot` + Theorem D.  No rigidity node.
 
 ## Paper theorems, not yet in Lean
 - **Theorem D** (`PROOF-THEOREM-D.md`): Saito's Problem 1.7 for `R(n) = c^n + s`; every Pisot `α` outside `f ≡ X^d (mod c)` (draft 2 removes the abelian-field exception by a one-automorphism size argument).  Referee pass: Lemmas OK.

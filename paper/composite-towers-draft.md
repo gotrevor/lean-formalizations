@@ -47,7 +47,7 @@ Saito (arXiv:2504.14968) asked whether `F(2^n) + h` is composite for infinitely 
 *Remark (higher order).*  For order `d ≥ 3` entries (Tribonacci), the needed non-integrality of the limit points follows from linear disjointness of `ℚ(α)` and `ℚ(ζ_n)` [paper, `ROADMAP` Theorem C′].
 *Example (order 3).*  For every `n ≡ 95 (mod 1980)`, `T(3^n) + h` is composite for all `|h| ≤ 3`, divisible by one of 5, 7, 13, 47, 53, 593 **[Lean]** `TribonacciCovering.trib_three_pow_prime_free`.
 
-## 7. Saito's Problem 1.7 for `R(n) = c^n + s`  **[paper]** `PROOF-THEOREM-D.md`
+## 7. Saito's Problem 1.7 for `R(n) = c^n + s`  **[Lean]** `TheoremDQuadratic`, `TheoremDGeneral`, `TheoremDMixed`; **[paper]** `PROOF-THEOREM-D.md`
 **Theorem 7.1.**  Let `c` be prime and `s ≥ s₀(d) = ⌈log(d+1)/log κ⌉`.  For every Pisot `α` of degree `d` with `f ≢ X^d (mod c)`, the number `⌊α^(c^n + s)⌋` is composite for infinitely many `n`.
 *Key steps.*
 - the floor offset `ε ∈ {0, −1}` and a combinatorial "stuck-index" lemma;
@@ -57,7 +57,7 @@ Saito (arXiv:2504.14968) asked whether `F(2^n) + h` is composite for infinitely 
 **Proposition 7.2 (the obstruction).**  If `f ≡ X^d (mod c)` and the conjugate contribution stays positive (e.g. `α = 2 + √2`, `c = 2`), the values are `≡ −1` modulo growing powers of `c`, and the filter is silent.  For **any** non-reversible ILRS `R` there is a quadratic Pisot `α` of this type, so Problem 1.7 in full needs an idea beyond this method.
 
 ## 8. Transcendence of shifted Mills constants  **[paper]** `PROOF-THEOREM-E.md`
-**Theorem 8.1.**  For every even `s ≠ 0`, the least `ξ > 1` such that `⌊ξ^(3^k + s)⌋` is prime for every `k ≥ k₀(s)` is transcendental.  (`3 ∣ s` reduces to the shift `s/3^a` for `β = ξ^(3^a)`.)
+**Theorem 8.1.**  (For even `s ≥ 8` with `3 ∤ s`: **[Lean]** `ShiftedMillsLarge.xi_shifted_large_transcendental`, conditional on Saito's Theorem 2.3/Prop 3.1 and Siegel 1944, via Theorem 7.1 directly.)  For every even `s ≠ 0`, the least `ξ > 1` such that `⌊ξ^(3^k + s)⌋` is prime for every `k ≥ k₀(s)` is transcendental.  (`3 ∣ s` reduces to the shift `s/3^a` for `β = ξ^(3^a)`.)
 **Theorem 8.2 (odd `s`).**  The same holds for every odd `s`.  So **`ξ(3^k + s)` is transcendental for every `s ≠ 0`.**  The new ingredient for `g = 2` is a trace-zero argument over `ℚ(μ₂₀₈)`, since odd powers of `±√β` cancel.  The Kummer-degenerate case `ξ = √d·γ` gives `|tr γ^s| = d^(−s/2) ∉ ℚ`.  In the conductor-13 field it is instead killed by a prime `q ∣ d` with a unique prime above it.  E.g. `ξ(3^k − 2)` (`k ≥ 1`) and `ξ(3^k + 2)` (`k ≥ 1`).
 *Proof outline.*
 - Saito's Theorem 2.3 reduces to `ξ` a cubic Pisot number.  His extra hypothesis `(B6)` is exactly what non-reversibility breaks.
