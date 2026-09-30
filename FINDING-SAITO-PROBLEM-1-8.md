@@ -49,6 +49,15 @@ As a consistency check, the Lucas analogue `L(2^n) + h` escapes the argument exa
 
 The same proof works for every Lucas sequence `U_N(P,Q)` (`U₀ = 0`, `U₁ = 1`, `U_(N+2) = P U_(N+1) − Q U_N`) with `P, Q` odd and `|U(2^n)| → ∞`.  It is also checked in Lean: [`NumberTheory/Mills/LucasTwoPow.lean`](src/LeanFormalizations/NumberTheory/Mills/LucasTwoPow.lean), theorem `lucasU_two_pow_add_not_prime`.  The sign flip becomes `V(2m) = V(m)² − 2Q^m` with `Q^(2^n) ≡ 1 (mod 2^(n+2))`.
 
+## Extension: every prime base
+
+For **every prime `c` and every integer `h`**, `F(c^n) + h` is composite for infinitely many `n`: [`NumberTheory/Mills/FibonacciAllPrimes.lean`](src/LeanFormalizations/NumberTheory/Mills/FibonacciAllPrimes.lean), theorem `fib_prime_pow_add_not_prime_all`.
+- For `c ≡ ±2 (mod 5)`, the same sign flip works: `F(c^(n+1)) ≡ −F(c^n) (mod c^(n+1))`.
+- For `c = 5`, the fact that `5^n ∣ F(5^n)` together with `F(4k+1) ± 1` factorizations does it.
+- For the remaining primes, the exact identity `F((2j+1)N) = Φ_j(F(N))` for odd `N` (`Φ_j` an integer polynomial) turns the 2-adic congruences into an equality `Φ_j(x) ∈ {x, x ± 2}`, which has no nonzero solutions.
+
+The Lucas numbers `L(c^n) + h` are settled for every odd prime `c` the same way (`LucasPrimePow.lean`).  At `c = 2` they are not: `L(2^n)` is a Fermat-type open problem.
+
 ## Provenance
 
 The argument was found and formalized by Trevor Morris with Claude (Anthropic), 2026-09-29.  Numerics: `scripts/saito-fibonacci-probe.py`.  Working notes: `PROBE-SAITO-FIBONACCI.md`.

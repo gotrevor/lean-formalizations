@@ -146,7 +146,10 @@ def register : List Row := [
   { route := "F(c^n) + h composite i.o. at SPLIT primes c (c ≡ ±1 mod 5) via the prime-modulus filter"
     verdict := .needsNewIdea, tier := .cited, anchor := none
     evidence := "SWEEP-PRIME-MODULUS.md: one c-adic limit point; survivor h looks non-integral \
-      numerically (c = 11..41) but no proof that the limit is not an integer"
+      numerically (c = 11..41) but no proof that the limit is not an integer.  CLOSED 2026-09-30 \
+      by a different route, phase 37 FibonacciAllPrimes.fib_prime_pow_add_not_prime_all: the exact \
+      composition F((2j+1)N) = Φ_j(F N) turns the congruences into an equality, avoiding \
+      non-integrality altogether"
     reopenIf := "an algebraic proof that lim F(c^n) (= (ω(φ)-ω(ψ))/√5 in ℤ_c) is not ±1 - h for any \
       integer h, e.g. via a polynomial it satisfies with no suitable integer root" }
 ]
