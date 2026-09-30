@@ -49,7 +49,7 @@ integer Teichmüller residue `w`, `w^(c−1) ≡ 1` (`c` odd) or `w² ≡ 1` (`c
 
 namespace LeanFormalizations.Mills.TheoremDGeneral
 
-open Filter Polynomial
+open Filter Polynomial LeanFormalizations.Mills.ThreeAdic
 
 /-! ## The spectral bridge (the new content of this phase)
 
@@ -481,6 +481,116 @@ theorem exists_complex_zero_of_family {σ ι : Type*} [Finite σ] [Fintype ι] {
           exact_mod_cast hc
   have := Int.le_of_dvd (abs_pos.2 hDpne) ((dvd_abs _ _).2 (hdvd k))
   omega
+
+
+/-! ### Step 2a: the companion matrix is invertible mod `c` when `c ∤ f(0)`
+
+Phase 55 computed `det (compMat a b) = b` by hand.  In degree `d` the determinant is
+`(-1)^d f(0)`, but computing it is unnecessary: over a field it is enough that `C *ᵥ u = 0` forces
+`u = 0`, and the kernel computation is a two-step cascade — the `i = 0` row gives
+`f(0) · u_(d-1) = 0`, and then row `j + 1` gives `u_j = 0`. -/
+theorem compM_det_ne_zero {K : Type*} [Field K] (f : ℤ[X]) (hd : 1 ≤ f.natDegree)
+    (h0 : ((f.coeff 0 : ℤ) : K) ≠ 0) : (compM K f).det ≠ 0 := by
+  classical
+  intro hdet
+  obtain ⟨u, hu0, hu⟩ := Matrix.exists_mulVec_eq_zero_iff.2 hdet
+  set last : Fin f.natDegree := ⟨f.natDegree - 1, by omega⟩ with hlastdef
+  have hjlast : ∀ j : Fin f.natDegree, ((j : ℕ) + 1 = f.natDegree) ↔ j = last := by
+    intro j
+    refine ⟨fun h => Fin.ext ?_, fun h => ?_⟩
+    · simp only [hlastdef]; omega
+    · subst h; simp only [hlastdef]; omega
+  have hmv : ∀ i : Fin f.natDegree, ∑ j : Fin f.natDegree, compM K f i j * u j = 0 := by
+    intro i
+    have := congrFun hu i
+    simpa [Matrix.mulVec, dotProduct] using this
+  -- the `i = 0` row
+  have hlast0 : u last = 0 := by
+    have h := hmv ⟨0, by omega⟩
+    have hrw : ∀ j : Fin f.natDegree,
+        compM K f ⟨0, by omega⟩ j * u j
+          = - (if j = last then ((f.coeff 0 : ℤ) : K) * u j else 0) := by
+      intro j
+      have hz : ¬ ((0 : ℕ) = (j : ℕ) + 1) := by omega
+      by_cases hj : j = last
+      · subst hj
+        simp only [compM, Matrix.of_apply, if_neg hz, if_pos ((hjlast last).2 rfl), if_pos rfl]
+        push_cast
+        ring
+      · have hne : ¬ ((j : ℕ) + 1 = f.natDegree) := fun h => hj ((hjlast j).1 h)
+        simp [compM, hz, hne, hj]
+    rw [Finset.sum_congr rfl (fun j _ => hrw j), Finset.sum_neg_distrib,
+      Finset.sum_ite_eq' Finset.univ last (fun j => ((f.coeff 0 : ℤ) : K) * u j)] at h
+    simp only [if_pos (Finset.mem_univ last)] at h
+    have : ((f.coeff 0 : ℤ) : K) * u last = 0 := by linear_combination -h
+    exact (mul_eq_zero.1 this).resolve_left h0
+  -- the remaining rows
+  have hterm : ∀ i j : Fin f.natDegree,
+      compM K f i j * u j = (if (i : ℕ) = (j : ℕ) + 1 then u j else 0) := by
+    intro i j
+    by_cases hj : j = last
+    · subst hj; simp [compM, hlast0]
+    · have hne : ¬ ((j : ℕ) + 1 = f.natDegree) := fun h => hj ((hjlast j).1 h)
+      simp [compM, hne]
+  have hall : ∀ j : Fin f.natDegree, u j = 0 := by
+    intro j
+    by_cases hj : j = last
+    · subst hj; exact hlast0
+    · have hne : (j : ℕ) + 1 ≠ f.natDegree := fun h => hj ((hjlast j).1 h)
+      have hlt : (j : ℕ) + 1 < f.natDegree := by have := j.2; omega
+      have h := hmv ⟨(j : ℕ) + 1, hlt⟩
+      rw [Finset.sum_congr rfl (fun k _ => hterm ⟨(j : ℕ) + 1, hlt⟩ k)] at h
+      rw [Finset.sum_eq_single_of_mem j (Finset.mem_univ j) ?_] at h
+      · simpa using h
+      · intro k _ hk
+        simp only [Fin.val_mk, add_left_inj]
+        exact if_neg (fun (hh : (j:ℕ) = (k:ℕ)) => hk (Fin.ext hh.symm))
+  exact hu0 (funext hall)
+
+/-! ### Step 2b: the Teichmüller congruence for `GL_d` -/
+
+theorem glCard_pos {d p : ℕ} (hd : 1 ≤ d) (hp : 2 ≤ p) : 0 < glCard d p := by
+  rw [glCard]
+  refine Finset.prod_pos fun i _ => ?_
+  have : p ^ (i : ℕ) < p ^ d := Nat.pow_lt_pow_right (by omega) i.isLt
+  omega
+
+/-- `C^(Q·c^n) ≡ I (mod c^(n+1))` for `Q = |GL_d(𝔽_c)|`. -/
+theorem compM_pow_congr_one (f : ℤ[X]) (hd : 1 ≤ f.natDegree) {c : ℕ} (hc : c.Prime)
+    (hc0 : ¬ (c : ℤ) ∣ f.coeff 0) (n : ℕ) :
+    ∀ i j, (c : ℤ) ^ (n + 1) ∣
+      ((compM ℤ f ^ glCard f.natDegree c) ^ (c ^ n) - 1) i j := by
+  haveI : Fact c.Prime := ⟨hc⟩
+  have hbase : ∀ i j, (c : ℤ) ∣ (compM ℤ f ^ glCard f.natDegree c - 1) i j := by
+    set φ : ℤ →+* ZMod c := Int.castRingHom (ZMod c) with hφ
+    have hD : φ.mapMatrix (compM ℤ f) = compM (ZMod c) f := by
+      simpa [RingHom.mapMatrix_apply] using compM_map φ f
+    have hdetD : IsUnit (compM (ZMod c) f).det := by
+      refine Ne.isUnit (compM_det_ne_zero f hd ?_)
+      simpa [hφ, ZMod.intCast_zmod_eq_zero_iff_dvd] using hc0
+    obtain ⟨u, hu⟩ := (Matrix.isUnit_iff_isUnit_det (compM (ZMod c) f)).2 hdetD
+    have hcard : Nat.card (GL (Fin f.natDegree) (ZMod c)) = glCard f.natDegree c := by
+      rw [Matrix.card_GL_field]; simp [glCard, ZMod.card]
+    have huQ : u ^ glCard f.natDegree c = 1 := by rw [← hcard]; exact pow_card_eq_one'
+    have hDQ : compM (ZMod c) f ^ glCard f.natDegree c = 1 := by
+      have := congrArg (fun v : GL (Fin f.natDegree) (ZMod c) =>
+        (v : Matrix (Fin f.natDegree) (Fin f.natDegree) (ZMod c))) huQ
+      simpa [hu] using this
+    intro i j
+    have h0 : ((((compM ℤ f ^ glCard f.natDegree c - 1) i j : ℤ)) : ZMod c) = 0 := by
+      have hz : φ.mapMatrix (compM ℤ f ^ glCard f.natDegree c - 1) = 0 := by
+        rw [map_sub, map_pow, hD, hDQ, map_one, sub_self]
+      have h2 := congrFun (congrFun hz i) j
+      simpa [RingHom.mapMatrix_apply, Matrix.map_apply, hφ] using h2
+    exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 h0
+  induction n with
+  | zero => simpa using hbase
+  | succ n ih =>
+      intro i j
+      have hcomm : Commute ((compM ℤ f ^ glCard f.natDegree c) ^ (c ^ n))
+          (1 : Matrix (Fin f.natDegree) (Fin f.natDegree) ℤ) := Commute.one_right _
+      have := TeichmullerCongruence.pow_congr_lift hcomm (e := n + 1) (by omega) ih i j
+      rwa [one_pow, ← pow_mul, ← pow_succ] at this
 
 /-- **Theorem D, every degree** (all roots `c`-units). -/
 theorem floor_pow_prime_pow_add_not_prime_general (f : ℤ[X]) (hmon : f.Monic)
