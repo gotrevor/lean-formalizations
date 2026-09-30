@@ -1,3 +1,30 @@
+## phase 47 (2026-09-30) — CLOSED: `A^(c^n)` is eventually periodic `c`-adically
+
+`NumberTheory/Mills/TeichmullerCongruence.lean` is sorry-free; `pow_prime_pow_period_congr` is
+`#print axioms`-clean (`propext, Classical.choice, Quot.sound`).  For `A` invertible mod `c` there
+are `f ≥ 1` and `a` with `A^(c^(n+f)) ≡ A^(c^n) (mod c^(n-a+1))` for all `n ≥ a` — i.e. the
+`c`-adic limit points of `A^(c^n)` are the `f` values `lim_m A^(c^(a+r+mf))`, `r < f`.  This is
+sub-node R2 of `ShiftedTraceRigidity` (`ROADMAP-PRIME-TOWERS.md` §4-live).
+
+**Route correction vs the file header (less machinery).**  The header proposed the binomial
+expansion `(Y + c^e Z)^c` with `c ∣ binom(c,i)`.  That is avoidable: use the *geometric-sum*
+factorization `X^c - Y^c = (∑_{k<c} X^k Y^(c-1-k))·(X - Y)` (`Commute.geom_sum₂_mul`, valid for
+commuting matrices).  Mod `c` every one of the `c` summands collapses to `Y^(c-1)`, so the cofactor
+is `≡ c·Y^(c-1) ≡ 0 (mod c)`; multiplying by `c^e ∣ X - Y` gives `c^(e+1)` with no binomial
+coefficients and no `Z` / no smul-divisibility bookkeeping at all.  `pow_congr_lift` is the reusable
+form (two commuting matrices, unlike `SmulDvd.pow_prime_pow` which is relative to `1`).
+The mod-`c` base step is `SharedConjecture.exists_trace_pow_congr`'s order splitting verbatim
+(`Nat.ordProj_mul_ordCompl_eq_self` + `Nat.ModEq.pow_totient`), with `a = N.factorization c`,
+`f = φ(ord_compl[c] N)`, `N = |GL_d(ZMod c)|`.
+`mapMatrix_eq_of_dvd` / `dvd_of_mapMatrix_eq` are the entrywise-congruence ↔ `ZMod c`-reduction
+bridge; note `ψ M i j` is *defeq* (not `simp`-equal) to `((M i j : ℤ) : ZMod c)`, so close that step
+with `rw [hsum]; rfl` + `exact`, never `simpa` (which pushes `map` under the `∑` and mismatches).
+
+### Next attack on `ShiftedTraceRigidity`
+R2 is now available; the open sub-nodes are the *identification* of the `f` limit points with
+Teichmüller lifts of the eigenvalues (needs `ℤ_c` or a resultant-free surrogate) and the step from
+"finitely many limit points" to "the window `μ_(d!)` is visited finitely often".
+
 ## phase 42 (2026-09-30) — CLOSED: Theorem B (2×2 traces at odd primes, classified)
 
 `NumberTheory/Mills/TraceClassification.lean` is sorry-free; all three frozen statements are
