@@ -414,12 +414,15 @@ theorem entry_period {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : 
     have := dvd_add hstep ih
     simpa [show m + (q + 1) * d = m + q * d + d by ring] using this
 
-/-- **Theorem A.** -/
-theorem entry_prime_pow_add_not_prime {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ}
+/-- **Theorem A, general form.**  The hypothesis `Odd d` of `entry_prime_pow_add_not_prime` is
+only used to rule out `h = 0`: the survivor count gives `∑_(k<d) ε_k = d·h` with `ε_k ∈ {±1}`, and
+`h ≠ 0` already forces `h = ±1` for any `d ≥ 1`.  So either hypothesis suffices. -/
+theorem entry_prime_pow_add_not_prime_gen {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ}
     (hc : c.Prime) (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c))))
-    (hodd : Odd d) (hmu : c = 2 ∨ ∀ k, 3 ≤ k → k ≤ d → ¬ k ∣ c - 1) {i j : Fin d} (hij : i ≠ j)
+    (hmu : c = 2 ∨ ∀ k, 3 ≤ k → k ≤ d → ¬ k ∣ c - 1) {i j : Fin d} (hij : i ≠ j)
     (hnz : ∃ r < d, ¬ (c : ℤ) ∣ (A ^ (c ^ r)) i j)
-    (hgrow : Tendsto (fun n => |(A ^ (c ^ n)) i j|) atTop atTop) (h : ℤ) :
+    (hgrow : Tendsto (fun n => |(A ^ (c ^ n)) i j|) atTop atTop) (h : ℤ)
+    (hdh : Odd d ∨ h ≠ 0) :
     ∃ᶠ n in atTop, ¬ Prime ((A ^ (c ^ n)) i j + h) := by
   haveI : Fact c.Prime := ⟨hc⟩
   obtain ⟨r, hrd, hr⟩ := hnz
@@ -598,26 +601,29 @@ theorem entry_prime_pow_add_not_prime {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ)
     rcases hS1 k with hh | hh <;> rw [hh] <;> norm_num
   have hh1 : h = 1 ∨ h = -1 := by
     have hsum : ∑ k ∈ Finset.range d, S k = (d : ℤ) * h := by linarith [hzero]
-    rcases eq_or_ne h 0 with rfl | h0
-    · rw [hsum] at hpar
-      simp only [mul_zero, zero_sub, dvd_neg] at hpar
-      obtain ⟨k, hk⟩ := hodd
-      have : (2 : ℤ) ∣ (d : ℤ) := hpar
-      have hd' : (d : ℤ) = 2 * k + 1 := by exact_mod_cast hk
-      omega
-    · have hdpos : (0 : ℤ) < d := by positivity
-      have h2 : |(d : ℤ) * h| ≤ (d : ℤ) := by rw [← hsum]; exact habsS
-      rw [abs_mul, abs_of_nonneg hdpos.le, hHabs] at h2
-      have : (H : ℤ) ≤ 1 := by
-        rcases le_or_gt (H : ℤ) 1 with hle | hlt
-        · exact hle
-        · nlinarith
-      have hH1 : H = 1 := by
-        have hH0 : H ≠ 0 := by simpa [hH, Int.natAbs_eq_zero] using h0
-        have : H ≤ 1 := by exact_mod_cast this
+    have h0 : h ≠ 0 := by
+      rcases hdh with hodd | h0
+      · rintro rfl
+        rw [hsum] at hpar
+        simp only [mul_zero, zero_sub, dvd_neg] at hpar
+        obtain ⟨k, hk⟩ := hodd
+        have : (2 : ℤ) ∣ (d : ℤ) := hpar
+        have hd' : (d : ℤ) = 2 * k + 1 := by exact_mod_cast hk
         omega
-      rw [hH] at hH1
+      · exact h0
+    have hdpos : (0 : ℤ) < d := by positivity
+    have h2 : |(d : ℤ) * h| ≤ (d : ℤ) := by rw [← hsum]; exact habsS
+    rw [abs_mul, abs_of_nonneg hdpos.le, hHabs] at h2
+    have : (H : ℤ) ≤ 1 := by
+      rcases le_or_gt (H : ℤ) 1 with hle | hlt
+      · exact hle
+      · nlinarith
+    have hH1 : H = 1 := by
+      have hH0 : H ≠ 0 := by simpa [hH, Int.natAbs_eq_zero] using h0
+      have : H ≤ 1 := by exact_mod_cast this
       omega
+    rw [hH] at hH1
+    omega
   -- every sign equals `h`
   have hhsq : h * h = 1 := by rcases hh1 with rfl | rfl <;> norm_num
   have hprodsum : ∑ k ∈ Finset.range d, (1 - h * S k) = 0 := by
@@ -655,6 +661,15 @@ theorem entry_prime_pow_add_not_prime {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ)
   have hnr : n = r + Q * d := by rw [hn]; ring
   rw [← hnr] at hper
   exact hr (by have := dvd_sub hun hper; simpa using this)
+
+/-- **Theorem A.** -/
+theorem entry_prime_pow_add_not_prime {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ}
+    (hc : c.Prime) (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c))))
+    (hodd : Odd d) (hmu : c = 2 ∨ ∀ k, 3 ≤ k → k ≤ d → ¬ k ∣ c - 1) {i j : Fin d} (hij : i ≠ j)
+    (hnz : ∃ r < d, ¬ (c : ℤ) ∣ (A ^ (c ^ r)) i j)
+    (hgrow : Tendsto (fun n => |(A ^ (c ^ n)) i j|) atTop atTop) (h : ℤ) :
+    ∃ᶠ n in atTop, ¬ Prime ((A ^ (c ^ n)) i j + h) :=
+  entry_prime_pow_add_not_prime_gen A hc hirr hmu hij hnz hgrow h (Or.inl hodd)
 
 /-- Tribonacci: `T 0 = T 1 = 0`, `T 2 = 1`, `T (n+3) = T (n+2) + T (n+1) + T n`. -/
 def trib : ℕ → ℤ
