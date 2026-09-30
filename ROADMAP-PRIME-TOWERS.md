@@ -295,6 +295,13 @@ Done: phases 32–44 (see `PRIME-MODULUS-MAP.md`).  45: Theorem E as a graph edg
 ## 4a. Week-by-week (proposal, 2026-09-30)
 - **Week 1 (Lean, cheap, high certainty).**  Phase 42 (Theorem B), phase 43 (intervals: Fibonacci at every prime; `U(P, ±1)`), phase 39 (quadratic Pisot floor corollary).  In parallel Ren writes the **paper draft §1–3 and §5** (everything already in Lean): Saito 1.8, binary recurrences, Theorem B, Theorem C for binary sequences.
 - **Week 2 (paper math, the new frontier).**  Rigorous write-ups of Theorem D (Saito 1.7 partial) and Theorem E (`ξ(3^k − 2)`), including the decomposition-group fix for exception (i) and the `T = 0` subcase.  Numerics to extend: degree 5–6 Pisot; `c = 5, 7`; `r·3^k − 1` for small `r`.
+- **Elementary route to Theorem A (found overnight; replaces the Hensel/`ℤ_c` plans below).**
+  1. **Dold/Gauss congruence** `p^(k+1) ∣ tr A^(p^(k+1)) − tr A^(p^k)` by necklace counting (phase 49).  This also discharges `Literature.GaussCongruenceTrace` and makes phase 29 unconditional in it.
+  2. The same for **every charpoly coefficient**, via exterior powers (`e_j(A^N) = tr Λ^j(A)^N`): `χ_(A^(c^(n+1))) ≡ χ_(A^(c^n)) (mod c^(n+1))`.
+  3. Let `B = A^(c^n)` and `R = (ℤ/c^(n+1))[B]`, free of rank `d` because `B mod c` is cyclic when `χ_A` is irreducible mod `c`.  By 2 and Cayley–Hamilton, `χ_B(B^c) ≡ 0`, so `σ : p(B) ↦ p(B^c)` is a well-defined ring endomorphism.
+  4. The fixed ring of `σ` is the scalars.  Induct on precision: `σ(y) = y`, `y ≡ s (mod c)` ⇒ `y − s = c·y′` with `σ(y′) ≡ y′ (mod c^n)`.
+  5. The orbit sum `Σ_(i<d) B^(c^i) = Σ σ^i(B)` is `σ`-invariant (`B^(c^d) ≡ B` by phase 47), hence scalar, hence `≡ tr(B)·I`.
+  6. Theorem A: phase 32's survivor argument with the orbit sum.
 - **Week 3 (Lean infrastructure).**  The orbit-sum identity `Σ_(i<d) A^(c^(n+i)) ≡ tr(A^(c^n))·I (mod c^(n+1))`, via either (a) a Galois-ring Frobenius (Hensel lift of a root of `f` near `x^c` in `(ℤ/c^k)[X]/f`), or (b) the Teichmüller limit `S = lim A^(c^(dk))` in `M_d(ℤ_c)` plus the eigenvalue/Cayley–Hamilton argument that `Σ S^(c^i)` is scalar.  Then Theorem A (Tribonacci).  Multi-phase; the first phase is only the `c`-adic limit `S` and `S^(c^d) = S`.
 - **Week 4+.**  Lean for Theorem D in the quadratic case (the Galois step for `d = 2` is a conjugation in `ℚ(√D)`), then cubic.  Theorem E in Lean is the long pole: it needs Saito's Type C (`Literature` Prop or our phase-6-era machinery) plus Theorem D for cubics.
 
