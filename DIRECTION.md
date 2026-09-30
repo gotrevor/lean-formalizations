@@ -2,7 +2,9 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 (phase 46, CURRENT): the 3-adic window for prime traces along `3^n − 2` — first sub-node of `ShiftedTraceRigidity` — target `NumberTheory/Mills/ShiftedWindow.lean` (1 frozen statement, route in header; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 47, CURRENT): `A^(c^n)` eventually periodic `c`-adically (integer Teichmüller congruence) — target `NumberTheory/Mills/TeichmullerCongruence.lean` (1 frozen statement, route in header; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+## ✅ DONE (phase 46): the 3-adic window for prime traces along `3^n − 2` — first sub-node of `ShiftedTraceRigidity` — target `NumberTheory/Mills/ShiftedWindow.lean` (1 frozen statement, route in header; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 ## ✅ DONE (phase 45): Theorem E as a graph edge — `ξ(3^k − 2)` transcendental from `Literature.Saito2025TypeBTrace` + our open node `ShiftedTraceRigidity` — target `NumberTheory/Mills/ShiftedMills.lean` (3 frozen theorems + frozen defs; frozen also: `Literature/Saito2025.lean` (new, faithful-or-weaker check in its header), all earlier Mills phase statements, the rest of Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
