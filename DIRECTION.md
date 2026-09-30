@@ -2,7 +2,9 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 (phase 56, CURRENT, MULTI-PHASE): **Theorem D in every degree** (`c ∤ f(0)`, `α^s > d + 1`) + the plastic-number corollary (degree 3) — target `NumberTheory/Mills/TheoremDGeneral.lean` (2 frozen statements; route = generalize phase 55's integer-system + Nullstellensatz transfer, see header and `HANDOFF-2026-09-30-phase55-complete.md`).  **Decomposing into named sub-lemmas is progress.**  Frozen also: all earlier statements, Literature/; stop: that file sorry-free
+## 🎯 (phase 57, CURRENT): **Theorem D in full**: some root a `c`-unit (`f ≢ X^d mod c`), via `T^(Q+1) = T`, `tr T^Q = m ≥ 1`, and one automorphism of ℂ — target `NumberTheory/Mills/TheoremDMixed.lean` (1 frozen statement, route in header; frozen also: all earlier statements, Literature/; stop: that file sorry-free)
+
+## ✅ DONE (phase 56): **Theorem D in every degree** (`c ∤ f(0)`, `α^s > d + 1`) + the plastic-number corollary (degree 3) — target `NumberTheory/Mills/TheoremDGeneral.lean` (2 frozen statements; route = generalize phase 55's integer-system + Nullstellensatz transfer, see header and `HANDOFF-2026-09-30-phase55-complete.md`).  **Decomposing into named sub-lemmas is progress.**  Frozen also: all earlier statements, Literature/; stop: that file sorry-free
 
 ## ✅ DONE (phase 55): **Theorem D, quadratic case** (Saito 1.7 for `c^n + s`): `⌊α^(c^n+s)⌋` not prime i.o. for quadratic Pisot `α`, `c ∤ b·disc`, `s ≥ 4` — target `NumberTheory/Mills/TheoremDQuadratic.lean` (1 frozen statement; number-field route WITHOUT completions in header, steps 1–5).  **Decomposing into named sub-lemmas is progress**; laps succeed by advancing the crux (Teichmüller in `𝒪_K` mod `𝔓^(n+1)`, spectral trace, separation, size).  Frozen also: all earlier statements, Literature/; stop: that file sorry-free
 
