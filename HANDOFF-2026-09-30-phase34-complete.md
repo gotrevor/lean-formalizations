@@ -1,6 +1,7 @@
 # Handoff: phase 34 complete — `F(c^n) + h` composite i.o. for inert `c` and for `c = 5`
 
-**Date**: 2026-09-30 · **Branch**: `main` · **HEAD**: `2eb97a9`
+**Date**: 2026-09-30 (final lap; treadmill stopped) · **Branch**: `main` · **HEAD**: `264dce9`
+(last proof commit `2eb97a9`; `264dce9` is this handoff.)
 
 ## 🎯 What we're doing
 
