@@ -64,6 +64,8 @@ graph LR
 | `GelfondSchneider1934` | 📚 theorem | 2 |
 | `FiveExponentials` | 📚 theorem | 2 |
 | `Mills.SharedConjecture.DoubleExpTraceComposite` | 📚 theorem | 2 |
+| `Saito2025TypeBTrace` | 📚 theorem | 2 |
+| `Siegel1944SmallestPisot` | 📚 theorem | 2 |
 | `Dudek2016` | 📚 theorem | 2 |
 | `Ridout1958` | 📚 theorem | 1 |
 | `ExponentialsKnown.BakerTwoLogs` | 📚 theorem | 1 |
@@ -71,11 +73,10 @@ graph LR
 | `StrongSixExponentials` | 📚 theorem | 1 |
 | `StrongFourExponentialsConjecture` | 🔮 conjecture | 1 |
 | `Roth1955` | 📚 theorem | 1 |
-| `Saito2025TypeBTrace` | 📚 theorem | 1 |
 | `Mills.ShiftedMills.ShiftedTraceRigidity` | 📚 theorem | 1 |
 | `Mahler1957` | 📚 theorem | 1 |
 
-Unconditional theorems in the scanned namespaces (no named hypothesis): 905.
+Unconditional theorems in the scanned namespaces (no named hypothesis): 960.
 
 ## Refuted
 
