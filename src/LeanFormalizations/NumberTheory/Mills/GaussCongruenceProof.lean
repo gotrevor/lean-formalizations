@@ -786,6 +786,45 @@ example : (2 : ℤ) ^ 2 ∣ lucasV 1 (-1) (2 ^ 2) - lucasV 1 (-1) (2 ^ 1) :=
   lucasV_prime_pow_congr Nat.prime_two 1 1
 
 
+
+/-- the `(P,Q)` companion matrix -/
+def lucasMPQ (P Q : ℤ) : Matrix (Fin 2) (Fin 2) ℤ := !![P, -Q; 1, 0]
+
+lemma lucasMPQ_trace (P Q : ℤ) : (lucasMPQ P Q).trace = P := by
+  simp [lucasMPQ, Matrix.trace_fin_two]
+
+lemma lucasMPQ_det (P Q : ℤ) : (lucasMPQ P Q).det = Q := by
+  simp [lucasMPQ, Matrix.det_fin_two]
+
+lemma trace_lucasMPQ_pow (P Q : ℤ) (N : ℕ) : ((lucasMPQ P Q) ^ N).trace = lucasV P Q N := by
+  rw [trace_pow_eq_lucasV, lucasMPQ_trace, lucasMPQ_det]
+
+/-- **Sharp `c`-adic descent for EVERY Lucas companion sequence `V(P,Q)`.** -/
+theorem lucasV_pq_prime_pow_congr {c : ℕ} (hc : c.Prime) (P Q : ℤ) (k : ℕ) :
+    (c : ℤ) ^ (k + 1) ∣ lucasV P Q (c ^ (k + 1)) - lucasV P Q (c ^ k) := by
+  rw [← trace_lucasMPQ_pow, ← trace_lucasMPQ_pow]
+  exact gaussCongruenceTrace_holds 2 (lucasMPQ P Q) c k hc
+
+/-- the same along any progression `m·c^k` of indices. -/
+theorem lucasV_pq_mul_prime_pow_congr {c : ℕ} (hc : c.Prime) (P Q : ℤ) (m k : ℕ) :
+    (c : ℤ) ^ (k + 1) ∣ lucasV P Q (m * c ^ (k + 1)) - lucasV P Q (m * c ^ k) := by
+  rw [← trace_lucasMPQ_pow, ← trace_lucasMPQ_pow]
+  exact gaussCongruence_mul (lucasMPQ P Q) m c k hc
+
+/-- the full Gauss–Dold congruence for every Lucas companion sequence. -/
+theorem lucasV_pq_dold {n : ℕ} (hn : n ≠ 0) (P Q : ℤ) :
+    (n : ℤ) ∣ ∑ d ∈ n.divisors, (μ (n / d) : ℤ) * lucasV P Q d := by
+  have h := dold_congruence' (lucasMPQ P Q) hn
+  have heq : ∑ d ∈ n.divisors, (μ (n / d) : ℤ) * ((lucasMPQ P Q) ^ d).trace
+      = ∑ d ∈ n.divisors, (μ (n / d) : ℤ) * lucasV P Q d :=
+    Finset.sum_congr rfl (fun d _ => by rw [trace_lucasMPQ_pow])
+  rwa [heq] at h
+
+/-- anchor: `V_n(3,2) = 2^n + 1`, so `4 ∣ V 4 − V 2 = 17 − 5`. -/
+example : (2 : ℤ) ^ 2 ∣ lucasV 3 2 (2 ^ 2) - lucasV 3 2 (2 ^ 1) :=
+  lucasV_pq_prime_pow_congr Nat.prime_two 3 2 1
+
+
 end Lucas
 
 /-! ## Numeric anchors (faithfulness of the frozen statement)

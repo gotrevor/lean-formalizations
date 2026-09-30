@@ -84,6 +84,12 @@ is FALSE (`gauss_anchor_composite`, `c = 9`).
 - `lucasV_mul_prime_pow_congr` — the same along any index progression `m·c^k`.
 - `lucasV_dold` — `n ∣ Σ_{d ∣ n} μ(n/d) V(d)` for every `n ≥ 1`.
 
+And via `trace_pow_eq_lucasV` (`(B^k).trace = lucasV B.trace B.det k` for ANY `2×2` integer `B`),
+the same three for **every** `(P,Q)`, using the companion matrix `lucasMPQ P Q = !![P,−Q;1,0]`:
+`lucasV_pq_prime_pow_congr`, `lucasV_pq_mul_prime_pow_congr`, `lucasV_pq_dold`.  That covers every
+Lucas `V(P,Q)` used in phases 33/36/38/39/43 (Fibonacci–Lucas `L = V(1,−1)`, `V(P,±1)`, `V(3,2) =
+2^n+1`, …), with anchors for `L` and `V(3,2)`.
+
 ## NEXT
 
 Phase 49's stop condition is met.  Open frontier for the Mills campaign is unchanged:
