@@ -437,6 +437,35 @@ it*".  Running the reachability criterion with `D = {1,2,4,8}` at `k = 8`: `1, 2
 two `ζ₃`-triples).  **Any route through "the tie size is small" must therefore bound the tie size
 by 4 — not by a power of 2.**
 
+**Lap 9b — the local leaf is now COMPLETELY RESOLVED, and it is sharp.**  Kernel-checked
+counterexample family: `sum_root_of_unity_pow_eq_zero` / `sum_root_of_unity_two_pow_eq_zero` /
+`sum_cube_root_two_pow_eq_zero`.  For any `m > 1` that is **not a power of `2`**, `m ∤ 2^n` for every
+`n`, so a full scaled set of `m`-th roots of unity (all of them `v`-units) has
+`Σ_i u_i^(2^n) = 0` — valuation `0`, hence `≤ B r^(2^n)` vacuously.  Counterexamples are additive
+over disjoint blocks (use distinct scalings), so the *realizable* tie sizes are exactly the sums of
+parts that are not powers of `2`:
+
+> `k` closes under doubling closure alone **iff `k ∈ {1, 2, 4}`**.
+> `3` = a `ζ₃`-triple; `5` = `ζ₅`; `6` = two `ζ₃`-triples; `7` = `ζ₇`; **`8` = `ζ₃`-triple ⊎
+> `ζ₅`-quintuple**; every `k ≥ 3` except `4` is a sum of non-powers-of-`2`.
+
+`{1, 2, 4}` is exactly what `valuation_sum_unit_pow_mulClosed` (`k=1`),
+`valuation_sum_unit_pow_card_two` and `valuation_sum_unit_pow_card_four` now prove.  **The
+Newton/Graeffe direction is therefore exhausted — no cleverer symmetric-function identity can
+help.**  Any further progress on Lemma 4's tie case must come from one of:
+
+1. **Bound the tie size by `≤ 4`** at the offending prime (a Newton-polygon statement about
+   `minpoly ℚ α` over `ℚ_p`), or
+2. **Enlarge the exponent set** past `{2^n}` — e.g. get `3 · 2^n` into `S`.  Handle:
+   `U_(3M) = e_1 U_(2M) − e_2 U_M + 3 e_3({w^M})` and `den(e_i({w^M})) ∣ D^(iM)`, so this needs a
+   *joint* denominator bound, not just `den(U_M)`; or
+3. **Show the tie ratios are `2`-power roots of unity** — then
+   `valuation_sum_unit_pow_of_common_pow` closes it outright with no Newton at all (this is what
+   makes route 3 attractive: the counterexamples above all need an ODD-order root of unity, and
+   `norm_eq_of_pow_eq` already forces the *archimedean*-dominant conjugates to differ by `2`-power
+   roots of unity).  **Route 3 is the recommended next attack**: the open half is purely
+   "can a `p`-adic tie involve conjugates that are not archimedean-dominant?".
+
 ⚠ New hard fact (the `ζ₃` witness, PROBE eighth lap part 2): doubling closure canNOT be pushed past
 tie size 2 — `u_i = ζ₃^i c` has `Σ u_i^(2^n) = 0` for every `n`.  So the residual is now exactly:
 (a) `D ≥ min(α, ρ⁻¹)`, or (b) a triple tie at some prime, or (c) the sparsity of CZ Lemma 3's index

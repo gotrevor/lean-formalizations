@@ -1810,6 +1810,60 @@ theorem valuation_sum_unit_pow_of_common_pow {L : Type*} [Field L] [NumberField 
     mul_le_mul_left' (pow_le_pow_of_le_one (by simp) hr.le hNn.le) B
   exact absurd (le_trans hle hmono) (not_le.2 hn)
 
+/-! ### Sharpness of the doubling-closure frontier -/
+
+/-- A full set of `m`-th roots of unity, scaled, has **vanishing** power sums along every exponent
+`N` with `m ∤ N`. -/
+theorem sum_root_of_unity_pow_eq_zero {L : Type*} [Field L] {m : ℕ} (hm : 1 < m) {ζ : L}
+    (hζ : IsPrimitiveRoot ζ m) {N : ℕ} (hN : ¬ m ∣ N) :
+    (((Multiset.range m).map (fun i => (ζ ^ i) ^ N)).sum) = 0 := by
+  have hsum : (((Multiset.range m).map (fun i => (ζ ^ i) ^ N)).sum)
+      = ∑ i ∈ Finset.range m, (ζ ^ N) ^ i := by
+    have hfun : ∀ i : ℕ, (ζ ^ i) ^ N = (ζ ^ N) ^ i := by
+      intro i; rw [← pow_mul, ← pow_mul, Nat.mul_comm]
+    simp only [hfun]
+    rfl
+  rw [hsum]
+  have hne : (ζ : L) ^ N ≠ 1 := fun h => hN ((hζ.pow_eq_one_iff_dvd N).1 h)
+  rw [geom_sum_eq hne]
+  have hone : ((ζ : L) ^ N) ^ m = 1 := by
+    rw [← pow_mul, Nat.mul_comm, pow_mul, hζ.pow_eq_one, one_pow]
+  rw [hone, sub_self, zero_div]
+
+/-- **The doubling-closure frontier is SHARP.**  A number `m > 1` that is not a power of `2`
+never divides `2^n`, so a full set of `m`-th roots of unity — all of them `v`-units — has
+`Σ_i u_i^(2^n) = 0` for **every** `n`.  Its valuation is therefore `0`, which is `≤ B r^(2^n)`
+vacuously: the hypotheses of `valuation_sum_unit_pow_card_four` (and of every doubling-closure
+statement) are *satisfiable* at every tie size `m` that is not a power of `2`.
+
+Combined with the additivity of the counterexample (disjoint blocks add), the realizable tie
+sizes are exactly the sums of parts that are not powers of `2`, i.e. **every `k` except
+`1, 2, 4`** — which is precisely the list that `valuation_sum_unit_pow_mulClosed` (`k = 1`),
+`valuation_sum_unit_pow_card_two` and `valuation_sum_unit_pow_card_four` close.  So the local
+leaf can NOT be improved further without enlarging the exponent set or bounding the tie size. -/
+theorem sum_root_of_unity_two_pow_eq_zero {L : Type*} [Field L] {m : ℕ} (hm : 1 < m)
+    (hm2 : ∀ a : ℕ, m ≠ 2 ^ a) {ζ : L} (hζ : IsPrimitiveRoot ζ m) (n : ℕ) :
+    (((Multiset.range m).map (fun i => (ζ ^ i) ^ (2 ^ n))).sum) = 0 := by
+  refine sum_root_of_unity_pow_eq_zero hm hζ ?_
+  intro hdvd
+  obtain ⟨a, _, ha⟩ := (Nat.dvd_prime_pow Nat.prime_two).1 hdvd
+  exact hm2 a ha
+
+/-- The tie size `3` witness in closed form: `1 + ζ₃^(2^n) + ζ₃^(2·2^n) = 0` for every `n`. -/
+theorem sum_cube_root_two_pow_eq_zero {L : Type*} [Field L] {ζ : L} (hζ : IsPrimitiveRoot ζ 3)
+    (n : ℕ) : (1 : L) + ζ ^ 2 ^ n + (ζ ^ 2) ^ 2 ^ n = 0 := by
+  have h := sum_root_of_unity_two_pow_eq_zero (m := 3) (by norm_num)
+    (fun a ha => by
+      rcases a with _ | _ | a
+      · omega
+      · omega
+      · have : 2 ^ 2 ≤ 2 ^ (a + 2) := Nat.pow_le_pow_right (by norm_num) (by omega)
+        omega) hζ n
+  have hrange : Multiset.range 3 = (0 : ℕ) ::ₘ (1 : ℕ) ::ₘ {(2 : ℕ)} := by decide
+  rw [hrange] at h
+  rw [add_assoc]
+  simpa using h
+
 /-- **Corvaja–Zannier (2004), main theorem, p. 177** (`δ = 1`, `u = α^(s n)`, `Γ = {α^t}`) —
 Dubickas (2022), Lemma 3.  If `q α^(s n)` is pseudo-Pisot for only finitely many `n`, then
 `‖q α^(s n)‖` is eventually larger than `e^(−ε s n)`.
