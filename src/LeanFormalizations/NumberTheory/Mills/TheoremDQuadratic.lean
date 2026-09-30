@@ -394,12 +394,66 @@ theorem good_unbounded {ε : ℕ → Bool} {Stuck : ℕ → Prop} {n₀ : ℕ}
   refine TheoremDGround.not_stuck_twice ε j hj1 N (hjspec N le_rfl) ?_
   exact hjspec (N + j N) (by omega)
 
+/-! ### The window for `c = 2`
+
+Phase 37's `pow_dvd_sub_or_add_of_lt_padicValNat` assumes `c` odd, because it uses that `c`
+divides at most one of `p ∓ 1`.  At `c = 2` both are even, but `4` still divides at most one of
+them (their difference is `2`), so `min(v_2(p-1), v_2(p+1)) = 1` and the same conclusion holds:
+`k < 2a + b` with `min(a,b) = 1` gives `k/2 ≤ max(a,b)`. -/
+theorem pow_dvd_sub_or_add_of_lt_padicValNat_all {c p k : ℕ} (hc : c.Prime)
+    (hp : p.Prime) (hpc : p ≠ c) (hk : k < padicValNat c (glCard 2 p)) :
+    (c : ℤ) ^ (k / 2) ∣ (p : ℤ) - 1 ∨ (c : ℤ) ^ (k / 2) ∣ (p : ℤ) + 1 := by
+  by_cases hc2 : c ≠ 2
+  · exact FibonacciPrimePow.pow_dvd_sub_or_add_of_lt_padicValNat hc hc2 hp hpc hk
+  push_neg at hc2
+  subst hc2
+  -- `p` is an odd prime
+  have hp2 : 2 ≤ p := hp.two_le
+  have hpodd : p ≠ 2 := hpc
+  have hne1 : p - 1 ≠ 0 := by omega
+  have hne2 : p + 1 ≠ 0 := by omega
+  set a := (p - 1).factorization 2 with ha
+  set b := (p + 1).factorization 2 with hb
+  rw [FibonacciPrimePow.padicValNat_glCard_two hc hp hpc] at hk
+  -- `4` divides at most one of `p ∓ 1`
+  have hmin : a ≤ 1 ∨ b ≤ 1 := by
+    by_contra hcon
+    push_neg at hcon
+    obtain ⟨ha0, hb0⟩ := hcon
+    have hd1 : 4 ∣ p - 1 := by
+      have := (Nat.Prime.pow_dvd_iff_le_factorization hc hne1).2 (show 2 ≤ a by omega)
+      simpa [show (2:ℕ)^2 = 4 from rfl] using this
+    have hd2 : 4 ∣ p + 1 := by
+      have := (Nat.Prime.pow_dvd_iff_le_factorization hc hne2).2 (show 2 ≤ b by omega)
+      simpa [show (2:ℕ)^2 = 4 from rfl] using this
+    have hd : (4 : ℕ) ∣ 2 := by
+      have hsub := Nat.dvd_sub hd2 hd1
+      rwa [show p + 1 - (p - 1) = 2 from by omega] at hsub
+    omega
+  have hcast1 : ((p - 1 : ℕ) : ℤ) = (p : ℤ) - 1 := by
+    have : (1 : ℕ) ≤ p := by omega
+    push_cast [this]; ring
+  have hcast2 : ((p + 1 : ℕ) : ℤ) = (p : ℤ) + 1 := by push_cast; ring
+  rcases hmin with h | h
+  · right
+    have hkb : k / 2 ≤ b := by omega
+    have hd : (2 : ℕ) ^ (k / 2) ∣ p + 1 :=
+      (Nat.Prime.pow_dvd_iff_le_factorization hc hne2).2 (by rw [← hb]; exact hkb)
+    rw [← hcast2]
+    exact_mod_cast Int.natCast_dvd_natCast.2 hd
+  · left
+    have hka : k / 2 ≤ a := by omega
+    have hd : (2 : ℕ) ^ (k / 2) ∣ p - 1 :=
+      (Nat.Prime.pow_dvd_iff_le_factorization hc hne1).2 (by rw [← ha]; exact hka)
+    rw [← hcast1]
+    exact_mod_cast Int.natCast_dvd_natCast.2 hd
+
 /-! ### Step 1e (Lemma 4): the window at a good index
 
 At a good `n` the phase-37 lemma `pow_dvd_sub_or_add_of_lt_padicValNat` (odd `c`) gives
 `p_n ≡ ±1 (mod c^(n/2))`, so `V(c^n + s) ≡ t (mod c^(n/2))` with `t = ω - ε ∈ {-1, 0, 1, 2}`. -/
 theorem good_window (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α * β = b)
-    (hα : 1 < α) (hβ : |β| < 1) (hβ0 : β ≠ 0) {c : ℕ} (hc : c.Prime) (hc2 : c ≠ 2) {s n : ℕ}
+    (hα : 1 < α) (hβ : |β| < 1) (hβ0 : β ≠ 0) {c : ℕ} (hc : c.Prime) {s n : ℕ}
     (hprime : (⌊α ^ (c ^ n + s)⌋₊).Prime) (hpc : (⌊α ^ (c ^ n + s)⌋₊) ≠ c)
     (hgood : n < padicValNat c (glCard 2 (⌊α ^ (c ^ n + s)⌋₊))) :
     ∃ t : ℤ, |t| ≤ 2 ∧ (c : ℤ) ^ (n / 2) ∣ lucasV a b (c ^ n + s) - t := by
@@ -412,7 +466,7 @@ theorem good_window (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α *
   have heb : |e| ≤ 1 := by rw [he]; split <;> simp
   have hV : lucasV a b (c ^ n + s) = ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ) - e := by
     rw [hfl, hoff]; ring
-  rcases FibonacciPrimePow.pow_dvd_sub_or_add_of_lt_padicValNat hc hc2 hprime hpc hgood with h | h
+  rcases pow_dvd_sub_or_add_of_lt_padicValNat_all hc hprime hpc hgood with h | h
   · refine ⟨1 - e, ?_, ?_⟩
     · rw [abs_le] at heb ⊢; omega
     · rw [hV]; simpa using h
