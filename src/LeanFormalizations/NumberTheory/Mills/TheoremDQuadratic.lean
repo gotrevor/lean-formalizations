@@ -5,6 +5,7 @@ Authors: Trevor Morris
 -/
 import LeanFormalizations.NumberTheory.Mills.TheoremDGround
 import LeanFormalizations.NumberTheory.Mills.TeichmullerCongruence
+import LeanFormalizations.NumberTheory.Mills.QuadraticPisotFloor
 
 /-!
 # Phase 55 (multi-phase): Theorem D, quadratic case — Saito's Problem 1.7 for `R(n) = c^n + s`
@@ -51,7 +52,54 @@ Frozen: the statement below; all earlier statements; `Literature/`.  No `private
 
 namespace LeanFormalizations.Mills.TheoremDQuadratic
 
-open Filter
+open Filter LeanFormalizations.Mills.LucasPrimePow
+
+/-! ### Step 1a (Lemma 1): the floor is the trace plus an offset
+
+`tr C^N = α^N + β^N = V_N(a, b)`, the Lucas `V`-sequence of `X^2 - aX + b`, and
+`⌊α^N⌋ = V_N + ε_N` with `ε_N ∈ {0, -1}` (`ε_N = -1` exactly when `β^N > 0`).
+-/
+
+/-- **Binet for a general real quadratic.**  `α^N + β^N = V_N(a, b)`. -/
+theorem pow_add_pow_eq_lucasV (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α * β = b)
+    (N : ℕ) : α ^ N + β ^ N = ((lucasV a b N : ℤ) : ℝ) := by
+  have hαq : α ^ 2 = (a : ℝ) * α - (b : ℝ) := by
+    rw [← hsum, ← hprod]; ring
+  have hβq : β ^ 2 = (a : ℝ) * β - (b : ℝ) := by
+    rw [← hsum, ← hprod]; ring
+  induction N using Nat.twoStepInduction with
+  | zero => norm_num [lucasV_zero]
+  | one => simp only [pow_one, lucasV_one]; rw [hsum]
+  | more N ih1 ih2 =>
+      have ea : α ^ (N + 2) = (a : ℝ) * α ^ (N + 1) - (b : ℝ) * α ^ N := by
+        have e : α ^ (N + 2) = α ^ N * α ^ 2 := by ring
+        rw [e, hαq]; ring
+      have eb : β ^ (N + 2) = (a : ℝ) * β ^ (N + 1) - (b : ℝ) * β ^ N := by
+        have e : β ^ (N + 2) = β ^ N * β ^ 2 := by ring
+        rw [e, hβq]; ring
+      rw [ea, eb, lucasV_succ_succ]
+      push_cast
+      linear_combination (a : ℝ) * ih2 - (b : ℝ) * ih1
+
+/-- **Lemma 1 (floor = trace + offset).**  For `|β| < 1`, `β ≠ 0` and `N ≥ 1`,
+`⌊α^N⌋ = V_N(a, b) + ε` with `ε = -1` if `β^N > 0` and `ε = 0` otherwise. -/
+theorem floor_pow_eq_lucasV_add (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α * β = b)
+    (hβ : |β| < 1) (hβ0 : β ≠ 0) {N : ℕ} (hN : 1 ≤ N) :
+    ⌊α ^ N⌋ = lucasV a b N + (if 0 < β ^ N then -1 else 0) := by
+  have hsumN := pow_add_pow_eq_lucasV a b hsum hprod N
+  have habs : |β ^ N| < 1 := by
+    rw [abs_pow]; exact pow_lt_one₀ (abs_nonneg _) hβ (by omega)
+  have hne : β ^ N ≠ 0 := pow_ne_zero _ hβ0
+  obtain ⟨hlo, hhi⟩ := abs_lt.1 habs
+  rcases lt_or_gt_of_ne (Ne.symm hne) with hpos | hneg
+  · rw [if_pos hpos, Int.floor_eq_iff]
+    constructor
+    · push_cast; linarith
+    · push_cast; linarith
+  · rw [if_neg (by linarith), Int.floor_eq_iff]
+    constructor
+    · push_cast; linarith
+    · push_cast; linarith
 
 /-! ### Step 5 (size): the archimedean obstruction
 
