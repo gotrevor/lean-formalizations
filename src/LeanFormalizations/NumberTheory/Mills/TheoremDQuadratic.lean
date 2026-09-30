@@ -825,6 +825,124 @@ theorem exists_denominator {σ : Type*} (g : MvPolynomial σ ℚ) :
       push_cast at hz
       linear_combination ((p n : ℤ) : ℚ) * hz
 
+/-- **Nullstellensatz + integrality.**  Three integer polynomials with a common zero modulo `c^k`
+for every `k` have a common complex zero.
+
+If not, the Nullstellensatz puts `1` in the ideal they generate over `ℚ`, say `1 = Σ gᵢ fᵢ`.
+Clearing the denominators of the `gᵢ` gives a *nonzero integer* `D` with `D = Σ zᵢ fᵢ(p)` for
+integers `zᵢ` at every integer point `p`; at a level-`k` point this forces `c^k ∣ D`.  Taking
+`c^k > |D|` is the contradiction. -/
+theorem exists_complex_zero_of_all_levels {σ : Type*} [Finite σ] {c : ℕ} (hc : 2 ≤ c)
+    (f₁ f₂ f₃ : MvPolynomial σ ℤ)
+    (hlev : ∀ k : ℕ, ∃ p : σ → ℤ,
+      (c : ℤ) ^ k ∣ MvPolynomial.eval p f₁ ∧ (c : ℤ) ^ k ∣ MvPolynomial.eval p f₂ ∧
+      (c : ℤ) ^ k ∣ MvPolynomial.eval p f₃) :
+    ∃ q : σ → ℂ, MvPolynomial.eval₂ (Int.castRingHom ℂ) q f₁ = 0 ∧
+      MvPolynomial.eval₂ (Int.castRingHom ℂ) q f₂ = 0 ∧
+      MvPolynomial.eval₂ (Int.castRingHom ℂ) q f₃ = 0 := by
+  classical
+  by_contra hcon
+  push_neg at hcon
+  set φ : ℤ →+* ℚ := Int.castRingHom ℚ with hφ
+  set g₁ := f₁.map φ with hg₁
+  set g₂ := f₂.map φ with hg₂
+  set g₃ := f₃.map φ with hg₃
+  set I : Ideal (MvPolynomial σ ℚ) := Ideal.span {g₁, g₂, g₃} with hI
+  -- translating `aeval` over `ℚ` into `eval₂` over `ℤ`
+  have hbridge : ∀ (f : MvPolynomial σ ℤ) (x : σ → ℂ),
+      MvPolynomial.aeval x (f.map φ) = MvPolynomial.eval₂ (Int.castRingHom ℂ) x f := by
+    intro f x
+    rw [MvPolynomial.aeval_def, MvPolynomial.eval₂_map]
+    congr 1
+  have hzl : MvPolynomial.zeroLocus ℂ I = ∅ := by
+    ext x
+    simp only [Set.mem_empty_iff_false, iff_false]
+    intro hx
+    have h1 := hx g₁ (Ideal.subset_span (by simp))
+    have h2 := hx g₂ (Ideal.subset_span (by simp))
+    have h3 := hx g₃ (Ideal.subset_span (by simp))
+    rw [hg₁, hbridge] at h1
+    rw [hg₂, hbridge] at h2
+    rw [hg₃, hbridge] at h3
+    exact hcon x h1 h2 h3
+  have htop : I = ⊤ := by
+    have h := MvPolynomial.vanishingIdeal_zeroLocus_eq_radical (K := ℂ) I
+    rw [hzl, MvPolynomial.vanishingIdeal_empty] at h
+    exact Ideal.radical_eq_top.1 h.symm
+  have hone : (1 : MvPolynomial σ ℚ) ∈ I := htop ▸ Submodule.mem_top
+  -- write `1 = c₁ g₁ + c₂ g₂ + c₃ g₃`
+  rw [hI, show ({g₁, g₂, g₃} : Set (MvPolynomial σ ℚ)) = insert g₁ (insert g₂ {g₃}) from rfl,
+    Submodule.mem_span_insert] at hone
+  obtain ⟨c₁, z, hz, hone⟩ := hone
+  rw [Submodule.mem_span_insert] at hz
+  obtain ⟨c₂, w, hw, hzeq⟩ := hz
+  rw [Submodule.mem_span_singleton] at hw
+  obtain ⟨c₃, hc₃⟩ := hw
+  have hsum : (1 : MvPolynomial σ ℚ) = c₁ * g₁ + c₂ * g₂ + c₃ * g₃ := by
+    rw [hone, hzeq, ← hc₃]; simp only [smul_eq_mul]; ring
+  -- clear denominators
+  obtain ⟨D₁, hD₁, hev₁⟩ := exists_denominator c₁
+  obtain ⟨D₂, hD₂, hev₂⟩ := exists_denominator c₂
+  obtain ⟨D₃, hD₃, hev₃⟩ := exists_denominator c₃
+  set D : ℤ := D₁ * D₂ * D₃ with hD
+  have hDne : D ≠ 0 := by
+    rw [hD]; exact mul_ne_zero (mul_ne_zero hD₁ hD₂) hD₃
+  -- every level forces `c ^ k ∣ D`
+  have hdvdD : ∀ k : ℕ, (c : ℤ) ^ k ∣ D := by
+    intro k
+    obtain ⟨p, hp₁, hp₂, hp₃⟩ := hlev k
+    obtain ⟨z₁, hz₁⟩ := hev₁ p
+    obtain ⟨z₂, hz₂⟩ := hev₂ p
+    obtain ⟨z₃, hz₃⟩ := hev₃ p
+    obtain ⟨m₁, hm₁⟩ := hp₁
+    obtain ⟨m₂, hm₂⟩ := hp₂
+    obtain ⟨m₃, hm₃⟩ := hp₃
+    -- evaluate `hsum` at `p`
+    have heval : (1 : ℚ) =
+        MvPolynomial.eval (fun i => ((p i : ℤ) : ℚ)) c₁ * ((MvPolynomial.eval p f₁ : ℤ) : ℚ)
+      + MvPolynomial.eval (fun i => ((p i : ℤ) : ℚ)) c₂ * ((MvPolynomial.eval p f₂ : ℤ) : ℚ)
+      + MvPolynomial.eval (fun i => ((p i : ℤ) : ℚ)) c₃ * ((MvPolynomial.eval p f₃ : ℤ) : ℚ) := by
+      have hpt : ∀ f : MvPolynomial σ ℤ,
+          MvPolynomial.eval (fun i => ((p i : ℤ) : ℚ)) (f.map φ)
+            = ((MvPolynomial.eval p f : ℤ) : ℚ) := by
+        intro f
+        rw [MvPolynomial.eval_map]
+        exact (MvPolynomial.eval₂_comp φ p f).symm
+      have h := congrArg (MvPolynomial.eval (fun i => ((p i : ℤ) : ℚ))) hsum
+      rw [map_one, map_add, map_add, map_mul, map_mul, map_mul, hg₁, hg₂, hg₃,
+        hpt f₁, hpt f₂, hpt f₃] at h
+      exact h
+    refine ⟨D₂ * D₃ * z₁ * m₁ + D₁ * D₃ * z₂ * m₂ + D₁ * D₂ * z₃ * m₃, ?_⟩
+    have : ((D : ℤ) : ℚ) = (((c : ℤ) ^ k *
+        (D₂ * D₃ * z₁ * m₁ + D₁ * D₃ * z₂ * m₂ + D₁ * D₂ * z₃ * m₃) : ℤ) : ℚ) := by
+      push_cast
+      push_cast at hz₁ hz₂ hz₃
+      rw [hD]
+      push_cast
+      have e₁ : ((MvPolynomial.eval p f₁ : ℤ) : ℚ) = ((c : ℚ) ^ k) * (m₁ : ℚ) := by
+        rw [hm₁]; push_cast; ring
+      have e₂ : ((MvPolynomial.eval p f₂ : ℤ) : ℚ) = ((c : ℚ) ^ k) * (m₂ : ℚ) := by
+        rw [hm₂]; push_cast; ring
+      have e₃ : ((MvPolynomial.eval p f₃ : ℤ) : ℚ) = ((c : ℚ) ^ k) * (m₃ : ℚ) := by
+        rw [hm₃]; push_cast; ring
+      rw [e₁, e₂, e₃] at heval
+      linear_combination ((D₁ : ℚ) * D₂ * D₃) * heval
+        + ((c : ℚ) ^ k * m₁ * D₂ * D₃) * hz₁
+        + ((c : ℚ) ^ k * m₂ * D₁ * D₃) * hz₂
+        + ((c : ℚ) ^ k * m₃ * D₁ * D₂) * hz₃
+    exact_mod_cast this
+  -- but `D ≠ 0` cannot be divisible by every power of `c`
+  obtain ⟨k, hk⟩ : ∃ k : ℕ, |D| < (c : ℤ) ^ k := by
+    refine ⟨(|D|).toNat + 1, ?_⟩
+    calc |D| < ((|D|).toNat + 1 : ℕ) := by
+            have := Int.toNat_of_nonneg (abs_nonneg D); push_cast; omega
+      _ ≤ (2 : ℤ) ^ ((|D|).toNat + 1) := by exact_mod_cast Nat.lt_two_pow_self.le
+      _ ≤ (c : ℤ) ^ ((|D|).toNat + 1) := by
+            refine pow_le_pow_left₀ (by norm_num) ?_ _
+            exact_mod_cast hc
+  have := Int.le_of_dvd (abs_pos.2 hDne) ((dvd_abs _ _).2 (hdvdD k))
+  omega
+
 /-- **Step 3 (transfer).**  A system of integer polynomial equations solvable modulo `c^k` for
 every `k` has a complex solution — by the Nullstellensatz: otherwise `1` is in the ideal over `ℚ`,
 hence a nonzero integer `N` is in the ideal over `ℤ`, and `c^k ∣ N` for all `k`. -/
