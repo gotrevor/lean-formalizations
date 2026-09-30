@@ -53,15 +53,15 @@ Let `G = Gal(K(ζ_M)/ℚ(ζ_M))`.  It is transitive on the three roots unless `�
 - *The chain continues from `q`.*  Iterate `(2.2)` (Saito's Lemma 9.1 argument, valid for `x ≥ x₀`).  This gives `A′ ∈ W(C_k)` with `⌊A′^(C_i)⌋ = p_i` for `i ≤ k` and `⌊A′^(C_(k+1))⌋ = q`.
   - The earlier constraints hold because `A′^(C_k) ∈ [q^(1/c), (q+1)^(1/c)) ⊂ [p_k, p_k + 1)`, and `p_k ≥ p_i^(C_k/C_i)` along any valid chain, while `A′ < ξ < (p_i + 1)^(1/C_i)`.
 - *Minimality.*  So `p_(k+1) ≤ q`, i.e. `ξ^(C_(k+1)) < q + 1 ≤ y + y^(0.525) + 1`.
-- *Conclusion.*  Writing `ξ^(C_k) = p_k + φ_k`, we get `(p_k + φ_k)^(c_(k+1)) < p_k^(c_(k+1)) + y^(0.525) + 1`, which forces `φ_k ≪ p_k^(1 − 0.525·c_(k+1)) = p_k^(−0.575 + o(1))` (with `c_(k+1) → 3`).  In particular `φ_k` is small, so `ξ^(C_k)` sits just **above** `p_k`: `ε_(C_k) = 0` (`ξ^N = tr − δ_N` with `−1 < δ_N < 0`).  ∎
+- *Conclusion.*  Writing `ξ^(C_k) = p_k + φ_k`, we get `(p_k + φ_k)^(c_(k+1)) < p_k^(c_(k+1)) + y^(0.525) + 1`, which forces `c·p_k^(c−1)·φ_k ≲ p_k^(0.525c)`, i.e. `φ_k ≪ p_k^(1 − 0.475·c_(k+1)) = p_k^(−0.425 + o(1))` (with `c_(k+1) → 3`).  In particular `φ_k` is small, so `ξ^(C_k)` sits just **above** `p_k`: `ε_(C_k) = 0` (`ξ^N = tr − δ_N` with `−1 < δ_N < 0`).  ∎
 
 **Consequences.**
 - **E3 is impossible** (Step 4 showed E3 needs `ε = −1` eventually always).
 - **E2 with `T = 0` is impossible** (it needs `ε = −1`).
 - **E2 with `T = ±2` is impossible** (`t = zT = ω − ε` with `|t| = 2` needs `ε = −1`).
-- What remains of E2: `T = tr(ξ^(−2)) = ±1`, `ξ` complex, and `δ_(C_k) = 2r^(C_k) cos(C_k θ) < 0` for **all** large `k`, with `r = |β₂| < ξ^(−0.575 + o(1))`.  That is a trapped orbit of `x ↦ 3x + 4θ/2π (mod 1)` in a half-circle plus a size condition.
+- What remains of E2: `T = tr(ξ^(−2)) = ±1`, `ξ` complex, and `δ_(C_k) = 2r^(C_k) cos(C_k θ) < 0` for **all** large `k`, with `r = |β₂| < ξ^(−0.425 + o(1))`.  That is a trapped orbit of `x ↦ 3x + 4θ/2π (mod 1)` in a half-circle plus a size condition.
 
-**Refined Theorem E.**  `ξ(3^k − 2)` is transcendental unless `ξ` is a complex cubic Pisot number with `f ≡ (X ∓ 1)³ (mod 3)`, `tr(ξ^(−2)) = ±1`, conjugate modulus `< ξ^(−0.575)`, and argument `θ` with `cos((3^k − 2)θ) < 0` for all large `k`; or `ξ` lies in the conductor-13 cyclic cubic field (E1, probably removable).  Unconditional (BHP + MTY24).
+**Refined Theorem E.**  `ξ(3^k − 2)` is transcendental unless `ξ` is a complex cubic Pisot number with `f ≡ (X ∓ 1)³ (mod 3)`, `tr(ξ^(−2)) = ±1`, conjugate modulus `< ξ^(−0.425)`, and argument `θ` with `cos((3^k − 2)θ) < 0` for all large `k`; or `ξ` lies in the conductor-13 cyclic cubic field (E1, probably removable).  Unconditional (BHP + MTY24).
 
 This parallels Saito's Theorem 1.7 for Mills (a size window `(1.3)` on a totally real cubic).  Here the survivor must be **complex**, sit in two residue classes mod 3, satisfy a trace equation, **and** have a trapped rotation orbit.
 
