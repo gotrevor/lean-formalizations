@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Trevor Morris
 -/
 import LeanFormalizations.NumberTheory.Mills.UnipotentTrace
+import LeanFormalizations.NumberTheory.Mills.LucasPrimePow
 
 /-!
 # Phase 49: the Gauss (Dold) congruence for matrix traces, proved; phase 29 becomes unconditional in it
@@ -746,6 +747,46 @@ theorem dold_congruence' {nd : ℕ} (C : Matrix (Fin nd) (Fin nd) ℤ) {n : ℕ}
 
 
 end Dold
+
+/-! ## Consequences for the Lucas companion sequence
+
+`trace_lucasM_pow` identifies `V_N(P,−1)` with `tr((lucasM P)^N)`, so the congruence above applies
+verbatim — and it is SHARPER than what the covering engine currently uses. -/
+
+section Lucas
+
+open ArithmeticFunction ArithmeticFunction.Moebius LeanFormalizations.Mills.LucasPrimePow
+
+/-- **Sharp `c`-adic descent for the Lucas companion sequence** — no shift, no loss:
+`V(c^(k+1)) ≡ V(c^k) (mod c^(k+1))` for every prime `c` and every `P`.  Compare
+`CoveringEngine.exists_shift_lucasV_prime_pow_congr`, which only gets
+`V(c^(n+d)) ≡ V(c^n) (mod c^n)` for an unspecified shift `d ≥ 1`. -/
+theorem lucasV_prime_pow_congr {c : ℕ} (hc : c.Prime) (P : ℤ) (k : ℕ) :
+    (c : ℤ) ^ (k + 1) ∣ lucasV P (-1) (c ^ (k + 1)) - lucasV P (-1) (c ^ k) := by
+  rw [← trace_lucasM_pow, ← trace_lucasM_pow]
+  exact gaussCongruenceTrace_holds 2 (lucasM P) c k hc
+
+/-- the same descent along any progression `m·c^k` of indices. -/
+theorem lucasV_mul_prime_pow_congr {c : ℕ} (hc : c.Prime) (P : ℤ) (m k : ℕ) :
+    (c : ℤ) ^ (k + 1) ∣ lucasV P (-1) (m * c ^ (k + 1)) - lucasV P (-1) (m * c ^ k) := by
+  rw [← trace_lucasM_pow, ← trace_lucasM_pow]
+  exact gaussCongruence_mul (lucasM P) m c k hc
+
+/-- the full Gauss–Dold congruence for the Lucas companion sequence. -/
+theorem lucasV_dold {n : ℕ} (hn : n ≠ 0) (P : ℤ) :
+    (n : ℤ) ∣ ∑ d ∈ n.divisors, (μ (n / d) : ℤ) * lucasV P (-1) d := by
+  have h := dold_congruence' (lucasM P) hn
+  have heq : ∑ d ∈ n.divisors, (μ (n / d) : ℤ) * ((lucasM P) ^ d).trace
+      = ∑ d ∈ n.divisors, (μ (n / d) : ℤ) * lucasV P (-1) d :=
+    Finset.sum_congr rfl (fun d _ => by rw [trace_lucasM_pow])
+  rwa [heq] at h
+
+/-- numeric anchor for the Lucas corollary: Lucas numbers `L = V(1,−1)` give `4 ∣ L 4 − L 2`. -/
+example : (2 : ℤ) ^ 2 ∣ lucasV 1 (-1) (2 ^ 2) - lucasV 1 (-1) (2 ^ 1) :=
+  lucasV_prime_pow_congr Nat.prime_two 1 1
+
+
+end Lucas
 
 /-! ## Numeric anchors (faithfulness of the frozen statement)
 

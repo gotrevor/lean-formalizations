@@ -72,6 +72,18 @@ This is the general form the `Literature/GaussCongruence.lean` docstring names, 
 COMPOSITE-base descent has to use: the naive composite form `c^(k+1) ∣ tr(C^(c^(k+1))) − tr(C^(c^k))`
 is FALSE (`gauss_anchor_composite`, `c = 9`).
 
+## Payoff already banked for the covering engine
+
+`trace_lucasM_pow` makes `V_N(P,−1) = tr((lucasM P)^N)`, so three corollaries drop out (axiom-clean):
+
+- `lucasV_prime_pow_congr` — `c^(k+1) ∣ V(c^(k+1)) − V(c^k)` for EVERY prime `c` and every `P`.
+  This is strictly sharper than `CoveringEngine.exists_shift_lucasV_prime_pow_congr`, which only
+  gives `V(c^(n+d)) ≡ V(c^n) (mod c^n)` for an unspecified shift `d ≥ 1` (plus an `s`-loss).  A
+  future lap could simplify that engine step by using this instead — it needs no `|GL₂(𝔽_p)|`
+  valuation input at all.
+- `lucasV_mul_prime_pow_congr` — the same along any index progression `m·c^k`.
+- `lucasV_dold` — `n ∣ Σ_{d ∣ n} μ(n/d) V(d)` for every `n ≥ 1`.
+
 ## NEXT
 
 Phase 49's stop condition is met.  Open frontier for the Mills campaign is unchanged:
