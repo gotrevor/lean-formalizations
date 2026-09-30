@@ -467,6 +467,182 @@ theorem root_pow_frobenius_injOn {c : ℕ} [Fact c.Prime] {f : (ZMod c)[X]} (hm 
 
 end FrobeniusOrbit
 
+
+section Assembly
+
+open Matrix Polynomial
+
+variable {d : ℕ}
+
+/-- `nextCoeff` commutes with coefficient maps on monic polynomials. -/
+theorem nextCoeff_map_of_monic {R S : Type*} [CommRing R] [CommRing S] [Nontrivial S]
+    (φ : R →+* S) {p : R[X]} (hp : p.Monic) : (p.map φ).nextCoeff = φ p.nextCoeff := by
+  unfold Polynomial.nextCoeff
+  rw [hp.natDegree_map]
+  split_ifs with h
+  · simp
+  · simp [Polynomial.coeff_map]
+
+/-- Reduction `ZMod N → ZMod c` has kernel `(c)`. -/
+theorem dvd_of_castHom_eq_zero {c N : ℕ} [NeZero N] (h : c ∣ N) {a : ZMod N}
+    (ha : ZMod.castHom h (ZMod c) a = 0) : (c : ZMod N) ∣ a := by
+  have hval : ((a.val : ℕ) : ZMod N) = a := ZMod.natCast_rightInverse a
+  have h0 : ((a.val : ℕ) : ZMod c) = 0 := by
+    rw [← hval] at ha
+    rwa [map_natCast] at ha
+  obtain ⟨t, ht⟩ := (ZMod.natCast_eq_zero_iff _ _).1 h0
+  refine ⟨(t : ZMod N), ?_⟩
+  rw [← hval, ht]
+  push_cast
+  ring
+
+/-- **The orbit-sum identity, at the level of polynomials over `ZMod (c ^ (n+1))`.** -/
+theorem orbit_sum_poly (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : c.Prime)
+    (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c)))) (n : ℕ) :
+    ((A ^ (c ^ n)).charpoly.map (Int.castRingHom (ZMod (c ^ (n + 1))))) ∣
+      ((∑ k ∈ Finset.range d, (Polynomial.X : (ZMod (c ^ (n + 1)))[X]) ^ (c ^ k))
+        - Polynomial.C (((A ^ (c ^ n)).trace : ℤ) : ZMod (c ^ (n + 1)))) := by
+  haveI : Fact c.Prime := ⟨hc⟩
+  have hd : 0 < d := pos_of_irreducible hirr
+  haveI : NeZero (c ^ (n + 1)) := ⟨pow_ne_zero _ hc.ne_zero⟩
+  haveI : Nontrivial (ZMod (c ^ (n + 1))) := by
+    have : 1 < c ^ (n + 1) := Nat.one_lt_pow (by omega) hc.one_lt
+    exact ZMod.nontrivial_iff.2 (by omega)
+  set B := A ^ (c ^ n) with hB
+  set φ : ℤ →+* ZMod (c ^ (n + 1)) := Int.castRingHom _ with hφ
+  set g : Polynomial ℤ := B.charpoly with hg
+  set gb : (ZMod (c ^ (n + 1)))[X] := g.map φ with hgb
+  have hgm : g.Monic := B.charpoly_monic
+  have hgbm : gb.Monic := hgm.map _
+  have hgbdeg : gb.natDegree = d := by
+    rw [hgb, hgm.natDegree_map, hg, B.charpoly_natDegree_eq_dim]; simp
+  have hcd : c ∣ c ^ (n + 1) := dvd_pow_self c (Nat.succ_ne_zero n)
+  set ρ : ZMod (c ^ (n + 1)) →+* ZMod c := ZMod.castHom hcd (ZMod c) with hρ
+  set gh : (ZMod c)[X] := gb.map ρ with hgh
+  have hghA : gh = A.charpoly.map (Int.castRingHom (ZMod c)) := by
+    rw [hgh, hgb, Polynomial.map_map]
+    have : ρ.comp φ = Int.castRingHom (ZMod c) := RingHom.ext_int _ _
+    rw [this, hg, hB, charpolyBar_tower A hc]
+  have hirrgh : Irreducible gh := by rw [hghA]; exact hirr
+  have hghm : gh.Monic := hgbm.map _
+  have hghdeg : gh.natDegree = d := by rw [hghA, charpolyBar_natDegree]
+  haveI : Fact (Irreducible gh) := ⟨hirrgh⟩
+  set T := AdjoinRoot gb with hT
+  set K := AdjoinRoot gh with hK
+  set x : T := AdjoinRoot.root gb with hx
+  set y : K := AdjoinRoot.root gh with hy
+  -- the reduction map `T → K`
+  have hlift : gb.eval₂ ((AdjoinRoot.of gh).comp ρ) y = 0 := by
+    rw [← Polynomial.eval₂_map]; exact AdjoinRoot.eval₂_root gh
+  set π : T →+* K := AdjoinRoot.lift ((AdjoinRoot.of gh).comp ρ) y hlift with hπ
+  have hπmk : ∀ p : (ZMod (c ^ (n + 1)))[X], π (AdjoinRoot.mk gb p) = AdjoinRoot.mk gh (p.map ρ) := by
+    intro p
+    rw [hπ, AdjoinRoot.lift_mk, ← Polynomial.eval₂_map, ← AdjoinRoot.algebraMap_eq,
+      ← Polynomial.aeval_def, AdjoinRoot.aeval_eq]
+  have hρsurj : Function.Surjective ρ := by
+    intro a
+    obtain ⟨k, rfl⟩ := ZMod.natCast_zmod_surjective a
+    exact ⟨(k : ZMod (c ^ (n + 1))), by rw [hρ, map_natCast]⟩
+  have hπsurj : Function.Surjective π := by
+    intro z
+    obtain ⟨q, rfl⟩ := AdjoinRoot.mk_surjective z
+    obtain ⟨p, hp⟩ := Polynomial.map_surjective ρ hρsurj q
+    exact ⟨AdjoinRoot.mk gb p, by rw [hπmk, hp]⟩
+  haveI : Nontrivial T := π.domain_nontrivial
+  have hcnil : ((c : T)) ^ (n + 1) = 0 := by
+    have h0 : ((c : ZMod (c ^ (n + 1)))) ^ (n + 1) = 0 := by
+      rw [← Nat.cast_pow, ZMod.natCast_self]
+    have hcast : ((c : T)) = algebraMap (ZMod (c ^ (n + 1))) T (c : ZMod (c ^ (n + 1))) := by
+      rw [map_natCast]
+    rw [hcast, ← map_pow, h0, map_zero]
+  have hker : ∀ z : T, π z = 0 → ∃ w, z = (c : T) * w := by
+    intro z hz
+    obtain ⟨p, rfl⟩ := AdjoinRoot.mk_surjective z
+    rw [hπmk, AdjoinRoot.mk_eq_zero] at hz
+    obtain ⟨qh, hqh⟩ := hz
+    obtain ⟨q, hq⟩ := Polynomial.map_surjective ρ hρsurj qh
+    have hzero : (p - gb * q).map ρ = 0 := by
+      rw [Polynomial.map_sub, Polynomial.map_mul, hq, ← hgh, hqh]
+      ring
+    have hcoeff : ∀ i, (c : ZMod (c ^ (n + 1))) ∣ (p - gb * q).coeff i := by
+      intro i
+      refine dvd_of_castHom_eq_zero hcd ?_
+      have hcc := congrArg (fun r => Polynomial.coeff r i) hzero
+      simp only [Polynomial.coeff_map, Polynomial.coeff_zero] at hcc
+      exact hcc
+    obtain ⟨s, hs⟩ := (Polynomial.C_dvd_iff_dvd_coeff (c : ZMod (c ^ (n + 1))) _).2 hcoeff
+    refine ⟨AdjoinRoot.mk gb s, ?_⟩
+    have : p = gb * q + Polynomial.C (c : ZMod (c ^ (n + 1))) * s := by
+      rw [← hs]; ring
+    rw [this, map_add, map_mul, map_mul, AdjoinRoot.mk_self, zero_mul, zero_add,
+      AdjoinRoot.mk_C, map_natCast]
+  have hunit : ∀ u : T, π u ≠ 0 → IsUnit u := by
+    intro u hu
+    obtain ⟨k, hk⟩ := (isUnit_iff_exists_inv.1 (Ne.isUnit hu))
+    obtain ⟨v, hv⟩ := hπsurj k
+    have h1 : π (u * v - 1) = 0 := by rw [map_sub, map_mul, hv, hk, map_one, sub_self]
+    obtain ⟨w, hw⟩ := hker _ h1
+    have h2 : u * v = 1 + (c : T) * w := by rw [← hw]; ring
+    have h3 : IsNilpotent ((c : T) * w) := by
+      refine ⟨n + 1, ?_⟩
+      rw [mul_pow, hcnil, zero_mul]
+    have h4 : IsUnit (u * v) := by rw [h2]; exact h3.isUnit_one_add
+    exact isUnit_of_mul_isUnit_left h4
+  -- the `d` roots
+  set P : T[X] := gb.map (AdjoinRoot.of gb) with hP
+  have hPm : P.Monic := hgbm.map _
+  have hPdeg : P.natDegree = d := by rw [hP, hgbm.natDegree_map, hgbdeg]
+  have hroot : ∀ k : ℕ, P.IsRoot (x ^ (c ^ k)) := by
+    intro k
+    have hdvd := charpoly_comp_dvd A hc hirr n k
+    rw [← hg, ← hgb] at hdvd
+    have hmapcomp : (g.comp (Polynomial.X ^ (c ^ k))).map φ
+        = gb.comp (Polynomial.X ^ (c ^ k)) := by
+      rw [hgb, Polynomial.map_comp]
+      simp
+    rw [hmapcomp] at hdvd
+    obtain ⟨h, hh⟩ := hdvd
+    have hz : AdjoinRoot.mk gb (gb.comp (Polynomial.X ^ (c ^ k))) = 0 := by
+      rw [hh, map_mul, AdjoinRoot.mk_self, zero_mul]
+    rw [← AdjoinRoot.aeval_eq, Polynomial.aeval_comp] at hz
+    simp only [map_pow, Polynomial.aeval_X, AdjoinRoot.aeval_eq, AdjoinRoot.mk_X] at hz
+    rw [Polynomial.IsRoot, hP, Polynomial.eval_map, ← AdjoinRoot.algebraMap_eq,
+      ← Polynomial.aeval_def]
+    exact hz
+  have hdiff : ∀ k ∈ Finset.range d, ∀ l ∈ Finset.range d, k ≠ l →
+      IsUnit (x ^ (c ^ k) - x ^ (c ^ l)) := by
+    intro k hk l hl hkl
+    refine hunit _ ?_
+    have hπx : π x = y := AdjoinRoot.lift_root _
+    rw [map_sub, map_pow, map_pow, hπx]
+    rw [sub_ne_zero]
+    refine root_pow_frobenius_injOn hghm hirrgh ?_ ?_ hkl
+    · rw [hghdeg]; simpa using hk
+    · rw [hghdeg]; simpa using hl
+  have hfact : P = ∏ k ∈ Finset.range d, (Polynomial.X - Polynomial.C (x ^ (c ^ k))) :=
+    eq_prod_X_sub_C_of_roots P hPm (Finset.range d) (fun k => x ^ (c ^ k))
+      (by rw [hPdeg]; simp) (fun k _ => hroot k) hdiff
+  -- compare the `nextCoeff`s
+  have hnext : P.nextCoeff = - ∑ k ∈ Finset.range d, x ^ (c ^ k) := by
+    rw [hfact, Polynomial.prod_X_sub_C_nextCoeff]
+  have hgbnext : gb.nextCoeff = φ g.nextCoeff := by
+    rw [hgb, nextCoeff_map_of_monic _ hgm]
+  have hgnext : g.nextCoeff = - B.trace := by
+    rw [hg, Matrix.trace_eq_neg_charpoly_nextCoeff (M := B), neg_neg]
+  have hnext2 : P.nextCoeff = AdjoinRoot.of gb (φ (- (B.trace))) := by
+    rw [hP, nextCoeff_map_of_monic _ hgbm, hgbnext, hgnext]
+  have hsum : ∑ k ∈ Finset.range d, x ^ (c ^ k)
+      = AdjoinRoot.mk gb (Polynomial.C (((B.trace : ℤ)) : ZMod (c ^ (n + 1)))) := by
+    have h5 := hnext.symm.trans hnext2
+    rw [map_neg, map_neg, neg_inj] at h5
+    rw [h5, AdjoinRoot.mk_C]
+    rfl
+  rw [← AdjoinRoot.mk_eq_zero, map_sub, ← hsum, map_sum]
+  simp only [map_pow, AdjoinRoot.mk_X, ← hx]
+  exact sub_self _
+
+end Assembly
+
 /-- **Period:** with `χ_A` irreducible mod `c`, `A^(c^(n+d)) ≡ A^(c^n) (mod c^(n+1))`. -/
 theorem pow_prime_pow_add_card_congr {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ}
     (hc : c.Prime) (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c)))) (n : ℕ)
@@ -497,13 +673,49 @@ theorem orbit_sum_congr {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc
     (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c)))) (n : ℕ) (i j : Fin d) :
     (c : ℤ) ^ (n + 1) ∣
       (∑ k ∈ Finset.range d, A ^ (c ^ (n + k))) i j - (A ^ (c ^ n)).trace * (1 : Matrix (Fin d) (Fin d) ℤ) i j := by
-  sorry
+  haveI : Fact c.Prime := ⟨hc⟩
+  haveI : NeZero (c ^ (n + 1)) := ⟨pow_ne_zero _ hc.ne_zero⟩
+  obtain ⟨h, hh⟩ := orbit_sum_poly A hc hirr n
+  set ψ : Matrix (Fin d) (Fin d) ℤ →+* Matrix (Fin d) (Fin d) (ZMod (c ^ (n + 1))) :=
+    (Int.castRingHom (ZMod (c ^ (n + 1)))).mapMatrix with hψ
+  set Bb := ψ (A ^ (c ^ n)) with hBb
+  have hCH : Polynomial.aeval Bb
+      ((A ^ (c ^ n)).charpoly.map (Int.castRingHom (ZMod (c ^ (n + 1))))) = 0 := by
+    have hcp : Bb.charpoly = (A ^ (c ^ n)).charpoly.map (Int.castRingHom (ZMod (c ^ (n + 1)))) := by
+      rw [hBb, hψ, RingHom.mapMatrix_apply, Matrix.charpoly_map]
+    rw [← hcp]; exact Matrix.aeval_self_charpoly Bb
+  have key := congrArg (Polynomial.aeval Bb) hh
+  rw [map_mul, hCH, zero_mul, map_sub, map_sum] at key
+  simp only [map_pow, Polynomial.aeval_X, Polynomial.aeval_C] at key
+  have hpow : ∀ k : ℕ, Bb ^ (c ^ k) = ψ (A ^ (c ^ (n + k))) := by
+    intro k
+    rw [hBb, ← map_pow, ← pow_mul, ← pow_add]
+  have hsum : ψ (∑ k ∈ Finset.range d, A ^ (c ^ (n + k)))
+      = ∑ k ∈ Finset.range d, Bb ^ (c ^ k) := by
+    rw [map_sum]
+    exact Finset.sum_congr rfl fun k _ => (hpow k).symm
+  rw [← hsum, Algebra.algebraMap_eq_smul_one] at key
+  have hij := congrFun (congrFun key i) j
+  simp only [Matrix.sub_apply, Matrix.smul_apply, Matrix.zero_apply, smul_eq_mul] at hij
+  have hone : (1 : Matrix (Fin d) (Fin d) (ZMod (c ^ (n + 1)))) i j
+      = (((1 : Matrix (Fin d) (Fin d) ℤ) i j : ℤ) : ZMod (c ^ (n + 1))) := by
+    by_cases hb : i = j <;> simp [Matrix.one_apply, hb]
+  rw [hone] at hij
+  have hcast : (((∑ k ∈ Finset.range d, A ^ (c ^ (n + k))) i j
+      - (A ^ (c ^ n)).trace * (1 : Matrix (Fin d) (Fin d) ℤ) i j : ℤ) : ZMod (c ^ (n + 1))) = 0 := by
+    push_cast
+    rw [← hij]
+    rw [hψ, RingHom.mapMatrix_apply, Matrix.map_apply, eq_intCast]
+  have := (ZMod.intCast_zmod_eq_zero_iff_dvd _ (c ^ (n + 1))).1 hcast
+  exact_mod_cast this
 
 /-- **Off-diagonal entries of the orbit sum vanish** (the input to Theorem A). -/
 theorem orbit_sum_entry_congr {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : c.Prime)
     (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c)))) (n : ℕ) {i j : Fin d}
     (hij : i ≠ j) :
     (c : ℤ) ^ (n + 1) ∣ ∑ k ∈ Finset.range d, (A ^ (c ^ (n + k))) i j := by
-  sorry
+  have h := orbit_sum_congr A hc hirr n i j
+  rw [Matrix.one_apply_ne hij, mul_zero, sub_zero, Matrix.sum_apply] at h
+  exact h
 
 end LeanFormalizations.Mills.OrbitSum
