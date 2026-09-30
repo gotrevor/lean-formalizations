@@ -660,3 +660,44 @@ theorem fib_prime_pow_add_not_prime {c : ℕ} (hc : c.Prime) (h5 : c % 5 = 2 ∨
       rcases hs with rfl | rfl <;> rcases hs' with rfl | rfl <;> rw [abs_le] <;> omega
     omega
   rcases hs with rfl | rfl <;> rcases hs' with rfl | rfl <;> omega
+/-! ### Step 5: the ramified prime `c = 5` -/
+
+theorem matrix_pow_five (A : Matrix (Fin 2) (Fin 2) ℤ) : A ^ 5 = A * A * A * A * A := by
+  rw [show (5 : ℕ) = 1 + 1 + 1 + 1 + 1 from by norm_num,
+    pow_add, pow_add, pow_add, pow_add, pow_one]
+
+/-- The quintuplication formula `F(5m) = F(m)(25F(m)^4 + 25(−1)^m F(m)^2 + 5)`. -/
+theorem fib_five_mul (m : ℕ) : (Nat.fib (5 * m) : ℤ)
+    = Nat.fib m * (25 * (Nat.fib m : ℤ) ^ 4 + 25 * (-1) ^ m * (Nat.fib m : ℤ) ^ 2 + 5) := by
+  have hmat : fibM ^ (5 * m) = (fibM ^ m) ^ 5 := by rw [← pow_mul, Nat.mul_comm]
+  have h01 : (fibM ^ (5 * m)) 0 1 = ((fibM ^ m) ^ 5) 0 1 := by rw [hmat]
+  rw [fibM_pow (5 * m), matrix_pow_five, fibM_pow m] at h01
+  rw [Matrix.mul_fin_two, Matrix.mul_fin_two, Matrix.mul_fin_two, Matrix.mul_fin_two] at h01
+  norm_num at h01
+  have hc := cassini_int m
+  have hu : ((-1 : ℤ) ^ m) ^ 2 = 1 := by
+    rw [← pow_mul, Nat.mul_comm, pow_mul]
+    norm_num
+  linear_combination h01
+    + (25 * (Nat.fib m : ℤ) ^ 3
+        + 5 * (Nat.fib m : ℤ) * (((Nat.fib (m + 1) : ℤ) ^ 2 - (Nat.fib (m + 1) : ℤ) * Nat.fib m
+            - (Nat.fib m : ℤ) ^ 2) + (-1) ^ m)) * hc
+    + 5 * (Nat.fib m : ℤ) * hu
+
+/-- `5^n ∣ F(5^n)`. -/
+theorem five_pow_dvd_fib_five_pow (n : ℕ) : (5 : ℤ) ^ n ∣ Nat.fib (5 ^ n) := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+      have h := fib_five_mul (5 ^ n)
+      rw [show (5 : ℕ) * 5 ^ n = 5 ^ (n + 1) from by ring] at h
+      rw [h, pow_succ]
+      refine mul_dvd_mul ih ⟨5 * (Nat.fib (5 ^ n) : ℤ) ^ 4
+        + 5 * (-1) ^ (5 ^ n) * (Nat.fib (5 ^ n) : ℤ) ^ 2 + 1, by ring⟩
+
+/-- **`F(5^n) + h` is composite infinitely often, for every `h`.** -/
+theorem fib_five_pow_add_not_prime (h : ℤ) :
+    ∃ᶠ n in atTop, ¬ Prime ((Nat.fib (5 ^ n) : ℤ) + h) := by
+  sorry
+
+end LeanFormalizations.Mills.FibonacciPrimePow
