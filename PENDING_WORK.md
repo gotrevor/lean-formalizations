@@ -8,6 +8,27 @@ new `AffineRankOne.const_ratio` derivation argument + `StrongSix.exists_logBasis
 
 ---
 
+## Phase 41 (next): Theorem C for Fibonacci at every prime `c`
+
+Phase 40 closed Theorem C at `c = 2` (`FibonacciCovering.lean`, sorry-free, axiom-clean,
+`4887023`).  The covering machinery is already `c`-generic:
+`exists_entry_pow_congr_mul` (general `n × n`, general prime `c`) and
+`PmOne.of_prime_factors` (all prime factors `≡ ±1 mod q^e` ⟹ the number is) transfer verbatim.
+
+Exactly two pieces are `c = 2`-specific and are the phase-41 crux:
+1. **the `GL₂` `c`-part bound.**  `two_pow_dvd_sub_or_add_of_lt_padicValNat` says
+   `n < v₂|GL₂(𝔽_p)| ⟹ p ≡ ±1 (mod 2^(n/2))`, using `v₂|GL₂| = 2v₂(p−1) + v₂(p+1)` and that one
+   of the two is exactly `1`.  For odd `c` the analogue must come from
+   `|GL₂(𝔽_p)| = p(p−1)²(p+1)`: `v_c` of it is `2v_c(p−1) + v_c(p+1)`, and now *both* can be
+   large (`c` odd divides at most one of `p ∓ 1`, so in fact one of them is `0` — this should be
+   *easier* than `c = 2`).  `ThreeAdic.padicValNat_glCard_le` is the `c = 3` precedent to copy.
+2. **the certificate.**  Replace `2^(n+1) ∣ 5F(2^n)²+3` by phase 37's exact composition
+   `F((2j+1)N) = Φ_j(F N)` with `2j+1 = c²`: `x = Φ_j(x)` forces `x = 0`, while `c ∤ F(c^n)`
+   (`FibonacciAllPrimes`).  `c = 5` is separate, via the `F(4k+1) ± 1` factorizations.
+
+`c` itself is a good prime at every `c` (`v_c(c(c−1)²(c+1)) = 1`), the analogue of
+`padicValNat_glCard_two_two`.
+
 ## PHASE 15 (2026-09-29) — CLOSED: consequences of Schanuel's conjecture
 
 `NumberTheory/Transcendence/Schanuel.lean` sorry-free, all ten frozen statements axiom-clean.
