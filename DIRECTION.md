@@ -2,7 +2,11 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 (phase 43, CURRENT): prime-free intervals around `F(c^n)` for EVERY prime `c`, and around `U_(c^n)(P, ±1)` — target `NumberTheory/Mills/CoveringInstances.lean` (3 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 39, CURRENT): `⌊α^(c^n)⌋ + h` composite i.o. for quadratic Pisot units of norm −1 (golden ratio included) — target `NumberTheory/Mills/QuadraticPisotFloor.lean` (3 frozen statements + frozen def, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+A cheap corollary of phase 35: `⌊α^N⌋ = V_N(P, −1)` for odd `N`.
+
+## ✅ DONE (phase 43): prime-free intervals around `F(c^n)` for EVERY prime `c`, and around `U_(c^n)(P, ±1)` — target `NumberTheory/Mills/CoveringInstances.lean` (3 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 Uses the phase 41 engine; `c = 5` combines the engine (`h ≠ ±1`) with the `F(4k+1) ± 1` factorizations.
 
