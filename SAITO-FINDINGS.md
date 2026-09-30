@@ -33,7 +33,7 @@ The same argument shows that primes `⌊β^(3^n)⌋` would have to tend to `±1`
 ## Related to arXiv:2508.16068
 
 Combining your Theorem 2.3 and Proposition 3.1 with the method above, the least `ξ > 1` such that `⌊ξ^(3^k + s)⌋` is prime for every `k` (indexed from where the ratios are `≥ 2`) is **transcendental**:
-- for **every even `s ≥ 8` with `3 ∤ s`: Lean-checked**, with your Theorem 2.3 / Proposition 3.1 and Siegel's smallest-Pisot theorem taken as stated hypotheses.  For these `s` the cubic Pisot alternative contradicts the Problem 1.7 result above directly ([`ShiftedMillsLarge.xi_shifted_large_transcendental`](src/LeanFormalizations/NumberTheory/Mills/ShiftedMillsLarge.lean));
+- for **every even `s` whose 3-free part is `≥ 8`** (e.g. `s = 8, 10, 14, 24, 30, 42, …`): **Lean-checked**, with your Theorem 2.3 / Proposition 3.1 and Siegel's smallest-Pisot theorem taken as stated hypotheses.  For these `s` the cubic Pisot alternative contradicts the Problem 1.7 result above directly ([`ShiftedMillsThreePow.xi_shifted_three_pow_transcendental`](src/LeanFormalizations/NumberTheory/Mills/ShiftedMillsThreePow.lean); the case `3 ∤ s` is [`ShiftedMillsLarge`](src/LeanFormalizations/NumberTheory/Mills/ShiftedMillsLarge.lean));
 - for **every `s ≠ 0`**: paper proof, which needs a Galois-rigidity step for small and negative `s` ([PROOF-THEOREM-E.md](PROOF-THEOREM-E.md)).
 
 The case `s = 0` is Mills' constant, and there the method fails exactly as in Problem 1.1.
