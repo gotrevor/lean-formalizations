@@ -2,7 +2,9 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 (phase 50, CURRENT): Dold congruence for EVERY charpoly coefficient (Theorem A route, step 2) + the Cayley–Hamilton-across-Frobenius corollary — target `NumberTheory/Mills/ExteriorDold.lean` (2 frozen statements, exterior-power/compound-matrix route in header; both checked on 960 random cases with a failing control; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 51, CURRENT): the Frobenius orbit sum is scalar, Σ_(k<d) A^(c^(n+k)) ≡ tr(A^(c^n))·I mod c^(n+1) for χ_A irreducible mod c (Theorem A route, steps 3–5) — target `NumberTheory/Mills/OrbitSum.lean` (3 frozen statements, route in header; checked on 604 cases, both controls fail as they should: `scripts/orbit-sum-probe.py`; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+## ✅ DONE (phase 50): Dold congruence for EVERY charpoly coefficient (Theorem A route, step 2) + the Cayley–Hamilton-across-Frobenius corollary — target `NumberTheory/Mills/ExteriorDold.lean` (2 frozen statements, exterior-power/compound-matrix route in header; both checked on 960 random cases with a failing control; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 ## ✅ DONE (phase 49): PROVE the Gauss (Dold) congruence for matrix traces (discharge `Literature.GaussCongruenceTrace`) and restate phase 29 without it — target `NumberTheory/Mills/GaussCongruenceProof.lean` (3 frozen statements, necklace route in header; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
