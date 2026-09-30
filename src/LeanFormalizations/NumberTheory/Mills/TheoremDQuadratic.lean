@@ -654,6 +654,86 @@ theorem torsionPair_eval {R : Type*} [CommRing R] (a b x y z : R) (hz : z ^ 2 = 
       simp only
       linear_combination (-((torsionPair a b x y N).2 * y)) * hz
 
+/-- `(x·I + y·C)^N = A·I + B·C` with `(A, B) = torsionPair a b x y N`. -/
+theorem torsionPair_matrix (a b x y : ℤ) (N : ℕ) :
+    (x • (1 : Matrix (Fin 2) (Fin 2) ℤ) + y • compMat a b) ^ N =
+      (torsionPair a b x y N).1 • (1 : Matrix (Fin 2) (Fin 2) ℤ) +
+        (torsionPair a b x y N).2 • compMat a b := by
+  induction N with
+  | zero => simp [torsionPair]
+  | succ N ih =>
+      have hsq2 : compMat a b * compMat a b
+          = a • compMat a b - b • (1 : Matrix (Fin 2) (Fin 2) ℤ) := by
+        rw [← pow_two]; exact compMat_sq a b
+      rw [pow_succ, ih, torsionPair]
+      simp only
+      simp only [add_mul, mul_add, Matrix.smul_mul, Matrix.mul_smul, one_mul, mul_one]
+      rw [hsq2]
+      simp only [smul_add, smul_sub, smul_smul]
+      module
+
+/-- The companion matrix's own powers, in the `(A, B)` coordinates. -/
+theorem compMat_pow_eq (a b : ℤ) (N : ℕ) :
+    compMat a b ^ N = (torsionPair a b 0 1 N).1 • (1 : Matrix (Fin 2) (Fin 2) ℤ) +
+      (torsionPair a b 0 1 N).2 • compMat a b := by
+  have := torsionPair_matrix a b 0 1 N
+  simpa using this
+
+/-- Reading off the two coordinates from the matrix entries. -/
+theorem entry_of_coords (a b A B : ℤ) :
+    (A • (1 : Matrix (Fin 2) (Fin 2) ℤ) + B • compMat a b) 1 0 = B ∧
+    (A • (1 : Matrix (Fin 2) (Fin 2) ℤ) + B • compMat a b) 0 0 = A := by
+  constructor <;>
+    simp only [Matrix.add_apply, Matrix.smul_apply, Matrix.one_apply, compMat,
+      Matrix.cons_val', Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+      Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.head_val', smul_eq_mul] <;> norm_num
+
+/-- The trace pairing: `tr((x·I + y·C)·C^s) = x·V_s + y·V_(s+1)`. -/
+theorem trace_coords_mul (a b x y : ℤ) (s : ℕ) :
+    ((x • (1 : Matrix (Fin 2) (Fin 2) ℤ) + y • compMat a b) * compMat a b ^ s).trace
+      = x * lucasV a b s + y * lucasV a b (s + 1) := by
+  rw [add_mul, Matrix.smul_mul, Matrix.smul_mul, Matrix.trace_add, Matrix.trace_smul,
+    Matrix.trace_smul, one_mul, ← pow_succ', trace_compMat_pow, trace_compMat_pow]
+  simp [smul_eq_mul]
+
+/-- `C^(Q·c^n) ≡ I (mod c^(n+1))` for `Q = |GL_2(𝔽_c)|`: the reduction is trivial mod `c`, and
+each `c`-th power gains one level (`TeichmullerCongruence.pow_congr_lift`). -/
+theorem compMat_pow_congr_one (a b : ℤ) {c : ℕ} (hc : c.Prime) (hcb : ¬ (c : ℤ) ∣ b) (n : ℕ) :
+    ∀ i j, (c : ℤ) ^ (n + 1) ∣ ((compMat a b ^ glCard 2 c) ^ (c ^ n) - 1) i j := by
+  haveI : Fact c.Prime := ⟨hc⟩
+  -- base case: `C^Q ≡ I (mod c)`
+  have hbase : ∀ i j, (c : ℤ) ∣ (compMat a b ^ glCard 2 c - 1) i j := by
+    set φ : ℤ →+* ZMod c := Int.castRingHom (ZMod c) with hφ
+    set D : Matrix (Fin 2) (Fin 2) (ZMod c) := φ.mapMatrix (compMat a b) with hD
+    have hdetD : IsUnit D.det := by
+      have hmd : D.det = φ (compMat a b).det := by rw [hD]; exact (RingHom.map_det φ _).symm
+      rw [hmd, compMat_det]
+      exact Ne.isUnit (by simpa [hφ, ZMod.intCast_zmod_eq_zero_iff_dvd] using hcb)
+    obtain ⟨u, hu⟩ := (Matrix.isUnit_iff_isUnit_det D).2 hdetD
+    have hcard : Nat.card (GL (Fin 2) (ZMod c)) = glCard 2 c := by
+      rw [Matrix.card_GL_field]; simp [glCard, ZMod.card]
+    have huQ : u ^ glCard 2 c = 1 := by rw [← hcard]; exact pow_card_eq_one'
+    have hDQ : D ^ glCard 2 c = 1 := by
+      have := congrArg (fun v : GL (Fin 2) (ZMod c) =>
+        (v : Matrix (Fin 2) (Fin 2) (ZMod c))) huQ
+      simpa [hu] using this
+    intro i j
+    have h0 : ((((compMat a b ^ glCard 2 c - 1) i j : ℤ)) : ZMod c) = 0 := by
+      have : φ.mapMatrix (compMat a b ^ glCard 2 c - 1) = 0 := by
+        rw [map_sub, map_pow, ← hD, hDQ, map_one, sub_self]
+      have h2 := congrFun (congrFun this i) j
+      simpa [RingHom.mapMatrix_apply, Matrix.map_apply, hφ] using h2
+    exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 h0
+  -- lift one level at a time
+  induction n with
+  | zero => simpa using hbase
+  | succ n ih =>
+      intro i j
+      have hcomm : Commute ((compMat a b ^ glCard 2 c) ^ (c ^ n))
+          (1 : Matrix (Fin 2) (Fin 2) ℤ) := Commute.one_right _
+      have := TeichmullerCongruence.pow_congr_lift hcomm (e := n + 1) (by omega) ih i j
+      rwa [one_pow, ← pow_mul, ← pow_succ] at this
+
 /-- **Step 2 (levels).**  For every `k` there is an integer point of the torsion system modulo
 `c^k`: take `X = C^(c^n)` for a large `n` in the residue class, and `Q` the prime-to-`c` part of
 `|GL_2(𝔽_c)|`. -/
