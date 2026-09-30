@@ -139,6 +139,71 @@ theorem floor_pow_eq_lucasV_add (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (
     · push_cast; linarith
     · push_cast; linarith
 
+/-! ### Growth: the values `⌊α^(c^n+s)⌋` are strictly increasing
+
+Needed for the good/stuck dichotomy: a stuck `n` would make the prime `p_n` divide the strictly
+larger prime `p_(n+kj)`.  The key point is that `α ≥ φ`, i.e. `α + 1 ≤ α ^ 2`, which forces
+`α ^ N + 1 ≤ α ^ (N+1)` for every `N ≥ 1`.
+-/
+
+/-- **`α` is at least the golden ratio**: `α + 1 ≤ α ^ 2`.
+
+Cases on `a = α + β ∈ ℤ` (which is `≥ 1`): for `a = 1` integrality gives `b ≤ -1`; for `a = 2` it
+gives `b ≤ 0`; for `a ≥ 3` one has `α > 2` and `|b| < α`. -/
+theorem golden_le_sq (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α * β = b)
+    (hα : 1 < α) (hβ : |β| < 1) : α + 1 ≤ α ^ 2 := by
+  rw [abs_lt] at hβ
+  obtain ⟨hβ1, hβ2⟩ := hβ
+  have ha0 : (0 : ℝ) < a := by rw [← hsum]; linarith
+  have ha0'' : (0 : ℤ) < a := by exact_mod_cast ha0
+  have ha0' : 1 ≤ a := ha0''
+  have hβeq : β = (a : ℝ) - α := by linarith [hsum]
+  have hsq : α ^ 2 = (a : ℝ) * α - (b : ℝ) := by rw [← hsum, ← hprod]; ring
+  rcases lt_trichotomy a 1 with h | h | h
+  · omega
+  · -- `a = 1`: `b = α - α ^ 2 < 0`, so `b ≤ -1`
+    subst h
+    have hbneg : (b : ℝ) < 0 := by rw [← hprod, hβeq]; push_cast; nlinarith
+    have : b < 0 := by exact_mod_cast hbneg
+    have hb1 : (b : ℝ) ≤ -1 := by exact_mod_cast (by omega : b ≤ -1)
+    rw [hsq]; push_cast; linarith
+  · rcases eq_or_lt_of_le (by omega : (2 : ℤ) ≤ a) with h2 | h3
+    · -- `a = 2`: `b = 1 - (α - 1) ^ 2 < 1`, so `b ≤ 0`
+      have hblt : (b : ℝ) < 1 := by rw [← hprod, hβeq, ← h2]; push_cast; nlinarith
+      have : b < 1 := by exact_mod_cast hblt
+      have hb0 : (b : ℝ) ≤ 0 := by exact_mod_cast (by omega : b ≤ 0)
+      rw [hsq, ← h2]; push_cast; nlinarith
+    · -- `a ≥ 3`: `α > a - 1 ≥ 2` and `|b| < α`
+      have ha3 : (3 : ℝ) ≤ (a : ℝ) := by exact_mod_cast h3
+      have hαbig : 2 < α := by rw [hβeq] at hβ2; linarith
+      have hblt : (b : ℝ) < α := by rw [← hprod]; nlinarith
+      rw [hsq]; nlinarith
+
+/-- `α ^ N + 1 ≤ α ^ (N + 1)` for `N ≥ 1`. -/
+theorem pow_succ_ge (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α * β = b)
+    (hα : 1 < α) (hβ : |β| < 1) {N : ℕ} (hN : 1 ≤ N) : α ^ N + 1 ≤ α ^ (N + 1) := by
+  have hg := golden_le_sq a b hsum hprod hα hβ
+  have hone : (1 : ℝ) ≤ α ^ (N - 1) := one_le_pow₀ hα.le
+  have hNe : N - 1 + 2 = N + 1 := by omega
+  have key : α ^ (N - 1) * (α + 1) ≤ α ^ (N - 1) * α ^ 2 := by
+    exact mul_le_mul_of_nonneg_left hg (by positivity)
+  have e1 : α ^ (N - 1) * α ^ 2 = α ^ (N + 1) := by rw [← pow_add, hNe]
+  have e2 : α ^ (N - 1) * α = α ^ N := by
+    rw [← pow_succ]; congr 1; omega
+  nlinarith [key, e1, e2]
+
+/-- The floors `⌊α ^ N⌋` are strictly increasing in `N ≥ 1`. -/
+theorem floor_pow_strictMono (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α * β = b)
+    (hα : 1 < α) (hβ : |β| < 1) {N N' : ℕ} (hN : 1 ≤ N) (hlt : N < N') :
+    ⌊α ^ N⌋ < ⌊α ^ N'⌋ := by
+  have hstep : α ^ N + 1 ≤ α ^ N' := by
+    have h1 : α ^ (N + 1) ≤ α ^ N' := pow_le_pow_right₀ hα.le (by omega)
+    linarith [pow_succ_ge a b hsum hprod hα hβ hN]
+  have h2 : ⌊α ^ N⌋ + 1 ≤ ⌊α ^ N'⌋ := by
+    have : (⌊α ^ N⌋ : ℝ) + 1 ≤ α ^ N' := by linarith [Int.floor_le (α ^ N)]
+    exact_mod_cast Int.le_floor.2 (by push_cast; linarith)
+  omega
+
 /-! ### Step 1b (Lemma 2): the prime-as-modulus filter
 
 If `p` is a prime not dividing `b = det C` and `M` annihilates the order of `C` mod `p`, then
