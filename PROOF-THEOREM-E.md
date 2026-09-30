@@ -104,7 +104,7 @@ Let `s ≠ 0` be even with `a₀ = v₃(s) ≥ 1`, and start the index where eve
   - So for odd `s`, the only open case is **E1 at `g = 2`**: `ℚ(ξ²)` is the conductor-13 cyclic cubic field.  It needs a finite certificate in the style of Step 6 over `ℚ(ζ₁₃, √d)`, `d ∈ {1, 2, 13, 26}`.
 - Once E1 at `g = 2` closes: **E+ for every `s ≠ 0`.**
 - **Referee 3 (2026-09-30, subagent):** no error.  The two gaps above are patched.  Confidence: all even `s ≠ 0` ~78%; odd-`s` generic step ~85%; odd `s` except E1 at `g = 2` ~72% (all conditional on Saito).  Numeric control: at `s = 1` the window hit for `X³ − 4X² + 1` mod `3^8` disappears at `3^15`, `3^30` and `3^60` (the limits flip sign with period 6, matching the odd `δ^s` structure).
-- **E1 at `g = 2` (draft 3d, 2026-09-30): closed for `s > 0`; `s < 0` open.**  Here `K = ℚ(β)` is the conductor-13 cyclic cubic field, totally real, with 3 inert.
+- **E1 at `g = 2` (draft 3e, 2026-09-30): CLOSED for every odd `s`.**  Here `K = ℚ(β)` is the conductor-13 cyclic cubic field, totally real, with 3 inert.
   1. **Every `a_k ≠ 0`.**  3 is inert, so `β` is a 3-unit in every conjugate or in none, and "none" gives `Λ = 0 ≠ ω`.
   2. **`H = Gal(E(δ)/E)` is trivial.**  A nontrivial `τ ∈ H` flips a nonempty set `S` of the `δ_k`.  Subtracting gives `Σ_(k∈S) a_k δ_k^s = 0`.
      - `|S| = 3` gives `−ω = ω`.
@@ -112,12 +112,13 @@ Let `s ≠ 0` be even with `a₀ = v₃(s) ≥ 1`, and start the index where eve
      - `|S| = 2` gives `|a_i||β_i|^(s/2) = |a_j||β_j|^(s/2)`.  The moduli `|β_k|` are distinct: `β₁ > 1 > |β₂|, |β₃|`, and `β₂ = −β₃` would make `β = −σ(β) = σ²(β)` rational.  So `a_i = a_j = 0`.
      - Each of these contradicts step 1.
   3. So every `δ_k ∈ E = ℚ(μ₂₀₈)`, and `ξ ∈ E` with `ξ² ∈ K`.  `K(ξ)/K` is a quadratic (or trivial) subextension of the abelian `E/K`, so `ξ ∈ K` (the `g = 1` E1 case, Step 6), or **`ξ = √d·γ`** with `γ ∈ K` and `d ∈ {2, 13, 26}`.
-  4. **`s > 0`.**  In any complex embedding exactly one term of `Σ a_k δ_k^s = ω` has modulus `> 1`.  So `β^(s/2) < 3`, hence **`β < 9`**.
-     - The Pisot elements of `K` below 9 are, up to conjugation, exactly `3.6511` (norm `−1`) and `6.0283` (norm `−5`), from a box enumeration in `ℤ[θ]`, `θ³ + θ² − 4θ + 1 = 0`.
-     - Both have a **negative conjugate**, but `d·γ²` with `d > 0` is totally positive.  **Contradiction.**
-     - Script: `scripts/theorem-e-e1-g2-search.py <bound>`.  Control: with the bound raised to 400 it does find `d·γ²` Pisot elements, the smallest being `142.36` (`d = 13`).
-  5. **`s < 0` is open.**  The two large terms `a₂δ₂^s + a₃δ₃^s` must cancel to within 2.  Lead: average over `Gal(E/K(√d))` and use the distinct moduli.
-- **Net for odd `s`:** transcendental for every odd `s > 0` (`3 ∤ s` or not), and for odd `s < 0` outside `ξ = √d·γ`, `γ ∈ K₁₃`, `d ∈ {2, 13, 26}`.
+  4. **Every `s`, by `q`-divisibility.**  Let `q ∣ d` be prime (`q = 2` for `d ∈ {2, 26}`, `q = 13` for `d = 13`).
+     - `q` has a **unique prime** `𝔮` in `K`: 2 is inert (it generates `(ℤ/13)^×`, so it has order 3 in the cubic quotient), and 13 is totally ramified.
+     - `v_𝔮(β) = v_𝔮(d) + 2v_𝔮(γ)` is odd (`v_𝔮(d) = e(𝔮/q) ∈ {1, 3}`) and `≥ 0`, hence `≥ 1`.  So `β ∈ 𝔮`, and since `𝔮` is Galois-stable, `tr(β^N) ∈ 𝔮^N ∩ ℤ ⊆ qℤ` for every `N ≥ 1`.
+     - But `⌊ξ^(C_n)⌋ = tr(β^(N_n))` (Prop 3.1(iv)) is a prime tending to infinity.  **Contradiction.**
+     - No sign condition on `s` and no size input.  Numeric check: `scripts/theorem-e-e1-g2-qdiv.py`.  The Pisot elements `142.36` (`d = 13`), `187.38` (`d = 2`) and `284.72` (`d = 26`) have `13 ∣ tr β^N`, `2 ∣ tr β^N` and `26 ∣ tr β^N` respectively for `N ≤ 7`.  Control: `γ²` (`d = 1`) has `tr β³ = 11·4363`.
+  5. *(Superseded, kept as an independent check for `s > 0`.)*  In any complex embedding exactly one term of `Σ a_k δ_k^s = ω` has modulus `> 1`.  So `β^(s/2) < 3`, hence `β < 9`.  The Pisot elements of `K` below 9 are, up to conjugation, `3.6511` (norm `−1`) and `6.0283` (norm `−5`).  Both have a negative conjugate, while `d·γ²` is totally positive.  Script: `scripts/theorem-e-e1-g2-search.py <bound>`.  Control: at bound 400 it finds the `d·γ²` elements above.
+- **Net: `ξ(3^k + s)` is transcendental for EVERY `s ≠ 0`** (index from where every ratio is `≥ 2`), pending a referee read of draft 3d/3e (the `H`-trivial step and the `q`-divisibility step).
 
 ## Variants
 - **`ξ(r·3^k − 1)` for even `r`: NOT established** (*referee 2*; draft-1 claim withdrawn).  The limit points carry `ζ_k^(r·3^m)`, and for even `r` the map `x ↦ x^r` is not injective on the (even-order) Teichmüller roots.  So `z_k = ±1` no longer forces equal `ζ_k`, and `f ≡ (X − 1)^a (X + 1)^b (mod 3)` survives the congruence step.  The `b = 0` reduction of Step 6 breaks the same way (e.g. `13 ∣ r`).  Odd `r` has `agcd = 2`.  Open.
