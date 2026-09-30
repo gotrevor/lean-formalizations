@@ -74,7 +74,7 @@ A trace has a single limit point `τ`.  If `τ ∈ ℤ`, then phase 35's exact `
 |---|---|---|---|
 | **DoubleExpTraceComposite** (ours, phase 30) | ⇒ Fermat composites i.o.; ⇒ Mills transcendental | the survivor cases (all `λ_r + h ∈ μ`) | **none known**; these are Fermat-type by construction |
 | **Theorem C for `d ≥ 3`** (e.g. Tribonacci intervals) | ⇐ non-integrality of every limit point | `λ_r ∉ ℤ + μ` for order-3 entries | no exact composition in `d = 3`, because the free second symmetric function is Saito's `b_k` obstacle.  Candidate: norm or trace relations over `W(𝔽_(c^d))`.  Needs an idea; worth a probe |
-| **Theorem A for even `d ≥ 4`, `h = 0`** | ⇐ `u(c^n)` composite i.o. | divisibility-type structure for 4th-order entries | none known yet; probe whether Tetranacci entries form a divisibility sequence |
+| **Theorem A for even `d ≥ 4`, `h = 0`** | ⇐ no limit point in `{±1}` | — | **resolved on paper by Theorem C′**: `h = 0` survivors need `λ_r ∈ {±1} ⊂ ℚ`, but `λ_r ∉ ℚ` (given disjointness).  The elementary orbit-sum count remains the Lean route for odd `d`; even `d` in Lean needs C′ or a per-`H` certificate |
 | **Quantitative Theorem C with `log n` intervals** | would match Saito's `δ(n)` | small good primes `p_h` (instead of `p_h ∣` a huge value) | Chebotarev-type density of primes whose Frobenius cycle hits `−h`; plausible and analytic, not Lean-sized |
 | **Saito Problem 1.7** (one `R` for all Pisot `α`) | — | trace survivors in every residue class | none; Maze row stands |
 
@@ -93,6 +93,9 @@ A trace has a single limit point `τ`.  If `τ ∈ ℤ`, then phase 35's exact `
 5. Phase 42: Theorem B (2×2 traces, odd `c`, `det ≡ ±1`), plus the `Φ₃`/`Φ₆` exception stated as a frozen survivor fact.
 6. Phases 43–44: Theorem A (general `d`, inert), with the Tribonacci corollary.
 7. Stretch: a quantitative Theorem C statement (`(log n)^(1/5)`), if the bookkeeping is clean.
+
+## 4b. Outward notes (Trevor's call, not queued)
+- formal-conjectures (checked 2026-09-30, `origin/main` + all PRs): no Saito problems stated; only `Wikipedia/Mills.lean`.  Stating Saito's 1.7/1.8 there, with 1.8 solved, is possible.
 
 ## 5. The paper (a draft for Trevor to decide on; publishing and arXiv are his call)
 Working title: *Composite values of linear recurrences along prime-power towers.*
