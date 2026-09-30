@@ -31,6 +31,12 @@ One page, one row per theorem.  Everything here was proved 2026-09-29/30, uncond
 | **`F(c^n)`** | **every prime** | `CoveringInstances.fib_prime_pow_prime_free_all` | 41, 43 |
 | `U(c^n)(P, ±1)` | odd, `c ∤ D` | `CoveringInstances.lucasU_unit_prime_pow_prime_free` | 43 |
 
+## Infrastructure proved overnight (phases 44–49)
+- `TheoremDGround`: stuck lemma, abstract-exponent filter, `GL_d` window (Theorem D Lemmas 2–4).
+- `Literature/Saito2025.lean` + `ShiftedMills.xi_shifted_transcendental`: **Theorem E as a Lean edge**, from Saito's Type B + Prop 3.1(iv) (Literature Prop) and our open node `ShiftedTraceRigidity`.
+- `ShiftedWindow` (the 3-adic window sub-node), `TeichmullerCongruence` (`A^(c^n)` eventually periodic `c`-adically), `UnipotentTrace` (the mod-3 kill, sub-node R4).
+- **`GaussCongruenceProof.gaussCongruenceTrace_holds`: the Gauss/Dold congruence for traces, PROVED.**  This discharges `Literature.GaussCongruenceTrace`, so phase 29 (`mills_threeAdic'`) no longer rests on it.
+
 ## Paper theorems, not yet in Lean
 - **Theorem D** (`PROOF-THEOREM-D.md`): Saito's Problem 1.7 for `R(n) = c^n + s`; every Pisot `α` outside `f ≡ X^d (mod c)` and finitely many abelian fields.  Referee pass: Lemmas OK.
 - **Theorem E / E+** (`PROOF-THEOREM-E.md`): the least `A` with `⌊A^(3^k + s)⌋` prime `∀k` is **transcendental** for every even `s ≠ 0` with `3 ∤ s`.  Unshifted Mills (`s = 0`) fails both steps.  Two referee passes, patches applied; ≈75–80%.

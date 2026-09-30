@@ -9,6 +9,10 @@ import Mathlib
 # Gauss congruence for traces of integer matrices
 
 A cited theorem, entered as a hypothesis `Prop` (never an axiom).
+
+**Now proved** (2026-09-30, phase 49): `LeanFormalizations.Mills.GaussCongruenceProof.gaussCongruenceTrace_holds`
+(necklace counting).  Phase 29's results are restated there without this hypothesis (`mills_threeAdic'`,
+`transcendental_of_not_pm_one'`).
 -/
 
 namespace LeanFormalizations.Literature

@@ -285,7 +285,9 @@ So `ξ := ξ(3^k − 2)` is transcendental or itself a cubic Pisot number with `
 6. Phases 43–44: Theorem A (general `d`, inert), with the Tribonacci corollary.
 7. Stretch: a quantitative Theorem C statement (`(log n)^(1/5)`), if the bookkeeping is clean.
 
-## 4-live. Status of the Lean queue (overnight 2026-09-30)
+## 4-live. Status of the Lean queue (overnight 2026-09-30; final: phases 32–49 done)
+Phase 49 also proved the Dold congruence (Theorem A route, step 1).  Next Lean steps, in order: Theorem A step 2 (charpoly-coefficient congruence via exterior powers); Theorem E sub-nodes R2 (limit points) and R3 (Galois rigidity).
+
 Done: phases 32–44 (see `PRIME-MODULUS-MAP.md`).  45: Theorem E as a graph edge (`Literature.Saito2025TypeBTrace` + open node `ShiftedTraceRigidity`).  46 (drafted): the 3-adic window sub-node of `ShiftedTraceRigidity`.  Remaining sub-nodes of the rigidity, i.e. the real Lean work for Theorem E:
 - (R2) the 3-adic limit `λ_r = Σ ζ_k α_k^s` (Teichmüller in `ℤ₃`-extensions; needs `ℚ₃` unramified extensions or a Galois-ring substitute);
 - (R3) Galois rigidity for cubics;
