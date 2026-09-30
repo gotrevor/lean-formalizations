@@ -42,7 +42,10 @@ Let `M` be the lcm of the Teichmüller orders and `|W| = 2`, so `M ∣ lcm(2, 8,
 - **`G ≅ S₃`:** `ℂ³ = 𝟙 ⊕ std`, and `w` is non-constant (`|w₁| < 1 < |w₂|, |w₃|`) with sum `T ≠ 0`, so the `G`-orbit of `w` spans `ℂ³` and the solution is unique: `z_k = ω/T` for all `k`.
 - **`G ≅ C₃`:** the equations form a circulant system with eigenvalues `ŵ(0) = T` and `ŵ(m) = Σ_j w_j ζ₃^(jm)` (`m = 1, 2`).
   - If `ξ` is totally real, the `w_j` are real, not all equal, so `ŵ(1), ŵ(2) ≠ 0`.
-  - If `ξ` is complex (`w₂ = w̄₃`), `ŵ(1)` could a priori vanish.  But in the `C₃` case `ℚ(√disc)` is not `ℚ(√−3)` (*referee patch*): the discriminant field lies in `ℚ(ζ_M)`, `M ∣ 104`, which does not contain `√−3`.  So `ζ₃ ∉ K`, and an automorphism fixing `K` with `ζ₃ ↦ ζ₃²` carries `ŵ(1) = 0` to `ŵ(2) = 0`; then `w` would be constant, which is impossible.
+  - If `ξ` is complex (`w₂ = w̄₃`), `ŵ(1)` could a priori vanish.  `G ≅ C₃` happens here when the `S₃` field's quadratic resolvent `ℚ(√disc)` lies in `ℚ(ζ_M)`.  (*Referee patch*, made precise.)
+    - `ζ₃ ∉ K(ζ_M)`: `3 ∤ 104`, so `√−3 ∉ ℚ(ζ_M)`, and `K(ζ_M)/ℚ(ζ_M)` is cubic, so it cannot contain the quadratic `ℚ(ζ_M, √−3)`.
+    - Hence some automorphism of `K(ζ_M, ζ₃)` fixes `K(ζ_M)`, and so each `w_j`, and sends `ζ₃ ↦ ζ₃²`.  It maps `ŵ(1) = 0` to `ŵ(2) = 0`.
+    - Together with `ŵ(0) = T`, that makes `w` constant, which is impossible.
   - So the circulant is invertible and again `z_k = ω/T`.
 - In all cases the `ζ_k^(3^r)` are equal to a common value `z`, with `zT = ω`.
 
