@@ -54,6 +54,44 @@ namespace LeanFormalizations.Mills.TheoremDQuadratic
 
 open Filter LeanFormalizations.Mills.LucasPrimePow
 
+/-! ### The companion matrix
+
+The filter of steps 1–2 runs on the companion matrix `C` of `X^2 - aX + b`.  Its traces are the
+Lucas `V`-sequence, so it is the bridge between the arithmetic of `GL_2(𝔽_p)` and the real
+quantity `⌊α^N⌋`.
+-/
+
+/-- The companion matrix of `X ^ 2 - a X + b`. -/
+def compMat (a b : ℤ) : Matrix (Fin 2) (Fin 2) ℤ := !![0, -b; 1, a]
+
+@[simp] theorem compMat_det (a b : ℤ) : (compMat a b).det = b := by
+  simp [compMat, Matrix.det_fin_two]
+
+@[simp] theorem compMat_trace (a b : ℤ) : (compMat a b).trace = a := by
+  simp [compMat, Matrix.trace_fin_two]
+
+/-- Cayley–Hamilton for the companion matrix, by hand. -/
+theorem compMat_sq (a b : ℤ) :
+    compMat a b ^ 2 = a • compMat a b - b • (1 : Matrix (Fin 2) (Fin 2) ℤ) := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp only [compMat, pow_two, Matrix.mul_apply, Fin.sum_univ_succ, Fin.sum_univ_zero,
+      Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply, smul_eq_mul, Matrix.cons_val',
+      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons, Matrix.head_fin_const,
+      Matrix.empty_val', Matrix.cons_val_fin_one, Matrix.head_val'] <;> norm_num <;> ring
+
+/-- The traces of the companion matrix are the Lucas `V`-sequence. -/
+theorem trace_compMat_pow (a b : ℤ) (N : ℕ) : (compMat a b ^ N).trace = lucasV a b N := by
+  induction N using Nat.twoStepInduction with
+  | zero => simp [lucasV_zero, Matrix.trace_fin_two, Matrix.one_apply]
+  | one => simp [lucasV_one, compMat, Matrix.trace_fin_two]
+  | more N ih1 ih2 =>
+      have e : compMat a b ^ (N + 2) = compMat a b ^ N * (compMat a b ^ 2) := pow_add _ N 2
+      rw [e, compMat_sq, mul_sub, Matrix.mul_smul, Matrix.mul_smul, mul_one,
+        Matrix.trace_sub, Matrix.trace_smul, Matrix.trace_smul, lucasV_succ_succ]
+      rw [← pow_succ, ih2, ih1]
+      simp [smul_eq_mul]
+
 /-! ### Step 1a (Lemma 1): the floor is the trace plus an offset
 
 `tr C^N = α^N + β^N = V_N(a, b)`, the Lucas `V`-sequence of `X^2 - aX + b`, and
