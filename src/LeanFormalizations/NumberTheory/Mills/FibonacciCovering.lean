@@ -405,11 +405,103 @@ theorem dvd_fib_two_pow_add_of_good {p m : ℕ} {h : ℤ} (hp : p.Prime)
 theorem fib_two_pow_covering (H : ℕ) :
     ∃ m L : ℕ, 1 ≤ L ∧ ∃ p : ℤ → ℕ, ∀ h : ℤ, |h| ≤ H →
       (p h).Prime ∧ ∀ k : ℕ, (p h : ℤ) ∣ (Nat.fib (2 ^ (L * k + m)) : ℤ) + h := by
-  sorry
+  classical
+  set S : Finset ℤ := Finset.Icc (-(H : ℤ)) (H : ℤ) with hS
+  have hmemS : ∀ h : ℤ, |h| ≤ (H : ℤ) → h ∈ S := by
+    intro h hh
+    rw [hS, Finset.mem_Icc]
+    have := abs_le.1 hh
+    exact ⟨this.1, this.2⟩
+  -- one index `m` works for every shift at once (finitely many shifts)
+  have hall : ∀ᶠ n in atTop, ∀ h ∈ S, ∃ q : ℕ, q.Prime ∧
+      (q : ℤ) ∣ (Nat.fib (2 ^ n) : ℤ) + h ∧ padicValNat 2 (glCard 2 q) ≤ n :=
+    (Filter.eventually_all_finset S).2 (fun h _ => exists_good_prime_factor h)
+  obtain ⟨m, hm⟩ := eventually_atTop.1 hall
+  have hm0 := hm m le_rfl
+  -- choose the good prime, and its period, for each shift
+  set Q : ℤ → ℕ → Prop := fun h q => q.Prime ∧ (q : ℤ) ∣ (Nat.fib (2 ^ m) : ℤ) + h ∧
+    padicValNat 2 (glCard 2 q) ≤ m with hQ
+  set P : ℤ → ℕ := fun h => if hh : ∃ q, Q h q then hh.choose else 2 with hP
+  have hPspec : ∀ h ∈ S, Q h (P h) := by
+    intro h hh
+    have hex : ∃ q, Q h q := hm0 h hh
+    rw [hP]
+    simp only [dif_pos hex]
+    exact hex.choose_spec
+  set R : ℤ → ℕ → Prop := fun h j => 1 ≤ j ∧
+    ∀ k : ℕ, (P h : ℤ) ∣ (Nat.fib (2 ^ (m + k * j)) : ℤ) + h with hR
+  set J : ℤ → ℕ := fun h => if hh : ∃ j, R h j then hh.choose else 1 with hJ
+  have hJspec : ∀ h ∈ S, R h (J h) := by
+    intro h hh
+    obtain ⟨hpr, hpd, hpv⟩ := hPspec h hh
+    have hex : ∃ j, R h j := dvd_fib_two_pow_add_of_good hpr hpv hpd
+    rw [hJ]
+    simp only [dif_pos hex]
+    exact hex.choose_spec
+  have hJpos : ∀ h : ℤ, 1 ≤ J h := by
+    intro h
+    rw [hJ]
+    by_cases hh : ∃ j, R h j
+    · simp only [dif_pos hh]; exact hh.choose_spec.1
+    · simp only [dif_neg hh]
+      exact le_refl 1
+  -- `L` is any common multiple of the periods; the product is the cheapest one
+  refine ⟨m, ∏ h ∈ S, J h, ?_, P, ?_⟩
+  · exact Finset.one_le_prod' (fun h _ => hJpos h)
+  intro h hh
+  have hhS : h ∈ S := hmemS h hh
+  obtain ⟨hpr, hpd, hpv⟩ := hPspec h hhS
+  refine ⟨hpr, fun k => ?_⟩
+  obtain ⟨d, hd⟩ : J h ∣ ∏ h' ∈ S, J h' := Finset.dvd_prod_of_mem J hhS
+  have hkey := (hJspec h hhS).2 (d * k)
+  have hidx : m + d * k * J h = (∏ h' ∈ S, J h') * k + m := by
+    rw [hd]; ring
+  rwa [hidx] at hkey
 
 /-- **Prime-free intervals of any fixed length around `F(2^n)`, infinitely often.** -/
 theorem fib_two_pow_prime_free (H : ℕ) :
     ∃ᶠ n in atTop, ∀ h : ℤ, |h| ≤ H → ¬ Prime ((Nat.fib (2 ^ n) : ℤ) + h) := by
-  sorry
+  obtain ⟨m, L, hL, p, hp⟩ := fib_two_pow_covering H
+  rw [frequently_atTop]
+  intro a
+  set K : ℕ := max a (H + 5) + 1 with hK
+  refine ⟨L * (K + 1) + m, ?_, ?_⟩
+  · have h1 : K + 1 ≤ L * (K + 1) := Nat.le_mul_of_pos_left _ hL
+    have h2 : a ≤ K := by rw [hK]; omega
+    omega
+  intro h hh
+  obtain ⟨hpr, hpd⟩ := hp h hh
+  have hKH : H + 5 ≤ K := by rw [hK]; omega
+  have h1 : K ≤ L * K := Nat.le_mul_of_pos_left _ hL
+  have hn1 : H + 5 ≤ L * K + m := by omega
+  have hlt12 : L * K + m < L * (K + 1) + m := by
+    have hexp : L * (K + 1) = L * K + L := by ring
+    omega
+  -- the value at `k = K` is positive and strictly smaller than the value at `k = K + 1`
+  have hfibge : ((L * K + m : ℕ) : ℤ) ≤ (Nat.fib (2 ^ (L * K + m)) : ℤ) := by
+    exact_mod_cast le_fib_two_pow' (by omega)
+  have hHle : (H : ℤ) ≤ ((L * K + m : ℕ) : ℤ) := by exact_mod_cast (by omega : H ≤ L * K + m)
+  have habs := abs_le.1 hh
+  have hA1 : (0 : ℤ) < (Nat.fib (2 ^ (L * K + m)) : ℤ) + h := by omega
+  have hgrow : (Nat.fib (2 ^ (L * K + m)) : ℤ) < (Nat.fib (2 ^ (L * (K + 1) + m)) : ℤ) := by
+    exact_mod_cast fib_two_pow_lt' (show 1 ≤ L * K + m by omega) hlt12
+  intro hprime
+  -- `p h` divides the (assumed prime) value at `k = K + 1`, hence equals it
+  have hd2 := hpd (K + 1)
+  have hd1 := hpd K
+  have hnat : ((Nat.fib (2 ^ (L * (K + 1) + m)) : ℤ) + h).natAbs.Prime :=
+    Int.prime_iff_natAbs_prime.1 hprime
+  have hdnat : p h ∣ ((Nat.fib (2 ^ (L * (K + 1) + m)) : ℤ) + h).natAbs := by
+    have := Int.natAbs_dvd_natAbs.2 hd2
+    simpa using this
+  have hpeq : p h = ((Nat.fib (2 ^ (L * (K + 1) + m)) : ℤ) + h).natAbs := by
+    rcases hnat.eq_one_or_self_of_dvd _ hdnat with hx | hx
+    · exact absurd hx hpr.one_lt.ne'
+    · exact hx
+  have hA2 : (0 : ℤ) < (Nat.fib (2 ^ (L * (K + 1) + m)) : ℤ) + h := by omega
+  have hpval : ((p h : ℤ)) = (Nat.fib (2 ^ (L * (K + 1) + m)) : ℤ) + h := by
+    rw [hpeq]; omega
+  have hple : ((p h : ℤ)) ≤ (Nat.fib (2 ^ (L * K + m)) : ℤ) + h := Int.le_of_dvd hA1 hd1
+  omega
 
 end LeanFormalizations.Mills.FibonacciCovering

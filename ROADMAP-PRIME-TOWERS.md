@@ -30,7 +30,7 @@ For `C ∈ M_2(ℤ)`, an odd prime `c` with `det C ≡ ε = ±1 (mod c)`, and `c
 - Generalizes phase 35 (`Q = −1` exactly).  About 1 phase.
 - **Consequence for the conjecture graph:** `DoubleExpTraceComposite` is folklore for `n = 1`.  Theorem B proves it for `n = 2`, every odd `c` with `det ≡ ±1`, except the `Φ₃`/`Φ₆` classes, which are provably survivors.  For `n = 3, c = 3` the residual classes are Mills.  That is a clean staircase for the paper.
 
-### Theorem C: prime-free intervals for the non-reversible tower `c^n`  ✅ numerics, ⏳ Lean
+### Theorem C: prime-free intervals for the non-reversible tower `c^n`  ✅ numerics, ✅ Lean for `c = 2` (phase 40, 2026-09-30)
 This is Saito's actual wish in arXiv:2504.14968: *"We desire to remove the reversibility."*
 
 **Statement (Fibonacci first).**  For every prime `c ≠ 5` and every `H`, there are `m`, `L` and primes `p_h` (`|h| ≤ H`) with `p_h ∣ F(c^(Lk+m)) + h` for all `k ≥ 0`.  Hence `[F(c^n) − H, F(c^n) + H]` contains no prime for all large `n ≡ m (mod L)`.  At `c = 5` the shifts `h = ±1` are always composite, via `F(4k+1) ± 1` factorizations.
@@ -44,7 +44,24 @@ This is Saito's actual wish in arXiv:2504.14968: *"We desire to remove the rever
 - **Concrete check** (`scripts/fib-d1-demo.py`): `H = 6`, `m = 4`, `L = 60`, primes `{2, 3, 23, 197, 983, 991}`.  So `F(2^(4+60k)) + h` is composite for all `|h| ≤ 6` and all `k ≥ 1`.
 - **Quantitative:** tracking sizes gives `m ≈ 4 log₂ H`, `p_h ≤ φ^(25H⁴)`, and `L ≤ ∏ j_h`.  Hence prime-free intervals of length `≫ (log n)^(1/5)` around `F(2^n)` for infinitely many `n`.  Saito's reversible theorem has `log n / (2d)`, so ours is weaker in the exponent, but it is the first result for a non-reversible tower as far as the searches show.
 - General `A`: the statement goes through whenever every single limit point avoids `ℤ + μ`.  The certificates are per family: easy for `d = 2` via exact composition, open for `d ≥ 3` (Tribonacci numerics say yes).
-- Lean: phase 40 (Fibonacci, `c = 2`, the qualitative (D1) plus intervals), then all primes.
+- Lean: **phase 40 DONE** (2026-09-30).  `NumberTheory/Mills/FibonacciCovering.lean` is sorry-free
+  and all four statements are `#print axioms`-clean: `five_mul_fib_two_pow_sq`,
+  `exists_good_prime_factor`, `fib_two_pow_covering`, `fib_two_pow_prime_free`.  No step of the
+  route failed.  Three remarks on how it actually went in:
+  - The certificate `2^(n+1) ∣ 5F(2^n)²+3` is cleanest as a *self-contained* induction: with
+    `x_n = 5F(2^n)²` one has `x_(n+1) = x_n(x_n+4)` (from `F(2m) = F(m)L(m)` and Cassini), so
+    `x_(n+1)+3 = (x_n+1)(x_n+3)`, and `x_n+1 = 2^(n+1)c − 2` is automatically even.  Phase 32's
+    `two_pow_dvd_lucas_two_pow_add_one` is not needed at all.
+  - Step 2 needs only that `{±1 mod 2^e}` is **multiplicatively closed** (`PmOne.mul`) plus a
+    strong induction on `minFac` (`PmOne.of_prime_factors`); `2` is good because
+    `|GL₂(𝔽₂)| = 6` has 2-part `2`.
+  - Step 3's strengthening is one line of the old proof: `g^(c^j) = g` iterates to
+    `g^(c^(kj)) = g` (`exists_entry_pow_congr_mul`).  Step 4 takes `L = ∏_h j_h` (a product, not
+    an lcm — `Finset.dvd_prod_of_mem` and `Finset.one_le_prod'` are cheaper than
+    `Finset.lcm_eq_zero_iff`).  Step 5 compares the values at `k = K` and `k = K+1`: a prime
+    `p_h` dividing both, with `0 < A_K < A_(K+1)`, forces `p_h = A_(K+1) ≤ A_K`.
+- Next: phase 41, Fibonacci at every prime `c` (`Φ_j` with `2j+1 = c²`; `c = 5` via the
+  `F(4k+1) ± 1` factorizations).
 
 ### Theorem C′: non-integrality of limit points for `d ≥ 3` (paper math, written 2026-09-30 01:30)
 The obstacle for Theorem C at `d ≥ 3` is that no exact composition is available.  Galois theory replaces it.
