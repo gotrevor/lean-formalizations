@@ -1,5 +1,8 @@
 # HANDOFF 2026-09-30 — phase 37 COMPLETE (FibonacciAllPrimes sorry-free, axiom-clean)
 
+**Branch** `main` · **HEAD at handoff** `28ce498` (this doc's own commit follows) · treadmill
+STOP requested after this lap, so nothing is in flight and no `sorry` was left mid-edit.
+
 `src/LeanFormalizations/NumberTheory/Mills/FibonacciAllPrimes.lean` is sorry-free; all four
 frozen statements are `#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`):
 `fib_odd_mul`, `fibOddPoly_far`, `not_dvd_fib_prime_pow`, `fib_prime_pow_add_not_prime_all`.
@@ -23,6 +26,16 @@ case-split-free endgame, are in `SWEEP-PRIME-MODULUS.md` § Phase 37.
 `fibM_pow_trace_sq`, `fibM_pow_det_odd`, `fibOddAux_growth`, `fibOddAux_mono`,
 `fibOddPoly_far_pos`, `lucas_sq_sub_fib_sq`, `dvd_fibOddPoly_sub`,
 `fib_prime_pow_add_not_prime_odd`.
+
+## Exact next steps (for a fresh session)
+1. `lake build` should be green at HEAD with zero `sorry` in
+   `src/LeanFormalizations/NumberTheory/Mills/FibonacciAllPrimes.lean`; every remaining `sorry`
+   in `src/` is designated-open audit surface from earlier phases, untouched by this lap.
+2. An **altitude lap must re-own `DIRECTION.md`**: this lap appended a "phase 37 DONE" section and
+   renumbered the queued Lucas-entry phase 36 → 38 before the operator rule "altitude laps own
+   DIRECTION.md" was surfaced.  Re-derive that file's CURRENT DIRECTIVE rather than trusting my
+   edit.
+3. Then phase 38 as below.
 
 ## Next
 Phase 38 (was 36): general Lucas **entries** `U(P,Q)` at odd `c`.  Concrete attack recorded in
