@@ -276,29 +276,48 @@ theorem pow_idem_of_pow_succ {M : Type*} [Monoid M] {S : M} {Q : ℕ} (hQ : 1 �
   rw [← pow_add]
   exact key Q hQ
 
-/-- **The mixed limit matrix.**  There are `L, Q ≥ 1` such that for every `n` the matrix
-`T := C^(L·c^n)` satisfies `T^(Q+1) ≡ T` and `det (1 - T^Q) ≡ 0` modulo `c^(n+1)`.  The second
-congruence says that the idempotent `T^Q` is nonzero, i.e. that *some* root of `f` is a
-`c`-unit — and it holds precisely because `f ≢ X^d (mod c)`. -/
+/-- **The mixed limit matrix.**  There are `Q ≥ 1` and a threshold `n₀` such that for every
+`ν ≥ n₀` the matrix `T := C^(c^ν)` satisfies `T^(Q+1) ≡ T` and `det (1 - T^Q) ≡ 0` modulo
+`c^(ν - n₀ + 1)`.  The second congruence says that the idempotent `T^Q` is nonzero, i.e. that
+*some* root of `f` is a `c`-unit — and it holds precisely because `f ≢ X^d (mod c)`.
+
+The exponent is a pure power `c^ν` (not `L·c^ν`), because the frozen statement is about
+`⌊α^(c^n+s)⌋`: the pre-period `a` of `D = C mod c` is absorbed by taking `ν ≥ a`, since
+`c^ν ≥ a` already, and the *level* — not the exponent — is what the lifting buys. -/
 theorem exists_mixed_limit (f : ℤ[X]) (hmon : f.Monic) (hd : 1 ≤ f.natDegree) {c : ℕ}
     (hc : c.Prime) (hunit : f.map (Int.castRingHom (ZMod c)) ≠ X ^ f.natDegree) :
-    ∃ L Q : ℕ, 1 ≤ L ∧ 1 ≤ Q ∧ ∀ n : ℕ,
-      (∀ i j, (c : ℤ) ^ (n + 1) ∣
-          ((compM ℤ f ^ (L * c ^ n)) ^ (Q + 1) - compM ℤ f ^ (L * c ^ n)) i j) ∧
-      (c : ℤ) ^ (n + 1) ∣ (1 - (compM ℤ f ^ (L * c ^ n)) ^ Q).det := by
+    ∃ Q n₀ : ℕ, 1 ≤ Q ∧ ∀ ν : ℕ, n₀ ≤ ν →
+      (∀ i j, (c : ℤ) ^ (ν - n₀ + 1) ∣
+          ((compM ℤ f ^ (c ^ ν)) ^ (Q + 1) - compM ℤ f ^ (c ^ ν)) i j) ∧
+      (c : ℤ) ^ (ν - n₀ + 1) ∣ (1 - (compM ℤ f ^ (c ^ ν)) ^ Q).det := by
   classical
   haveI : Fact c.Prime := ⟨hc⟩
   set D := compM (ZMod c) f with hD
   obtain ⟨a, Q, ha, hQ, hper⟩ := exists_period D
-  refine ⟨a * Q, Q, Nat.one_le_iff_ne_zero.2 (by positivity), hQ, ?_⟩
-  set L := a * Q with hL
-  -- the stable value
-  have hstab : ∀ j : ℕ, 1 ≤ j → D ^ (L * j) = D ^ L := fun j hj =>
-    pow_mul_period ha hQ hper hj
-  have hDLne : D ^ L ≠ 0 := by
-    intro h0
-    exact hunit (map_eq_X_pow_of_compM_pow_eq_zero f hmon hd h0)
-  -- the base congruence mod `c`
+  have hn₀ : a ≤ c ^ a :=
+    le_trans (Nat.lt_two_pow_self).le (Nat.pow_le_pow_left hc.two_le a)
+  refine ⟨Q, a, hQ, ?_⟩
+  -- past the pre-period, only the residue of the exponent mod `Q` matters
+  have hper2 : ∀ N u : ℕ, a ≤ N → D ^ (N + u * Q) = D ^ N := by
+    intro N u hN
+    have hNa : N = a + (N - a) := by omega
+    rw [hNa]
+    exact pow_add_period hper (N - a) u
+  have hDL : ∀ ν : ℕ, a ≤ c ^ ν → D ^ (c ^ ν * Q) = D ^ (a * Q) := by
+    intro ν hν
+    have hrw : c ^ ν * Q = a * Q + (c ^ ν - a) * Q := by
+      have h1 : a + (c ^ ν - a) = c ^ ν := by omega
+      calc c ^ ν * Q = (a + (c ^ ν - a)) * Q := by rw [h1]
+        _ = a * Q + (c ^ ν - a) * Q := by ring
+    rw [hrw]
+    exact hper2 (a * Q) (c ^ ν - a) (Nat.le_mul_of_pos_right a hQ)
+  have hDLne : D ^ (a * Q) ≠ 0 := fun h0 =>
+    hunit (map_eq_X_pow_of_compM_pow_eq_zero f hmon hd h0)
+  -- the base congruence mod `c`, at exponent `c^a`
+  have hbaseD : D ^ (c ^ a * (Q + 1)) = D ^ (c ^ a) := by
+    have hrw : c ^ a * (Q + 1) = c ^ a + c ^ a * Q := by ring
+    rw [hrw]
+    exact hper2 (c ^ a) (c ^ a) hn₀
   set φ : ℤ →+* ZMod c := Int.castRingHom (ZMod c) with hφ
   have hmapZ : ∀ N : ℕ, (compM ℤ f ^ N).map φ = D ^ N := by
     intro N
@@ -306,87 +325,82 @@ theorem exists_mixed_limit (f : ℤ[X]) (hmon : f.Monic) (hd : 1 ≤ f.natDegree
   have hdvd_of_map : ∀ (M : Matrix (Fin f.natDegree) (Fin f.natDegree) ℤ),
       M.map φ = 0 → ∀ i j, (c : ℤ) ∣ M i j := by
     intro M hM i j
-    have := congrFun (congrFun hM i) j
-    simp only [Matrix.map_apply, Matrix.zero_apply, hφ] at this
-    exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ c).1 (by exact_mod_cast this)
+    have h1 := congrFun (congrFun hM i) j
+    simp only [Matrix.map_apply, Matrix.zero_apply, hφ] at h1
+    exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ c).1 (by exact_mod_cast h1)
   have hbase : ∀ i j, (c : ℤ) ∣
-      (compM ℤ f ^ (L * (Q + 1)) - compM ℤ f ^ L) i j := by
+      (compM ℤ f ^ (c ^ a * (Q + 1)) - compM ℤ f ^ (c ^ a)) i j := by
     refine hdvd_of_map _ ?_
-    have : (compM ℤ f ^ (L * (Q + 1)) - compM ℤ f ^ L).map φ
-        = D ^ (L * (Q + 1)) - D ^ L := by
-      rw [map_matrix_sub, hmapZ, hmapZ]
-    rw [this, hstab (Q + 1) (by omega), sub_self]
-  have hcomm : Commute (compM ℤ f ^ (L * (Q + 1))) (compM ℤ f ^ L) :=
+    rw [map_matrix_sub, hmapZ, hmapZ, hbaseD, sub_self]
+  have hcomm : Commute (compM ℤ f ^ (c ^ a * (Q + 1))) (compM ℤ f ^ (c ^ a)) :=
     (Commute.refl (compM ℤ f)).pow_pow _ _
-  have hlift := fun n => pow_c_pow_congr hcomm hbase n
-  intro n
-  -- rewrite the lifted congruence in terms of `T`
-  have hT1 : (compM ℤ f ^ (L * (Q + 1))) ^ (c ^ n) = (compM ℤ f ^ (L * c ^ n)) ^ (Q + 1) := by
+  intro ν hν
+  have hcν : a ≤ c ^ ν := le_trans hn₀ (Nat.pow_le_pow_right hc.one_lt.le hν)
+  set m := ν - a with hm
+  have hνm : a + m = ν := by omega
+  -- the lifted congruence, rewritten at exponent `c^ν`
+  have hT1 : (compM ℤ f ^ (c ^ a * (Q + 1))) ^ (c ^ m)
+      = (compM ℤ f ^ (c ^ ν)) ^ (Q + 1) := by
     rw [← pow_mul, ← pow_mul]
     congr 1
+    rw [← hνm, pow_add]
     ring
-  have hT2 : (compM ℤ f ^ L) ^ (c ^ n) = compM ℤ f ^ (L * c ^ n) := by rw [← pow_mul]
-  have hcongT : ∀ i j, (c : ℤ) ^ (n + 1) ∣
-      ((compM ℤ f ^ (L * c ^ n)) ^ (Q + 1) - compM ℤ f ^ (L * c ^ n)) i j := by
+  have hT2 : (compM ℤ f ^ (c ^ a)) ^ (c ^ m) = compM ℤ f ^ (c ^ ν) := by
+    rw [← pow_mul, ← hνm, pow_add]
+  have hcongT : ∀ i j, (c : ℤ) ^ (m + 1) ∣
+      ((compM ℤ f ^ (c ^ ν)) ^ (Q + 1) - compM ℤ f ^ (c ^ ν)) i j := by
     intro i j
-    have := hlift n i j
-    rwa [hT1, hT2] at this
+    have h1 := pow_c_pow_congr hcomm hbase m i j
+    rwa [hT1, hT2] at h1
   refine ⟨hcongT, ?_⟩
-  -- the determinant congruence, read in `ZMod (c^(n+1))`
-  set R := ZMod (c ^ (n + 1)) with hR
+  -- the determinant congruence, read in `ZMod (c^(m+1))`
+  set R := ZMod (c ^ (m + 1)) with hR
   set ψ : ℤ →+* R := Int.castRingHom R with hψ
   set S : Matrix (Fin f.natDegree) (Fin f.natDegree) R :=
-    (compM ℤ f ^ (L * c ^ n)).map ψ with hS
+    (compM ℤ f ^ (c ^ ν)).map ψ with hS
   have hSsucc : S ^ (Q + 1) = S := by
-    have hmap : ((compM ℤ f ^ (L * c ^ n)) ^ (Q + 1)).map ψ = S ^ (Q + 1) := by
+    have hmap : ((compM ℤ f ^ (c ^ ν)) ^ (Q + 1)).map ψ = S ^ (Q + 1) := by
       rw [hS, map_matrix_pow]
     rw [← hmap]
     ext i j
     have h1 := hcongT i j
-    have h2 : ψ (((compM ℤ f ^ (L * c ^ n)) ^ (Q + 1)
-        - compM ℤ f ^ (L * c ^ n)) i j) = 0 := by
+    have h2 : ψ (((compM ℤ f ^ (c ^ ν)) ^ (Q + 1) - compM ℤ f ^ (c ^ ν)) i j) = 0 := by
       obtain ⟨z, hz⟩ := h1
       rw [hz, hψ]
-      simp only [map_mul, eq_intCast, Int.cast_mul, Int.cast_pow, Int.cast_natCast]
-      have : ((c : R)) ^ (n + 1) = 0 := by
-        have := ZMod.natCast_self (c ^ (n + 1))
-        push_cast at this
-        simpa [hR] using this
-      rw [this, zero_mul]
+      simp only [map_mul, eq_intCast, Int.cast_pow, Int.cast_natCast]
+      have hzero : ((c : R)) ^ (m + 1) = 0 := by
+        have h3 := ZMod.natCast_self (c ^ (m + 1))
+        push_cast at h3
+        simpa [hR] using h3
+      rw [hzero, zero_mul]
     simp only [Matrix.map_apply, Matrix.sub_apply, map_sub, hS] at h2 ⊢
     linear_combination h2
   have hidem : S ^ Q * S ^ Q = S ^ Q := pow_idem_of_pow_succ hQ hSsucc
   have hSQne : S ^ Q ≠ 0 := by
     intro h0
-    -- reduce further to `ZMod c`
-    have hdvdc : c ∣ c ^ (n + 1) := dvd_pow_self c (by omega)
+    have hdvdc : c ∣ c ^ (m + 1) := dvd_pow_self c (by omega)
     set χ : R →+* ZMod c := ZMod.castHom hdvdc (ZMod c) with hχ
     have hcomp : ((χ : R → ZMod c) ∘ (ψ : ℤ → R)) = (φ : ℤ → ZMod c) := by
       funext z
       simp [hψ, hφ, hχ]
-    have hmapD : ((S ^ Q).map χ) = D ^ (L * c ^ n * Q) := by
-      rw [hS]
-      rw [← map_matrix_pow, Matrix.map_map, hcomp, ← pow_mul, hmapZ]
-    rw [h0] at hmapD
-    have hDeq : D ^ (L * c ^ n * Q) = D ^ L := by
-      rw [mul_assoc]
-      exact hstab (c ^ n * Q) (Nat.one_le_iff_ne_zero.2 (by have hcp := hc.pos; positivity))
-    rw [hDeq] at hmapD
+    have hmapD : ((S ^ Q).map χ) = D ^ (c ^ ν * Q) := by
+      rw [hS, ← map_matrix_pow, Matrix.map_map, hcomp, ← pow_mul, hmapZ]
+    rw [h0, hDL ν hcν] at hmapD
     exact hDLne (by simpa using hmapD.symm)
   have hdet0 : (1 - S ^ Q).det = 0 :=
-    det_one_sub_eq_zero_of_idem (zmod_idem_eq_zero_or_one hc (n + 1)) hidem hSQne
-  have hmapdet : ψ ((1 - (compM ℤ f ^ (L * c ^ n)) ^ Q).det) = (1 - S ^ Q).det := by
+    det_one_sub_eq_zero_of_idem (zmod_idem_eq_zero_or_one hc (m + 1)) hidem hSQne
+  have hmapdet : ψ ((1 - (compM ℤ f ^ (c ^ ν)) ^ Q).det) = (1 - S ^ Q).det := by
     rw [RingHom.map_det]
     congr 1
     ext i j
-    simp only [Matrix.map_apply, Matrix.sub_apply, Matrix.one_apply, map_sub, hS]
+    simp only [Matrix.sub_apply, Matrix.one_apply, map_sub, hS]
     rw [← map_matrix_pow]
     simp only [Matrix.map_apply]
     by_cases hij : i = j <;> simp [hij]
   rw [hdet0] at hmapdet
-  have := (ZMod.intCast_zmod_eq_zero_iff_dvd
-    ((1 - (compM ℤ f ^ (L * c ^ n)) ^ Q).det) (c ^ (n + 1))).1 (by simpa [hψ] using hmapdet)
-  exact_mod_cast this
+  have hfin := (ZMod.intCast_zmod_eq_zero_iff_dvd
+    ((1 - (compM ℤ f ^ (c ^ ν)) ^ Q).det) (c ^ (m + 1))).1 (by simpa [hψ] using hmapdet)
+  exact_mod_cast hfin
 
 
 /-! ### Step 2: the transfer, over the algebraic numbers
