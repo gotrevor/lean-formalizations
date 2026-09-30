@@ -2,7 +2,11 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 (phase 42, CURRENT): Theorem B — 2×2 traces at odd primes classified (`DoubleExpTraceComposite` for `n = 2`) — target `NumberTheory/Mills/TraceClassification.lean` (3 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 43, CURRENT): prime-free intervals around `F(c^n)` for EVERY prime `c`, and around `U_(c^n)(P, ±1)` — target `NumberTheory/Mills/CoveringInstances.lean` (3 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+Uses the phase 41 engine; `c = 5` combines the engine (`h ≠ ±1`) with the `F(4k+1) ± 1` factorizations.
+
+## ✅ DONE (phase 42): Theorem B — 2×2 traces at odd primes classified (`DoubleExpTraceComposite` for `n = 2`) — target `NumberTheory/Mills/TraceClassification.lean` (3 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 `ROADMAP-PRIME-TOWERS.md` §1 Theorem B.  Statements numerically checked (2196 congruence cases and 260 survivor-rate cases, 0 failures).
 
