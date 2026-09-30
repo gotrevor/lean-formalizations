@@ -338,11 +338,85 @@ theorem fib_prime_pow_succ_add {c : ℕ} (hc : c.Prime) (h5 : c % 5 = 2 ∨ c % 
   simp only [Matrix.add_apply, Matrix.smul_apply, smul_eq_mul, fibM_pow, fibMinv] at h01
   simpa using h01
 
+/-! ### Step 3: the `c`-adic part of `|GL₂(𝔽_p)|` for an odd prime `c` -/
+
+theorem factorization_self_eq_zero {p c : ℕ} (hp : p.Prime) (hpc : p ≠ c) :
+    p.factorization c = 0 := by
+  rw [hp.factorization]
+  simp [Finsupp.single_apply, hpc]
+
+/-- `v_c|GL₂(𝔽_p)| = 2 v_c(p−1) + v_c(p+1)` for a prime `p ≠ c`. -/
+theorem padicValNat_glCard_two {c p : ℕ} (hc : c.Prime) (hp : p.Prime) (hpc : p ≠ c) :
+    padicValNat c (glCard 2 p) = 2 * (p - 1).factorization c + (p + 1).factorization c := by
+  have hp2 : 2 ≤ p := hp.two_le
+  obtain ⟨r, hr⟩ : ∃ r, p = r + 1 := ⟨p - 1, by omega⟩
+  have hq1 : p - 1 = r := by omega
+  have he1 : p ^ 2 - 1 = (p - 1) * (p + 1) := by
+    have h : p ^ 2 = (p - 1) * (p + 1) + 1 := by rw [hq1, hr]; ring
+    omega
+  have he2 : p ^ 2 - p = p * (p - 1) := by
+    have h : p ^ 2 = p * (p - 1) + p := by rw [hq1, hr]; ring
+    omega
+  have hg : glCard 2 p = ((p - 1) * (p + 1)) * (p * (p - 1)) := by
+    rw [glCard, Fin.prod_univ_two]
+    simp only [Fin.val_zero, Fin.val_one, pow_zero, pow_one]
+    rw [he1, he2]
+  have hne1 : p - 1 ≠ 0 := by omega
+  have hne2 : p + 1 ≠ 0 := by omega
+  have hnep : p ≠ 0 := by omega
+  have hfp : p.factorization c = 0 := factorization_self_eq_zero hp hpc
+  have hdef := Nat.factorization_def (glCard 2 p) hc
+  rw [← hdef, hg]
+  rw [Nat.factorization_mul (by positivity) (by positivity),
+      Nat.factorization_mul hne1 hne2, Nat.factorization_mul hnep hne1]
+  simp [hfp]
+  omega
+
 /-- The filter's `c`-adic output for an odd prime `c`. -/
 theorem pow_dvd_sub_or_add_of_lt_padicValNat {c p k : ℕ} (hc : c.Prime) (hc2 : c ≠ 2)
     (hp : p.Prime) (hpc : p ≠ c) (hk : k < padicValNat c (glCard 2 p)) :
     (c : ℤ) ^ (k / 2) ∣ (p : ℤ) - 1 ∨ (c : ℤ) ^ (k / 2) ∣ (p : ℤ) + 1 := by
-  sorry
+  have hp2 : 2 ≤ p := hp.two_le
+  have hne1 : p - 1 ≠ 0 := by omega
+  have hne2 : p + 1 ≠ 0 := by omega
+  set a := (p - 1).factorization c with ha
+  set b := (p + 1).factorization c with hb
+  rw [padicValNat_glCard_two hc hp hpc] at hk
+  -- `c` cannot divide both `p − 1` and `p + 1`
+  have hmin : a = 0 ∨ b = 0 := by
+    by_contra hcon
+    push_neg at hcon
+    obtain ⟨ha0, hb0⟩ := hcon
+    have hd1 : c ∣ p - 1 := by
+      have := (Nat.Prime.pow_dvd_iff_le_factorization hc hne1).2 (show 1 ≤ a by omega)
+      simpa using this
+    have hd2 : c ∣ p + 1 := by
+      have := (Nat.Prime.pow_dvd_iff_le_factorization hc hne2).2 (show 1 ≤ b by omega)
+      simpa using this
+    have hd : c ∣ 2 := by
+      have hsub := Nat.dvd_sub hd2 hd1
+      rwa [show p + 1 - (p - 1) = 2 from by omega] at hsub
+    have hle := Nat.le_of_dvd (by norm_num) hd
+    have := hc.two_le
+    omega
+  have hcast1 : ((p - 1 : ℕ) : ℤ) = (p : ℤ) - 1 := by
+    have : (1 : ℕ) ≤ p := by omega
+    push_cast [this]
+    ring
+  have hcast2 : ((p + 1 : ℕ) : ℤ) = (p : ℤ) + 1 := by push_cast; ring
+  rcases hmin with h | h
+  · right
+    have hkb : k / 2 ≤ b := by omega
+    have : (c : ℕ) ^ (k / 2) ∣ p + 1 :=
+      (Nat.Prime.pow_dvd_iff_le_factorization hc hne2).2 (by rw [← hb]; exact hkb)
+    rw [← hcast2]
+    exact_mod_cast Int.natCast_dvd_natCast.2 this
+  · left
+    have hka : k / 2 ≤ a := by omega
+    have : (c : ℕ) ^ (k / 2) ∣ p - 1 :=
+      (Nat.Prime.pow_dvd_iff_le_factorization hc hne1).2 (by rw [← ha]; exact hka)
+    rw [← hcast1]
+    exact_mod_cast Int.natCast_dvd_natCast.2 this
 
 /-- **`F(c^n) + h` is composite infinitely often, for every inert prime `c` and every `h`.** -/
 theorem fib_prime_pow_add_not_prime {c : ℕ} (hc : c.Prime) (h5 : c % 5 = 2 ∨ c % 5 = 3)
