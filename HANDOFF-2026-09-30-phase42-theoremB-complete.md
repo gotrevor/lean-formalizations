@@ -1,6 +1,7 @@
 # HANDOFF 2026-09-30 — phase 42 (Theorem B) CLOSED
 
-**Branch** `main`. `lake build` green (8761 jobs). Target file
+**Branch** `main` · HEAD `645c26e` (proof + docs), previous checkpoint `d93ebaa` (statements 1 and 3).
+Stop sentinel written (`box done --green`); the treadmill will not relaunch. `lake build` green (8761 jobs). Target file
 `src/LeanFormalizations/NumberTheory/Mills/TraceClassification.lean` is **sorry-free**; all three
 frozen statements are `#print axioms`-clean `[propext, Classical.choice, Quot.sound]`.
 `scripts/fact-graph`: 30 edges, 29 hypotheses. Nothing in flight; no Aristotle job used.
