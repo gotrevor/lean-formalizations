@@ -41,6 +41,23 @@ So the phase-41 crux is precisely the `c`-adic convergence statement
 
 > **`c^(n+1) ∣ F(c^(n+2)) − F(c^n)` for every odd prime `c`** (any `c^(κn)`, `κ > 0`, suffices).
 
+**CLOSED 2026-09-30** — `exists_shift_fib_prime_pow_congr`: for every prime `c` there is a shift
+`d ≥ 1` with `c^n ∣ F(c^(n+d)) − F(c^n)` for all `n ≥ 1`.  The shift `d` (rather than the guessed
+`d = 2`) is what makes it elementary, and it costs nothing downstream since `c^d` is still odd and
+still bounded by `c` alone.  The general statement is `exists_shift_pow_congr`: for ANY integer
+matrix `A` with `c ∤ det A`,
+`c^(n−s+1) ∣ (A^(c^(n+d)))ᵢⱼ − (A^(c^n))ᵢⱼ` for `n ≥ s`, with `s ≤ v_c|GLₙ(𝔽_c)|`.
+**No lifting machinery is used** — this was the key realisation; the Teichmüller/Witt route is
+avoidable:
+  1. `A^T ≡ 1 (mod c)` for `T = |GLₙ(𝔽_c)|` (Lagrange);
+  2. raising to the `c`-th power gains one factor of `c` — and *without* binomial coefficients:
+     `Z^c − 1 = (∑_{i<c} Z^i)(Z − 1)` and `∑_{i<c} Z^i ≡ c·1 ≡ 0 (mod c)`, so the sum contributes
+     the extra `c` (`SmulDvd.pow_prime_gain`, `SmulDvd.pow_prime_pow`);
+  3. `e ∣ c^d − 1` with `d = φ(e)` and `e` the `c`-free part of `T`, so `T c^(n−s)` divides the
+     exponent gap `c^(n+d) − c^n = c^n(c^d − 1)`.
+Divisibility of matrices is carried by `SmulDvd a M := ∃ B, M = a • B`, which multiplies on both
+sides (`Matrix.smul_mul`/`Matrix.mul_smul`) and is exactly `a ∣ Mᵢⱼ` entrywise.
+
 This is the quantitative form of "Frobenius permutes the Teichmüller lifts of `α, β`, and its
 square fixes them".  With it: `c^e ∣ F(c^n) − x` plus `dvd_fibOddPoly_sub` gives
 `c^e ∣ Φ_J(x) − F(c^(n+2))`, hence `c^e ∣ Φ_J(x) − x` for `e ≤ n+1`, and `fibOddPoly_far` finishes

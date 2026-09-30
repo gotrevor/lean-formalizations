@@ -231,4 +231,249 @@ theorem pow_dvd_sub_or_add_of_lt_padicValNat_odd {c p n : ℕ} (hc : c.Prime) (h
     rw [← hcast1]
     exact_mod_cast Int.natCast_dvd_natCast.2 hd
 
+/-! ### `c`-adic convergence of `A^(c^n)` — the phase-41 crux, via group theory only
+
+The route.  Let `T = ord(A mod c)` in `GLₙ(𝔽_c)` and write `T = c^s e` with `c ∤ e`.
+1. `A^T = 1 + c • B` (definition of `T`).
+2. **Raising to the `c`-th power gains one factor of `c`**: if `Z − 1 = c^k • B` with `k ≥ 1`, then
+   `Z^c − 1 = c^(k+1) • B'`.  No binomial coefficients are needed: `Z^c − 1 = S · (Z − 1)` with
+   `S = ∑_{i<c} Z^i`, and `S ≡ c · 1 (mod c^k)`, so `S = c • U`.
+3. Hence `A^(T c^m) − 1 = c^(m+1) • B_m`, and multiplying the exponent by anything preserves that.
+4. `e ∣ c^d − 1` for `d = φ(e)`, so `T c^(n−s) ∣ c^n (c^d − 1) = c^(n+d) − c^n` whenever `s ≤ n`;
+   and `s ≤ v_c|GLₙ(𝔽_c)|`, which is `1` for `n = 2`.
+
+Conclusion: `c^n ∣ (A^(c^(n+d)) − A^(c^n)) a b`, with `d` depending only on `c` and `A`.  At
+`A = !![1,1;1,0]` and entry `(0,1)` this is `c^n ∣ F(c^(n+d)) − F(c^n)`, and `c^d` is odd, so
+`FibonacciAllPrimes.fib_odd_mul` applies with `2J + 1 = c^d`.  That is exactly the single-index
+certificate phase 41 needs. -/
+
+section MatrixCong
+
+variable {N : ℕ}
+
+/-- `a` divides `M` entrywise, packaged so ring manipulations are easy. -/
+def SmulDvd (a : ℤ) (M : Matrix (Fin N) (Fin N) ℤ) : Prop := ∃ B, M = a • B
+
+lemma SmulDvd.mul_left {a : ℤ} {M : Matrix (Fin N) (Fin N) ℤ} (h : SmulDvd a M)
+    (X : Matrix (Fin N) (Fin N) ℤ) : SmulDvd a (X * M) := by
+  obtain ⟨B, hB⟩ := h
+  exact ⟨X * B, by rw [hB, Matrix.mul_smul]⟩
+
+lemma SmulDvd.mul_right {a : ℤ} {M : Matrix (Fin N) (Fin N) ℤ} (h : SmulDvd a M)
+    (X : Matrix (Fin N) (Fin N) ℤ) : SmulDvd a (M * X) := by
+  obtain ⟨B, hB⟩ := h
+  exact ⟨B * X, by rw [hB, Matrix.smul_mul]⟩
+
+lemma SmulDvd.of_dvd {a b : ℤ} {M : Matrix (Fin N) (Fin N) ℤ} (hab : a ∣ b)
+    (h : SmulDvd b M) : SmulDvd a M := by
+  obtain ⟨B, hB⟩ := h
+  obtain ⟨t, ht⟩ := hab
+  exact ⟨t • B, by rw [hB, ht, smul_smul]⟩
+
+lemma SmulDvd.entry {a : ℤ} {M : Matrix (Fin N) (Fin N) ℤ} (h : SmulDvd a M) (i j : Fin N) :
+    a ∣ M i j := by
+  obtain ⟨B, hB⟩ := h
+  exact ⟨B i j, by rw [hB]; simp⟩
+
+/-- `Z^m − 1` inherits any entrywise divisor of `Z − 1`. -/
+lemma SmulDvd.pow_sub_one {a : ℤ} {Z : Matrix (Fin N) (Fin N) ℤ} (h : SmulDvd a (Z - 1))
+    (m : ℕ) : SmulDvd a (Z ^ m - 1) := by
+  have hg : (∑ i ∈ Finset.range m, Z ^ i) * (Z - 1) = Z ^ m - 1 := geom_sum_mul Z m
+  rw [← hg]
+  exact h.mul_left _
+
+/-- **The gain step.**  If `Z ≡ 1 (mod c^k)` with `k ≥ 1`, then `Z^c ≡ 1 (mod c^(k+1))`. -/
+lemma SmulDvd.pow_prime_gain {c : ℕ} {k : ℕ} (hk : 1 ≤ k) {Z : Matrix (Fin N) (Fin N) ℤ}
+    (h : SmulDvd ((c : ℤ) ^ k) (Z - 1)) :
+    SmulDvd ((c : ℤ) ^ (k + 1)) (Z ^ c - 1) := by
+  obtain ⟨B, hB⟩ := h
+  -- `S = ∑_{i<c} Z^i` is `≡ c · 1 (mod c^k)`, hence `≡ 0 (mod c)`
+  obtain ⟨C, hC⟩ : SmulDvd ((c : ℤ) ^ k)
+      ((∑ i ∈ Finset.range c, Z ^ i) - (c : ℤ) • (1 : Matrix (Fin N) (Fin N) ℤ)) := by
+    have hrw : (∑ i ∈ Finset.range c, Z ^ i) - (c : ℤ) • (1 : Matrix (Fin N) (Fin N) ℤ)
+        = ∑ i ∈ Finset.range c, (Z ^ i - 1) := by
+      rw [Finset.sum_sub_distrib]
+      congr 1
+      simp [Finset.sum_const, Finset.card_range]
+    rw [hrw]
+    refine ⟨∑ i ∈ Finset.range c, (Classical.choose (SmulDvd.pow_sub_one ⟨B, hB⟩ i)), ?_⟩
+    rw [Finset.smul_sum]
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    exact Classical.choose_spec (SmulDvd.pow_sub_one (a := (c : ℤ) ^ k) ⟨B, hB⟩ i)
+  obtain ⟨k', hk'⟩ : ∃ k', k = k' + 1 := ⟨k - 1, by omega⟩
+  have hS : (∑ i ∈ Finset.range c, Z ^ i)
+      = (c : ℤ) • ((1 : Matrix (Fin N) (Fin N) ℤ) + (c : ℤ) ^ k' • C) := by
+    have h1 : (∑ i ∈ Finset.range c, Z ^ i)
+        = (c : ℤ) • (1 : Matrix (Fin N) (Fin N) ℤ) + (c : ℤ) ^ k • C := by
+      rw [← hC]; abel
+    rw [h1, hk', smul_add, smul_smul, pow_succ']
+  have hg : (∑ i ∈ Finset.range c, Z ^ i) * (Z - 1) = Z ^ c - 1 := geom_sum_mul Z c
+  refine ⟨((1 : Matrix (Fin N) (Fin N) ℤ) + (c : ℤ) ^ k' • C) * B, ?_⟩
+  rw [← hg, hS, hB, Matrix.smul_mul, Matrix.mul_smul, smul_smul]
+  congr 1
+  rw [hk']
+  ring
+
+/-- `Z ≡ 1 (mod c)` ⟹ `Z^(c^m) ≡ 1 (mod c^(m+1))`. -/
+lemma SmulDvd.pow_prime_pow {c : ℕ} {Z : Matrix (Fin N) (Fin N) ℤ}
+    (h : SmulDvd ((c : ℤ) ^ 1) (Z - 1)) (m : ℕ) :
+    SmulDvd ((c : ℤ) ^ (m + 1)) (Z ^ c ^ m - 1) := by
+  induction m with
+  | zero => simpa using h
+  | succ m ih =>
+      have hpow : Z ^ c ^ (m + 1) = (Z ^ c ^ m) ^ c := by
+        rw [← pow_mul, ← pow_succ]
+      rw [hpow]
+      exact SmulDvd.pow_prime_gain (by omega) ih
+
+lemma SmulDvd.of_entries (a : ℤ) (M : Matrix (Fin N) (Fin N) ℤ) (h : ∀ i j, a ∣ M i j) :
+    SmulDvd a M := by
+  classical
+  refine ⟨Matrix.of fun i j => (h i j).choose, ?_⟩
+  ext i j
+  simpa using (h i j).choose_spec
+
+end MatrixCong
+
+/-! ### The `c`-adic convergence theorem -/
+
+/-- **`c`-adic convergence of `A^(c^n)` along a residue class.**  For any integer matrix `A` with
+`c ∤ det A` there are a *shift* `d ≥ 1` and a constant `s` — both depending only on `A`, `c` and
+the size — with
+
+  `c^(n − s + 1) ∣ (A^(c^(n+d)))ᵢⱼ − (A^(c^n))ᵢⱼ`  for every `n ≥ s`.
+
+This is the quantitative form of "Frobenius permutes the Teichmüller lifts of the eigenvalues, and
+a power of it fixes them", proved with no lifting machinery at all: `A^T ≡ 1 (mod c)` for
+`T = |GLₙ(𝔽_c)|`, raising to the `c`-th power gains a factor of `c`
+(`SmulDvd.pow_prime_pow`), and `c^d ≡ 1 (mod e)` for `d = φ(e)`, `e` the `c`-free part of `T`. -/
+theorem exists_shift_pow_congr {N : ℕ} (A : Matrix (Fin N) (Fin N) ℤ) {c : ℕ} (hc : c.Prime)
+    (hdet : ¬ (c : ℤ) ∣ A.det) :
+    ∃ d s : ℕ, 1 ≤ d ∧ s ≤ padicValNat c (glCard N c) ∧ ∀ n : ℕ, s ≤ n → ∀ i j : Fin N,
+      (c : ℤ) ^ (n - s + 1) ∣ (A ^ c ^ (n + d)) i j - (A ^ c ^ n) i j := by
+  haveI : Fact c.Prime := ⟨hc⟩
+  set f : ℤ →+* ZMod c := Int.castRingHom (ZMod c) with hf
+  set D : Matrix (Fin N) (Fin N) (ZMod c) := f.mapMatrix A with hD
+  have hent : ∀ (M : ℕ) (i j : Fin N), (((A ^ M) i j : ℤ) : ZMod c) = (D ^ M) i j := by
+    intro M i j
+    rw [hD, ← map_pow]
+    simp [RingHom.mapMatrix_apply, Matrix.map_apply, hf]
+  have hdetD : IsUnit D.det := by
+    have hmd : D.det = f A.det := by rw [hD]; exact (RingHom.map_det f A).symm
+    rw [hmd]
+    refine Ne.isUnit ?_
+    simpa [hf, ZMod.intCast_zmod_eq_zero_iff_dvd] using hdet
+  obtain ⟨u, hu⟩ := (Matrix.isUnit_iff_isUnit_det D).2 hdetD
+  have hcard : Nat.card (GL (Fin N) (ZMod c)) = glCard N c := by
+    rw [Matrix.card_GL_field]
+    simp [glCard, ZMod.card]
+  obtain ⟨T, hT⟩ : ∃ T, T = glCard N c := ⟨_, rfl⟩
+  have hTpos : 0 < T := by rw [hT, ← hcard]; exact Nat.card_pos
+  have hTne : T ≠ 0 := hTpos.ne'
+  have huT : u ^ T = 1 := by rw [hT, ← hcard]; exact pow_card_eq_one'
+  -- `A^T ≡ 1 (mod c)`
+  have hDT : D ^ T = 1 := by
+    have h : ((u ^ T : (Matrix (Fin N) (Fin N) (ZMod c))ˣ) :
+        Matrix (Fin N) (Fin N) (ZMod c)) = ((1 : (Matrix (Fin N) (Fin N) (ZMod c))ˣ) :
+        Matrix (Fin N) (Fin N) (ZMod c)) := by rw [huT]
+    rw [Units.val_pow_eq_pow_val, hu] at h
+    simpa using h
+  have hAT : SmulDvd ((c : ℤ) ^ 1) (A ^ T - 1) := by
+    refine SmulDvd.of_entries _ _ (fun i j => ?_)
+    have hz : ((((A ^ T) i j - (1 : Matrix (Fin N) (Fin N) ℤ) i j : ℤ)) : ZMod c) = 0 := by
+      push_cast
+      rw [hent, hDT]
+      have h1 : ∀ k l : Fin N, (((1 : Matrix (Fin N) (Fin N) ℤ) k l : ℤ) : ZMod c)
+          = (1 : Matrix (Fin N) (Fin N) (ZMod c)) k l := by
+        intro k l
+        by_cases hkl : k = l <;> simp [Matrix.one_apply, hkl]
+      rw [h1]
+      ring
+    have := (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 hz
+    simpa using this
+  -- split `T = c^s · e` with `c ∤ e`
+  obtain ⟨s, hs⟩ : ∃ s, s = padicValNat c T := ⟨_, rfl⟩
+  obtain ⟨e, he⟩ : ∃ e, e = T / c ^ s := ⟨_, rfl⟩
+  have hfac : T.factorization c = s := by rw [hs, Nat.factorization_def _ hc]
+  have hsplit : c ^ s * e = T := by
+    have hx := Nat.ordProj_mul_ordCompl_eq_self T c
+    rw [hfac] at hx
+    rw [he, hfac] at *
+    exact hx
+  have hedvd : ¬ (c ∣ e) := by
+    have hx := Nat.not_dvd_ordCompl hc hTne
+    rw [hfac] at hx
+    rwa [he]
+  have hepos : 0 < e := by
+    rcases Nat.eq_zero_or_pos e with h | h
+    · rw [h, mul_zero] at hsplit; exact absurd hsplit.symm hTne
+    · exact h
+  -- `e ∣ c^d − 1` for `d = φ(e)`
+  obtain ⟨d, hd⟩ : ∃ d, d = Nat.totient e := ⟨_, rfl⟩
+  have hdpos : 1 ≤ d := by rw [hd]; exact Nat.totient_pos.2 hepos
+  have hcop : Nat.Coprime c e := (Nat.Prime.coprime_iff_not_dvd hc).2 hedvd
+  have hmod : c ^ d ≡ 1 [MOD e] := by rw [hd]; exact Nat.ModEq.pow_totient hcop
+  obtain ⟨t, ht⟩ : ∃ t, c ^ d = 1 + e * t := by
+    have h1 : 1 ≤ c ^ d := Nat.one_le_pow _ _ hc.pos
+    obtain ⟨w, hw⟩ := (Nat.modEq_iff_dvd' h1).1 hmod.symm
+    exact ⟨w, by omega⟩
+  refine ⟨d, s, hdpos, le_of_eq (by rw [hs, hT]), fun n hn i j => ?_⟩
+  -- the exponent gap is `T · c^(n−s) · t`
+  obtain ⟨m, hm⟩ : ∃ m, n = s + m := ⟨n - s, by omega⟩
+  have hgap : c ^ (n + d) = c ^ n + T * c ^ m * t := by
+    have h1 : c ^ (n + d) = c ^ n * c ^ d := by rw [pow_add]
+    have h2 : T * c ^ m = c ^ n * e := by rw [← hsplit, hm]; ring
+    rw [h1, ht, h2]
+    ring
+  have hns : n - s + 1 = m + 1 := by omega
+  -- `A^(T c^m) ≡ 1 (mod c^(m+1))`, hence so is any power of it
+  have hstep : SmulDvd ((c : ℤ) ^ (m + 1)) (A ^ (T * c ^ m) - 1) := by
+    have hZ : A ^ (T * c ^ m) = (A ^ T) ^ c ^ m := by rw [← pow_mul]
+    rw [hZ]
+    exact SmulDvd.pow_prime_pow hAT m
+  have hall : SmulDvd ((c : ℤ) ^ (m + 1)) (A ^ (T * c ^ m * t) - 1) := by
+    have hZ : A ^ (T * c ^ m * t) = (A ^ (T * c ^ m)) ^ t := by rw [← pow_mul]
+    rw [hZ]
+    exact SmulDvd.pow_sub_one hstep t
+  have hdiff : SmulDvd ((c : ℤ) ^ (m + 1)) (A ^ c ^ (n + d) - A ^ c ^ n) := by
+    have hZ : A ^ c ^ (n + d) - A ^ c ^ n
+        = A ^ c ^ n * (A ^ (T * c ^ m * t) - 1) := by
+      rw [hgap, pow_add, Matrix.mul_sub, mul_one]
+    rw [hZ]
+    exact hall.mul_left _
+  rw [hns]
+  have := hdiff.entry i j
+  simpa using this
+
+
+/-! ### The phase-41 certificate, at last: `c`-adic convergence of `F(c^n)` -/
+
+/-- **The phase-41 crux, PROVED.**  For every prime `c` there is a shift `d ≥ 1` with
+`c^n ∣ F(c^(n+d)) − F(c^n)` for every `n ≥ 1`.
+
+Together with `FibonacciAllPrimes.fib_odd_mul` (`F((2J+1)M) = Φ_J(F M)` for odd `M`, applied with
+`2J + 1 = c^d`, which is odd for odd `c`) this turns the roadmap's two-index `Φ_J` fixed-point
+obstruction into the **single-index** certificate that phase 40's `exists_good_prime_factor`
+argument needs at odd `c`: from `c^e ∣ F(c^n) − x` one gets
+`c^e ∣ Φ_J(x) − Φ_J(F(c^n)) = Φ_J(x) − F(c^(n+d))`, hence `c^e ∣ Φ_J(x) − x` for `e ≤ n`, and
+`FibonacciAllPrimes.fibOddPoly_far` rules that out for `x ≠ 0` (with `x ≠ 0` supplied by
+`FibonacciAllPrimes.not_dvd_fib_prime_pow`). -/
+theorem exists_shift_fib_prime_pow_congr {c : ℕ} (hc : c.Prime) :
+    ∃ d : ℕ, 1 ≤ d ∧ ∀ n : ℕ, 1 ≤ n →
+      (c : ℤ) ^ n ∣ (Nat.fib (c ^ (n + d)) : ℤ) - (Nat.fib (c ^ n) : ℤ) := by
+  have hdet : ¬ (c : ℤ) ∣ FibonacciCovering.fibMat.det := by
+    rw [FibonacciCovering.fibMat_det]
+    intro hdd
+    have h1 : (c : ℤ) ≤ 1 := Int.le_of_dvd one_pos (dvd_neg.mp hdd)
+    have h2 : (2 : ℤ) ≤ (c : ℤ) := by exact_mod_cast hc.two_le
+    omega
+  obtain ⟨d, s, hd, hsle, hmain⟩ := exists_shift_pow_congr FibonacciCovering.fibMat hc hdet
+  have hs1 : s ≤ 1 := by rwa [padicValNat_glCard_two_self hc] at hsle
+  refine ⟨d, hd, fun n hn => ?_⟩
+  have hkey := hmain n (by omega) 0 1
+  rw [FibonacciCovering.fibMat_pow, FibonacciCovering.fibMat_pow] at hkey
+  have hkey' : (c : ℤ) ^ (n - s + 1) ∣
+      (Nat.fib (c ^ (n + d)) : ℤ) - (Nat.fib (c ^ n) : ℤ) := by simpa using hkey
+  exact dvd_trans (pow_dvd_pow _ (by omega)) hkey'
+
 end LeanFormalizations.Mills.FibonacciCoveringAllPrimes
