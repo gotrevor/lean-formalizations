@@ -1,104 +1,72 @@
-# Theorem E — transcendence of `ξ(3^k − 2)` outside explicit classes (proof write-up, draft 1)
+# Theorem E — the shifted Mills constant `ξ(3^k − 2)` is transcendental (proof write-up, draft 2)
 
-Ren, 2026-09-30.  Status: **paper proof, not in Lean, unrefereed.**  It builds on `PROOF-THEOREM-D.md` (Lemmas 1–6) and Saito, arXiv:2508.16068, Theorem 2.6.
+Ren, 2026-09-30.  **Status: paper proof, not in Lean.**  Draft 2 incorporates an adversarial referee pass (a subagent, same night).  The referee found no fatal error and about 80% confidence after three patches, all applied below: Step 5 now cites Saito's Prop 3.1(iv), Step 3's `C₃` rank argument is completed, and the `b = 0` case of the E1 certificate is covered.
 
-`ξ(C_k)` is the least `A > 1` with `⌊A^(C_k)⌋` prime for every `k ≥ 1` (Saito's notation).
+It builds on `PROOF-THEOREM-D.md` (Lemmas 1–6) and Saito, arXiv:2508.16068 (itself unrefereed; its Theorem 2.3/2.6 and Prop 3.1 are load-bearing here).
 
-**Theorem E.**  `ξ := ξ(3^k − 2)` exists.  It is transcendental unless it is a cubic Pisot number with minimal polynomial `f` in one of:
-- **E1.** `ℚ(ξ)` is the cyclic cubic field of conductor 13;
-- **E2.** `f ≡ (X ∓ 1)³ (mod 3)` and `tr(ξ^(−2)) ∈ {0, ±1, ±2}`, with the floor offset `ε = −1` along the tower if `tr(ξ^(−2)) = 0`;
-- **E3.** `f ≡ X³ (mod 3)` and `ε_(3^k − 2) = −1` for all large `k`.
+`ξ(C_k)` is the least `A > 1` with `⌊A^(C_k)⌋` prime for every `k ≥ 1` (Saito's notation; it exists by his Lemma 4.1 and Theorem 1.3).
 
-Moreover:
-- E2 with `tr(ξ^(−2)) ≠ 0` is impossible for totally real `ξ`, since `ξ^(−2) + β₂^(−2) + β₃^(−2) > 2`.
-- E3 for totally real `ξ` requires the dominant conjugate `β₂` to be positive.
+> **Theorem E.**  `ξ := ξ(3^k − 2)` is transcendental.  Unconditional: it uses Baker–Harman–Pintz via Saito's Prop 3.1, and the Mossinghoff–Trudgian–Yang short-interval theorem only through Saito's existence/size lemma.
 
-## Step 1: Saito's Type C applies
-Saito's Theorem 2.6 (with `c = 3`; hypothesis `(2.2)` holds unconditionally by Mossinghoff–Trudgian–Yang) needs:
-- `(C1)` `c₁ = C₁ = 1 ≥ 1` ✓.
-- `(C2)` `c_(k+1) = (3^(k+1) − 2)/(3^k − 2) = 3 + 4/(3^k − 2) ≥ 3` ✓.
-- `(C3)` `C_k ∈ ℕ` ✓.  (Real ratios `c_k` are allowed.)
-- `(C4)` `gcd(3, C_m) = 1`, so `3^(φ(C_m)) ≡ 1 (mod C_m)` and `C_(m+φ(C_m)) = 3^m·3^(φ(C_m)) − 2 ≡ 3^m − 2 ≡ 0` ✓.
-- `(C5)` `gcd(C_m, C_(m+1)) ∣ 3C_m − C_(m+1) = 4`, and every `C_m` is odd, so `agcd = 1` ✓.
+Saito's own Type C theorem kills the Pisot branch by **size only**, which is why his Theorem 1.9(C) for `ξ(r·3^k − 1)` needs `r ≥ 4.003·10¹⁴`.  Here the first term is `C₁ = 1`, where size says nothing; the Pisot branch is killed **arithmetically**.  The same proof gives `ξ(r·3^k − 1)` for every even `r ≥ 2` (see the end).
 
-Conclusion (Saito, §9, via Type B): `ξ` exists, and either `ξ` is transcendental or `ξ^g` is a cubic Pisot number with `g ∣ agcd = 1`.  So `ξ` itself is a cubic Pisot number with `⌊ξ^(3^k − 2)⌋` prime for all `k ≥ 1`.  (Type B already excludes degree 2.)
+## Step 1: reduction to a cubic Pisot number (Saito, Theorem 2.6 / 2.3)
+`C_k = 3^k − 2` satisfies:
+- `(C1)` `C₁ = 1`.
+- `(C2)` `c_(k+1) = 3 + 4/(3^k − 2) ≥ 3`.
+- `(C3)` `C_k ∈ ℕ`; real ratios are allowed.
+- `(C4)` `gcd(3, C_m) = 1`, so `C_m ∣ C_(m + φ(C_m))`.
+- `(C5)` `gcd(C_m, C_(m+1)) ∣ 3C_m − C_(m+1) = −4`, and every `C_m` is odd, so `agcd = 1`.
 
-## Step 2: Theorem D's machinery with the negative shift `s = −2`
-Put `R(n) = 3^n − 2`.  Lemmas 1–5 of `PROOF-THEOREM-D.md` hold verbatim.
-- Lemma 2 uses `R(n+kj) − R(n) = 3^n(3^(kj) − 1)`.
-- Lemma 5 gives `λ_r = Σ_k ω(ι α_k)^(3^r) ι(α_k)^(−2)` over the unit roots.  Non-units contribute 0 because `α^(3^n − 2) → 0` `3`-adically for a non-unit `α`.
+By Theorem 2.6, **`ξ` is transcendental, or `ξ` itself (`g = 1`) is a cubic Pisot number** with `⌊ξ^(3^k − 2)⌋` prime for all `k`.  The dichotomy comes from Theorem 2.3 (Type B); degree 2 is excluded there.  Assume the latter for contradiction; let `f = X³ − σ₁X² + σ₂X − σ₃` be its minimal polynomial and `C` the companion matrix.
 
-So, assuming every value is prime, some residue class has `Λ_r = Σ_k ζ_k^(3^r) α_k^(−2) = t` with `t = ω − ε`, `ω ∈ {±1}` (the window at `c = 3` is `μ₂`) and `|t| ≤ 2`.
+## Step 2: `ε = 0` eventually (Saito, Prop 3.1(iv))
+Apply Prop 3.1 with `θ = 21/40` (BHP satisfies `(†)`).
+- `(G1)`, `(G2)`, `(G4)` are clear; `(G3)`: `lim sup c_(k+1) = 3 > 1/(1 − θ) = 40/19`.
+- `(3.1)`: `ξ^(C_m) ∉ ℕ`, since a power of a cubic Pisot number is cubic Pisot, not an integer.
+- `I = {k : c_(k+1) ≥ 40/19 + ε} = ℕ`.
+- Then (iv) gives `Tr(ξ^(C_k)) = ⌊ξ^(C_k)⌋` for all large `k`, i.e. **the floor offset is `ε_(C_k) = 0` eventually.**
 
-## Step 3: Galois rigidity in degree 3 (no Pisot dominance needed)
-Let `G = Gal(K(ζ_M)/ℚ(ζ_M))`.  It is transitive on the three roots unless `ℚ(ξ) ⊂ ℚ(ζ_M)` (that is **E1**; `M ∣ lcm(26, 8)`, so the only abelian cubic field inside is the one of conductor 13).  Then `Σ_k z_k w_(σk) = t` for all `σ ∈ G`, with `w_k = α_k^(−2)` and `z_k = ζ_k^(3^r)`.
-- **Sum over `σ`:** `(|G|/3)·T·Σ_k z_k = |G| t`, where `T = Σ_k w_k = tr(ξ^(−2)) ∈ ℚ`.
-- **Rank.**  `G ∈ {S₃, C₃}` acting on `ℂ³`.  The span of `{σw}` contains the "standard" part because `w` is non-constant (the `|α_k|` are distinct: one exceeds 1, and the other two are `< 1` and different, or a complex pair whose `w`-values are conjugate but not equal to the real one).
-  - For `S₃` the span is `std ⊕ (𝟙 if T ≠ 0)`.
-  - For `C₃` the circulant eigenvalues `Σ_j w_j ω^(jm)` (`m = 1, 2`) are nonzero because `w_1 ≠ w_2 ≠ w_3` are not all equal and are real, or pair up under complex conjugation; to double-check in the cyclic, totally real case: `x + ωy + ω²z = 0` with real `x, y, z` forces `x = y = z`.
-- **Conclusion:** `z_k` is constant, `z_k = z`, with `zT = t`.
+*(Draft 1 proved this by an explicit minimality construction.  The referee found a gap: it used `p_k ≥ p_i^(C_k/C_i)`, which needs integer ratios.  Prop 3.1(iv) is the correct citation; its (i) also gives the fractional-part bound `{ξ^(C_k)} ≪ p_k^(−0.425)`.)*
 
-## Step 4: the cases
-- `z = 0`: every root is a non-unit at 3, i.e. `f ≡ X³ (mod 3)`.  Then `λ = 0`, so `t = 0`, `ω = ε`, and hence `ε = ω = −1` (as `ε ∈ {0, −1}` and `ω ∈ {±1}`).  Along the whole tower (not just good `n`), `⌊ξ^N⌋ ≡ ε_N` modulo growing powers of 3, so `ε_N = 0` makes the value divisible by 3.  Survival therefore needs `ε = −1` eventually always: **E3**.
-- `z = ±1` and `T ≠ 0`: `t = zT` with `|t| ≤ 2`, so `T ∈ {±1, ±2}` (and `T ∈ ℚ` forces `t` rational).  All unit roots have Teichmüller `z`, i.e. `f ≡ (X − z)³ (mod 3)`: **E2**.
-- `z = ±1` and `T = 0`: `t = 0`, so `ω = ε = −1`, and `f ≡ (X − z)³ (mod 3)` with value `≡ −1`: **E2** (`T = 0` subcase).
-- Totally real `ξ` with `T ∈ {±1, ±2}` is impossible: `T = ξ^(−2) + β₂^(−2) + β₃^(−2) > 0 + 1 + 1`.
-- E3 totally real: `ε_N = −1 ⟺ β₂^N + β₃^N > 0`; with `N = 3^n − 2` odd, this needs the dominant conjugate `β₂ > 0`.  ∎
+## Step 3: the filter, with every large `n` good
+Put `R(n) = 3^n − 2`, and write `p_n = ⌊ξ^(R(n))⌋`, which equals `tr C^(R(n))` for large `n` by Step 2.
+- Lemma 2 of `PROOF-THEOREM-D.md`: if `v₃(ord_(p_n) C) ≤ n`, then `p_n ∣ p_(n+kj)` for all `k ≥ 1`.  Since `ε` is now constant there are no flips, so this contradicts primality.
+- Hence **every** large `n` is good: `v₃(ord_(p_n) C) > n`.  (The stuck-index Lemma 3 is not needed.)
+- Lemma 4: `p_n ≡ ω_n ∈ {±1} (mod 3^(e_n))` with `e_n → ∞` (the window at `c = 3, d = 3` is `μ₂`).
+- Lemma 5: along a residue class `r (mod D)` with constant `ω`, `Λ_r := Σ_k ζ_k^(3^r) α_k^(−2) = ω ∈ {±1}`.  Here `ζ_k = ι⁻¹ ω(ι α_k)` (or `0` for non-units); non-units contribute `α^(3^n − 2) → 0`.
 
-## Step 5: minimality of `ξ` kills E3 and shrinks E2
-`ξ` is the *least* element of `W(C_k)`.
+## Step 4: Galois rigidity (degree 3, no dominance needed)
+Let `M` be the lcm of the Teichmüller orders and `|W| = 2`, so `M ∣ lcm(2, 8, 26) = 104`.  Suppose `ℚ(ξ) ⊄ ℚ(ζ_M)`.  Then `f` stays irreducible over `ℚ(ζ_M)`, and `G = Gal(K(ζ_M)/ℚ(ζ_M))` acts transitively on the roots while fixing each `ζ_k`.  Put `w_k = α_k^(−2)` and `z_k = ζ_k^(3^r)`; then `Σ_k z_k w_(σ(k)) = ω` for all `σ ∈ G`.
+- **Sum over `σ`:** `(|G|/3)·T·Σ_k z_k = |G|·ω`, where `T = Σ_k w_k = tr(ξ^(−2)) = (σ₂² − 2σ₁σ₃)/σ₃² ∈ ℚ`.  So `T ≠ 0`.
+- **`G ≅ S₃`:** `ℂ³ = 𝟙 ⊕ std`, and `w` is non-constant (`|w₁| < 1 < |w₂|, |w₃|`) with sum `T ≠ 0`, so the `G`-orbit of `w` spans `ℂ³` and the solution is unique: `z_k = ω/T` for all `k`.
+- **`G ≅ C₃`:** the equations form a circulant system with eigenvalues `ŵ(0) = T` and `ŵ(m) = Σ_j w_j ζ₃^(jm)` (`m = 1, 2`).
+  - If `ξ` is totally real, the `w_j` are real, not all equal, so `ŵ(1), ŵ(2) ≠ 0`.
+  - If `ξ` is complex (`w₂ = w̄₃`), `ŵ(1)` could a priori vanish.  But in the `C₃` case `ℚ(√disc)` is not `ℚ(√−3)` (*referee patch*): the discriminant field lies in `ℚ(ζ_M)`, `M ∣ 104`, which does not contain `√−3`.  So `ζ₃ ∉ K`, and an automorphism fixing `K` with `ζ₃ ↦ ζ₃²` carries `ŵ(1) = 0` to `ŵ(2) = 0`; then `w` would be constant, which is impossible.
+  - So the circulant is invertible and again `z_k = ω/T`.
+- In all cases the `ζ_k^(3^r)` are equal to a common value `z`, with `zT = ω`.
 
-**Claim: `ε_(C_k) = 0` for all large `k`**, i.e. the fractional part of `ξ^(C_k)` is `< p_k^(−0.425)`.
-- *Room for a smaller constant.*  Let `k` be large (`p_k^(c_(k+1)) ≥ x₀`), and let `q` be the least prime `≥ y := p_k^(c_(k+1))`.  By Baker–Harman–Pintz, `q ≤ y + y^(0.525)` for large `y`.
-- *The chain continues from `q`.*  Iterate `(2.2)` (Saito's Lemma 9.1 argument, valid for `x ≥ x₀`).  This gives `A′ ∈ W(C_k)` with `⌊A′^(C_i)⌋ = p_i` for `i ≤ k` and `⌊A′^(C_(k+1))⌋ = q`.
-  - The earlier constraints hold because `A′^(C_k) ∈ [q^(1/c), (q+1)^(1/c)) ⊂ [p_k, p_k + 1)`, and `p_k ≥ p_i^(C_k/C_i)` along any valid chain, while `A′ < ξ < (p_i + 1)^(1/C_i)`.
-- *Minimality.*  So `p_(k+1) ≤ q`, i.e. `ξ^(C_(k+1)) < q + 1 ≤ y + y^(0.525) + 1`.
-- *Conclusion.*  Writing `ξ^(C_k) = p_k + φ_k`, we get `(p_k + φ_k)^(c_(k+1)) < p_k^(c_(k+1)) + y^(0.525) + 1`, which forces `c·p_k^(c−1)·φ_k ≲ p_k^(0.525c)`, i.e. `φ_k ≪ p_k^(1 − 0.475·c_(k+1)) = p_k^(−0.425 + o(1))` (with `c_(k+1) → 3`).  In particular `φ_k` is small, so `ξ^(C_k)` sits just **above** `p_k`: `ε_(C_k) = 0` (`ξ^N = tr − δ_N` with `−1 < δ_N < 0`).  ∎
+## Step 5: the cases
+- `z = 0`: all roots are non-units at 3, so `Λ_r = 0 ≠ ω`.  Impossible.
+- `z ≠ 0`: `z` is a root of unity and `z = ω/T ∈ ℚ`, so `z = ±1` and `T = ±1`.  All roots then reduce to the same `z (mod 3)`, i.e. `f ≡ (X − z)³ ≡ X³ − z (mod 3)`: `σ₁ ≡ σ₂ ≡ 0`, `σ₃ ≡ z ≢ 0`.  Then `v₃(T) = v₃(σ₂² − 2σ₁σ₃) − 2v₃(σ₃) ≥ 1`, contradicting `T = ±1`.  (A repeated root `ζ̄` in `𝔽₃[X]` forces `ζ̄ ∈ 𝔽₃`, so no other `z` arises.)
 
-**Consequences.**
-- **E3 is impossible** (Step 4 showed E3 needs `ε = −1` eventually always).
-- **E2 with `T = 0` is impossible** (it needs `ε = −1`).
-- **E2 with `T = ±2` is impossible** (`t = zT = ω − ε` with `|t| = 2` needs `ε = −1`).
-- What remains of E2: `T = tr(ξ^(−2)) = ±1`, `ξ` complex, and `δ_(C_k) = 2r^(C_k) cos(C_k θ) < 0` for **all** large `k`, with `r = |β₂| < ξ^(−0.425 + o(1))`.  That is a trapped orbit of `x ↦ 3x + 4θ/2π (mod 1)` in a half-circle plus a size condition.
+## Step 6: the exceptional field `ℚ(ξ) ⊂ ℚ(ζ_M)` (E1) is empty
+The only cubic subfield of `ℚ(ζ₁₀₄)` is `K`, the cyclic cubic field of conductor 13.  In it `3` is inert (3 has order 3 mod 13), `ℚ₃(ζ₁₃)` is unramified, and `ι ∘ τ₃ = Frob ∘ ι` on `ℚ(ζ₁₃)`.  Teichmüller commutes with Frobenius, which cubes `μ₂₆`, so with `α_k := τ_(3^k)(α)`:
+`ζ_k = ζ₀^(3^k) = τ_(3^k)(ζ₀)` and `Λ_r = Tr_D(ζ₀^(3^r) · α^(−2))`, where `D = ⟨τ₃⟩ = {1, 3, 9}`.
+- `ζ₀ = ±ζ₁₃^b` with `b ≠ 0`: `scripts/theorem-e-e1-certificate.py` shows that `K → ℚ(ζ₁₃)/ℚ`, `w ↦ Tr_D(ζ^b w)` has rank 3 for every `b = 1..12`.  So `Λ_r ∈ ℚ` forces `α^(−2) = 0`: impossible.
+- `ζ₀ = ±1` (`b = 0`, i.e. `α ≡ ±1 (mod 3O_K)`; *referee patch*): the map is `Tr_(K/ℚ)`, always rational.  But then every `ζ_k = ζ₀`, so `z` is constant without any transitivity, and Step 5's congruence applies verbatim (`f ≡ (X ∓ 1)³`, `3 ∣ T`): contradiction.
+- Non-unit `α` (inert, so every conjugate is a non-unit) is the `z = 0` case: contradiction.  ∎
 
-**E2 is impossible outright (mod-3 congruence).**  In E2, `f ≡ (X − z)³ ≡ X³ − z (mod 3)`, so `σ₁ ≡ σ₂ ≡ 0` and `σ₃ ≡ ±1 (mod 3)`.  Hence `T = tr(ξ^(−2)) = (σ₂² − 2σ₁σ₃)/σ₃²` has `v₃(T) ≥ 1`, and `T ∉ {±1, ±2}`.  With `ε = 0` (minimality), `t = zT = ω ∈ {±1}` forces `T = ±1`, which is impossible; and `T = 0` gives `t = 0 = ω`, also impossible.  (This supersedes the complex/trapped-orbit residue below; kept for provenance.)
+## Variants
+- **`ξ(r·3^k − 1)`, `r ≥ 2` even.**  `agcd = 1` (Saito), shift `s = −1`, `T = tr(ξ^(−1)) = σ₂/σ₃`; in the `(X − z)³` class `σ₂ ≡ 0 ⇒ 3 ∣ T`.  Steps 2–6 are identical (the certificate is shift-independent).  This extends Saito's Theorem 1.9(C) from `r ≥ 4·10¹⁴` to all even `r`.  Odd `r` has `agcd = 2` (`ξ²` is Pisot): Lemma 5 then needs exponent `(r·3^n − 1)/2`, which is to do.
+- **The obstruction for Mills itself (`s = 0`).**  `w_k = 1` is constant, so Step 4 gives nothing: the trace is Frobenius-invariant.  That is exactly the six residual classes of phase 29.
 
-**E1, numerics:** all 6 cyclic cubic Pisot `f` with `13² ∣ disc` in `[−15, 15]³` — `(−14, 9, −1)`, `(−12, 9, 1)`, `(−11, −4, 1)`, `(−10, 3, 1)`, `(−6, −1, 5)`, `(−4, 1, 1)` — **fail the window test outright**.  `3` is inert in the conductor-13 field, so the Teichmüller roots form one Frobenius orbit of primitive 13th/26th roots of unity.  Expected proof: the `C′` support argument in `ℚ(ζ₂₆)`, with the `α_k` written in Gaussian periods.
+## Numerics (supporting, not load-bearing)
+- 867 cubic Pisot `f` with coefficients in `[−9, 9]`, `R = 3^n − 2`, precision `3^10`.  The survivors of the window test with the true offsets are exactly 4 cases with `f ≡ X³ (mod 3)` and positive dominant conjugate.
+- Those survivors all have `ε = −1`, which Step 2 excludes for the least constant (they are admissible Pisot numbers, just not `ξ`).
+- All 6 conductor-13 Pisot numbers in `[−15, 15]³` fail the window test.
 
-**E1 is empty (finite certificate, `scripts/theorem-e-e1-certificate.py`).**
-- In the conductor-13 cyclic cubic field `K ⊂ ℚ(ζ₁₃)`, `3` is inert and its Frobenius is `τ₃`, generating `D = {1, 3, 9}`.
-- Decomposition-group compatibility `ι ∘ τ₃ = Frob ∘ ι` gives Teichmüller roots `ζ_k = τ_(3^k)(ζ₀)` with `ζ₀ = ±ζ^b`.  The labelling `α_k = τ_(3^k)(α)` follows.
-- So `Λ_r = Tr_D(ζ₀^(3^r) · α^s)`.
-- For each `b`, the `ℚ`-linear map `K → ℚ(ζ₁₃)/ℚ`, `w ↦ Tr_D(ζ^b w)`, has rank 3 (computed on the Gaussian-period basis), so `Λ_r ∈ ℚ ⇒ α^s = 0`: impossible.
-- If `α` is a non-unit at 3 (inert, so every conjugate is), that is the `z = 0` case, already killed by minimality.
-- **This holds for every shift `s`**, so it covers the `r·3^k − 1` family too.
-
-**Final form (draft 1, now without exceptions).**  **`ξ(3^k − 2)` is transcendental, unconditionally** (BHP + MTY24 + Saito's Theorem 2.6 + Theorem D machinery + minimality + mod-3 congruence + the E1 certificate).  Likewise `ξ(r·3^k − 1)` for every even `r ≥ 2`.  **Confidence ≈ 70%**: unrefereed, many steps; the riskiest are Lemma 6's use of `G = Gal(K(ζ_M)/ℚ(ζ_M))` and the minimality step's claim that every prime in the admissible interval continues.
-
-(Superseded wording kept below for provenance.)
-
-**Final form (draft 1).**  **`ξ(3^k − 2)` is transcendental, unconditionally (BHP + MTY24 + Saito's Theorem 2.6), unless `ℚ(ξ)` is the cyclic cubic field of conductor 13.**  Numerically that field contributes no survivors.
-
-**Same template, other sequences.**  `ξ(r·3^k − 1)` for **every even `r ≥ 2`** (`agcd = 1`, shift `s = −1`, `T = σ₂/σ₃`, `σ₂ ≡ 0 ⇒ 3 ∣ T` in the `(X − z)³` class; minimality is identical).  Saito's Theorem 1.9(C) needs `r ≥ 4.003·10¹⁴`.  Odd `r` has `agcd = 2`, so `ξ²` is the Pisot number: redo Lemma 5 with exponent `(r·3^n − 1)/2` (half-integral 3-adic powers; the Galois step then needs consistent square roots).
-
-**Refined Theorem E (superseded by the final form above).**  `ξ(3^k − 2)` is transcendental unless `ξ` is a complex cubic Pisot number with `f ≡ (X ∓ 1)³ (mod 3)`, `tr(ξ^(−2)) = ±1`, conjugate modulus `< ξ^(−0.425)`, and argument `θ` with `cos((3^k − 2)θ) < 0` for all large `k`; or `ξ` lies in the conductor-13 cyclic cubic field (E1, probably removable).  Unconditional (BHP + MTY24).
-
-This parallels Saito's Theorem 1.7 for Mills (a size window `(1.3)` on a totally real cubic).  Here the survivor must be **complex**, sit in two residue classes mod 3, satisfy a trace equation, **and** have a trapped rotation orbit.
-
-## Numerics
-All 867 irreducible cubic Pisot `f` with coefficients in `[−9, 9]`, `c = 3`, `R = 3^n − 2`, precision `3^10`, true offsets `ε_n` for `n = 4..15`.
-- 41 pass the window test; 37 are killed by `ε = 0 ⇒ 3 ∣ value`.
-- The 4 survivors are all **E3** with a positive dominant conjugate: `x³ − 9x² + 3`, `x³ − 9x² + 6`, `x³ − 9x² + 3x + 3`, `x³ − 6x² + 3`.
-- The one E2-type window hit, `(−9, −6, −2)` (`T = 0`, complex), is killed by `ε`.
-
-## Comparison with Saito
-- Saito's Theorem 1.9(C) settles `ξ(r·3^k − 1)` completely, but only for `r ≥ 4.003·10¹⁴`, and his Type C argument uses size only.
-- Theorem E handles a small first term (`C₁ = 1`), where size says nothing, arithmetically.  In exchange it leaves congruence-defined exceptions.
-- The same template gives `ξ(r·3^k − 1)` for every `r ≥ 1` (shift `s = −1`, `T = σ₂/σ₃`), with the analogous E1–E3.
-- **E3 is Mersenne-shaped and, by Proposition D′, invisible to the prime-as-modulus method.**
-
-## Open points
-1. The `C₃`-case rank claim when two `w`-values coincide in modulus (the complex pair has `w₂ = w̄₃`, which is not equal to `w₁` since `|w₁| < 1 < |w₂|`).  Written above; to double-check.
-2. E1 removal (decomposition group).
-3. ~~Can E3 be excluded using minimality?~~  **Yes, Step 5.**
-4. Can the trapped-orbit condition be excluded for algebraic `θ`?  It is a Mahler-type `3^k θ (mod 2π)` question, open in general.  Combining it with `tr(ξ^(−2)) = ±1` and the mod-3 class might leave a finite search: bounded `|β₂|`, `ξ` bounded via the `T` equation?  **Worth a probe.**
+## Remaining risks
+1. Saito 2508.16068 is unrefereed; Theorem 2.3/2.6 and Prop 3.1(iv) are load-bearing.
+2. Theorem D's Lemmas 2, 4, 5 and 6: the referee found them OK.
+3. Ordinary risk of an unrefereed argument.  Next: a second independent read, then decide on Lean (the Galois step is heavy; the rest is within reach).
