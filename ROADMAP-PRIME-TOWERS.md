@@ -180,6 +180,32 @@ Then `⌊α^(c^n + s)⌋` is composite for infinitely many `n`.
 - the quadratic case via exact identities: `d = 2` needs no Galois, since `Λ = ζ₁ α₁^s + ζ₂ α₂^s` can be handled by the norm/trace of `ℚ(√D)`.
 A reasonable first Lean target: **Theorem D for quadratic Pisot `α`**.
 
+### Theorem E (candidate): transcendence of shifted Mills constants with SMALL first term (2026-09-30 02:10)
+Saito 2025 (arXiv:2508.16068) Theorem 2.6 (Type C): under `(C1)–(C5)` and short-interval primes `(2.2)` (for `c = 3` this is unconditional by MTY24), `ξ(C_k)` is transcendental OR `ξ^g` is a cubic Pisot number `≤ (2x₀^(1/9) + 1)^(g/c₁)`, with `g ∣ agcd(C_k)`.  He kills the Pisot branch **by size only**, hence his Theorem 1.9(C) needs `r ≥ 4.003·10¹⁴` for `C_k = r·3^k − 1`.
+
+**`C_k = 3^k − 2` satisfies `(C1)–(C5)`:**
+- `c₁ = 1`; the ratios exceed 3;
+- `C_m ∣ C_(m + φ(C_m))`, since `gcd(3, C_m) = 1`;
+- `agcd = 1`, since `gcd(3^m − 2, 3^(m+1) − 2) ∣ 4` and every term is odd.
+
+So `ξ := ξ(3^k − 2)` is transcendental or itself a cubic Pisot number with `⌊ξ^(3^k − 2)⌋` prime for all `k`.  (`c₁ = 1` makes the size bound useless.)  **Theorem D with the shift `s = −2` then applies:**
+- The mechanism is unchanged.
+- The limit points are `λ_r = Σ_(units) ω(α_k)^(3^r) α_k^(−2)`.
+- For `d = 3` the Galois rank step needs no Pisot dominance: `S₃` acts through `𝟙 ⊕ std` and the vector `(α_k^(−2))` is non-constant with nonzero sum; in the `C₃` case, a circulant with nonzero eigenvalues.
+- So every `ζ_k = z = t/T` with `T = tr(C^(−2)) ∈ ℚ`, hence `z = ±1` or `0`.
+
+**Exceptional classes that remain:**
+- **E1.** `ξ` in the cyclic cubic field of conductor 13 (the only abelian cubic field inside `ℚ(ζ_(lcm(26, 8)))`).  Probably an artifact, as the conductor-7 check suggests.
+- **E2.** `f ≡ (X ∓ 1)³ (mod 3)` and `tr(ξ^(−2)) ∈ {±1, ±2}`.  **Impossible for totally real `ξ`**, where `β₂^(−2) + β₃^(−2) > 2`; only complex cubics with `2|β₂|^(−2) cos 2θ + ξ^(−2)` small remain.
+- **E3.** `f ≡ X³ (mod 3)` with the floor offset `ε = −1` for all large `n` (if `ε_n = 0`, then `3 ∣ ⌊⌋`, which is composite).  For totally real `ξ` this needs a positive dominant conjugate; for complex `ξ`, an orbit of `x ↦ 3x + 4θ/2π` trapped in a half-circle.
+
+**Candidate statement:** `ξ(3^k − 2)` is transcendental unless `ξ ∈ E1 ∪ E2 ∪ E3`.  The same template works for `ξ(r·3^k − 1)` at every `r ≥ 1` (`s = −1`, `T = σ₂/σ₃`), which would extend Saito's Theorem 1.9(C) from `r ≥ 4·10¹⁴` to all `r`, up to congruence-defined exceptions.
+
+**Honest weight.**
+- Saito's own Mills exceptions are a size window (`(1.3)`); ours are congruence classes mod 3 plus a trace condition.  Neither is empty, so this is a *different* partial result, not a completion.
+- E3 is Mersenne-shaped and probably genuinely out of reach of congruences.
+- **Needs:** reading Saito's `(C4)` (surely `k > m`), and a check of Theorem 2.6's proof for anything that uses integrality of `c_k` that `3^k − 2` breaks.
+
 ## 2. Conjectures, each with its difficulty check
 
 | Conjecture | Proved implications | Unproved premise | Mechanism for the premise |
