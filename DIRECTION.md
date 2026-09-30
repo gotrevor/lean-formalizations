@@ -2,6 +2,10 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## 🎯 (phase 36, CURRENT): `U_(c^n)(P,Q) + h` composite i.o. at every odd prime `c` inert in `ℚ(√(P²−4Q))` — target `NumberTheory/Mills/LucasInert.lean` (3 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+Generalizes phase 34 (Fibonacci) to all Lucas `U(P,Q)`.  Phases 34, 35, 37 DONE (37 `5e13749`: Fibonacci at every prime).
+
 ## ✅ DONE (phase 32, 1 lap, 2026-09-29): Saito's Problem 1.8 — ANSWERED (new math)
 
 `NumberTheory/Mills/SaitoFibonacci.lean` is sorry-free; all five frozen statements are
