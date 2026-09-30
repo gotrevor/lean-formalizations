@@ -352,6 +352,112 @@ lemma prod_ofNat_mod (M : ℕ) [NeZero M] (H : Fin M → ℤ) (p : ℕ) :
       pow_succ]
 
 
+
+
+lemma ofNat_add_one_of_dvd {M N : ℕ} [NeZero M] [NeZero N] (h : M ∣ N) (t : Fin N) :
+    Fin.ofNat M (t + 1).val = Fin.ofNat M t.val + 1 := by
+  ext
+  simp only [Fin.ofNat, Fin.val_mk, Fin.val_add, Fin.val_one']
+  rw [Nat.mod_mod_of_dvd _ h, Nat.add_mod t.val (1 % N) M, Nat.mod_mod_of_dvd _ h,
+    Nat.add_mod (t.val % M) (1 % M) M, Nat.mod_mod]
+
+/-- the walk weight of a `p`-fold repetition is the walk weight for the entrywise `p`-th power -/
+lemma cw_repw (M p : ℕ) [NeZero M] [NeZero (M * p)] (u : Fin M → Fin n) :
+    cw C (M * p) (repw M p n u) = cw (C.map (fun a => a ^ p)) M u := by
+  have hdvd : M ∣ M * p := Dvd.intro p rfl
+  set H : Fin M → ℤ := fun s => C (u s) (u (s + 1)) with hH
+  have hstep : ∀ t : Fin (M * p),
+      C (repw M p n u t) (repw M p n u (t + 1)) = H (Fin.ofNat M t.val) := by
+    intro t
+    show C (u (Fin.ofNat M t.val)) (u (Fin.ofNat M (t + 1).val)) = H (Fin.ofNat M t.val)
+    rw [ofNat_add_one_of_dvd hdvd t, hH]
+  rw [cw, Finset.prod_congr rfl (fun t (_ : t ∈ Finset.univ) => hstep t), prod_ofNat_mod, cw,
+    ← Finset.prod_pow]
+  refine Finset.prod_congr rfl (fun s _ => ?_)
+  rw [hH]
+  simp [Matrix.map_apply, mul_pow]
+
+/-- words fixed by rotation by `M` are exactly the `p`-fold repetitions -/
+lemma sum_over_fixed (M p : ℕ) [NeZero M] [NeZero (M * p)] (F : (Fin (M * p) → Fin n) → ℤ) :
+    ∑ w ∈ Finset.univ.filter
+        (fun w : Fin (M * p) → Fin n => ¬ ((rotE (M * p) n) ^ M) w ≠ w), F w
+      = ∑ u : Fin M → Fin n, F (repw M p n u) := by
+  classical
+  have hdvd : M ∣ M * p := Dvd.intro p rfl
+  have hper : ∀ w : Fin (M * p) → Fin n, ((rotE (M * p) n) ^ M) w = w →
+      ∀ (q : ℕ) (t : Fin (M * p)), w (t + Fin.ofNat (M * p) (M * q)) = w t := by
+    intro w hw q t
+    have hq : ((rotE (M * p) n) ^ (M * q)) w = w := by
+      induction q with
+      | zero => simp
+      | succ q ih =>
+        have he : M * (q + 1) = M * q + M := by ring
+        rw [he, pow_add, Equiv.Perm.mul_apply, hw, ih]
+    calc w (t + Fin.ofNat (M * p) (M * q)) = ((rotE (M * p) n) ^ (M * q)) w t :=
+          (rotE_pow _ w t).symm
+      _ = w t := by rw [hq]
+  -- the restriction of a fixed word rebuilds it
+  have hrebuild : ∀ w : Fin (M * p) → Fin n, ((rotE (M * p) n) ^ M) w = w →
+      repw M p n (resw M p n w) = w := by
+    intro w hw
+    funext t
+    show w (Fin.ofNat (M * p) (Fin.ofNat M t.val).val) = w t
+    have h1 : Fin.ofNat (M * p) (Fin.ofNat M t.val).val
+        = Fin.ofNat (M * p) (t.val % M) := rfl
+    have h4 : Fin.ofNat (M * p) t.val
+        = Fin.ofNat (M * p) (t.val % M) + Fin.ofNat (M * p) (M * (t.val / M)) := by
+      rw [← ofNat_add]
+      congr 1
+      exact (Nat.mod_add_div _ _).symm
+    rw [h1]
+    calc w (Fin.ofNat (M * p) (t.val % M))
+        = w (Fin.ofNat (M * p) (t.val % M) + Fin.ofNat (M * p) (M * (t.val / M))) :=
+          (hper w hw (t.val / M) _).symm
+      _ = w (Fin.ofNat (M * p) t.val) := by rw [← h4]
+      _ = w t := by rw [ofNat_val_lt]
+  refine Finset.sum_nbij' (resw M p n) (repw M p n) (fun w _ => Finset.mem_univ _) ?_ ?_ ?_ ?_
+  · intro u _
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, not_not]
+    funext t
+    rw [rotE_pow]
+    show u (Fin.ofNat M (t + Fin.ofNat (M * p) M).val) = u (Fin.ofNat M t.val)
+    refine congrArg u ?_
+    ext
+    simp only [Fin.ofNat, Fin.val_mk, Fin.val_add]
+    rw [Nat.mod_mod_of_dvd _ hdvd, Nat.add_mod t.val (M % (M * p)) M,
+      Nat.mod_mod_of_dvd _ hdvd, Nat.mod_self, Nat.add_zero, Nat.mod_mod]
+  · intro w hw
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, not_not] at hw
+    exact hrebuild w hw
+  · intro u _
+    funext s
+    show u (Fin.ofNat M (Fin.ofNat (M * p) s.val).val) = u s
+    rw [ofNat_mod_dvd hdvd, ofNat_val_lt]
+  · intro w hw
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, not_not] at hw
+    rw [hrebuild w hw]
+
+
+
+lemma dvd_pow_sub_pow_step {p m : ℕ} {a b : ℤ} (h : (p : ℤ) ^ (m + 1) ∣ a - b) :
+    (p : ℤ) ^ (m + 2) ∣ a ^ p - b ^ p := by
+  have hp1 : (p : ℤ) ∣ a - b :=
+    dvd_trans (dvd_pow_self (p : ℤ) (Nat.succ_ne_zero m)) h
+  have h1 : (p : ℤ) ∣ ∑ i ∈ Finset.range p, a ^ i * b ^ (p - 1 - i) :=
+    dvd_geom_sum₂_self (by exact_mod_cast hp1)
+  have hgeom : (∑ i ∈ Finset.range p, a ^ i * b ^ (p - 1 - i)) * (a - b) = a ^ p - b ^ p :=
+    (Commute.all a b).geom_sum₂_mul p
+  rw [← hgeom, pow_succ' (p : ℤ) (m + 1)]
+  exact mul_dvd_mul h1 h
+
+lemma dvd_pow_sub_self {p : ℕ} (hp : p.Prime) (a : ℤ) : (p : ℤ) ∣ a ^ p - a := by
+  haveI := Fact.mk hp
+  rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
+  push_cast
+  rw [ZMod.pow_card]
+  ring
+
+
 end Necklace
 
 /-- **The Gauss congruence for traces holds** (discharging the Literature hypothesis). -/
