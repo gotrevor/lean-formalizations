@@ -14,7 +14,7 @@ Two regimes follow:
 
 ## 1. Theorems to prove (Lean via treadmill; paper math by Ren)
 
-### Theorem A: recurrences of any order, at inert primes  ✅ numerics, ⏳ Lean
+### Theorem A: recurrences of any order, at inert primes  ✅ numerics, ✅ **PROVED IN LEAN (phase 52 odd `d`; phase 54 Theorem A′ any `d`, `h ≠ 0`)** — `NumberTheory/Mills/TheoremA.lean`, `TheoremAEven.lean`
 Let `χ_A` be irreducible mod `c` (degree `d`), take `u(N) = (A^N)_ij` with `i ≠ j`, and assume `μ_(≤d)(ℤ_c) = {±1}` (i.e. `c = 2`, or no `k ∈ [3,d]` divides `c − 1`).  Assume `d` is odd and `c ∤ u(c^r)` for `r < d`.  Then `u(c^n) + h` is composite i.o. **for every `h`**.
 - **Key identity:** `Σ_(i<d) A^(c^(n+i)) ≡ (scalar)·I (mod c^(n+1))`.  Frobenius acts on `𝔽_c[A] ≅ 𝔽_(c^d)` as a `d`-cycle, and the orbit sum is a field trace.  So `Σ_(i<d) u(c^(n+i)) ≡ 0`.  This is the sign flip (`d = 2`) in general form.
 - **Survivor count:** `s_i = u_i + h ∈ {±1}` with `Σ s_i = d·h`.  For odd `d` this forces `h = ±1` with all `s_i = h`, hence `u ≡ 0`, which is impossible.  (For even `d` the case `h = 0` needs the divisibility-sequence argument, which works for `d = 2`; open for `d ≥ 4`.)
@@ -152,7 +152,7 @@ The obstacle for Theorem C at `d ≥ 3` is that no exact composition is availabl
 ### Theorem C for traces at odd `c` (Lucas numbers)
 A trace has a single limit point `τ`.  If `τ ∈ ℤ`, then phase 35's exact `V_c(τ, −1) = τ` forces `τ = 0`, contradicting `τ ≡ P ≢ 0 (mod c)`.  So `τ ∉ ℤ`, and **prime-free intervals of any fixed length surround `L(c^n)` (and `V_(c^n)(P, −1)`, `c ∤ P`) infinitely often.**  All pieces are in Lean already.
 
-### Theorem D: a partial answer to Saito's Problem 1.7 (paper math, 2026-09-30; numerics ✅, proof sketch below, to verify)
+### Theorem D: a partial answer to Saito's Problem 1.7  ✅ **PROVED IN LEAN (phases 55–57)** — `TheoremDQuadratic.lean`, `TheoremDGeneral.lean`, `TheoremDMixed.lean`; paper proof `PROOF-THEOREM-D.md` (the sketch below is the original candidate)
 Saito's Problem 1.7: *find a non-reversible ILRS `R` such that for every Pisot `α` (especially degree 3), `⌊α^(R(n))⌋` is composite for infinitely many `n`.*
 
 **Candidate `R(n) = c^n + s`** (`R(n+1) = c R(n) − (c − 1)s`; `a₀ = c ≠ ±1`, so non-reversible).
