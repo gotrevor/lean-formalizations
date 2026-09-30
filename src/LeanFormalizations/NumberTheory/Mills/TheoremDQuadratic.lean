@@ -53,6 +53,138 @@ namespace LeanFormalizations.Mills.TheoremDQuadratic
 
 open Filter
 
+/-! ### Step 5 (size): the archimedean obstruction
+
+These two lemmas are the endgame of the proof and are **fully proved**: once the number-theoretic
+machinery (steps 2–4) delivers the identity `u·α^s + v·β^s = t` with `u, v` roots of unity and
+`|t| ≤ 2`, a contradiction is immediate, because `α^s ≥ α^4 > 3`.
+-/
+
+/-- **Step 5a.**  A quadratic integer `α > 1` whose conjugate `β` satisfies `|β| < 1` has
+`α ^ 4 > 3`.
+
+This is sharp in spirit: the smallest such `α` is the golden ratio `φ`, and `φ ^ 4 ≈ 6.854`.
+The proof needs no square roots and no discriminant hypothesis: if `α ^ 4 ≤ 3` then `α < 1.32`,
+so `a = α + β ∈ (0, 2.32)` forces `a ∈ {1, 2}`, and then `b = α * (a - α)` is pinned strictly
+between two consecutive integers (`-1 < b < 0` when `a = 1`; `0 < b < 1` when `a = 2`). -/
+theorem alpha_pow_four_gt_three (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α * β = b)
+    (hα : 1 < α) (hβ : |β| < 1) : 3 < α ^ 4 := by
+  by_contra hcon
+  push_neg at hcon
+  rw [abs_lt] at hβ
+  obtain ⟨hβ1, hβ2⟩ := hβ
+  -- `α < 1.32`, since `1.32 ^ 4 > 3`
+  have hαlt : α < 1.32 := by nlinarith [sq_nonneg (α - 1), sq_nonneg (α * α - 1)]
+  -- `0 < a < 3`, hence `a = 1` or `a = 2`
+  have ha0 : (0 : ℝ) < a := by rw [← hsum]; linarith
+  have ha3 : (a : ℝ) < 3 := by rw [← hsum]; linarith
+  have ha0' : 0 < a := by exact_mod_cast ha0
+  have ha3' : a < 3 := by exact_mod_cast ha3
+  interval_cases a
+  · -- `a = 1`: `b = α - α ^ 2 ∈ (-1, 0)`
+    have hβeq : β = 1 - α := by push_cast at hsum; linarith
+    have hb1 : (b : ℝ) < 0 := by rw [← hprod, hβeq]; nlinarith
+    have hb2 : (-1 : ℝ) < b := by rw [← hprod, hβeq]; nlinarith
+    have : b < 0 := by exact_mod_cast hb1
+    have : (-1 : ℤ) < b := by exact_mod_cast hb2
+    omega
+  · -- `a = 2`: `b = 1 - (α - 1) ^ 2 ∈ (0, 1)`
+    have hβeq : β = 2 - α := by push_cast at hsum; linarith
+    have hb1 : (0 : ℝ) < b := by rw [← hprod, hβeq]; nlinarith
+    have hb2 : (b : ℝ) < 1 := by rw [← hprod, hβeq]; nlinarith
+    have : 0 < b := by exact_mod_cast hb1
+    have : b < 1 := by exact_mod_cast hb2
+    omega
+
+/-- **Step 5b (the contradiction).**  With `α, β` as above, `s ≥ 4`, and `u, v` of complex
+modulus `1` (they will be roots of unity, the Teichmüller lifts of step 2), the spectral value
+`u·α^s + v·β^s` cannot be an integer `t` with `|t| ≤ 2`.
+
+Indeed `‖u·α^s + v·β^s‖ ≥ α^s - |β|^s > 3 - 1 = 2`. -/
+theorem spectral_ne_small_int (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α * β = b)
+    (hα : 1 < α) (hβ : |β| < 1) {s : ℕ} (hs : 4 ≤ s) {u v : ℂ} (hu : ‖u‖ = 1) (hv : ‖v‖ = 1)
+    {t : ℤ} (ht : |t| ≤ 2) :
+    u * (α : ℂ) ^ s + v * (β : ℂ) ^ s ≠ (t : ℂ) := by
+  intro heq
+  have h4 : 3 < α ^ 4 := alpha_pow_four_gt_three a b hsum hprod hα hβ
+  -- `α ^ s ≥ α ^ 4 > 3`
+  have hαs : 3 < α ^ s := lt_of_lt_of_le h4 (pow_le_pow_right₀ hα.le hs)
+  -- `|β| ^ s < 1`
+  have hβs : |β| ^ s < 1 := pow_lt_one₀ (abs_nonneg _) hβ (by omega)
+  have hnu : ‖u * (α : ℂ) ^ s‖ = α ^ s := by
+    rw [norm_mul, hu, one_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs,
+      abs_of_pos (by positivity)]
+  have hnv : ‖v * (β : ℂ) ^ s‖ = |β| ^ s := by
+    rw [norm_mul, hv, one_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs]
+  have hlow : α ^ s - |β| ^ s ≤ ‖u * (α : ℂ) ^ s + v * (β : ℂ) ^ s‖ := by
+    have := norm_sub_norm_le (u * (α : ℂ) ^ s) (-(v * (β : ℂ) ^ s))
+    rw [hnu, norm_neg, hnv, sub_neg_eq_add] at this
+    exact this
+  rw [heq] at hlow
+  have hnt : ‖(t : ℂ)‖ = |(t : ℝ)| := by
+    rw [show ((t : ℂ)) = ((t : ℝ) : ℂ) by push_cast; ring, Complex.norm_real, Real.norm_eq_abs]
+  have ht' : |(t : ℝ)| ≤ 2 := by
+    rw [← Int.cast_abs]
+    exact_mod_cast ht
+  rw [hnt] at hlow
+  linarith
+
+/-! ### Steps 2–4: the number-field machinery (the crux, open)
+
+The nodes below are the remaining obligations.  They are stated over a number field `K` containing
+`α` and the `(q-1)`-th roots of unity, with `𝔓` a prime of `𝒪_K` above `c`; see the header.
+-/
+
+/-- **Step 4 (separation).**  In a Noetherian integral domain, an element lying in every power of
+a proper ideal is zero.  This turns "`Λ - t ∈ 𝔓^m` for all `m`" into "`Λ = t`".  (Krull
+intersection.) -/
+theorem eq_of_mem_pow_all {R : Type*} [CommRing R] [IsDomain R] [IsNoetherianRing R]
+    (I : Ideal R) (hI : I ≠ ⊤) (x : R) (hx : ∀ m : ℕ, x ∈ I ^ m) : x = 0 := by
+  have h := Ideal.iInf_pow_eq_bot_of_isDomain I hI
+  have hxm : x ∈ ⨅ m : ℕ, I ^ m := Ideal.mem_iInf.2 hx
+  rw [h] at hxm
+  simpa using hxm
+
+/-! ### Steps 2–3: the Teichmüller / spectral crux
+
+`spectral_identity` is the single remaining mathematical obligation: it packages steps 2 and 3
+(Teichmüller representatives in `𝒪_K` and the spectral form of the trace) together with step 4
+(separation), and hands step 5 exactly what it needs.
+
+**Why the conclusion has this shape.**  Let `q` be the size of the residue field of `ℚ(α)` at `c`
+(so `q = c` or `c²`), `K = ℚ(α, ζ_(q-1))`, and `𝔓` a prime of `𝒪_K` over `c`.  Because `c ∤ q - 1`,
+reduction mod `𝔓` is injective on `μ_(q-1)`, so `α` and `β` (both `𝔓`-units, as `c ∤ b`) have
+Teichmüller representatives `ζ₁, ζ₂ ∈ μ_(q-1)`, and
+`α^(c^n) ≡ ζ₁^(c^n) (mod 𝔓^(n+1))`, likewise for `β`.  As `c^2 ≡ 1 (mod q-1)`, the residues
+`ζ_i^(c^n)` depend only on `n mod 2`; enlarging the modulus `f` of the residue class `r` is
+harmless.  Hence `V (c^n + s) ≡ ζ₁^(c^r) α^s + ζ₂^(c^r) β^s (mod 𝔓^(n+1))`, and the hypothesis
+`hcong` forces `ζ₁^(c^r) α^s + ζ₂^(c^r) β^s - t ∈ 𝔓^m` for every `m`, so by `eq_of_mem_pow_all`
+the two sides are equal in `K`.  Finally `u := ζ₁^(c^r)` and `v := ζ₂^(c^r)` are roots of unity,
+hence of complex modulus `1` under the embedding `K → ℂ` sending `α, β` to the given reals. -/
+theorem spectral_identity (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α * β = b)
+    (hα : 1 < α) (hβ : |β| < 1) (hdisc : ¬ IsSquare (a ^ 2 - 4 * b))
+    {c : ℕ} (hc : c.Prime) (hcb : ¬ (c : ℤ) ∣ b) (hcd : ¬ (c : ℤ) ∣ a ^ 2 - 4 * b)
+    (V : ℕ → ℤ) (hV : ∀ N, (V N : ℝ) = α ^ N + β ^ N)
+    {s f r : ℕ} (hf : 1 ≤ f) (t : ℤ)
+    (hcong : ∀ m : ℕ, ∃ n, m ≤ n ∧ n % f = r ∧ (c : ℤ) ^ m ∣ V (c ^ n + s) - t) :
+    ∃ u v : ℂ, ‖u‖ = 1 ∧ ‖v‖ = 1 ∧ u * (α : ℂ) ^ s + v * (β : ℂ) ^ s = (t : ℂ) := by
+  sorry
+
+/-- **Steps 2–5 combined.**  Along a residue class, the traces `V (c^n + s)` cannot be congruent
+to a fixed small integer `t` modulo arbitrarily large powers of `c`.
+
+This is fully proved from `spectral_identity` (the crux) and `spectral_ne_small_int` (step 5). -/
+theorem not_congr_small_int (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α * β = b)
+    (hα : 1 < α) (hβ : |β| < 1) (hdisc : ¬ IsSquare (a ^ 2 - 4 * b))
+    {c : ℕ} (hc : c.Prime) (hcb : ¬ (c : ℤ) ∣ b) (hcd : ¬ (c : ℤ) ∣ a ^ 2 - 4 * b)
+    (V : ℕ → ℤ) (hV : ∀ N, (V N : ℝ) = α ^ N + β ^ N)
+    {s f r : ℕ} (hs : 4 ≤ s) (hf : 1 ≤ f) {t : ℤ} (ht : |t| ≤ 2) :
+    ¬ ∀ m : ℕ, ∃ n, m ≤ n ∧ n % f = r ∧ (c : ℤ) ^ m ∣ V (c ^ n + s) - t := by
+  intro hcong
+  obtain ⟨u, v, hu, hv, huv⟩ :=
+    spectral_identity a b hsum hprod hα hβ hdisc hc hcb hcd V hV hf t hcong
+  exact spectral_ne_small_int a b hsum hprod hα hβ hs hu hv ht huv
+
 /-- **Theorem D, quadratic case.** -/
 theorem floor_pow_prime_pow_add_not_prime (a b : ℤ) {α β : ℝ} (hsum : α + β = a)
     (hprod : α * β = b) (hα : 1 < α) (hβ : |β| < 1) (hdisc : ¬ IsSquare (a ^ 2 - 4 * b))
