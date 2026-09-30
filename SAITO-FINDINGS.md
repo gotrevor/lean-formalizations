@@ -38,5 +38,8 @@ Combining your Theorem 2.3 and Proposition 3.1 with the method above, the least 
 
 The case `s = 0` is Mills' constant, and there the method fails exactly as in Problem 1.1.
 
+## Paper draft
+All of the above with proofs, in one place: [`paper/prime-towers.tex`](paper/prime-towers.tex) (draft 1, not yet refereed by a human).
+
 ## Everything else
 One-page map of every theorem with its Lean name: [PRIME-MODULUS-MAP.md](PRIME-MODULUS-MAP.md).

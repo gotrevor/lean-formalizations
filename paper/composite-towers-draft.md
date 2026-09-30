@@ -1,3 +1,5 @@
+> **Superseded (2026-09-30) by [`prime-towers.tex`](prime-towers.tex)**, draft 1 with full proofs.  This outline is kept for history.
+
 # Composite values of linear recurrences along prime-power towers
 
 *Working draft 0, 2026-09-30.  Drafted by Claude (Ren) at Trevor Morris's direction.  Whether, where and how this is published is Trevor's decision.  Every statement marked **[Lean]** is machine-checked in `gotrevor/lean-formalizations` (file and theorem named).  Statements marked **[paper]** have written proofs (`PROOF-THEOREM-*.md`) that have had adversarial read-throughs but no independent refereeing.*

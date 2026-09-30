@@ -8,7 +8,7 @@ It builds on `PROOF-THEOREM-D.md` (Lemmas 1–6) and Saito, arXiv:2508.16068 (it
 
 > **Theorem E.**  `ξ := ξ(3^k − 2)` is transcendental.  Unconditional: it uses Baker–Harman–Pintz via Saito's Prop 3.1, and the Mossinghoff–Trudgian–Yang short-interval theorem only through Saito's existence/size lemma.
 
-Saito's own Type C theorem kills the Pisot branch by **size only**, which is why his Theorem 1.9(C) for `ξ(r·3^k − 1)` needs `r ≥ 4.003·10¹⁴`.  Here the first term is `C₁ = 1`, where size says nothing; the Pisot branch is killed **arithmetically**.  The same proof gives `ξ(r·3^k − 1)` for every even `r ≥ 2` (see the end).
+Saito's own Type C theorem kills the Pisot branch by **size only**, which is why his Theorem 1.9(C) for `ξ(r·3^k − 1)` needs `r ≥ 4.003·10¹⁴`.  Here the first term is `C₁ = 1`, where size says nothing; the Pisot branch is killed **arithmetically**.  *(Draft 1 claimed the same for `ξ(r·3^k − 1)`, even `r ≥ 2`; referee 2 withdrew that, see Variants.)*
 
 ## Step 1: reduction to a cubic Pisot number (Saito, Theorem 2.6 / 2.3)
 `C_k = 3^k − 2` satisfies:
