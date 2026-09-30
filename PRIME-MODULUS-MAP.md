@@ -41,7 +41,11 @@ One page, one row per theorem.  Everything here was proved 2026-09-29/30, uncond
 - `ExteriorDold` (phase 50): `χ_(A^(p^(k+1))) ≡ χ_(A^(p^k)) (mod p^(k+1))` coefficientwise, via compound matrices; plus `χ_B(B^p) ≡ 0`.
 - `OrbitSum` (phase 51): for `χ_A` irreducible mod `c`, `A^(c^(n+d)) ≡ A^(c^n)` and **`Σ_(k<d) A^(c^(n+k)) ≡ tr(A^(c^n))·I (mod c^(n+1))`**, exact even when `c ∣ d` (factorization over the Galois ring).
 - **`TheoremA` (phase 52): `entry_prime_pow_add_not_prime`.**  Order-`d` entries `u(c^n) + h` are composite i.o. for every `h`, given: `χ_A` irreducible mod `c`, odd `d`, `μ_(≤d)(ℤ_c) = {±1}`, and `c ∤ u(c^r)` for some `r < d`.  Corollaries: **Tribonacci `T(3^n) + h` and `T(5^n) + h`** (`trib_three_pow_add_not_prime`, `trib_five_pow_add_not_prime`).
+- **`TheoremAEven` (phase 54):** Theorem A′ for every `d` when `h ≠ 0`; **Tetranacci `T₄(2^n) + h` composite i.o. for every `h`** (`tetra_two_pow_add_not_prime`; `h = 0` by parity via the period).
 - **`TribonacciCovering` (phase 53):** `[T(3^n) − 3, T(3^n) + 3]` contains no prime for every `n ≡ 95 (mod 1980)` (`trib_three_pow_prime_free`, `trib_three_pow_prime_free_often`).  Certificate primes: 5, 7, 13, 47, 53, 593.
+
+## In progress
+- `TheoremDQuadratic` (phase 55, multi-phase): Theorem D for quadratic Pisot `α`, `c ∤ b·disc`, `s ≥ 4`.  The route uses a number field `K = ℚ(α, ζ_(c²−1))` and a prime `𝔓 | c`, with no `c`-adic completion: Teichmüller mod `𝔓^(n+1)`, spectral trace, separation, then size.
 
 ## Paper theorems, not yet in Lean
 - **Theorem D** (`PROOF-THEOREM-D.md`): Saito's Problem 1.7 for `R(n) = c^n + s`; every Pisot `α` outside `f ≡ X^d (mod c)` (draft 2 removes the abelian-field exception by a one-automorphism size argument).  Referee pass: Lemmas OK.
