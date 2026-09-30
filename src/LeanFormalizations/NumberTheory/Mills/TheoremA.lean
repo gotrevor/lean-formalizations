@@ -44,7 +44,7 @@ No `private`.  Helpers public; add as many as needed.
 
 namespace LeanFormalizations.Mills.TheoremA
 
-open Matrix Filter
+open LeanFormalizations.Mills.ThreeAdic Matrix Filter
 
 /-! ### Step 2: the window — `p^i ≡ 1 (mod c^e)` with `i ≤ d` forces `p ≡ ±1` -/
 
@@ -367,6 +367,53 @@ theorem exists_sign_dvd_sub {c p d i e : ℕ} (hc : c.Prime) (hp : p.Prime) (hpc
       have : e - d = 0 := by omega
       simp [this]
 
+/-! ### Structural inputs: the determinant is a unit mod `c`, and the period -/
+
+/-- Irreducibility of `χ̄_A` (in dimension `≥ 2`) makes `det A` a unit mod `c`. -/
+theorem not_dvd_det_of_irreducible {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : c.Prime)
+    (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c)))) (hd : 2 ≤ d) :
+    ¬ (c : ℤ) ∣ A.det := by
+  haveI : Fact c.Prime := ⟨hc⟩
+  intro hdvd
+  have hdet := Matrix.det_eq_sign_charpoly_coeff A
+  rw [Fintype.card_fin] at hdet
+  have hsq : ((-1 : ℤ) ^ d) * ((-1 : ℤ) ^ d) = 1 := by
+    rw [← pow_add, show d + d = 2 * d by ring, pow_mul]; norm_num
+  have hc0 : (c : ℤ) ∣ A.charpoly.coeff 0 := by
+    have : A.charpoly.coeff 0 = ((-1 : ℤ) ^ d) * A.det := by
+      rw [hdet]; rw [← mul_assoc, hsq, one_mul]
+    rw [this]
+    exact Dvd.dvd.mul_left hdvd _
+  have hzero : (A.charpoly.map (Int.castRingHom (ZMod c))).coeff 0 = 0 := by
+    rw [Polynomial.coeff_map]
+    simpa using (ZMod.intCast_zmod_eq_zero_iff_dvd _ c).2 hc0
+  obtain ⟨g, hg⟩ := (Polynomial.X_dvd_iff).2 hzero
+  have hdeg : (A.charpoly.map (Int.castRingHom (ZMod c))).natDegree = d :=
+    OrbitSum.charpolyBar_natDegree A c
+  rcases hirr.isUnit_or_isUnit hg with hu | hu
+  · have := Polynomial.natDegree_eq_zero_of_isUnit hu
+    simp at this
+  · have hg0 : g.natDegree = 0 := Polynomial.natDegree_eq_zero_of_isUnit hu
+    have hne : (A.charpoly.map (Int.castRingHom (ZMod c))) ≠ 0 := hirr.ne_zero
+    have hgne : g ≠ 0 := by
+      intro h0; rw [h0, mul_zero] at hg; exact hne hg
+    have : (A.charpoly.map (Int.castRingHom (ZMod c))).natDegree = 1 + 0 := by
+      rw [hg, Polynomial.natDegree_mul Polynomial.X_ne_zero hgne, Polynomial.natDegree_X, hg0]
+    omega
+
+/-- **Period mod `c`:** `(A^(c^(m + q·d))) i j ≡ (A^(c^m)) i j (mod c)`. -/
+theorem entry_period {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : c.Prime)
+    (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c)))) (m q : ℕ) (i j : Fin d) :
+    (c : ℤ) ∣ (A ^ (c ^ (m + q * d))) i j - (A ^ (c ^ m)) i j := by
+  induction q with
+  | zero => simp
+  | succ q ih =>
+    have hstep : (c : ℤ) ∣ (A ^ (c ^ (m + q * d + d))) i j - (A ^ (c ^ (m + q * d))) i j :=
+      dvd_trans (dvd_pow_self _ (Nat.succ_ne_zero _))
+        (OrbitSum.pow_prime_pow_add_card_congr A hc hirr (m + q * d) i j)
+    have := dvd_add hstep ih
+    simpa [show m + (q + 1) * d = m + q * d + d by ring] using this
+
 /-- **Theorem A.** -/
 theorem entry_prime_pow_add_not_prime {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ}
     (hc : c.Prime) (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c))))
@@ -374,7 +421,240 @@ theorem entry_prime_pow_add_not_prime {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ)
     (hnz : ∃ r < d, ¬ (c : ℤ) ∣ (A ^ (c ^ r)) i j)
     (hgrow : Tendsto (fun n => |(A ^ (c ^ n)) i j|) atTop atTop) (h : ℤ) :
     ∃ᶠ n in atTop, ¬ Prime ((A ^ (c ^ n)) i j + h) := by
-  sorry
+  haveI : Fact c.Prime := ⟨hc⟩
+  obtain ⟨r, hrd, hr⟩ := hnz
+  have hd2 : 2 ≤ d := by
+    have h1 := i.isLt
+    have h2 := j.isLt
+    have h3 : (i : ℕ) ≠ (j : ℕ) := fun hh => hij (Fin.ext hh)
+    omega
+  set u : ℕ → ℤ := fun n => (A ^ (c ^ n)) i j with hudef
+  set t : ℕ → ℤ := fun n => u n + h with htdef
+  have hcle : 2 ≤ c := hc.two_le
+  have hdet : ¬ (c : ℤ) ∣ A.det := not_dvd_det_of_irreducible A hc hirr hd2
+  have hdet0 : A.det ≠ 0 := fun h0 => hdet (by rw [h0]; exact dvd_zero _)
+  have hgr : ∀ B : ℤ, ∃ N : ℕ, ∀ n ≥ N, B ≤ |u n| := by
+    intro B
+    obtain ⟨N, hN⟩ := eventually_atTop.1 (tendsto_atTop.1 hgrow B)
+    exact ⟨N, hN⟩
+  have hlow : ∀ n : ℕ, |u n| - |h| ≤ |t n| := fun n => LucasInert.abs_sub_abs_le_abs_add'
+  by_contra hcon
+  rw [Filter.not_frequently] at hcon
+  simp only [not_not] at hcon
+  obtain ⟨n₀, hn₀⟩ := eventually_atTop.1 hcon
+  set H : ℕ := h.natAbs with hH
+  have hHabs : |h| = (H : ℤ) := Int.abs_eq_natAbs h
+  obtain ⟨N₁, hN₁⟩ := hgr (|h| + |A.det| + (c : ℤ) + 3)
+  set N : ℕ := max (max n₀ N₁) d with hNdef
+  have hprime : ∀ n ≥ N, Prime (t n) := fun n hn => hn₀ n (by omega)
+  have hpabs : ∀ n : ℕ, ((t n).natAbs : ℤ) = |t n| := fun n => (Int.abs_eq_natAbs _).symm
+  have hbig : ∀ n ≥ N, |A.det| + (c : ℤ) + 3 ≤ |t n| := by
+    intro n hn
+    have h1 := hN₁ n (by omega)
+    have h2 := hlow n
+    linarith
+  have hpn : ∀ n ≥ N, (t n).natAbs.Prime := fun n hn =>
+    Int.prime_iff_natAbs_prime.1 (hprime n hn)
+  have hpnec : ∀ n ≥ N, (t n).natAbs ≠ c := by
+    intro n hn hEq
+    have h1 := hbig n hn
+    have h2 := hpabs n
+    rw [hEq] at h2
+    have h3 := abs_nonneg A.det
+    omega
+  have hpdvdD : ∀ n ≥ N, ¬ ((t n).natAbs : ℤ) ∣ A.det := by
+    intro n hn hd
+    have h1 : ((t n).natAbs : ℤ) ≤ |A.det| :=
+      Int.le_of_dvd (abs_pos.2 hdet0) ((dvd_abs _ _).2 hd)
+    have h2 := hbig n hn
+    rw [hpabs n] at h1
+    have h3 : (0 : ℤ) ≤ (c : ℤ) := by positivity
+    omega
+  -- **Step 1 (the return step).**
+  have hstep : ∀ n ≥ N, padicValNat c (glCard d (t n).natAbs) ≤ n →
+      ∃ q, 1 ≤ q ∧ (t (n + q)).natAbs = (t n).natAbs := by
+    intro n hn hv
+    obtain ⟨q, hq1, hq⟩ := SaitoFibonacci.exists_entry_pow_congr A (hpn n hn) hc
+      (hpdvdD n hn) hv
+    have hent : ((t n).natAbs : ℤ) ∣ u (n + q) - u n := hq i j
+    have hdvd : ((t n).natAbs : ℤ) ∣ t (n + q) := by
+      have hA : ((t n).natAbs : ℤ) ∣ t n := Int.natAbs_dvd.2 dvd_rfl
+      have hre : t (n + q) = (u (n + q) - u n) + t n := by simp only [htdef]; ring
+      rw [hre]
+      exact dvd_add hent hA
+    have hqp := hpn (n + q) (by omega)
+    have hdq : (t n).natAbs ∣ (t (n + q)).natAbs :=
+      Int.natAbs_dvd_natAbs.2 (Int.natAbs_dvd.1 hdvd)
+    rcases hqp.eq_one_or_self_of_dvd _ hdq with hh | hh
+    · exact absurd hh (hpn n hn).ne_one
+    · exact ⟨q, hq1, hh.symm⟩
+  have hstep2 : ∀ n ≥ N, n < padicValNat c (glCard d (t n).natAbs) := by
+    intro n hn
+    by_contra hle
+    push_neg at hle
+    have chain : ∀ k : ℕ, ∃ n' : ℕ, n + k ≤ n' ∧ (t n').natAbs = (t n).natAbs ∧
+        padicValNat c (glCard d (t n').natAbs) ≤ n' := by
+      intro k
+      induction k with
+      | zero => exact ⟨n, by omega, rfl, hle⟩
+      | succ k ih =>
+        obtain ⟨n', hn'1, hn'2, hn'3⟩ := ih
+        obtain ⟨q, hq1, hq⟩ := hstep n' (by omega) hn'3
+        refine ⟨n' + q, by omega, ?_, ?_⟩
+        · rw [hq]; exact hn'2
+        · rw [hq]; omega
+    obtain ⟨Nb, hNb⟩ := hgr (|t n| + |h| + 1)
+    obtain ⟨n', hc1, hc2', _⟩ := chain (Nb + n)
+    have h1 : |t n'| = |t n| := by rw [← hpabs n', ← hpabs n, hc2']
+    have h2 := hNb n' (by omega)
+    have h3 := hlow n'
+    linarith
+  -- **Step 2 (the window).**
+  have hstep3 : ∀ n ≥ N, ∃ s : ℤ, (s = 1 ∨ s = -1) ∧ (c : ℤ) ^ (n / d - d) ∣ t n - s := by
+    intro n hn
+    have hnd : 1 ≤ n / d := Nat.one_le_div_iff (by omega) |>.2 (by omega)
+    obtain ⟨i', hi'1, hi'd, hi'⟩ := TheoremDGround.exists_pow_sub_one_of_lt_padicValNat_glCard
+      hc (hpn n hn) (hpnec n hn) (by omega) (hstep2 n hn)
+    obtain ⟨s0, hs0, hd0⟩ := exists_sign_dvd_sub hc (hpn n hn) (hpnec n hn) hmu hi'1 hi'd hnd hi'
+    rcases Int.natAbs_eq (t n) with he | he
+    · exact ⟨s0, hs0, by rw [he]; exact hd0⟩
+    · refine ⟨-s0, ?_, ?_⟩
+      · rcases hs0 with rfl | rfl
+        · exact Or.inr rfl
+        · exact Or.inl (by norm_num)
+      · have hrw : t n - -s0 = -(((t n).natAbs : ℤ) - s0) := by omega
+        rw [hrw]
+        exact dvd_neg.2 hd0
+  -- **Steps 3–4: the orbit sum pins every sign to `h`, and the period contradicts `c ∤ u r`.**
+  set M₀ : ℕ := d * H + d + 1 with hM₀
+  set Q : ℕ := M₀ + d + N + 1 with hQ
+  set n : ℕ := d * Q + r with hn
+  have hdiv : n / d = Q := by
+    rw [hn, Nat.mul_add_div (by omega : 0 < d), Nat.div_eq_of_lt hrd]
+  have hnN : N ≤ n := by
+    have : Q ≤ d * Q := Nat.le_mul_of_pos_left Q (by omega)
+    omega
+  have hE : M₀ ≤ n / d - d := by rw [hdiv]; omega
+  set E : ℕ := n / d - d with hEdef
+  have hQle : Q ≤ n := by
+    have : Q ≤ d * Q := Nat.le_mul_of_pos_left Q (by omega)
+    omega
+  have hall : ∀ k : ℕ, ∃ s : ℤ, (s = 1 ∨ s = -1) ∧ (c : ℤ) ^ E ∣ t (n + k) - s := by
+    intro k
+    obtain ⟨s, hs, hsd⟩ := hstep3 (n + k) (by omega)
+    refine ⟨s, hs, dvd_trans (pow_dvd_pow _ ?_) hsd⟩
+    rw [hEdef]
+    have : n / d ≤ (n + k) / d := Nat.div_le_div_right (by omega)
+    omega
+  choose S hS1 hS2 using hall
+  -- the modulus we actually use
+  set m : ℕ := min E (n + 1) with hm
+  have hmM₀ : M₀ ≤ m := by rw [hm]; omega
+  have hbnd : (d * (H : ℤ) + d : ℤ) < (c : ℤ) ^ m := by
+    have h1 : m < 2 ^ m := Nat.lt_two_pow_self
+    have h2 : (2 : ℕ) ^ m ≤ c ^ m := Nat.pow_le_pow_left hcle m
+    have h0 : d * H + d < M₀ := by rw [hM₀]; omega
+    have h3 : d * H + d < c ^ m :=
+      lt_of_lt_of_le (lt_of_lt_of_le (lt_of_lt_of_le h0 hmM₀) (le_of_lt h1)) h2
+    exact_mod_cast h3
+  have horb : (c : ℤ) ^ (n + 1) ∣ ∑ k ∈ Finset.range d, u (n + k) :=
+    OrbitSum.orbit_sum_entry_congr A hc hirr n hij
+  have hsum1 : (c : ℤ) ^ m ∣ ∑ k ∈ Finset.range d, (t (n + k) - S k) := by
+    refine Finset.dvd_sum fun k _ => dvd_trans (pow_dvd_pow _ ?_) (hS2 k)
+    omega
+  have hsum2 : (c : ℤ) ^ m ∣ ∑ k ∈ Finset.range d, u (n + k) :=
+    dvd_trans (pow_dvd_pow _ (by omega)) horb
+  have hsplit : ∑ k ∈ Finset.range d, (t (n + k) - S k)
+      = (∑ k ∈ Finset.range d, u (n + k)) + (d * h - ∑ k ∈ Finset.range d, S k) := by
+    simp only [htdef, Finset.sum_sub_distrib, Finset.sum_add_distrib, Finset.sum_const,
+      Finset.card_range]
+    ring
+  have hkey : (c : ℤ) ^ m ∣ d * h - ∑ k ∈ Finset.range d, S k := by
+    rw [hsplit] at hsum1
+    simpa using (dvd_sub hsum1 hsum2)
+  have habsS : |∑ k ∈ Finset.range d, S k| ≤ (d : ℤ) := by
+    have heq : ∀ k ∈ Finset.range d, |S k| = (1 : ℤ) := by
+      intro k _; rcases hS1 k with hh | hh <;> simp [hh]
+    have hb := Finset.abs_sum_le_sum_abs S (Finset.range d)
+    rw [Finset.sum_congr rfl heq, Finset.sum_const, Finset.card_range] at hb
+    simpa using hb
+  have hzero : (d : ℤ) * h - ∑ k ∈ Finset.range d, S k = 0 := by
+    by_contra hne
+    have hle := Int.le_of_dvd (abs_pos.2 hne) ((dvd_abs _ _).2 hkey)
+    have hb : |(d : ℤ) * h - ∑ k ∈ Finset.range d, S k| ≤ d * (H : ℤ) + d := by
+      have h1 : |(d : ℤ) * h| = d * (H : ℤ) := by
+        rw [abs_mul, hHabs, abs_of_nonneg (by positivity : (0:ℤ) ≤ (d:ℤ))]
+      have := abs_sub (((d : ℤ)) * h) (∑ k ∈ Finset.range d, S k)
+      calc |(d : ℤ) * h - ∑ k ∈ Finset.range d, S k|
+          ≤ |(d : ℤ) * h| + |∑ k ∈ Finset.range d, S k| := abs_sub _ _
+        _ ≤ d * (H : ℤ) + d := by rw [h1]; linarith
+    omega
+  -- `d` odd forces `h ≠ 0`, and then `|h| ≤ 1`
+  have hpar : (2 : ℤ) ∣ (∑ k ∈ Finset.range d, S k) - d := by
+    have : (∑ k ∈ Finset.range d, S k) - d = ∑ k ∈ Finset.range d, (S k - 1) := by
+      simp [Finset.sum_sub_distrib]
+    rw [this]
+    refine Finset.dvd_sum fun k _ => ?_
+    rcases hS1 k with hh | hh <;> rw [hh] <;> norm_num
+  have hh1 : h = 1 ∨ h = -1 := by
+    have hsum : ∑ k ∈ Finset.range d, S k = (d : ℤ) * h := by linarith [hzero]
+    rcases eq_or_ne h 0 with rfl | h0
+    · rw [hsum] at hpar
+      simp only [mul_zero, zero_sub, dvd_neg] at hpar
+      obtain ⟨k, hk⟩ := hodd
+      have : (2 : ℤ) ∣ (d : ℤ) := hpar
+      have hd' : (d : ℤ) = 2 * k + 1 := by exact_mod_cast hk
+      omega
+    · have hdpos : (0 : ℤ) < d := by positivity
+      have h2 : |(d : ℤ) * h| ≤ (d : ℤ) := by rw [← hsum]; exact habsS
+      rw [abs_mul, abs_of_nonneg hdpos.le, hHabs] at h2
+      have : (H : ℤ) ≤ 1 := by
+        rcases le_or_gt (H : ℤ) 1 with hle | hlt
+        · exact hle
+        · nlinarith
+      have hH1 : H = 1 := by
+        have hH0 : H ≠ 0 := by simpa [hH, Int.natAbs_eq_zero] using h0
+        have : H ≤ 1 := by exact_mod_cast this
+        omega
+      rw [hH] at hH1
+      omega
+  -- every sign equals `h`
+  have hhsq : h * h = 1 := by rcases hh1 with rfl | rfl <;> norm_num
+  have hprodsum : ∑ k ∈ Finset.range d, (1 - h * S k) = 0 := by
+    have hsum : ∑ k ∈ Finset.range d, S k = (d : ℤ) * h := by linarith [hzero]
+    have : ∑ k ∈ Finset.range d, (1 - h * S k)
+        = (d : ℤ) - h * ∑ k ∈ Finset.range d, S k := by
+      rw [Finset.mul_sum]
+      simp [Finset.sum_sub_distrib]
+    rw [this, hsum]
+    have : h * ((d : ℤ) * h) = (d : ℤ) * (h * h) := by ring
+    rw [this, hhsq, mul_one]
+    ring
+  have hS0 : S 0 = h := by
+    have hnn : ∀ k ∈ Finset.range d, (0 : ℤ) ≤ 1 - h * S k := by
+      intro k _
+      rcases hh1 with rfl | rfl <;> rcases hS1 k with hh | hh <;> rw [hh] <;> norm_num
+    have := (Finset.sum_eq_zero_iff_of_nonneg hnn).1 hprodsum 0 (Finset.mem_range.2 (by omega))
+    have hz : h * S 0 = 1 := by linarith
+    rcases hS1 0 with hh | hh
+    · rcases hh1 with h1 | h1
+      · rw [hh, h1]
+      · rw [hh, h1] at hz; norm_num at hz
+    · rcases hh1 with h1 | h1
+      · rw [hh, h1] at hz; norm_num at hz
+      · rw [hh, h1]
+  -- so `c ∣ u n`, and the period carries this back to `u r`
+  have hEpos : 1 ≤ E := by omega
+  have hun : (c : ℤ) ∣ u n := by
+    have := hS2 0
+    rw [hS0] at this
+    have hre : t (n + 0) - h = u n := by simp [htdef]
+    rw [hre] at this
+    exact dvd_trans (dvd_pow_self _ (by omega : E ≠ 0)) this
+  have hper : (c : ℤ) ∣ u (r + Q * d) - u r := entry_period A hc hirr r Q i j
+  have hnr : n = r + Q * d := by rw [hn]; ring
+  rw [← hnr] at hper
+  exact hr (by have := dvd_sub hun hper; simpa using this)
 
 /-- Tribonacci: `T 0 = T 1 = 0`, `T 2 = 1`, `T (n+3) = T (n+2) + T (n+1) + T n`. -/
 def trib : ℕ → ℤ
