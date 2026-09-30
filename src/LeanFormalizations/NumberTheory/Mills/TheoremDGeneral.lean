@@ -266,6 +266,222 @@ theorem polyVal_pow_eq_one {K : Type*} [Field K] (f : ℤ[X]) (hmon : f.Monic)
   have := congrArg (fun M : Matrix (Fin f.natDegree) (Fin f.natDegree) K => M i i) hd
   simpa using this
 
+
+/-! ### Step 1a: the trace sequence and the root enumeration -/
+
+/-- The integer trace sequence `V_N = tr(C^N)`; for `d = 2` this is `lucasV`. -/
+def traceSeq (f : ℤ[X]) (N : ℕ) : ℤ := (compM ℤ f ^ N).trace
+
+theorem traceSeq_cast {R : Type*} [CommRing R] (f : ℤ[X]) (N : ℕ) :
+    ((traceSeq f N : ℤ) : R) = (compM R f ^ N).trace := by
+  have hmap : (compM ℤ f ^ N).map (Int.castRingHom R) = compM R f ^ N := by
+    rw [show (compM ℤ f ^ N).map (Int.castRingHom R)
+        = ((compM ℤ f).map (Int.castRingHom R)) ^ N from
+      (RingHom.mapMatrix (Int.castRingHom R)).map_pow (compM ℤ f) N ▸ rfl, compM_map]
+  rw [← hmap, traceSeq, Matrix.trace, Matrix.trace]
+  simp [Matrix.diag, Matrix.map_apply]
+
+/-- **Step 1a.**  `V_N = ∑_k (e k)^N`: the trace of the companion power is the power sum of the
+roots.  (Immediate from the Vandermonde conjugation.) -/
+theorem traceSeq_eq_root_sum {K : Type*} [Field K] (f : ℤ[X]) (hmon : f.Monic)
+    (e : Fin f.natDegree → K) (he : ∀ i, (f.map (Int.castRingHom K)).eval (e i) = 0)
+    (hinj : Function.Injective e) (N : ℕ) :
+    ((traceSeq f N : ℤ) : K) = ∑ i, (e i) ^ N := by
+  rw [traceSeq_cast]
+  have hconj := conj_pow (Matrix.vandermonde e) (compM K f) (Matrix.diagonal e)
+    (vandermonde_mul_compM f hmon e he) N
+  rw [conj_trace _ _ _ (vandermonde_isUnit_det e hinj) hconj, Matrix.diagonal_pow,
+    Matrix.trace_diagonal]
+  rfl
+
+/-- **The root enumeration.**  A monic irreducible integer polynomial of degree `d ≥ 1` has an
+injective enumeration `e : Fin d → ℂ` of its complex roots hitting every root (irreducibility gives
+separability, so there are exactly `d` of them). -/
+theorem exists_root_enum (f : ℤ[X]) (hmon : f.Monic) (hirr : Irreducible f) :
+    ∃ e : Fin f.natDegree → ℂ, Function.Injective e ∧
+      (∀ i, (f.map (Int.castRingHom ℂ)).eval (e i) = 0) ∧
+      ∀ z : ℂ, (f.map (Int.castRingHom ℂ)).eval z = 0 → ∃ i, e i = z := by
+  classical
+  set fC := f.map (Int.castRingHom ℂ) with hfCdef
+  have hfC0 : fC ≠ 0 := (hmon.map (Int.castRingHom ℂ)).ne_zero
+  have hnd : fC.natDegree = f.natDegree := hmon.natDegree_map _
+  have hcard : fC.roots.card = f.natDegree := by
+    rw [← hnd]; exact Polynomial.splits_iff_card_roots.1 (IsAlgClosed.splits fC)
+  -- separability, via irreducibility over `ℚ`
+  have hsepQ : (f.map (Int.castRingHom ℚ)).Separable := by
+    have hirrQ : Irreducible (f.map (Int.castRingHom ℚ)) :=
+      (Polynomial.IsPrimitive.Int.irreducible_iff_irreducible_map_cast hmon.isPrimitive).1 hirr
+    exact hirrQ.separable
+  have hsepC : fC.Separable := by
+    have hcomp : (Rat.castHom ℂ).comp (Int.castRingHom ℚ) = Int.castRingHom ℂ :=
+      RingHom.ext fun n => by simp
+    have hfe : fC = (f.map (Int.castRingHom ℚ)).map (Rat.castHom ℂ) := by
+      rw [Polynomial.map_map, hcomp]
+    rw [hfe]
+    exact hsepQ.map
+  have hnodup : fC.roots.Nodup := Polynomial.nodup_roots hsepC
+  obtain ⟨S, hS⟩ : ∃ S : Finset ℂ, S = fC.roots.toFinset := ⟨_, rfl⟩
+  have hScard : S.card = f.natDegree := by
+    rw [hS, Multiset.toFinset_card_of_nodup hnodup, hcard]
+  have hSroot : ∀ z ∈ S, fC.eval z = 0 := by
+    intro z hz
+    rw [hS, Multiset.mem_toFinset] at hz
+    exact Polynomial.isRoot_of_mem_roots hz
+  have hSmem : ∀ z : ℂ, fC.eval z = 0 → z ∈ S := by
+    intro z hz
+    rw [hS, Multiset.mem_toFinset]
+    exact (Polynomial.mem_roots hfC0).2 hz
+  set E := S.equivFin with hE
+  refine ⟨fun i => (E.symm (Fin.cast hScard.symm i) : ℂ), ?_, ?_, ?_⟩
+  · intro i j hij
+    have := E.symm.injective (Subtype.ext hij)
+    exact Fin.cast_injective _ this
+  · intro i
+    exact hSroot _ (E.symm (Fin.cast hScard.symm i)).2
+  · intro z hz
+    refine ⟨Fin.cast hScard (E ⟨z, hSmem z hz⟩), ?_⟩
+    simp
+
+
+/-! ### Step 1b: the floor is the trace up to an offset in `{0, -1}` -/
+
+/-- **Step 1b.**  If `α` is the distinguished root and all other roots have modulus `< 1`, then
+`⌊α^N⌋ ∈ {V_N, V_N - 1}` for all large `N`: the tail power sum `δ_N = ∑_(i ≠ i₀) (e i)^N` tends to
+`0`, and `α^N = V_N - δ_N`. -/
+theorem eventually_floor_eq_traceSeq (f : ℤ[X]) (hmon : f.Monic)
+    (e : Fin f.natDegree → ℂ) (he : ∀ i, (f.map (Int.castRingHom ℂ)).eval (e i) = 0)
+    (hinj : Function.Injective e) {α : ℝ} {i₀ : Fin f.natDegree} (hi₀ : e i₀ = (α : ℂ))
+    (hsmall : ∀ i, i ≠ i₀ → ‖e i‖ < 1) :
+    ∀ᶠ N in atTop, ⌊α ^ N⌋ = traceSeq f N ∨ ⌊α ^ N⌋ = traceSeq f N - 1 := by
+  classical
+  have htend : Tendsto
+      (fun N : ℕ => ∑ i ∈ Finset.univ.erase i₀, ‖e i‖ ^ N) atTop (nhds 0) := by
+    have h : ∀ i ∈ Finset.univ.erase i₀,
+        Tendsto (fun N : ℕ => ‖e i‖ ^ N) atTop (nhds 0) := by
+      intro i hi
+      exact tendsto_pow_atTop_nhds_zero_of_lt_one (norm_nonneg _)
+        (hsmall i (Finset.ne_of_mem_erase hi))
+    simpa using tendsto_finset_sum (Finset.univ.erase i₀) h
+  have heven : ∀ᶠ N : ℕ in atTop, (∑ i ∈ Finset.univ.erase i₀, ‖e i‖ ^ N) < 1 :=
+    htend.eventually_lt_const one_pos
+  filter_upwards [heven] with N hN
+  have hsum : ((traceSeq f N : ℤ) : ℂ) = ∑ i, e i ^ N :=
+    traceSeq_eq_root_sum f hmon e he hinj N
+  have hsplit : ∑ i, e i ^ N = (α : ℂ) ^ N + ∑ i ∈ Finset.univ.erase i₀, e i ^ N := by
+    rw [← hi₀]
+    exact (Finset.add_sum_erase _ (fun i => e i ^ N) (Finset.mem_univ i₀)).symm
+  have hnormle : ‖∑ i ∈ Finset.univ.erase i₀, e i ^ N‖
+      ≤ ∑ i ∈ Finset.univ.erase i₀, ‖e i‖ ^ N :=
+    le_trans (norm_sum_le _ _) (Finset.sum_le_sum fun i _ => by rw [norm_pow])
+  have hreal : |((traceSeq f N : ℤ) : ℝ) - α ^ N| < 1 := by
+    have hcast : (((((traceSeq f N : ℤ) : ℝ) - α ^ N : ℝ)) : ℂ)
+        = ∑ i ∈ Finset.univ.erase i₀, e i ^ N := by
+      push_cast
+      rw [hsum, hsplit]
+      push_cast
+      ring
+    have h2 := congrArg norm hcast
+    rw [Complex.norm_real, Real.norm_eq_abs] at h2
+    rw [h2]
+    exact lt_of_le_of_lt hnormle hN
+  rw [abs_lt] at hreal
+  have h1 : (traceSeq f N - 1 : ℤ) ≤ ⌊α ^ N⌋ := Int.le_floor.2 (by push_cast; linarith [hreal.1])
+  have h2 : ⌊α ^ N⌋ < traceSeq f N + 1 := Int.floor_lt.2 (by push_cast; linarith [hreal.2])
+  omega
+
+
+/-! ### The transfer, for an arbitrary finite family of equations
+
+Phase 55's `TheoremDQuadratic.exists_complex_zero_of_all_levels` is stated for exactly three
+polynomials; degree `d` needs `d² + 2` of them (the entries of `T^Q - I`, plus the root-of-unity
+equation for `w` and the trace equation).  Same proof, with a `Fintype`-indexed family. -/
+
+/-- **Nullstellensatz + integrality, finite family.**  A finite family of integer polynomials with a
+common zero modulo `c^k` for every `k` has a common complex zero. -/
+theorem exists_complex_zero_of_family {σ ι : Type*} [Finite σ] [Fintype ι] {c : ℕ} (hc : 2 ≤ c)
+    (F : ι → MvPolynomial σ ℤ)
+    (hlev : ∀ k : ℕ, ∃ p : σ → ℤ, ∀ i, (c : ℤ) ^ k ∣ MvPolynomial.eval p (F i)) :
+    ∃ q : σ → ℂ, ∀ i, MvPolynomial.eval₂ (Int.castRingHom ℂ) q (F i) = 0 := by
+  classical
+  by_contra hcon
+  push_neg at hcon
+  set φ : ℤ →+* ℚ := Int.castRingHom ℚ with hφ
+  set G : ι → MvPolynomial σ ℚ := fun i => (F i).map φ with hG
+  have hbridge : ∀ (q : MvPolynomial σ ℤ) (x : σ → ℂ),
+      MvPolynomial.aeval x (q.map φ) = MvPolynomial.eval₂ (Int.castRingHom ℂ) x q := by
+    intro q x
+    rw [MvPolynomial.aeval_def, MvPolynomial.eval₂_map]
+    congr 1
+  have hzl : MvPolynomial.zeroLocus ℂ (Ideal.span (Set.range G)) = ∅ := by
+    ext x
+    simp only [Set.mem_empty_iff_false, iff_false]
+    intro hx
+    obtain ⟨i, hi⟩ := hcon x
+    have hxi := hx (G i) (Ideal.subset_span ⟨i, rfl⟩)
+    rw [hG] at hxi
+    exact hi (by rw [← hbridge]; exact hxi)
+  have htop : Ideal.span (Set.range G) = ⊤ := by
+    have h := MvPolynomial.vanishingIdeal_zeroLocus_eq_radical (K := ℂ) (Ideal.span (Set.range G))
+    rw [hzl, MvPolynomial.vanishingIdeal_empty] at h
+    exact Ideal.radical_eq_top.1 h.symm
+  have hone : (1 : MvPolynomial σ ℚ) ∈ Ideal.span (Set.range G) := htop ▸ Submodule.mem_top
+  obtain ⟨g, hg⟩ := Ideal.mem_span_range_iff_exists_fun.1 hone
+  choose D hD hDz using fun i => TheoremDQuadratic.exists_denominator (g i)
+  set Dp : ℤ := ∏ i, D i with hDp
+  have hDpne : Dp ≠ 0 := by
+    rw [hDp]; exact Finset.prod_ne_zero_iff.2 fun i _ => hD i
+  have hdvd : ∀ k : ℕ, (c : ℤ) ^ k ∣ Dp := by
+    intro k
+    obtain ⟨p, hp⟩ := hlev k
+    choose m hm using fun i => hp i
+    choose z hz using fun i => hDz i p
+    refine ⟨∑ i, (∏ j ∈ Finset.univ.erase i, D j) * z i * m i, ?_⟩
+    have hpt : ∀ q : MvPolynomial σ ℤ,
+        MvPolynomial.eval (fun t => ((p t : ℤ) : ℚ)) (q.map φ)
+          = ((MvPolynomial.eval p q : ℤ) : ℚ) := by
+      intro q
+      rw [MvPolynomial.eval_map]
+      exact (MvPolynomial.eval₂_comp φ p q).symm
+    have heval : (1 : ℚ) = ∑ i, MvPolynomial.eval (fun t => ((p t : ℤ) : ℚ)) (g i)
+        * ((MvPolynomial.eval p (F i) : ℤ) : ℚ) := by
+      have h := congrArg (MvPolynomial.eval (fun t => ((p t : ℤ) : ℚ))) hg
+      rw [map_one, map_sum] at h
+      rw [← h]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [map_mul, hG, hpt (F i)]
+    have hid : (∏ i, (D i : ℚ))
+        = (c : ℚ) ^ k * ∑ i, (∏ j ∈ Finset.univ.erase i, (D j : ℚ)) * (z i : ℚ) * (m i : ℚ) := by
+      rw [Finset.mul_sum]
+      calc (∏ i, (D i : ℚ)) = (∏ i, (D i : ℚ)) * 1 := by ring
+        _ = ∑ i, (∏ t, (D t : ℚ)) * (MvPolynomial.eval (fun t => ((p t : ℤ) : ℚ)) (g i)
+              * ((MvPolynomial.eval p (F i) : ℤ) : ℚ)) := by rw [heval, Finset.mul_sum]
+        _ = ∑ i, (c : ℚ) ^ k
+              * ((∏ j ∈ Finset.univ.erase i, (D j : ℚ)) * (z i : ℚ) * (m i : ℚ)) := by
+            refine Finset.sum_congr rfl fun i _ => ?_
+            have hprod : (∏ t, (D t : ℚ))
+                = (D i : ℚ) * ∏ j ∈ Finset.univ.erase i, (D j : ℚ) :=
+              (Finset.mul_prod_erase _ (fun t => (D t : ℚ)) (Finset.mem_univ i)).symm
+            have hFi : ((MvPolynomial.eval p (F i) : ℤ) : ℚ) = (c : ℚ) ^ k * (m i : ℚ) := by
+              rw [hm i]; push_cast; ring
+            rw [hprod, hFi]
+            linear_combination
+              ((∏ j ∈ Finset.univ.erase i, (D j : ℚ)) * (c : ℚ) ^ k * (m i : ℚ)) * (hz i)
+    have hcast : ((Dp : ℤ) : ℚ)
+        = ((((c : ℤ) ^ k * ∑ i, (∏ j ∈ Finset.univ.erase i, D j) * z i * m i : ℤ)) : ℚ) := by
+      push_cast [hDp]
+      exact hid
+    exact_mod_cast hcast
+  obtain ⟨k, hk⟩ : ∃ k : ℕ, |Dp| < (c : ℤ) ^ k := by
+    refine ⟨(|Dp|).toNat + 1, ?_⟩
+    calc |Dp| < ((|Dp|).toNat + 1 : ℕ) := by
+          have := Int.toNat_of_nonneg (abs_nonneg Dp); push_cast; omega
+      _ ≤ (2 : ℤ) ^ ((|Dp|).toNat + 1) := by exact_mod_cast Nat.lt_two_pow_self.le
+      _ ≤ (c : ℤ) ^ ((|Dp|).toNat + 1) := by
+          refine pow_le_pow_left₀ (by norm_num) ?_ _
+          exact_mod_cast hc
+  have := Int.le_of_dvd (abs_pos.2 hDpne) ((dvd_abs _ _).2 (hdvd k))
+  omega
+
 /-- **Theorem D, every degree** (all roots `c`-units). -/
 theorem floor_pow_prime_pow_add_not_prime_general (f : ℤ[X]) (hmon : f.Monic)
     (hirr : Irreducible f) (hdeg : 2 ≤ f.natDegree) {α : ℝ} (hroot : aeval α f = 0)
