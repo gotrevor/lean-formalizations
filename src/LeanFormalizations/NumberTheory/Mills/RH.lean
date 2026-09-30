@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The digits of Mills' constant, assuming RH (Caldwell–Cheng 2005)
 
 C. K. Caldwell, Y. Cheng, *Determining Mills' constant and a note on Honaker's problem*,

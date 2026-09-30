@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # A grid-vanishing lemma for 2-variable polynomials over an infinite field
 
 For an infinite field `K`, a polynomial `G ∈ K[X₀,X₁]` of total degree `≤ n` that

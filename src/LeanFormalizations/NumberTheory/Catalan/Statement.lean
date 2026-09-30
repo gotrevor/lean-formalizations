@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Catalan salvage — the audit surface
 
 The load-bearing statements of the thread, written to be checked against Sun's arXiv:2609.04176v1

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The rational function `R_n` and the linear form `r_n`
 
 Zudilin 2019 (arXiv:1804.09922) §2, in the elementary rendering of his SIGMA 2018 paper.  For

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Saito §3 for a general exponent `c ≥ 3`: existence of `ξ_c`
 
 Generalises `primeBetweenCubes_of_BHP` and `exists_least_of_exists` (`Mills/Irrational.lean`,

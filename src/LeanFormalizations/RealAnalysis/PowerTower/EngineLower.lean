@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Infinite power tower (Euler 1783) — proof engine (LOWER half)
 
 The oscillating regime `e^(-e) ≤ x < 1`. Here `f t = x^t` is **decreasing**, so the

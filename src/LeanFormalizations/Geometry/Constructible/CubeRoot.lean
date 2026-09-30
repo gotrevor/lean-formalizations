@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The cube root of 2 has degree 3 over ℚ
 
 The arithmetic heart of the "doubling the cube is impossible" theorem: the real

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # No-three-in-line problem — core definitions
 
 The no-three-in-line problem (Dudeney 1917; Ben Green's open problem 72): how many

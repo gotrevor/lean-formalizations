@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Choquet capacitability core (finite measure, range of a continuous Baire map)
 
 GOAL: replace the `sorry` with a real proof.

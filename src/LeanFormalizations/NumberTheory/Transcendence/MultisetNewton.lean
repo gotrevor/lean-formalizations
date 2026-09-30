@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Newton's identities for a multiset, and integrality of `k! · eₖ`
 
 Mathlib has Newton's identities only for `MvPolynomial σ R` over a `Fintype` (`mul_esymm_eq_sum`).

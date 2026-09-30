@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Strictly completely monotone sequences — the discrete engine behind N3
 
 `rForm_neg` (the crux, `Integral.lean`) is usually proved by an `s`-fold Beta integral.  This

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The four simple-fraction blocks of `R_n`
 
 `R_n(t) = 2^{6n} (n!)^{s-3} (2t+n) ∏_{j=1}^{3n}(t-n+j-½) / ∏_{j=0}^{n}(t+j)^s` factors as

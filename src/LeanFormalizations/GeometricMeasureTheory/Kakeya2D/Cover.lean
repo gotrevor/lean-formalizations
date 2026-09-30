@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The Hausdorff content lower bound (ladder K5, the honest cover route)
 
 The Córdoba content bound (K4, `volume_thickening_log_ge`) gives `vol(Sδ) ≳ 1/log(1/δ)` at every

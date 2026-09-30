@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The δ-net of directions on the circle (ladder K3, brick 2)
 
 The Córdoba `L²` estimate (K4) is run against a *finite family of δ-tubes* of distinct

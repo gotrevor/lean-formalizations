@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The Córdoba `L²` integral identities (ladder K4, bridge to Cauchy–Schwarz)
 
 The Córdoba estimate lower-bounds `vol(Sδ)` by Cauchy–Schwarz applied to the tube-counting

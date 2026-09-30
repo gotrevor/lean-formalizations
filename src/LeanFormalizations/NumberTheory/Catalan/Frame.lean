@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The generic frame: what ANY Apéry/Nesterenko-style attack on `G` must supply (Phase 3)
 
 Phase 1 (`Residual`, `TwoAdic`, `Statement`) settled what survives of arXiv:2609.04176v1 and

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Dubickas (2022), formula (6) for monic quadratics
 
 For an integer sequence `x_{n+1} = x_n² + a₁ x_n + a₂` tending to `∞`, the substitution

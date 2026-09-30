@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Cichoń's lower bound at finite levels: the unconditional closure
 
 `Logic/Goodstein/Domination.lean` reduces the diagonal domination

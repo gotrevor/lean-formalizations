@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The 2-adic obstruction: Sun's stage-3 integer is divisible by `2^{v₂(F_B)}`
 
 Machine-checkable refutation of the *shape* of §9 of arXiv:2609.04176v1.  Assume, as the paper

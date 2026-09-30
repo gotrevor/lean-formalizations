@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Catalan's constant: tails and Sun's weighted tails (§1 of arXiv:2609.04176v1)
 
 Faithful rendering of the §1 objects of Zhi-Wei Sun, *Catalan's constant is irrational*,

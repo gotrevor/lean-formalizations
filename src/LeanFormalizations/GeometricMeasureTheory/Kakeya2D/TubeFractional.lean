@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Fractional δ-tube area lower bound (ladder K5, localized-Córdoba numerator)
 
 `Tube.lean`'s `volume_tube_ge` lower-bounds the area of a δ-tube about a *unit* segment by `2δ`.

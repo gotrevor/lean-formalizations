@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Saito §4, Lemma 4.1: the Pisot degree bound
 
 This is the *route-decisive* half of Saito's Theorem 1.5 (and hence of Theorems 1.1/1.2,

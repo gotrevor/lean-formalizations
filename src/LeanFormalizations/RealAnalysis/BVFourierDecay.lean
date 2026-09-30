@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Route (b) toward `prelim_decay_2`: half-period shift + L¹-translation-by-TV
 
 `prelim_decay_2` (`‖𝓕 ψ u‖ ≤ V(ψ)/(2π|u|)` for ψ integrable + bounded variation) is **still `sorry`

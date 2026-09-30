@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The HJSW pinwheel: the `3(p−1)` no-three-in-line construction (half-band form)
 
 Hall–Jackson–Sudbery–Wild (J. Combin. Theory Ser. A 18 (1975) 336–341, Theorem 2) realize

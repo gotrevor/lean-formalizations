@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Literature inputs: prime distribution and Diophantine approximation
 
 Published theorems this repo **uses but does not (yet) prove**.  Each is a `Prop`, never an

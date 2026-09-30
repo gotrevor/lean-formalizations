@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # N2 — the decomposition: `d_n^s · r_n` is an integer combination of `1, β(2), β(4), …, β(s-1)`
 
 The arithmetic heart.  Partial fractions of `R_n`,

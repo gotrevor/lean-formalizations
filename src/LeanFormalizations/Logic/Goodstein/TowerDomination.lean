@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The FULL ω-power tower: diagonal domination at every level up to ε₀
 
 Lap 10 closed the diagonal `f_o(m) ≤ goodsteinLength m + 2` at the individual limit levels

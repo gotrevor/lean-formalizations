@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Mills' constant is irrational (Saito 2024), from three literature inputs
 
 K. Saito, *Mills' constant is irrational*, Mathematika **71** (2025), no. 3, e70027,

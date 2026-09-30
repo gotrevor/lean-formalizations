@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Goodstein's theorem: every Goodstein sequence terminates — Goodstein (1944)
 
 **Designated audit surface** (with `Defs.lean` and `Anchors.lean`). The proof

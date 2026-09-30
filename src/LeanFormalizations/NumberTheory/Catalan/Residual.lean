@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The weighted residual matrix has full column rank (Sun, Theorem 2.1) — algebraic core
 
 Field-generic core of §2 of arXiv:2609.04176v1.  The theorem is stated for an **abstract tail

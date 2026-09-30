@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # δ-tubes in the plane — infrastructure for Davies' theorem (ladder K2)
 
 A **δ-tube** is the closed `δ`-neighbourhood of a unit line segment. These are the basic

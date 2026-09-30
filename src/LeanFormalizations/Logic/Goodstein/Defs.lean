@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Goodstein sequences — definitions (audit surface, part 1 of 2)
 
 This file fixes the **faithful definition** of a Goodstein sequence. Together with

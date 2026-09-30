@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Geometric faithfulness: constructible points
 
 Layer 2 of Wantzel's theorem. Layer 1 (`SqrtTower.lean`) developed the *algebraic*

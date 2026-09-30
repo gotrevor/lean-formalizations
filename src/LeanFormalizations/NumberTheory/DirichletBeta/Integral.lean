@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # N3 — nonvanishing: `r_n < 0` (**the crux**)
 
 `r_n` is a nonzero *number*, and nothing about the ledger proves that; classically it comes from

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The Hardy hierarchy `H_α`
 
 The **Hardy hierarchy** is the companion of the fast-growing hierarchy used in the

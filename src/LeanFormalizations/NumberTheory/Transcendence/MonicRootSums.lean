@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Power sums / symmetric functions of the roots of a monic integer polynomial are integers
 
 This file discharges **fact (a)** of the π-Lindemann reduction (`PiLindemann.lean`): the

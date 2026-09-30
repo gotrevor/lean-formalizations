@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The shifted nested-interval construction
 
 `Basic.lean` builds a Mills number from a prime chain by putting `b k` at exponent `3^k`, so its

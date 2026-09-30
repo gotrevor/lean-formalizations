@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # An explicit upper bound on Mills' constant, without RH
 
 `lower_bound` gives `1.3063778838 < ξ` unconditionally; the matching `< 1.3063778839` needs RH

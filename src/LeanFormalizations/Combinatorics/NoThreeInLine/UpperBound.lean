@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The `2N` upper bound (pigeonhole)
 
 The only fully general, fully proven theorem of the no-three-in-line problem: a grid set

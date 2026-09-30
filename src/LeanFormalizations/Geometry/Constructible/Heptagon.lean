@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The regular heptagon (7-gon) is not constructible — `cos(2π/7)` has degree 3 over ℚ
 
 Another case of the Gauss–Wantzel theorem. Constructing a regular `7`-gon amounts to

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Narrowing the measurable-selection crux to a standard Jankov–von Neumann statement
 
 This file narrows what was once the last gap under `davies_kakeya_2d` to a standard statement.

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Curtis (1990): the Frobenius number has no closed formula for n ≥ 3
 
 Frank Curtis, *On formulas for the Frobenius number of a numerical semigroup*,

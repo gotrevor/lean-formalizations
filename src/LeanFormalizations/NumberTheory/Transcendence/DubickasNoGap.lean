@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Dubickas (2022), monic quadratics, without Lemma 8
 
 `c_eq_zero_or_two` (`DubickasPisot.lean`) is the only place Dubickas's Theorem 2 for `d = 2`

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Dirichlet beta values: `β(s) = Σ (-1)^k / (2k+1)^s`
 
 Phase 4 of the Catalan thread (`DIRECTION.md`).  The target is the nearest **true** theorem in

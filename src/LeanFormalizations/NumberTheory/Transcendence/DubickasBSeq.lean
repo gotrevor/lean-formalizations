@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The finite-`j` Dubickas recursion
 
 Step 4 of the "no-gap" route (`PROBE-DUBICKAS-NOGAP.md`), part 2.  With `b u j := −A_{2u+1} j`

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # WIP / quarantined — BV-Fourier decay island (NOT built; not in `src/`)
 
 Excised from `src/LeanFormalizations/NumberTheory/PrimeNumberTheorem/Wiener.lean` on 2026-06-19

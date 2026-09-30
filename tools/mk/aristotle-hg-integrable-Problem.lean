@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 Integrability of the Abel-summation dominator t^(-s)*(1 + log t) on (1,∞) for s > 1.
 This is the `hg_int` hypothesis for an Abel-summation argument on the prime zeta function.
 Since s > 1, the polynomial decay t^(-s) (with -s < -1) makes both t^(-s) and t^(-s)*log t

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The shifted nested-interval construction for a general exponent `c ≥ 2`
 
 `Chain.lean` is this file at `c = 3`.  Given primes `b 0, b 1, …` with `(b k)ᶜ < b (k+1)` and

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # δ-discretization of a planar Kakeya set (ladder K3)
 
 A Kakeya set `S` contains a unit segment in *every* direction. δ-thickening turns each such

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Hall–Jackson–Sudbery–Wild `3N/2` lower bound — PROVEN, axiom-clean
 
 The best *proven* lower bound for the no-three-in-line problem (1975), unimproved since.

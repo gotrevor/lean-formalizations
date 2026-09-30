@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Saito §4, Lemmas 4.2 and 4.3: the degree-two Pisot alternative
 
 For `b ∈ {3, 4}` the Claim of Lemma 4.1 does not close by itself (`μ = 19c/40 − 1` is `9/10`

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The general HJSW Lemma: a line meets the hyperbola in ≤ 2 congruence classes
 
 This is the load-bearing lemma of the **Hall–Jackson–Sudbery–Wild `3(p−1)` pinwheel**

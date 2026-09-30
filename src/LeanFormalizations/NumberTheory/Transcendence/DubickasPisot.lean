@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Dubickas (2022), Lemmas 9 and §5 for monic quadratics
 
 `DubickasGrowth.lean` produced the growth constant `α > 1` with `|y_n − α^(2ⁿ)| ≤ C α^(−2ⁿ)` for

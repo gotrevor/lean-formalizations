@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The Córdoba `L²` denominator — harmonic double-sum bound (ladder K4)
 
 The Córdoba estimate lower-bounds `vol(Sδ)` by Cauchy–Schwarz against `f = ∑ₖ 1_{Tₖ}` over the

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Independent NL→Lean faithfulness cross-check for the planar-Kakeya headline
 
 This file hardens the *faithfulness* of `davies_kakeya_2d` with an **independent** check that does

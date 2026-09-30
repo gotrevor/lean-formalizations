@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # N5 — the arithmetic place: `d_n = lcm(1,…,n) ≤ exp(1.01 n)` eventually
 
 Mathlib already supplies `Chebyshev.psi_eq_log_lcmUpto : ψ n = log (lcmUpto n)`, and the in-repo

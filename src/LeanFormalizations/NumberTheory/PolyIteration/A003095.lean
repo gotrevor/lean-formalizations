@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # OEIS A003095: `a(n) = a(n−1)² + 1`, `a(0) = 0`
 
 The elementary facts recorded on <https://oeis.org/A003095> (checked 2026-09-28).  Its growth

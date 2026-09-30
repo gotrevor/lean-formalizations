@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The conjugate-power symmetric functions `eₖ(N)` and `Eₖ(N)`
 
 Bridge layer of the Dubickas "no-gap" route (`PROBE-DUBICKAS-NOGAP.md`) between the general

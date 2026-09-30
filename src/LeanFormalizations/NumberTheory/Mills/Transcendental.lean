@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Mills-type constants are transcendental (Saito 2024, Theorems 1.1 and 1.2)
 
 K. Saito, *Mills' constant is irrational*, Mathematika **71** (2025), e70027, arXiv:2404.19461.

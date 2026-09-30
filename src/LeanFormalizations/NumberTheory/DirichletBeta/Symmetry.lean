@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The symmetry `R_n(-t-n) = R_n(t)` and the symmetrized partial fractions
 
 For odd `s` and even `n`, `R_n(-t-n) = R_n(t)`.  Given *any* level-`s` representation

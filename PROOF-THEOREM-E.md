@@ -74,19 +74,29 @@ The only cubic subfield of `ℚ(ζ₁₀₄)` is `K`, the cyclic cubic field of 
 - **Step 6:** the certificate is shift-independent (any `w ∈ K`), and `b = 0` is covered by Step 5.
 - **The unshifted case `s = 0` (Mills' constant; outside this family, since `3 ∣ 0`) fails twice.**  The reduction fails: `agcd(3^k) = ∞`, so Type B only gives some `ξ^(3^j)` Pisot, not `ξ`.  The rigidity fails too: `w_k = α_k^0 = 1` is constant, the trace is Frobenius-invariant, and the phase-29 residual classes survive.  (Saito: transcendental under RH/DH.)
 
-**Still to do:**
-- odd `s` (`agcd = 2`).  **Sketch, 2026-09-30, unverified.**
-  - If `g = 1`, the E+ argument applies verbatim.
-  - If `g = 2`, then `β = ξ²` is cubic Pisot and the exponent is `N = (3^n + s)/2`.  The Teichmüller part `ω(β_k)^N` is periodic in `n` (it depends on `3^n + s (mod 2m)`); the unit part `⟨β_k⟩^N → ⟨β_k⟩^(s/2)` (`s/2 ∈ ℤ₃`; square roots are well defined in `1 + 3𝒪`).
-  - So `Λ_r = Σ_k ζ″_k δ_k^s` with `δ_k = ±√β_k` (consistent choices) and odd `s`.
-  - Galois: `H = Gal(L / K(ζ))`, `L = K(ζ, √β₁, √β₂, √β₃)`, fixes the `ζ″_k` and the `β_k` and flips signs of the `δ_k`.
-    - A **single flip** gives `2ζ″_k δ_k^s = 0`: impossible.
-    - A **pair flip** involving the Pisot index gives `|δ_a|^s = |δ_b|^s`: impossible, as `|√β| > 1 > |√β_j|`.  A pair not involving it (`δ₂, δ₃`): subtracting gives `ζ″₂δ₂^s + ζ″₃δ₃^s = 0`, hence `ζ″₁δ₁^s = t`, so `±ξ^s` is a root of unity times `t`.  All its conjugates would then have equal modulus, which is impossible for a power of a Pisot number.
-    - The **triple flip** gives `2t = 0`, but `t = ω ≠ 0`.
-  - If `H` is trivial, every `√β_k ∈ K(ζ)`, so `ξ` itself has degree 3 with conjugates `±√β_j` of modulus `< 1`.  Then `ξ` is Pisot and the `g = 1` analysis applies.
-  - If this holds up: **E+ for every `s ≠ 0`** (with the `3 ∣ s` reduction below).
-- `3 ∣ s` (`agcd ∈ {3, 6}`).  **Likely easy.**  For even `s`, `agcd = 3^(v₃(s))` (divides `2s`, odd part only via 3).  So `g = 3^a` with `a ≤ v₃(s)`, and `β = ξ^(3^a)` satisfies `⌊β^(3^(k−a) + s/3^a)⌋` prime: the same shape with shift `s/3^a`.  Run the E+ argument on `β` (the Theorem D machinery never needs minimality of `β` itself, and Prop 3.1(iv) is stated for `β^(C_k/g)`).  If `s/3^a ≠ 0` the weights `β_k^(s/3^a)` are non-constant and the mod-3 congruence holds.  To write out: this would give **all even `s ≠ 0`**.  (Also check the case `g = 1` with `3 ∣ s`: the weights `α^s` are non-constant and `T ≡ 0 (mod 3)`, so fine.)
-- a second independent read.
+### E+ for even `s` with `3 ∣ s` (draft 3, 2026-09-30; closes all even `s ≠ 0`)
+Let `s ≠ 0` be even with `a₀ = v₃(s) ≥ 1`, and start the index where every ratio is `≥ 2` and `C_k ≥ 1` (for `s > 0`: `3^k ≥ s`; for `s < 0`: `3^k + s ≥ 1`), reindexed so that `k = 1` is the first term.
+- **`(B5′)` holds.**  For `m > a₀`, `v₃(C_m) = a₀`; for `m ≤ a₀`, `v₃(C_m) = m`.  Write `C_m = 3^(v)·u` with `3 ∤ u`.  For every `k > m`, `v₃(C_k) = min(k, a₀) ≥ v`.  Take `t = ord_u(3)`; then `u ∣ 3^m(3^t − 1) = C_(m+t) − C_m`, so `C_m ∣ C_(m+t)`, and every ratio is `≥ 2.9` once `3^k ≫ |s|`.
+- **`agcd`.**  `gcd(C_m, C_(m+1)) ∣ 3C_m − C_(m+1) = 2s`.  The `C_k` are odd, and an odd prime `q ≠ 3` with `q ∣ s` and `q ∣ 3^m + s` would divide `3^m`.  So only `3` survives, and `gcd_(k ≥ K) C_k = 3^(a₀)` for large `K`.  Type B gives `g ∣ C_k` for all large `k`, so `g = 3^a` with `0 ≤ a ≤ a₀`.
+- **Reduce to `β = ξ^(3^a)`**, cubic Pisot, with `⌊ξ^(C_k)⌋ = tr(β^(N_k))` for large `k` (Prop 3.1(iv), as in our `Saito2025TypeBTrace` conclusion), `N_k = 3^(k−a) + s′`, `s′ = s/3^a`.  Here `s′` is even and **nonzero**, and may still be divisible by 3.
+- **Steps 3–5 for `β` with shift `s′`.**  None of them uses `3 ∤ s′`, and none uses minimality of `β`.
+  - The filter (Lemma 2) needs only `N_(n+t) − N_n = 3^(n−a)(3^t − 1)`.
+  - The window (Lemma 4) is unchanged (`d = 3`, `c = 3`, `μ₂`).
+  - The limit points are `Λ_r = Σ_k ζ_k^(3^r) β_k^(s′)`.  `ω(β)^(3^(n−a) + s′)` is periodic in `n`, and `⟨β⟩^(3^(n−a)) → 1`.
+  - The rigidity weights `w_k = β_k^(s′)` are non-constant because `s′ ≠ 0` and the moduli differ.
+  - Step 5: `z = ±1` forces `f_β ≡ (X − z)³ (mod 3)`, so `T = tr(β^(s′)) ≡ 3z^(s′) ≡ 0 (mod 3)` and `T ≠ ±1`.
+- **Step 6** (E1) is shift-independent.  **Conclusion: `ξ(3^k + s)` is transcendental for every even `s ≠ 0`** (index as above).  ~75%, same caveats as E+.
+
+### E+ for odd `s` (draft 3; partial)
+`C_k = 3^k + s` is even.  `agcd = 2·3^(v₃(s))`: the odd part is as above, and `v₂(3^m + s)` equals 1 for one parity of `m`.  After the `3^a` reduction above (which needs no parity), `g ∈ {1, 2}`.
+- **`g = 1`:** E+ verbatim.  Step 5's congruence `T = tr(ξ^s) ≡ 3z^s ≡ 0` does not care about parity.
+- **`g = 2`,** `β = ξ²` cubic Pisot, `N_n = (3^n + s)/2`.  The Teichmüller part `ω(β_k)^(N_n)` is periodic in `n`.  `⟨β_k⟩^(N_n) → ⟨β_k⟩^(s/2)` (`s/2 ∈ ℤ₃`; `1 + 𝔪` is a pro-3 group).  `⟨β_k⟩^(s/2)` is a root of `Y² = β_k^s ω(β_k)^(−s)`, so it is algebraic, and after fixing square roots `δ_k` of `β_k`:
+  `Λ_r = Σ_k a_k δ_k^s = ω`, with `a_k ∈ μ_(2m) ∪ {0}` and `m ∣ 26` or `m ∣ 8`.  All of this lies in `E(δ₁, δ₂, δ₃)` with `E = ℚ(μ_M)`, `M ∣ 208`.
+  - **Generic case: `F(X) = f_β(X²)` irreducible over `E`.**  `G = Gal(E(δ)/E)` is transitive on the six roots `±δ_j` and fixes every `a_k` and `ω`.  For each `k` the multiset `{τ(δ_k) : τ ∈ G}` is `|G|/6` copies of each `±δ_j`.  Since `s` is odd, `Σ_(τ ∈ G) τ(δ_k)^s = 0`.  Summing the identity over `G` gives `0 = |G|·ω`: **contradiction.**  (This replaces the draft-2 sign-flip case analysis, which had gaps at non-unit indices where `a_k = 0`.)
+  - **`f_β` reducible over `E`** (`ℚ(β)` is the conductor-13 field, E1).  **Open**: needs a `g = 2` analogue of the Step 6 certificate.
+  - **Kummer-degenerate case: `f_β` irreducible over `E`, `F` reducible over `E`.**  Then `δ₁ = ξ ∈ E(β)`.  Since `ℚ(β) ∩ E = ℚ` (non-E1), the quadratic subextensions of `ℚ(β)E/ℚ(β)` are `ℚ(β, √d)` with `ℚ(√d) ⊂ E`.  So either `ξ ∈ ℚ(β)`, i.e. `ξ` is cubic and Pisot (its conjugates `±√β_j` have modulus `< 1`): the `g = 1` case, done.  Or **`β = d·γ²`** with `γ ∈ ℚ(β)`, `d > 1` squarefree, `ℚ(√d) ⊂ ℚ(μ_208)`, i.e. **`d ∈ {2, 13, 26}`**, and `ξ = √d·γ` of degree 6.  **Open: this finite residue.**  Lead: for a prime `q ∣ d`, some `𝔮 | q` in `ℚ(β)` has odd ramification index (`Σ e_i f_i = 3`), so `v_𝔮(β) = e(𝔮/q) + 2v_𝔮(γ)` is odd, hence `≥ 1`: `β` is a non-unit at `q`.  A `q`-adic filter on `p_n = tr β^(N_n)` might finish it.
+- If both open sub-cases close: **E+ for every `s ≠ 0`.**
+- **Next:** a second independent read of the even-`s`, `3 ∣ s` paragraph and the odd-`s` generic case.
 
 ## Variants
 - **`ξ(r·3^k − 1)` for even `r`: NOT established** (*referee 2*; draft-1 claim withdrawn).  The limit points carry `ζ_k^(r·3^m)`, and for even `r` the map `x ↦ x^r` is not injective on the (even-order) Teichmüller roots.  So `z_k = ±1` no longer forces equal `ζ_k`, and `f ≡ (X − 1)^a (X + 1)^b (mod 3)` survives the congruence step.  The `b = 0` reduction of Step 6 breaks the same way (e.g. `13 ∣ r`).  Odd `r` has `agcd = 2`.  Open.

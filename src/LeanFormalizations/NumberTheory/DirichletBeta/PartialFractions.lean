@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The integrality lattice for partial fractions (SIGMA Lemma 1, derivative-free)
 
 `Rep n σ f` says that the function `f : ℚ → ℚ` agrees, away from the poles `t = 0, -1, …, -n`,

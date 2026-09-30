@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The Dubickas "no-gap" route: the combinatorial finish
 
 This file holds the *terminal* step of the elementary route to `c_eq_zero_or_two_noGap`

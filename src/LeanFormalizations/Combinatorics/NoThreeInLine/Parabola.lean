@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The Erdős parabola lower bound: `Θ(N)` points with no three collinear
 
 Erdős's construction. For a prime `p`, the `p` points `(i, i² mod p)`, `i ∈ [0, p)`, lie in

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Partial sums of the shifted alternating series `Σ (-1)^w / (w + a)^q`
 
 The N2 assembly evaluates `r_n` by *partial sums* (the `q = 1` pieces are only conditionally

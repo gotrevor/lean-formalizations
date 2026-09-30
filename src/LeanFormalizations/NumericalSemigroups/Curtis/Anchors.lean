@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Curtis (1990) — faithfulness anchors
 
 The headline theorems in `Statement.lean` are only meaningful if the definitions

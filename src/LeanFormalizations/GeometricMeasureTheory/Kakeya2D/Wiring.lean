@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The honest (measurable-selection) route — the wiring (W)
 
 This file assembles the proven measurable-selection spine (`MeasurableRoute.lean`:

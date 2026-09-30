@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # No-three-in-line problem — audit surface
 
 This is the faithful **audit surface** for the no-three-in-line formalization. The

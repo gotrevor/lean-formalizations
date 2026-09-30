@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The hyperbola arc: no three collinear on `xy ≡ k (mod p)`
 
 The algebraic crux of the **Hall–Jackson–Sudbery–Wild `3N/2`** construction (1975), the best

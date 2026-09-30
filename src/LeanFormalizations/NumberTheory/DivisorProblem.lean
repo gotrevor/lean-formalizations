@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Dirichlet's Divisor Problem  `∑_{n ≤ N} d(n) = N·log N + (2γ−1)·N + O(√N)`
 
 The classical leading asymptotic for the summatory divisor function `D(N) = ∑_{n ≤ N} d(n)`,

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # The subset-sum `esymm` is rational — the last open fact of π-Lindemann
 
 This file supplies the single remaining input of `MonicRootSums.transcendental_pi_of_subsetSumEsymm`:

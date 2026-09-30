@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Trisecting the 60° angle is impossible — `cos 20°` has degree 3 over ℚ
 
 The arithmetic heart of the second classical problem. To trisect a `60°` angle with

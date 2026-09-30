@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Growth theory of the fast-growing hierarchy
 
 `Mathlib.SetTheory.Ordinal.Notation` already provides the **fast-growing hierarchy**

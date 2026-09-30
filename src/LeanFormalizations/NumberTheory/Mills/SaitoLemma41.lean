@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Saito §4, Lemma 4.1 assembled (the case `μ > 1`, i.e. `b ≥ 5`)
 
 `transcendental_of_decay` below is the whole of Saito's Lemma 4.1 in the regime where the

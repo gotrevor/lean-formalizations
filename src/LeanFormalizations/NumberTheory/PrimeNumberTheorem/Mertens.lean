@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 # Mertens' First Theorem  `∑_{n ≤ N} Λ(n)/n = log N + O(1)`
 
 The classical first theorem of Mertens, in von Mangoldt form: the weighted prime-power sum

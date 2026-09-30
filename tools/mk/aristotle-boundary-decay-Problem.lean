@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+
+/-
 Boundary term of an Abel-summation argument for the prime zeta function.
 With f(t)=t^(1-s), s>1, and a(n) the partial sum of prime reciprocals up to n
 (0 ≤ a n ≤ 1 + log n by the harmonic bound), the boundary f(n)·a(n) → 0 because
