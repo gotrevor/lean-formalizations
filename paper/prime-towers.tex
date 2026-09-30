@@ -1,4 +1,4 @@
-% Draft 1, 2026-09-30.  Drafted by Claude (Anthropic) at Trevor Morris's direction.
+% Draft 2, 2026-09-30 (referee pass applied).  Drafted by Claude (Anthropic) at Trevor Morris's direction.
 % Authorship, venue and whether to post are Trevor's decisions; see the AI-use statement at the end.
 \documentclass[11pt]{amsart}
 \usepackage{amssymb,amsmath,amsthm,mathtools}
@@ -35,19 +35,19 @@
 
 \title[Primes as their own moduli]{Primes as their own moduli: composite values along\\ prime-power towers and shifted Mills constants}
 \author{Trevor Morris}
-\date{Draft 1, 30 September 2026}
+\date{Draft 2, 30 September 2026}
 
 \begin{document}
 
 \begin{abstract}
-Saito asked whether $F(2^n)+h$ is composite for infinitely many $n$ for every integer $h$, where $F$ is the Fibonacci sequence, and asked for a non-reversible inhomogeneous linear recurrence $R$ such that $\floor{\alpha^{R(n)}}$ is composite infinitely often for every Pisot number $\alpha$.  We answer the first question affirmatively, for every prime base $c$ in place of $2$ and for several families of Lucas sequences.  We extend it to off-diagonal entries of integer matrices of any order at inert primes (e.g.\ Tribonacci numbers $T(3^n)+h$), classify traces of $2\times 2$ integer matrices of determinant $\pm1$ modulo $c$ along odd prime towers $c^n$, and obtain prime-free intervals of every fixed length around $F(c^n)$, a Dubickas-type covering result for a non-reversible tower.  For the second question we show that $R(n)=c^n+s$ works for every Pisot number $\alpha$ of degree $d$ whose minimal polynomial is not $\equiv X^d \pmod c$, as soon as $\alpha^s> d+1$; in particular $c^n+5$ works for every cubic Pisot number outside that class.  Combined with Saito's reduction theorems, a Galois-rigidity argument shows that the least $\xi>1$ with $\floor{\xi^{3^k+s}}$ prime for every $k$ is transcendental for every integer $s\neq 0$.  The unshifted case $s=0$ is Mills' constant, and we describe exactly where the method stops there.  All results except the last are formally verified in Lean~4; the last is verified in Lean for even $s$ whose $3$-free part is at least $8$.
+Saito asked whether $F(2^n)+h$ is composite for infinitely many $n$ for every integer $h$, where $F$ is the Fibonacci sequence, and asked for a non-reversible inhomogeneous linear recurrence $R$ such that $\floor{\alpha^{R(n)}}$ is composite infinitely often for every Pisot number $\alpha$.  We answer the first question affirmatively, for every prime base $c$ in place of $2$ and for several families of Lucas sequences.  We extend it to off-diagonal entries of integer matrices of any order at inert primes (e.g.\ Tribonacci numbers $T(3^n)+h$), treat traces of $2\times 2$ integer matrices of determinant $\pm1$ modulo $c$ along odd prime towers $c^n$, isolating the classes the method cannot reach, and obtain prime-free intervals of every fixed length around $F(c^n)$, a Dubickas-type covering result for a non-reversible tower.  For the second question we show that $R(n)=c^n+s$ works for every Pisot number $\alpha$ of degree $d$ whose minimal polynomial is not $\equiv X^d \pmod c$ (on part of that class the method is provably silent), as soon as $\alpha^s> d+1$; in particular $c^n+5$ works for every cubic Pisot number outside that class.  Combined with Saito's reduction theorems, a Galois-rigidity argument shows that for every integer $s\neq0$ the least $\xi>1$ with $\floor{\xi^{3^{k+j}+s}}$ prime for every $k\ge1$ is transcendental, where $j=j(s)\ge0$ is the least index from which the exponents are positive and at least double at each step.  The unshifted case $s=0$ is Mills' constant, and we describe exactly where the method stops there.  All results except the last are formally verified in Lean~4; the last is verified in Lean for positive even $s$ whose $3$-free part is at least $8$.
 \end{abstract}
 
 \maketitle
 
 \section{Introduction}
 
-Mills~\cite{Mil47} showed that there is a real $A>1$ with $\floor{A^{3^k}}$ prime for every $k\ge1$; the least such $A$ is Mills' constant.  Saito proved that it is irrational~\cite{Sai24}, and that it is transcendental under the Density Hypothesis~\cite{Sai25c}.  Unconditionally, the obstruction is a single branch: Mills' constant $\xi$ is transcendental unless some power $\beta=\xi^{3^m}$ is a cubic Pisot number, and then every $\floor{\beta^{3^n}}$ would be prime.  This led Saito~\cite[Problem~1.1]{Sai25a} to ask whether $\floor{\beta^{3^n}}$ is composite infinitely often for every cubic Pisot $\beta$.
+Mills~\cite{Mil47} showed that there is a real $A>1$ with $\floor{A^{3^k}}$ prime for every $k\ge1$; the least such $A$ is Mills' constant.  Saito proved that it is irrational~\cite{Sai24}, and that it is transcendental under the Density Hypothesis~\cite{Sai25c}.  Unconditionally, the obstruction is a single branch: Mills' constant $\xi$ is transcendental unless some power $\beta=\xi^{3^m}$ is a cubic Pisot number~\cite[Theorem~1.5]{Sai24}, and then $\floor{\beta^{3^n}}$ would be prime for every large $n$.  This led Saito~\cite[Problem~1.1]{Sai25a} to ask whether $\floor{\beta^{3^n}}$ is composite infinitely often for every cubic Pisot $\beta$.
 
 For \emph{reversible} exponent sequences, those whose recurrence has constant term $\pm1$, Dubickas~\cite{Dub02,Dub18} and Saito~\cite{Sai25a} proved strong results: composite values and even prime-free intervals near $\floor{\alpha^{R(n)}}$.  The tower $3^n$ is not reversible, and Saito~\cite{Sai25a} asked two test questions:
 
@@ -58,7 +58,7 @@ For \emph{reversible} exponent sequences, those whose recurrence has constant te
 \end{quote}
 
 \subsection*{The idea}
-If $p=u(A^{c^n})+h$ is prime, where $u$ is a linear functional of an integer matrix $A$, work modulo $p$ itself.  If the $c$-part of the order of $A$ modulo $p$ is at most $c^n$, then $A^{c^n}$ returns modulo $p$ along the tower, so $p$ divides a later value $u(A^{c^{n+j}})+h$, which is a larger prime: a contradiction.  Otherwise the $c$-part of $|\GL_d(\F_p)|$ is large, which forces $p$ to be congruent to a root of unity modulo a high power of $c$.  So a prime value is confined to a small $c$-adic \emph{window}.  In its simplest form this observation is folklore for $a^{c^n}+h$, and Saito uses the term as its own modulus in~\cite[\S2]{Sai25c}.  What is new here is how we exploit the window: through sign flips of matrix entries along the tower, through Frobenius orbit sums, and, for Pisot numbers, through the Teichm\"uller limit points of $A^{c^n}$ together with one automorphism of $\Qbar$ or a Galois-rigidity argument.
+If $p=u(A^{c^n})+h$ is prime, where $u$ is a linear functional of an integer matrix $A$, work modulo $p$ itself.  If the $c$-part of the order of $A$ modulo $p$ is at most $c^n$, then $A^{c^n}$ returns modulo $p$ along the tower, so $p$ divides a later value $u(A^{c^{n+j}})+h$, which is a larger prime: a contradiction.  Otherwise the $c$-part of $|\GL_d(\F_p)|$ is large, which forces $p$ to be congruent to a root of unity modulo a high power of $c$.  So a prime value is confined to a small $c$-adic \emph{window}.  In its simplest form this observation is folklore for $a^{c^n}+h$, and Saito uses a term of the sequence as a modulus in~\cite[\S8]{Sai25c}.  What is new here is how we exploit the window: through sign flips of matrix entries along the tower, through Frobenius orbit sums, and, for Pisot numbers, through the Teichm\"uller limit points of $A^{c^n}$ together with one automorphism of $\Qbar$ or a Galois-rigidity argument.
 
 \subsection*{Results}
 Throughout, ``$x$ is not prime'' means that $|x|$ is not a prime number.
@@ -79,7 +79,7 @@ Let $A\in M_d(\Z)$ and let $c$ be a prime such that the characteristic polynomia
 For the Tribonacci numbers ($T_0=T_1=0$, $T_2=1$) this gives: $T(3^n)+h$ and $T(5^n)+h$ are composite infinitely often for every $h$.  For the Tetranacci numbers ($T_4(0)=T_4(1)=T_4(2)=0$, $T_4(3)=1$), $T_4(2^n)+h$ is composite infinitely often for every $h$ (the case $h=0$ by a separate parity argument).
 
 \begin{theorem}[traces of $2\times2$ matrices; Section~\ref{sec:traces}]\label{thm:B}
-Let $C\in M_2(\Z)$, $c$ an odd prime, $\det C\equiv\varepsilon\pmod c$ with $\varepsilon=\pm1$, $c\nmid \tr C\cdot(\tr C^2-4\det C)$, and $|\tr C^{c^n}|\to\infty$.  Unless $\varepsilon=1$ and $\tr C\equiv\pm1\pmod c$, the number $\tr C^{c^n}+h$ is not prime for infinitely many $n$, for every $h$.  In the excluded case $\tr C^{c^n}\equiv\pm1\pmod{c^{n+1}}$, so the shifts $h\in\{0,\mp2\}$ are invisible to every congruence argument of this kind.
+Let $C\in M_2(\Z)$, $c$ an odd prime, $\det C\equiv\varepsilon\pmod c$ with $\varepsilon=\pm1$, $c\nmid \tr C\cdot((\tr C)^2-4\det C)$, and $|\tr C^{c^n}|\to\infty$.  Unless $\varepsilon=1$ and $\tr C\equiv\pm1\pmod c$, the number $\tr C^{c^n}+h$ is not prime for infinitely many $n$, for every $h$.  In the excluded case $\tr C^{c^n}\equiv\pm1\pmod{c^{n+1}}$, so the shifts $h\in\{0,\mp2\}$ are invisible to every congruence argument of this kind.
 \end{theorem}
 
 \begin{theorem}[prime-free intervals; Section~\ref{sec:intervals}]\label{thm:C}
@@ -88,7 +88,7 @@ For every prime $c$ and every $H\ge0$, the interval $[F(c^n)-H,\,F(c^n)+H]$ cont
 
 This is statement (D1) of Dubickas~\cite{Dub18} (as quoted in~\cite{Sai25a}) for the non-reversible tower $c^n$.
 
-\begin{theorem}[Problem 1.7 for $c^n+s$; Section~\ref{sec:D}]\label{thm:D}
+\begin{theorem}[Problem 1.7 for $c^n+s$, outside one class; Section~\ref{sec:D}]\label{thm:D}
 Let $c$ be a prime, $\alpha$ a Pisot number of degree $d\ge2$ with minimal polynomial $f\in\Z[X]$ such that $f\not\equiv X^d\pmod c$, and $s\ge1$ with $\alpha^s> d+1$.  Then $\floor{\alpha^{c^n+s}}$ is composite for infinitely many $n$.
 \end{theorem}
 
@@ -101,7 +101,7 @@ Let $s\neq0$ be an integer and let $j\ge0$ be least with $3^{j+1}+s\ge1$ and $3^
 For example $\xi(3^k-2)$ and $\xi(3^k+2)$, $k\ge1$, are transcendental.  Theorem~\ref{thm:E} uses Saito's Theorem~2.3 and Proposition~3.1 from~\cite{Sai25c} (which rest on the Baker--Harman--Pintz theorem~\cite{BHP01}) and nothing else from outside.  For comparison, Saito's size-based method proves the transcendence of $\xi(r3^k-1)$ for $r\ge4.003\cdot10^{14}$~\cite[Theorem~1.9(C)]{Sai25c}; our argument is arithmetic and works when the first term is $C_1=1$.
 
 \subsection*{Formal verification}
-Theorems~\ref{thm:binary}--\ref{thm:D} are formally verified in Lean~4 with Mathlib, with no hypotheses beyond those stated.  Theorem~\ref{thm:E} is verified in Lean for even $s$ whose $3$-free part is at least $8$ (then Theorem~\ref{thm:D} applies directly to the Pisot branch), with Saito's Theorem~2.3 and Proposition~3.1 and Siegel's theorem entered as explicit hypotheses.  The general case of Theorem~\ref{thm:E} has a paper proof only (Section~\ref{sec:E}).  Section~\ref{sec:lean} lists the Lean names.  The Lean proofs sometimes take different routes from the ones written here; where they do, we say so.
+Theorems~\ref{thm:binary}--\ref{thm:D} are formally verified in Lean~4 with Mathlib, with no hypotheses beyond those stated.  Theorem~\ref{thm:E} is verified in Lean for positive even $s$ whose $3$-free part is at least $8$ (then Theorem~\ref{thm:D} applies directly to the Pisot branch), with Saito's Theorem~2.3 and Proposition~3.1 and Siegel's theorem entered as explicit hypotheses and with the existence of $\xi$ taken as given.  The general case of Theorem~\ref{thm:E} has a paper proof only (Section~\ref{sec:E}).  Section~\ref{sec:lean} lists the Lean names.  The Lean proofs sometimes take different routes from the ones written here; where they do, we say so.
 
 \section{The filter and the window}\label{sec:filter}
 
@@ -118,7 +118,7 @@ $c^a\mid c^n$ and $o\mid c^{kt}-1$, so $\ord_p(A)\mid N_{n+kt}-N_n$.
 So if $x_n=u(A^{N_n})+h$ is prime and $p=x_n$ has $v_c(\ord_p A)\le n$, then $p\mid x_{n+kt}$ for all $k$; when $|x_m|$ increases this contradicts the primality of $x_{n+t}$.
 
 \begin{definition}
-Let $W_d(c)=\mu_{\gcd(d!,\,c-1)}\subset\Z_c^\times$ for odd $c$, and $W_d(2)=\{\pm1\}$.  It is a finite multiplicative group containing $-1$.
+Let $W_d(c)=\mu_{\gcd(d!,\,c-1)}\subset\Z_c^\times$ for odd $c$, and $W_d(2)=\{\pm1\}$.  It is a finite multiplicative group, and it contains $-1$ when $d\ge2$.
 \end{definition}
 
 \begin{lemma}[the window]\label{lem:window}
@@ -130,7 +130,7 @@ $|\GL_d(\F_p)|=p^{d(d-1)/2}\prod_{i\le d}(p^i-1)$, so $v_c(p^i-1)>n/d$ for some 
 \end{proof}
 
 \begin{remark}\label{rem:limits}
-The sequence $A^{c^n}$ converges $c$-adically along residue classes of $n$: if $c\nmid\det A$ then there are $D\ge1$ and $n_0$ with $c^{\,n-n_0}\mid A^{c^{n+D}}-A^{c^n}$ for $n\ge n_0$ (Lean: \lean{exists_shift_pow_congr}; it needs only $A^{T}\equiv I\pmod c$ for $T=|\GL_d(\F_c)|$ and the identity $Z^c-I=(\sum_{i<c}Z^i)(Z-I)$).  If $\alpha_1,\dots,\alpha_d$ are the eigenvalues, the limit along $n\equiv r\pmod D$ is $\sum_k \omega(\alpha_k)^{c^r}E_k$, where $\omega$ is the Teichm\"uller character on units of a finite extension of $\Q_c$ (and $0$ on non-units) and $E_k$ are the spectral idempotents.  The window lemma confines prime values near these limit points; this is the engine behind everything below.
+The sequence $A^{c^n}$ converges $c$-adically along residue classes of $n$: if $c\nmid\det A$ then there are $D\ge1$ and $n_0$ with $c^{\,n-n_0}\mid A^{c^{n+D}}-A^{c^n}$ for $n\ge n_0$ (Lean: \lean{exists_shift_pow_congr}; it needs only $A^{T}\equiv I\pmod c$ for $T=|\GL_d(\F_c)|$ and the identity $Z^c-I=(\sum_{i<c}Z^i)(Z-I)$).  If $\alpha_1,\dots,\alpha_d$ are the eigenvalues, the limit along $n\equiv r\pmod D$ is $\sum_k \omega(\alpha_k)^{c^r}E_k$, where $\omega$ is the Teichm\"uller character on units of a finite extension of $\Q_c$ (all eigenvalues are units, as $c\nmid\det A$) and $E_k$ are the spectral idempotents.  The window lemma confines prime values near these limit points; this is the engine behind everything below.
 \end{remark}
 
 \section{Problem 1.8 and binary recurrences}\label{sec:binary}
@@ -165,7 +165,7 @@ Let $A\in M_d(\Z)$ with $\chi_A$ irreducible modulo the prime $c$.  Then for eve
 \end{proposition}
 
 \begin{proof}
-Let $\Lambda=\Z/c^{n+1}$ and $R=\Lambda[A]\subset M_d(\Lambda)$.  Since $\chi_A$ is irreducible modulo $c$, $R\cong\Lambda[X]/(\chi_A)$ is the Galois ring of degree $d$ over $\Lambda$; its automorphism group is cyclic of order $d$, generated by the Frobenius $\phi$, and $\phi(t)\equiv t^c\pmod c$.  In any commutative ring, $x\equiv y\pmod c$ implies $x^{c^n}\equiv y^{c^n}\pmod{c^{n+1}}$.  As $A^{c^d}\equiv A\pmod c$ (the reduction of $R$ is $\F_{c^d}$), $B:=A^{c^n}$ satisfies $B^{c^d}=B$ in $R$, i.e.\ $B$ is a Teichm\"uller element, and so $\phi(B)=B^c$ (both are Teichm\"uller elements with the same reduction).  Hence $\sum_{k<d}B^{c^k}=\sum_{k<d}\phi^k(B)=\Tr_{R/\Lambda}(B)\cdot1$.  Finally $\Lambda^d$ is a free $R$-module of rank one (it is cyclic modulo $c$, as $\chi_A$ is irreducible, and Nakayama applies), so $\Tr_{R/\Lambda}(B)$ is the matrix trace of $B$.
+Let $\Lambda=\Z/c^{n+1}$ and $R=\Lambda[A]\subset M_d(\Lambda)$.  Since $\chi_A$ is irreducible modulo $c$, it is the minimal polynomial of $A$ modulo $c$, so $I,A,\dots,A^{d-1}$ are independent modulo $c$ and span a free direct summand of $M_d(\Lambda)$; hence $R\cong\Lambda[X]/(\chi_A)$, the Galois ring of degree $d$ over $\Lambda$~\cite{Wan03}; its automorphism group is cyclic of order $d$, generated by the Frobenius $\phi$, and $\phi(t)\equiv t^c\pmod c$.  In any commutative ring, $x\equiv y\pmod c$ implies $x^{c^n}\equiv y^{c^n}\pmod{c^{n+1}}$.  As $A^{c^d}\equiv A\pmod c$ (the reduction of $R$ is $\F_{c^d}$), $B:=A^{c^n}$ satisfies $B^{c^d}=B$ in $R$, i.e.\ $B$ is a Teichm\"uller element, and so $\phi(B)=B^c$ (both are Teichm\"uller elements with the same reduction).  Hence $\sum_{k<d}B^{c^k}=\sum_{k<d}\phi^k(B)=\Tr_{R/\Lambda}(B)\cdot1$, the trace of a Galois ring over its base being the sum of the Galois conjugates~\cite{Wan03}.  Finally $\Lambda^d$ is a free $R$-module of rank one (it is cyclic modulo $c$, as $\chi_A$ is irreducible, and Nakayama applies), so $\Tr_{R/\Lambda}(B)$ is the matrix trace of $B$.
 \end{proof}
 
 (The Lean proof is different: it proves the Dold congruence for every coefficient of the characteristic polynomial via compound matrices, and factors $\chi_{A^{c^n}}$ over the Galois ring.)
@@ -179,10 +179,10 @@ For Tribonacci, $\chi=x^3-x^2-x-1$ is irreducible modulo $3$ and $5$ (no roots),
 \section{Traces of $2\times2$ matrices}\label{sec:traces}
 
 \begin{proof}[Proof sketch of Theorem~\ref{thm:B}]
-Let $x_n=\tr C^{c^n}$.  Lifting the exponent gives $(\det C)^{c^n}\equiv\varepsilon\pmod{c^{n+1}}$, hence $x_{n+1}\equiv V_c(x_n,\varepsilon)\pmod{c^{n+1}}$, where $V_c(x,q)$ is the Lucas polynomial with $\tr M^c=V_c(\tr M,\det M)$.  The window for $d=2$ at odd $c$ is $\{\pm1\}$.  If $x_n+h$ is prime for all large $n$, the pairs $(x_n,x_{n+1})$ lie in $\{-h\pm1\}^2$ modulo growing powers of $c$, and passing to the limit gives an \emph{integer} relation $V_c(y,\varepsilon)=y'$ with $y,y'\in\{-h\pm1\}$, so $V_c(y,\varepsilon)-y\in\{0,\pm2\}$.  For $\varepsilon=-1$, $|V_c(y,-1)|\ge|y|+3$ when $y\neq0$, and $y=0$ is excluded because $x_n\equiv\tr C\not\equiv0\pmod c$.  For $\varepsilon=1$, $V_c(y,1)=2T_c(y/2)$ grows for $|y|\ge3$; $y=0$ and $y=\pm2$ are excluded by $c\nmid\tr C\cdot(\tr C^2-4\det C)$; and $y=\pm1$ is the excluded class.  In that class $C^6\equiv I\pmod c$, lifting gives $C^{6c^n}\equiv I\pmod{c^{n+1}}$, and comparing $\tr C^{7c^n}$ with $V_7$ shows $\tr C^{c^n}\equiv\pm1\pmod{c^{n+1}}$.
+Let $x_n=\tr C^{c^n}$.  Lifting the exponent gives $(\det C)^{c^n}\equiv\varepsilon\pmod{c^{n+1}}$, hence $x_{n+1}\equiv V_c(x_n,\varepsilon)\pmod{c^{n+1}}$, where $V_c(x,q)$ is the Lucas polynomial with $\tr M^c=V_c(\tr M,\det M)$.  The window for $d=2$ at odd $c$ is $\{\pm1\}$.  If $x_n+h$ is prime for all large $n$, the pairs $(x_n,x_{n+1})$ lie in $\{-h\pm1\}^2$ modulo growing powers of $c$, and passing to the limit gives an \emph{integer} relation $V_c(y,\varepsilon)=y'$ with $y,y'\in\{-h\pm1\}$, so $V_c(y,\varepsilon)-y\in\{0,\pm2\}$.  For $\varepsilon=-1$, $|V_c(y,-1)|\ge|y|+3$ when $y\neq0$, and $y=0$ is excluded because $x_n\equiv\tr C\not\equiv0\pmod c$.  For $\varepsilon=1$, $V_c(y,1)=2T_c(y/2)$ grows for $|y|\ge3$; $y=0$ and $y=\pm2$ are excluded by $c\nmid\tr C\cdot((\tr C)^2-4\det C)$; and $y=\pm1$ is the excluded class.  In that class $C^6\equiv I\pmod c$, lifting gives $C^{6c^n}\equiv I\pmod{c^{n+1}}$, and comparing $\tr C^{7c^n}$ with $V_7$ shows $\tr C^{c^n}\equiv\pm1\pmod{c^{n+1}}$.
 \end{proof}
 
-The resulting staircase: for $1\times1$ matrices, $a^{c^n}+h$ is folklore; for $2\times2$ traces at odd $c$ the survivors are exactly the $\Phi_3$/$\Phi_6$ classes; for $3\times3$ traces at $c=3$ the survivors include the classes that carry Mills' constant (Section~\ref{sec:limits}).
+The resulting staircase: for $1\times1$ matrices, $a^{c^n}+h$ is folklore; for $2\times2$ traces at odd $c$ with $\det C\equiv\pm1$ and $c\nmid\tr C\cdot\mathrm{disc}\,C$, only the $\Phi_3$/$\Phi_6$ classes remain; for $3\times3$ traces at $c=3$ the survivors include the classes that carry Mills' constant (Section~\ref{sec:limits}).
 
 \section{Prime-free intervals along a non-reversible tower}\label{sec:intervals}
 
@@ -194,7 +194,7 @@ Let $A\in M_d(\Z)$, $c$ prime, $u$ linear, and $S\subset\Z$ finite.  Suppose the
 Lemma~\ref{lem:filter} gives $t_h$ for each $h$; take $L=\prod_h t_h$.
 \end{proof}
 
-A value $x=u(A^{c^m})+h$ that lies outside every window $\pm W_d(c)\pmod{c^{e_m}}$ has a prime factor $p$ with $v_c(|\GL_d(\F_p)|)\le m$: otherwise every prime factor lies in the window and so does their product, as $W_d(c)$ is a group containing $-1$ (the prime $c$ itself and the finitely many primes dividing $\det A$ are handled directly).  So Proposition~\ref{prop:engine} applies at any single $m$ at which all the values $u(A^{c^m})+h$, $|h|\le H$, avoid the windows.  By Remark~\ref{rem:limits}, such an $m$ exists as soon as no limit point $\lambda$ of $u(A^{c^n})$ satisfies $\lambda+h\in W_d(c)$ for any $|h|\le H$.
+A value $x=u(A^{c^m})+h$ that lies outside every window $\pm W_d(c)\pmod{c^{e_m}}$ has a prime factor $p$ with $v_c(|\GL_d(\F_p)|)\le m$: otherwise every prime factor lies in the window and so does their product, as $W_d(c)$ is a group containing $-1$ (we assume $\det A=\pm1$, as in all our applications, so that every prime factor is prime to $\det A$; the prime $c$ itself is harmless, since $v_c(\ord_cA)$ is bounded).  So Proposition~\ref{prop:engine} applies at any single $m$ at which all the values $u(A^{c^m})+h$, $|h|\le H$, avoid the windows.  By Remark~\ref{rem:limits}, such an $m$ exists as soon as no limit point $\lambda$ of $u(A^{c^n})$ satisfies $\lambda+h\in W_d(c)$ for any $|h|\le H$.
 
 \begin{proof}[Proof of Theorem~\ref{thm:C}]
 For Fibonacci we must show that no $2$- or $c$-adic limit point of $F(c^n)$ is an integer (if $\lambda+h=\pm1$ then $\lambda\in\Z$).  At $c=2$: $5F(2^n)^2=L(2^n)^2-4$ and $L(2^n)\to-1$, so $5\lambda^2=-3$, impossible.  At odd $c\neq5$: along a residue class, $F(c^{n+D})=\Phi_J(F(c^n))$ exactly with $2J+1=c^D$, so $\Phi_J(\lambda)=\lambda$; the only integer fixed point is $0$, and $c\nmid F(c^n)$.  At $c=5$, $F(5^n)\to0$, and the shifts $h=\pm1$ are composite by the factorizations of Section~\ref{sec:binary}.  The Lucas case is identical, with $\Phi_J$ the composition polynomial of $U(P,\pm1)$.  Composite values follow because $p_h$ is fixed while the values grow.  The Tribonacci statement is a finite certificate: for $n\equiv95\pmod{1980}$ and $h=-3,\dots,3$, the primes $53,5,7,13,593,47,5$ respectively divide $T(3^n)+h$, which is verified by computing $T(3^n)$ modulo each prime using the periods of the Tribonacci matrix.
@@ -205,7 +205,7 @@ $F(2^{4+60k})+h$ is composite for all $|h|\le6$ and $k\ge1$, divisible by one of
 \end{example}
 
 \begin{remark}
-Tracking the sizes gives prime-free intervals of length $\gg(\log n)^{1/5}$ around $F(2^n)$ for infinitely many $n$; Saito's reversible theorems give $\log n/(2d)$~\cite{Sai25a}.  We have not optimized this.
+The argument is qualitative.  A quantitative version would give prime-free intervals of length tending to infinity around $F(2^n)$; we have not worked it out, and it would certainly be weaker than the $\log n/(2d)$ of Saito's reversible theorems~\cite{Sai25a}.
 \end{remark}
 
 \section{Problem 1.7 for $R(n)=c^n+s$}\label{sec:D}
@@ -267,7 +267,7 @@ We use the following special case of~\cite[Theorem~2.3 and Proposition~3.1]{Sai2
 Let $(C_k)_{k\ge1}$ be positive integers with $C_{k+1}\ge2C_k$ for all $k$ and $C_{k+1}/C_k\to3$.  Suppose that for every $m$ there is $k>m$ with $C_m\mid C_k$.  Then $\xi=\xi(C_k)$ exists, and either $\xi$ is transcendental or there is $g\ge1$ such that $\beta=\xi^g$ is a cubic Pisot number, $g\mid C_k$ for all large $k$, and $\floor{\xi^{C_k}}=\Tr(\beta^{C_k/g})$ for all large $k$.
 \end{theorem}
 
-(The degree bound in~\cite[Theorem~2.3]{Sai25c} is $3\le\ell\le1+(\tfrac{19}{40}\cdot3-1)^{-1}<4$.  Proposition~3.1 needs $\xi^{C_m}\notin\N$, which holds because a positive power of a cubic Pisot number is irrational.)
+(Derivation.  All large $k$ lie in Saito's set $I$, as $C_{k+1}/C_k\to3>40/19$, so (B1)--(B5) of~\cite[Theorem~2.3]{Sai25c} hold.  If $\xi$ is algebraic, Theorem~2.3 gives $g_0$ with $\xi^{g_0}$ Pisot of degree $3$; then $\xi^{C_m}\notin\N$ for every $m$, since otherwise $(\xi^{g_0})^{C_m}$ would be a rational integer, which no positive power of a Pisot number of degree $\ge2$ is.  This is hypothesis (3.1) of~\cite[Proposition~3.1]{Sai25c}, and parts (ii) and (iv) give $g$ with $\beta=\xi^g$ Pisot of degree $\ell\le1+(\tfrac{19}{40}\cdot3-1)^{-1}<4$, $g\mid C_k$ and $\floor{\xi^{C_k}}=\Tr(\beta^{C_k/g})$ for large $k$.  If $\ell=2$, part (iii) makes $C_k/g$ prime for all large $k$, which contradicts $C_m\mid C_k$ with $C_m<C_k$ for large $m$; so $\ell=3$.  We use this $g$.)
 
 \subsection{Checking the hypotheses}
 Let $s\neq0$, $j$ and $C_k=3^{k+j}+s$ be as in Theorem~\ref{thm:E}, and $a_0=v_3(s)$.  The doubling condition $C_{k+1}\ge2C_k$ is $3^{k+j}\ge s$, which holds for $k\ge1$ by the choice of $j$, and $C_1\ge1$.  One checks from the choice of $j$ that $v_3(C_k)=a_0$ and $k+j\ge a_0$ for all $k\ge1$: for $s<0$, $k+j\le a_0$ would give $C_k\le3^{a_0}-|s|\le0$; for $s>0$, $3^{j+1}\ge s\ge3^{a_0}$ gives $k+j\ge a_0$, with equality only if $k=1$ and $s=3^{a_0}$, when $C_1=2\cdot3^{a_0}$.  Write $C_m=2^b3^{a_0}u$ with $\gcd(u,6)=1$.  Then $C_{m+t}-C_m=3^{m+j}(3^t-1)$ is divisible by $C_m$ whenever $t$ is a multiple of $\operatorname{lcm}(\ord_u3,\ord_{2^b}3)$, which gives the divisibility hypothesis.
@@ -326,7 +326,7 @@ For $s\ge8$ even with $3$-free part $s_0\ge8$ there is a much shorter proof, whi
 \end{remark}
 
 \begin{remark}
-A heuristic computation (greedy prime chain, as for the published digits of Mills' constant under RH) gives $\xi(3^k-2)\approx2.00663014725500738956\ldots$ with $\floor{\xi}=2$, $\floor{\xi^7}=131$, $\floor{\xi^{25}}=36448807$.  The theorem does not depend on this value.
+A heuristic computation (greedy prime chain, as for the published digits of Mills' constant under RH) gives $\xi(3^k-2)\approx2.00663014725500738956382906826814\ldots$ with $\floor{\xi}=2$, $\floor{\xi^7}=131$, $\floor{\xi^{25}}=36448807$.  The theorem does not depend on this value.
 \end{remark}
 
 \section{Where the method stops}\label{sec:limits}
@@ -357,7 +357,7 @@ Thm \ref{thm:A} & \lean{TheoremAEven.entry_prime_pow_add_not_prime'};\newline Tr
 Thm \ref{thm:B} & \lean{TraceClassification.trace_prime_pow_add_not_prime}\\
 Thm \ref{thm:C} & \lean{CoveringInstances.fib_prime_pow_prime_free_all},\newline \lean{lucasU_unit_prime_pow_prime_free};\newline \lean{TribonacciCovering.trib_three_pow_prime_free}\\
 Thm \ref{thm:D} & \lean{TheoremDMixed.floor_pow_prime_pow_add_not_prime_full}\\
-Thm \ref{thm:E}, even $s$, $3$-free part $\ge8$ & \lean{ShiftedMillsThreePow.xi_shifted_three_pow_transcendental}\\
+Thm \ref{thm:E}, $s>0$ even, $3$-free part $\ge8$ & \lean{ShiftedMillsThreePow.xi_shifted_three_pow_transcendental}\\
 Mills $3$-adic constraint & \lean{ThreeAdic} (with \lean{GaussCongruenceProof})\\
 \bottomrule
 \end{tabular}
@@ -375,6 +375,7 @@ The mathematics in this paper, the Lean formalization and the text were produced
 \bibitem{Sai25a} K.~Saito, \emph{Intervals without primes near an iterated linear recurrence sequence}, preprint (2025), arXiv:2504.14968.
 \bibitem{Sai25c} K.~Saito, \emph{Transcendency of variants of Mills' constant}, preprint (2025), arXiv:2508.16068v3.
 \bibitem{Sie44} C.~L. Siegel, \emph{Algebraic integers whose conjugates lie in the unit circle}, Duke Math. J. \textbf{11} (1944), 597--602.
+\bibitem{Wan03} Z.-X. Wan, \emph{Lectures on Finite Fields and Galois Rings}, World Scientific, 2003.
 \bibitem{Ste17} H.~Steinlein, \emph{Fermat's little theorem and Gauss congruence: matrix versions and cyclic permutations}, Amer. Math. Monthly \textbf{124} (2017), no.~6, doi:10.4169/amer.math.monthly.124.6.548.
 \end{thebibliography}
 
