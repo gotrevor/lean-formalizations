@@ -658,6 +658,64 @@ theorem floor_pow_prime_pow_add_not_prime (a b : ℤ) {α β : ℝ} (hsum : α +
     {c : ℕ} (hc : c.Prime) (hcb : ¬ (c : ℤ) ∣ b) (hcd : ¬ (c : ℤ) ∣ a ^ 2 - 4 * b)
     {s : ℕ} (hs : 4 ≤ s) :
     ∃ᶠ n in atTop, ¬ (⌊α ^ (c ^ n + s)⌋₊).Prime := by
-  sorry
+  classical
+  by_contra hcon
+  rw [Filter.not_frequently] at hcon
+  obtain ⟨n₁, hn₁⟩ := Filter.eventually_atTop.1 hcon
+  have hb0 : b ≠ 0 := by
+    rintro rfl
+    exact hcb (dvd_zero _)
+  have hβ0 : β ≠ 0 := by
+    rintro rfl
+    rw [mul_zero] at hprod
+    exact hb0 (by exact_mod_cast hprod.symm)
+  -- all indices past `n₀` are prime, big, and different from `c`
+  set n₀ := max n₁ (max (|b|.toNat + 1) (c + 1)) with hn₀def
+  have hidx : ∀ m : ℕ, (m : ℤ) ≤ ((⌊α ^ (c ^ m + s)⌋₊ : ℕ) : ℤ) := by
+    intro m
+    rw [Int.natCast_floor_eq_floor (by positivity)]
+    exact index_le_floor a b hsum hprod hα hβ hc s m
+  have hprime : ∀ m, n₀ ≤ m → (⌊α ^ (c ^ m + s)⌋₊).Prime := by
+    intro m hm
+    have := hn₁ m (le_trans (le_max_left _ _) hm)
+    simpa using this
+  have hbig : ∀ m, n₀ ≤ m → |b| < ((⌊α ^ (c ^ m + s)⌋₊ : ℕ) : ℤ) := by
+    intro m hm
+    have h1 : |b|.toNat + 1 ≤ m :=
+      le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) hm
+    have h2 := hidx m
+    have h3 : |b| = (|b|.toNat : ℤ) := (Int.toNat_of_nonneg (abs_nonneg b)).symm
+    have h4 : ((|b|.toNat + 1 : ℕ) : ℤ) ≤ (m : ℤ) := by exact_mod_cast h1
+    push_cast at h4
+    omega
+  have hnec : ∀ m, n₀ ≤ m → (⌊α ^ (c ^ m + s)⌋₊) ≠ c := by
+    intro m hm heq
+    have h1 : c + 1 ≤ m :=
+      le_trans (le_trans (le_max_right _ _) (le_max_right _ _)) hm
+    have h2 := hidx m
+    rw [heq] at h2
+    have : ((c + 1 : ℕ) : ℤ) ≤ (m : ℤ) := by exact_mod_cast h1
+    push_cast at this
+    omega
+  -- good indices are unbounded
+  have hgood := good_unbounded (ε := fun m => decide (0 < β ^ (c ^ m + s)))
+    (Stuck := fun n => padicValNat c (glCard 2 (⌊α ^ (c ^ n + s)⌋₊)) ≤ n) (n₀ := n₀)
+    (fun n hn hstuck =>
+      stuck_alternation a b hsum hprod hα hβ hβ0 hb0 hc hprime hbig hn hstuck)
+  -- the window at each good index, with values in a fixed finite set
+  have hwin : ∀ m : ℕ, ∃ n, m ≤ n ∧ ∃ t ∈ Finset.Icc (-2 : ℤ) 2,
+      (c : ℤ) ^ (n / 2) ∣ lucasV a b (c ^ n + s) - t := by
+    intro m
+    obtain ⟨n, hn0, hnm, hns⟩ := hgood m
+    obtain ⟨t, ht, htd⟩ := good_window a b hsum hprod hα hβ hβ0 hc (hprime n hn0)
+      (hnec n hn0) (not_le.1 hns)
+    exact ⟨n, hnm, t, Finset.mem_Icc.2 (abs_le.1 ht), htd⟩
+  obtain ⟨r, t, htT, hfreq⟩ := exists_class_frequently (f := 2) (by norm_num) hwin
+  refine not_congr_small_int a b hsum hprod hα hβ hdisc hc hcb hcd (lucasV a b)
+    (fun N => (pow_add_pow_eq_lucasV a b hsum hprod N).symm) (r := r) hs
+    (abs_le.2 (Finset.mem_Icc.1 htT)) ?_
+  intro m
+  obtain ⟨n, hn, hr, hd⟩ := hfreq (2 * m)
+  refine ⟨n, by omega, hr, dvd_trans (pow_dvd_pow (c : ℤ) (by omega)) hd⟩
 
 end LeanFormalizations.Mills.TheoremDQuadratic
