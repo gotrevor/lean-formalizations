@@ -189,7 +189,7 @@ Combine the engine (phase 41) with Theorem D's Galois step.  For `(D1)` with hal
 - Inside a unipotent class exactly one shift, `h = z·tr C^s ± 1 − ε`, is a survivor, so intervals fail by construction for that `h`.
 - Lean: needs the Galois step, so it goes with Theorem D (paper first).
 
-### ⭐ Theorem E, current form (see `PROOF-THEOREM-E.md`): `ξ(3^k − 2)` is transcendental unconditionally, unless `ℚ(ξ)` is the conductor-13 cyclic cubic field (numerically empty)
+### ⭐ Theorem E, current form (see `PROOF-THEOREM-E.md`): `ξ(3^k − 2)` is transcendental, unconditionally (draft proof; E1 closed by the finite certificate `scripts/theorem-e-e1-certificate.py`; confidence ≈ 70%)
 Also `ξ(r·3^k − 1)` for every even `r ≥ 2` (Saito needs `r ≥ 4·10¹⁴`).  The ingredients: Saito Type C, Theorem D with a negative shift, minimality plus BHP (forcing `ε = 0`), and a mod-3 congruence on `tr(ξ^(−2))`.  The original candidate write-up follows.
 
 ### Theorem E (candidate): transcendence of shifted Mills constants with SMALL first term (2026-09-30)

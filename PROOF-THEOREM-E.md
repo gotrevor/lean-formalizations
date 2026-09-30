@@ -65,6 +65,18 @@ Let `G = Gal(K(ζ_M)/ℚ(ζ_M))`.  It is transitive on the three roots unless `�
 
 **E1, numerics:** all 6 cyclic cubic Pisot `f` with `13² ∣ disc` in `[−15, 15]³` — `(−14, 9, −1)`, `(−12, 9, 1)`, `(−11, −4, 1)`, `(−10, 3, 1)`, `(−6, −1, 5)`, `(−4, 1, 1)` — **fail the window test outright**.  `3` is inert in the conductor-13 field, so the Teichmüller roots form one Frobenius orbit of primitive 13th/26th roots of unity.  Expected proof: the `C′` support argument in `ℚ(ζ₂₆)`, with the `α_k` written in Gaussian periods.
 
+**E1 is empty (finite certificate, `scripts/theorem-e-e1-certificate.py`).**
+- In the conductor-13 cyclic cubic field `K ⊂ ℚ(ζ₁₃)`, `3` is inert and its Frobenius is `τ₃`, generating `D = {1, 3, 9}`.
+- Decomposition-group compatibility `ι ∘ τ₃ = Frob ∘ ι` gives Teichmüller roots `ζ_k = τ_(3^k)(ζ₀)` with `ζ₀ = ±ζ^b`.  The labelling `α_k = τ_(3^k)(α)` follows.
+- So `Λ_r = Tr_D(ζ₀^(3^r) · α^s)`.
+- For each `b`, the `ℚ`-linear map `K → ℚ(ζ₁₃)/ℚ`, `w ↦ Tr_D(ζ^b w)`, has rank 3 (computed on the Gaussian-period basis), so `Λ_r ∈ ℚ ⇒ α^s = 0`: impossible.
+- If `α` is a non-unit at 3 (inert, so every conjugate is), that is the `z = 0` case, already killed by minimality.
+- **This holds for every shift `s`**, so it covers the `r·3^k − 1` family too.
+
+**Final form (draft 1, now without exceptions).**  **`ξ(3^k − 2)` is transcendental, unconditionally** (BHP + MTY24 + Saito's Theorem 2.6 + Theorem D machinery + minimality + mod-3 congruence + the E1 certificate).  Likewise `ξ(r·3^k − 1)` for every even `r ≥ 2`.  **Confidence ≈ 70%**: unrefereed, many steps; the riskiest are Lemma 6's use of `G = Gal(K(ζ_M)/ℚ(ζ_M))` and the minimality step's claim that every prime in the admissible interval continues.
+
+(Superseded wording kept below for provenance.)
+
 **Final form (draft 1).**  **`ξ(3^k − 2)` is transcendental, unconditionally (BHP + MTY24 + Saito's Theorem 2.6), unless `ℚ(ξ)` is the cyclic cubic field of conductor 13.**  Numerically that field contributes no survivors.
 
 **Same template, other sequences.**  `ξ(r·3^k − 1)` for **every even `r ≥ 2`** (`agcd = 1`, shift `s = −1`, `T = σ₂/σ₃`, `σ₂ ≡ 0 ⇒ 3 ∣ T` in the `(X − z)³` class; minimality is identical).  Saito's Theorem 1.9(C) needs `r ≥ 4.003·10¹⁴`.  Odd `r` has `agcd = 2`, so `ξ²` is the Pisot number: redo Lemma 5 with exponent `(r·3^n − 1)/2` (half-integral 3-adic powers; the Galois step then needs consistent square roots).
