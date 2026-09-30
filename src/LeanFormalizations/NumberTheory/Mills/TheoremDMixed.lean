@@ -759,6 +759,168 @@ theorem exists_spectral_solution_mixed (f : ℤ[X]) (hd : 1 ≤ f.natDegree) {c 
     rw [trace_polyMat_mul]
     linear_combination this
 
+
+/-! ### Step 3: transport along a ring hom, and the automorphism
+
+The system is a set of *integer* polynomial equations, so any ring hom carries a solution to a
+solution.  That is what makes step 3 work: an automorphism `σ` of the algebraic numbers moving
+`α_(k*)` — a root at which the spectral value is nonzero — onto `α` produces a new solution whose
+spectral value *at `α`* is nonzero, which is exactly what the size argument needs. -/
+
+theorem trace_map_eq {n R S : Type*} [Fintype n] [CommRing R] [CommRing S] (τ : R →+* S)
+    (M : Matrix n n R) : (M.map τ).trace = τ M.trace := by
+  simp [Matrix.trace, Matrix.diag, Matrix.map_apply, map_sum]
+
+theorem map_matrix_mul {n R S : Type*} [Fintype n] [DecidableEq n] [CommRing R] [CommRing S]
+    (τ : R →+* S) (A B : Matrix n n R) : (A * B).map τ = A.map τ * B.map τ := by
+  simpa [RingHom.mapMatrix_apply] using map_mul (RingHom.mapMatrix τ) A B
+
+theorem polyVal_map {R S : Type*} [CommRing R] [CommRing S] (τ : R →+* S) {d : ℕ}
+    (x : Fin d → R) (z : R) : τ (polyVal x z) = polyVal (fun t => τ (x t)) (τ z) := by
+  simp [polyVal, map_sum, map_mul, map_pow]
+
+/-- **Transport.**  A ring hom carries a solution of the integer system to a solution. -/
+theorem transport_solution {R S : Type*} [CommRing R] [CommRing S] (τ : R →+* S)
+    (f : ℤ[X]) {Q m s : ℕ} {ε : ℤ} (x : Fin f.natDegree → R) (w : R)
+    (hT : polyMat R f x ^ (Q + 1) = polyMat R f x) (hw : w ^ m = 1)
+    (htr : (polyMat R f x * compM R f ^ s).trace = w - (ε : R)) :
+    polyMat S f (fun t => τ (x t)) ^ (Q + 1) = polyMat S f (fun t => τ (x t)) ∧
+      (τ w) ^ m = 1 ∧
+      (polyMat S f (fun t => τ (x t)) * compM S f ^ s).trace = τ w - (ε : S) := by
+  refine ⟨?_, by rw [← map_pow, hw, map_one], ?_⟩
+  · have h : (polyMat R f x ^ (Q + 1)).map τ = (polyMat R f x).map τ := by rw [hT]
+    rwa [map_matrix_pow, polyMat_map] at h
+  · have hmm : (polyMat R f x * compM R f ^ s).map τ
+        = polyMat S f (fun t => τ (x t)) * compM S f ^ s := by
+      rw [map_matrix_mul, polyMat_map, map_matrix_pow, compM_map]
+    have h := trace_map_eq τ (polyMat R f x * compM R f ^ s)
+    rw [hmm, htr] at h
+    rw [h, map_sub, map_intCast]
+
+/-- **Step 3 (the automorphism).**  If `a` and `b` are roots of the monic irreducible `f` in the
+algebraic numbers, some automorphism over `ℚ` carries `a` to `b`. -/
+theorem exists_algEquiv_of_roots (f : ℤ[X]) (hmon : f.Monic) (hirr : Irreducible f)
+    (hd : 1 ≤ f.natDegree) {a b : AlgQ}
+    (ha : (f.map (Int.castRingHom AlgQ)).eval a = 0)
+    (hb : (f.map (Int.castRingHom AlgQ)).eval b = 0) :
+    ∃ τ : AlgQ ≃ₐ[ℚ] AlgQ, τ a = b := by
+  classical
+  set g := f.map (Int.castRingHom ℚ) with hg
+  have hgm : g.Monic := hmon.map _
+  have hgirr : Irreducible g :=
+    (Polynomial.IsPrimitive.Int.irreducible_iff_irreducible_map_cast hmon.isPrimitive).1 hirr
+  have hbridge : ∀ z : AlgQ, Polynomial.aeval z g
+      = (f.map (Int.castRingHom AlgQ)).eval z := by
+    intro z
+    rw [Polynomial.aeval_def, Polynomial.eval₂_eq_eval_map, hg, Polynomial.map_map]
+    congr 2
+  have hmin : minpoly ℚ b = g :=
+    (minpoly.eq_of_irreducible_of_monic (x := b) hgirr (by rw [hbridge]; exact hb) hgm).symm
+  have halg : IsAlgebraic ℚ b := ⟨g, hgm.ne_zero, by rw [hbridge]; exact hb⟩
+  refine minpoly.exists_algEquiv_of_root halg ?_
+  rw [hmin, hbridge]
+  exact ha
+
+/-! ### Step 4: the archimedean contradiction, mixed version -/
+
+theorem norm_le_one_of_pow_succ_eq {z : ℂ} {Q : ℕ} (hQ : 1 ≤ Q) (h : z ^ (Q + 1) = z) :
+    ‖z‖ ≤ 1 := by
+  rcases eq_or_ne z 0 with h0 | h0
+  · rw [h0]; simp
+  · have hzQ : z ^ Q = 1 := by
+      have hfac : z * (z ^ Q - 1) = 0 := by
+        have hr : z * (z ^ Q - 1) = z ^ (Q + 1) - z := by ring
+        rw [hr, h, sub_self]
+      rcases mul_eq_zero.1 hfac with h1 | h1
+      · exact absurd h1 h0
+      · linear_combination h1
+    exact le_of_eq (norm_eq_one_of_pow_eq_one hQ hzQ)
+
+/-- **Step 7 (mixed size argument).**  `T^(Q+1) = T` with a *nonzero* spectral value at `α`,
+`tr(T C^s) = w - ε`, `w` a root of unity and `|ε| ≤ 1`, forces `α^s ≤ 2 + (d - 1) = d + 1`. -/
+theorem not_exists_spectral_mixed (f : ℤ[X]) (hmon : f.Monic) (hirr : Irreducible f)
+    (hdeg : 2 ≤ f.natDegree) {α : ℝ} (hα : 1 < α)
+    (hroot : (f.map (Int.castRingHom ℂ)).eval (α : ℂ) = 0)
+    (hpisot : ∀ z ∈ (f.map (Int.castRingHom ℂ)).roots, z ≠ (α : ℂ) → ‖z‖ < 1)
+    {Q : ℕ} (hQ : 1 ≤ Q) {s : ℕ} (hs : (f.natDegree : ℝ) + 1 < α ^ s)
+    {m : ℕ} (hm : 1 ≤ m) {ε : ℤ} (hε : |ε| ≤ 1)
+    (x : Fin f.natDegree → ℂ) (w : ℂ)
+    (hT : polyMat ℂ f x ^ (Q + 1) = polyMat ℂ f x) (hnz : polyVal x (α : ℂ) ≠ 0)
+    (hw : w ^ m = 1)
+    (htr : (polyMat ℂ f x * compM ℂ f ^ s).trace = w - (ε : ℂ)) : False := by
+  classical
+  have hd : 1 ≤ f.natDegree := by omega
+  obtain ⟨e, hinj, he, hsurj⟩ := exists_root_enum_field (K := ℂ) f hmon hirr
+  obtain ⟨i₀, hi₀⟩ := hsurj (α : ℂ) hroot
+  have hfC0 : (f.map (Int.castRingHom ℂ)) ≠ 0 := (hmon.map (Int.castRingHom ℂ)).ne_zero
+  have hsmall : ∀ k, k ≠ i₀ → ‖e k‖ < 1 := by
+    intro k hk
+    refine hpisot (e k) ((Polynomial.mem_roots hfC0).2 (he k)) ?_
+    rw [← hi₀]
+    exact fun hh => hk (hinj hh)
+  have hsp : ∑ k, polyVal x (e k) * e k ^ s = w - (ε : ℂ) := by
+    rw [← trace_polyMat_mul_compM_pow f hmon e he hinj x s]; exact htr
+  have hpv : ∀ k, polyVal x (e k) ^ (Q + 1) = polyVal x (e k) :=
+    polyVal_pow_succ_eq f hmon e he hinj x hT
+  have hle : ∀ k, ‖polyVal x (e k)‖ ≤ 1 := fun k =>
+    norm_le_one_of_pow_succ_eq hQ (hpv k)
+  -- at `α` the spectral value is nonzero, hence of modulus one
+  have hone : ‖polyVal x (e i₀)‖ = 1 := by
+    have hnz0 : polyVal x (e i₀) ≠ 0 := by rw [hi₀]; exact hnz
+    have hzQ : polyVal x (e i₀) ^ Q = 1 := by
+      have hfac : polyVal x (e i₀) * (polyVal x (e i₀) ^ Q - 1) = 0 := by
+        have hr : polyVal x (e i₀) * (polyVal x (e i₀) ^ Q - 1)
+            = polyVal x (e i₀) ^ (Q + 1) - polyVal x (e i₀) := by ring
+        rw [hr, hpv i₀, sub_self]
+      rcases mul_eq_zero.1 hfac with h1 | h1
+      · exact absurd h1 hnz0
+      · linear_combination h1
+    exact norm_eq_one_of_pow_eq_one hQ hzQ
+  have hsplit : polyVal x (e i₀) * e i₀ ^ s
+      = (w - (ε : ℂ)) - ∑ k ∈ Finset.univ.erase i₀, polyVal x (e k) * e k ^ s := by
+    rw [← hsp, ← Finset.add_sum_erase _ (fun k => polyVal x (e k) * e k ^ s)
+      (Finset.mem_univ i₀)]
+    ring
+  have hlhs : ‖polyVal x (e i₀) * e i₀ ^ s‖ = α ^ s := by
+    rw [norm_mul, hone, one_mul, hi₀, norm_pow, Complex.norm_real, Real.norm_eq_abs,
+      abs_of_pos (by linarith)]
+  have htail : ‖∑ k ∈ Finset.univ.erase i₀, polyVal x (e k) * e k ^ s‖
+      ≤ (f.natDegree : ℝ) - 1 := by
+    refine le_trans (norm_sum_le _ _) ?_
+    have hb : ∀ k ∈ Finset.univ.erase i₀, ‖polyVal x (e k) * e k ^ s‖ ≤ 1 := by
+      intro k hk
+      rw [norm_mul, norm_pow]
+      have h1 : ‖e k‖ ^ s ≤ 1 :=
+        pow_le_one₀ (norm_nonneg _) (le_of_lt (hsmall k (Finset.ne_of_mem_erase hk)))
+      have h2 := hle k
+      nlinarith [norm_nonneg (polyVal x (e k)), pow_nonneg (norm_nonneg (e k)) s]
+    have hsum := Finset.sum_le_sum hb
+    rw [Finset.sum_const, Finset.card_erase_of_mem (Finset.mem_univ i₀),
+      Finset.card_univ, Fintype.card_fin] at hsum
+    refine le_trans hsum ?_
+    rw [nsmul_eq_mul, mul_one]
+    have hcast : ((f.natDegree - 1 : ℕ) : ℝ) = (f.natDegree : ℝ) - 1 := by
+      have h1 : (1 : ℕ) ≤ f.natDegree := hd
+      push_cast [h1]; ring
+    rw [hcast]
+  have hwε : ‖w - (ε : ℂ)‖ ≤ 2 := by
+    have h1 : ‖w‖ = 1 := norm_eq_one_of_pow_eq_one hm hw
+    have h2 : ‖(ε : ℂ)‖ ≤ 1 := by
+      rw [show ((ε : ℤ) : ℂ) = ((ε : ℝ) : ℂ) from by push_cast; ring, Complex.norm_real,
+        Real.norm_eq_abs, abs_le]
+      obtain ⟨hε1, hε2⟩ := abs_le.1 hε
+      refine ⟨by exact_mod_cast hε1, by exact_mod_cast hε2⟩
+    calc ‖w - (ε : ℂ)‖ ≤ ‖w‖ + ‖(ε : ℂ)‖ := norm_sub_le _ _
+      _ ≤ 2 := by linarith
+  have hfinal : α ^ s ≤ (f.natDegree : ℝ) + 1 := by
+    rw [← hlhs, hsplit]
+    calc ‖(w - (ε : ℂ)) - ∑ k ∈ Finset.univ.erase i₀, polyVal x (e k) * e k ^ s‖
+        ≤ ‖w - (ε : ℂ)‖ + ‖∑ k ∈ Finset.univ.erase i₀, polyVal x (e k) * e k ^ s‖ :=
+          norm_sub_le _ _
+      _ ≤ 2 + ((f.natDegree : ℝ) - 1) := by linarith
+      _ = (f.natDegree : ℝ) + 1 := by ring
+  linarith
+
 /-- **Theorem D (full):** some root of `f` is a `c`-unit, i.e. `f ≢ X^d (mod c)`. -/
 theorem floor_pow_prime_pow_add_not_prime_full (f : ℤ[X]) (hmon : f.Monic)
     (hirr : Irreducible f) (hdeg : 2 ≤ f.natDegree) {α : ℝ} (hroot : aeval α f = 0)
