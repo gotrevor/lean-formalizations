@@ -6,6 +6,7 @@ Authors: Trevor Morris
 import LeanFormalizations.NumberTheory.Mills.TheoremDGround
 import LeanFormalizations.NumberTheory.Mills.TeichmullerCongruence
 import LeanFormalizations.NumberTheory.Mills.QuadraticPisotFloor
+import LeanFormalizations.NumberTheory.Mills.FibonacciPrimePow
 
 /-!
 # Phase 55 (multi-phase): Theorem D, quadratic case — Saito's Problem 1.7 for `R(n) = c^n + s`
@@ -393,6 +394,35 @@ theorem good_unbounded {ε : ℕ → Bool} {Stuck : ℕ → Prop} {n₀ : ℕ}
   refine TheoremDGround.not_stuck_twice ε j hj1 N (hjspec N le_rfl) ?_
   exact hjspec (N + j N) (by omega)
 
+/-! ### Step 1e (Lemma 4): the window at a good index
+
+At a good `n` the phase-37 lemma `pow_dvd_sub_or_add_of_lt_padicValNat` (odd `c`) gives
+`p_n ≡ ±1 (mod c^(n/2))`, so `V(c^n + s) ≡ t (mod c^(n/2))` with `t = ω - ε ∈ {-1, 0, 1, 2}`. -/
+theorem good_window (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α * β = b)
+    (hα : 1 < α) (hβ : |β| < 1) (hβ0 : β ≠ 0) {c : ℕ} (hc : c.Prime) (hc2 : c ≠ 2) {s n : ℕ}
+    (hprime : (⌊α ^ (c ^ n + s)⌋₊).Prime) (hpc : (⌊α ^ (c ^ n + s)⌋₊) ≠ c)
+    (hgood : n < padicValNat c (glCard 2 (⌊α ^ (c ^ n + s)⌋₊))) :
+    ∃ t : ℤ, |t| ≤ 2 ∧ (c : ℤ) ^ (n / 2) ∣ lucasV a b (c ^ n + s) - t := by
+  have hcpos : 1 ≤ c ^ n + s := by have := Nat.one_le_pow n c hc.pos; omega
+  have hα0 : (0 : ℝ) ≤ α := by linarith
+  have hfl : ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ) = ⌊α ^ (c ^ n + s)⌋ :=
+    Int.natCast_floor_eq_floor (by positivity)
+  have hoff := floor_pow_eq_lucasV_add a b hsum hprod hβ hβ0 hcpos
+  set e : ℤ := (if 0 < β ^ (c ^ n + s) then (-1 : ℤ) else 0) with he
+  have heb : |e| ≤ 1 := by rw [he]; split <;> simp
+  have hV : lucasV a b (c ^ n + s) = ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ) - e := by
+    rw [hfl, hoff]; ring
+  rcases FibonacciPrimePow.pow_dvd_sub_or_add_of_lt_padicValNat hc hc2 hprime hpc hgood with h | h
+  · refine ⟨1 - e, ?_, ?_⟩
+    · rw [abs_le] at heb ⊢; omega
+    · rw [hV]; simpa using h
+  · refine ⟨-1 - e, ?_, ?_⟩
+    · rw [abs_le] at heb ⊢; omega
+    · rw [hV]
+      have : ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ) - e - (-1 - e)
+          = ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ) + 1 := by ring
+      rw [this]; exact h
+
 /-! ### Step 5 (size): the archimedean obstruction
 
 These two lemmas are the endgame of the proof and are **fully proved**: once the number-theoretic
@@ -505,8 +535,8 @@ theorem spectral_identity (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod 
     (hα : 1 < α) (hβ : |β| < 1) (hdisc : ¬ IsSquare (a ^ 2 - 4 * b))
     {c : ℕ} (hc : c.Prime) (hcb : ¬ (c : ℤ) ∣ b) (hcd : ¬ (c : ℤ) ∣ a ^ 2 - 4 * b)
     (V : ℕ → ℤ) (hV : ∀ N, (V N : ℝ) = α ^ N + β ^ N)
-    {s f r : ℕ} (hf : 1 ≤ f) (t : ℤ)
-    (hcong : ∀ m : ℕ, ∃ n, m ≤ n ∧ n % f = r ∧ (c : ℤ) ^ m ∣ V (c ^ n + s) - t) :
+    {s r : ℕ} (t : ℤ)
+    (hcong : ∀ m : ℕ, ∃ n, m ≤ n ∧ n % 2 = r ∧ (c : ℤ) ^ m ∣ V (c ^ n + s) - t) :
     ∃ u v : ℂ, ‖u‖ = 1 ∧ ‖v‖ = 1 ∧ u * (α : ℂ) ^ s + v * (β : ℂ) ^ s = (t : ℂ) := by
   sorry
 
@@ -518,11 +548,11 @@ theorem not_congr_small_int (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hpro
     (hα : 1 < α) (hβ : |β| < 1) (hdisc : ¬ IsSquare (a ^ 2 - 4 * b))
     {c : ℕ} (hc : c.Prime) (hcb : ¬ (c : ℤ) ∣ b) (hcd : ¬ (c : ℤ) ∣ a ^ 2 - 4 * b)
     (V : ℕ → ℤ) (hV : ∀ N, (V N : ℝ) = α ^ N + β ^ N)
-    {s f r : ℕ} (hs : 4 ≤ s) (hf : 1 ≤ f) {t : ℤ} (ht : |t| ≤ 2) :
-    ¬ ∀ m : ℕ, ∃ n, m ≤ n ∧ n % f = r ∧ (c : ℤ) ^ m ∣ V (c ^ n + s) - t := by
+    {s r : ℕ} (hs : 4 ≤ s) {t : ℤ} (ht : |t| ≤ 2) :
+    ¬ ∀ m : ℕ, ∃ n, m ≤ n ∧ n % 2 = r ∧ (c : ℤ) ^ m ∣ V (c ^ n + s) - t := by
   intro hcong
   obtain ⟨u, v, hu, hv, huv⟩ :=
-    spectral_identity a b hsum hprod hα hβ hdisc hc hcb hcd V hV hf t hcong
+    spectral_identity a b hsum hprod hα hβ hdisc hc hcb hcd V hV t hcong
   exact spectral_ne_small_int a b hsum hprod hα hβ hs hu hv ht huv
 
 /-- **Theorem D, quadratic case.** -/
