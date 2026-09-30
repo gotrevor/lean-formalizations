@@ -70,6 +70,53 @@ The obstacle for Theorem C at `d ≥ 3` is that no exact composition is availabl
 ### Theorem C for traces at odd `c` (Lucas numbers)
 A trace has a single limit point `τ`.  If `τ ∈ ℤ`, then phase 35's exact `V_c(τ, −1) = τ` forces `τ = 0`, contradicting `τ ≡ P ≢ 0 (mod c)`.  So `τ ∉ ℤ`, and **prime-free intervals of any fixed length surround `L(c^n)` (and `V_(c^n)(P, −1)`, `c ∤ P`) infinitely often.**  All pieces are in Lean already.
 
+### Theorem D: a partial answer to Saito's Problem 1.7 (paper math, 2026-09-30 01:45; numerics ✅, proof sketch below, to verify)
+Saito's Problem 1.7: *find a non-reversible ILRS `R` such that for every Pisot `α` (especially degree 3), `⌊α^(R(n))⌋` is composite for infinitely many `n`.*
+
+**Candidate `R(n) = c^n + s`** (`R(n+1) = c R(n) − (c − 1)s`; `a₀ = c ≠ ±1`, so non-reversible).
+- With `s = 0` this is the Mills situation: the floor's `c`-adic limit points are **traces** `τ = Σ ω(α_k)`, which are Frobenius-invariant and can equal `±1`.  That is where the residual classes come from.
+- A shift `s ≥ 1` replaces them by **weighted** sums `Λ_r = Σ_k ω(α_k)^(c^r) α_k^s`, which are not Frobenius-invariant.
+
+**Statement (candidate).**  Let `c` be prime, `s ≥ s₀(d)`, and `α` a Pisot number of degree `d` with minimal polynomial `f`.  Assume:
+- (i) `f` is irreducible over `ℚ(ζ_M)`, where `M` is the order of the relevant Teichmüller roots of unity (`M ∣ ∏_(i≤d)(c^i − 1)`, times `d!`-window roots);
+- (ii) `f ≢ X^d (mod c)`.
+
+Then `⌊α^(c^n + s)⌋` is composite for infinitely many `n`.
+
+**Proof sketch.**
+1. `⌊α^N⌋ = tr C^N + ε_N` with `ε_N ∈ {0, −1}`, where `C` is the companion matrix.  Assume every `p_n = ⌊α^(R(n))⌋` is prime for `n ≥ n₀`.
+2. **Filter with a varying `ε`.**  If `v_c(ord_(p_n) C) ≤ n`, then `C^(R(n+kj)) ≡ C^(R(n)) (mod p_n)` for all `k ≥ 1`.  So `p_n ∣ ⌊α^(R(n+kj))⌋` whenever `ε_(n+kj) = ε_n`, and this is impossible (composite).  Call `n` *stuck* if `ε` flips for every `k`.  If `n` is stuck, then `n′ = n + j` is not stuck: at `k = j`, `n′ + j·j′ = n + j(1 + j′)` gets opposite `ε`-verdicts from the two stuck conditions.  **This is purely combinatorial, so it works for any configuration of conjugates, complex pairs included.**  Hence the window `v_c(ord) > n` occurs for infinitely many `n`.
+3. Along a residue class `r` hit infinitely often, `λ_r + ε ∈ μ_(window)`, i.e. `Λ_r := ι⁻¹(λ_r) = t` with `t ∈ ζ′ + {0, 1}` and `|t| ≤ 2`.  Here `λ_r = Σ_k ω(α_k)^(c^r) α_k^s` (spectral decomposition `C^N = Σ α_k^N E_k`, `tr(E_k C^s) = α_k^s`; Teichmüller limits along `n ≡ r`, non-units → 0).
+4. **Galois plus Pisot dominance.**  `G = Gal(K(ζ)/ℚ(ζ))` is transitive on the roots by (i) and fixes the `ζ_k`, so `Σ_k ζ_k α_(σk)^s = t` for all `σ ∈ G`.  The constant vector `ζ° = (t / tr C^s)·𝟙` solves this.  If `η` is the difference, pick `k₀` maximizing `|η_k|` and `σ` with `σ(k₀) = 1` (the Pisot root).  Then `|η_(k₀)| α^s ≤ |η_(k₀)| Σ_(j≥2) |α_j|^s`, which is impossible once `α^s > d − 1`.  So every `ζ_k = t / tr C^s`.
+5. Then either all `ζ_k` are equal roots of unity, so `|t| = |tr C^s| ≥ 3` for `s ≥ s₀`, which is impossible; or all `ζ_k = 0`, i.e. `f ≡ X^d (mod c)`, which is excluded by (ii).  (Mixed zero/non-zero is impossible by the constancy.)  ∎
+
+**Numerics** (`scripts/saito-17-shift-probe.py`, precision `3^10` / `2^20`, all Pisot `α` of degree 2 and 3 with coefficients in `[−6, 6]` / `[−8, 8]` and `c ∤ N(α)`).
+- `s = 0`: 48 survivors of 244 at `c = 3` (the Mills residual classes, the known-answer control) and 73 of 183 at `c = 2`.
+- `s ≥ 2`: **0 genuine survivors** at either `c` (the only hit, `(x − 1)²`, is not Pisot).
+- The predicted exception family survives: `2 + √2`, `1 + √3` at `c = 2`; `3 + √6`, `x² − 3x − 3` at `c = 3`.
+
+**The exception (ii) is a genuine obstruction for congruence methods.**
+- If `f ≡ X^d (mod c)`, then `⌊α^N⌋ ≡ ε_N (mod c^(big))`.
+- If `ε_N = 0` along the tower, the value is divisible by `c`, hence composite.  So negative-conjugate cases are killed by choosing the parity of `s`, e.g. `1 + √3` with `s` odd.
+- If `ε_N = −1` persistently (all conjugate contributions positive, e.g. `2 + √2` at `c = 2`, `6 + √30` at `c ∈ {2, 3}`), the value is `≡ −1` forever: a **Mersenne-type survivor**.
+- For **any** non-reversible ILRS `R`, `a₀` has finitely many primes, and `f = x² − Mx + N` with `M, N ≡ 0 (mod rad a₀)` and both conjugates in `(0, 1)` gives such an `α`.  **So Problem 1.7 in full ("every Pisot α") cannot be settled by prime-as-modulus arguments alone, even in degree 2.**  A precise negative, worth a remark in the paper.
+
+**Exceptions (i).**  Abelian fields inside `ℚ(ζ_M)`: finitely many, e.g. for `c = 2`, `d ≤ 3`, `M ∣ 21`: `ℚ(√21)` and the cubic subfield of `ℚ(ζ₇)`.  These need a separate argument; the numerics suggest no survivors there either.
+
+**Complementarity with Mills.**  At `s = 0` the unconditional wall is the totally real cubic case.  At `s ≥ s₀`, Theorem D handles totally real and complex cubics alike.  The obstruction for Mills is exactly the `s = 0` trace structure.
+
+**To verify before the paper:**
+- the Teichmüller limit formula when `C` is not semisimple mod `c`;
+- the size bound `s₀(d)` (need `α^s > d − 1` and `tr C^s ≥ 3`; `α ≥ 1.3247` by Siegel, so `s₀ = 3` works for `d ≤ 3`);
+- the window for `c ≡ 1 (mod 3)` (`t ∈ ℚ(ζ₃)`: same argument, `|t| ≤ 2`);
+- disjointness bookkeeping for (i).
+
+**Lean path.**  The Galois step is heavy.  Lean-sized pieces:
+- the combinatorial "stuck" lemma (pure `ℕ → Bool` combinatorics);
+- the filter with varying `ε`;
+- the quadratic case via exact identities: `d = 2` needs no Galois, since `Λ = ζ₁ α₁^s + ζ₂ α₂^s` can be handled by the norm/trace of `ℚ(√D)`.
+A reasonable first Lean target: **Theorem D for quadratic Pisot `α`**.
+
 ## 2. Conjectures, each with its difficulty check
 
 | Conjecture | Proved implications | Unproved premise | Mechanism for the premise |
