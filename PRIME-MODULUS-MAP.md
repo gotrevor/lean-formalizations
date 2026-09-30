@@ -18,7 +18,22 @@ One page, one row per theorem.  Everything here was proved 2026-09-29/30, uncond
 | Lucas numbers `L`, and `V(P,−1)` with `c ∤ P` | every odd prime | all | `LucasPrimePow.lucas_prime_pow_add_not_prime`, `lucasV_prime_pow_add_not_prime` | exact composition `V_(cm) = V_c(V_m, −1)` |
 | **Fibonacci** | **every prime** | **all** | `FibonacciAllPrimes.fib_prime_pow_add_not_prime_all` | composition `F((2j+1)N) = Φ_j(F N)` |
 | Lucas `U(P,Q)`, any `Q` | odd, inert in `ℚ(√(P²−4Q))` | all | `LucasInert.lucasU_prime_pow_add_not_prime` | sign flip |
-| Lucas `U(P,±1)` | odd, `c ∤ D` | all | `LucasUnitAllPrimes.lucasU_unit_prime_pow_add_not_prime` (phase 38, in progress) | composition |
+| Lucas `U(P,±1)` | odd, `c ∤ D` | all | `LucasUnitAllPrimes.lucasU_unit_prime_pow_add_not_prime` (phase 38) | composition |
+| **2×2 traces**, `det ≡ ±1 (mod c)`, `c ∤ tr·disc` | odd | all, except the `Φ₃`/`Φ₆` classes (proved to be survivors) | `TraceClassification.trace_prime_pow_add_not_prime`, `trace_phi_survivor` (phase 42) | composition mod `c^(n+1)` |
+
+## Prime-free intervals (Dubickas's (D1) for the non-reversible tower `c^n`)
+
+| Sequence | Base `c` | Lean | Phase |
+|---|---|---|---|
+| `F(2^n)` | 2 | `FibonacciCovering.fib_two_pow_prime_free`, `fib_two_pow_covering` | 40 |
+| any `ℓ(A^(c^n))` given good prime factors (the **engine**) | any | `CoveringEngine.covering_of_good`, `prime_free_of_good` | 41 |
+| Lucas `V(c^n)(P, −1)`, `c ∤ P` | odd | `CoveringEngine.lucasV_prime_pow_prime_free` | 41 |
+| **`F(c^n)`** | **every prime** | `CoveringInstances.fib_prime_pow_prime_free_all` | 41, 43 |
+| `U(c^n)(P, ±1)` | odd, `c ∤ D` | `CoveringInstances.lucasU_unit_prime_pow_prime_free` | 43 |
+
+## Paper theorems, not yet in Lean
+- **Theorem D** (`PROOF-THEOREM-D.md`): Saito's Problem 1.7 for `R(n) = c^n + s`; every Pisot `α` outside `f ≡ X^d (mod c)` and finitely many abelian fields.  Referee pass: Lemmas OK.
+- **Theorem E / E+** (`PROOF-THEOREM-E.md`): the least `A` with `⌊A^(3^k + s)⌋` prime `∀k` is **transcendental** for every even `s ≠ 0` with `3 ∤ s`.  Unshifted Mills (`s = 0`) fails both steps.  Two referee passes, patches applied; ≈75–80%.
 
 ## Where it stops (Maze rows, `src/LeanFormalizations/Maze.lean`)
 - **Traces at `c = 2`**: `L(2^n)` (`h = 0`) and the Fermat numbers are exactly the survivors.  These are the classical open problems, so the method fails precisely where it should.
