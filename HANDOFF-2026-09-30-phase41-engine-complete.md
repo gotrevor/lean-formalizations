@@ -1,6 +1,6 @@
 # HANDOFF 2026-09-30 — phase 41 (CoveringEngine.lean) CLOSED
 
-**Branch** `main` · HEAD `21595a0`.  `lake build` green (8760 jobs).  Target file **sorry-free**.
+**Branch** `main` · HEAD `c00ce5e` (this doc). Proof commit `be4d97a`, cleanup `21595a0`.  `lake build` green (8760 jobs).  Target file **sorry-free**.
 All four frozen statements `#print axioms`-clean `[propext, Classical.choice, Quot.sound]`.
 `scripts/fact-graph`: 29 hypotheses, unchanged.  Nothing in flight; no Aristotle job used.
 
