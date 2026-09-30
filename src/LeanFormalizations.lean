@@ -185,6 +185,7 @@ import LeanFormalizations.NumberTheory.Mills.TheoremA
 import LeanFormalizations.NumberTheory.Mills.TribonacciCovering
 import LeanFormalizations.NumberTheory.Mills.TheoremAEven
 import LeanFormalizations.NumberTheory.Mills.TheoremDQuadratic
+import LeanFormalizations.NumberTheory.Mills.TheoremDGeneral
 import LeanFormalizations.NumberTheory.Mills.FibonacciCoveringAllPrimes
 import LeanFormalizations.NumberTheory.Mills.LucasCoveringAllPrimes
 import LeanFormalizations.NumberTheory.Transcendence.MultisetGraeffe
