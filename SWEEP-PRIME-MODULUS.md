@@ -130,3 +130,53 @@ this phase does *not* transfer to entries: `U` has no composition identity of th
 - Phase 34 ✅ (`2eb97a9`): Fibonacci at every inert prime and at `c = 5`.
 - Phase 35 (DONE, see § above): Lucas traces at every odd prime, via the exact composition `L(c·m) = V_c(L(m), −1)` (`m` odd) and `|V_c(x, −1)| ≥ |x| + 3` for `x ≠ 0`.  An integer surviving `h` would force an integer point with `V_c(x) ∈ {x, x ± 2}`, hence `x = 0`, but `L(c^n) ≡ 1 (mod c)`.  This settles traces at odd `c` without any non-integrality proof.
 - Phase 36 (drafted): general Lucas `U(P,Q)` at odd inert `c`.
+
+## Phase 37 ✅ — Fibonacci at EVERY prime `c` (the split row is CLOSED)
+
+`NumberTheory/Mills/FibonacciAllPrimes.lean` is sorry-free; all four frozen statements are
+`#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`):
+`fib_odd_mul`, `fibOddPoly_far`, `not_dvd_fib_prime_pow`, `fib_prime_pow_add_not_prime_all`.
+
+**Result.** For *every* prime `c` and every integer `h`, `F(c^n) + h` is composite for infinitely
+many `n`.  No inertness, no `c ≡ ±1 (mod 5)` exclusion, no non-integrality proof.
+
+**The correction this phase records.**  Phase 35's closing note claimed the entry family `U` "has no
+composition identity of the form `U_(cm) = f(U_m)`".  That is false *when `m` is odd*: for odd `N`,
+
+    F((2j+1)N) = Φ_j(F N),   Φ_0 = x,  Φ_1 = 5x³ − 3x,  Φ_(j+2) = (5x² − 2)Φ_(j+1) − Φ_j.
+
+Reason: `A := fibM^N` has `det A = (−1)^N = −1` and `(tr A)² = 5F(N)² − 4` (Cassini), so
+Cayley–Hamilton gives `A² = (tr A)•A + 1` and hence `A⁴ = T•A² − 1` with `T = 5F(N)² − 2`, a
+coefficient depending only on `F(N)`.  Every entry of `A^(2j+1)` therefore satisfies the `Φ`
+recursion; entry `(0,1)` is `F((2j+1)N)`.  **The odd-index restriction is exactly what makes the
+determinant `−1` and so the coefficient a polynomial in the entry alone** — the phase-35 pessimism
+came from testing even indices.  Since `c^n` is odd for odd `c`, that is all the argument needs.
+
+**Route as formalized.**
+1. `fib_odd_mul` — as above; `fibOddPoly_eq_mul` also factors `Φ_j(x) = x · ψ_j(5x²−2)` with
+   `ψ_0 = 1`, `ψ_1 = t − 1`, `ψ_(j+2) = tψ_(j+1) − ψ_j` (`fibOddAux`).
+2. `fibOddPoly_far` — for `x ≠ 0`, `j ≥ 1`: `Φ_j(x) − x ∉ {0, 2, −2}`.  Via `fibOddAux_growth`
+   (`ψ` is ≥ 1 and strictly increasing once `t ≥ 3`) plus oddness `Φ_j(−x) = −Φ_j(x)`, so only
+   `x ≥ 1` needs work.  The single close call is `x = ±1, j = 1`, where the difference is exactly
+   `±1`; everywhere else it is `≥ 4` in absolute value.
+3. `not_dvd_fib_prime_pow` — `c ∤ F(c^n)` for prime `c ≠ 5`.  **Short new route:** the companion
+   identity `L(m)² − 5F(m)² = 4(−1)^m` (from `lucasL_eq_fib` + `cassini_int`) together with phase
+   35's `lucas_prime_pow_mod` (`L(c^n) ≡ 1 (mod c)`) gives `c ∣ 4(−1)^(c^n) − 1`, i.e. `c ∣ 3` or
+   `c ∣ 5`.  `c ∣ 3` forces `c = 3`, but `3^n` is odd, so only `c = 5` survives.  No rank of
+   apparition, no Legendre symbol, no `AdjoinRoot` Frobenius.
+4. Endgame — the phase-34 filter (`exists_fib_prime_pow_congr` +
+   `pow_dvd_sub_or_add_of_lt_padicValNat`) gives `c^(n/2) ∣ F(c^n) − x_n` with
+   `x_n ∈ {1 − h, −1 − h}`.  `dvd_fibOddPoly_sub` (Φ respects congruences) plus step 1 at
+   `N = c^n`, `2j + 1 = c` gives `c^(n/2) ∣ x_(n+1) − Φ_j(x_n)`.  The right side is bounded by a
+   constant `B` depending only on `c, h` (two candidate residues, one fixed polynomial), so one
+   `n` with `c^(n/2) > B` forces `x_(n+1) = Φ_j(x_n)`; since `x_(n+1) − x_n ∈ {0, ±2}`, step 2
+   forces `x_n = 0`, whence `c ∣ F(c^n)` against step 3.  **No case split on `h`, and only one
+   large `n` is needed** — the "finite sets ⟹ equality for large `n`" step in the file header turned
+   out to be unnecessary.
+5. `c = 2` delegates to phase 32, `c = 5` to phase 34's `fib_five_pow_add_not_prime`.
+
+**Now open:** phase 36 (general Lucas entries `U(P,Q)`).  Given the correction above, the natural
+first attempt there is the same odd-index Cayley–Hamilton composition: for odd `N`,
+`det(A_N) = (−Q)^N = −Q^N`, so the doubling coefficient `tr(A_N)² − 2det(A_N)` is a polynomial in
+`U(N)` *and* `Q^N`, not in `U(N)` alone.  That extra `Q^N` is the whole difficulty; for `Q = ±1` it
+is a sign and the phase-37 route should transfer verbatim.

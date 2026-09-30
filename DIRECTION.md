@@ -32,7 +32,17 @@ unchanged and the index grows) to get `|t_{n'}| = |t_n|` for arbitrarily large `
 
 ### original directive
 
-## 🎯 (phase 37): `F(c^n) + h` composite i.o. for EVERY prime `c` and every `h` — target `NumberTheory/Mills/FibonacciAllPrimes.lean` (4 frozen statements + frozen def `fibOddPoly`, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## ✅ DONE (phase 37, 1 lap, 2026-09-30): `F(c^n) + h` composite i.o. for EVERY prime `c`
+
+`NumberTheory/Mills/FibonacciAllPrimes.lean` is sorry-free; all four frozen statements are
+`#print axioms`-clean.  The split Fibonacci primes `c ≡ ±1 (mod 5)` are CLOSED — no non-integrality
+proof was needed.  Key correction to phase 35's pessimism: the entry family *does* have a
+composition identity at **odd** index, `F((2j+1)N) = Φ_j(F N)`, because `det(fibM^N) = −1` for odd
+`N`.  Full notes in `SWEEP-PRIME-MODULUS.md` § Phase 37.
+
+## 🎯 (phase 38, was 36): general Lucas entries `U(P,Q)` at odd `c` — see the sweep's phase-37 § for the `Q^N` obstruction and why `Q = ±1` should transfer verbatim
+
+### superseded directive (phase 37): `F(c^n) + h` composite i.o. for EVERY prime `c` and every `h` — target `NumberTheory/Mills/FibonacciAllPrimes.lean` (4 frozen statements + frozen def `fibOddPoly`, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 Closes the split-prime Maze row via phase 35's exact-composition idea (`F((2j+1)N) = Φ_j(F N)` for odd `N`).  Phase 35 (`6b7cd6e`) DONE.  (Phase 36, general Lucas `U(P,Q)` at inert odd `c`, is queued after this one.)
 
