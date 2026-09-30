@@ -79,7 +79,54 @@ where the sweep's survivors look non-integral.  There the `c`-adic limit of `F(c
 point and proving it is not an integer needs an algebraic argument, not the Frobenius sign flip.
 The Dickson-polynomial route noted above for traces is the closest available idea.
 
+## § Phase 35 — DONE (2026-09-30, 1 lap)
+
+`NumberTheory/Mills/LucasPrimePow.lean` is sorry-free; all frozen statements are
+`#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`).  **For every odd prime `c`, every
+integer `P` with `c ∤ P`, and every integer `h`, `V_(c^n)(P, −1) + h` fails to be prime for
+infinitely many `n`** — in particular `L(c^n) + h` (the `P = 1` case).  The trace family at odd `c`
+is therefore settled with no non-integrality proof, exactly as the header's route promised.  Nothing
+in that route failed; formalization notes:
+
+- **One trace lemma does all the algebra.**  `trace_pow_eq_lucasV : (B ^ k).trace =
+  lucasV B.trace B.det k` for any 2×2 integer `B`, proved by `Nat.twoStepInduction` off the explicit
+  Cayley–Hamilton `B^2 = (tr B) • B − (det B) • 1`.  Composition (`lucasV_mul_odd`), doubling
+  (`lucasV_two_mul`, needed only for the `c = 2` half of `lucas_prime_pow_mod`) and the Frobenius
+  congruence are all instances of it.
+- **Frobenius needs no field extension.**  `V_c(x,−1) ≡ x (mod c)` comes from the binomial theorem
+  for the two *commuting* matrices `B = !![x,1;1,0]` and `B' = !![0,−1;−1,x]`, whose sum is the
+  scalar `diagonal (fun _ => x)` and which have the same trace `x` and determinant `−1`.
+  `Commute.add_pow` plus `Matrix.trace_sum` gives `2x^c = V_c + V_c + (c-divisible middle)`, and
+  `c` odd cancels the `2`.  No `AdjoinRoot`, no linear-independence/degree argument, no
+  `add_pow_char` — and `trace_mul_natCast` is the only glue lemma (`tr (M * (k : Matrix)) =
+  k * tr M`).  This is markedly shorter than phase 34's inert-prime Frobenius.
+- **Monotonicity is recovered by a sign WLOG.**  `SharedConjecture.exists_trace_pow_congr` is used
+  through the same "bigger prime divides smaller" endgame as phase 34, which needs `t n < t (n+j)`.
+  For `P ≤ −1` the trace alternates, so instead of phase 33's iterated-return trick we use
+  `lucasV (−x) (−1) k = (−1)^k lucasV x (−1) k`: at odd `c^n` the whole sequence just flips sign, so
+  the theorem for `(P, h)` is the theorem for `(−P, −h)` composed with `Prime (−z) ↔ Prime z`.  The
+  main argument then only ever runs at `P ≥ 1`, where `V_k` is strictly increasing from `k = 1`
+  (`lucasV_pos_lt`) and `k ≤ V_k`.
+- **The endgame has no case split on `h` at all** — cleaner than both phase 32 and phase 34.  The
+  filter at `n` and `n+1` gives `V(c^n) ≡ x_n` and `V(c^(n+1)) ≡ x_(n+1) (mod c^(n/2))` with
+  `x_n, x_(n+1) ∈ {1−h, −1−h}`; composition plus `dvd_lucasV_sub` (`lucasV · q k` respects
+  congruences, since it is a polynomial in its first argument) turns this into
+  `c^(n/2) ∣ lucasV x_n (−1) c − x_(n+1)`.  If `x_n ≠ 0` then `|lucasV x_n (−1) c| ≥ |x_n| + 3`
+  while `|x_(n+1)| ≤ |x_n| + 2`, so the difference is nonzero and bounded by a constant depending
+  only on `c` and `h`; choosing `n` with `c^(n/2)` beyond that bound forces `x_n = 0`.  Then
+  `c ∣ V(c^n)`, contradicting `V(c^n) ≡ P (mod c)` and `c ∤ P`.
+- **`c = 2` in `lucas_prime_pow_mod`** (the one statement that does not assume `c ≠ 2`) is the
+  doubling identity mod 2: `L(2^(n+1)) = L(2^n)² − 2(−1)^(2^n)`, so oddness propagates from
+  `L(1) = 1`.  The main theorem still genuinely excludes `c = 2` (`L(2^n)` at `h = 0` is
+  Fermat-type).
+
+**Still open:** the split Fibonacci primes `c ≡ ±1 (mod 5)` (Maze-row material, unchanged), and the
+general Lucas **entry** family `U(P,Q)` at odd inert `c` (phase 36 draft).  Note the trace route of
+this phase does *not* transfer to entries: `U` has no composition identity of the form
+`U_(cm) = f(U_m)`.
+
 ## Progress
+- Phase 35 ✅: Lucas traces `V_(c^n)(P,−1) + h` (incl. `L(c^n) + h`) composite i.o. at every odd prime `c`, for every `h` and every `c ∤ P`.
 - Phase 34 ✅ (`2eb97a9`): Fibonacci at every inert prime and at `c = 5`.
-- Phase 35 (planted): Lucas traces at every odd prime, via the exact composition `L(c·m) = V_c(L(m), −1)` (`m` odd) and `|V_c(x, −1)| ≥ |x| + 3` for `x ≠ 0`.  An integer surviving `h` would force an integer point with `V_c(x) ∈ {x, x ± 2}`, hence `x = 0`, but `L(c^n) ≡ 1 (mod c)`.  This settles traces at odd `c` without any non-integrality proof.
+- Phase 35 (DONE, see § above): Lucas traces at every odd prime, via the exact composition `L(c·m) = V_c(L(m), −1)` (`m` odd) and `|V_c(x, −1)| ≥ |x| + 3` for `x ≠ 0`.  An integer surviving `h` would force an integer point with `V_c(x) ∈ {x, x ± 2}`, hence `x = 0`, but `L(c^n) ≡ 1 (mod c)`.  This settles traces at odd `c` without any non-integrality proof.
 - Phase 36 (drafted): general Lucas `U(P,Q)` at odd inert `c`.
