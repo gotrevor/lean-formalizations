@@ -2,7 +2,9 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 (phase 54, CURRENT): Theorem A′ (any `d` when `h ≠ 0`) + Tetranacci `T₄(2^n) + h` composite i.o. for EVERY `h` (`h = 0` by parity via the period) — target `NumberTheory/Mills/TheoremAEven.lean` (2 frozen statements + def `tetra`; route in header; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 55, CURRENT, MULTI-PHASE): **Theorem D, quadratic case** (Saito 1.7 for `c^n + s`): `⌊α^(c^n+s)⌋` not prime i.o. for quadratic Pisot `α`, `c ∤ b·disc`, `s ≥ 4` — target `NumberTheory/Mills/TheoremDQuadratic.lean` (1 frozen statement; number-field route WITHOUT completions in header, steps 1–5).  **Decomposing into named sub-lemmas is progress**; laps succeed by advancing the crux (Teichmüller in `𝒪_K` mod `𝔓^(n+1)`, spectral trace, separation, size).  Frozen also: all earlier statements, Literature/; stop: that file sorry-free
+
+## ✅ DONE (phase 54): Theorem A′ (any `d` when `h ≠ 0`) + Tetranacci `T₄(2^n) + h` composite i.o. for EVERY `h` (`h = 0` by parity via the period) — target `NumberTheory/Mills/TheoremAEven.lean` (2 frozen statements + def `tetra`; route in header; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 ## ✅ DONE (phase 53): prime-free intervals `[T(3^n) − 3, T(3^n) + 3]` i.o. (Tribonacci; Theorem C for order 3) by an explicit covering certificate (`n ≡ 95 mod 1980`, primes 5, 7, 13, 47, 53, 593) — target `NumberTheory/Mills/TribonacciCovering.lean` (def `tribCoverPrime` + 3 frozen statements, certificate table and route in header; `native_decide` was NOT needed — all certificates are `decide +kernel`, so the three theorems are axiom-clean; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
