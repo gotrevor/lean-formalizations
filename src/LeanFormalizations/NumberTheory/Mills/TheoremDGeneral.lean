@@ -939,6 +939,167 @@ theorem not_exists_spectral_of_large (f : ℤ[X]) (hmon : f.Monic) (hirr : Irred
       _ = (f.natDegree : ℝ) + 1 := by ring
   linarith
 
+
+/-! ### Steps 1c–1d: growth, the filter and the stuck alternation (degree `d`) -/
+
+/-- Beyond a threshold the floors of `α^N` strictly increase: `α^(N+1) ≥ α^N + 1` once
+`α^N (α - 1) ≥ 1`.  (In degree `d` one cannot ask for `α ≥ φ`: the plastic number is smaller.) -/
+theorem exists_floor_strictMono {α : ℝ} (hα : 1 < α) :
+    ∃ N₀ : ℕ, ∀ N M : ℕ, N₀ ≤ N → N < M → ⌊α ^ N⌋ < ⌊α ^ M⌋ := by
+  have hten : Tendsto (fun N : ℕ => α ^ N) atTop atTop := tendsto_pow_atTop_atTop_of_one_lt hα
+  obtain ⟨N₀, hN₀⟩ := (hten.eventually_ge_atTop (1 / (α - 1))).exists_forall_of_atTop
+  refine ⟨N₀, fun N M hN hNM => ?_⟩
+  have hα0 : (0 : ℝ) < α := by linarith
+  have hstep : α ^ N + 1 ≤ α ^ (N + 1) := by
+    have h1 : 1 / (α - 1) ≤ α ^ N := hN₀ N hN
+    have h2 : 1 ≤ α ^ N * (α - 1) := by
+      rw [div_le_iff₀ (by linarith)] at h1
+      linarith
+    have : α ^ (N + 1) = α ^ N * α := by ring
+    rw [this]; nlinarith
+  have hmono : α ^ (N + 1) ≤ α ^ M := pow_le_pow_right₀ (le_of_lt hα) (by omega)
+  have : (⌊α ^ N⌋ : ℤ) + 1 ≤ ⌊α ^ M⌋ := by
+    have h3 : (⌊α ^ N⌋ : ℝ) + 1 ≤ α ^ M := by
+      have := Int.floor_le (α ^ N)
+      linarith
+    exact Int.le_floor.2 (by push_cast; linarith)
+  omega
+
+/-- The floors along `c^n + s` exceed any bound eventually. -/
+theorem exists_floor_gt {α : ℝ} (hα : 1 < α) {c : ℕ} (hc : 2 ≤ c) (s : ℕ) (B : ℤ) :
+    ∃ n₀ : ℕ, ∀ n, n₀ ≤ n → B < ⌊α ^ (c ^ n + s)⌋ := by
+  have hten : Tendsto (fun N : ℕ => α ^ N) atTop atTop := tendsto_pow_atTop_atTop_of_one_lt hα
+  have hle : ∀ n : ℕ, n ≤ c ^ n + s := by
+    intro n
+    have h1 : n < 2 ^ n := Nat.lt_two_pow_self
+    have h2 : (2 : ℕ) ^ n ≤ c ^ n := Nat.pow_le_pow_left hc n
+    omega
+  have hcomp : Tendsto (fun n : ℕ => α ^ (c ^ n + s)) atTop atTop := by
+    refine tendsto_atTop_mono (fun n => ?_) hten
+    exact pow_le_pow_right₀ (le_of_lt hα) (hle n)
+  obtain ⟨n₀, hn₀⟩ := (hcomp.eventually_gt_atTop ((B : ℝ) + 1)).exists_forall_of_atTop
+  refine ⟨n₀, fun n hn => ?_⟩
+  have h := hn₀ n hn
+  have : (B : ℝ) + 1 < α ^ (c ^ n + s) := h
+  have := Int.le_floor.2 (show ((B + 1 : ℤ) : ℝ) ≤ α ^ (c ^ n + s) by push_cast; linarith)
+  omega
+
+theorem orderOf_dvd_glCard_d {d p : ℕ} (hp : p.Prime) (D : GL (Fin d) (ZMod p)) :
+    orderOf D ∣ glCard d p := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  have hcard : Nat.card (GL (Fin d) (ZMod p)) = glCard d p := by
+    rw [Matrix.card_GL_field]; simp [glCard, ZMod.card]
+  rw [← hcard]
+  exact orderOf_dvd_natCard D
+
+/-- Trace congruence from an order bound. -/
+theorem traceSeq_congr_of_order (f : ℤ[X]) {p : ℕ} (hp : p.Prime)
+    (hpdet : ¬ (p : ℤ) ∣ (compM ℤ f).det) {M : ℕ}
+    (hord : ∀ D : GL (Fin f.natDegree) (ZMod p),
+      (D : Matrix (Fin f.natDegree) (Fin f.natDegree) (ZMod p)) =
+        (Int.castRingHom (ZMod p)).mapMatrix (compM ℤ f) → orderOf D ∣ M)
+    {N N' : ℕ} (hle : N ≤ N') (hdvd : M ∣ N' - N) :
+    (p : ℤ) ∣ traceSeq f N' - traceSeq f N :=
+  TheoremDGround.dvd_trace_sub_of_orderOf_dvd (compM ℤ f) hp hpdet hle
+    (fun D hD => (hord D hD).trans hdvd)
+
+/-- **The filter.**  With `A = v_c(M) ≤ n`, the values `V(c^(n+kj) + s)` are all congruent to
+`V(c^n + s)` mod `p`, for a fixed period `j ≥ 1`. -/
+theorem traceSeq_stuck_period (f : ℤ[X]) {p : ℕ} (hp : p.Prime)
+    (hpdet : ¬ (p : ℤ) ∣ (compM ℤ f).det) {c : ℕ} (hc : c.Prime) {M : ℕ} (hM0 : 0 < M)
+    (hord : ∀ D : GL (Fin f.natDegree) (ZMod p),
+      (D : Matrix (Fin f.natDegree) (Fin f.natDegree) (ZMod p)) =
+        (Int.castRingHom (ZMod p)).mapMatrix (compM ℤ f) → orderOf D ∣ M)
+    {n : ℕ} (hA : M.factorization c ≤ n) (s : ℕ) :
+    ∃ j, 1 ≤ j ∧ ∀ k, 1 ≤ k →
+      (p : ℤ) ∣ traceSeq f (c ^ (n + k * j) + s) - traceSeq f (c ^ n + s) := by
+  set A := M.factorization c with hAdef
+  set o := M / c ^ A with hodef
+  have hsplit : c ^ A * o = M := by
+    rw [hAdef, hodef]; exact Nat.ordProj_mul_ordCompl_eq_self M c
+  have hcno : ¬ c ∣ o := by rw [hodef, hAdef]; exact Nat.not_dvd_ordCompl hc hM0.ne'
+  have hopos : 0 < o := by
+    rcases Nat.eq_zero_or_pos o with h | h
+    · rw [h, mul_zero] at hsplit; omega
+    · exact h
+  have hcop : Nat.Coprime c o := (Nat.Prime.coprime_iff_not_dvd hc).2 hcno
+  refine ⟨o.totient, Nat.totient_pos.2 hopos, fun k hk => ?_⟩
+  have hpow : c ^ (k * o.totient) % o = 1 % o := by
+    have h1 : c ^ o.totient ≡ 1 [MOD o] := Nat.ModEq.pow_totient hcop
+    have := h1.pow k
+    rw [← pow_mul, one_pow] at this
+    rw [mul_comm k o.totient]
+    exact this
+  obtain ⟨Y, hY⟩ : ∃ Y, c ^ (k * o.totient) = Y + 1 := by
+    have : 1 ≤ c ^ (k * o.totient) := Nat.one_le_pow _ _ hc.pos
+    exact ⟨c ^ (k * o.totient) - 1, by omega⟩
+  have hoY : o ∣ Y := by
+    have h2 : Nat.ModEq o 1 (c ^ (k * o.totient)) := hpow.symm
+    have h3 := (Nat.modEq_iff_dvd' (by omega : 1 ≤ c ^ (k * o.totient))).1 h2
+    rw [hY] at h3
+    simpa using h3
+  have hNN : c ^ (n + k * o.totient) + s - (c ^ n + s) = c ^ n * Y := by
+    rw [pow_add, hY]; ring_nf; omega
+  have hle : c ^ n + s ≤ c ^ (n + k * o.totient) + s := by
+    have : c ^ n ≤ c ^ (n + k * o.totient) :=
+      Nat.pow_le_pow_right hc.one_le (by omega)
+    omega
+  refine traceSeq_congr_of_order f hp hpdet hord hle ?_
+  rw [hNN, ← hsplit]
+  exact Nat.mul_dvd_mul (pow_dvd_pow c hA) hoY
+
+/-- **Step 1d (the stuck alternation).**  At a stuck `n` the offset `ε` alternates along an
+arithmetic progression: otherwise the prime `p_n` divides the strictly larger prime `p_(n+kj)`. -/
+theorem stuck_alternation_general (f : ℤ[X]) {α : ℝ} (hα : 1 < α) {c : ℕ} (hc : c.Prime)
+    {s n₀ : ℕ} (ε : ℕ → Bool) (off : Bool → ℤ)
+    (hoff : ∀ m, n₀ ≤ m → ⌊α ^ (c ^ m + s)⌋ = traceSeq f (c ^ m + s) + off (ε m))
+    (hprime : ∀ m, n₀ ≤ m → (⌊α ^ (c ^ m + s)⌋₊).Prime)
+    (hpdet : ∀ m, n₀ ≤ m → ¬ ((⌊α ^ (c ^ m + s)⌋₊ : ℕ) : ℤ) ∣ (compM ℤ f).det)
+    (hgrow : ∀ m m', n₀ ≤ m → m < m' → ⌊α ^ (c ^ m + s)⌋ < ⌊α ^ (c ^ m' + s)⌋)
+    {n : ℕ} (hn : n₀ ≤ n)
+    (hstuck : padicValNat c (glCard f.natDegree (⌊α ^ (c ^ n + s)⌋₊)) ≤ n) :
+    ∃ j, 1 ≤ j ∧ ∀ k, 1 ≤ k → ε (n + k * j) ≠ ε n := by
+  classical
+  have hα0 : (0 : ℝ) ≤ α := by linarith
+  have hfl : ∀ m : ℕ, ((⌊α ^ (c ^ m + s)⌋₊ : ℕ) : ℤ) = ⌊α ^ (c ^ m + s)⌋ := fun m =>
+    Int.natCast_floor_eq_floor (by positivity)
+  have hPp : (⌊α ^ (c ^ n + s)⌋₊).Prime := hprime n hn
+  have hord : ∀ D : GL (Fin f.natDegree) (ZMod (⌊α ^ (c ^ n + s)⌋₊)),
+      (D : Matrix (Fin f.natDegree) (Fin f.natDegree) (ZMod (⌊α ^ (c ^ n + s)⌋₊))) =
+        (Int.castRingHom (ZMod (⌊α ^ (c ^ n + s)⌋₊))).mapMatrix (compM ℤ f) →
+        orderOf D ∣ glCard f.natDegree (⌊α ^ (c ^ n + s)⌋₊) :=
+    fun D _ => orderOf_dvd_glCard_d hPp D
+  have hA : (glCard f.natDegree (⌊α ^ (c ^ n + s)⌋₊)).factorization c ≤ n := by
+    rwa [Nat.factorization_def _ hc]
+  have hQpos : 0 < glCard f.natDegree (⌊α ^ (c ^ n + s)⌋₊) := by
+    rcases Nat.eq_zero_or_pos f.natDegree with h | h
+    · rw [glCard, h]; simp
+    · exact glCard_pos h hPp.two_le
+  obtain ⟨j, hj1, hjd⟩ :=
+    traceSeq_stuck_period f hPp (hpdet n hn) hc hQpos hord hA s
+  refine ⟨j, hj1, fun k hk => ?_⟩
+  intro heq
+  have hmn : n < n + k * j := by
+    have : 1 ≤ k * j := Nat.one_le_iff_ne_zero.2 (by positivity)
+    omega
+  have hm0 : n₀ ≤ n + k * j := by omega
+  have he1 := hoff (n + k * j) hm0
+  have he2 := hoff n hn
+  have hdvd : ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ) ∣
+      ⌊α ^ (c ^ (n + k * j) + s)⌋ - ⌊α ^ (c ^ n + s)⌋ := by
+    rw [he1, he2, heq]
+    simpa using hjd k hk
+  rw [← hfl (n + k * j), ← hfl n] at hdvd
+  have hQp : (⌊α ^ (c ^ (n + k * j) + s)⌋₊).Prime := hprime _ hm0
+  have hPQ : ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ) ∣ ((⌊α ^ (c ^ (n + k * j) + s)⌋₊ : ℕ) : ℤ) := by
+    have := dvd_add hdvd (dvd_refl ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ))
+    simpa using this
+  have hnat : (⌊α ^ (c ^ n + s)⌋₊) ∣ (⌊α ^ (c ^ (n + k * j) + s)⌋₊) := by exact_mod_cast hPQ
+  have heqPQ := (Nat.prime_dvd_prime_iff_eq hPp hQp).1 hnat
+  have hlt := hgrow n (n + k * j) hn hmn
+  rw [← hfl n, ← hfl (n + k * j), heqPQ] at hlt
+  exact lt_irrefl _ hlt
+
 /-- **Theorem D, every degree** (all roots `c`-units). -/
 theorem floor_pow_prime_pow_add_not_prime_general (f : ℤ[X]) (hmon : f.Monic)
     (hirr : Irreducible f) (hdeg : 2 ≤ f.natDegree) {α : ℝ} (hroot : aeval α f = 0)
