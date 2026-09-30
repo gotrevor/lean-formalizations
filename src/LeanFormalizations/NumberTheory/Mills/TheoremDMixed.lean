@@ -921,6 +921,70 @@ theorem not_exists_spectral_mixed (f : ℤ[X]) (hmon : f.Monic) (hirr : Irreduci
       _ = (f.natDegree : ℝ) + 1 := by ring
   linarith
 
+
+/-- Ring homs commute with evaluating an integer polynomial. -/
+theorem eval_map_int_hom {A B : Type*} [CommRing A] [CommRing B] (τ : A →+* B) (f : ℤ[X])
+    (z : A) : τ ((f.map (Int.castRingHom A)).eval z)
+      = (f.map (Int.castRingHom B)).eval (τ z) := by
+  rw [Polynomial.eval_map, Polynomial.eval_map, Polynomial.hom_eval₂]
+  congr 1
+  exact RingHom.ext fun n => by simp
+
+/-- **Steps 3–4 assembled.**  From a solution over the algebraic numbers with *some* nonzero
+spectral value, an automorphism produces a complex solution whose spectral value at the
+distinguished root `α` is nonzero. -/
+theorem exists_complex_solution_nonzero_at_root (f : ℤ[X]) (hmon : f.Monic)
+    (hirr : Irreducible f) (hd : 1 ≤ f.natDegree) {α : ℝ}
+    (hrootC : (f.map (Int.castRingHom ℂ)).eval (α : ℂ) = 0)
+    {Q m s : ℕ} (hQ : 1 ≤ Q) {ε : ℤ}
+    (x : Fin f.natDegree → AlgQ) (w : AlgQ)
+    (hT : polyMat AlgQ f x ^ (Q + 1) = polyMat AlgQ f x)
+    (hdet : (1 - polyMat AlgQ f x ^ Q).det = 0) (hw : w ^ m = 1)
+    (htr : (polyMat AlgQ f x * compM AlgQ f ^ s).trace = w - (ε : AlgQ)) :
+    ∃ (y : Fin f.natDegree → ℂ) (v : ℂ),
+      polyMat ℂ f y ^ (Q + 1) = polyMat ℂ f y ∧ polyVal y (α : ℂ) ≠ 0 ∧ v ^ m = 1 ∧
+      (polyMat ℂ f y * compM ℂ f ^ s).trace = v - (ε : ℂ) := by
+  classical
+  set ι : AlgQ →+* ℂ := (algebraicClosure ℚ ℂ).val.toRingHom with hι
+  have hιinj : Function.Injective ι := fun a b hab => by
+    exact Subtype.ext hab
+  -- the roots of `f` in the algebraic numbers, and one with nonzero spectral value
+  obtain ⟨e, hinj, he, _⟩ := exists_root_enum_field (K := AlgQ) f hmon hirr
+  obtain ⟨k, hk⟩ := exists_polyVal_pow_eq_one f hmon e he hinj x hdet
+  have hknz : polyVal x (e k) ≠ 0 := by
+    intro h0
+    rw [h0, zero_pow (by omega : Q ≠ 0)] at hk
+    exact zero_ne_one hk
+  -- `α` is an algebraic number, and a root of `f` there
+  have halgα : IsAlgebraic ℚ (α : ℂ) := by
+    refine ⟨f.map (Int.castRingHom ℚ), (hmon.map _).ne_zero, ?_⟩
+    rw [Polynomial.aeval_def, Polynomial.eval₂_eq_eval_map, Polynomial.map_map,
+      show (algebraMap ℚ ℂ).comp (Int.castRingHom ℚ) = Int.castRingHom ℂ from
+        RingHom.ext fun n => by simp]
+    exact hrootC
+  set α' : AlgQ := ⟨(α : ℂ), (mem_algebraicClosure_iff).2 halgα⟩ with hα'
+  have hια' : ι α' = (α : ℂ) := rfl
+  have hα'root : (f.map (Int.castRingHom AlgQ)).eval α' = 0 := by
+    refine hιinj ?_
+    rw [eval_map_int_hom ι f α', hια', hrootC, map_zero]
+  -- the automorphism
+  obtain ⟨τ, hτ⟩ := exists_algEquiv_of_roots f hmon hirr hd (he k) hα'root
+  set τr : AlgQ →+* AlgQ := τ.toAlgHom.toRingHom with hτr
+  obtain ⟨hT1, hw1, htr1⟩ := transport_solution τr f x w hT hw htr
+  obtain ⟨hT2, hw2, htr2⟩ :=
+    transport_solution ι f (fun t => τr (x t)) (τr w) hT1 hw1 htr1
+  refine ⟨fun t => ι (τr (x t)), ι (τr w), hT2, ?_, hw2, htr2⟩
+  -- the spectral value at `α` is the image of a nonzero one
+  have hval : polyVal (fun t => ι (τr (x t))) (α : ℂ) = ι (τr (polyVal x (e k))) := by
+    have h1 : τr (polyVal x (e k)) = polyVal (fun t => τr (x t)) (τr (e k)) :=
+      polyVal_map τr x (e k)
+    have h2 : τr (e k) = α' := hτ
+    rw [h1, h2, polyVal_map ι (fun t => τr (x t)) α', hια']
+  rw [hval]
+  intro h0
+  have h1 : τr (polyVal x (e k)) = 0 := hιinj (by rw [h0, map_zero])
+  exact hknz (τ.injective (by simpa [hτr] using h1))
+
 /-- **Theorem D (full):** some root of `f` is a `c`-unit, i.e. `f ≢ X^d (mod c)`. -/
 theorem floor_pow_prime_pow_add_not_prime_full (f : ℤ[X]) (hmon : f.Monic)
     (hirr : Irreducible f) (hdeg : 2 ≤ f.natDegree) {α : ℝ} (hroot : aeval α f = 0)
