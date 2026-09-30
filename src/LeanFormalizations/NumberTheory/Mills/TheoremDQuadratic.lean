@@ -782,6 +782,49 @@ theorem torsion_congr_levels (a b : ℤ) {c : ℕ} (hc : c.Prime) (hcb : ¬ (c :
     rw [hV s, hV (s + 1), ← htr, ← hV (c ^ n + s)]
     exact hdvd
 
+/-- `torsionPair` is a polynomial map, so it commutes with ring homomorphisms. -/
+theorem torsionPair_map {R S : Type*} [CommRing R] [CommRing S] (f : R →+* S) (a b x y : R)
+    (N : ℕ) :
+    ((torsionPair (f a) (f b) (f x) (f y) N).1 = f (torsionPair a b x y N).1) ∧
+    ((torsionPair (f a) (f b) (f x) (f y) N).2 = f (torsionPair a b x y N).2) := by
+  induction N with
+  | zero => simp [torsionPair]
+  | succ N ih =>
+      obtain ⟨ih1, ih2⟩ := ih
+      constructor <;> simp only [torsionPair, ih1, ih2, map_mul, map_sub, map_add] <;> ring
+
+/-- **Clearing denominators.**  Every rational polynomial has a nonzero integer `D` such that
+`D · g` takes integer values at every integer point. -/
+theorem exists_denominator {σ : Type*} (g : MvPolynomial σ ℚ) :
+    ∃ D : ℤ, D ≠ 0 ∧ ∀ p : σ → ℤ, ∃ z : ℤ,
+      (D : ℚ) * MvPolynomial.eval (fun i => ((p i : ℤ) : ℚ)) g = (z : ℚ) := by
+  induction g using MvPolynomial.induction_on with
+  | C q =>
+      refine ⟨(q.den : ℤ), by exact_mod_cast q.den_nz, fun p => ⟨q.num, ?_⟩⟩
+      simp only [MvPolynomial.eval_C]
+      rw [show ((q.den : ℤ) : ℚ) = (q.den : ℚ) by push_cast; ring]
+      exact_mod_cast Rat.den_mul_eq_num q
+  | add g₁ g₂ ih₁ ih₂ =>
+      obtain ⟨D₁, hD₁, h₁⟩ := ih₁
+      obtain ⟨D₂, hD₂, h₂⟩ := ih₂
+      refine ⟨D₁ * D₂, mul_ne_zero hD₁ hD₂, fun p => ?_⟩
+      obtain ⟨z₁, hz₁⟩ := h₁ p
+      obtain ⟨z₂, hz₂⟩ := h₂ p
+      refine ⟨D₂ * z₁ + D₁ * z₂, ?_⟩
+      rw [map_add]
+      push_cast
+      push_cast at hz₁ hz₂
+      linear_combination (D₂ : ℚ) * hz₁ + (D₁ : ℚ) * hz₂
+  | mul_X g n ih =>
+      obtain ⟨D, hD, h⟩ := ih
+      refine ⟨D, hD, fun p => ?_⟩
+      obtain ⟨z, hz⟩ := h p
+      refine ⟨z * p n, ?_⟩
+      rw [map_mul, MvPolynomial.eval_X]
+      push_cast
+      push_cast at hz
+      linear_combination ((p n : ℤ) : ℚ) * hz
+
 /-- **Step 3 (transfer).**  A system of integer polynomial equations solvable modulo `c^k` for
 every `k` has a complex solution — by the Nullstellensatz: otherwise `1` is in the ideal over `ℚ`,
 hence a nonzero integer `N` is in the ideal over `ℤ`, and `c^k ∣ N` for all `k`. -/
