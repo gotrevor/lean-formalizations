@@ -1,5 +1,11 @@
 # HANDOFF — 2026-09-30, phase 48 COMPLETE
 
+## Coordinates
+- branch: `main`
+- HEAD at write time: `01948c7` (proof commit `5ae4107`)
+- working tree: clean; `lake build` green (8769 jobs)
+- treadmill: STOP requested after this lap; not relaunching
+
 ## State
 `src/LeanFormalizations/NumberTheory/Mills/UnipotentTrace.lean` is **sorry-free**.
 All three frozen statements proved and axiom-clean (`propext, Classical.choice, Quot.sound`):
@@ -37,7 +43,12 @@ Transport lemmas: `red_sub`, `red_pow`, `red_trace`, `red_adjugate`, `red_smul_o
 No statement was false; `ROADMAP-PRIME-TOWERS.md` needed no counterexample entry.
 Nothing outside the target file was touched.
 
-## Next
+## Next (exact steps for a fresh session)
+1. Read `DIRECTION.md` CURRENT DIRECTIVE first — altitude laps own it and it outranks this pointer.
+2. Grep `src/LeanFormalizations/Maze.lean` before planting phase 49 (records routes already walked/closed).
+3. If phase 49 continues `ShiftedTraceRigidity`: its sub-nodes are `PROOF-THEOREM-E.md` Steps 3–6; R4 (Step 5) is now CLOSED by this file. Identify the next unclosed step there and plant it as a frozen-statement file under `NumberTheory/Mills/`, same pattern as phases 46–48.
+4. Gate as usual: target file sorry-free, `#print axioms` on each frozen statement, then `scripts/fact-graph`.
+
 Phase 48 is sub-node **R4** of `ShiftedTraceRigidity` (`PROOF-THEOREM-E.md` Step 5).
 Remaining sub-nodes of that node are the next planting target; `DIRECTION.md` is owned by
 altitude laps and should be consulted before picking one.
