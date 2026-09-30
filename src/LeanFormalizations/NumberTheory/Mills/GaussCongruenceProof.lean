@@ -458,6 +458,57 @@ lemma dvd_pow_sub_self {p : ℕ} (hp : p.Prime) (a : ℤ) : (p : ℤ) ∣ a ^ p 
   ring
 
 
+
+
+lemma rotE_pow_self (N : ℕ) [NeZero N] : (rotE N n) ^ N = 1 := by
+  ext w t
+  rw [rotE_pow]
+  have h0 : Fin.ofNat N N = 0 := by ext; simp [Fin.ofNat]
+  rw [h0, add_zero]
+  rfl
+
+/-- the free part of the walk sum is divisible by the length times the common divisor -/
+lemma dvd_sum_nonfixed (p k : ℕ) (hp : p.Prime) [NeZero (p ^ k * p)]
+    (F : (Fin (p ^ k * p) → Fin n) → ℤ)
+    (hinv : ∀ w, F ((rotE (p ^ k * p) n) w) = F w) (q : ℤ) (hq : ∀ w, q ∣ F w) :
+    ((p : ℤ) ^ (k + 1) * q) ∣
+      ∑ w ∈ Finset.univ.filter
+        (fun w : Fin (p ^ k * p) → Fin n => ((rotE (p ^ k * p) n) ^ (p ^ k)) w ≠ w), F w := by
+  classical
+  have hN : p ^ k * p = p ^ (k + 1) := (pow_succ p k).symm
+  have main : ((p ^ k * p : ℕ) : ℤ) * q ∣
+      ∑ w ∈ Finset.univ.filter
+        (fun w : Fin (p ^ k * p) → Fin n => ((rotE (p ^ k * p) n) ^ (p ^ k)) w ≠ w), F w := by
+    refine dvd_sum_of_free (rotE_pow_self (p ^ k * p)) (NeZero.pos _) F hinv _ ?_ ?_ q hq
+    · intro w hw
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hw ⊢
+      intro hc
+      refine hw ?_
+      have hcomm : ((rotE (p ^ k * p) n) ^ (p ^ k)) ((rotE (p ^ k * p) n) w)
+          = (rotE (p ^ k * p) n) (((rotE (p ^ k * p) n) ^ (p ^ k)) w) := by
+        simp only [← Equiv.Perm.mul_apply]
+        rw [((Commute.refl (rotE (p ^ k * p) n)).pow_left (p ^ k)).eq]
+      rw [hcomm] at hc
+      exact (rotE (p ^ k * p) n).injective hc
+    · intro w hw j hj hjN
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hw
+      intro hc
+      exact hw (pow_dvd_period hp hN w j hj hjN hc)
+  have hcast : ((p ^ k * p : ℕ) : ℤ) = (p : ℤ) ^ (k + 1) := by push_cast; ring
+  rwa [hcast] at main
+
+/-- walk sum split into the free part and the `p`-fold repetitions -/
+lemma sum_split (p k : ℕ) [NeZero (p ^ k)] [NeZero (p ^ k * p)]
+    (F : (Fin (p ^ k * p) → Fin n) → ℤ) :
+    ∑ w : Fin (p ^ k * p) → Fin n, F w
+      = (∑ w ∈ Finset.univ.filter
+          (fun w : Fin (p ^ k * p) → Fin n => ((rotE (p ^ k * p) n) ^ (p ^ k)) w ≠ w), F w)
+        + ∑ u : Fin (p ^ k) → Fin n, F (repw (p ^ k) p n u) := by
+  classical
+  rw [← sum_over_fixed (p ^ k) p F]
+  exact (Finset.sum_filter_add_sum_filter_not Finset.univ _ F).symm
+
+
 end Necklace
 
 /-- **The Gauss congruence for traces holds** (discharging the Literature hypothesis). -/
