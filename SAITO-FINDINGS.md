@@ -24,7 +24,7 @@ K. Saito, *Intervals without primes near an iterated linear recurrence sequence*
 
 `R(n) = c^n + s` works for every Pisot `α` of degree `d` whose minimal polynomial `f` has `c ∤ f(0)`, as soon as `α^s > d + 1`.  This is **Lean-checked**: [`TheoremDGeneral.floor_pow_prime_pow_add_not_prime_general`](src/LeanFormalizations/NumberTheory/Mills/TheoremDGeneral.lean).
 - **Degree 3:** since `κ^5 > 4` for the smallest Pisot number `κ`, `R(n) = c^n + 5` works for **every cubic Pisot `α` with `c ∤ N(α)`**.  For example, `⌊ρ^(c^n + 5)⌋` is composite i.o. for the plastic number `ρ` and every prime `c` (Lean).
-- The paper proof extends this to `f ≢ X^d (mod c)`, where some but not all roots are `c`-units: [PROOF-THEOREM-D.md](PROOF-THEOREM-D.md).  The remaining class `f ≡ X^d (mod c)` is out of reach for this method with *any* non-reversible `R`: `α = 2 + √2` at `c = 2` makes every value `≡ −1` to growing `c`-adic precision.
+- The same holds whenever **some** root is a `c`-unit (`f ≢ X^d (mod c)`), also Lean-checked: [`TheoremDMixed.floor_pow_prime_pow_add_not_prime_full`](src/LeanFormalizations/NumberTheory/Mills/TheoremDMixed.lean).  Paper proof: [PROOF-THEOREM-D.md](PROOF-THEOREM-D.md).  The remaining class `f ≡ X^d (mod c)` is out of reach for this method with *any* non-reversible `R`: `α = 2 + √2` at `c = 2` makes every value `≡ −1` to growing `c`-adic precision.
 
 ## Problem 1.1: not solved
 

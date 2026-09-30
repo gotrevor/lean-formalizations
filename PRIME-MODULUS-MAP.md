@@ -47,7 +47,9 @@ One page, one row per theorem.  Everything here was proved 2026-09-29/30, uncond
 ## Theorem D in Lean
 - ✅ **`TheoremDQuadratic` (phase 55): Theorem D, quadratic case, PROVED** (`floor_pow_prime_pow_add_not_prime`).  `⌊α^(c^n + s)⌋` is not prime for infinitely many `n`, for quadratic Pisot `α`, `c ∤ b·disc` and `s ≥ 4`.  The route avoids `c`-adic completions: torsion congruences at every level, a transfer to a complex zero (Nullstellensatz plus integrality), then size.
 
-- ✅ **`TheoremDGeneral` (phase 56): Theorem D in every degree, PROVED** (`floor_pow_prime_pow_add_not_prime_general`).  Pisot `α` of degree `d`, `c ∤ f(0)`, `α^s > d + 1` ⇒ `⌊α^(c^n + s)⌋` is not prime i.o.  Plastic-number corollary, `s = 5`, every prime `c`.  Still paper-only: the mixed unit/non-unit case, `f ≢ X^d (mod c)` with `c ∣ f(0)`.
+- ✅ **`TheoremDGeneral` (phase 56): Theorem D in every degree, PROVED** (`floor_pow_prime_pow_add_not_prime_general`).  Pisot `α` of degree `d`, `c ∤ f(0)`, `α^s > d + 1` ⇒ `⌊α^(c^n + s)⌋` is not prime i.o.  Plastic-number corollary, `s = 5`, every prime `c`.  
+- ✅ **`TheoremDMixed` (phase 57): Theorem D in full** (`floor_pow_prime_pow_add_not_prime_full`): it suffices that some root is a `c`-unit (`f ≢ X^d (mod c)`), using one automorphism of ℂ.  This is the method's full reach (Proposition D′).
+- `ShiftedMillsLarge` (phase 58, running): `ξ(3^k + s)` is transcendental for even `s ≥ 8`, `3 ∤ s`, conditional on Saito Type B + Siegel 1944 only.
 
 ## Paper theorems, not yet in Lean
 - **Theorem D** (`PROOF-THEOREM-D.md`): Saito's Problem 1.7 for `R(n) = c^n + s`; every Pisot `α` outside `f ≡ X^d (mod c)` (draft 2 removes the abelian-field exception by a one-automorphism size argument).  Referee pass: Lemmas OK.
