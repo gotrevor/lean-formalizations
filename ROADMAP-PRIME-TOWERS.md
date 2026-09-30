@@ -77,8 +77,19 @@ This is Saito's actual wish in arXiv:2504.14968: *"We desire to remove the rever
     applies with `2J + 1 = c^d`, and `d` depends only on `c`).
   - The odd-`c` `GL₂` bound (`pow_dvd_sub_or_add_of_lt_padicValNat_odd`) is *easier* than `c = 2`:
     an odd `c` divides at most one of `p ∓ 1`, so one of the two valuations is `0`.
-- Remaining: **`c = 5`** only, via the `F(4k+1) ± 1` factorizations (`5 ∣ disc`, so the
-  `Φ_J ≡ ε x^c (mod c)` Frobenius congruence degenerates: `Φ_2 = 25x⁵ − 25x³ + 5x ≡ 0 (mod 5)`).
+- **`c = 5` DONE the same lap, away from `h = ±1`.**  The degeneration at `5` is a *gift*, not an
+  obstacle: `Φ_2 = 25x⁵ − 25x³ + 5x = 5x(5x⁴ − 5x² + 1)`, so `5 ∣ Φ_2(x)` identically, giving
+  `5^n ∣ F(5^n)` (`five_pow_dvd_fib_five_pow`) in three lines.  The `5`-adic limit of `F(5^n)` is
+  therefore `0`, and the window condition `F(5^n) + h ≡ ±1 (mod 5^(n/2))` reads `5^(n/2) ∣ h ∓ 1`
+  directly — no `Φ_J` fixed-point analysis at all, so `c = 5` is the EASIEST prime, not the hardest.
+  `exists_good_prime_factor_five`, `fib_five_pow_covering`, `fib_five_pow_prime_free`.
+- **The `c = 5` survivors are exactly `h = ±1`**, and they are survivors in the strict sense of §0:
+  the window condition holds identically for them, so no covering prime can come from this
+  mechanism.  The elementary `F(4k+1) − 1 = F(2k)L(2k+1)` and `F(4k+1) + 1 = F(2k+1)L(2k)`
+  (specialisations of `F(m+n) + (−1)^n F(m−n) = F(m)L(n)`; note `5^n ≡ 1 mod 4`) give
+  compositeness for them, but NOT a covering prime — the factors depend on `n`.  So the honest
+  shape of Theorem C at `c = 5` is: covering for `h ≠ ±1`, plus separate factorisation
+  compositeness at `h = ±1`.  That factorisation identity is the one piece still to formalize.
 
 ### Theorem C′: non-integrality of limit points for `d ≥ 3` (paper math, written 2026-09-30 01:30)
 The obstacle for Theorem C at `d ≥ 3` is that no exact composition is available.  Galois theory replaces it.

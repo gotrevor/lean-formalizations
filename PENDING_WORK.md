@@ -8,6 +8,25 @@ new `AffineRankOne.const_ratio` derivation argument + `StrongSix.exists_logBasis
 
 ---
 
+## Theorem C leftover: the `c = 5` survivors `h = ±1`
+
+`fib_five_pow_covering`/`fib_five_pow_prime_free` cover `|h| ≤ H` with `h ≠ ±1`.  `h = ±1` are
+genuine filter survivors at `c = 5` (the window condition `F(5^n) + h ≡ ±1 (mod 5^e)` holds
+identically because `5^n ∣ F(5^n)`), so no covering prime exists by this mechanism.  They need the
+elementary route instead:
+
+  `F(m+n) + (−1)^n F(m−n) = F(m) L(n)`
+
+with `(m,n) = (2k+1, 2k)` giving `F(4k+1) + 1 = F(2k+1) L(2k)`, and `(m,n) = (2k, 2k+1)` giving
+`F(4k+1) − 1 = F(2k) L(2k+1)`.  Since `5^n ≡ 1 (mod 4)`, every `5^n` is of the form `4k+1`.  Both
+factors exceed `1` for `k ≥ 2`, so `F(5^n) ± 1` is composite for all `n ≥ 1`.  Checked by hand:
+`F(5)−1 = 4 = F(2)L(3)`, `F(5)+1 = 6 = F(3)L(2)`, `F(9)−1 = 33 = F(4)L(5)`, `F(9)+1 = 35 = F(5)L(4)`.
+
+This yields a `∀ᶠ` (not merely `∃ᶠ`) non-primality statement at `h = ±1`, so combining it with
+`fib_five_pow_prime_free` gives the full-strength `c = 5` interval theorem.  The only Lean work is
+the `F(m+n) + (−1)^n F(m−n) = F(m) L(n)` identity, which is cleanest from the matrix form
+(`fibMat^(m+n) = fibMat^m * fibMat^n`, then read off entry `(0,1)` and use `det = (−1)^n`).
+
 ## Phase 41 (next): Theorem C for Fibonacci at every prime `c`
 
 Phase 40 closed Theorem C at `c = 2` (`FibonacciCovering.lean`, sorry-free, axiom-clean,

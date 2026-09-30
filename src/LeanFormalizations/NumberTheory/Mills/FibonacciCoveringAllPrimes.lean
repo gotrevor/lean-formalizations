@@ -737,4 +737,245 @@ theorem fib_prime_pow_prime_free {c : ℕ} (hc : c.Prime) (hc2 : c ≠ 2) (hc5 :
   have hple : ((p h : ℤ)) ≤ (Nat.fib (c ^ (L * K + m)) : ℤ) + h := Int.le_of_dvd hA1 hd1
   omega
 
+/-! ### The last prime: `c = 5`
+
+`c = 5` is excluded from everything above because `5 ∣ disc`, so the Frobenius congruence
+degenerates (`Φ_2 = 25x⁵ − 25x³ + 5x ≡ 0 (mod 5)`).  That degeneration is not an obstacle but a
+**gift**: it says `5 ∣ Φ_2(x)` identically, whence `5^n ∣ F(5^n)` and the `5`-adic limit of
+`F(5^n)` is `0` rather than a unit.  The filter's window condition `F(5^n) + h ≡ ±1` then reads
+`h ≡ ±1 (mod 5^(n/2))` directly, so it fails outright for every `h ≠ ±1` — no `Φ_J` fixed-point
+analysis at all.
+
+`h = ±1` are genuine **survivors** of the congruence filter at `c = 5` (the window condition holds
+identically), which is why the roadmap routes them through the elementary `F(4k+1) ± 1`
+factorizations instead.  They are therefore excluded from the covering statement below; a covering
+prime for them cannot exist by this mechanism. -/
+
+open LeanFormalizations.Mills.FibonacciAllPrimes in
+/-- `5^n ∣ F(5^n)`.  Immediate from `Φ_2(x) = 25x⁵ − 25x³ + 5x = 5x(5x⁴ − 5x² + 1)`, the `c = 5`
+instance of the odd composition identity. -/
+theorem five_pow_dvd_fib_five_pow (n : ℕ) : (5 : ℤ) ^ n ∣ (Nat.fib (5 ^ n) : ℤ) := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+      have hodd : Odd (5 ^ n) := (by decide : Odd 5).pow
+      have hidx : (2 * 2 + 1) * 5 ^ n = 5 ^ (n + 1) := by rw [pow_succ]; ring
+      have hcomp : (Nat.fib (5 ^ (n + 1)) : ℤ) = fibOddPoly (Nat.fib (5 ^ n)) 2 := by
+        rw [← hidx]; exact fib_odd_mul 2 hodd
+      obtain ⟨x, hx⟩ : ∃ x : ℤ, x = (Nat.fib (5 ^ n) : ℤ) := ⟨_, rfl⟩
+      have hpoly : fibOddPoly x 2 = 5 * x * (5 * x ^ 4 - 5 * x ^ 2 + 1) := by
+        simp only [fibOddPoly]; ring
+      obtain ⟨u, hu⟩ := ih
+      refine ⟨u * (5 * x ^ 4 - 5 * x ^ 2 + 1), ?_⟩
+      rw [hcomp, ← hx, hpoly, hx, hu, pow_succ]
+      ring
+
+/-- **Step 2 at `c = 5`, for every `h ≠ ±1`.**  Since `5^n ∣ F(5^n)`, the window condition on
+`F(5^n) + h` is `5^(n/2) ∣ h − s` with `s = ±1`, which fails as soon as `5^(n/2) > |h| + 1`. -/
+theorem exists_good_prime_factor_five {h : ℤ} (hh1 : h ≠ 1) (hh2 : h ≠ -1) :
+    ∀ᶠ n in atTop, ∃ p : ℕ, p.Prime ∧ (p : ℤ) ∣ (Nat.fib (5 ^ n) : ℤ) + h ∧
+      padicValNat 5 (glCard 2 p) ≤ n := by
+  have hfive : Nat.Prime 5 := by norm_num
+  refine eventually_atTop.2 ⟨max 5 (2 * h.natAbs + 8), fun n hn => ?_⟩
+  have hn5 : 5 ≤ n := le_trans (le_max_left _ _) hn
+  have hnB : 2 * h.natAbs + 8 ≤ n := le_trans (le_max_right _ _) hn
+  obtain ⟨e, hedef⟩ : ∃ e, e = n / 2 := ⟨_, rfl⟩
+  have he1 : 1 ≤ e := by omega
+  have hen : e ≤ n := by omega
+  have heB : (h.natAbs : ℤ) + 1 < (5 : ℤ) ^ e := by
+    have h1 : h.natAbs + 2 ≤ e := by omega
+    have h2 : e < 2 ^ e := Nat.lt_two_pow_self
+    have h3 : (2 : ℕ) ^ e ≤ 5 ^ e := Nat.pow_le_pow_left (by omega) e
+    have : h.natAbs + 1 < 5 ^ e := by omega
+    exact_mod_cast this
+  by_contra hcon
+  have hfac : ∀ q : ℕ, q.Prime → (q : ℤ) ∣ (Nat.fib (5 ^ n) : ℤ) + h →
+      PmOneMod ((5 : ℤ) ^ e) (q : ℤ) := by
+    intro q hq hqd
+    have hvq : ¬ (padicValNat 5 (glCard 2 q) ≤ n) := fun hv => hcon ⟨q, hq, hqd, hv⟩
+    have hqc : q ≠ 5 := by
+      intro hx
+      rw [hx, padicValNat_glCard_two_self hfive] at hvq
+      omega
+    have := pow_dvd_sub_or_add_of_lt_padicValNat_odd hfive (by norm_num) hq hqc (n := n) (by omega)
+    rw [← hedef] at this
+    exact this
+  have hfibbig : (h.natAbs : ℤ) < (Nat.fib (5 ^ n) : ℤ) := by
+    have h1 : (n : ℤ) ≤ (Nat.fib (5 ^ n) : ℤ) := by
+      have hle : n ≤ Nat.fib (5 ^ n) := by
+        refine le_trans (Nat.le_fib_self hn5) (Nat.fib_mono ?_)
+        calc n ≤ 2 ^ n := Nat.le_of_lt Nat.lt_two_pow_self
+        _ ≤ 5 ^ n := Nat.pow_le_pow_left (by norm_num) n
+      exact_mod_cast hle
+    have h2 : ((2 * h.natAbs + 8 : ℕ) : ℤ) ≤ (n : ℤ) := by exact_mod_cast hnB
+    push_cast at h2
+    omega
+  have hval : (0 : ℤ) < (Nat.fib (5 ^ n) : ℤ) + h := by
+    have h4 : |h| = (h.natAbs : ℤ) := Int.abs_eq_natAbs h
+    have h5 : -|h| ≤ h := neg_abs_le h
+    omega
+  obtain ⟨M, hM⟩ : ∃ M : ℕ, (M : ℤ) = (Nat.fib (5 ^ n) : ℤ) + h :=
+    ⟨((Nat.fib (5 ^ n) : ℤ) + h).toNat, by omega⟩
+  have hM1 : 1 ≤ M := by
+    have : (0 : ℤ) < (M : ℤ) := by rw [hM]; exact hval
+    exact_mod_cast this
+  have hpm : PmOneMod ((5 : ℤ) ^ e) ((Nat.fib (5 ^ n) : ℤ) + h) := by
+    rw [← hM]
+    exact PmOneMod.of_prime_factors _ M hM1 (by
+      intro q hq hqd
+      exact hfac q hq (by rw [← hM]; exact_mod_cast Int.natCast_dvd_natCast.2 hqd))
+  obtain ⟨s, hs, hsd⟩ := hpm.exists_sign
+  -- `5^e ∣ F(5^n)` turns the window condition into `5^e ∣ h − s`
+  have hdvdF : (5 : ℤ) ^ e ∣ (Nat.fib (5 ^ n) : ℤ) :=
+    dvd_trans (pow_dvd_pow 5 hen) (five_pow_dvd_fib_five_pow n)
+  have hhs : (5 : ℤ) ^ e ∣ h - s := by
+    have hrw : h - s = ((Nat.fib (5 ^ n) : ℤ) + h - s) - (Nat.fib (5 ^ n) : ℤ) := by ring
+    rw [hrw]
+    exact dvd_sub hsd hdvdF
+  have hne : h - s ≠ 0 := by rcases hs with rfl | rfl <;> intro hx <;> omega
+  have hle := Int.le_of_dvd (abs_pos.2 hne) ((dvd_abs _ _).2 hhs)
+  have habs : |h - s| ≤ (h.natAbs : ℤ) + 1 := by
+    have h4 : |h| = (h.natAbs : ℤ) := Int.abs_eq_natAbs h
+    have h5 : -|h| ≤ h := neg_abs_le h
+    have h6 : h ≤ |h| := le_abs_self h
+    rcases hs with rfl | rfl <;> rw [abs_le] <;> omega
+  omega
+
+/-! ### The assembly, factored out
+
+Steps 3–5 depend on the prime `c` only through the step-2 input, so state them once for an
+arbitrary finite set `S` of shifts.  `c = 5` then reuses them verbatim with
+`S = Icc (−H) H \ {1, −1}`. -/
+
+/-- **Steps 3–4, for an arbitrary finite set of shifts.**  Given that each shift in `S` eventually
+has a good prime factor, one index `m` and one modulus `L` serve them all. -/
+theorem covering_of_good {c : ℕ} (hc : c.Prime) (S : Finset ℤ)
+    (hgood : ∀ h ∈ S, ∀ᶠ n in atTop, ∃ q : ℕ, q.Prime ∧
+      (q : ℤ) ∣ (Nat.fib (c ^ n) : ℤ) + h ∧ padicValNat c (glCard 2 q) ≤ n) :
+    ∃ m L : ℕ, 1 ≤ L ∧ ∃ p : ℤ → ℕ, ∀ h ∈ S,
+      (p h).Prime ∧ ∀ k : ℕ, (p h : ℤ) ∣ (Nat.fib (c ^ (L * k + m)) : ℤ) + h := by
+  classical
+  obtain ⟨m, hm⟩ := eventually_atTop.1 ((Filter.eventually_all_finset S).2 hgood)
+  have hm0 := hm m le_rfl
+  set Q : ℤ → ℕ → Prop := fun h q => q.Prime ∧ (q : ℤ) ∣ (Nat.fib (c ^ m) : ℤ) + h ∧
+    padicValNat c (glCard 2 q) ≤ m with hQ
+  set P : ℤ → ℕ := fun h => if hh : ∃ q, Q h q then hh.choose else 2 with hP
+  have hPspec : ∀ h ∈ S, Q h (P h) := by
+    intro h hh
+    have hex : ∃ q, Q h q := hm0 h hh
+    rw [hP]
+    simp only [dif_pos hex]
+    exact hex.choose_spec
+  set R : ℤ → ℕ → Prop := fun h j => 1 ≤ j ∧
+    ∀ k : ℕ, (P h : ℤ) ∣ (Nat.fib (c ^ (m + k * j)) : ℤ) + h with hR
+  set Jf : ℤ → ℕ := fun h => if hh : ∃ j, R h j then hh.choose else 1 with hJf
+  have hJspec : ∀ h ∈ S, R h (Jf h) := by
+    intro h hh
+    obtain ⟨hpr, hpd, hpv⟩ := hPspec h hh
+    have hex : ∃ j, R h j := dvd_fib_prime_pow_add_of_good hc hpr hpv hpd
+    rw [hJf]
+    simp only [dif_pos hex]
+    exact hex.choose_spec
+  have hJpos : ∀ h : ℤ, 1 ≤ Jf h := by
+    intro h
+    rw [hJf]
+    by_cases hh : ∃ j, R h j
+    · simp only [dif_pos hh]; exact hh.choose_spec.1
+    · simp only [dif_neg hh]
+      exact le_refl 1
+  refine ⟨m, ∏ h ∈ S, Jf h, Finset.one_le_prod' (fun h _ => hJpos h), P, ?_⟩
+  intro h hhS
+  obtain ⟨hpr, hpd, hpv⟩ := hPspec h hhS
+  refine ⟨hpr, fun k => ?_⟩
+  obtain ⟨t, ht⟩ : Jf h ∣ ∏ h' ∈ S, Jf h' := Finset.dvd_prod_of_mem Jf hhS
+  have hkey := (hJspec h hhS).2 (t * k)
+  have hidx : m + t * k * Jf h = (∏ h' ∈ S, Jf h') * k + m := by rw [ht]; ring
+  rwa [hidx] at hkey
+
+/-- **Step 5, for an arbitrary finite set of shifts.**  A covering prime forces non-primality,
+by comparing the values at `k = K` and `k = K + 1`. -/
+theorem prime_free_of_covering {c : ℕ} (hc : c.Prime) (S : Finset ℤ) (H : ℕ)
+    (hSb : ∀ h ∈ S, |h| ≤ (H : ℤ))
+    (hcov : ∃ m L : ℕ, 1 ≤ L ∧ ∃ p : ℤ → ℕ, ∀ h ∈ S,
+      (p h).Prime ∧ ∀ k : ℕ, (p h : ℤ) ∣ (Nat.fib (c ^ (L * k + m)) : ℤ) + h) :
+    ∃ᶠ n in atTop, ∀ h ∈ S, ¬ Prime ((Nat.fib (c ^ n) : ℤ) + h) := by
+  obtain ⟨m, L, hL, p, hp⟩ := hcov
+  rw [frequently_atTop]
+  intro a
+  obtain ⟨K, hK⟩ : ∃ K, K = max a (H + 5) + 1 := ⟨_, rfl⟩
+  refine ⟨L * (K + 1) + m, ?_, ?_⟩
+  · have h1 : K + 1 ≤ L * (K + 1) := Nat.le_mul_of_pos_left _ hL
+    have h2 : a ≤ K := by rw [hK]; omega
+    omega
+  intro h hhS
+  obtain ⟨hpr, hpd⟩ := hp h hhS
+  have hh := hSb h hhS
+  have hKH : H + 5 ≤ K := by rw [hK]; omega
+  have h1 : K ≤ L * K := Nat.le_mul_of_pos_left _ hL
+  have hlt12 : L * K + m < L * (K + 1) + m := by
+    have hexp : L * (K + 1) = L * K + L := by ring
+    omega
+  have hfibge : ((L * K + m : ℕ) : ℤ) ≤ (Nat.fib (c ^ (L * K + m)) : ℤ) := by
+    have hle : L * K + m ≤ Nat.fib (c ^ (L * K + m)) := by
+      refine le_trans (Nat.le_fib_self (by omega)) (Nat.fib_mono ?_)
+      calc L * K + m ≤ 2 ^ (L * K + m) := Nat.le_of_lt Nat.lt_two_pow_self
+      _ ≤ c ^ (L * K + m) := Nat.pow_le_pow_left hc.two_le _
+    exact_mod_cast hle
+  have hHle : (H : ℤ) ≤ ((L * K + m : ℕ) : ℤ) := by exact_mod_cast (by omega : H ≤ L * K + m)
+  have habs := abs_le.1 hh
+  have hA1 : (0 : ℤ) < (Nat.fib (c ^ (L * K + m)) : ℤ) + h := by omega
+  have hgrow : (Nat.fib (c ^ (L * K + m)) : ℤ) < (Nat.fib (c ^ (L * (K + 1) + m)) : ℤ) := by
+    exact_mod_cast fib_prime_pow_lt hc.two_le (show 1 ≤ L * K + m by omega) hlt12
+  intro hprime
+  have hd2 := hpd (K + 1)
+  have hd1 := hpd K
+  have hnat : ((Nat.fib (c ^ (L * (K + 1) + m)) : ℤ) + h).natAbs.Prime :=
+    Int.prime_iff_natAbs_prime.1 hprime
+  have hdnat : p h ∣ ((Nat.fib (c ^ (L * (K + 1) + m)) : ℤ) + h).natAbs := by
+    have := Int.natAbs_dvd_natAbs.2 hd2
+    simpa using this
+  have hpeq : p h = ((Nat.fib (c ^ (L * (K + 1) + m)) : ℤ) + h).natAbs := by
+    rcases hnat.eq_one_or_self_of_dvd _ hdnat with hx | hx
+    · exact absurd hx hpr.one_lt.ne'
+    · exact hx
+  have hA2 : (0 : ℤ) < (Nat.fib (c ^ (L * (K + 1) + m)) : ℤ) + h := by omega
+  have hpval : ((p h : ℤ)) = (Nat.fib (c ^ (L * (K + 1) + m)) : ℤ) + h := by rw [hpeq]; omega
+  have hple : ((p h : ℤ)) ≤ (Nat.fib (c ^ (L * K + m)) : ℤ) + h := Int.le_of_dvd hA1 hd1
+  omega
+
+/-- The shifts `|h| ≤ H` other than the two `c = 5` survivors `h = ±1`. -/
+noncomputable def fiveShifts (H : ℕ) : Finset ℤ := ((Finset.Icc (-(H : ℤ)) (H : ℤ)).erase 1).erase (-1)
+
+lemma mem_fiveShifts {H : ℕ} {h : ℤ} (hb : |h| ≤ (H : ℤ)) (h1 : h ≠ 1) (h2 : h ≠ -1) :
+    h ∈ fiveShifts H := by
+  rw [fiveShifts, Finset.mem_erase, Finset.mem_erase, Finset.mem_Icc]
+  have := abs_le.1 hb
+  exact ⟨h2, h1, this.1, this.2⟩
+
+lemma fiveShifts_bound {H : ℕ} {h : ℤ} (hh : h ∈ fiveShifts H) : |h| ≤ (H : ℤ) := by
+  rw [fiveShifts, Finset.mem_erase, Finset.mem_erase, Finset.mem_Icc] at hh
+  exact abs_le.2 ⟨hh.2.2.1, hh.2.2.2⟩
+
+lemma fiveShifts_ne {H : ℕ} {h : ℤ} (hh : h ∈ fiveShifts H) : h ≠ 1 ∧ h ≠ -1 := by
+  rw [fiveShifts, Finset.mem_erase, Finset.mem_erase] at hh
+  exact ⟨hh.2.1, hh.1⟩
+
+/-- **(D1) at `c = 5`, for every shift other than the two survivors `h = ±1`.** -/
+theorem fib_five_pow_covering (H : ℕ) :
+    ∃ m L : ℕ, 1 ≤ L ∧ ∃ p : ℤ → ℕ, ∀ h : ℤ, |h| ≤ H → h ≠ 1 → h ≠ -1 →
+      (p h).Prime ∧ ∀ k : ℕ, (p h : ℤ) ∣ (Nat.fib (5 ^ (L * k + m)) : ℤ) + h := by
+  obtain ⟨m, L, hL, p, hp⟩ := covering_of_good (by norm_num : Nat.Prime 5) (fiveShifts H)
+    (fun h hh => exists_good_prime_factor_five (fiveShifts_ne hh).1 (fiveShifts_ne hh).2)
+  exact ⟨m, L, hL, p, fun h hb h1 h2 => hp h (mem_fiveShifts hb h1 h2)⟩
+
+/-- **Prime-free intervals around `F(5^n)`, infinitely often**, away from the two survivors. -/
+theorem fib_five_pow_prime_free (H : ℕ) :
+    ∃ᶠ n in atTop, ∀ h : ℤ, |h| ≤ H → h ≠ 1 → h ≠ -1 →
+      ¬ Prime ((Nat.fib (5 ^ n) : ℤ) + h) := by
+  have hfr := prime_free_of_covering (by norm_num : Nat.Prime 5) (fiveShifts H) H
+    (fun h hh => fiveShifts_bound hh) (covering_of_good (by norm_num : Nat.Prime 5) (fiveShifts H)
+      (fun h hh => exists_good_prime_factor_five (fiveShifts_ne hh).1 (fiveShifts_ne hh).2))
+  refine hfr.mono (fun n hn h hb h1 h2 => hn h (mem_fiveShifts hb h1 h2))
+
 end LeanFormalizations.Mills.FibonacciCoveringAllPrimes
+
