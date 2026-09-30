@@ -614,20 +614,75 @@ theorem eq_of_mem_pow_all {R : Type*} [CommRing R] [IsDomain R] [IsNoetherianRin
 
 /-! ### Steps 2–3: the Teichmüller / spectral crux
 
-`spectral_identity` is the single remaining mathematical obligation: it packages steps 2 and 3
-(Teichmüller representatives in `𝒪_K` and the spectral form of the trace) together with step 4
-(separation), and hands step 5 exactly what it needs.
+**The route taken here avoids number fields, completions and Teichmüller theory entirely.**
+Write `T = x·I + y·C` for the (`c`-adic) Teichmüller limit of `C^(c^n)`; everything about `T`
+that the proof uses is captured by three *integer polynomial equations* in `(x, y)`:
 
-**Why the conclusion has this shape.**  Let `q` be the size of the residue field of `ℚ(α)` at `c`
-(so `q = c` or `c²`), `K = ℚ(α, ζ_(q-1))`, and `𝔓` a prime of `𝒪_K` over `c`.  Because `c ∤ q - 1`,
-reduction mod `𝔓` is injective on `μ_(q-1)`, so `α` and `β` (both `𝔓`-units, as `c ∤ b`) have
-Teichmüller representatives `ζ₁, ζ₂ ∈ μ_(q-1)`, and
-`α^(c^n) ≡ ζ₁^(c^n) (mod 𝔓^(n+1))`, likewise for `β`.  As `c^2 ≡ 1 (mod q-1)`, the residues
-`ζ_i^(c^n)` depend only on `n mod 2`; enlarging the modulus `f` of the residue class `r` is
-harmless.  Hence `V (c^n + s) ≡ ζ₁^(c^r) α^s + ζ₂^(c^r) β^s (mod 𝔓^(n+1))`, and the hypothesis
-`hcong` forces `ζ₁^(c^r) α^s + ζ₂^(c^r) β^s - t ∈ 𝔓^m` for every `m`, so by `eq_of_mem_pow_all`
-the two sides are equal in `K`.  Finally `u := ζ₁^(c^r)` and `v := ζ₂^(c^r)` are roots of unity,
-hence of complex modulus `1` under the embedding `K → ℂ` sending `α, β` to the given reals. -/
+* `(x·I + y·C)^Q = I`, i.e. `A_Q(x,y) = 1` and `B_Q(x,y) = 0` where `(x·I+y·C)^N = A_N·I + B_N·C`;
+* the linear relation `x·V_s + y·V_(s+1) = t`, which is `tr(T·C^s) = t`.
+
+Step 2 (`torsion_congr_levels`) produces *integer* solutions of this system modulo `c^k` for every
+`k`, with no `p`-adic numbers: take `X = C^(c^n)` for a large good `n`, and let `Q` be the
+prime-to-`c` part of `|GL_2(𝔽_c)|`.
+
+Step 3 (`exists_complex_of_all_levels`) transfers to `ℂ`.  This is where the `c`-adic and
+archimedean worlds meet, and the mechanism replacing Teichmüller theory is the **Nullstellensatz
+plus integrality**: if the system had no complex solution then `1` lies in the ideal it generates
+over `ℚ`, so clearing denominators gives a *nonzero integer* `N` in the ideal over `ℤ`; evaluating
+at a level-`k` solution forces `c^k ∣ N` for every `k`, which is absurd.
+
+Then `u = x + yα` and `v = x + yβ` satisfy `u^Q = v^Q = 1` (so `‖u‖ = ‖v‖ = 1`) and
+`u·α^s + v·β^s = x·V_s + y·V_(s+1) = t`. -/
+
+/-- `(x·I + y·C)^N = A·I + B·C` for the companion matrix `C` of `X^2 - aX + b`; this computes the
+pair `(A, B)` in any commutative ring. -/
+def torsionPair {R : Type*} [CommRing R] (a b x y : R) : ℕ → R × R
+  | 0 => (1, 0)
+  | N + 1 =>
+      let p := torsionPair a b x y N
+      (p.1 * x - b * (p.2 * y), p.1 * y + p.2 * x + a * (p.2 * y))
+
+/-- Evaluation at a root `z` of `X^2 - aX + b`: `A + B·z = (x + y·z)^N`. -/
+theorem torsionPair_eval {R : Type*} [CommRing R] (a b x y z : R) (hz : z ^ 2 = a * z - b)
+    (N : ℕ) :
+    (torsionPair a b x y N).1 + (torsionPair a b x y N).2 * z = (x + y * z) ^ N := by
+  induction N with
+  | zero => simp [torsionPair]
+  | succ N ih =>
+      rw [pow_succ, ← ih, torsionPair]
+      have : z * z = a * z - b := by rw [← hz]; ring
+      simp only
+      linear_combination (-((torsionPair a b x y N).2 * y)) * hz
+
+/-- **Step 2 (levels).**  For every `k` there is an integer point of the torsion system modulo
+`c^k`: take `X = C^(c^n)` for a large `n` in the residue class, and `Q` the prime-to-`c` part of
+`|GL_2(𝔽_c)|`. -/
+theorem torsion_congr_levels (a b : ℤ) {c : ℕ} (hc : c.Prime) (hcb : ¬ (c : ℤ) ∣ b)
+    (V : ℕ → ℤ) (hV : ∀ N, V N = lucasV a b N) {s r : ℕ} (t : ℤ)
+    (hcong : ∀ m : ℕ, ∃ n, m ≤ n ∧ n % 2 = r ∧ (c : ℤ) ^ m ∣ V (c ^ n + s) - t) :
+    ∃ Q : ℕ, 1 ≤ Q ∧ ∀ k : ℕ, ∃ x y : ℤ,
+      (c : ℤ) ^ k ∣ (torsionPair a b x y Q).1 - 1 ∧
+      (c : ℤ) ^ k ∣ (torsionPair a b x y Q).2 ∧
+      (c : ℤ) ^ k ∣ x * V s + y * V (s + 1) - t := by
+  sorry
+
+/-- **Step 3 (transfer).**  A system of integer polynomial equations solvable modulo `c^k` for
+every `k` has a complex solution — by the Nullstellensatz: otherwise `1` is in the ideal over `ℚ`,
+hence a nonzero integer `N` is in the ideal over `ℤ`, and `c^k ∣ N` for all `k`. -/
+theorem exists_complex_of_all_levels (a b : ℤ) {c : ℕ} (hc : c.Prime) {Q : ℕ}
+    (w₁ w₂ t : ℤ)
+    (hlev : ∀ k : ℕ, ∃ x y : ℤ,
+      (c : ℤ) ^ k ∣ (torsionPair a b x y Q).1 - 1 ∧
+      (c : ℤ) ^ k ∣ (torsionPair a b x y Q).2 ∧
+      (c : ℤ) ^ k ∣ x * w₁ + y * w₂ - t) :
+    ∃ x y : ℂ, (torsionPair (a : ℂ) (b : ℂ) x y Q).1 = 1 ∧
+      (torsionPair (a : ℂ) (b : ℂ) x y Q).2 = 0 ∧
+      x * (w₁ : ℂ) + y * (w₂ : ℂ) = (t : ℂ) := by
+  sorry
+
+/-- **The crux, assembled.**  Steps 2 and 3 together give the spectral identity: along the
+residue class, the trace congruences force a pair of roots of unity `u, v` with
+`u·α^s + v·β^s = t`. -/
 theorem spectral_identity (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α * β = b)
     (hα : 1 < α) (hβ : |β| < 1) (hdisc : ¬ IsSquare (a ^ 2 - 4 * b))
     {c : ℕ} (hc : c.Prime) (hcb : ¬ (c : ℤ) ∣ b) (hcd : ¬ (c : ℤ) ∣ a ^ 2 - 4 * b)
@@ -635,7 +690,42 @@ theorem spectral_identity (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod 
     {s r : ℕ} (t : ℤ)
     (hcong : ∀ m : ℕ, ∃ n, m ≤ n ∧ n % 2 = r ∧ (c : ℤ) ^ m ∣ V (c ^ n + s) - t) :
     ∃ u v : ℂ, ‖u‖ = 1 ∧ ‖v‖ = 1 ∧ u * (α : ℂ) ^ s + v * (β : ℂ) ^ s = (t : ℂ) := by
-  sorry
+  -- identify `V` with the Lucas sequence
+  have hVl : ∀ N, V N = lucasV a b N := by
+    intro N
+    have h1 := hV N
+    have h2 := pow_add_pow_eq_lucasV a b hsum hprod N
+    exact_mod_cast h1.trans h2
+  obtain ⟨Q, hQ1, hlev⟩ := torsion_congr_levels a b hc hcb V hVl (r := r) t hcong
+  obtain ⟨x, y, hx1, hx2, hx3⟩ :=
+    exists_complex_of_all_levels a b hc (Q := Q) (V s) (V (s + 1)) t hlev
+  -- the two roots, as complex numbers
+  have hαq : ((α : ℂ)) ^ 2 = (a : ℂ) * (α : ℂ) - (b : ℂ) := by
+    have : α ^ 2 = (a : ℝ) * α - (b : ℝ) := by rw [← hsum, ← hprod]; ring
+    exact_mod_cast congrArg (fun z : ℝ => (z : ℂ)) this
+  have hβq : ((β : ℂ)) ^ 2 = (a : ℂ) * (β : ℂ) - (b : ℂ) := by
+    have : β ^ 2 = (a : ℝ) * β - (b : ℝ) := by rw [← hsum, ← hprod]; ring
+    exact_mod_cast congrArg (fun z : ℝ => (z : ℂ)) this
+  have hu : (x + y * (α : ℂ)) ^ Q = 1 := by
+    rw [← torsionPair_eval (a : ℂ) (b : ℂ) x y _ hαq Q, hx1, hx2]; ring
+  have hv : (x + y * (β : ℂ)) ^ Q = 1 := by
+    rw [← torsionPair_eval (a : ℂ) (b : ℂ) x y _ hβq Q, hx1, hx2]; ring
+  have hnorm : ∀ z : ℂ, z ^ Q = 1 → ‖z‖ = 1 := by
+    intro z hz
+    have h1 : ‖z‖ ^ Q = 1 := by rw [← norm_pow, hz, norm_one]
+    have hQ0 : Q ≠ 0 := by omega
+    rcases lt_trichotomy ‖z‖ 1 with h | h | h
+    · exact absurd h1 (ne_of_lt (pow_lt_one₀ (norm_nonneg z) h hQ0))
+    · exact h
+    · exact absurd h1 (ne_of_gt (one_lt_pow₀ h hQ0))
+  refine ⟨x + y * (α : ℂ), x + y * (β : ℂ), hnorm _ hu, hnorm _ hv, ?_⟩
+  -- the linear identity
+  have hVs : ((V s : ℤ) : ℂ) = (α : ℂ) ^ s + (β : ℂ) ^ s := by
+    have := hV s; exact_mod_cast congrArg (fun z : ℝ => (z : ℂ)) this
+  have hVs1 : ((V (s + 1) : ℤ) : ℂ) = (α : ℂ) ^ (s + 1) + (β : ℂ) ^ (s + 1) := by
+    have := hV (s + 1); exact_mod_cast congrArg (fun z : ℝ => (z : ℂ)) this
+  rw [← hx3, hVs, hVs1]
+  ring
 
 /-- **Steps 2–5 combined.**  Along a residue class, the traces `V (c^n + s)` cannot be congruent
 to a fixed small integer `t` modulo arbitrarily large powers of `c`.
