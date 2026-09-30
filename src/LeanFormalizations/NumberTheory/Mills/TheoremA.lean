@@ -203,6 +203,170 @@ theorem two_pow_descend {z : ℤ} (hz : Odd z) {e a : ℕ}
         have : (4 : ℤ) ∣ 2 := by simpa using dvd_sub h4 h4'
         omega
 
+/-- With `μ_(≤d)(ℤ_c) = {±1}`, an exponent `i ≤ d` with `c ∣ z^i − 1` forces `c ∣ z² − 1`. -/
+theorem sq_congr_one_of_mu {c d i : ℕ} (hc : c.Prime) (hc2 : c ≠ 2)
+    (hmu : ∀ k, 3 ≤ k → k ≤ d → ¬ k ∣ c - 1) (hi1 : 1 ≤ i) (hid : i ≤ d) {z : ℤ}
+    (hz : ¬ (c : ℤ) ∣ z) (h : (c : ℤ) ∣ z ^ i - 1) : (c : ℤ) ∣ z ^ 2 - 1 := by
+  haveI : Fact c.Prime := ⟨hc⟩
+  set w : ZMod c := (z : ZMod c) with hw
+  have hwne : w ≠ 0 := by
+    rw [hw]
+    intro hd
+    exact hz ((ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 hd)
+  have hwi : w ^ i = 1 := by
+    have := (ZMod.intCast_zmod_eq_zero_iff_dvd (z ^ i - 1) c).2 h
+    push_cast at this
+    rw [hw]
+    linear_combination this
+  have hfin : IsOfFinOrder w := isOfFinOrder_iff_pow_eq_one.2 ⟨i, by omega, hwi⟩
+  have hgpos : 0 < orderOf w := orderOf_pos_iff.2 hfin
+  have hgi : orderOf w ∣ i := orderOf_dvd_of_pow_eq_one hwi
+  have hgc : orderOf w ∣ c - 1 := orderOf_dvd_of_pow_eq_one (ZMod.pow_card_sub_one_eq_one hwne)
+  have hgle : orderOf w ≤ i := Nat.le_of_dvd (by omega) hgi
+  have hg2 : orderOf w ∣ 2 := by
+    rcases Nat.lt_or_ge (orderOf w) 3 with hlt | hge
+    · interval_cases h : orderOf w <;> simp_all
+    · exact absurd hgc (hmu _ hge (by omega))
+  have hw2 : w ^ 2 = 1 := orderOf_dvd_iff_pow_eq_one.1 hg2
+  have : ((z ^ 2 - 1 : ℤ) : ZMod c) = 0 := by push_cast; rw [← hw, hw2]; ring
+  exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 this
+
+/-- `(-1 : ZMod c) ≠ 1` for an odd prime `c`. -/
+theorem neg_one_ne_one_zmod {c : ℕ} (hc : c.Prime) (hc2 : c ≠ 2) :
+    (-1 : ZMod c) ≠ 1 := by
+  intro hh
+  have h2 : ((2 : ℤ) : ZMod c) = 0 := by push_cast; linear_combination -hh
+  have hd : (c : ℤ) ∣ 2 := (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 h2
+  have hle := Int.le_of_dvd (by norm_num) hd
+  have h2c := hc.two_le
+  have : (2 : ℤ) ≤ (c : ℤ) := by exact_mod_cast h2c
+  have : c = 2 := by omega
+  exact hc2 this
+
+/-- **The window at an odd prime.**  `c^e ∣ z^i − 1` with `1 ≤ i ≤ d` and `μ_(≤d) = {±1}`
+gives `c^e ∣ z − σ` for a sign `σ`, provided `c ∤ z`. -/
+theorem exists_sign_dvd_sub_odd {c d i e : ℕ} (hc : c.Prime) (hc2 : c ≠ 2)
+    (hmu : ∀ k, 3 ≤ k → k ≤ d → ¬ k ∣ c - 1) (hi1 : 1 ≤ i) (hid : i ≤ d) (he : 1 ≤ e)
+    {z : ℤ} (hz : ¬ (c : ℤ) ∣ z) (hdvd : (c : ℤ) ^ e ∣ z ^ i - 1) (hci : ¬ c ∣ i) :
+    ∃ σ : ℤ, (σ = 1 ∨ σ = -1) ∧ (c : ℤ) ^ e ∣ z - σ := by
+  haveI : Fact c.Prime := ⟨hc⟩
+  have hcp : Prime (c : ℤ) := Nat.prime_iff_prime_int.1 hc
+  have h1 : (c : ℤ) ∣ z ^ i - 1 := dvd_trans (dvd_pow_self _ (by omega)) hdvd
+  have hz2 : (c : ℤ) ∣ z ^ 2 - 1 := sq_congr_one_of_mu hc hc2 hmu hi1 hid hz h1
+  by_cases hd1 : (c : ℤ) ∣ z - 1
+  · exact ⟨1, Or.inl rfl, dvd_sub_one_of_coprime_exp hc hci hd1 hdvd⟩
+  · -- `c ∣ z + 1`
+    have hd2 : (c : ℤ) ∣ z + 1 := by
+      have hfac : z ^ 2 - 1 = (z - 1) * (z + 1) := by ring
+      rw [hfac] at hz2
+      exact (hcp.dvd_or_dvd hz2).resolve_left hd1
+    -- `i` is even
+    have hzw : ((z : ZMod c)) = -1 := by
+      have := (ZMod.intCast_zmod_eq_zero_iff_dvd (z + 1) c).2 hd2
+      push_cast at this
+      linear_combination this
+    have hwi : ((z : ZMod c)) ^ i = 1 := by
+      have := (ZMod.intCast_zmod_eq_zero_iff_dvd (z ^ i - 1) c).2 h1
+      push_cast at this
+      linear_combination this
+    rw [hzw] at hwi
+    have hieven : Even i := (neg_one_pow_eq_one_iff_even (neg_one_ne_one_zmod hc hc2)).1 hwi
+    obtain ⟨m, hm⟩ := hieven
+    have hm2 : i = 2 * m := by omega
+    have hcm : ¬ c ∣ m := fun hd => hci (hm2 ▸ Dvd.dvd.mul_left hd 2)
+    have hstep : (c : ℤ) ^ e ∣ (z ^ 2) ^ m - 1 := by
+      rw [← pow_mul, show 2 * m = i by omega]; exact hdvd
+    have hze : (c : ℤ) ^ e ∣ z ^ 2 - 1 := dvd_sub_one_of_coprime_exp hc hcm hz2 hstep
+    refine ⟨-1, Or.inr rfl, ?_⟩
+    have hfac : z ^ 2 - 1 = (z - 1) * (z + 1) := by ring
+    rw [hfac] at hze
+    have := hcp.pow_dvd_of_dvd_mul_left e hd1 hze
+    simpa using this
+
+/-- **Step 2 (the window).**  If `p^i ≡ 1 (mod c^e)` for some `1 ≤ i ≤ d` and
+`μ_(≤d)(ℤ_c) = {±1}`, then `p ≡ ±1 (mod c^(e−d))`. -/
+theorem exists_sign_dvd_sub {c p d i e : ℕ} (hc : c.Prime) (hp : p.Prime) (hpc : p ≠ c)
+    (hmu : c = 2 ∨ ∀ k, 3 ≤ k → k ≤ d → ¬ k ∣ c - 1) (hi1 : 1 ≤ i) (hid : i ≤ d) (he : 1 ≤ e)
+    (hdvd : (c : ℤ) ^ e ∣ (p : ℤ) ^ i - 1) :
+    ∃ s : ℤ, (s = 1 ∨ s = -1) ∧ (c : ℤ) ^ (e - d) ∣ (p : ℤ) - s := by
+  have hcp : Prime (c : ℤ) := Nat.prime_iff_prime_int.1 hc
+  have hine : i ≠ 0 := by omega
+  set a : ℕ := i.factorization c with hadef
+  set i₀ : ℕ := i / c ^ a with hi0def
+  have hsplit : c ^ a * i₀ = i := Nat.ordProj_mul_ordCompl_eq_self i c
+  have hci0 : ¬ c ∣ i₀ := Nat.not_dvd_ordCompl hc hine
+  have hi0dvd : i₀ ∣ i := ⟨c ^ a, by rw [← hsplit]; ring⟩
+  have hi0pos : 1 ≤ i₀ := by
+    rcases Nat.eq_zero_or_pos i₀ with h0 | h; · rw [h0, mul_zero] at hsplit; omega
+    exact h
+  have hi0d : i₀ ≤ d := le_trans (Nat.le_of_dvd (by omega) hi0dvd) hid
+  have hcad : c ^ a ≤ d := by
+    have h1 : c ^ a ∣ i := Nat.ordProj_dvd i c
+    exact le_trans (Nat.le_of_dvd (by omega) h1) hid
+  have had : a ≤ d := by
+    have h1 : (2 : ℕ) ^ a ≤ c ^ a := Nat.pow_le_pow_left hc.two_le a
+    have h2 : a < 2 ^ a := Nat.lt_two_pow_self
+    omega
+  have hcpn : ¬ (c : ℤ) ∣ (p : ℤ) := by
+    intro hd
+    have : c ∣ p := Int.ofNat_dvd.1 (by exact_mod_cast hd)
+    rcases (Nat.Prime.eq_one_or_self_of_dvd hp c this) with hh | hh
+    · have := hc.two_le; omega
+    · exact hpc hh.symm
+  have hpow : ((p : ℤ) ^ (c ^ a)) ^ i₀ = (p : ℤ) ^ i := by
+    rw [← pow_mul, hsplit]
+  by_cases hc2 : c = 2
+  · -- `c = 2`
+    subst hc2
+    have hpodd : Odd (p : ℤ) := by
+      rcases Int.even_or_odd (p : ℤ) with hev | ho
+      · exact absurd (hev.two_dvd) (by simpa using hcpn)
+      · exact ho
+    have hz1 : (2 : ℤ) ∣ (p : ℤ) ^ (2 ^ a) - 1 := by
+      have : Odd ((p : ℤ) ^ (2 ^ a)) := hpodd.pow
+      obtain ⟨u, hu⟩ := this
+      exact ⟨u, by rw [hu]; ring⟩
+    have hstep : (2 : ℤ) ^ e ∣ ((p : ℤ) ^ (2 ^ a)) ^ i₀ - 1 := by
+      rw [hpow]; exact_mod_cast hdvd
+    have hze : (2 : ℤ) ^ e ∣ (p : ℤ) ^ (2 ^ a) - 1 :=
+      dvd_sub_one_of_coprime_exp Nat.prime_two hci0 hz1 hstep
+    have hmono : (2 : ℤ) ^ (e - d) ∣ (2 : ℤ) ^ (e - a) := pow_dvd_pow 2 (by omega)
+    rcases two_pow_descend hpodd hze with hl | hr
+    · exact ⟨1, Or.inl rfl, by exact_mod_cast dvd_trans hmono hl⟩
+    · refine ⟨-1, Or.inr rfl, ?_⟩
+      have := dvd_trans hmono hr
+      have hrw : (p : ℤ) - -1 = (p : ℤ) + 1 := by ring
+      rw [hrw]; exact_mod_cast this
+  · -- `c` odd
+    have hmu : ∀ k, 3 ≤ k → k ≤ d → ¬ k ∣ c - 1 := hmu.resolve_left hc2
+    have hz : ¬ (c : ℤ) ∣ (p : ℤ) ^ (c ^ a) := fun hd => hcpn (hcp.dvd_of_dvd_pow hd)
+    have hstep : (c : ℤ) ^ e ∣ ((p : ℤ) ^ (c ^ a)) ^ i₀ - 1 := by rw [hpow]; exact hdvd
+    obtain ⟨σ, hσ, hσd⟩ :=
+      exists_sign_dvd_sub_odd hc hc2 hmu hi0pos hi0d he hz hstep hci0
+    have hcaodd : Odd (c ^ a) := (hc.odd_of_ne_two hc2).pow
+    have hy : (σ * (p : ℤ)) ^ (c ^ a) - 1 = σ * ((p : ℤ) ^ (c ^ a) - σ) := by
+      rcases hσ with rfl | rfl
+      · simp
+      · rw [mul_pow, hcaodd.neg_one_pow]
+        ring
+    have hyd : (c : ℤ) ^ e ∣ (σ * (p : ℤ)) ^ (c ^ a) - 1 := by
+      rw [hy]; exact Dvd.dvd.mul_left hσd σ
+    rcases Nat.lt_or_ge a e with hae | hae
+    · have hf : (e - a) + a = e := by omega
+      rw [← hf] at hyd
+      have hres := dvd_sub_one_of_pow_pow_odd hc hc2 hyd
+      refine ⟨σ, hσ, ?_⟩
+      have hmono : (c : ℤ) ^ (e - d) ∣ (c : ℤ) ^ (e - a) := pow_dvd_pow _ (by omega)
+      have hfin : (c : ℤ) ^ (e - a) ∣ (p : ℤ) - σ := by
+        have hid2 : (p : ℤ) - σ = σ * (σ * (p : ℤ) - 1) := by
+          rcases hσ with rfl | rfl <;> ring
+        rw [hid2]
+        exact Dvd.dvd.mul_left hres σ
+      exact dvd_trans hmono hfin
+    · refine ⟨1, Or.inl rfl, ?_⟩
+      have : e - d = 0 := by omega
+      simp [this]
+
 /-- **Theorem A.** -/
 theorem entry_prime_pow_add_not_prime {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ}
     (hc : c.Prime) (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c))))
