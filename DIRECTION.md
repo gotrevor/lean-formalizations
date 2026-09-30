@@ -2,7 +2,7 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 (phase 52, CURRENT): **Theorem A**, order-`d` entries `u(c^n) + h` composite i.o. at inert `c` (odd `d`, `μ_(≤d)(ℤ_c) = {±1}`), plus Tribonacci `T(3^n) + h` and `T(5^n) + h` — target `NumberTheory/Mills/TheoremA.lean` (3 frozen statements + def `trib`, survivor route in header using phase 51 `orbit_sum_entry_congr` + period; hypotheses checked: `scripts/theorem-a-tribonacci-probe.py`; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## ✅ DONE (phase 52): **Theorem A**, order-`d` entries `u(c^n) + h` composite i.o. at inert `c` (odd `d`, `μ_(≤d)(ℤ_c) = {±1}`), plus Tribonacci `T(3^n) + h` and `T(5^n) + h` — target `NumberTheory/Mills/TheoremA.lean` (3 frozen statements + def `trib`, survivor route in header using phase 51 `orbit_sum_entry_congr` + period; hypotheses checked: `scripts/theorem-a-tribonacci-probe.py`; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 ## ✅ DONE (phase 51): the Frobenius orbit sum is scalar, Σ_(k<d) A^(c^(n+k)) ≡ tr(A^(c^n))·I mod c^(n+1) for χ_A irreducible mod c (Theorem A route, steps 3–5) — target `NumberTheory/Mills/OrbitSum.lean` (3 frozen statements, route in header; checked on 604 cases, both controls fail as they should: `scripts/orbit-sum-probe.py`; frozen also: all earlier statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 

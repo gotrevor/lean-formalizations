@@ -663,14 +663,127 @@ def trib : ℕ → ℤ
   | 2 => 1
   | n + 3 => trib (n + 2) + trib (n + 1) + trib n
 
+/-! ### The Tribonacci corollaries -/
+
+/-- The Tribonacci companion matrix. -/
+def tribMat : Matrix (Fin 3) (Fin 3) ℤ := !![1, 1, 1; 1, 0, 0; 0, 1, 0]
+
+theorem tribMat_pow_col (N : ℕ) :
+    (tribMat ^ N) 0 0 = trib (N + 2) ∧ (tribMat ^ N) 1 0 = trib (N + 1) ∧
+      (tribMat ^ N) 2 0 = trib N := by
+  induction N with
+  | zero => refine ⟨?_, ?_, ?_⟩ <;> simp [trib]
+  | succ N ih =>
+    obtain ⟨h0, h1, h2⟩ := ih
+    have hmul : ∀ a : Fin 3, (tribMat ^ (N + 1)) a 0 =
+        ∑ k : Fin 3, tribMat a k * (tribMat ^ N) k 0 := by
+      intro a
+      rw [pow_succ']
+      exact Matrix.mul_apply
+    refine ⟨?_, ?_, ?_⟩
+    · rw [hmul 0, Fin.sum_univ_three, h0, h1, h2, show N + 1 + 2 = N + 3 from rfl, trib]
+      simp [tribMat]
+    · rw [hmul 1, Fin.sum_univ_three, h0, h1, h2]
+      simp [tribMat]
+    · rw [hmul 2, Fin.sum_univ_three, h0, h1, h2]
+      simp [tribMat]
+
+theorem tribMat_pow_apply (N : ℕ) : (tribMat ^ N) 2 0 = trib N := (tribMat_pow_col N).2.2
+
+theorem tribMat_charpoly :
+    tribMat.charpoly = Polynomial.X ^ 3 - Polynomial.X ^ 2 - Polynomial.X - 1 := by
+  rw [Matrix.charpoly, Matrix.det_fin_three]
+  simp [Matrix.charmatrix, tribMat, Matrix.one_apply]
+  ring
+
+theorem tribMat_charpolyBar (c : ℕ) :
+    tribMat.charpoly.map (Int.castRingHom (ZMod c))
+      = Polynomial.X ^ 3 - Polynomial.X ^ 2 - Polynomial.X - 1 := by
+  rw [tribMat_charpoly]
+  simp
+
+/-- `X³ − X² − X − 1` is irreducible mod `c` as soon as it has no root there. -/
+theorem tribMat_charpolyBar_irreducible {c : ℕ} [Fact c.Prime]
+    (hroot : ∀ x : ZMod c, x ^ 3 - x ^ 2 - x - 1 ≠ 0) :
+    Irreducible (tribMat.charpoly.map (Int.castRingHom (ZMod c))) := by
+  rw [tribMat_charpolyBar]
+  have hdeg : Polynomial.natDegree
+      (Polynomial.X ^ 3 - Polynomial.X ^ 2 - Polynomial.X - 1 : Polynomial (ZMod c)) = 3 := by
+    compute_degree!
+  refine Polynomial.irreducible_of_degree_le_three_of_not_isRoot ?_ ?_
+  · rw [Finset.mem_Icc, hdeg]; omega
+  · intro x hx
+    refine hroot x ?_
+    simpa [Polynomial.IsRoot] using hx
+
+/-! ### Growth of the Tribonacci sequence -/
+
+theorem trib_bounds (n : ℕ) : 0 ≤ trib n ∧ 0 ≤ trib (n + 1) ∧ 1 ≤ trib (n + 2) := by
+  induction n with
+  | zero => refine ⟨?_, ?_, ?_⟩ <;> simp [trib]
+  | succ n ih =>
+    obtain ⟨h0, h1, h2⟩ := ih
+    have heq : trib (n + 3) = trib (n + 2) + trib (n + 1) + trib n := rfl
+    refine ⟨h1, ?_, ?_⟩
+    · rw [show n + 1 + 1 = n + 2 from rfl]; omega
+    · rw [show n + 1 + 2 = n + 3 from rfl, heq]; omega
+
+theorem trib_ge (n : ℕ) : (n : ℤ) + 2 ≤ trib (n + 4) := by
+  induction n with
+  | zero => norm_num [trib]
+  | succ n ih =>
+    have heq : trib (n + 5) = trib (n + 4) + trib (n + 3) + trib (n + 2) := rfl
+    obtain ⟨_, _, h2⟩ := trib_bounds (n + 1)
+    obtain ⟨_, _, h2'⟩ := trib_bounds n
+    rw [show n + 1 + 4 = n + 5 from rfl, heq]
+    push_cast
+    rw [show n + 1 + 2 = n + 3 from rfl] at h2
+    omega
+
+theorem trib_tendsto {c : ℕ} (hc : 2 ≤ c) :
+    Tendsto (fun n => |(tribMat ^ (c ^ n)) 2 0|) atTop atTop := by
+  refine tendsto_atTop.2 fun B => eventually_atTop.2 ⟨B.toNat + 4, fun n hn => ?_⟩
+  have h2n : (2 : ℕ) ^ n ≤ c ^ n := Nat.pow_le_pow_left hc n
+  have hlt : n < 2 ^ n := Nat.lt_two_pow_self
+  obtain ⟨m, hm⟩ : ∃ m, c ^ n = m + 4 := ⟨c ^ n - 4, by omega⟩
+  have h1 : (m : ℤ) + 2 ≤ trib (c ^ n) := by rw [hm]; exact trib_ge m
+  have hBm : B ≤ (m : ℤ) + 2 := by
+    have hBt : B ≤ (B.toNat : ℤ) := Int.self_le_toNat B
+    have : B.toNat < m := by omega
+    have : (B.toNat : ℤ) < (m : ℤ) := by exact_mod_cast this
+    omega
+  rw [tribMat_pow_apply]
+  exact le_trans (le_trans hBm h1) (le_abs_self _)
+
+/-! ### The corollaries -/
+
+theorem trib_prime_pow_add_not_prime {c : ℕ} (hc : c.Prime)
+    (hirr : Irreducible (tribMat.charpoly.map (Int.castRingHom (ZMod c))))
+    (hmu : ∀ k, 3 ≤ k → k ≤ 3 → ¬ k ∣ c - 1) (hnz : ¬ (c : ℤ) ∣ trib c) (h : ℤ) :
+    ∃ᶠ n in atTop, ¬ Prime (trib (c ^ n) + h) := by
+  have hkey := entry_prime_pow_add_not_prime tribMat hc hirr (by decide : Odd 3) (Or.inr hmu)
+    (show (2 : Fin 3) ≠ 0 by decide)
+    ⟨1, by omega, by rw [pow_one, tribMat_pow_apply]; exact hnz⟩ (trib_tendsto hc.two_le) h
+  simpa [tribMat_pow_apply] using hkey
+
 /-- **`T(3^n) + h` is composite for infinitely many `n`, for every `h`.** -/
 theorem trib_three_pow_add_not_prime (h : ℤ) :
     ∃ᶠ n in atTop, ¬ Prime (trib (3 ^ n) + h) := by
-  sorry
+  haveI : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
+  refine trib_prime_pow_add_not_prime Nat.prime_three
+    (tribMat_charpolyBar_irreducible (by decide +revert)) ?_ ?_ h
+  · intro k h1 h2
+    interval_cases k <;> decide
+  · rw [show trib 3 = 1 from rfl]; decide
 
 /-- **`T(5^n) + h` is composite for infinitely many `n`, for every `h`.** -/
 theorem trib_five_pow_add_not_prime (h : ℤ) :
     ∃ᶠ n in atTop, ¬ Prime (trib (5 ^ n) + h) := by
-  sorry
+  haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+  refine trib_prime_pow_add_not_prime (by norm_num)
+    (tribMat_charpolyBar_irreducible (by decide +revert)) ?_ ?_ h
+  · intro k h1 h2
+    interval_cases k <;> decide
+  · rw [show trib 5 = 4 from rfl]; decide
 
 end LeanFormalizations.Mills.TheoremA
