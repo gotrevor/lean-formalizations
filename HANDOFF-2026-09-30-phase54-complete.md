@@ -1,5 +1,11 @@
 # HANDOFF 2026-09-30 — phase 54 COMPLETE
 
+- **Branch:** `main` (clean; nothing pushed — host pushes)
+- **HEAD at handoff:** `b701cc0` "Phase 54 handoff + FACT-GRAPH refresh"
+- **Proof commit:** `1f22118` "Phase 54 COMPLETE: Theorem A for any d when h != 0; Tetranacci T4(2^n)+h composite for every h"
+- **Build:** full `lake build` green (8775 jobs); pre-commit hook verified it.
+- **Treadmill:** stop requested and signalled via `box done --green`; will not relaunch.
+
 ## What landed
 `src/LeanFormalizations/NumberTheory/Mills/TheoremAEven.lean` is **sorry-free and axiom-clean**
 (`propext, Classical.choice, Quot.sound` only); full `lake build` green.
@@ -39,6 +45,27 @@
   a `C`-level rewrite.
 - No `Matrix.det_fin_four` in mathlib; `det_succ_row_zero` + `det_fin_three` works.
 
-## Next
-Directive scope is met (`scripts/fact-graph` rerun: 30 edges, 31 hypotheses). Next phase is an
-altitude/operator call — see DIRECTION.md.
+## Verification done this lap
+```
+#print axioms LeanFormalizations.Mills.TheoremAEven.entry_prime_pow_add_not_prime'  -- propext, Classical.choice, Quot.sound
+#print axioms LeanFormalizations.Mills.TheoremAEven.tetra_two_pow_add_not_prime     -- ditto
+#print axioms LeanFormalizations.Mills.TheoremA.entry_prime_pow_add_not_prime       -- ditto (unchanged by the refactor)
+#print axioms LeanFormalizations.Mills.TheoremA.trib_three_pow_add_not_prime        -- ditto (unchanged by the refactor)
+```
+`grep -c sorry TheoremAEven.lean` = 0.  `scripts/fact-graph` rerun: 30 edges, 31 hypotheses.
+
+## Exact next steps (for whoever picks this up)
+1. **Nothing is owed on phase 54.** Do not reopen `TheoremAEven.lean` or `TheoremA.lean`; both are
+   proved and axiom-clean, and the phase-52/54 statements are frozen.
+2. The next phase is an **altitude/operator call** — `DIRECTION.md` has no phase 55 directive yet, so
+   a reflection lap must plant one before proof work resumes. Grep
+   `src/LeanFormalizations/Maze.lean` first: it records closed routes and each row's `reopenIf`.
+3. Natural continuations visible from here, if a directive is wanted:
+   - **`c = 5` for Tetranacci is deliberately NOT claimed.** The charpoly is irreducible mod 5 too,
+     but `μ₄ ⊂ ℤ₅` (since `4 ∣ 5 − 1`) breaks the `μ_(≤d) = {±1}` window hypothesis. Closing `c = 5`
+     needs a genuinely wider window lemma, not a re-run of Theorem A.
+   - **Pentanacci / general order `d`** is now nearly free for any `c` where the window holds: the
+     only per-sequence work is the companion-matrix `pow_col` induction, the charpoly computation,
+     the growth bound, and irreducibility — see the gotchas above, especially the cyclotomic route
+     for degree `≥ 4`.
+   - **Theorem C (prime-free intervals) for order 4** would mirror phase 53's covering certificate.
