@@ -15,19 +15,39 @@ Phase 40 closed Theorem C at `c = 2` (`FibonacciCovering.lean`, sorry-free, axio
 `exists_entry_pow_congr_mul` (general `n × n`, general prime `c`) and
 `PmOne.of_prime_factors` (all prime factors `≡ ±1 mod q^e` ⟹ the number is) transfer verbatim.
 
-Exactly two pieces are `c = 2`-specific and are the phase-41 crux:
-1. **the `GL₂` `c`-part bound.**  `two_pow_dvd_sub_or_add_of_lt_padicValNat` says
-   `n < v₂|GL₂(𝔽_p)| ⟹ p ≡ ±1 (mod 2^(n/2))`, using `v₂|GL₂| = 2v₂(p−1) + v₂(p+1)` and that one
-   of the two is exactly `1`.  For odd `c` the analogue must come from
-   `|GL₂(𝔽_p)| = p(p−1)²(p+1)`: `v_c` of it is `2v_c(p−1) + v_c(p+1)`, and now *both* can be
-   large (`c` odd divides at most one of `p ∓ 1`, so in fact one of them is `0` — this should be
-   *easier* than `c = 2`).  `ThreeAdic.padicValNat_glCard_le` is the `c = 3` precedent to copy.
-2. **the certificate.**  Replace `2^(n+1) ∣ 5F(2^n)²+3` by phase 37's exact composition
-   `F((2j+1)N) = Φ_j(F N)` with `2j+1 = c²`: `x = Φ_j(x)` forces `x = 0`, while `c ∤ F(c^n)`
-   (`FibonacciAllPrimes`).  `c = 5` is separate, via the `F(4k+1) ± 1` factorizations.
+**Groundwork landed 2026-09-30** in `NumberTheory/Mills/FibonacciCoveringAllPrimes.lean`
+(sorry-free, axiom-clean): `PmOneMod` (the `±1` closure modulo an ARBITRARY modulus, generalizing
+phase 40's `PmOne e`), `glCard_two_eq`, `padicValNat_glCard_two_self` (`v_c|GL₂(𝔽_c)| = 1`, so the
+base prime is good at every `c`), and `pow_dvd_sub_or_add_of_lt_padicValNat_odd` — crux 1 below,
+now CLOSED, and indeed easier than `c = 2` as predicted.
 
-`c` itself is a good prime at every `c` (`v_c(c(c−1)²(c+1)) = 1`), the analogue of
-`padicValNat_glCard_two_two`.
+**Crux 1 is done.  The real wall is the certificate, and it is sharper than the roadmap says:**
+Phase 40's certificate `2^(n+1) ∣ 5F(2^n)²+3` is **single-index**, which is exactly why
+`exists_good_prime_factor` comes out as `∀ᶠ n`.  The roadmap proposes replacing it by phase 37's
+`Φ_J` fixed-point obstruction (`FibonacciAllPrimes.fibOddPoly_far`: `Φ_J(x) − x ∉ {0, ±2}` for
+`x ≠ 0`).  **That obstruction is two-index, and naive two-index comparison is NOT enough** — this
+lap's finding, recorded so a later lap does not rediscover it:
+
+> From `c^e ∣ F(c^n) − x` and `c^e ∣ F(c^(n+d)) − x'` one gets `c^e ∣ Φ_J(x) − x'` with
+> `2J + 1 = c^d` (odd for every `d`, since `c` is odd).  Concluding `Φ_J(x) = x'` needs
+> `c^e > |Φ_J(x)| + |x'|`, and `|Φ_J(x)| ≍ φ^(c^d)`.  So the threshold on `n` for comparing `n`
+> and `n + d` grows like `c^d`: two-index comparison shows only that bad indices are
+> **exponentially sparse**, never that they are finitely many.  It therefore gives neither
+> `∀ᶠ n, ∃ good p` nor a single index good for all `|h| ≤ H` simultaneously (different shifts can
+> stay bad at different indices).
+
+Fixing `d = 2` does bound `|Φ_J(x)|` in terms of `c` and `H` alone, and then the argument closes.
+So the phase-41 crux is precisely the `c`-adic convergence statement
+
+> **`c^(n+1) ∣ F(c^(n+2)) − F(c^n)` for every odd prime `c`** (any `c^(κn)`, `κ > 0`, suffices).
+
+This is the quantitative form of "Frobenius permutes the Teichmüller lifts of `α, β`, and its
+square fixes them".  With it: `c^e ∣ F(c^n) − x` plus `dvd_fibOddPoly_sub` gives
+`c^e ∣ Φ_J(x) − F(c^(n+2))`, hence `c^e ∣ Φ_J(x) − x` for `e ≤ n+1`, and `fibOddPoly_far` finishes
+(`x ≠ 0` from `FibonacciAllPrimes.not_dvd_fib_prime_pow`).  Base case `n = 0` is
+`F(c²) ≡ F(1) (mod c)`, i.e. `F(cM) ≡ (5|c) F(M) (mod c)` twice.  The inductive step is the open
+part; note it cannot be a contraction/LTE argument (the multiplier at the fixed point is a unit),
+so it wants the `c`-adic lift directly.  `c = 5` stays separate, via `F(4k+1) ± 1`.
 
 ## PHASE 15 (2026-09-29) — CLOSED: consequences of Schanuel's conjecture
 
