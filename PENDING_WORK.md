@@ -1,3 +1,46 @@
+## phase 57 (2026-09-30, IN PROGRESS) — Theorem D in full: the mixed limit matrix is BUILT
+
+`NumberTheory/Mills/TheoremDMixed.lean` (target: `floor_pow_prime_pow_add_not_prime_full`, still
+one disclosed `sorry`).  **The crux — step 1 of the header route — is proved** (`exists_mixed_limit`):
+for `f ≢ X^d (mod c)` there are `L, Q ≥ 1` with, for every `n`, `T := C^(L·c^n)` satisfying
+
+* `T^(Q+1) ≡ T (mod c^(n+1))`, and
+* `det (1 − T^Q) ≡ 0 (mod c^(n+1))`.
+
+### The design decision that removed a Hensel lift
+
+The header route asks for `tr(T^Q) ≡ m` with `1 ≤ m ≤ d` the number of unit roots.  Getting the
+integer `m` needs the Hensel coprime factorization `f ≡ X^r·g (mod c^k)`, the CRT splitting of
+`(ℤ/c^k)[X]/f`, and the rank of an idempotent over `ℤ/c^k` — none of which is in mathlib.
+**Replace that equation by `det (1 − T^Q) = 0`.**  Over `ℂ` it reads `∏_k (1 − u_k^Q) = 0`, i.e.
+*some* `u_k ≠ 0` — exactly what step 3 consumes — and it is a single integer polynomial equation,
+so the Nullstellensatz transfer takes it unchanged.  Mod `c^(n+1)` it is free: `T^Q` is idempotent,
+`ZMod (c^(n+1))` has no nontrivial idempotents, so `det(1 − T^Q) = 0` ⟺ `T^Q ≠ 0`, and `T^Q ≠ 0`
+is visible already mod `c`.  No `m`, no rank, no Hensel.
+
+### How `T` itself is built (phase 56's `C^(Q c^n) ≡ I` has no analogue)
+
+`C mod c` is singular, so there is no `Q` with `D^Q = 1`.  What survives is eventual periodicity in
+the *finite monoid* `Mat_d(𝔽_c)`: `∃ a, Q ≥ 1, D^(a+Q) = D^a` (`exists_period`), and then with
+`L := a·Q` every positive multiple of `L` gives the same element (`pow_mul_period`), so `D^L` is
+idempotent and `D^(L(Q+1)) = D^L`.  That base congruence mod `c` is lifted to `c^(n+1)` by phase
+47's `TeichmullerCongruence.pow_congr_lift` (`pow_c_pow_congr`).  `D^L ≠ 0` is the *only* use of
+`f ≢ X^d (mod c)`, via `map_eq_X_pow_of_compM_pow_eq_zero`: a vanishing power of the companion
+matrix forces `f mod c ∣ X^M`, hence `= X^d` (`modByMonic` + the cyclic vector `e₀` + `prime_X`).
+
+### Next attack (steps 2–4)
+
+1. `exists_zero_of_family`: phase 56's Nullstellensatz over an arbitrary `[IsAlgClosed] [CharZero]`
+   field, so the solution can be taken in `𝔸 := algebraicClosure ℚ ℂ` (needed for step 3 — the
+   Galois conjugation is only available on algebraic numbers).  Proof = copy of
+   `exists_complex_zero_of_family` with `ℂ ↝ K`.
+2. `exists_root_enum` over `K` (same copy-and-generalize).
+3. `T^(Q+1) = T ⟹ u_k^(Q+1) = u_k` — a `conj_inj` variant of phase 56's `polyVal_pow_eq_one`;
+   `det(1 − T^Q) = 0 ⟹ ∃ k*, u_(k*) ≠ 0` via `det_diagonal` under the Vandermonde conjugation.
+4. the automorphism: `minpoly.exists_algEquiv_of_root` on `Normal ℚ 𝔸` moves `α_(k*)` to `α`;
+   the integer system is preserved because `σ` is a ring hom.  Then push to `ℂ` and run a mixed
+   `not_exists_spectral_of_large` (only `‖u_(i₀)‖ = 1` is needed, the other `u_k` have `‖·‖ ≤ 1`).
+
 ### finding (2026-09-30, phase 49): the composite-base descent is FALSE
 
 `CoveringEngine.lean`'s header wishes for a Gauss-type descent
