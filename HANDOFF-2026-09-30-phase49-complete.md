@@ -90,8 +90,22 @@ the same three for **every** `(P,Q)`, using the companion matrix `lucasMPQ P Q =
 Lucas `V(P,Q)` used in phases 33/36/38/39/43 (Fibonacci–Lucas `L = V(1,−1)`, `V(P,±1)`, `V(3,2) =
 2^n+1`, …), with anchors for `L` and `V(3,2)`.
 
+## Coordinates
+
+Branch `main`, HEAD `8f38ecf`, working tree clean, `lake build` green,
+`GaussCongruenceProof.lean` has 0 sorries.  The only `src/` sorries left are the pre-existing
+designated-open ones in `Transcendence/DubickasNoSubspace.lean` and `Transcendence/CorvajaZannier*`.
+
 ## NEXT
 
-Phase 49's stop condition is met.  Open frontier for the Mills campaign is unchanged:
+Phase 49's stop condition is met.  One concrete unfinished thread, if a lap wants it: the CONVERSE
+of the Gauss criterion — `(∀ n ≥ 1, n ∣ Σ_{d ∣ n} μ(n/d) a_d) → ∀ p prime m k,
+p^(k+1) ∣ a(m p^(k+1)) − a(m p^k)`.  Route: Möbius-invert to `b_d := Σ_{e ∣ d} μ(d/e) a_e` (so
+`d ∣ b_d` and `a_N = Σ_{d ∣ N} b_d` by `ArithmeticFunction.sum_eq_iff_sum_smul_moebius_eq`), then
+`a(m p^(k+1)) − a(m p^k) = Σ over d ∣ m p^(k+1) with v_p(d) = k+1 of b_d`, and every such `d` is
+divisible by `p^(k+1)`.  Proving it makes the frozen `Literature.GaussCongruenceTrace` provably
+EQUIVALENT to the full Dold congruence (`gauss_dold_of_padic` is the other half, already done) — a
+faithfulness statement about the hypothesis phase 29 was written against.  Nothing depends on it.
+  Open frontier for the Mills campaign is unchanged:
 `ShiftedTraceRigidity` (phases 45–48 built its sub-nodes R4/window/Teichmüller); the remaining
 sub-nodes of `PROOF-THEOREM-E.md` Steps 3–6 are the next real crux.
