@@ -1,3 +1,7 @@
+## phase 49 DONE (2026-09-30): Gauss/Dold congruence for matrix traces PROVED
+
+`NumberTheory/Mills/GaussCongruenceProof.lean` sorry-free + axiom-clean; `Literature.GaussCongruenceTrace` discharged (`gaussCongruenceTrace_holds`), phase 29's two 3-adic results restated unconditionally in it.  Key insight: the rotation-fixed part of the walk sum is the trace for the ENTRYWISE `p`-th power matrix, which turns step 3 into the moving-modulus induction `key` and kills the primitive-period/Möbius bookkeeping.  See `HANDOFF-2026-09-30-phase49-complete.md`.
+
 ## phase 47 (2026-09-30) — CLOSED: `A^(c^n)` is eventually periodic `c`-adically
 
 `NumberTheory/Mills/TeichmullerCongruence.lean` is sorry-free; `pow_prime_pow_period_congr` is

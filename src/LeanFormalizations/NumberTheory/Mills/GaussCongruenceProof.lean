@@ -509,25 +509,101 @@ lemma sum_split (p k : ℕ) [NeZero (p ^ k)] [NeZero (p ^ k * p)]
   exact (Finset.sum_filter_add_sum_filter_not Finset.univ _ F).symm
 
 
+
+
+lemma dvd_prod_sub_prod {ι : Type*} (s : Finset ι) (f g : ι → ℤ) (d : ℤ)
+    (h : ∀ i ∈ s, d ∣ f i - g i) : d ∣ (∏ i ∈ s, f i) - ∏ i ∈ s, g i := by
+  have h' : ∀ i ∈ s, f i ≡ g i [ZMOD d] := by
+    intro i hi
+    exact Int.modEq_iff_dvd.2 (dvd_sub_comm.mp (h i hi))
+  have := Int.ModEq.prod h'
+  exact (Int.modEq_iff_dvd.1 this.symm)
+
+lemma dvd_cw_sub_cw (N : ℕ) [NeZero N] (A B : Matrix (Fin n) (Fin n) ℤ) (d : ℤ)
+    (h : ∀ i j, d ∣ A i j - B i j) (w : Fin N → Fin n) :
+    d ∣ cw A N w - cw B N w := by
+  rw [cw, cw]
+  exact dvd_prod_sub_prod _ _ _ d (fun t _ => h _ _)
+
+/-- **The key induction.** -/
+lemma key (p : ℕ) (hp : p.Prime) :
+    ∀ (k m : ℕ) (A B : Matrix (Fin n) (Fin n) ℤ),
+      (∀ i j, (p : ℤ) ^ (m + 1) ∣ A i j - B i j) →
+      (p : ℤ) ^ (k + m + 1) ∣ (A ^ (p ^ k)).trace - (B ^ (p ^ k)).trace := by
+  intro k
+  induction k with
+  | zero =>
+    intro m A B h
+    rw [pow_zero, pow_one, pow_one, zero_add, ← Matrix.trace_sub]
+    refine Finset.dvd_sum (fun i _ => ?_)
+    exact h i i
+  | succ k ih =>
+    intro m A B h
+    haveI hz1 : NeZero (p ^ k) := ⟨pow_ne_zero _ hp.pos.ne'⟩
+    haveI hz2 : NeZero (p ^ k * p) := ⟨Nat.mul_ne_zero (pow_ne_zero _ hp.pos.ne') hp.pos.ne'⟩
+    rw [show p ^ (k + 1) = p ^ k * p from pow_succ p k, trace_pow_eq_sum_cw' A (p ^ k * p), trace_pow_eq_sum_cw' B (p ^ k * p),
+      ← Finset.sum_sub_distrib,
+      sum_split p k (fun w => cw A (p ^ k * p) w - cw B (p ^ k * p) w)]
+    refine dvd_add ?_ ?_
+    · have hfree := dvd_sum_nonfixed p k hp (fun w => cw A (p ^ k * p) w - cw B (p ^ k * p) w)
+        (fun w => by rw [cw_rotE, cw_rotE]) ((p : ℤ) ^ (m + 1))
+        (fun w => dvd_cw_sub_cw _ A B _ h w)
+      have hpow : (p : ℤ) ^ (k + 1) * (p : ℤ) ^ (m + 1) = (p : ℤ) ^ (k + 1 + m + 1) := by
+        rw [← pow_add]
+        congr 1
+      rwa [hpow] at hfree
+    · have hrep : ∀ u : Fin (p ^ k) → Fin n,
+          (cw A (p ^ k * p) (repw (p ^ k) p n u) - cw B (p ^ k * p) (repw (p ^ k) p n u))
+            = cw (A.map (fun a => a ^ p)) (p ^ k) u - cw (B.map (fun a => a ^ p)) (p ^ k) u := by
+        intro u; rw [cw_repw, cw_repw]
+      rw [Finset.sum_congr rfl (fun u (_ : u ∈ Finset.univ) => hrep u), Finset.sum_sub_distrib,
+        ← trace_pow_eq_sum_cw' _ (p ^ k), ← trace_pow_eq_sum_cw' _ (p ^ k)]
+      have := ih (m + 1) (A.map (fun a => a ^ p)) (B.map (fun a => a ^ p)) (by
+        intro i j
+        simpa [Matrix.map_apply] using dvd_pow_sub_pow_step (h i j))
+      have he : k + (m + 1) + 1 = k + 1 + m + 1 := by ring
+      rwa [he] at this
+
+
 end Necklace
 
 /-- **The Gauss congruence for traces holds** (discharging the Literature hypothesis). -/
 theorem gaussCongruenceTrace_holds : GaussCongruenceTrace := by
-  sorry
+  intro n C p k hp
+  haveI hz1 : NeZero (p ^ k) := ⟨pow_ne_zero _ hp.pos.ne'⟩
+  haveI hz2 : NeZero (p ^ k * p) := ⟨Nat.mul_ne_zero (pow_ne_zero _ hp.pos.ne') hp.pos.ne'⟩
+  set C' := C.map (fun a : ℤ => a ^ p) with hC'
+  have h1 : (p : ℤ) ^ (k + 1) ∣ (C ^ (p ^ (k + 1))).trace - (C' ^ (p ^ k)).trace := by
+    rw [show p ^ (k + 1) = p ^ k * p from pow_succ p k, trace_pow_eq_sum_cw' C (p ^ k * p),
+      sum_split p k (cw C (p ^ k * p))]
+    have hfix : ∑ u : Fin (p ^ k) → Fin n, cw C (p ^ k * p) (repw (p ^ k) p n u)
+        = (C' ^ (p ^ k)).trace := by
+      rw [Finset.sum_congr rfl (fun u (_ : u ∈ Finset.univ) => cw_repw C (p ^ k) p u),
+        ← trace_pow_eq_sum_cw' C' (p ^ k)]
+    rw [hfix, add_sub_cancel_right]
+    have hfree := dvd_sum_nonfixed p k hp (cw C (p ^ k * p)) (fun w => cw_rotE C w) 1
+      (fun w => one_dvd _)
+    rwa [mul_one] at hfree
+  have h2 : (p : ℤ) ^ (k + 1) ∣ (C' ^ (p ^ k)).trace - (C ^ (p ^ k)).trace := by
+    have hkey := key p hp k 0 C' C (fun i j => by
+      simpa [hC', Matrix.map_apply] using dvd_pow_sub_self hp (C i j))
+    simpa using hkey
+  have := dvd_add h1 h2
+  rwa [sub_add_sub_cancel] at this
 
 /-- Phase 29 (`ThreeAdic.mills_threeAdic`) without the Gauss-congruence hypothesis. -/
 theorem mills_threeAdic' (hB : BakerHarmanPintz2001) (hM : Matomaki2007) (hD : Dubickas2022)
     (hG : Dubickas2022PisotGap) {A : ℝ} (hA : IsMinMills A) (halg : IsAlgebraic ℚ A) :
     ∀ e : ℕ, ∃ K, ∀ k ≥ K,
-      (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ 1 [ZMOD 3 ^ e] ∨ (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ -1 [ZMOD 3 ^ e] := by
-  sorry
+      (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ 1 [ZMOD 3 ^ e] ∨ (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ -1 [ZMOD 3 ^ e] :=
+  ThreeAdic.mills_threeAdic gaussCongruenceTrace_holds hB hM hD hG hA halg
 
 /-- Phase 29 (`ThreeAdic.transcendental_of_not_pm_one`) without the Gauss-congruence hypothesis. -/
 theorem transcendental_of_not_pm_one' (hB : BakerHarmanPintz2001) (hM : Matomaki2007)
     (hD : Dubickas2022) (hG : Dubickas2022PisotGap) {A : ℝ} (hA : IsMinMills A) {e : ℕ}
     (h : ∃ᶠ k in atTop, ¬ ((⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ 1 [ZMOD 3 ^ e] ∨
       (⌊A ^ ((3:ℕ) ^ k)⌋₊ : ℤ) ≡ -1 [ZMOD 3 ^ e])) :
-    Transcendental ℚ A := by
-  sorry
+    Transcendental ℚ A :=
+  ThreeAdic.transcendental_of_not_pm_one gaussCongruenceTrace_holds hB hM hD hG hA h
 
 end LeanFormalizations.Mills.GaussCongruenceProof

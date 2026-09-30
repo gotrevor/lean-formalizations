@@ -44,11 +44,11 @@ graph LR
 | Hypothesis | Status | Theorems resting on it |
 |---|---|---|
 | `SchanuelConjecture` | 🔮 conjecture | 50 |
-| `BakerHarmanPintz2001` | 📚 theorem | 22 |
-| `Matomaki2007` | 📚 theorem | 18 |
+| `BakerHarmanPintz2001` | 📚 theorem | 24 |
+| `Matomaki2007` | 📚 theorem | 20 |
 | `AlgIndepLogsConjecture` | 🔮 conjecture | 15 |
-| `Dubickas2022PisotGap` | 📚 theorem | 13 |
-| `Dubickas2022` | 📚 theorem | 12 |
+| `Dubickas2022PisotGap` | 📚 theorem | 15 |
+| `Dubickas2022` | 📚 theorem | 14 |
 | `LindemannWeierstrassAlgIndep` | 📚 theorem | 11 |
 | `Schoenfeld1976` | 📚 theorem | 8 |
 | `RiemannHypothesis` | 🔮 conjecture | 8 |
@@ -75,7 +75,7 @@ graph LR
 | `Mills.ShiftedMills.ShiftedTraceRigidity` | 📚 theorem | 1 |
 | `Mahler1957` | 📚 theorem | 1 |
 
-Unconditional theorems in the scanned namespaces (no named hypothesis): 652.
+Unconditional theorems in the scanned namespaces (no named hypothesis): 690.
 
 ## Refuted
 
