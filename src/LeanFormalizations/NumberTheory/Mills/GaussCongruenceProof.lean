@@ -606,4 +606,33 @@ theorem transcendental_of_not_pm_one' (hB : BakerHarmanPintz2001) (hM : Matomaki
     Transcendental ℚ A :=
   ThreeAdic.transcendental_of_not_pm_one gaussCongruenceTrace_holds hB hM hD hG hA h
 
+/-! ## Numeric anchors (faithfulness of the frozen statement)
+
+`GaussCongruenceTrace` is a `Literature` def we are not allowed to restate, so these four
+computations check it against real arithmetic: that it HOLDS where it should, that its exponent
+`k+1` is sharp, and that primality of `p` is load-bearing (so we did not prove something weaker
+or vacuous).  `C = !![1,2;3,4]` (non-symmetric, `det = -2`). -/
+
+local notation "Cex" => (!![1, 2; 3, 4] : Matrix (Fin 2) (Fin 2) ℤ)
+
+/-- anchor 1: the congruence itself, `p = 2`, `k = 2`. -/
+theorem gauss_anchor_two : ((2:ℤ) ^ 3) ∣ ((Cex ^ (2 ^ 3)).trace - (Cex ^ (2 ^ 2)).trace) := by
+  norm_num [pow_succ, Matrix.trace_fin_two, Matrix.mul_fin_two]
+
+/-- anchor 2: the exponent `k+1` is SHARP — `2^3` does not divide the `k = 1` difference. -/
+theorem gauss_anchor_sharp : ¬ (((2:ℤ) ^ 3) ∣ ((Cex ^ (2 ^ 2)).trace - (Cex ^ (2 ^ 1)).trace)) := by
+  norm_num [pow_succ, Matrix.trace_fin_two, Matrix.mul_fin_two]
+
+/-- anchor 3: `3^3` divides the `p = 3, k = 2` difference, and `3^4` does not. -/
+theorem gauss_anchor_three : ((3:ℤ) ^ 3) ∣ ((Cex ^ (3 ^ 3)).trace - (Cex ^ (3 ^ 2)).trace) ∧
+    ¬ (((3:ℤ) ^ 4) ∣ ((Cex ^ (3 ^ 3)).trace - (Cex ^ (3 ^ 2)).trace)) := by
+  norm_num [pow_succ, Matrix.trace_fin_two, Matrix.mul_fin_two]
+
+/-- anchor 4: PRIMALITY is load-bearing — for the composite base `9` and `k = 1`, `9^2` does NOT
+divide `tr(C^(9^2)) - tr(C^9)`, so the prime hypothesis cannot be dropped. -/
+theorem gauss_anchor_composite :
+    ¬ (((9:ℤ) ^ 2) ∣ ((Cex ^ (9 ^ 2)).trace - (Cex ^ (9 ^ 1)).trace)) := by
+  norm_num [pow_succ, Matrix.trace_fin_two, Matrix.mul_fin_two]
+
+
 end LeanFormalizations.Mills.GaussCongruenceProof
