@@ -632,20 +632,19 @@ section Dold
 open ArithmeticFunction ArithmeticFunction.Moebius
 
 
-/-- the `p`-part of the Möbius sum -/
-lemma prime_pow_dvd_moebius_sum {nd : ℕ} (C : Matrix (Fin nd) (Fin nd) ℤ) {n : ℕ} (hn : n ≠ 0)
-    {p : ℕ} (hp : p.Prime) :
-    ((p : ℤ) ^ (n.factorization p)) ∣
-      ∑ x ∈ n.divisors, (μ x : ℤ) * (C ^ (n / x)).trace := by
+/-- the `p`-part of the Möbius sum, for ANY integer sequence with the prime-power congruences -/
+lemma prime_pow_dvd_moebius_sum_gen (a : ℕ → ℤ) {n : ℕ} (hn : n ≠ 0) {p : ℕ} (hp : p.Prime)
+    (hcong : ∀ m k : ℕ, (p : ℤ) ^ (k + 1) ∣ a (m * p ^ (k + 1)) - a (m * p ^ k)) :
+    ((p : ℤ) ^ (n.factorization p)) ∣ ∑ x ∈ n.divisors, (μ x : ℤ) * a (n / x) := by
   classical
   rcases Nat.eq_zero_or_pos (n.factorization p) with h0 | hpos
   · simp [h0]
-  set a := n.factorization p with ha
-  obtain ⟨m, hpm, hpnd⟩ : ∃ m, p ^ a * m = n ∧ ¬ p ∣ m :=
-    ⟨n / p ^ a, Nat.ordProj_mul_ordCompl_eq_self n p, Nat.not_dvd_ordCompl hp hn⟩
+  set e := n.factorization p with ha
+  obtain ⟨m, hpm, hpnd⟩ : ∃ m, p ^ e * m = n ∧ ¬ p ∣ m :=
+    ⟨n / p ^ e, Nat.ordProj_mul_ordCompl_eq_self n p, Nat.not_dvd_ordCompl hp hn⟩
   -- drop the non-squarefree terms
-  have hsq : ∑ x ∈ n.divisors.filter (fun x => Squarefree x), (μ x : ℤ) * (C ^ (n / x)).trace
-      = ∑ x ∈ n.divisors, (μ x : ℤ) * (C ^ (n / x)).trace := by
+  have hsq : ∑ x ∈ n.divisors.filter (fun x => Squarefree x), (μ x : ℤ) * a (n / x)
+      = ∑ x ∈ n.divisors, (μ x : ℤ) * a (n / x) := by
     refine Finset.sum_filter_of_ne (fun x _ hne => ?_)
     by_contra hns
     rw [ArithmeticFunction.moebius_eq_zero_of_not_squarefree hns] at hne
@@ -658,12 +657,12 @@ lemma prime_pow_dvd_moebius_sum {nd : ℕ} (C : Matrix (Fin nd) (Fin nd) ℤ) {n
     simp only [hs, Finset.mem_filter, Nat.mem_divisors] at hy
     obtain ⟨⟨⟨hyn, _⟩, hysq⟩, hpy⟩ := hy
     refine ⟨?_, hysq, hpy⟩
-    have hcop : Nat.Coprime y (p ^ a) :=
-      (Nat.Prime.coprime_iff_not_dvd hp).2 hpy |>.symm.pow_right a
+    have hcop : Nat.Coprime y (p ^ e) :=
+      (Nat.Prime.coprime_iff_not_dvd hp).2 hpy |>.symm.pow_right e
     exact hcop.dvd_of_dvd_mul_left (by rwa [hpm])
   -- reindex the `p ∣ x` half
-  have hbij : ∑ x ∈ s.filter (fun x => p ∣ x), (μ x : ℤ) * (C ^ (n / x)).trace
-      = ∑ y ∈ s.filter (fun x => ¬ p ∣ x), (μ (p * y) : ℤ) * (C ^ (n / (p * y))).trace := by
+  have hbij : ∑ x ∈ s.filter (fun x => p ∣ x), (μ x : ℤ) * a (n / x)
+      = ∑ y ∈ s.filter (fun x => ¬ p ∣ x), (μ (p * y) : ℤ) * a (n / (p * y)) := by
     refine Finset.sum_nbij' (fun x => x / p) (fun y => p * y) ?_ ?_ ?_ ?_ ?_
     · intro x hx
       simp only [hs, Finset.mem_filter, Nat.mem_divisors] at hx ⊢
@@ -680,7 +679,7 @@ lemma prime_pow_dvd_moebius_sum {nd : ℕ} (C : Matrix (Fin nd) (Fin nd) ℤ) {n
       obtain ⟨hym, hysq, hpy⟩ := hmemB y hy
       simp only [hs, Finset.mem_filter, Nat.mem_divisors]
       refine ⟨⟨⟨?_, hn⟩, ?_⟩, Dvd.intro y rfl⟩
-      · calc p * y ∣ p ^ a * m := mul_dvd_mul (dvd_pow_self p (by omega)) hym
+      · calc p * y ∣ p ^ e * m := mul_dvd_mul (dvd_pow_self p (by omega)) hym
           _ = n := hpm
       · rw [Nat.squarefree_mul ((Nat.Prime.coprime_iff_not_dvd hp).2 hpy)]
         exact ⟨hp.squarefree, hysq⟩
@@ -705,34 +704,43 @@ lemma prime_pow_dvd_moebius_sum {nd : ℕ} (C : Matrix (Fin nd) (Fin nd) ℤ) {n
     exact hn hpm.symm
   have hy0 : y ≠ 0 := fun h => hm0 (Nat.eq_zero_of_zero_dvd (h ▸ hym))
   obtain ⟨c, rfl⟩ := hym
-  have hny : n / y = c * p ^ a := by
-    rw [← hpm, show p ^ a * (y * c) = y * (c * p ^ a) from by ring,
+  have hny : n / y = c * p ^ e := by
+    rw [← hpm, show p ^ e * (y * c) = y * (c * p ^ e) from by ring,
       Nat.mul_div_cancel_left _ (Nat.pos_of_ne_zero hy0)]
-  have hnpy : n / (p * y) = c * p ^ (a - 1) := by
+  have hnpy : n / (p * y) = c * p ^ (e - 1) := by
     rw [mul_comm p y, ← Nat.div_div_eq_div_mul, hny,
-      show a = (a - 1) + 1 from by omega, pow_succ,
-      show c * (p ^ (a - 1) * p) = (c * p ^ (a - 1)) * p from by ring,
+      show e = (e - 1) + 1 from by omega, pow_succ,
+      show c * (p ^ (e - 1) * p) = (c * p ^ (e - 1)) * p from by ring,
       Nat.mul_div_cancel _ hp.pos]
     congr 2
-  have hdvd := gaussCongruence_mul C c p (a - 1) hp
-  rw [show a - 1 + 1 = a from by omega] at hdvd
+  have hdvd := hcong c (e - 1)
+  rw [show e - 1 + 1 = e from by omega] at hdvd
   rw [hmu, hny, hnpy,
-    show -(μ y : ℤ) * (C ^ (c * p ^ (a - 1))).trace + (μ y : ℤ) * (C ^ (c * p ^ a)).trace
-      = (μ y : ℤ) * ((C ^ (c * p ^ a)).trace - (C ^ (c * p ^ (a - 1))).trace) from by ring]
+    show -(μ y : ℤ) * a (c * p ^ (e - 1)) + (μ y : ℤ) * a (c * p ^ e)
+      = (μ y : ℤ) * (a (c * p ^ e) - a (c * p ^ (e - 1))) from by ring]
   exact Dvd.dvd.mul_left hdvd _
+
+/-- **The Gauss criterion (sufficiency), for an arbitrary integer sequence.**  If `a` satisfies the
+prime-power congruences `p^(k+1) ∣ a(m p^(k+1)) − a(m p^k)`, then it satisfies the Gauss–Dold
+congruences `n ∣ Σ_{x ∣ n} μ(x) a(n/x)` for every modulus. -/
+theorem gauss_dold_of_padic (a : ℕ → ℤ)
+    (h : ∀ p : ℕ, p.Prime → ∀ m k : ℕ, (p : ℤ) ^ (k + 1) ∣ a (m * p ^ (k + 1)) - a (m * p ^ k))
+    {n : ℕ} (hn : n ≠ 0) : (n : ℤ) ∣ ∑ x ∈ n.divisors, (μ x : ℤ) * a (n / x) := by
+  refine Int.ofNat_dvd_left.mpr ((Nat.dvd_iff_prime_pow_dvd_dvd _ n).2 ?_)
+  intro p k hpp hk
+  have hkle : k ≤ n.factorization p := (Nat.Prime.pow_dvd_iff_le_factorization hpp hn).1 hk
+  have hz : ((p ^ k : ℕ) : ℤ) ∣ ∑ x ∈ n.divisors, (μ x : ℤ) * a (n / x) := by
+    refine dvd_trans ?_ (prime_pow_dvd_moebius_sum_gen a hn hpp (h p hpp))
+    push_cast
+    exact pow_dvd_pow _ hkle
+  exact Int.ofNat_dvd_left.mp hz
 
 /-- **The full Gauss–Dold congruence.**  For every integer matrix `C` and every `n ≥ 1`,
 `n ∣ Σ_{x ∣ n} μ(x) tr(C^(n/x))`. -/
 theorem dold_congruence {nd : ℕ} (C : Matrix (Fin nd) (Fin nd) ℤ) {n : ℕ} (hn : n ≠ 0) :
-    (n : ℤ) ∣ ∑ x ∈ n.divisors, (μ x : ℤ) * (C ^ (n / x)).trace := by
-  refine Int.ofNat_dvd_left.mpr ((Nat.dvd_iff_prime_pow_dvd_dvd _ n).2 ?_)
-  intro p k hpp hk
-  have hkle : k ≤ n.factorization p := (Nat.Prime.pow_dvd_iff_le_factorization hpp hn).1 hk
-  have hz : ((p ^ k : ℕ) : ℤ) ∣ ∑ x ∈ n.divisors, (μ x : ℤ) * (C ^ (n / x)).trace := by
-    refine dvd_trans ?_ (prime_pow_dvd_moebius_sum C hn hpp)
-    push_cast
-    exact pow_dvd_pow _ hkle
-  exact Int.ofNat_dvd_left.mp hz
+    (n : ℤ) ∣ ∑ x ∈ n.divisors, (μ x : ℤ) * (C ^ (n / x)).trace :=
+  gauss_dold_of_padic (fun N => (C ^ N).trace)
+    (fun p hp m k => gaussCongruence_mul C m p k hp) hn
 
 /-- the classical shape of the Gauss–Dold congruence: `n ∣ Σ_{d ∣ n} μ(n/d) tr(C^d)`. -/
 theorem dold_congruence' {nd : ℕ} (C : Matrix (Fin nd) (Fin nd) ℤ) {n : ℕ} (hn : n ≠ 0) :
