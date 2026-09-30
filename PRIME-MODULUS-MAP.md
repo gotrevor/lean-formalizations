@@ -44,8 +44,8 @@ One page, one row per theorem.  Everything here was proved 2026-09-29/30, uncond
 - **`TheoremAEven` (phase 54):** Theorem A′ for every `d` when `h ≠ 0`; **Tetranacci `T₄(2^n) + h` composite i.o. for every `h`** (`tetra_two_pow_add_not_prime`; `h = 0` by parity via the period).
 - **`TribonacciCovering` (phase 53):** `[T(3^n) − 3, T(3^n) + 3]` contains no prime for every `n ≡ 95 (mod 1980)` (`trib_three_pow_prime_free`, `trib_three_pow_prime_free_often`).  Certificate primes: 5, 7, 13, 47, 53, 593.
 
-## In progress
-- `TheoremDQuadratic` (phase 55, multi-phase): Theorem D for quadratic Pisot `α`, `c ∤ b·disc`, `s ≥ 4`.  The route uses a number field `K = ℚ(α, ζ_(c²−1))` and a prime `𝔓 | c`, with no `c`-adic completion: Teichmüller mod `𝔓^(n+1)`, spectral trace, separation, then size.
+## Theorem D in Lean
+- ✅ **`TheoremDQuadratic` (phase 55): Theorem D, quadratic case, PROVED** (`floor_pow_prime_pow_add_not_prime`).  `⌊α^(c^n + s)⌋` is not prime for infinitely many `n`, for quadratic Pisot `α`, `c ∤ b·disc` and `s ≥ 4`.  The route avoids `c`-adic completions: torsion congruences at every level, a transfer to a complex zero (Nullstellensatz plus integrality), then size.
 
 ## Paper theorems, not yet in Lean
 - **Theorem D** (`PROOF-THEOREM-D.md`): Saito's Problem 1.7 for `R(n) = c^n + s`; every Pisot `α` outside `f ≡ X^d (mod c)` (draft 2 removes the abelian-field exception by a one-automorphism size argument).  Referee pass: Lemmas OK.

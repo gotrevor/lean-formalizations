@@ -22,7 +22,7 @@ K. Saito, *Intervals without primes near an iterated linear recurrence sequence*
 
 > Find a non-reversible ILRS `R(n)` such that for every Pisot number `α`, especially of degree 3, `⌊α^(R(n))⌋` is composite for infinitely many `n`.
 
-`R(n) = c^n + s`, with `s` large enough in terms of the degree, works for every Pisot `α` whose minimal polynomial is not `≡ X^d (mod c)` (paper proof).  The excluded class is out of reach for this method with *any* non-reversible `R`: a quadratic example such as `α = 2 + √2` at `c = 2` makes every value `≡ −1` to growing `c`-adic precision.  Details: [PROOF-THEOREM-D.md](PROOF-THEOREM-D.md).
+`R(n) = c^n + s`, with `s` large enough in terms of the degree, works for every Pisot `α` whose minimal polynomial is not `≡ X^d (mod c)` (paper proof).  The **quadratic case is Lean-checked**, for `c ∤ b·disc` and `s ≥ 4`: [`TheoremDQuadratic.floor_pow_prime_pow_add_not_prime`](src/LeanFormalizations/NumberTheory/Mills/TheoremDQuadratic.lean).  The excluded class is out of reach for this method with *any* non-reversible `R`: a quadratic example such as `α = 2 + √2` at `c = 2` makes every value `≡ −1` to growing `c`-adic precision.  Details: [PROOF-THEOREM-D.md](PROOF-THEOREM-D.md).
 
 ## Problem 1.1: not solved
 
