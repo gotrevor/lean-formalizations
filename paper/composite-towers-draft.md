@@ -59,6 +59,7 @@ Saito (arXiv:2504.14968) asked whether `F(2^n) + h` is composite for infinitely 
 - His Proposition 3.1(iv) gives floor = trace.
 - §7's machinery with the shift `s` (for degree 3 the rigidity needs no dominance) forces `f ≡ (X ∓ 1)³ (mod 3)` and `tr(ξ^s) = ±1`, which contradicts `tr(ξ^s) ≡ 0 (mod 3)`.
 - The one exceptional field (cyclic cubic of conductor 13) is closed by a finite Galois-trace computation.
+*Example.*  Heuristically (greedy chain; cf. Mills' constant under RH), `ξ(3^k − 2) ≈ 2.0066301472550073895638290682681…`, with prime chain `2, 131, 36448807, …`.
 *Comparison.*  Saito's Theorem 1.9(C) proves transcendence for `ξ(r·3^k − 1)` with `r ≥ 4·10¹⁴`, by size.  Ours is arithmetic and works at the smallest first term.
 
 ## 9. What the method cannot do

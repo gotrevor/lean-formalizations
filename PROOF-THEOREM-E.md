@@ -92,6 +92,13 @@ The only cubic subfield of `ℚ(ζ₁₀₄)` is `K`, the cyclic cubic field of 
 - **`ξ(r·3^k − 1)` for even `r`: NOT established** (*referee 2*; draft-1 claim withdrawn).  The limit points carry `ζ_k^(r·3^m)`, and for even `r` the map `x ↦ x^r` is not injective on the (even-order) Teichmüller roots.  So `z_k = ±1` no longer forces equal `ζ_k`, and `f ≡ (X − 1)^a (X + 1)^b (mod 3)` survives the congruence step.  The `b = 0` reduction of Step 6 breaks the same way (e.g. `13 ∣ r`).  Odd `r` has `agcd = 2`.  Open.
 - **The obstruction for Mills itself (`s = 0`):** see the last bullet of Theorem E+.
 
+## The constant (heuristic value)
+Assume the greedy chain (least admissible prime at each step) never gets stuck.  This is the same assumption behind the published digits of Mills' constant, which rest on RH.  Then
+`ξ(3^k − 2) ≈ 2.00663014725500738956382906826814896606031523146614463546077…`.
+- The chain is `⌊ξ⌋ = 2`, `⌊ξ^7⌋ = 131`, `⌊ξ^25⌋ = 36448807`, then primes of 24, 73 and 220 digits (`k = 4, 5, 6`).
+- The interval width after `k = 6` is `≈ 3.5·10^(−223)`.
+- Computed 2026-09-30 by an ad-hoc greedy search (sympy `nextprime` + mpmath).  The theorem does **not** depend on these digits.
+
 ## Numerics (supporting, not load-bearing)
 - 867 cubic Pisot `f` with coefficients in `[−9, 9]`, `R = 3^n − 2`, precision `3^10`.  The survivors of the window test with the true offsets are exactly 4 cases with `f ≡ X³ (mod 3)` and positive dominant conjugate.
 - Those survivors all have `ε = −1`, which Step 2 excludes for the least constant (they are admissible Pisot numbers, just not `ξ`).
