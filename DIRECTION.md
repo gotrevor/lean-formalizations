@@ -2,7 +2,11 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 (phase 44, CURRENT): groundwork for Theorems D/E — stuck lemma, abstract-exponent filter, `GL_d` window — target `NumberTheory/Mills/TheoremDGround.lean` (3 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 45, CURRENT): Theorem E as a graph edge — `ξ(3^k − 2)` transcendental from `Literature.Saito2025TypeBTrace` + our open node `ShiftedTraceRigidity` — target `NumberTheory/Mills/ShiftedMills.lean` (3 frozen theorems + frozen defs; frozen also: `Literature/Saito2025.lean` (new, faithful-or-weaker check in its header), all earlier Mills phase statements, the rest of Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+`ShiftedTraceRigidity` is a `def … : Prop` node (our own math, `PROOF-THEOREM-E.md` Steps 3–6): **do not try to prove it in this phase.**
+
+## ✅ DONE (phase 44): groundwork for Theorems D/E — stuck lemma, abstract-exponent filter, `GL_d` window — target `NumberTheory/Mills/TheoremDGround.lean` (3 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 `PROOF-THEOREM-D.md` Lemmas 2–4 (and E's Step 3).  Statements brute-force checked (random `ε`/`j`; primes `< 400`, `d ≤ 4`, `c ≤ 7`).
 
