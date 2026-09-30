@@ -8,6 +8,32 @@ new `AffineRankOne.const_ratio` derivation argument + `StrongSix.exists_logBasis
 
 ---
 
+## Theorem C beyond `d = 2`: the wall, reformulated (2026-09-30)
+
+The filter, the mechanism and the whole steps-3–5 assembly are now `d`-generic in Lean:
+`FibonacciCoveringAllPrimes.exists_shift_pow_congr` (any `n × n` matrix, any prime) and
+`LucasCoveringAllPrimes.covering_of_good_seq` / `prime_free_of_covering_seq` (any `t : ℕ → ℤ`, the
+latter needing only `|t n| → ∞`, no monotonicity).  So for a new family the ONLY missing input is
+the certificate — "the `±1` window is visited finitely often".
+
+**Sharper statement of the `d ≥ 3` wall.**  `exists_shift_pow_congr` says `A^(c^n)` is `c`-adically
+Cauchy along each class `n mod d'`, so a limit `Λ ∈ M_d(ℤ_c)` exists; and because
+`A^(c^(n+d')) = (A^(c^n))^(c^(d'))`, the limit satisfies
+
+> `Λ^(c^(d') − 1) = I`.
+
+So each limit point is a **torsion** element of `GL_d(ℤ_c)` of order coprime to `c` — its
+eigenvalues are Teichmüller lifts of `𝔽_(c^d)`-roots of unity.  The certificate needed is exactly:
+*no such torsion element in the closure of `⟨A⟩` has `(i,j)` entry equal to `s − h` with `s = ±1`
+and `|h| ≤ H`.*  At `d = 2` the exact composition `U((2J+1)N) = Φ_J(U N)` makes this elementary and
+avoids the lifts entirely (that is what phases 40/41 exploit); at `d ≥ 3` Saito's free `b_k` blocks
+the exact composition, so the lifts appear to be unavoidable.  This is a more precise wall than the
+roadmap's original "no exact composition in `d = 3`", and it says what to build: the Teichmüller
+lift of `𝔽_(c^d)` inside `ℤ_c`-algebras, i.e. `W(𝔽_(c^d))` and its Frobenius.
+
+Numerics (`scripts/order-d-inert-probe.py`) say the certificate is TRUE for Tribonacci, so this is
+a formalization wall, not a mathematical unknown.
+
 ## Theorem C leftover: the `c = 5` survivors `h = ±1` — CLOSED 2026-09-30
 
 `fib_five_pow_covering`/`fib_five_pow_prime_free` cover `|h| ≤ H` with `h ≠ ±1`.  `h = ±1` are
