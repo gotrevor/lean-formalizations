@@ -2,7 +2,11 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 (phase 40, CURRENT): prime-free intervals around `F(2^n)` — Dubickas's (D1) for a non-reversible tower — target `NumberTheory/Mills/FibonacciCovering.lean` (4 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 41, CURRENT): the Theorem C engine — (D1) and prime-free intervals along `c^n` for any integer matrix — target `NumberTheory/Mills/CoveringEngine.lean` (4 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+Refactor phase 40's mechanism into a general `d × d` engine, then instantiate it for Lucas `V(c^n)` (odd `c ∤ P`) and for Fibonacci at every prime `c ≠ 5`.  `ROADMAP-PRIME-TOWERS.md` §1 Theorem C and §4.
+
+## ✅ DONE (phase 40, `4887023`): prime-free intervals around `F(2^n)` — Dubickas's (D1) for a non-reversible tower — target `NumberTheory/Mills/FibonacciCovering.lean` (4 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 Theorem C of `ROADMAP-PRIME-TOWERS.md` (read §1 Theorem C).  Saito's stated wish in arXiv:2504.14968 ("remove the reversibility"), for Fibonacci along `2^n`.  Phase 39 (quadratic Pisot floor corollary) is deferred behind this one.
 
