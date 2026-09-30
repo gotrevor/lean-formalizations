@@ -1,3 +1,39 @@
+## phase 42 (2026-09-30) — CLOSED: Theorem B (2×2 traces at odd primes, classified)
+
+`NumberTheory/Mills/TraceClassification.lean` is sorry-free; all three frozen statements are
+`#print axioms`-clean.  `DoubleExpTraceComposite` now holds for `n = 2` at every odd prime `c`
+with `det C ≡ ±1 (mod c)`, `c ∤ tr C · disc C`, outside the `Φ₃`/`Φ₆` classes — and those classes
+are proved to be genuine survivors.
+
+Two route corrections vs the file header (both toward *less* machinery):
+* **Statement 3 needs no derivative/Taylor argument.**  The header proposed "`lucasV τ 1 c = τ`
+  and the derivative is `≡ 0 (mod c)`".  Two-variable Taylor in `(x, q)` is avoidable: Cayley–
+  Hamilton in `lucasU` coordinates gives `C^6 = U₆ • C − (det C · U₅) • 1` with
+  `U₆(±1,1) = 0`, `U₅(±1,1) = −1`, so `C^6 ≡ 1 (mod c)`; phase 41's matrix LTE
+  (`SmulDvd.pow_prime_pow`) lifts that to `D^6 ≡ 1 (mod c^(n+1))` for `D = C^(c^n)`; hence
+  `tr D^7 ≡ tr D`, and `V₇(s,1) − s = s(s²−1)(s²−2)(s²−4) = (s − τ)·W` with `c ∤ W` for `c ≥ 5`.
+  Using `tr D^6 ≡ 2` instead would only give `(s − τ)²` — half the exponent.  **`D^7` is the
+  trick**: the odd power keeps the factor `(s²−1)` linear in `(s − τ)` after dividing by units.
+* **Statement 2 needs no monotonicity.**  `hgrow` (`|tr C^(c^n)| → ∞`) plus phase 33's
+  iterated-return chain replaces `lucasV_strictMono`: a prime `p = |t n + h|` whose `c`-part of
+  `|GL₂(𝔽_p)|` is `≤ n` returns to the *same absolute value* at infinitely many later indices,
+  contradicting `|t n| → ∞`.
+
+New reusable lemmas (all public, in `TraceClassification`):
+`lucasU` + `pow_eq_lucasU_smul` (CH in `U`-coordinates), `dvd_lucasU_sub`, `dvd_lucasV_sub'`
+(congruence in *both* arguments), `dvd_lucasV_sub_q`, `pow_succ_dvd_pow_sub_pow` /
+`pow_pow_dvd_sub` (LTE via `geom_sum₂_mul`, no binomial coefficients — needs no primality
+for the one-step version), `lucasV_seven`, `lucasV_one_one_prime` / `lucasV_tau_one_prime`
+(period 6), `dvd_two_mul_lucasV_sub_pow_q` / `lucasV_prime_mod_q` (Frobenius `V_c(x,q) ≡ x`
+for *every* `q`, generalizing phase 35's `q = −1`), `lucasV_one_growth`
+(`|x| ≥ 3 ⟹ |x| + 3 ≤ |V_c(x,1)|`).
+
+Next from the roadmap: §1 **Theorem A** (order `d`, inert primes; Tribonacci at `c = 3`).  The
+phase-41 engine is already `d`-generic, so only the certificate is missing; the `d ≥ 3` wall
+recorded below is unchanged.
+
+---
+
 ## phase 17 (2026-09-29) — CLOSED
 
 `ExponentialsKnown.lean` is sorry-free and axiom-clean.  Both open statements closed:

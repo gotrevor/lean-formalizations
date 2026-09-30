@@ -302,6 +302,174 @@ theorem trace_pow_prime_congr (C : Matrix (Fin 2) (Fin 2) ℤ) {c : ℕ} (hc : c
   exact dvd_lucasV_sub_q (pow_pow_dvd_sub hc hc2 hε hdet n) c
 
 
+/-! ### Frobenius and growth for a general determinant -/
+
+theorem abs_add_ge {a b : ℤ} : |a| - |b| ≤ |a + b| := by
+  have h := abs_sub_abs_le_abs_sub a (-b)
+  rw [abs_neg, sub_neg_eq_add] at h
+  linarith
+
+
+/-- `2 x^c ≡ 2 V_c(x, q) (mod c)` for every `q`: the binomial theorem for the two commuting
+matrices `!![x, −q; 1, 0]` and `!![0, q; −1, x]`, both of trace `x` and determinant `q`. -/
+theorem dvd_two_mul_lucasV_sub_pow_q {c : ℕ} (hc : c.Prime) (x q : ℤ) :
+    (c : ℤ) ∣ 2 * x ^ c - 2 * lucasV x q c := by
+  set B : Matrix (Fin 2) (Fin 2) ℤ := !![x, -q; 1, 0] with hB
+  set B' : Matrix (Fin 2) (Fin 2) ℤ := !![0, q; -1, x] with hB'
+  set D : Matrix (Fin 2) (Fin 2) ℤ := Matrix.diagonal (fun _ : Fin 2 => x) with hD
+  have hcomm : Commute B B' := by
+    show B * B' = B' * B
+    rw [hB, hB']
+    ext i j
+    fin_cases i <;> fin_cases j <;>
+      simp [Matrix.mul_apply, Fin.sum_univ_two] <;> ring
+  have hsum : B + B' = D := by
+    rw [hB, hB', hD]
+    ext i j
+    fin_cases i <;> fin_cases j <;>
+      simp [Matrix.add_apply, Matrix.diagonal_apply]
+  have htrB : B.trace = x := by rw [hB]; simp [Matrix.trace_fin_two]
+  have hdetB : B.det = q := by rw [hB]; simp [Matrix.det_fin_two]
+  have htrB' : B'.trace = x := by rw [hB']; simp [Matrix.trace_fin_two]
+  have hdetB' : B'.det = q := by rw [hB']; simp [Matrix.det_fin_two]
+  have hends : ∀ k : ℕ, (B ^ k).trace = lucasV x q k ∧ (B' ^ k).trace = lucasV x q k := by
+    intro k
+    refine ⟨?_, ?_⟩
+    · rw [trace_pow_eq_lucasV, htrB, hdetB]
+    · rw [trace_pow_eq_lucasV, htrB', hdetB']
+  have hDtr : (D ^ c).trace = 2 * x ^ c := by
+    rw [hD, Matrix.diagonal_pow, Matrix.trace_diagonal, Fin.sum_univ_two]
+    simp [Pi.pow_apply]
+    ring
+  have hexp := hcomm.add_pow c
+  set g : ℕ → ℤ := fun m => (c.choose m : ℤ) * (B ^ m * B' ^ (c - m)).trace with hg
+  have hsumtr : (2 : ℤ) * x ^ c = ∑ m ∈ Finset.range (c + 1), g m := by
+    rw [← hDtr, ← hsum, hexp, Matrix.trace_sum]
+    exact Finset.sum_congr rfl fun m _ => trace_mul_natCast _ _
+  have hcpos : 0 < c := hc.pos
+  obtain ⟨d, hd⟩ : ∃ d, c = d + 1 := ⟨c - 1, by omega⟩
+  have hpeel : ∑ m ∈ Finset.range (c + 1), g m
+      = (g 0 + ∑ i ∈ Finset.range d, g (i + 1)) + g c := by
+    rw [Finset.sum_range_succ]
+    congr 1
+    rw [hd, Finset.sum_range_succ']
+    ring
+  have hg0 : g 0 = lucasV x q c := by
+    simp only [hg, pow_zero, Matrix.one_mul, Nat.choose_zero_right, Nat.cast_one,
+      Nat.sub_zero, one_mul]
+    exact (hends c).2
+  have hgc : g c = lucasV x q c := by
+    simp only [hg, Nat.sub_self, pow_zero, Matrix.mul_one, Nat.choose_self, Nat.cast_one,
+      one_mul]
+    exact (hends c).1
+  have hmid : (c : ℤ) ∣ ∑ i ∈ Finset.range d, g (i + 1) := by
+    refine Finset.dvd_sum ?_
+    intro i hi
+    have hilt : i + 1 < c := by
+      have := Finset.mem_range.1 hi
+      omega
+    have hdvd : (c : ℤ) ∣ (c.choose (i + 1) : ℤ) := by
+      have := hc.dvd_choose_self (by omega) hilt
+      exact_mod_cast this
+    exact Dvd.dvd.mul_right hdvd _
+  rw [hpeel, hg0, hgc] at hsumtr
+  have hfin : 2 * x ^ c - 2 * lucasV x q c = ∑ i ∈ Finset.range d, g (i + 1) := by
+    linarith [hsumtr]
+  rw [hfin]
+  exact hmid
+
+/-- **Frobenius for every `q`.**  `V_c(x, q) ≡ x (mod c)` for a prime `c ≠ 2`. -/
+theorem lucasV_prime_mod_q {c : ℕ} (hc : c.Prime) (hc2 : c ≠ 2) (x q : ℤ) :
+    (c : ℤ) ∣ lucasV x q c - x := by
+  haveI : Fact c.Prime := ⟨hc⟩
+  have hfermat : (c : ℤ) ∣ x ^ c - x := by
+    have : ((x ^ c - x : ℤ) : ZMod c) = 0 := by
+      push_cast
+      rw [ZMod.pow_card]
+      ring
+    exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 this
+  have h2 := dvd_two_mul_lucasV_sub_pow_q hc x q
+  have hcomb : (c : ℤ) ∣ 2 * (x - lucasV x q c) := by
+    have e : 2 * (x - lucasV x q c)
+        = (2 * x ^ c - 2 * lucasV x q c) - 2 * (x ^ c - x) := by ring
+    rw [e]
+    exact dvd_sub h2 (hfermat.mul_left 2)
+  have hcZ : Prime (c : ℤ) := Nat.prime_iff_prime_int.1 hc
+  have hc3 : 3 ≤ c := by
+    have := hc.two_le
+    rcases Nat.lt_or_ge c 3 with h | h
+    · interval_cases c <;> simp_all
+    · exact h
+  rcases (hcZ.dvd_mul.1 hcomb) with hd | hd
+  · have h1 := Int.le_of_dvd (by norm_num) hd
+    have : (3 : ℤ) ≤ (c : ℤ) := by exact_mod_cast hc3
+    omega
+  · have : (c : ℤ) ∣ -(lucasV x q c - x) := by simpa [neg_sub] using hd
+    exact (dvd_neg.1 this)
+
+/-! ### Growth for `q = 1` -/
+
+theorem lucasV_one_pos_lt {x : ℤ} (hx : 3 ≤ x) (k : ℕ) :
+    1 ≤ lucasV x 1 (k + 1) ∧ lucasV x 1 (k + 1) < lucasV x 1 (k + 2) := by
+  induction k with
+  | zero =>
+      have e1 : lucasV x 1 (0 + 1) = x := by norm_num [lucasV_one]
+      have e2 : lucasV x 1 (0 + 2) = x ^ 2 - 2 := by
+        rw [show (0:ℕ) + 2 = 0 + 2 from rfl, lucasV_succ_succ, lucasV_one, lucasV_zero]; ring
+      rw [e1, e2]
+      exact ⟨by omega, by nlinarith⟩
+  | succ k ih =>
+      obtain ⟨h1, h2⟩ := ih
+      simp only [lucasV_succ_succ] at h2 ⊢
+      constructor
+      · linarith
+      · nlinarith
+
+theorem lucasV_one_strictMono {x : ℤ} (hx : 3 ≤ x) {j k : ℕ} (hj : 1 ≤ j) (hjk : j < k) :
+    lucasV x 1 j < lucasV x 1 k := by
+  induction k with
+  | zero => omega
+  | succ k ih =>
+      obtain ⟨u, rfl⟩ : ∃ u, k = u + 1 := ⟨k - 1, by omega⟩
+      have hstep := (lucasV_one_pos_lt hx u).2
+      rcases Nat.lt_or_ge j (u + 1) with hlt | hge
+      · exact lt_trans (ih hlt) hstep
+      · have : j = u + 1 := by omega
+        rw [this]; exact hstep
+
+/-- For odd `c ≥ 3` and `|x| ≥ 3`, `V_c(x, 1)` is far from `x`. -/
+theorem lucasV_one_growth {c : ℕ} (hc : Odd c) (hc3 : 3 ≤ c) {x : ℤ} (hx : 3 ≤ |x|) :
+    |x| + 3 ≤ |lucasV x 1 c| := by
+  have key : ∀ y : ℤ, 3 ≤ y → y + 3 ≤ lucasV y 1 c := by
+    intro y hy
+    have h3 : lucasV y 1 3 ≤ lucasV y 1 c := by
+      rcases eq_or_lt_of_le hc3 with heq | hlt
+      · rw [heq]
+      · exact (lucasV_one_strictMono hy (by omega) hlt).le
+    have e3 : lucasV y 1 3 = y ^ 3 - 3 * y := by
+      rw [show (3:ℕ) = 1 + 2 from rfl, lucasV_succ_succ, show (1:ℕ) + 1 = 2 from rfl,
+        show lucasV y 1 2 = y ^ 2 - 2 from by
+          rw [show (2:ℕ) = 0 + 2 from rfl, lucasV_succ_succ, lucasV_one, lucasV_zero]; ring,
+        lucasV_one]
+      ring
+    rw [e3] at h3
+    nlinarith [mul_nonneg (by linarith : (0:ℤ) ≤ y - 3) (by nlinarith : (0:ℤ) ≤ y ^ 2 + 3 * y + 5)]
+  rcases abs_cases x with ⟨he, hpos⟩ | ⟨he, hneg⟩
+  · have hy : (3 : ℤ) ≤ x := by omega
+    have := key x hy
+    rw [abs_of_nonneg (by omega : (0:ℤ) ≤ lucasV x 1 c), he]
+    omega
+  · have hy : (3 : ℤ) ≤ -x := by omega
+    have hk := key (-x) hy
+    have hneg' : lucasV x 1 c = -lucasV (-x) 1 c := by
+      have h := lucasV_neg' (-x) 1 c
+      rw [neg_neg] at h
+      rw [h, hc.neg_one_pow]
+      ring
+    rw [hneg', abs_neg, abs_of_nonneg (by omega : (0:ℤ) ≤ lucasV (-x) 1 c), he]
+    omega
+
+
 /-- **Theorem B.**  2×2 traces at odd primes: composite infinitely often for every shift, outside
 the `Φ₆`/`Φ₃` classes. -/
 theorem trace_prime_pow_add_not_prime (C : Matrix (Fin 2) (Fin 2) ℤ) {c : ℕ} (hc : c.Prime)
@@ -310,7 +478,261 @@ theorem trace_prime_pow_add_not_prime (C : Matrix (Fin 2) (Fin 2) ℤ) {c : ℕ}
     (hexc : ¬ (ε = 1 ∧ ((c : ℤ) ∣ C.trace - 1 ∨ (c : ℤ) ∣ C.trace + 1)))
     (hgrow : Tendsto (fun n : ℕ => |(C ^ (c ^ n)).trace|) atTop atTop) (h : ℤ) :
     ∃ᶠ n in atTop, ¬ Prime ((C ^ (c ^ n)).trace + h) := by
-  sorry
+  have hc3 : 3 ≤ c := by
+    have := hc.two_le
+    rcases Nat.lt_or_ge c 3 with hlt | hge
+    · interval_cases c <;> simp_all
+    · exact hge
+  have hcodd : Odd c := hc.odd_of_ne_two hc2
+  have hcZ : (3 : ℤ) ≤ (c : ℤ) := by exact_mod_cast hc3
+  obtain ⟨t, htdef⟩ : ∃ t : ℕ → ℤ, t = fun n => (C ^ (c ^ n)).trace := ⟨_, rfl⟩
+  have hteq : ∀ n, (C ^ (c ^ n)).trace = t n := by intro n; rw [htdef]
+  simp only [hteq] at hgrow ⊢
+  -- Step 0: `t n ≡ tr C (mod c)`, so `c ∤ t n` and `c ∤ t n² − 4ε`
+  have hmod : ∀ n, (c : ℤ) ∣ t n - C.trace := by
+    intro n
+    induction n with
+    | zero => rw [← hteq]; simp
+    | succ n ih =>
+        have h1 : (c : ℤ) ∣ t (n + 1) - lucasV (t n) ε c := by
+          have hh := trace_pow_prime_congr C hc hc2 hε hdet n
+          rw [hteq, hteq] at hh
+          exact dvd_trans (dvd_pow_self _ (by omega)) hh
+        have h2 : (c : ℤ) ∣ lucasV (t n) ε c - t n := lucasV_prime_mod_q hc hc2 _ _
+        have e : t (n + 1) - C.trace
+            = (t (n + 1) - lucasV (t n) ε c) + (lucasV (t n) ε c - t n) + (t n - C.trace) := by
+          ring
+        rw [e]
+        exact dvd_add (dvd_add h1 h2) ih
+  have hnd : ∀ n, ¬ (c : ℤ) ∣ t n := by
+    intro n hd
+    refine htr ?_
+    have := dvd_sub hd (hmod n)
+    simpa using this
+  have hdet0 : C.det ≠ 0 := by
+    intro h0
+    have h1 : (c : ℤ) ∣ ε := by
+      have := hdet
+      rw [h0] at this
+      simpa using (dvd_neg.1 (by simpa using this))
+    rcases hε with rfl | rfl
+    · have := Int.le_of_dvd one_pos h1; omega
+    · have : (c : ℤ) ∣ (1 : ℤ) := (dvd_neg.1 h1)
+      have := Int.le_of_dvd one_pos this; omega
+  -- growth, in the form we use
+  have hgr : ∀ B : ℤ, ∃ N : ℕ, ∀ n ≥ N, B ≤ |t n| := by
+    intro B
+    exact eventually_atTop.1 (tendsto_atTop.1 hgrow B)
+  have hlow : ∀ n : ℕ, |t n| - |h| ≤ |t n + h| := fun n => abs_add_ge
+  by_contra hcon
+  rw [Filter.not_frequently] at hcon
+  simp only [not_not] at hcon
+  obtain ⟨n₀, hn₀⟩ := eventually_atTop.1 hcon
+  obtain ⟨N₁, hN₁⟩ := hgr (|h| + |C.det| + (c : ℤ) + 5)
+  set Bnd : ℤ := |lucasV (1 - h) ε c| + |lucasV (-1 - h) ε c| + |h| + 3 with hBnd
+  set Bn : ℕ := Bnd.toNat with hBn
+  set N : ℕ := max n₀ N₁ with hNdef
+  have hprime : ∀ n ≥ N, Prime (t n + h) := fun n hn => hn₀ n (by omega)
+  have hTbig : ∀ n ≥ N, |C.det| + (c : ℤ) + 5 ≤ |t n + h| := by
+    intro n hn
+    have h1 := hN₁ n (by omega)
+    have h2 := hlow n
+    linarith
+  have hpabs : ∀ n : ℕ, ((t n + h).natAbs : ℤ) = |t n + h| := fun n => (Int.abs_eq_natAbs _).symm
+  have hpn : ∀ n ≥ N, (t n + h).natAbs.Prime := fun n hn =>
+    Int.prime_iff_natAbs_prime.1 (hprime n hn)
+  have hpc : ∀ n ≥ N, (t n + h).natAbs ≠ c := by
+    intro n hn he
+    have h1 := hTbig n hn
+    have h2 := hpabs n
+    rw [he] at h2
+    have := abs_nonneg C.det
+    omega
+  have hpdet : ∀ n ≥ N, ¬ ((t n + h).natAbs : ℤ) ∣ C.det := by
+    intro n hn hd
+    have h1 : ((t n + h).natAbs : ℤ) ≤ |C.det| := Int.le_of_dvd (abs_pos.2 hdet0) ((dvd_abs _ _).2 hd)
+    have h2 := hTbig n hn
+    rw [hpabs n] at h1
+    omega
+  -- the return step
+  have hstep : ∀ n ≥ N, padicValNat c (glCard 2 (t n + h).natAbs) ≤ n →
+      ∃ j, 1 ≤ j ∧ (t (n + j) + h).natAbs = (t n + h).natAbs := by
+    intro n hn hv
+    obtain ⟨j, hj1, hj⟩ :=
+      SharedConjecture.exists_trace_pow_congr C (hpn n hn) hc (hpdet n hn) hv
+    rw [hteq, hteq] at hj
+    have hdvd : ((t n + h).natAbs : ℤ) ∣ t (n + j) + h := by
+      have h1 : ((t n + h).natAbs : ℤ) ∣ t n + h := Int.natAbs_dvd.2 dvd_rfl
+      have h2 : t (n + j) + h = (t (n + j) - t n) + (t n + h) := by ring
+      rw [h2]
+      exact dvd_add hj h1
+    have hq := hpn (n + j) (by omega)
+    have hdq : (t n + h).natAbs ∣ (t (n + j) + h).natAbs :=
+      Int.natAbs_dvd_natAbs.2 (Int.natAbs_dvd.1 hdvd)
+    rcases hq.eq_one_or_self_of_dvd _ hdq with hh | hh
+    · exact absurd hh (hpn n hn).ne_one
+    · exact ⟨j, hj1, hh.symm⟩
+  have hstep2 : ∀ n ≥ N, n < padicValNat c (glCard 2 (t n + h).natAbs) := by
+    intro n hn
+    by_contra hle
+    push_neg at hle
+    have chain : ∀ k : ℕ, ∃ n' : ℕ, n + k ≤ n' ∧ (t n' + h).natAbs = (t n + h).natAbs ∧
+        padicValNat c (glCard 2 (t n' + h).natAbs) ≤ n' := by
+      intro k
+      induction k with
+      | zero => exact ⟨n, by omega, rfl, hle⟩
+      | succ k ih =>
+          obtain ⟨n', hn'1, hn'2, hn'3⟩ := ih
+          obtain ⟨j, hj1, hj⟩ := hstep n' (by omega) hn'3
+          refine ⟨n' + j, by omega, ?_, ?_⟩
+          · rw [hj]; exact hn'2
+          · rw [hj]; omega
+    obtain ⟨Nb, hNb⟩ := hgr (|t n + h| + |h| + 1)
+    obtain ⟨n', hcc1, hcc2, _⟩ := chain (Nb + n)
+    have h1 : |t n' + h| = |t n + h| := by
+      rw [← hpabs n', ← hpabs n, hcc2]
+    have h2 := hNb n' (by omega)
+    have h3 := hlow n'
+    linarith
+  -- the filter's output
+  have hstep3 : ∀ n ≥ N, ∃ s : ℤ, (s = 1 ∨ s = -1) ∧ (c : ℤ) ^ (n / 2) ∣ t n + h - s := by
+    intro n hn
+    have hlt := hstep2 n hn
+    obtain ⟨s0, hs0, hd⟩ : ∃ s0 : ℤ, (s0 = 1 ∨ s0 = -1) ∧
+        (c : ℤ) ^ (n / 2) ∣ ((t n + h).natAbs : ℤ) - s0 := by
+      rcases FibonacciPrimePow.pow_dvd_sub_or_add_of_lt_padicValNat hc hc2 (hpn n hn)
+        (hpc n hn) hlt with hd | hd
+      · exact ⟨1, Or.inl rfl, hd⟩
+      · exact ⟨-1, Or.inr rfl, by simpa using hd⟩
+    rcases Int.natAbs_eq (t n + h) with he | he
+    · exact ⟨s0, hs0, by rw [he]; exact hd⟩
+    · refine ⟨-s0, ?_, ?_⟩
+      · rcases hs0 with rfl | rfl
+        · exact Or.inr rfl
+        · exact Or.inl (by norm_num)
+      · have hrw : t n + h - -s0 = -(((t n + h).natAbs : ℤ) - s0) := by omega
+        rw [hrw]
+        exact dvd_neg.2 hd
+  -- pick a large even index
+  set n : ℕ := 2 * (Bn + N + 3) with hn
+  set e : ℕ := Bn + N + 3 with he
+  have hne : n / 2 = e := by omega
+  have hnN : N ≤ n := by omega
+  have hBndpos : 0 ≤ Bnd := by positivity
+  have hBncast : ((Bn : ℕ) : ℤ) = Bnd := Int.toNat_of_nonneg hBndpos
+  have hbnd : Bnd < (c : ℤ) ^ e := by
+    have h1 : e < 2 ^ e := Nat.lt_two_pow_self
+    have h2 : (2 : ℕ) ^ e ≤ c ^ e := Nat.pow_le_pow_left (by omega) e
+    have h3 : Bn < c ^ e := by omega
+    have h4 : ((Bn : ℕ) : ℤ) < ((c ^ e : ℕ) : ℤ) := by exact_mod_cast h3
+    push_cast at h4
+    linarith [hBncast]
+  obtain ⟨s, hs, hsd⟩ := hstep3 n hnN
+  obtain ⟨s', hs', hsd'⟩ := hstep3 (n + 1) (by omega)
+  rw [hne] at hsd
+  have hsd'' : (c : ℤ) ^ e ∣ t (n + 1) + h - s' := by
+    refine dvd_trans (pow_dvd_pow _ ?_) hsd'
+    omega
+  set x : ℤ := s - h with hx
+  set x' : ℤ := s' - h with hx'
+  have hVx : (c : ℤ) ^ e ∣ t n - x := by
+    have hrw : t n - x = t n + h - s := by rw [hx]; ring
+    rw [hrw]; exact hsd
+  have hVx' : (c : ℤ) ^ e ∣ t (n + 1) - x' := by
+    have hrw : t (n + 1) - x' = t (n + 1) + h - s' := by rw [hx']; ring
+    rw [hrw]; exact hsd''
+  have hkey : (c : ℤ) ^ e ∣ lucasV x ε c - x' := by
+    have hcong : (c : ℤ) ^ e ∣ t (n + 1) - lucasV (t n) ε c := by
+      have hh := trace_pow_prime_congr C hc hc2 hε hdet n
+      rw [hteq, hteq] at hh
+      exact dvd_trans (pow_dvd_pow _ (by omega)) hh
+    have h1 : (c : ℤ) ^ e ∣ lucasV (t n) ε c - lucasV x ε c := dvd_lucasV_sub hVx c
+    have e2 : lucasV x ε c - x'
+        = (t (n + 1) - x') - (t (n + 1) - lucasV (t n) ε c) - (lucasV (t n) ε c - lucasV x ε c) := by
+      ring
+    rw [e2]
+    exact dvd_sub (dvd_sub hVx' hcong) h1
+  -- the growth bound forces `lucasV x ε c = x'`
+  have hxcases : x = 1 - h ∨ x = -1 - h := by
+    rcases hs with hh | hh
+    · exact Or.inl (by rw [hx, hh])
+    · exact Or.inr (by rw [hx, hh])
+  have hxx' : |x' - x| ≤ 2 := by
+    have e : x' - x = s' - s := by rw [hx, hx']; ring
+    rw [e]
+    rcases hs with hh | hh <;> rcases hs' with hh' | hh' <;> rw [hh, hh'] <;> norm_num
+  have hx'abs : |x'| ≤ |h| + 1 := by
+    rcases hs' with hh | hh <;> rw [hx', hh] <;>
+      rcases abs_cases h with ⟨e1, e2⟩ | ⟨e1, e2⟩ <;> rw [abs_le] <;> omega
+  have hfix : lucasV x ε c = x' := by
+    by_contra hne0'
+    have hne0 : lucasV x ε c - x' ≠ 0 := by intro hz; exact hne0' (by omega)
+    have hLbound : |lucasV x ε c| ≤ |lucasV (1 - h) ε c| + |lucasV (-1 - h) ε c| := by
+      rcases hxcases with hee | hee
+      · rw [hee]; have := abs_nonneg (lucasV (-1 - h) ε c); omega
+      · rw [hee]; have := abs_nonneg (lucasV (1 - h) ε c); omega
+    have hle := Int.le_of_dvd (abs_pos.2 hne0) ((dvd_abs _ _).2 hkey)
+    have hb : |lucasV x ε c - x'| ≤ |lucasV x ε c| + |x'| := by
+      rw [sub_eq_add_neg]
+      exact (abs_add_le _ _).trans (by rw [abs_neg])
+    rw [hBnd] at hbnd
+    linarith
+  -- `x = 0` is impossible: it makes `c ∣ t n`
+  have hx0 : x ≠ 0 := by
+    intro hz
+    refine hnd n ?_
+    have h1 : (c : ℤ) ^ e ∣ t n := by rw [hz, sub_zero] at hVx; exact hVx
+    exact dvd_trans (dvd_pow_self _ (by omega)) h1
+  have hxsmall : |x'| ≤ |x| + 2 := by
+    have := abs_sub_abs_le_abs_sub x' x
+    omega
+  rcases hε with rfl | rfl
+  · -- `ε = 1`
+    have hxabs : ¬ (3 ≤ |x|) := by
+      intro hge
+      have hgr3 := lucasV_one_growth hcodd hc3 hge
+      rw [hfix] at hgr3
+      omega
+    -- so `|x| ≤ 2`, and `x ≠ 0`
+    have hmodx : (c : ℤ) ∣ C.trace - x := by
+      have h1 : (c : ℤ) ∣ t n - x := dvd_trans (dvd_pow_self _ (by omega)) hVx
+      have e : C.trace - x = (t n - x) - (t n - C.trace) := by ring
+      rw [e]
+      exact dvd_sub h1 (hmod n)
+    have h1x : 0 < |x| := abs_pos.2 hx0
+    have habs2 : |x| = 1 ∨ |x| = 2 := by omega
+    rcases habs2 with h1 | h2
+    · -- `x = ±1`: the excluded `Φ₃`/`Φ₆` class
+      refine hexc ⟨rfl, ?_⟩
+      rcases abs_cases x with ⟨e1, _⟩ | ⟨e1, _⟩
+      · left
+        have : x = 1 := by omega
+        rw [this] at hmodx; exact hmodx
+      · right
+        have hxv : x = -1 := by omega
+        rw [hxv] at hmodx
+        have : C.trace + 1 = C.trace - -1 := by ring
+        rw [this]; exact hmodx
+    · -- `x = ±2`: `c ∣ disc`
+      refine hdisc ?_
+      have hd4 : (c : ℤ) ∣ C.trace ^ 2 - 4 := by
+        have hsq : C.trace ^ 2 - x ^ 2 = (C.trace - x) * (C.trace + x) := by ring
+        have h1 : (c : ℤ) ∣ C.trace ^ 2 - x ^ 2 := by
+          rw [hsq]; exact hmodx.mul_right _
+        have hx2 : x ^ 2 = 4 := by
+          have hsa := sq_abs x
+          rw [h2] at hsa
+          norm_num at hsa
+          linarith
+        rwa [hx2] at h1
+      have e : C.trace ^ 2 - 4 * C.det = (C.trace ^ 2 - 4) - 4 * (C.det - 1) := by ring
+      rw [e]
+      exact dvd_sub hd4 (hdet.mul_left 4)
+  · -- `ε = −1`
+    have hgr3 := lucasV_neg_one_growth hcodd hc3 hx0
+    rw [hfix] at hgr3
+    omega
+
 
 /-- **The exceptional classes really are survivors**: the traces converge to `τ = ±1`
 `c`-adically at rate `c^(n+1)`. -/

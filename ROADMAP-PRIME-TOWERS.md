@@ -22,12 +22,21 @@ Let `χ_A` be irreducible mod `c` (degree `d`), take `u(N) = (A^N)_ij` with `i �
 - Corollary: **`T(3^n) + h` is composite i.o. for every `h`** (Tribonacci), and likewise at `c = 5, 23, …`.
 - Lean: `exists_entry_pow_congr` is already stated for general `n × n`.  New pieces: the field trace of Frobenius in `AdjoinRoot χ_A` over `ZMod c` (phase 31 did `d = 3` by hand), and the `GL_d` filter's `c`-adic output.  About 2 phases.
 
-### Theorem B: 2×2 traces at odd `c` — the `n = 2` case of our `DoubleExpTraceComposite`  ✅ numerics, ⏳ Lean
+### Theorem B: 2×2 traces at odd `c` — the `n = 2` case of our `DoubleExpTraceComposite`  ✅ numerics, ✅ **PROVED IN LEAN (phase 42, 2026-09-30)** — `NumberTheory/Mills/TraceClassification.lean`, sorry-free, all three statements axiom-clean
 For `C ∈ M_2(ℤ)`, an odd prime `c` with `det C ≡ ε = ±1 (mod c)`, and `c ∤ tr C · disc C`: **`tr C^(c^n) + h` is composite i.o. for every `h`**, with exactly one exception: `χ_C ≡ X² ∓ X + 1 (mod c)` with `ε = +1`.  In that case `τ = ±1` exactly (sixth or third roots of unity), the survivors are `h ∈ {0, ∓2}`, and it is a genuine Fermat-type case.
 - Route: lifting the exponent gives `det^(c^n) ≡ ε (mod c^(n+1))`, so `tr C^(c^(n+1)) ≡ V_c(tr C^(c^n), ε) (mod c^(n+1))`.  The finite window then forces an integer fixed point `V_c(x, ε) = x` (or a 2-cycle inside `{x, x ± 2}`).  With `ε = −1`, `|V_c(x, −1)| ≥ |x| + 3`.  With `ε = +1`, `V_c(x, 1) = 2T_c(x/2)`: `|x| ≥ 3` grows, `x = 0, ±2` are excluded by `c ∤ tr·disc`, and `x = ±1` is exactly the `Φ_6` / `Φ_3` exception.
 - The sweep's table matches: `V(4,1)` at `c = 5` has survivors `{0, 2}`, and `X² − 4X + 1 ≡ X² + X + 1 (mod 5)`.
 - **Classification tested (2026-09-30):** 1276 cases (`c ∈ {3,5,7,11,13}`, `|P| ≤ 12`, `|Q| ≤ 30` with `Q ≡ ±1 (mod c)`, `c ∤ P·D`).  Survivors appear **exactly** in the 216 predicted `Φ₃`/`Φ₆` classes: 0 mismatches.  Non-unit determinants are included (e.g. `Q = 4` at `c = 3, 5`).
 - Generalizes phase 35 (`Q = −1` exactly).  About 1 phase.
+- **Lean: DONE in one lap.**  No step of the route failed, but two steps were *replaced by less
+  machinery* (details in `PENDING_WORK.md`):
+  - the survivor statement needs **no derivative / two-variable Taylor** argument: `C^6 ≡ 1 (mod c)`
+    (Cayley–Hamilton in `lucasU` coordinates) + phase 41's matrix LTE gives `D^6 ≡ 1 (mod c^(n+1))`,
+    and the trace of **`D^7`** gives `V₇(s,1) − s = (s−τ)·W` with `c ∤ W` — a single power of
+    `(s−τ)`, where `tr D^6 ≡ 2` would only give `(s−τ)²`.
+  - the main theorem needs **no monotonicity**: `hgrow` plus phase 33's iterated-return chain.
+  - Frobenius `V_c(x,q) ≡ x (mod c)` was generalized off `q = −1` (`lucasV_prime_mod_q`), which is
+    what makes `tr C^(c^n) ≡ tr C (mod c)` available at a general determinant.
 - **Consequence for the conjecture graph:** `DoubleExpTraceComposite` is folklore for `n = 1`.  Theorem B proves it for `n = 2`, every odd `c` with `det ≡ ±1`, except the `Φ₃`/`Φ₆` classes, which are provably survivors.  For `n = 3, c = 3` the residual classes are Mills.  That is a clean staircase for the paper.
 
 ### Theorem C: prime-free intervals for the non-reversible tower `c^n`  ✅ PROVED IN LEAN FOR EVERY PRIME (phases 40–41, 2026-09-30) — headline `fib_prime_pow_prime_free_all`
