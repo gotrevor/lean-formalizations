@@ -52,7 +52,7 @@ Frozen: the statement below; all earlier statements; `Literature/`.  No `private
 
 namespace LeanFormalizations.Mills.TheoremDQuadratic
 
-open Filter LeanFormalizations.Mills.LucasPrimePow
+open Filter LeanFormalizations.Mills.LucasPrimePow LeanFormalizations.Mills.ThreeAdic
 
 /-! ### The companion matrix
 
@@ -268,6 +268,97 @@ theorem lucasV_stuck_period (a b : ℤ) {p : ℕ} (hp : p.Prime) (hpb : ¬ (p : 
   refine lucasV_congr_of_order a b hp hpb hord hle ?_
   rw [hNN, ← hsplit]
   exact Nat.mul_dvd_mul (pow_dvd_pow c hA) hoY
+
+/-! ### `glCard` as a universal annihilator
+
+Rather than track the exact order of `C` mod `p`, use `M = |GL_2(𝔽_p)| = glCard 2 p`: it
+annihilates every element, and `Stuck n := v_c(glCard 2 p_n) ≤ n` is exactly the negation of the
+hypothesis of the window lemma `TheoremDGround.exists_pow_sub_one_of_lt_padicValNat_glCard`.
+So the good/stuck dichotomy needs no finer information. -/
+theorem orderOf_dvd_glCard {p : ℕ} (hp : p.Prime) (D : GL (Fin 2) (ZMod p)) :
+    orderOf D ∣ glCard 2 p := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  have hcard : Nat.card (GL (Fin 2) (ZMod p)) = glCard 2 p := by
+    rw [Matrix.card_GL_field]; simp [glCard, ZMod.card]
+  rw [← hcard]
+  exact orderOf_dvd_natCard D
+
+theorem glCard_two_pos {p : ℕ} (hp : p.Prime) : 0 < glCard 2 p := by
+  have h2 : 2 ≤ p := hp.two_le
+  rw [glCard]
+  refine Finset.prod_pos fun i _ => ?_
+  have : p ^ (i : ℕ) < p ^ 2 := Nat.pow_lt_pow_right (by omega) i.isLt
+  omega
+
+/-! ### Step 1d: the stuck alternation
+
+If `n` is stuck and the offset `ε` fails to change at `n + k j`, then the prime `p_n` divides the
+strictly larger prime `p_(n+kj)` — impossible.  So `ε` alternates, which is exactly the hypothesis
+`good_unbounded` needs. -/
+theorem stuck_alternation (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (hprod : α * β = b)
+    (hα : 1 < α) (hβ : |β| < 1) (hβ0 : β ≠ 0) (hb0 : b ≠ 0) {c : ℕ} (hc : c.Prime) {s : ℕ}
+    {n₀ : ℕ} (hprime : ∀ m, n₀ ≤ m → (⌊α ^ (c ^ m + s)⌋₊).Prime)
+    (hbig : ∀ m, n₀ ≤ m → |b| < (⌊α ^ (c ^ m + s)⌋₊ : ℤ))
+    {n : ℕ} (hn : n₀ ≤ n)
+    (hstuck : padicValNat c (glCard 2 (⌊α ^ (c ^ n + s)⌋₊)) ≤ n) :
+    ∃ j, 1 ≤ j ∧ ∀ k, 1 ≤ k →
+      (decide (0 < β ^ (c ^ (n + k * j) + s)) ≠ decide (0 < β ^ (c ^ n + s))) := by
+  classical
+  -- the floor, as an integer
+  have hfl : ∀ m : ℕ, ((⌊α ^ (c ^ m + s)⌋₊ : ℕ) : ℤ) = ⌊α ^ (c ^ m + s)⌋ := by
+    intro m
+    exact Int.natCast_floor_eq_floor (by positivity)
+  have hcpos : ∀ x : ℕ, 1 ≤ c ^ x + s := fun x => by
+    have := Nat.one_le_pow x c hc.pos; omega
+  have hPp : (⌊α ^ (c ^ n + s)⌋₊).Prime := hprime n hn
+  have hPb : ¬ ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ) ∣ b := by
+    intro hd
+    have := Int.le_of_dvd (abs_pos.2 hb0) ((dvd_abs _ _).2 hd)
+    exact absurd (hbig n hn) (by omega)
+  have hord : ∀ D : GL (Fin 2) (ZMod (⌊α ^ (c ^ n + s)⌋₊)),
+      (D : Matrix (Fin 2) (Fin 2) (ZMod (⌊α ^ (c ^ n + s)⌋₊))) =
+        (Int.castRingHom (ZMod (⌊α ^ (c ^ n + s)⌋₊))).mapMatrix (compMat a b) →
+        orderOf D ∣ glCard 2 (⌊α ^ (c ^ n + s)⌋₊) :=
+    fun D _ => orderOf_dvd_glCard hPp D
+  have hA : (glCard 2 (⌊α ^ (c ^ n + s)⌋₊)).factorization c ≤ n := by
+    rwa [Nat.factorization_def _ hc]
+  obtain ⟨j, hj1, hjd⟩ :=
+    lucasV_stuck_period a b hPp hPb hc (glCard_two_pos hPp) hord hA s
+  refine ⟨j, hj1, fun k hk => ?_⟩
+  intro heq
+  have hmn : n < n + k * j := by
+    have : 1 ≤ k * j := Nat.one_le_iff_ne_zero.2 (by positivity)
+    omega
+  have hm0 : n₀ ≤ n + k * j := by omega
+  have hiff : (0 < β ^ (c ^ (n + k * j) + s)) ↔ (0 < β ^ (c ^ n + s)) := decide_eq_decide.mp heq
+  have hoff : (if 0 < β ^ (c ^ (n + k * j) + s) then (-1 : ℤ) else 0)
+      = (if 0 < β ^ (c ^ n + s) then (-1 : ℤ) else 0) := by
+    by_cases h : 0 < β ^ (c ^ n + s)
+    · rw [if_pos (hiff.mpr h), if_pos h]
+    · rw [if_neg (fun hx => h (hiff.mp hx)), if_neg h]
+  have he1 := floor_pow_eq_lucasV_add a b hsum hprod hβ hβ0
+    (N := c ^ (n + k * j) + s) (hcpos _)
+  have he2 := floor_pow_eq_lucasV_add a b hsum hprod hβ hβ0
+    (N := c ^ n + s) (hcpos n)
+  have hdvd : ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ) ∣
+      ⌊α ^ (c ^ (n + k * j) + s)⌋ - ⌊α ^ (c ^ n + s)⌋ := by
+    rw [he1, he2, hoff]
+    simpa using hjd k hk
+  rw [← hfl (n + k * j), ← hfl n] at hdvd
+  have hQp : (⌊α ^ (c ^ (n + k * j) + s)⌋₊).Prime := hprime _ hm0
+  have hPQ : ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ) ∣ ((⌊α ^ (c ^ (n + k * j) + s)⌋₊ : ℕ) : ℤ) := by
+    have := dvd_add hdvd (dvd_refl ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ))
+    simpa using this
+  have hnat : (⌊α ^ (c ^ n + s)⌋₊) ∣ (⌊α ^ (c ^ (n + k * j) + s)⌋₊) := by exact_mod_cast hPQ
+  have heqPQ := (Nat.prime_dvd_prime_iff_eq hPp hQp).1 hnat
+  have hcm : c ^ n + s < c ^ (n + k * j) + s := by
+    have : c ^ n < c ^ (n + k * j) := Nat.pow_lt_pow_right hc.one_lt hmn
+    omega
+  have hlt : ((⌊α ^ (c ^ n + s)⌋₊ : ℕ) : ℤ) < ((⌊α ^ (c ^ (n + k * j) + s)⌋₊ : ℕ) : ℤ) := by
+    rw [hfl n, hfl (n + k * j)]
+    exact floor_pow_strictMono a b hsum hprod hα hβ (hcpos n) hcm
+  rw [heqPQ] at hlt
+  exact lt_irrefl _ hlt
 
 /-! ### Step 1c (Lemma 3): good indices are unbounded
 
