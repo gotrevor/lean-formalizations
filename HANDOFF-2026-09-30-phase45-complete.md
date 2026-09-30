@@ -1,5 +1,7 @@
 # HANDOFF — phase 45 complete (2026-09-30)
 
+**Branch:** `main`  **HEAD at handoff:** `bb5e4f0` (+ this handoff commit)  **Build:** green, whole repo
+
 ## Done
 `src/LeanFormalizations/NumberTheory/Mills/ShiftedMills.lean` is **sorry-free**; all three frozen
 statements are `#print axioms`-clean (`propext, Classical.choice, Quot.sound`).
