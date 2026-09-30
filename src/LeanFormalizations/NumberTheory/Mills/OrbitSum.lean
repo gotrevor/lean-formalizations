@@ -318,6 +318,59 @@ theorem charpoly_comp_dvd (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ} (hc : c.Pri
 
 end Integral
 
+
+section Factorization
+
+open Polynomial
+
+variable {T : Type*} [CommRing T]
+
+/-- Over any commutative ring, a family of roots whose pairwise differences are units splits off
+as a product of linear factors. -/
+theorem prod_X_sub_C_dvd_of_roots {ι : Type*} [DecidableEq ι] (p : T[X]) (s : Finset ι) (r : ι → T)
+    (hroot : ∀ k ∈ s, p.IsRoot (r k))
+    (hu : ∀ k ∈ s, ∀ l ∈ s, k ≠ l → IsUnit (r k - r l)) :
+    (∏ k ∈ s, (X - C (r k))) ∣ p := by
+  induction s using Finset.induction_on with
+  | empty => simp
+  | insert a s ha ih =>
+    obtain ⟨h, hh⟩ := ih (fun k hk => hroot k (Finset.mem_insert_of_mem hk))
+      (fun k hk l hl hkl => hu k (Finset.mem_insert_of_mem hk) l (Finset.mem_insert_of_mem hl) hkl)
+    have hpa : p.eval (r a) = 0 := hroot a (Finset.mem_insert_self _ _)
+    rw [hh, eval_mul] at hpa
+    have hunit : IsUnit ((∏ k ∈ s, (X - C (r k))).eval (r a)) := by
+      rw [eval_prod]
+      refine Finset.prod_induction _ IsUnit (fun x y => IsUnit.mul) isUnit_one fun k hk => ?_
+      have hne : a ≠ k := fun hak => ha (hak ▸ hk)
+      simpa using hu a (Finset.mem_insert_self _ _) k (Finset.mem_insert_of_mem hk) hne
+    have hz : h.eval (r a) = 0 := (hunit.mul_right_eq_zero).1 hpa
+    obtain ⟨h', hh'⟩ := (dvd_iff_isRoot (a := r a) (p := h)).2 hz
+    refine ⟨h', ?_⟩
+    rw [Finset.prod_insert ha, hh, hh']
+    ring
+
+/-- A monic polynomial of degree `m` with `m` roots of pairwise unit difference is exactly the
+product of the corresponding linear factors. -/
+theorem eq_prod_X_sub_C_of_roots {ι : Type*} [DecidableEq ι] (p : T[X]) (hp : p.Monic)
+    (s : Finset ι) (r : ι → T) (hcard : s.card = p.natDegree)
+    (hroot : ∀ k ∈ s, p.IsRoot (r k))
+    (hu : ∀ k ∈ s, ∀ l ∈ s, k ≠ l → IsUnit (r k - r l)) :
+    p = ∏ k ∈ s, (X - C (r k)) := by
+  nontriviality T
+  obtain ⟨h, hh⟩ := prod_X_sub_C_dvd_of_roots p s r hroot hu
+  have hmonic : (∏ k ∈ s, (X - C (r k))).Monic := monic_prod_of_monic _ _ fun k _ => monic_X_sub_C _
+  have hdeg : (∏ k ∈ s, (X - C (r k))).natDegree = s.card := by
+    rw [Polynomial.natDegree_prod_of_monic _ _ (fun k _ => monic_X_sub_C _)]
+    simp
+  have hh' : h.Monic := Polynomial.Monic.of_mul_monic_left hmonic (hh ▸ hp)
+  have : p.natDegree = s.card + h.natDegree := by
+    rw [hh, Polynomial.Monic.natDegree_mul hmonic hh', hdeg]
+  have hz : h.natDegree = 0 := by omega
+  have : h = 1 := (Polynomial.Monic.natDegree_eq_zero hh').1 hz
+  rw [hh, this, mul_one]
+
+end Factorization
+
 /-- **Period:** with `χ_A` irreducible mod `c`, `A^(c^(n+d)) ≡ A^(c^n) (mod c^(n+1))`. -/
 theorem pow_prime_pow_add_card_congr {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ}
     (hc : c.Prime) (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c)))) (n : ℕ)
