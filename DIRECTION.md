@@ -2,7 +2,11 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 (phase 41, CURRENT): the Theorem C engine — (D1) and prime-free intervals along `c^n` for any integer matrix — target `NumberTheory/Mills/CoveringEngine.lean` (4 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 42, CURRENT): Theorem B — 2×2 traces at odd primes classified (`DoubleExpTraceComposite` for `n = 2`) — target `NumberTheory/Mills/TraceClassification.lean` (3 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+`ROADMAP-PRIME-TOWERS.md` §1 Theorem B.  Statements numerically checked (2196 congruence cases and 260 survivor-rate cases, 0 failures).
+
+## ✅ DONE (phase 41): the Theorem C engine — (D1) and prime-free intervals along `c^n` for any integer matrix — target `NumberTheory/Mills/CoveringEngine.lean` (4 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 Refactor phase 40's mechanism into a general `d × d` engine, then instantiate it for Lucas `V(c^n)` (odd `c ∤ P`) and for Fibonacci at every prime `c ≠ 5`.  `ROADMAP-PRIME-TOWERS.md` §1 Theorem C and §4.
 

@@ -163,6 +163,7 @@ import LeanFormalizations.NumberTheory.Mills.LucasInert
 import LeanFormalizations.NumberTheory.Mills.LucasUnitAllPrimes
 import LeanFormalizations.NumberTheory.Mills.FibonacciCovering
 import LeanFormalizations.NumberTheory.Mills.CoveringEngine
+import LeanFormalizations.NumberTheory.Mills.TraceClassification
 import LeanFormalizations.NumberTheory.Mills.FibonacciCoveringAllPrimes
 import LeanFormalizations.NumberTheory.Mills.LucasCoveringAllPrimes
 import LeanFormalizations.NumberTheory.Transcendence.MultisetGraeffe
