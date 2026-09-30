@@ -38,7 +38,7 @@ One page, one row per theorem.  Everything here was proved 2026-09-29/30, uncond
 ## Where it stops (Maze rows, `src/LeanFormalizations/Maze.lean`)
 - **Traces at `c = 2`**: `L(2^n)` (`h = 0`) and the Fermat numbers are exactly the survivors.  These are the classical open problems, so the method fails precisely where it should.
 - **Mills' constant** (cubic trace at `c = 3`, phase 29): the filter forces the Mills primes `→ ±1` in `ℤ₃`, which leaves 6 of 27 residue classes.  The exact recurrence `t_(k+1) = t_k³ − 3b_k t_k + 3e_k` (Saito 2024, (4.3)) is consistent with the limit `(t, b) → (x, e·x)`, i.e. a root `x = ±1` mod 3, so composition does not help.  The unknown second symmetric function `b_k` is exactly Saito's stated obstacle.
-- **Saito's Problem 1.7** (every Pisot `α`): `⌊α^R(n)⌋` is a trace, and residual classes survive.
+- **Saito's Problem 1.7** (every Pisot `α`).  With `R = c^n` (no shift) the floor is a trace and residual classes survive.  With `R = c^n + s`, Theorem D handles every `α` outside the Mersenne class `f ≡ X^d (mod c)` (with positive conjugate contribution), and Proposition D′ shows that class is invisible to this method for **every** non-reversible `R`.
 - The 1×1 case `a^(c^n) + h` is olympiad folklore (PEN).
 
 ## Pointers
