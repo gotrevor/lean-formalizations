@@ -1260,6 +1260,99 @@ theorem floor_pow_prime_pow_add_not_prime_general (f : ℤ[X]) (hmon : f.Monic)
 theorem plastic_floor_pow_prime_pow_add_not_prime {ρ : ℝ} (hρ : ρ ^ 3 = ρ + 1) (hρ1 : 1 < ρ)
     {c : ℕ} (hc : c.Prime) :
     ∃ᶠ n in atTop, ¬ (⌊ρ ^ (c ^ n + 5)⌋₊).Prime := by
-  sorry
+  classical
+  set f : ℤ[X] := X ^ 3 - X - 1 with hfdef
+  have hmon : f.Monic := by rw [hfdef]; monicity!
+  have hdeg3 : f.natDegree = 3 := by rw [hfdef]; compute_degree!
+  have hf0 : f ≠ 0 := hmon.ne_zero
+  have hcoeff : f.coeff 0 = -1 := by rw [hfdef]; simp
+  -- irreducibility: a monic cubic with no integer root
+  have hirr : Irreducible f := by
+    refine (hmon.irreducible_iff_roots_eq_zero_of_degree_le_three (by omega) (by omega)).2 ?_
+    rw [Multiset.eq_zero_iff_forall_notMem]
+    intro r hr
+    have hroot0 : r ^ 3 - r - 1 = 0 := by
+      have := Polynomial.isRoot_of_mem_roots hr
+      rw [hfdef] at this
+      simpa using this
+    have hdvd : r ∣ 1 := ⟨r ^ 2 - 1, by linarith⟩
+    rcases Int.isUnit_iff.1 (isUnit_of_dvd_one hdvd) with h | h <;> rw [h] at hroot0 <;> norm_num at hroot0
+  -- numerical facts about the plastic number
+  have hρ2 : ρ ^ 2 < 2 := by nlinarith [hρ, hρ1]
+  have hρlow : (1.32 : ℝ) < ρ := by nlinarith [hρ, hρ1]
+  have hq0 : (0 : ℝ) < ρ ^ 2 - 1 := by nlinarith
+  have hdisc : ρ ^ 2 < 4 * (ρ ^ 2 - 1) := by nlinarith
+  -- `ρ` is a root
+  have hrootρ : aeval ρ f = 0 := by
+    have he : aeval ρ f = ρ ^ 3 - ρ - 1 := by rw [hfdef]; simp
+    rw [he]; linarith [hρ]
+  -- the conjugates are small
+  have hρC : ((ρ : ℝ) : ℂ) ^ 3 = ((ρ : ℝ) : ℂ) + 1 := by
+    rw [← Complex.ofReal_pow, hρ]
+    push_cast
+    ring
+  have hpisot : ∀ z ∈ (f.map (Int.castRingHom ℂ)).roots, z ≠ ((ρ : ℝ) : ℂ) → ‖z‖ < 1 := by
+    intro z hz hzρ
+    have hfC : (f.map (Int.castRingHom ℂ)) = X ^ 3 - X - 1 := by
+      rw [hfdef]; simp
+    have hz3 : z ^ 3 - z - 1 = 0 := by
+      have h := Polynomial.isRoot_of_mem_roots hz
+      rw [hfC] at h
+      simpa using h
+    -- the quadratic factor
+    have hfac : (z - ((ρ : ℝ) : ℂ))
+        * (z ^ 2 + ((ρ : ℝ) : ℂ) * z + (((ρ : ℝ) : ℂ) ^ 2 - 1)) = z ^ 3 - z - 1 := by
+      linear_combination -hρC
+    have hq : z ^ 2 + ((ρ : ℝ) : ℂ) * z + (((ρ : ℝ) : ℂ) ^ 2 - 1) = 0 := by
+      rcases mul_eq_zero.1 (hfac.trans hz3) with h | h
+      · exact absurd (by linear_combination h) hzρ
+      · exact h
+    -- `z` is not real
+    have hzne : (starRingEnd ℂ) z ≠ z := by
+      intro hcj
+      obtain ⟨x, hx⟩ : ∃ x : ℝ, z = (x : ℂ) := ⟨z.re, (Complex.conj_eq_iff_re.1 hcj).symm⟩
+      rw [hx] at hq
+      have hreal : x ^ 2 + ρ * x + (ρ ^ 2 - 1) = 0 := by
+        have := hq
+        push_cast at this
+        exact_mod_cast this
+      nlinarith [sq_nonneg (2 * x + ρ)]
+    -- the conjugate satisfies the same quadratic
+    have hqc : (starRingEnd ℂ) z ^ 2 + ((ρ : ℝ) : ℂ) * ((starRingEnd ℂ) z)
+        + (((ρ : ℝ) : ℂ) ^ 2 - 1) = 0 := by
+      have h := congrArg (starRingEnd ℂ) hq
+      simpa using h
+    have hsum : z + (starRingEnd ℂ) z = -((ρ : ℝ) : ℂ) := by
+      have hd : (z - (starRingEnd ℂ) z) * (z + (starRingEnd ℂ) z + ((ρ : ℝ) : ℂ)) = 0 := by
+        linear_combination hq - hqc
+      rcases mul_eq_zero.1 hd with h | h
+      · exact absurd (by linear_combination -h) hzne
+      · linear_combination h
+    have hprod : z * (starRingEnd ℂ) z = (((ρ : ℝ) : ℂ) ^ 2 - 1) := by
+      linear_combination -hq + z * hsum
+    have hns : (Complex.normSq z : ℂ) = ((ρ ^ 2 - 1 : ℝ) : ℂ) := by
+      rw [← Complex.mul_conj, hprod]
+      push_cast
+      ring
+    have hns' : Complex.normSq z = ρ ^ 2 - 1 := by exact_mod_cast hns
+    have hnorm : ‖z‖ ^ 2 = ρ ^ 2 - 1 := by
+      rw [← hns', Complex.normSq_eq_norm_sq]
+    nlinarith [norm_nonneg z, hnorm, hρ2]
+  -- the size hypothesis: `ρ^5 = ρ^2 + ρ + 1 > 4`
+  have hs : ((f.natDegree : ℝ)) + 1 < ρ ^ 5 := by
+    rw [hdeg3]
+    have h5 : ρ ^ 5 = ρ ^ 2 + ρ + 1 := by nlinarith [hρ]
+    rw [h5]
+    push_cast
+    nlinarith
+  have hc0 : ¬ (c : ℤ) ∣ f.coeff 0 := by
+    rw [hcoeff]
+    intro h
+    have h1 : (c : ℤ) ∣ 1 := dvd_neg.1 h
+    have h2 := Int.le_of_dvd one_pos h1
+    have hc2 : 2 ≤ (c : ℤ) := by exact_mod_cast hc.two_le
+    omega
+  exact floor_pow_prime_pow_add_not_prime_general f hmon hirr (by omega) hrootρ hρ1 hpisot hc hc0 hs
+
 
 end LeanFormalizations.Mills.TheoremDGeneral
