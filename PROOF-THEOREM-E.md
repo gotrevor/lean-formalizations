@@ -61,18 +61,18 @@ The only cubic subfield of `ℚ(ζ₁₀₄)` is `K`, the cyclic cubic field of 
 - Non-unit `α` (inert, so every conjugate is a non-unit) is the `z = 0` case: contradiction.  ∎
 
 ## Theorem E+ (the whole shifted family; draft)
-> **For every even `s ≠ 0` with `3 ∤ s`, `ξ(3^k + s)` is transcendental** (index `k` starting where `3^k + s ≥ 1`).  Unconditional, same caveats as Theorem E.
+> **For every even `s ≠ 0` with `3 ∤ s`, `ξ(C_k)` with `C_k = 3^k + s` is transcendental**, with the index starting at `k₀ = 1` if `s < 0` (where `3^k + s ≥ 1`), and at the least `k₀` with `3^(k₀) ≥ s` if `s > 0` (*referee 2*: Saito's existence theorem needs every ratio `c_(k+1) ≥ 2`, and `(3^(k+1) + s)/(3^k + s) ≥ 2 ⟺ 3^k ≥ s`).  So for example `ξ(3^k + 2)` from `k = 1`, and `ξ(3^k + 4)` from `k = 2`.  Unconditional, same caveats as Theorem E.
 
 - **Reduction via Saito's Type B (Theorem 2.3), for both signs of `s`.**  `C_k = 3^k + s`.
   - `(B1)`–`(B4)`: ratios `c_(k+1) → 3`, all `≥ 2`, and `lim sup 3 > 40/19`.
   - `(B5)`: `gcd(3, C_m) = 1` (`3 ∤ s`), so `C_m ∣ C_(m + φ(C_m))`.
-  - Conclusion: `ξ` is transcendental, or `ξ^g` is Pisot of degree `ℓ ∈ [3, 1 + 1/(57/40 − 1)] = [3, 3.35]`, so `ℓ = 3`, with `g ∣ C_k` for large `k`.  `agcd(3^k + s) = 1` for even `s` with `3 ∤ s` (it divides `gcd(C_m, C_(m+1)) ∣ 2s`, the `C_k` are odd, and no prime of `s` divides `3^m + s`; checked numerically for `|s| ≤ 16`), so `g = 1`.
+  - Conclusion: `ξ` is transcendental, or `ξ^g` is Pisot of degree `ℓ ∈ [3, 1 + 1/(57/40 − 1)] = [3, 3.35]`, so `ℓ = 3`, with `g ∣ C_k` for large `k`.  `agcd(3^k + s) = 1` for even `s` with `3 ∤ s` (it divides `gcd(C_m, C_(m+1)) ∣ 2s`; the `C_k` are odd, so an odd `d ∣ s` with `d ∣ 3^m + s` has `d ∣ 3^m`, hence `d = 1`), so `g = 1`.
   - Saito's `(B6)` (`C_k ≡ C_m mod L·C_m`) **fails** for these sequences: it is the non-reversibility.  That is exactly why his theorem stops at "cubic Pisot" here.
 - **Step 2** (Prop 3.1(iv), same `(G)`-conditions): `ε = 0` eventually.
 - **Steps 3–4** unchanged with shift `s` (for `s > 0`, `T = tr(ξ^s) > 0`; for `s < 0`, `T ≠ 0` is forced by the summed equation).  Rank: `w = (α_k^s)` is non-constant because the root moduli differ, so `S₃` and `C₃` both work as in Step 4.
-- **Step 5, general `s ≠ 0`:** in the class `f ≡ (X − z)³ (mod 3)` every root (and its inverse) is `≡ z` modulo the prime above 3.  So `T = Σ α_k^s ≡ 3z^s ≡ 0`: `v₃(T) ≥ 1` (the denominator `σ₃^|s|` is prime to 3).  Hence `T ≠ ±1`.  No size input is needed.
+- **Step 5, general `s ≠ 0`:** the load-bearing point (*referee 2*): `z_k = ζ_k^(3^r)`, and `x ↦ x^(3^r)` is a bijection on the prime-to-3 roots of unity, so `z = ±1` forces every `ζ_k = z`.  Then `σ₃ ≡ z ≢ 0`, so every root is a unit.  In the class `f ≡ (X − z)³ (mod 3)` every root (and its inverse) is `≡ z` modulo the prime above 3.  So `T = Σ α_k^s ≡ 3z^s ≡ 0`: `v₃(T) ≥ 1` (the denominator `σ₃^|s|` is prime to 3).  Hence `T ≠ ±1`.  No size input is needed.
 - **Step 6:** the certificate is shift-independent (any `w ∈ K`), and `b = 0` is covered by Step 5.
-- **`s = 0` (Mills' constant) is exactly where this fails**: `w_k = α_k^0 = 1` is constant, so Galois rigidity gives nothing.  The trace is Frobenius-invariant, and the phase-29 residual classes survive.  **Among the base-3 shifted Mills constants with even `s` and `3 ∤ s`, Mills' own is the only one left open** (Saito: transcendental under RH/DH).
+- **The unshifted case `s = 0` (Mills' constant; outside this family, since `3 ∣ 0`) fails twice.**  The reduction fails: `agcd(3^k) = ∞`, so Type B only gives some `ξ^(3^j)` Pisot, not `ξ`.  The rigidity fails too: `w_k = α_k^0 = 1` is constant, the trace is Frobenius-invariant, and the phase-29 residual classes survive.  (Saito: transcendental under RH/DH.)
 
 **Still to do:**
 - odd `s` (`agcd = 2`; `ξ²` Pisot: redo Lemma 5 with exponent `(3^n + s)/2`);
@@ -80,8 +80,8 @@ The only cubic subfield of `ℚ(ζ₁₀₄)` is `K`, the cyclic cubic field of 
 - a second independent read.
 
 ## Variants
-- **`ξ(r·3^k − 1)`, `r ≥ 2` even.**  `agcd = 1` (Saito), shift `s = −1`, `T = tr(ξ^(−1)) = σ₂/σ₃`; in the `(X − z)³` class `σ₂ ≡ 0 ⇒ 3 ∣ T`.  Steps 2–6 are identical (the certificate is shift-independent).  This extends Saito's Theorem 1.9(C) from `r ≥ 4·10¹⁴` to all even `r`.  Odd `r` has `agcd = 2` (`ξ²` is Pisot): Lemma 5 then needs exponent `(r·3^n − 1)/2`, which is to do.
-- **The obstruction for Mills itself (`s = 0`).**  `w_k = 1` is constant, so Step 4 gives nothing: the trace is Frobenius-invariant.  That is exactly the six residual classes of phase 29.
+- **`ξ(r·3^k − 1)` for even `r`: NOT established** (*referee 2*; draft-1 claim withdrawn).  The limit points carry `ζ_k^(r·3^m)`, and for even `r` the map `x ↦ x^r` is not injective on the (even-order) Teichmüller roots.  So `z_k = ±1` no longer forces equal `ζ_k`, and `f ≡ (X − 1)^a (X + 1)^b (mod 3)` survives the congruence step.  The `b = 0` reduction of Step 6 breaks the same way (e.g. `13 ∣ r`).  Odd `r` has `agcd = 2`.  Open.
+- **The obstruction for Mills itself (`s = 0`):** see the last bullet of Theorem E+.
 
 ## Numerics (supporting, not load-bearing)
 - 867 cubic Pisot `f` with coefficients in `[−9, 9]`, `R = 3^n − 2`, precision `3^10`.  The survivors of the window test with the true offsets are exactly 4 cases with `f ≡ X³ (mod 3)` and positive dominant conjugate.

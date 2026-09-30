@@ -218,10 +218,10 @@ Combine the engine (phase 41) with Theorem D's Galois step.  For `(D1)` with hal
 - Inside a unipotent class exactly one shift, `h = z·tr C^s ± 1 − ε`, is a survivor, so intervals fail by construction for that `h`.
 - Lean: needs the Galois step, so it goes with Theorem D (paper first).
 
-### ⭐⭐ Theorem E+ (see `PROOF-THEOREM-E.md`): `ξ(3^k + s)` is transcendental for every even `s ≠ 0` with `3 ∤ s`; Mills' `s = 0` is the lone base-3 holdout (it fails precisely because the weights `α^0` are constant).  Draft; referee pass done on E.
+### ⭐⭐ Theorem E+ (see `PROOF-THEOREM-E.md`): `ξ(3^k + s)` is transcendental for every even `s ≠ 0` with `3 ∤ s` (index starting where `3^k ≥ s` when `s > 0`).  The unshifted Mills constant fails both the reduction and the rigidity step.  Two referee passes: no fatal error; referee 2 put it at ~80% for `s < 0` and ~75% for `s > 0` after the reindexing patch.  The `r·3^k − 1` family is **withdrawn**.
 
 ### ⭐ Theorem E, current form (see `PROOF-THEOREM-E.md`): `ξ(3^k − 2)` is transcendental, unconditionally (draft proof; E1 closed by the finite certificate `scripts/theorem-e-e1-certificate.py`; confidence ≈ 70%)
-Also `ξ(r·3^k − 1)` for every even `r ≥ 2` (Saito needs `r ≥ 4·10¹⁴`).  The ingredients: Saito Type C, Theorem D with a negative shift, minimality plus BHP (forcing `ε = 0`), and a mod-3 congruence on `tr(ξ^(−2))`.  The original candidate write-up follows.
+(The `ξ(r·3^k − 1)` extension was withdrawn after referee 2: `x ↦ x^r` is not injective on even-order roots of unity.)  The ingredients: Saito Type C, Theorem D with a negative shift, minimality plus BHP (forcing `ε = 0`), and a mod-3 congruence on `tr(ξ^(−2))`.  The original candidate write-up follows.
 
 ### Theorem E (candidate): transcendence of shifted Mills constants with SMALL first term (2026-09-30)
 Saito 2025 (arXiv:2508.16068) Theorem 2.6 (Type C): under `(C1)–(C5)` and short-interval primes `(2.2)` (for `c = 3` this is unconditional by MTY24), `ξ(C_k)` is transcendental OR `ξ^g` is a cubic Pisot number `≤ (2x₀^(1/9) + 1)^(g/c₁)`, with `g ∣ agcd(C_k)`.  He kills the Pisot branch **by size only**, hence his Theorem 1.9(C) needs `r ≥ 4.003·10¹⁴` for `C_k = r·3^k − 1`.
