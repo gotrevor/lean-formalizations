@@ -32,7 +32,13 @@ unchanged and the index grows) to get `|t_{n'}| = |t_n|` for arbitrarily large `
 
 ### original directive
 
-## 🎯 (phase 34): `F(c^n) + h` composite i.o. for every inert prime `c` and for `c = 5` — target `NumberTheory/Mills/FibonacciPrimePow.lean` (6 frozen statements, route in header; frozen also: SaitoFibonacci, LucasTwoPow, ThreeAdic, SharedConjecture, Projective, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 35): `L(c^n) + h` (and `V_(c^n)(P,−1) + h`, `c ∤ P`) composite i.o. for every odd prime `c` — target `NumberTheory/Mills/LucasPrimePow.lean` (7 frozen statements + 2 frozen defs, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+Traces have no sign flip; the route is the exact composition `V_(cm) = V_c(V_m, −1)` plus a growth bound, which pins the `c`-adic limit to an integer fixed point and then to `0`, contradicting `V ≡ P (mod c)`.  Phase 34 (`2eb97a9`) DONE.
+
+---
+
+## ✅ DONE (phase 34): `F(c^n) + h` composite i.o. for every inert prime `c` and for `c = 5` — target `NumberTheory/Mills/FibonacciPrimePow.lean` (6 frozen statements, route in header; frozen also: SaitoFibonacci, LucasTwoPow, ThreeAdic, SharedConjecture, Projective, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 From the sweep `SWEEP-PRIME-MODULUS.md`.  Phase 33 (`78fd009`) DONE.
 

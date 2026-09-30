@@ -78,3 +78,8 @@ prime `c = 5`.  Nothing in the header's route failed; formalization notes:
 where the sweep's survivors look non-integral.  There the `c`-adic limit of `F(c^n)` is a single
 point and proving it is not an integer needs an algebraic argument, not the Frobenius sign flip.
 The Dickson-polynomial route noted above for traces is the closest available idea.
+
+## Progress
+- Phase 34 ✅ (`2eb97a9`): Fibonacci at every inert prime and at `c = 5`.
+- Phase 35 (planted): Lucas traces at every odd prime, via the exact composition `L(c·m) = V_c(L(m), −1)` (`m` odd) and `|V_c(x, −1)| ≥ |x| + 3` for `x ≠ 0`.  An integer surviving `h` would force an integer point with `V_c(x) ∈ {x, x ± 2}`, hence `x = 0`, but `L(c^n) ≡ 1 (mod c)`.  This settles traces at odd `c` without any non-integrality proof.
+- Phase 36 (drafted): general Lucas `U(P,Q)` at odd inert `c`.
