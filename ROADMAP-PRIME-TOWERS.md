@@ -30,7 +30,7 @@ For `C ∈ M_2(ℤ)`, an odd prime `c` with `det C ≡ ε = ±1 (mod c)`, and `c
 - Generalizes phase 35 (`Q = −1` exactly).  About 1 phase.
 - **Consequence for the conjecture graph:** `DoubleExpTraceComposite` is folklore for `n = 1`.  Theorem B proves it for `n = 2`, every odd `c` with `det ≡ ±1`, except the `Φ₃`/`Φ₆` classes, which are provably survivors.  For `n = 3, c = 3` the residual classes are Mills.  That is a clean staircase for the paper.
 
-### Theorem C: prime-free intervals for the non-reversible tower `c^n`  ✅ numerics, ✅ Lean for EVERY prime `c ≠ 5` (phases 40–41, 2026-09-30)
+### Theorem C: prime-free intervals for the non-reversible tower `c^n`  ✅ PROVED IN LEAN FOR EVERY PRIME (phases 40–41, 2026-09-30) — headline `fib_prime_pow_prime_free_all`
 This is Saito's actual wish in arXiv:2504.14968: *"We desire to remove the reversibility."*
 
 **Statement (Fibonacci first).**  For every prime `c ≠ 5` and every `H`, there are `m`, `L` and primes `p_h` (`|h| ≤ H`) with `p_h ∣ F(c^(Lk+m)) + h` for all `k ≥ 0`.  Hence `[F(c^n) − H, F(c^n) + H]` contains no prime for all large `n ≡ m (mod L)`.  At `c = 5` the shifts `h = ±1` are always composite, via `F(4k+1) ± 1` factorizations.
@@ -89,7 +89,13 @@ This is Saito's actual wish in arXiv:2504.14968: *"We desire to remove the rever
   (specialisations of `F(m+n) + (−1)^n F(m−n) = F(m)L(n)`; note `5^n ≡ 1 mod 4`) give
   compositeness for them, but NOT a covering prime — the factors depend on `n`.  So the honest
   shape of Theorem C at `c = 5` is: covering for `h ≠ ±1`, plus separate factorisation
-  compositeness at `h = ±1`.  That factorisation identity is the one piece still to formalize.
+  compositeness at `h = ±1`.
+- **That factorisation is DONE too** (`fib_five_pow_pm_one_not_prime`), and it needed no new
+  identity: `F(4k+1) = F(2k+1)² + F(2k)²` (`Nat.fib_two_mul_add_one`) together with Cassini
+  `F(2k+1)² − F(2k+1)F(2k) − F(2k)² = 1` gives both factorisations by `linarith`.  Hence
+  `fib_five_pow_prime_free_all` (no exceptional shifts at `c = 5`) and the headline
+  **`fib_prime_pow_prime_free_all`: for EVERY prime `c` and every `H`, `[F(c^n) − H, F(c^n) + H]`
+  contains no prime for infinitely many `n`.**  Theorem C is closed.
 
 ### Theorem C′: non-integrality of limit points for `d ≥ 3` (paper math, written 2026-09-30 01:30)
 The obstacle for Theorem C at `d ≥ 3` is that no exact composition is available.  Galois theory replaces it.

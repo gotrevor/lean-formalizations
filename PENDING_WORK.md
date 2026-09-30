@@ -8,7 +8,7 @@ new `AffineRankOne.const_ratio` derivation argument + `StrongSix.exists_logBasis
 
 ---
 
-## Theorem C leftover: the `c = 5` survivors `h = ±1`
+## Theorem C leftover: the `c = 5` survivors `h = ±1` — CLOSED 2026-09-30
 
 `fib_five_pow_covering`/`fib_five_pow_prime_free` cover `|h| ≤ H` with `h ≠ ±1`.  `h = ±1` are
 genuine filter survivors at `c = 5` (the window condition `F(5^n) + h ≡ ±1 (mod 5^e)` holds
@@ -22,10 +22,18 @@ with `(m,n) = (2k+1, 2k)` giving `F(4k+1) + 1 = F(2k+1) L(2k)`, and `(m,n) = (2k
 factors exceed `1` for `k ≥ 2`, so `F(5^n) ± 1` is composite for all `n ≥ 1`.  Checked by hand:
 `F(5)−1 = 4 = F(2)L(3)`, `F(5)+1 = 6 = F(3)L(2)`, `F(9)−1 = 33 = F(4)L(5)`, `F(9)+1 = 35 = F(5)L(4)`.
 
-This yields a `∀ᶠ` (not merely `∃ᶠ`) non-primality statement at `h = ±1`, so combining it with
-`fib_five_pow_prime_free` gives the full-strength `c = 5` interval theorem.  The only Lean work is
-the `F(m+n) + (−1)^n F(m−n) = F(m) L(n)` identity, which is cleanest from the matrix form
-(`fibMat^(m+n) = fibMat^m * fibMat^n`, then read off entry `(0,1)` and use `det = (−1)^n`).
+**DONE** (`fib_five_pow_pm_one_not_prime`, `fib_five_pow_prime_free_all`,
+`fib_prime_pow_prime_free_all`).  The general `F(m+n) + (−1)^n F(m−n) = F(m)L(n)` identity was NOT
+needed: the two instances follow from `F(4k+1) = F(2k+1)² + F(2k)²` (`Nat.fib_two_mul_add_one`) plus
+Cassini at the even index, since
+`F1² + F0² + 1 = 2F1² − F1F0 = F1·L(2k)` and `F1² + F0² − 1 = 2F0² + F0F1 = F0·L(2k+1)` are both
+one `linarith` from `F1² − F1F0 − F0² = 1`.  `k ≥ 6` (i.e. `n ≥ 2`) is what makes both factors
+exceed `1`; at `k = 1` the factorisation `F(5) − 1 = F(2)·L(3) = 1·4` is trivial.
+
+**Theorem C is now closed for every prime.**  Next targets are roadmap §1 Theorem B (2×2 traces,
+odd `c`, `det ≡ ±1`) and Theorem A (order `d`, inert primes); both should reuse
+`exists_shift_pow_congr`, `covering_of_good` and `prime_free_of_covering` rather than rebuilding
+the convergence or the assembly.
 
 ## Phase 41 (next): Theorem C for Fibonacci at every prime `c`
 

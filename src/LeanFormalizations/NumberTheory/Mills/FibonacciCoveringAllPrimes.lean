@@ -977,5 +977,120 @@ theorem fib_five_pow_prime_free (H : ℕ) :
       (fun h hh => exists_good_prime_factor_five (fiveShifts_ne hh).1 (fiveShifts_ne hh).2))
   refine hfr.mono (fun n hn h hb h1 h2 => hn h (mem_fiveShifts hb h1 h2))
 
+/-! ### The `c = 5` survivors `h = ±1`, by elementary factorisation
+
+`h = ±1` cannot be reached by a covering prime (they are filter survivors at `c = 5`), but they do
+not need one: `5^n ≡ 1 (mod 4)`, and writing `5^n = 4k+1`,
+
+  `F(4k+1) + 1 = F(2k+1) · L(2k)`,   `F(4k+1) − 1 = F(2k) · L(2k+1)`,
+
+both of which are just `F(4k+1) = F(2k+1)² + F(2k)²` (`Nat.fib_two_mul_add_one`) plus Cassini
+`F(2k+1)² − F(2k+1)F(2k) − F(2k)² = 1`.  So no new identity is needed beyond `fib_cassini`. -/
+
+lemma not_prime_of_mul {a b : ℤ} (ha : 1 < a) (hb : 1 < b) : ¬ Prime (a * b) := by
+  intro hp
+  have hnat : (a * b).natAbs.Prime := Int.prime_iff_natAbs_prime.1 hp
+  have hmul : (a * b).natAbs = a.natAbs * b.natAbs := Int.natAbs_mul a b
+  have ha2 : 2 ≤ a.natAbs := by
+    have : |a| = (a.natAbs : ℤ) := Int.abs_eq_natAbs a
+    have h2 : (2 : ℤ) ≤ |a| := by rw [abs_of_pos (by omega : (0:ℤ) < a)]; omega
+    omega
+  have hb2 : 2 ≤ b.natAbs := by
+    have : |b| = (b.natAbs : ℤ) := Int.abs_eq_natAbs b
+    have h2 : (2 : ℤ) ≤ |b| := by rw [abs_of_pos (by omega : (0:ℤ) < b)]; omega
+    omega
+  rw [hmul] at hnat
+  rcases (Nat.prime_mul_iff.1 hnat) with ⟨_, h⟩ | ⟨_, h⟩ <;> omega
+
+/-- `5^n = 4k + 1` with `k ≥ 6`, for `n ≥ 2`. -/
+lemma five_pow_eq_four_mul_add_one {n : ℕ} (hn : 2 ≤ n) : ∃ k, 6 ≤ k ∧ 5 ^ n = 4 * k + 1 := by
+  have hmod : 5 ^ n % 4 = 1 := by
+    rw [Nat.pow_mod]
+    norm_num
+  have h25 : 25 ≤ 5 ^ n := by
+    calc (25 : ℕ) = 5 ^ 2 := by norm_num
+    _ ≤ 5 ^ n := Nat.pow_le_pow_right (by norm_num) hn
+  exact ⟨5 ^ n / 4, by omega, by omega⟩
+
+/-- **The `c = 5` survivors are composite anyway.**  `F(5^n) ± 1` is not prime for any `n ≥ 2`. -/
+theorem fib_five_pow_pm_one_not_prime {n : ℕ} (hn : 2 ≤ n) :
+    ¬ Prime ((Nat.fib (5 ^ n) : ℤ) + 1) ∧ ¬ Prime ((Nat.fib (5 ^ n) : ℤ) + (-1)) := by
+  obtain ⟨k, hk6, hk⟩ := five_pow_eq_four_mul_add_one hn
+  obtain ⟨F0, hF0⟩ : ∃ F0 : ℤ, F0 = (Nat.fib (2 * k) : ℤ) := ⟨_, rfl⟩
+  obtain ⟨F1, hF1⟩ : ∃ F1 : ℤ, F1 = (Nat.fib (2 * k + 1) : ℤ) := ⟨_, rfl⟩
+  -- `F(4k+1) = F(2k+1)² + F(2k)²`
+  have hsum : (Nat.fib (5 ^ n) : ℤ) = F1 ^ 2 + F0 ^ 2 := by
+    have hidx : 2 * (2 * k) + 1 = 5 ^ n := by omega
+    have h := Nat.fib_two_mul_add_one (2 * k)
+    rw [hidx] at h
+    rw [hF1, hF0]
+    exact_mod_cast congrArg (Nat.cast : ℕ → ℤ) h
+  -- Cassini at the even index `2k`
+  have hcas : F1 ^ 2 - F1 * F0 - F0 ^ 2 = 1 := by
+    have h := FibonacciCovering.fib_cassini (2 * k)
+    have hpar : (-1 : ℤ) ^ (2 * k) = 1 :=
+      Even.neg_one_pow ⟨k, by ring⟩
+    rw [hpar] at h
+    rw [hF1, hF0]
+    exact h
+  -- both factors are large
+  have hF0big : 144 ≤ F0 := by
+    have h1 : Nat.fib 12 ≤ Nat.fib (2 * k) := Nat.fib_mono (by omega)
+    have h2 : Nat.fib 12 = 144 := by decide
+    rw [hF0]
+    have : (144 : ℕ) ≤ Nat.fib (2 * k) := by omega
+    exact_mod_cast this
+  have hF01 : F0 < F1 := by
+    rw [hF0, hF1]
+    have : Nat.fib (2 * k) < Nat.fib (2 * k + 1) :=
+      Nat.fib_lt_fib_succ (by omega)
+    exact_mod_cast this
+  refine ⟨?_, ?_⟩
+  · -- `F(5^n) + 1 = F1 · (2F1 − F0)`
+    have hfac : (Nat.fib (5 ^ n) : ℤ) + 1 = F1 * (2 * F1 - F0) := by
+      rw [hsum]; linarith [hcas]
+    rw [hfac]
+    exact not_prime_of_mul (by omega) (by omega)
+  · -- `F(5^n) − 1 = F0 · (2F0 + F1)`
+    have hfac : (Nat.fib (5 ^ n) : ℤ) + (-1) = F0 * (2 * F0 + F1) := by
+      rw [hsum]; linarith [hcas]
+    rw [hfac]
+    exact not_prime_of_mul (by omega) (by omega)
+
+/-- **Theorem C at `c = 5`, in full**: prime-free intervals of any fixed length around `F(5^n)`,
+infinitely often, with no exceptional shifts. -/
+theorem fib_five_pow_prime_free_all (H : ℕ) :
+    ∃ᶠ n in atTop, ∀ h : ℤ, |h| ≤ H → ¬ Prime ((Nat.fib (5 ^ n) : ℤ) + h) := by
+  have hpm : ∀ᶠ n in atTop, ¬ Prime ((Nat.fib (5 ^ n) : ℤ) + 1) ∧
+      ¬ Prime ((Nat.fib (5 ^ n) : ℤ) + (-1)) :=
+    eventually_atTop.2 ⟨2, fun n hn => fib_five_pow_pm_one_not_prime hn⟩
+  refine ((fib_five_pow_prime_free H).and_eventually hpm).mono ?_
+  rintro n ⟨hrest, hp1, hm1⟩ h hb
+  by_cases h1 : h = 1
+  · rw [h1]; exact hp1
+  by_cases h2 : h = -1
+  · rw [h2]; exact hm1
+  exact hrest h hb h1 h2
+
+/-! ### Theorem C, assembled over every prime -/
+
+/-- **Theorem C of `ROADMAP-PRIME-TOWERS.md`, complete.**  For every prime `c` and every `H`, the
+interval `[F(c^n) − H, F(c^n) + H]` contains no prime for infinitely many `n`.
+
+This is Saito's *"We desire to remove the reversibility"* (arXiv:2504.14968) for the Fibonacci
+tower `c^n`, which is not reversible.  The three regimes are genuinely different:
+* `c = 2` — phase 40, certificate `2^(n+1) ∣ 5F(2^n)² + 3`;
+* odd `c ≠ 5` — phase 41, certificate the `c`-adic convergence `c^n ∣ F(c^(n+d)) − F(c^n)`
+  together with the `Φ_J` fixed-point obstruction;
+* `c = 5` — the `5`-adic limit is `0`, so the window fails outright for `h ≠ ±1`, and the two
+  survivors `h = ±1` fall to the `F(4k+1) ± 1` factorisations. -/
+theorem fib_prime_pow_prime_free_all {c : ℕ} (hc : c.Prime) (H : ℕ) :
+    ∃ᶠ n in atTop, ∀ h : ℤ, |h| ≤ H → ¬ Prime ((Nat.fib (c ^ n) : ℤ) + h) := by
+  by_cases hc2 : c = 2
+  · subst hc2; exact FibonacciCovering.fib_two_pow_prime_free H
+  by_cases hc5 : c = 5
+  · subst hc5; exact fib_five_pow_prime_free_all H
+  exact fib_prime_pow_prime_free hc hc2 hc5 H
+
 end LeanFormalizations.Mills.FibonacciCoveringAllPrimes
 
