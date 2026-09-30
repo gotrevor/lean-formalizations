@@ -32,7 +32,13 @@ unchanged and the index grows) to get `|t_{n'}| = |t_n|` for arbitrarily large `
 
 ### original directive
 
-## 🎯 (phase 35): `L(c^n) + h` (and `V_(c^n)(P,−1) + h`, `c ∤ P`) composite i.o. for every odd prime `c` — target `NumberTheory/Mills/LucasPrimePow.lean` (7 frozen statements + 2 frozen defs, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 37): `F(c^n) + h` composite i.o. for EVERY prime `c` and every `h` — target `NumberTheory/Mills/FibonacciAllPrimes.lean` (4 frozen statements + frozen def `fibOddPoly`, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+Closes the split-prime Maze row via phase 35's exact-composition idea (`F((2j+1)N) = Φ_j(F N)` for odd `N`).  Phase 35 (`6b7cd6e`) DONE.  (Phase 36, general Lucas `U(P,Q)` at inert odd `c`, is queued after this one.)
+
+---
+
+## ✅ DONE (phase 35): `L(c^n) + h` (and `V_(c^n)(P,−1) + h`, `c ∤ P`) composite i.o. for every odd prime `c` — target `NumberTheory/Mills/LucasPrimePow.lean` (7 frozen statements + 2 frozen defs, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 Traces have no sign flip; the route is the exact composition `V_(cm) = V_c(V_m, −1)` plus a growth bound, which pins the `c`-adic limit to an integer fixed point and then to `0`, contradicting `V ≡ P (mod c)`.  Phase 34 (`2eb97a9`) DONE.
 
