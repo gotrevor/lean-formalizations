@@ -108,6 +108,26 @@ This is Saito's actual wish in arXiv:2504.14968: *"We desire to remove the rever
   **`fib_prime_pow_prime_free_all`: for EVERY prime `c` and every `H`, `[F(c^n) − H, F(c^n) + H]`
   contains no prime for infinitely many `n`.**  Theorem C is closed.
 
+#### Phase 43 note (2026-09-30): no failing step — the phase was already subsumed
+
+`NumberTheory/Mills/CoveringInstances.lean` is now sorry-free with all three frozen statements
+axiom-clean (`propext, Classical.choice, Quot.sound`).  No step of its route failed; the route was
+simply redundant.  Phase 41's own lap had already carried the three statements to the end:
+
+| phase-43 statement | already proved as |
+| --- | --- |
+| `fib_five_pow_prime_free` | `FibonacciCoveringAllPrimes.fib_five_pow_prime_free_all` |
+| `fib_prime_pow_prime_free_all` | `FibonacciCoveringAllPrimes.fib_prime_pow_prime_free_all` |
+| `lucasU_unit_prime_pow_prime_free` | `LucasCoveringAllPrimes.lucasU_prime_pow_prime_free` (verbatim hypotheses) |
+
+Route step 1 (a `Finset`-general `covering_of_good`) was never needed: the `Finset`-general engine
+already exists twice (`FibonacciCoveringAllPrimes.covering_of_good` / `prime_free_of_covering`,
+`LucasCoveringAllPrimes.covering_of_good_seq` / `prime_free_of_covering_seq`), and
+`CoveringEngine.covering_of_mech` is itself stated over an arbitrary `S : Finset ℤ`.  So
+`CoveringInstances.lean` is the phase-43 **audit surface** for Theorem C's binary families, not new
+mathematics.  Lesson for planting: grep the existing Mills files for the target statement shape
+before writing a phase route; phase 41's lap overshot its own brief.
+
 ### Theorem C′: non-integrality of limit points for `d ≥ 3` (paper math, written 2026-09-30)
 The obstacle for Theorem C at `d ≥ 3` is that no exact composition is available.  Galois theory replaces it.
 - Let `K` be the splitting field of `χ_A` (irreducible over `ℚ`), with eigenvalues `α_k` and spectral projectors `E_k ∈ M_d(K)`.  The Teichmüller lifts are `ω(α_k) = ζ^(c^k)`, where `ζ` is a root of unity of order `n ∣ c^d − 1` (`c` inert).
