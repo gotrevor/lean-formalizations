@@ -74,7 +74,8 @@ So `η_(k₀) = 0`, hence `η = 0`.  (The Pisot property concerns the root set, 
    - `τ(t) = τ(ι⁻¹ω) − ε` has modulus `≤ 2` in every complex embedding.
 4. Fix the complex embedding in which `α_1 = α > 1` and `|α_j| < 1` for `j ≥ 2`.  Isolate the `k*` term:
    `α^s = |τ(ζ_(k*))^(c^r) α^s| ≤ |τ(t)| + Σ_(k≠k*) |α_(π(k))|^s < 2 + (d − 1) = d + 1`.
-5. But `s ≥ s₀(d)` gives `α^s ≥ κ^s ≥ d + 1`.  **Contradiction.**  ∎
+5. But `s ≥ s₀(d)` gives `α^s ≥ κ^s ≥ d + 1`.  **Contradiction.**  (`d = 1` is trivial: `⌊α^N⌋ = α^N` is composite.)  ∎
+   - **Referee (2026-09-30, subagent): no error, ~90%.**  Hypothesis (i) was used only by Lemma 6.  Lemmas 1–5 need only irreducibility over `ℚ`, for distinct roots.
    - No Galois rigidity and no hypothesis on `ℚ(ζ_M)` are needed.  The abelian exception fields of draft 1 (conductor 7 at `c = 2`; conductor 13 at `c = 3`; e.g. `c = 7` with conductor 19, where 7 splits) are covered.
    - *(Draft 1's steps 3–5 used Lemma 6 to force all `ζ_k^(c^r)` equal, then `|t| = |T| > 2`.  That is correct under (i), but it is a detour.)*
 
@@ -82,6 +83,12 @@ So `η_(k₀) = 0`, hence `η = 0`.  (The Pisot property concerns the root set, 
 If `f ≡ X^d (mod c)`, every `ι(α_k)` is a non-unit, so `tr C^N ≡ 0 (mod c^(e′(N)))` with `e′ → ∞`.  (Non-unit powers go to 0; their integer sum has growing valuation.)  Then `⌊α^N⌋ = tr C^N + ε_N` gives both claims.
 
 For the "any ILRS" remark: `f = X² − MX + N` with `M, N ≡ 0 (mod rad a₀)` and `0 < N < M − 1`, with real conjugates in `(0, 1)`.  Then `α` is Pisot, `ε ≡ −1`, and the value is `≡ −1` modulo growing powers of every prime of `a₀`.  The method needs a prime of `a₀` to act as the base; each such prime sees the value in its window.  ∎
+
+## Corollary (prime-free intervals, draft 2)
+Survival of the shift `h` means `Λ_r = ζ′ − h − ε` for some root of unity `ζ′`, so `|τ(·)| ≤ |h| + 2`, and step 4 gives `α^s < d + |h| + 1`.
+- So **for `s ≥ ⌈log(d + H + 1)/log κ⌉`, no `h` with `|h| ≤ H` survives**, for every Pisot `α` with `f ≢ X^d (mod c)`.  This also removes the unipotent classes `(X ∓ 1)^d`, whose survivor `h` has `|h| ≥ α^s − d − 1 > H`.
+- The statement is "half-width `H` once `s ≥ s₀(d, H)`", not "every length at a fixed `s`": at a fixed `s` the bound is `H < α^s − d − 1`.
+- This assumes the phase-41 engine's only input is `Λ_r ∉ {ζ′ − h − ε}` for every `r`, `ε`, `ζ′`, which the referee did not check against the Lean.
 
 ## Open points
 1. ~~Remove (i).~~  **Done in draft 2** (2026-09-30) by the one-automorphism size argument.  This matches the numerics, which found no survivors in the abelian exception fields.

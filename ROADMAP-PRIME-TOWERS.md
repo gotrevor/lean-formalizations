@@ -214,7 +214,7 @@ A reasonable first Lean target: **Theorem D for quadratic Pisot `α`**.
 Combine the engine (phase 41) with Theorem D's Galois step.  For `(D1)` with half-width `H`, each window must be visited only finitely often for every `|h| ≤ H`, i.e. `Λ_r ∉ {ζ′ − h − ε}`.
 - If `Λ_r ∈ ℚ(ζ)`, step 4 of Theorem D forces all `ζ_k` equal, and then `Λ_r = z·tr C^s` with `z ∈ {0, ±1}`.
 - So outside the **unipotent classes** `f ≡ (X ∓ 1)^d` or `X^d (mod c)`, `Λ_r ∉ ℚ(ζ)` and every shift is eventually outside its window.
-- Hence **for Pisot `α` outside the unipotent classes (and the abelian exceptions (i); the draft-2 size argument for Theorem D should remove these too once `α^s > d + H + 1`, unchecked), there are prime-free intervals of every fixed length around `⌊α^(c^n + s)⌋`, infinitely often.**
+- Hence **for Pisot `α` outside the unipotent classes (draft 2, 2026-09-30: once `s ≥ ⌈log(d + H + 1)/log κ⌉`, the size argument removes both the abelian exceptions and the unipotent classes; only `f ≡ X^d (mod c)` remains; see `PROOF-THEOREM-D.md` Corollary), there are prime-free intervals of every fixed length around `⌊α^(c^n + s)⌋`, infinitely often.**
 - Inside a unipotent class exactly one shift, `h = z·tr C^s ± 1 − ε`, is a survivor, so intervals fail by construction for that `h`.
 - Lean: needs the Galois step, so it goes with Theorem D (paper first).
 
