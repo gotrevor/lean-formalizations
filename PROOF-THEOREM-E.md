@@ -76,7 +76,7 @@ The only cubic subfield of `ℚ(ζ₁₀₄)` is `K`, the cyclic cubic field of 
 
 **Still to do:**
 - odd `s` (`agcd = 2`; `ξ²` Pisot: redo Lemma 5 with exponent `(3^n + s)/2`);
-- `3 ∣ s` (`agcd ∈ {3, 6}`);
+- `3 ∣ s` (`agcd ∈ {3, 6}`).  **Likely easy.**  For even `s`, `agcd = 3^(v₃(s))` (divides `2s`, odd part only via 3).  So `g = 3^a` with `a ≤ v₃(s)`, and `β = ξ^(3^a)` satisfies `⌊β^(3^(k−a) + s/3^a)⌋` prime: the same shape with shift `s/3^a`.  Run the E+ argument on `β` (the Theorem D machinery never needs minimality of `β` itself, and Prop 3.1(iv) is stated for `β^(C_k/g)`).  If `s/3^a ≠ 0` the weights `β_k^(s/3^a)` are non-constant and the mod-3 congruence holds.  To write out: this would give **all even `s ≠ 0`**.  (Also check the case `g = 1` with `3 ∣ s`: the weights `α^s` are non-constant and `T ≡ 0 (mod 3)`, so fine.)
 - a second independent read.
 
 ## Variants
