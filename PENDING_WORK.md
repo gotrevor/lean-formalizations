@@ -1,7 +1,8 @@
-## phase 57 (2026-09-30, IN PROGRESS) — Theorem D in full: the mixed limit matrix is BUILT
+## phase 57 DONE (2026-09-30) — Theorem D in full: PROVED and axiom-clean
 
-`NumberTheory/Mills/TheoremDMixed.lean` (target: `floor_pow_prime_pow_add_not_prime_full`, still
-one disclosed `sorry`).  **The crux — step 1 of the header route — is proved** (`exists_mixed_limit`):
+`NumberTheory/Mills/TheoremDMixed.lean` is sorry-free; `floor_pow_prime_pow_add_not_prime_full` is
+`#print axioms`-clean.  See `HANDOFF-2026-09-30-phase57-complete.md`.  The crux
+(`exists_mixed_limit`):
 for `f ≢ X^d (mod c)` there are `L, Q ≥ 1` with, for every `n`, `T := C^(L·c^n)` satisfying
 
 * `T^(Q+1) ≡ T (mod c^(n+1))`, and
@@ -28,18 +29,15 @@ idempotent and `D^(L(Q+1)) = D^L`.  That base congruence mod `c` is lifted to `c
 `f ≢ X^d (mod c)`, via `map_eq_X_pow_of_compM_pow_eq_zero`: a vanishing power of the companion
 matrix forces `f mod c ∣ X^M`, hence `= X^d` (`modByMonic` + the cyclic vector `e₀` + `prime_X`).
 
-### Next attack (steps 2–4)
+### Steps 2–4, as built
 
-1. `exists_zero_of_family`: phase 56's Nullstellensatz over an arbitrary `[IsAlgClosed] [CharZero]`
-   field, so the solution can be taken in `𝔸 := algebraicClosure ℚ ℂ` (needed for step 3 — the
-   Galois conjugation is only available on algebraic numbers).  Proof = copy of
-   `exists_complex_zero_of_family` with `ℂ ↝ K`.
-2. `exists_root_enum` over `K` (same copy-and-generalize).
-3. `T^(Q+1) = T ⟹ u_k^(Q+1) = u_k` — a `conj_inj` variant of phase 56's `polyVal_pow_eq_one`;
-   `det(1 − T^Q) = 0 ⟹ ∃ k*, u_(k*) ≠ 0` via `det_diagonal` under the Vandermonde conjugation.
-4. the automorphism: `minpoly.exists_algEquiv_of_root` on `Normal ℚ 𝔸` moves `α_(k*)` to `α`;
-   the integer system is preserved because `σ` is a ring hom.  Then push to `ℂ` and run a mixed
-   `not_exists_spectral_of_large` (only `‖u_(i₀)‖ = 1` is needed, the other `u_k` have `‖·‖ ≤ 1`).
+The solution is taken in `AlgQ := algebraicClosure ℚ ℂ`, not in `ℂ`: step 3 conjugates by a field
+automorphism, and `Aut(ℂ/ℚ)` is not constructible in mathlib, while `T^(Q+1) = T` already forces
+every spectral value into `{0} ∪ μ_Q`, so the solution is algebraic anyway.  `exists_zero_of_family`
+and `exists_root_enum_field` are phase 56's Nullstellensatz and root enumeration generalized from
+`ℂ` to any algebraically closed characteristic-zero field (all the proofs used about `ℂ`).
+`transport_solution` carries a solution along any ring hom — the system has integer coefficients —
+which is what makes both the automorphism `τ` and the inclusion `AlgQ ↪ ℂ` legitimate.
 
 ### finding (2026-09-30, phase 49): the composite-base descent is FALSE
 
