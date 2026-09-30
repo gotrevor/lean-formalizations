@@ -250,6 +250,14 @@ So `ξ := ξ(3^k − 2)` is transcendental or itself a cubic Pisot number with `
 6. Phases 43–44: Theorem A (general `d`, inert), with the Tribonacci corollary.
 7. Stretch: a quantitative Theorem C statement (`(log n)^(1/5)`), if the bookkeeping is clean.
 
+## 4a. Week-by-week (proposal, 2026-09-30)
+- **Week 1 (Lean, cheap, high certainty).**  Phase 42 (Theorem B), phase 43 (intervals: Fibonacci at every prime; `U(P, ±1)`), phase 39 (quadratic Pisot floor corollary).  In parallel Ren writes the **paper draft §1–3 and §5** (everything already in Lean): Saito 1.8, binary recurrences, Theorem B, Theorem C for binary sequences.
+- **Week 2 (paper math, the new frontier).**  Rigorous write-ups of Theorem D (Saito 1.7 partial) and Theorem E (`ξ(3^k − 2)`), including the decomposition-group fix for exception (i) and the `T = 0` subcase.  Numerics to extend: degree 5–6 Pisot; `c = 5, 7`; `r·3^k − 1` for small `r`.
+- **Week 3 (Lean infrastructure).**  The orbit-sum identity `Σ_(i<d) A^(c^(n+i)) ≡ tr(A^(c^n))·I (mod c^(n+1))`, via either (a) a Galois-ring Frobenius (Hensel lift of a root of `f` near `x^c` in `(ℤ/c^k)[X]/f`), or (b) the Teichmüller limit `S = lim A^(c^(dk))` in `M_d(ℤ_c)` plus the eigenvalue/Cayley–Hamilton argument that `Σ S^(c^i)` is scalar.  Then Theorem A (Tribonacci).  Multi-phase; the first phase is only the `c`-adic limit `S` and `S^(c^d) = S`.
+- **Week 4+.**  Lean for Theorem D in the quadratic case (the Galois step for `d = 2` is a conjugation in `ℚ(√D)`), then cubic.  Theorem E in Lean is the long pole: it needs Saito's Type C (`Literature` Prop or our phase-6-era machinery) plus Theorem D for cubics.
+
+**Ranking by value:** D ≈ E (new answers to Saito's open problems) > C (intervals; qualitative) > A (order `d`) > B (classification) > corollaries.  The ranking by Lean cost runs the other way, which is why weeks 1 and 3 are Lean-heavy and week 2 is paper-heavy.
+
 ## 4b. Outward notes (Trevor's call, not queued)
 - formal-conjectures (checked 2026-09-30, `origin/main` + all PRs): no Saito problems stated; only `Wikipedia/Mills.lean`.  Stating Saito's 1.7/1.8 there, with 1.8 solved, is possible.
 
