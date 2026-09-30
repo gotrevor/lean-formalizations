@@ -267,10 +267,108 @@ theorem lucasOddPoly_far {P ε x : ℤ} (hε : ε = 1 ∨ ε = -1) (hD : 5 ≤ P
   · obtain ⟨g1, g2⟩ := lucasOddPoly_far_pos hε hD (show 1 ≤ x by omega) hj
     refine ⟨by omega, by omega, by omega⟩
 
+/-! ### Step 3: `c ∤ U(c^n)` for an odd prime `c ∤ D` -/
+
+theorem not_dvd_of_unit {Q : ℤ} (hQ : Q = 1 ∨ Q = -1) {c : ℕ} (hc : c.Prime) :
+    ¬ (c : ℤ) ∣ Q := by
+  have hc2 := hc.two_le
+  rcases hQ with rfl | rfl
+  · intro hd
+    have := Int.le_of_dvd one_pos hd
+    omega
+  · intro hd
+    have hd' : (c : ℤ) ∣ (1 : ℤ) := by
+      have h := dvd_neg.mpr hd
+      simpa using h
+    have := Int.le_of_dvd one_pos hd'
+    omega
+
+theorem two_ne_zero_zmod {c : ℕ} (hc : c.Prime) (hc2 : c ≠ 2) : (2 : ZMod c) ≠ 0 := by
+  haveI : Fact c.Prime := ⟨hc⟩
+  have hcast : ((2 : ℕ) : ZMod c) = (2 : ZMod c) := by norm_num
+  rw [← hcast, Ne, ZMod.natCast_eq_zero_iff]
+  intro hdd
+  exact hc2 ((Nat.prime_dvd_prime_iff_eq hc Nat.prime_two).1 hdd)
+
+/-- **The split case**: if `D` is a nonzero square mod `c`, then `U(c^n) ≡ 1 (mod c)`. -/
+theorem lucasU_prime_pow_split_eq_one {P Q : ℤ} {c : ℕ} (hc : c.Prime) (hc2 : c ≠ 2)
+    (hD : ¬ (c : ℤ) ∣ P ^ 2 - 4 * Q)
+    (hsq : IsSquare ((P ^ 2 - 4 * Q : ℤ) : ZMod c)) (n : ℕ) :
+    ((lucasU P Q (c ^ n) : ℤ) : ZMod c) = 1 := by
+  haveI : Fact c.Prime := ⟨hc⟩
+  obtain ⟨d, hd⟩ := hsq
+  have h2ne : (2 : ZMod c) ≠ 0 := two_ne_zero_zmod hc hc2
+  obtain ⟨u, hu⟩ : ∃ u : ZMod c, (2 : ZMod c) * u = 1 :=
+    ⟨(2 : ZMod c)⁻¹, mul_inv_cancel₀ h2ne⟩
+  obtain ⟨α, hα⟩ : ∃ α : ZMod c, α = ((P : ZMod c) + d) * u := ⟨_, rfl⟩
+  have h2A : 2 * α = (P : ZMod c) + d := by
+    rw [hα]; linear_combination ((P : ZMod c) + d) * hu
+  have h4u : (4 : ZMod c) * (u * u) = 1 := by linear_combination (2 * u + 1) * hu
+  have hDcast : ((P ^ 2 - 4 * Q : ℤ) : ZMod c) = (P : ZMod c) ^ 2 - 4 * (Q : ZMod c) := by
+    push_cast; ring
+  have hdd : d * d = (P : ZMod c) ^ 2 - 4 * (Q : ZMod c) := by rw [← hDcast, ← hd]
+  have hbig : (2 * α) ^ 2 - 2 * (P : ZMod c) * (2 * α) + 4 * (Q : ZMod c) = 0 := by
+    rw [h2A]; linear_combination hdd
+  have hαroot : α ^ 2 = (P : ZMod c) * α - (Q : ZMod c) := by
+    have e : α ^ 2 - (P : ZMod c) * α + (Q : ZMod c)
+        = (u * u) * ((2 * α) ^ 2 - 2 * (P : ZMod c) * (2 * α) + 4 * (Q : ZMod c)) := by
+      linear_combination (-(α ^ 2) + (P : ZMod c) * α - (Q : ZMod c)) * h4u
+    rw [hbig, mul_zero] at e
+    linear_combination e
+  obtain ⟨β, hβ⟩ : ∃ β : ZMod c, β = (P : ZMod c) - α := ⟨_, rfl⟩
+  have hβroot : β ^ 2 = (P : ZMod c) * β - (Q : ZMod c) := by
+    rw [hβ]; linear_combination hαroot
+  have hdne : α - β ≠ 0 := by
+    have hab : α - β = d := by rw [hβ]; linear_combination h2A
+    rw [hab]
+    intro h0
+    rw [h0] at hd
+    rw [mul_zero] at hd
+    exact hD ((ZMod.intCast_zmod_eq_zero_iff_dvd _ c).1 hd)
+  have hpow : ∀ z : ZMod c, z ^ (c ^ n) = z := by
+    intro z
+    induction n with
+    | zero => simp
+    | succ k ih =>
+        rw [pow_succ, pow_mul, ih, ZMod.pow_card]
+  obtain ⟨N, hN⟩ : ∃ N, c ^ n = N + 1 :=
+    ⟨c ^ n - 1, by have := Nat.one_le_pow n c hc.pos; omega⟩
+  have hae := pow_eq_lucasU P Q hαroot N
+  have hbe := pow_eq_lucasU P Q hβroot N
+  rw [← hN, hpow α] at hae
+  rw [← hN, hpow β] at hbe
+  have hz : (α - β) * (((lucasU P Q (c ^ n) : ℤ) : ZMod c) - 1) = 0 := by
+    linear_combination hbe - hae
+  rcases mul_eq_zero.1 hz with h | h
+  · exact absurd h hdne
+  · linear_combination h
+
 theorem not_dvd_lucasU_prime_pow {P Q : ℤ} (hQ : Q = 1 ∨ Q = -1) {c : ℕ} (hc : c.Prime)
     (hc2 : c ≠ 2) (hD : ¬ (c : ℤ) ∣ P ^ 2 - 4 * Q) (n : ℕ) :
     ¬ (c : ℤ) ∣ lucasU P Q (c ^ n) := by
-  sorry
+  haveI : Fact c.Prime := ⟨hc⟩
+  intro hdvd
+  by_cases hsq : IsSquare ((P ^ 2 - 4 * Q : ℤ) : ZMod c)
+  · have h1 := lucasU_prime_pow_split_eq_one hc hc2 hD hsq n
+    have h0 : ((lucasU P Q (c ^ n) : ℤ) : ZMod c) = 0 :=
+      (ZMod.intCast_zmod_eq_zero_iff_dvd _ c).2 hdvd
+    rw [h0] at h1
+    exact zero_ne_one h1
+  · have hmod := lucasU_prime_pow_mod hc (not_dvd_of_unit hQ hc) hsq n
+    have h1 : (c : ℤ) ∣ (-1 : ℤ) ^ n := by
+      have e : (-1 : ℤ) ^ n = lucasU P Q (c ^ n) - (lucasU P Q (c ^ n) - (-1) ^ n) := by ring
+      rw [e]
+      exact dvd_sub hdvd hmod
+    have h2 : ((-1 : ℤ) ^ n).natAbs = 1 := by
+      rcases Nat.even_or_odd n with he | ho
+      · rw [he.neg_one_pow]; norm_num
+      · rw [ho.neg_one_pow]; norm_num
+    have h3 : c ∣ 1 := by
+      have := Int.natAbs_dvd_natAbs.2 h1
+      rwa [Int.natAbs_natCast, h2] at this
+    have h4 := Nat.le_of_dvd one_pos h3
+    have := hc.two_le
+    omega
 
 /-- **`U_(c^n)(P, ±1) + h` is composite infinitely often**, for every odd prime `c ∤ D`,
 `D = P² − 4Q ≥ 5`, and every integer `h`. -/
