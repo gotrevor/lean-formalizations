@@ -2,7 +2,11 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 (phase 36, CURRENT): `U_(c^n)(P,Q) + h` composite i.o. at every odd prime `c` inert in `ℚ(√(P²−4Q))` — target `NumberTheory/Mills/LucasInert.lean` (3 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 38, CURRENT): `U_(c^n)(P, ±1) + h` composite i.o. at every odd prime `c ∤ D` — target `NumberTheory/Mills/LucasUnitAllPrimes.lean` (4 frozen statements + frozen def `lucasOddPoly`, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+Phase 37's exact-composition route for all Lucas `U(P, ±1)`: split and inert `c` alike.
+
+## ✅ DONE (phase 36, `889bdcb`): `U_(c^n)(P,Q) + h` composite i.o. at every odd prime `c` inert in `ℚ(√(P²−4Q))` — target `NumberTheory/Mills/LucasInert.lean` (3 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 Generalizes phase 34 (Fibonacci) to all Lucas `U(P,Q)`.  Phases 34, 35, 37 DONE (37 `5e13749`: Fibonacci at every prime).
 
