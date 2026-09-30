@@ -204,7 +204,11 @@ So `ξ := ξ(3^k − 2)` is transcendental or itself a cubic Pisot number with `
 **Honest weight.**
 - Saito's own Mills exceptions are a size window (`(1.3)`); ours are congruence classes mod 3 plus a trace condition.  Neither is empty, so this is a *different* partial result, not a completion.
 - E3 is Mersenne-shaped and probably genuinely out of reach of congruences.
-- **Needs:** reading Saito's `(C4)` (surely `k > m`), and a check of Theorem 2.6's proof for anything that uses integrality of `c_k` that `3^k − 2` breaks.
+- **Checked against Saito's text (§9, 02:05):**
+  - Theorem 2.6 allows real `c_k` (only `C_k ∈ ℕ`); our `(C4)` witness `k = m + φ(C_m) > m` is exactly his pattern for `r·3^k − 1`.
+  - The proof routes through Type B (Theorem 2.3), which already forces degree `ℓ = 3` (quadratic excluded) and `g ∣ agcd = 1`.
+  - So the branch is exactly "`ξ` is cubic Pisot with `⌊ξ^(3^k − 2)⌋` prime `∀k`".
+- **Remaining:** the Theorem D (`s = −2`) write-up, and E1–E3.
 
 ## 2. Conjectures, each with its difficulty check
 
