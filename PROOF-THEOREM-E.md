@@ -2,7 +2,7 @@
 
 Ren, 2026-09-30.  **Status: paper proof, not in Lean.**  Draft 2 incorporates an adversarial referee pass (a subagent, same night).  The referee found no fatal error and about 80% confidence after three patches, all applied below: Step 5 now cites Saito's Prop 3.1(iv), Step 3's `C₃` rank argument is completed, and the `b = 0` case of the E1 certificate is covered.
 
-It builds on `PROOF-THEOREM-D.md` (Lemmas 1–6) and Saito, arXiv:2508.16068 (itself unrefereed; its Theorem 2.3/2.6 and Prop 3.1 are load-bearing here).
+It builds on `PROOF-THEOREM-D.md` (Lemmas 1–6) and Saito, arXiv:2508.16068 (itself unrefereed; its Theorem 2.3/2.6 and Prop 3.1 are load-bearing here).  **Version check (2026-09-30):** arXiv:2508.16068 has a v2 (2025-12-07); Theorems 1.9, 2.3, 2.6 and Proposition 3.1 read identically in v2, and v2 has nothing on shifted sequences `3^k + s`.  `papers followups 2508.16068` finds 0 citing papers.
 
 `ξ(C_k)` is the least `A > 1` with `⌊A^(C_k)⌋` prime for every `k ≥ 1` (Saito's notation; it exists by his Lemma 4.1 and Theorem 1.3).
 
