@@ -75,7 +75,7 @@ graph LR
 | `Mills.ShiftedMills.ShiftedTraceRigidity` | 📚 theorem | 1 |
 | `Mahler1957` | 📚 theorem | 1 |
 
-Unconditional theorems in the scanned namespaces (no named hypothesis): 816.
+Unconditional theorems in the scanned namespaces (no named hypothesis): 856.
 
 ## Refuted
 
