@@ -740,6 +740,205 @@ theorem exists_coords (f : ℤ[X]) (hd : 1 ≤ f.natDegree) (N : ℕ) :
   obtain ⟨cc, hcc⟩ := (Submodule.mem_span_range_iff_exists_fun ℤ).1 hpow
   exact ⟨cc, hcc.symm⟩
 
+
+/-! ### Step 5: the integer system at every level, and the complex solution -/
+
+theorem trace_polyMat_mul {R : Type*} [CommRing R] (f : ℤ[X]) (x : Fin f.natDegree → R) (s : ℕ) :
+    (polyMat R f x * compM R f ^ s).trace
+      = ∑ j, x j * ((traceSeq f ((j : ℕ) + s) : ℤ) : R) := by
+  rw [polyMat, Finset.sum_mul, Matrix.trace_sum]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  rw [Matrix.smul_mul, Matrix.trace_smul, ← pow_add, ← traceSeq_cast]
+  simp [smul_eq_mul]
+
+/-- A ring hom pushed through an entry of `T^Q - 1`. -/
+theorem map_polyMat_pow_sub_one {R S : Type*} [CommRing R] [CommRing S] (φ : R →+* S)
+    (f : ℤ[X]) (x : Fin f.natDegree → R) (Q : ℕ) (i j : Fin f.natDegree) :
+    φ ((polyMat R f x ^ Q - 1) i j)
+      = (polyMat S f (fun t => φ (x t)) ^ Q - 1) i j := by
+  have hh : RingHom.mapMatrix φ (polyMat R f x ^ Q - 1)
+      = polyMat S f (fun t => φ (x t)) ^ Q - 1 := by
+    rw [map_sub, map_pow, map_one, RingHom.mapMatrix_apply, polyMat_map]
+  simpa [RingHom.mapMatrix_apply, Matrix.map_apply] using congrFun (congrFun hh i) j
+
+/-- **Steps 5–6.**  If, at every level `k`, some `n ≥ k` and some integer `w` with `w^m ≡ 1` satisfy
+`V(c^n + s) ≡ w - ε (mod c^k)`, then the system has a *complex* solution: a `Q`-torsion element
+`T = P(C)` of the algebra, a root of unity `w`, and the trace identity. -/
+theorem exists_spectral_solution (f : ℤ[X]) (hd : 1 ≤ f.natDegree) {c : ℕ} (hc : c.Prime)
+    (hc0 : ¬ (c : ℤ) ∣ f.coeff 0) {s m : ℕ} {ε : ℤ}
+    (hcong : ∀ k : ℕ, ∃ n, k ≤ n ∧ ∃ w : ℤ, (c : ℤ) ^ k ∣ w ^ m - 1 ∧
+        (c : ℤ) ^ k ∣ traceSeq f (c ^ n + s) - (w - ε)) :
+    ∃ (x : Fin f.natDegree → ℂ) (w : ℂ),
+      polyMat ℂ f x ^ glCard f.natDegree c = 1 ∧ w ^ m = 1 ∧
+      (polyMat ℂ f x * compM ℂ f ^ s).trace = w - (ε : ℂ) := by
+  classical
+  set d := f.natDegree with hdd
+  set Q := glCard f.natDegree c with hQ
+  set σ := Option (Fin d) with hσ
+  set Xv : Fin d → MvPolynomial σ ℤ := fun j => MvPolynomial.X (some j) with hXv
+  set W : MvPolynomial σ ℤ := MvPolynomial.X none with hW
+  set Fsys : ((Fin d × Fin d) ⊕ Bool) → MvPolynomial σ ℤ :=
+    Sum.elim (fun ij => (polyMat (MvPolynomial σ ℤ) f Xv ^ Q - 1) ij.1 ij.2)
+      (fun b => if b then W ^ m - ((1 : ℤ) : MvPolynomial σ ℤ)
+        else (∑ j, Xv j * ((traceSeq f ((j : ℕ) + s) : ℤ) : MvPolynomial σ ℤ)) - W
+          + ((ε : ℤ) : MvPolynomial σ ℤ)) with hFsys
+  -- evaluation of the system at an integer point
+  have hevalZ : ∀ p : σ → ℤ,
+      (∀ i j : Fin d, MvPolynomial.eval p (Fsys (Sum.inl (i, j)))
+        = (polyMat ℤ f (fun t => p (some t)) ^ Q - 1) i j) ∧
+      MvPolynomial.eval p (Fsys (Sum.inr true)) = (p none) ^ m - 1 ∧
+      MvPolynomial.eval p (Fsys (Sum.inr false))
+        = (∑ j, p (some j) * traceSeq f ((j : ℕ) + s)) - p none + ε := by
+    intro p
+    refine ⟨fun i j => ?_, ?_, ?_⟩
+    · have := map_polyMat_pow_sub_one (MvPolynomial.eval p) f Xv Q i j
+      simpa [hFsys, hXv] using this
+    · simp [hFsys, hW]
+    · simp [hFsys, hXv, hW]
+  -- evaluation at a complex point
+  have hevalC : ∀ q : σ → ℂ,
+      (∀ i j : Fin d, MvPolynomial.eval₂ (Int.castRingHom ℂ) q (Fsys (Sum.inl (i, j)))
+        = (polyMat ℂ f (fun t => q (some t)) ^ Q - 1) i j) ∧
+      MvPolynomial.eval₂ (Int.castRingHom ℂ) q (Fsys (Sum.inr true)) = (q none) ^ m - 1 ∧
+      MvPolynomial.eval₂ (Int.castRingHom ℂ) q (Fsys (Sum.inr false))
+        = (∑ j, q (some j) * ((traceSeq f ((j : ℕ) + s) : ℤ) : ℂ)) - q none + (ε : ℂ) := by
+    intro q
+    refine ⟨fun i j => ?_, ?_, ?_⟩
+    · have := map_polyMat_pow_sub_one (MvPolynomial.eval₂Hom (Int.castRingHom ℂ) q) f Xv Q i j
+      simpa [hFsys, hXv, ← MvPolynomial.coe_eval₂Hom] using this
+    · simp [hFsys, hW, ← MvPolynomial.coe_eval₂Hom]
+    · simp [hFsys, hXv, hW, ← MvPolynomial.coe_eval₂Hom]
+  -- the levels
+  have hlev : ∀ k : ℕ, ∃ p : σ → ℤ, ∀ i, (c : ℤ) ^ k ∣ MvPolynomial.eval p (Fsys i) := by
+    intro k
+    obtain ⟨n, hnk, w, hw, hV⟩ := hcong k
+    obtain ⟨x, hx⟩ := exists_coords f hd (c ^ n)
+    refine ⟨fun o => Option.elim o w x, ?_⟩
+    obtain ⟨h1, h2, h3⟩ := hevalZ (fun o => Option.elim o w x)
+    intro i
+    rcases i with ⟨i, j⟩ | b
+    · rw [h1 i j]
+      have hpow : polyMat ℤ f x ^ Q = (compM ℤ f ^ Q) ^ (c ^ n) := by
+        rw [← hx, ← pow_mul, ← pow_mul, Nat.mul_comm]
+      have hmat := compM_pow_congr_one f hd hc hc0 n i j
+      rw [← hpow] at hmat
+      exact dvd_trans (pow_dvd_pow (c : ℤ) (by omega)) hmat
+    · rcases b with _ | _
+      · rw [h3]
+        have htr : (∑ j, x j * traceSeq f ((j : ℕ) + s)) = traceSeq f (c ^ n + s) := by
+          have := trace_polyMat_mul f x s
+          rw [← hx, ← pow_add] at this
+          exact this.symm
+        simp only [Option.elim]
+        rw [htr]
+        have : traceSeq f (c ^ n + s) - w + ε = traceSeq f (c ^ n + s) - (w - ε) := by ring
+        rw [this]
+        exact hV
+      · rw [h2]; exact hw
+  obtain ⟨q, hq⟩ := exists_complex_zero_of_family (σ := σ) hc.two_le Fsys hlev
+  obtain ⟨h1, h2, h3⟩ := hevalC q
+  refine ⟨fun t => q (some t), q none, ?_, ?_, ?_⟩
+  · have : polyMat ℂ f (fun t => q (some t)) ^ Q - 1 = 0 := by
+      ext i j
+      rw [← h1 i j, hq (Sum.inl (i, j))]
+      simp
+    exact sub_eq_zero.1 this
+  · have := hq (Sum.inr true)
+    rw [h2] at this
+    exact sub_eq_zero.1 this
+  · have := hq (Sum.inr false)
+    rw [h3] at this
+    rw [trace_polyMat_mul]
+    linear_combination this
+
+
+/-! ### Step 7: the archimedean contradiction -/
+
+theorem norm_eq_one_of_pow_eq_one {z : ℂ} {Q : ℕ} (hQ : 1 ≤ Q) (h : z ^ Q = 1) : ‖z‖ = 1 := by
+  have hn : ‖z‖ ^ Q = 1 := by rw [← norm_pow, h, norm_one]
+  rcases lt_trichotomy ‖z‖ 1 with hlt | heq | hgt
+  · exact absurd hn (by
+      have := pow_lt_one₀ (norm_nonneg z) hlt (by omega : Q ≠ 0)
+      exact ne_of_lt this)
+  · exact heq
+  · exact absurd hn (by
+      have := one_lt_pow₀ hgt (by omega : Q ≠ 0)
+      exact (ne_of_lt this).symm)
+
+/-- **Step 7 (the size argument).**  A `Q`-torsion `T = P(C)` with `tr(T C^s) = w - ε`, `w` a root
+of unity and `|ε| ≤ 1`, forces `α^s ≤ 2 + (d - 1) = d + 1`. -/
+theorem not_exists_spectral_of_large (f : ℤ[X]) (hmon : f.Monic) (hirr : Irreducible f)
+    (hdeg : 2 ≤ f.natDegree) {α : ℝ} (hα : 1 < α)
+    (hroot : (f.map (Int.castRingHom ℂ)).eval (α : ℂ) = 0)
+    (hpisot : ∀ z ∈ (f.map (Int.castRingHom ℂ)).roots, z ≠ (α : ℂ) → ‖z‖ < 1)
+    {c : ℕ} (hc : c.Prime) {s : ℕ} (hs : (f.natDegree : ℝ) + 1 < α ^ s)
+    {m : ℕ} (hm : 1 ≤ m) {ε : ℤ} (hε : |ε| ≤ 1)
+    (x : Fin f.natDegree → ℂ) (w : ℂ)
+    (hT : polyMat ℂ f x ^ glCard f.natDegree c = 1) (hw : w ^ m = 1)
+    (htr : (polyMat ℂ f x * compM ℂ f ^ s).trace = w - (ε : ℂ)) : False := by
+  classical
+  have hd : 1 ≤ f.natDegree := by omega
+  obtain ⟨e, hinj, he, hsurj⟩ := exists_root_enum f hmon hirr
+  obtain ⟨i₀, hi₀⟩ := hsurj (α : ℂ) hroot
+  have hfC0 : (f.map (Int.castRingHom ℂ)) ≠ 0 := (hmon.map (Int.castRingHom ℂ)).ne_zero
+  have hsmall : ∀ k, k ≠ i₀ → ‖e k‖ < 1 := by
+    intro k hk
+    refine hpisot (e k) ((Polynomial.mem_roots hfC0).2 (he k)) ?_
+    rw [← hi₀]
+    exact fun hh => hk (hinj hh)
+  -- the spectral form of the trace
+  have hsp : ∑ k, polyVal x (e k) * e k ^ s = w - (ε : ℂ) := by
+    rw [← trace_polyMat_mul_compM_pow f hmon e he hinj x s]; exact htr
+  -- every `P(e k)` has modulus one
+  have hQ1 : 1 ≤ glCard f.natDegree c := glCard_pos hd hc.two_le
+  have hunit : ∀ k, ‖polyVal x (e k)‖ = 1 := fun k =>
+    norm_eq_one_of_pow_eq_one hQ1 (polyVal_pow_eq_one f hmon e he hinj x hT k)
+  -- split off the distinguished root
+  have hsplit : polyVal x (e i₀) * e i₀ ^ s
+      = (w - (ε : ℂ)) - ∑ k ∈ Finset.univ.erase i₀, polyVal x (e k) * e k ^ s := by
+    rw [← hsp, ← Finset.add_sum_erase _ (fun k => polyVal x (e k) * e k ^ s)
+      (Finset.mem_univ i₀)]
+    ring
+  -- the two sides' norms
+  have hlhs : ‖polyVal x (e i₀) * e i₀ ^ s‖ = α ^ s := by
+    rw [norm_mul, hunit i₀, one_mul, hi₀, norm_pow, Complex.norm_real, Real.norm_eq_abs,
+      abs_of_pos (by linarith)]
+  have htail : ‖∑ k ∈ Finset.univ.erase i₀, polyVal x (e k) * e k ^ s‖
+      ≤ (f.natDegree : ℝ) - 1 := by
+    refine le_trans (norm_sum_le _ _) ?_
+    have hb : ∀ k ∈ Finset.univ.erase i₀, ‖polyVal x (e k) * e k ^ s‖ ≤ 1 := by
+      intro k hk
+      rw [norm_mul, hunit k, one_mul, norm_pow]
+      exact pow_le_one₀ (norm_nonneg _) (le_of_lt (hsmall k (Finset.ne_of_mem_erase hk)))
+    have := Finset.sum_le_sum hb
+    rw [Finset.sum_const, Finset.card_erase_of_mem (Finset.mem_univ i₀),
+      Finset.card_univ, Fintype.card_fin] at this
+    refine le_trans this ?_
+    rw [nsmul_eq_mul, mul_one]
+    have : ((f.natDegree - 1 : ℕ) : ℝ) = (f.natDegree : ℝ) - 1 := by
+      have : (1 : ℕ) ≤ f.natDegree := hd
+      push_cast [this]; ring
+    rw [this]
+  have hwε : ‖w - (ε : ℂ)‖ ≤ 2 := by
+    have h1 : ‖w‖ = 1 := norm_eq_one_of_pow_eq_one hm hw
+    have h2 : ‖(ε : ℂ)‖ ≤ 1 := by
+      rw [show ((ε : ℤ) : ℂ) = ((ε : ℝ) : ℂ) from by push_cast; ring, Complex.norm_real,
+        Real.norm_eq_abs, abs_le]
+      obtain ⟨ha, hb⟩ := abs_le.1 hε
+      constructor
+      · exact_mod_cast ha
+      · exact_mod_cast hb
+    calc ‖w - (ε : ℂ)‖ ≤ ‖w‖ + ‖(ε : ℂ)‖ := norm_sub_le _ _
+      _ ≤ 2 := by linarith
+  have hfinal : α ^ s ≤ (f.natDegree : ℝ) + 1 := by
+    rw [← hlhs, hsplit]
+    calc ‖(w - (ε : ℂ)) - ∑ k ∈ Finset.univ.erase i₀, polyVal x (e k) * e k ^ s‖
+        ≤ ‖w - (ε : ℂ)‖ + ‖∑ k ∈ Finset.univ.erase i₀, polyVal x (e k) * e k ^ s‖ :=
+          norm_sub_le _ _
+      _ ≤ 2 + ((f.natDegree : ℝ) - 1) := by linarith
+      _ = (f.natDegree : ℝ) + 1 := by ring
+  linarith
+
 /-- **Theorem D, every degree** (all roots `c`-units). -/
 theorem floor_pow_prime_pow_add_not_prime_general (f : ℤ[X]) (hmon : f.Monic)
     (hirr : Irreducible f) (hdeg : 2 ≤ f.natDegree) {α : ℝ} (hroot : aeval α f = 0)
