@@ -2,7 +2,11 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 (phase 39, CURRENT): `⌊α^(c^n)⌋ + h` composite i.o. for quadratic Pisot units of norm −1 (golden ratio included) — target `NumberTheory/Mills/QuadraticPisotFloor.lean` (3 frozen statements + frozen def, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 44, CURRENT): groundwork for Theorems D/E — stuck lemma, abstract-exponent filter, `GL_d` window — target `NumberTheory/Mills/TheoremDGround.lean` (3 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+`PROOF-THEOREM-D.md` Lemmas 2–4 (and E's Step 3).  Statements brute-force checked (random `ε`/`j`; primes `< 400`, `d ≤ 4`, `c ≤ 7`).
+
+## ✅ DONE (phase 39): `⌊α^(c^n)⌋ + h` composite i.o. for quadratic Pisot units of norm −1 (golden ratio included) — target `NumberTheory/Mills/QuadraticPisotFloor.lean` (3 frozen statements + frozen def, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 A cheap corollary of phase 35: `⌊α^N⌋ = V_N(P, −1)` for odd `N`.
 
