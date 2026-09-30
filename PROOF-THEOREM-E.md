@@ -45,6 +45,26 @@ Let `G = Gal(K(ζ_M)/ℚ(ζ_M))`.  It is transitive on the three roots unless `�
 - Totally real `ξ` with `T ∈ {±1, ±2}` is impossible: `T = ξ^(−2) + β₂^(−2) + β₃^(−2) > 0 + 1 + 1`.
 - E3 totally real: `ε_N = −1 ⟺ β₂^N + β₃^N > 0`; with `N = 3^n − 2` odd, this needs the dominant conjugate `β₂ > 0`.  ∎
 
+## Step 5: minimality of `ξ` kills E3 and shrinks E2
+`ξ` is the *least* element of `W(C_k)`.
+
+**Claim: `ε_(C_k) = 0` for all large `k`**, i.e. the fractional part of `ξ^(C_k)` is `< p_k^(−0.425)`.
+- *Room for a smaller constant.*  Let `k` be large (`p_k^(c_(k+1)) ≥ x₀`), and let `q` be the least prime `≥ y := p_k^(c_(k+1))`.  By Baker–Harman–Pintz, `q ≤ y + y^(0.525)` for large `y`.
+- *The chain continues from `q`.*  Iterate `(2.2)` (Saito's Lemma 9.1 argument, valid for `x ≥ x₀`).  This gives `A′ ∈ W(C_k)` with `⌊A′^(C_i)⌋ = p_i` for `i ≤ k` and `⌊A′^(C_(k+1))⌋ = q`.
+  - The earlier constraints hold because `A′^(C_k) ∈ [q^(1/c), (q+1)^(1/c)) ⊂ [p_k, p_k + 1)`, and `p_k ≥ p_i^(C_k/C_i)` along any valid chain, while `A′ < ξ < (p_i + 1)^(1/C_i)`.
+- *Minimality.*  So `p_(k+1) ≤ q`, i.e. `ξ^(C_(k+1)) < q + 1 ≤ y + y^(0.525) + 1`.
+- *Conclusion.*  Writing `ξ^(C_k) = p_k + φ_k`, we get `(p_k + φ_k)^(c_(k+1)) < p_k^(c_(k+1)) + y^(0.525) + 1`, which forces `φ_k ≪ p_k^(1 − 0.525·c_(k+1)) = p_k^(−0.575 + o(1))` (with `c_(k+1) → 3`).  In particular `φ_k` is small, so `ξ^(C_k)` sits just **above** `p_k`: `ε_(C_k) = 0` (`ξ^N = tr − δ_N` with `−1 < δ_N < 0`).  ∎
+
+**Consequences.**
+- **E3 is impossible** (Step 4 showed E3 needs `ε = −1` eventually always).
+- **E2 with `T = 0` is impossible** (it needs `ε = −1`).
+- **E2 with `T = ±2` is impossible** (`t = zT = ω − ε` with `|t| = 2` needs `ε = −1`).
+- What remains of E2: `T = tr(ξ^(−2)) = ±1`, `ξ` complex, and `δ_(C_k) = 2r^(C_k) cos(C_k θ) < 0` for **all** large `k`, with `r = |β₂| < ξ^(−0.575 + o(1))`.  That is a trapped orbit of `x ↦ 3x + 4θ/2π (mod 1)` in a half-circle plus a size condition.
+
+**Refined Theorem E.**  `ξ(3^k − 2)` is transcendental unless `ξ` is a complex cubic Pisot number with `f ≡ (X ∓ 1)³ (mod 3)`, `tr(ξ^(−2)) = ±1`, conjugate modulus `< ξ^(−0.575)`, and argument `θ` with `cos((3^k − 2)θ) < 0` for all large `k`; or `ξ` lies in the conductor-13 cyclic cubic field (E1, probably removable).  Unconditional (BHP + MTY24).
+
+This parallels Saito's Theorem 1.7 for Mills (a size window `(1.3)` on a totally real cubic).  Here the survivor must be **complex**, sit in two residue classes mod 3, satisfy a trace equation, **and** have a trapped rotation orbit.
+
 ## Numerics
 All 867 irreducible cubic Pisot `f` with coefficients in `[−9, 9]`, `c = 3`, `R = 3^n − 2`, precision `3^10`, true offsets `ε_n` for `n = 4..15`.
 - 41 pass the window test; 37 are killed by `ε = 0 ⇒ 3 ∣ value`.
@@ -60,4 +80,5 @@ All 867 irreducible cubic Pisot `f` with coefficients in `[−9, 9]`, `c = 3`, `
 ## Open points
 1. The `C₃`-case rank claim when two `w`-values coincide in modulus (the complex pair has `w₂ = w̄₃`, which is not equal to `w₁` since `|w₁| < 1 < |w₂|`).  Written above; to double-check.
 2. E1 removal (decomposition group).
-3. Can E3 be excluded for this specific `ξ` using minimality (`ξ` is the *least* element of `W(C_k)`)?  No idea yet.
+3. ~~Can E3 be excluded using minimality?~~  **Yes, Step 5.**
+4. Can the trapped-orbit condition be excluded for algebraic `θ`?  It is a Mahler-type `3^k θ (mod 2π)` question, open in general.  Combining it with `tr(ξ^(−2)) = ±1` and the mod-3 class might leave a finite search: bounded `|β₂|`, `ξ` bounded via the `T` equation?  **Worth a probe.**
