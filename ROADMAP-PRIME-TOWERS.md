@@ -225,7 +225,7 @@ Combine the engine (phase 41) with Theorem D's Galois step.  For `(D1)` with hal
   - Referee 3 found no error, with two one-line patches (applied).  Confidence ~78% for even `s`, ~72% for odd `s`.
   - **E1 at `g = 2`:**
     - **Closed for every `s`** (draft 3e).  `H` is trivial, so `ξ = √d·γ`.  Then `q ∣ d` has a unique prime `𝔮` in `K₁₃` with `β ∈ 𝔮`, so `q ∣ tr β^N`: not prime.
-    - **⇒ E+ for every `s ≠ 0`**, pending a referee read of 3d/3e.
+    - **⇒ E+ for every `s ≠ 0`.**  Referee 4 found no gap; confidence ~70% end to end, conditional on Saito.
 
 ### ⭐ Theorem E, current form (see `PROOF-THEOREM-E.md`): `ξ(3^k − 2)` is transcendental, unconditionally (draft proof; E1 closed by the finite certificate `scripts/theorem-e-e1-certificate.py`; confidence ≈ 70%)
 (The `ξ(r·3^k − 1)` extension was withdrawn after referee 2: `x ↦ x^r` is not injective on even-order roots of unity.)  The ingredients: Saito Type C, Theorem D with a negative shift, minimality plus BHP (forcing `ε = 0`), and a mod-3 congruence on `tr(ξ^(−2))`.  The original candidate write-up follows.

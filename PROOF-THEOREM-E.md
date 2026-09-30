@@ -118,7 +118,12 @@ Let `s ≠ 0` be even with `a₀ = v₃(s) ≥ 1`, and start the index where eve
      - But `⌊ξ^(C_n)⌋ = tr(β^(N_n))` (Prop 3.1(iv)) is a prime tending to infinity.  **Contradiction.**
      - No sign condition on `s` and no size input.  Numeric check: `scripts/theorem-e-e1-g2-qdiv.py`.  The Pisot elements `142.36` (`d = 13`), `187.38` (`d = 2`) and `284.72` (`d = 26`) have `13 ∣ tr β^N`, `2 ∣ tr β^N` and `26 ∣ tr β^N` respectively for `N ≤ 7`.  Control: `γ²` (`d = 1`) has `tr β³ = 11·4363`.
   5. *(Superseded, kept as an independent check for `s > 0`.)*  In any complex embedding exactly one term of `Σ a_k δ_k^s = ω` has modulus `> 1`.  So `β^(s/2) < 3`, hence `β < 9`.  The Pisot elements of `K` below 9 are, up to conjugation, `3.6511` (norm `−1`) and `6.0283` (norm `−5`).  Both have a negative conjugate, while `d·γ²` is totally positive.  Script: `scripts/theorem-e-e1-g2-search.py <bound>`.  Control: at bound 400 it finds the `d·γ²` elements above.
-- **Net: `ξ(3^k + s)` is transcendental for EVERY `s ≠ 0`** (index from where every ratio is `≥ 2`), pending a referee read of draft 3d/3e (the `H`-trivial step and the `q`-divisibility step).
+- **Referee 4 (2026-09-30, subagent), on draft 3e:** no error, no real gap.
+  - Tightening for step 3: `K(ξ) ⊂ E` is cyclic of order 6, so `K(ξ) = K(√d)`.
+  - Overstatement: in E1 the residue field at 3 is `𝔽₂₇`, so `a_k ∈ μ₅₂` and `E = ℚ(μ₅₂)`.  **In fact only `d = 13` occurs**; keeping 2 and 26 is harmless.
+  - Coverage: `g = 2·3^a` reduces to `ξ′ = ξ^(3^a)` with odd shift `s′`, and every `g = 2` argument uses only `ξ′² cubic Pisot`, floor = trace, and `s′` odd.  Negative `s` is fine throughout.
+  - Confidence: E1 at `g = 2` ~88%; **the whole E+ claim ~70%**.  The residual risk is the chain as a whole plus Saito being unrefereed, not the new steps.
+- **Net: `ξ(3^k + s)` is transcendental for EVERY `s ≠ 0`** (index from where every ratio is `≥ 2`).
 
 ## Variants
 - **`ξ(r·3^k − 1)` for even `r`: NOT established** (*referee 2*; draft-1 claim withdrawn).  The limit points carry `ζ_k^(r·3^m)`, and for even `r` the map `x ↦ x^r` is not injective on the (even-order) Teichmüller roots.  So `z_k = ±1` no longer forces equal `ζ_k`, and `f ≡ (X − 1)^a (X + 1)^b (mod 3)` survives the congruence step.  The `b = 0` reduction of Step 6 breaks the same way (e.g. `13 ∣ r`).  Odd `r` has `agcd = 2`.  Open.
