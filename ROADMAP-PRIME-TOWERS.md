@@ -46,6 +46,19 @@ This is Saito's actual wish in arXiv:2504.14968: *"We desire to remove the rever
 - General `A`: the statement goes through whenever every single limit point avoids `ℤ + μ`.  The certificates are per family: easy for `d = 2` via exact composition, open for `d ≥ 3` (Tribonacci numerics say yes).
 - Lean: phase 40 (Fibonacci, `c = 2`, the qualitative (D1) plus intervals), then all primes.
 
+### Theorem C′: non-integrality of limit points for `d ≥ 3` (paper math, written 2026-09-30 01:30)
+The obstacle for Theorem C at `d ≥ 3` is that no exact composition is available.  Galois theory replaces it.
+- Let `K` be the splitting field of `χ_A` (irreducible over `ℚ`), with eigenvalues `α_k` and spectral projectors `E_k ∈ M_d(K)`.  The Teichmüller lifts are `ω(α_k) = ζ^(c^k)`, where `ζ` is a root of unity of order `n ∣ c^d − 1` (`c` inert).
+- Then `lim A^(c^(dn + r)) = Σ_k ζ^(c^(k+r)) E_k`, and the limit point `λ_r = Σ_k (E_k)_ij ζ^(c^(k+r))` lies in `K(ζ_n) ∩ ℚ_c`.
+- **Claim:** suppose `K` and `ℚ(ζ_n)` are linearly disjoint, `n` is squarefree, and `ord_n(c) = d < φ(n)`.  Then `λ_r ∉ ℚ` unless `u ≡ 0`.  This suffices whenever the window is `{±1}`: `c = 2`, or `μ_(d!) ∩ μ_(c−1) = {±1}` (e.g. `d = 3` with `3 ∤ c − 1`).
+  - Proof: for squarefree `n` the primitive `n`-th roots `{ζ^m : m ∈ (ℤ/n)^×}` form a `ℚ`-basis of `ℚ(ζ_n)`, hence a `K`-basis of `K(ζ_n)` by disjointness.
+  - A rational `q` equals `q·μ(n)·Σ_m ζ^m`, since the sum of the primitive roots is `μ(n) = ±1`.
+  - `λ_r` is supported on the `d` exponents `{c^(k+r)}` of one Frobenius orbit.  Since `φ(n) > d`, some basis vector lies outside the orbit; its coefficient forces `q = 0`, and then all `e_k = (E_k)_ij = 0`.
+  - Larger windows (`ω ∈` window when `3 ∣ c − 1` and `d ≥ 3`) need the same comparison against `ℚ(ζ_(c−1))`-combinations, i.e. full orbits of `Gal(ℚ(ζ_n)/ℚ(ζ_(c−1)))`.  Still to write out.
+- **Tribonacci at `c = 3`:** `n = 13`.  `K ⊃ ℚ(√−11)` (`disc = −44`), and the only quadratic subfield of `ℚ(ζ₁₃)` is `ℚ(√13)`, so the fields are linearly disjoint.  `φ(13) = 12 > 3`.  Hence **Theorem C for Tribonacci along `3^n`: prime-free intervals of any fixed length around `T(3^n)`, infinitely often.**
+- The larger-window version would also re-derive Theorem A at `c ≡ 1 (mod 3)`, where the elementary orbit-sum count does not reach (the window contains `ω`).
+- **Lean path.**  The full Galois argument is paper-only for now; formalizing linear disjointness is heavy.  Lean-sized substitute: for each FIXED `H`, the statement "no limit point lies in `{s − h : |h| ≤ H}`" is a finite congruence check mod `c^K`.  So "(D1) for Tribonacci with `H = 10`" is a `decide`-able certificate, plus the general mechanism from phase 40.
+
 ## 2. Conjectures, each with its difficulty check
 
 | Conjecture | Proved implications | Unproved premise | Mechanism for the premise |
