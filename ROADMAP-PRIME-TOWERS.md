@@ -147,6 +147,7 @@ Then `⌊α^(c^n + s)⌋` is composite for infinitely many `n`.
 - `s = 0`: 48 survivors of 244 at `c = 3` (the Mills residual classes, the known-answer control) and 73 of 183 at `c = 2`.
 - `s ≥ 2`: **0 genuine survivors** at either `c` (the only hit, `(x − 1)²`, is not Pisot).
 - The predicted exception family survives: `2 + √2`, `1 + √3` at `c = 2`; `3 + √6`, `x² − 3x − 3` at `c = 3`.
+- **`c = 5, 7`** (cubic, coefficients in `[−6, 6]`, full window `μ_(≤3)`, which contains `ω` at `c = 7`; 02:35): `s = 0` gives 35 of 241 and 33 of 263 survivors; **`s ≥ 1` gives 0 at both**.
 - **Degree 4** (coefficients in `[−4, 4]`, 2026-09-30 02:00): `s = 0` gives 27 of 201 survivors at `c = 2` and 33 of 271 at `c = 3`; `s ≥ 2` gives **0 at both**.
 - **Exception (i) looks like a proof artifact.**  The cyclic cubic Pisot numbers of conductor 7 (the exceptional field at `c = 2`: `(−6, 5, −1)`, `(−3, −4, −1)`, …) have **no survivors at any `s`, even `s = 0`**.  `2` is inert there, so traces are sums like `ζ₇ + ζ₇² + ζ₇⁴ = (−1 + √−7)/2`, which are irrational.  A decomposition-group version of step 4 should remove (i).
 
