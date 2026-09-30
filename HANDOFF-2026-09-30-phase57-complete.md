@@ -1,5 +1,22 @@
 # HANDOFF — phase 57 COMPLETE: Theorem D in full (some root a `c`-unit)
 
+**Branch** `main` · **HEAD at handoff** `7ce4fb0` ("Phase 57 COMPLETE: Theorem D in full
+(some root a c-unit), axiom-clean") · `lake build` **GREEN** (8778 jobs) · stop sentinel signalled
+via `box done --green`.
+
+**State:** the phase-57 target `src/LeanFormalizations/NumberTheory/Mills/TheoremDMixed.lean` is
+sorry-free and its headline is `#print axioms`-clean.  Nothing is left open in this phase.
+
+**Exact next steps for a fresh session** (do NOT reopen phase 57):
+1. Read `DIRECTION.md` — phase 57 is met, so the top entry needs a new phase planted by an altitude
+   lap.  Candidate successor named in the phase-56/57 headers: **Proposition D′** (the excluded class
+   `f ≡ X^d (mod c)` is provably invisible to the method), which would close Theorem D's statement
+   space completely; the other standing pointer is Saito's Remark 4.4 (degree-3 Pisot).
+2. Before planting, `grep src/LeanFormalizations/Maze.lean` for routes already walked/closed.
+3. Designated-open elsewhere, untouched by this phase and NOT to be attacked casually: the two
+   active-crux `sorry`s in `NumberTheory/Transcendence/DubickasNoSubspace.lean`
+   (`PENDING_WORK.md` §PHASE 9).
+
 `src/LeanFormalizations/NumberTheory/Mills/TheoremDMixed.lean` is **sorry-free**, and the frozen
 headline
 
