@@ -592,6 +592,154 @@ theorem compM_pow_congr_one (f : ℤ[X]) (hd : 1 ≤ f.natDegree) {c : ℕ} (hc 
       have := TeichmullerCongruence.pow_congr_lift hcomm (e := n + 1) (by omega) ih i j
       rwa [one_pow, ← pow_mul, ← pow_succ] at this
 
+
+/-! ### Step 2c: Cayley–Hamilton for the companion matrix
+
+Every power `C^N` lies in the `ℤ`-span of `I, C, …, C^(d-1)`: this is what makes the torsion
+system finite-dimensional (phase 55's `torsionPair` in degree 2).  The proof is the cyclic-vector
+argument: `C^j *ᵥ e₀ = e_j` for `j < d`, and `C *ᵥ e_(d-1) = -(f.coeff ·)`, so two matrices
+commuting with `C` and agreeing on `e₀` are equal. -/
+
+/-- `(M *ᵥ e_j) i = M i j`. -/
+theorem mulVec_single_one {n R : Type*} [Fintype n] [DecidableEq n] [CommRing R]
+    (M : Matrix n n R) (j i : n) : Matrix.mulVec M (Pi.single j 1) i = M i j := by
+  simp [Matrix.mulVec, dotProduct, Pi.single_apply]
+
+/-- `C^m *ᵥ e₀ = e_m` for `m < d`. -/
+theorem compM_pow_mulVec_e0 {R : Type*} [CommRing R] (f : ℤ[X]) (hd : 1 ≤ f.natDegree)
+    (m : ℕ) (hm : m < f.natDegree) :
+    Matrix.mulVec (compM R f ^ m) (Pi.single (⟨0, by omega⟩ : Fin f.natDegree) 1)
+      = Pi.single (⟨m, hm⟩ : Fin f.natDegree) 1 := by
+  induction m with
+  | zero => rw [pow_zero, Matrix.one_mulVec]
+  | succ m ih =>
+      have hm' : m < f.natDegree := by omega
+      rw [pow_succ', ← Matrix.mulVec_mulVec, ih hm']
+      funext i
+      rw [mulVec_single_one]
+      have hne : ¬ ((m : ℕ) + 1 = f.natDegree) := by omega
+      simp only [compM, Matrix.of_apply, Fin.val_mk, if_neg hne, sub_zero]
+      by_cases h : (i : ℕ) = m + 1
+      · have hi : i = (⟨m + 1, hm⟩ : Fin f.natDegree) := Fin.ext h
+        subst hi
+        simp
+      · rw [if_neg h]
+        have hne2 : i ≠ (⟨m + 1, hm⟩ : Fin f.natDegree) := fun hh => h (by rw [hh])
+        simp [Pi.single_apply, hne2]
+
+/-- `C *ᵥ e_(d-1) = -(f.coeff ·)`: the feedback column. -/
+theorem compM_mulVec_last {R : Type*} [CommRing R] (f : ℤ[X]) (hd : 1 ≤ f.natDegree) :
+    Matrix.mulVec (compM R f) (Pi.single (⟨f.natDegree - 1, by omega⟩ : Fin f.natDegree) 1)
+      = fun i : Fin f.natDegree => -((f.coeff (i : ℕ) : ℤ) : R) := by
+  funext i
+  rw [mulVec_single_one]
+  have hlast : (f.natDegree - 1) + 1 = f.natDegree := by omega
+  have hne : ¬ ((i : ℕ) = f.natDegree - 1 + 1) := by have := i.2; omega
+  simp only [compM, Matrix.of_apply, Fin.val_mk, if_neg hne, if_pos hlast, zero_sub]
+
+
+/-- Two matrices commuting with `C` and agreeing on `e₀` are equal: `e₀` is a cyclic vector. -/
+theorem eq_of_commute_of_mulVec_e0 {R : Type*} [CommRing R] (f : ℤ[X]) (hd : 1 ≤ f.natDegree)
+    (M N : Matrix (Fin f.natDegree) (Fin f.natDegree) R)
+    (hM : Commute (compM R f) M) (hN : Commute (compM R f) N)
+    (h : Matrix.mulVec M (Pi.single (⟨0, by omega⟩ : Fin f.natDegree) 1)
+      = Matrix.mulVec N (Pi.single (⟨0, by omega⟩ : Fin f.natDegree) 1)) : M = N := by
+  have key : ∀ (P : Matrix (Fin f.natDegree) (Fin f.natDegree) R),
+      Commute (compM R f) P → ∀ j : Fin f.natDegree,
+      Matrix.mulVec P (Pi.single j 1)
+        = Matrix.mulVec (compM R f ^ (j : ℕ))
+            (Matrix.mulVec P (Pi.single (⟨0, by omega⟩ : Fin f.natDegree) 1)) := by
+    intro P hP j
+    have hej : (Pi.single j (1 : R))
+        = Matrix.mulVec (compM R f ^ (j : ℕ))
+            (Pi.single (⟨0, by omega⟩ : Fin f.natDegree) 1) := by
+      rw [compM_pow_mulVec_e0 f hd (j : ℕ) j.2]
+    rw [hej, Matrix.mulVec_mulVec, Matrix.mulVec_mulVec]
+    congr 1
+    exact (hP.pow_left (j : ℕ)).symm
+  ext i j
+  have h1 := key M hM j
+  have h2 := key N hN j
+  have : Matrix.mulVec M (Pi.single j 1) = Matrix.mulVec N (Pi.single j 1) := by
+    rw [h1, h2, h]
+  have h3 := congrFun this i
+  rwa [mulVec_single_one, mulVec_single_one] at h3
+
+theorem commute_compM_polyMat {R : Type*} [CommRing R] (f : ℤ[X]) (x : Fin f.natDegree → R) :
+    Commute (compM R f) (polyMat R f x) := by
+  rw [polyMat]
+  refine Commute.sum_right _ _ _ fun j _ => ?_
+  exact (Commute.refl (compM R f)).pow_right (j : ℕ) |>.smul_right (x j)
+
+theorem compM_pow_apply_zero {R : Type*} [CommRing R] (f : ℤ[X]) (hd : 1 ≤ f.natDegree)
+    (j i : Fin f.natDegree) :
+    (compM R f ^ (j : ℕ)) i (⟨0, by omega⟩ : Fin f.natDegree) = if i = j then (1 : R) else 0 := by
+  rw [← mulVec_single_one (compM R f ^ (j : ℕ)) (⟨0, by omega⟩ : Fin f.natDegree) i,
+    compM_pow_mulVec_e0 f hd (j : ℕ) j.2]
+  by_cases hij : i = j
+  · subst hij; simp
+  · have hne : ¬ ((i : ℕ) = (j : ℕ)) := fun hh => hij (Fin.ext hh)
+    simp [Pi.single_apply, hij, hne]
+
+theorem polyMat_mulVec_e0 {R : Type*} [CommRing R] (f : ℤ[X]) (hd : 1 ≤ f.natDegree)
+    (x : Fin f.natDegree → R) :
+    Matrix.mulVec (polyMat R f x) (Pi.single (⟨0, by omega⟩ : Fin f.natDegree) 1) = x := by
+  classical
+  funext i
+  rw [mulVec_single_one, polyMat, Matrix.sum_apply]
+  rw [Finset.sum_congr rfl (fun j (_ : j ∈ Finset.univ) =>
+    show (x j • compM R f ^ (j : ℕ)) i (⟨0, by omega⟩ : Fin f.natDegree)
+        = (if i = j then x j else 0) from by
+      rw [Matrix.smul_apply, compM_pow_apply_zero f hd j i]
+      by_cases hij : i = j <;> simp [hij])]
+  simp
+
+/-- **Cayley–Hamilton for the companion matrix**: `C^d = -∑_(j<d) f.coeff j · C^j`. -/
+theorem compM_pow_natDegree {R : Type*} [CommRing R] (f : ℤ[X]) (hd : 1 ≤ f.natDegree) :
+    compM R f ^ f.natDegree = polyMat R f (fun j => -((f.coeff (j : ℕ) : ℤ) : R)) := by
+  refine eq_of_commute_of_mulVec_e0 f hd _ _
+    ((Commute.refl (compM R f)).pow_right _) (commute_compM_polyMat f _) ?_
+  rw [polyMat_mulVec_e0 f hd]
+  have hd1 : compM R f ^ f.natDegree = compM R f * compM R f ^ (f.natDegree - 1) := by
+    rw [← pow_succ']
+    congr 1
+    omega
+  rw [hd1, ← Matrix.mulVec_mulVec, compM_pow_mulVec_e0 f hd (f.natDegree - 1) (by omega)]
+  exact compM_mulVec_last f hd
+
+/-- Every power of `C` is a `ℤ`-combination of `I, C, …, C^(d-1)`. -/
+theorem exists_coords (f : ℤ[X]) (hd : 1 ≤ f.natDegree) (N : ℕ) :
+    ∃ x : Fin f.natDegree → ℤ, compM ℤ f ^ N = polyMat ℤ f x := by
+  classical
+  set S := Submodule.span ℤ (Set.range (fun j : Fin f.natDegree => compM ℤ f ^ (j : ℕ))) with hS
+  have hmem : ∀ x : Fin f.natDegree → ℤ, polyMat ℤ f x ∈ S := by
+    intro x
+    rw [polyMat]
+    exact Submodule.sum_mem _ fun j _ =>
+      Submodule.smul_mem _ _ (Submodule.subset_span ⟨j, rfl⟩)
+  have hstep : ∀ M ∈ S, M * compM ℤ f ∈ S := by
+    intro M hM
+    induction hM using Submodule.span_induction with
+    | mem y hy =>
+        obtain ⟨j, rfl⟩ := hy
+        rw [← pow_succ]
+        by_cases hj : (j : ℕ) + 1 = f.natDegree
+        · rw [hj, compM_pow_natDegree f hd]; exact hmem _
+        · exact Submodule.subset_span ⟨⟨(j : ℕ) + 1, by have := j.2; omega⟩, rfl⟩
+    | zero => simp
+    | add y z _ _ ihy ihz => rw [add_mul]; exact Submodule.add_mem _ ihy ihz
+    | smul a y _ ih => rw [Matrix.smul_mul]; exact Submodule.smul_mem _ _ ih
+  have hpow : compM ℤ f ^ N ∈ S := by
+    induction N with
+    | zero =>
+        have : (1 : Matrix (Fin f.natDegree) (Fin f.natDegree) ℤ)
+            = compM ℤ f ^ ((⟨0, by omega⟩ : Fin f.natDegree) : ℕ) := by simp
+        rw [pow_zero, this]
+        exact Submodule.subset_span ⟨⟨0, by omega⟩, rfl⟩
+    | succ N ih => rw [pow_succ]; exact hstep _ ih
+  obtain ⟨cc, hcc⟩ := (Submodule.mem_span_range_iff_exists_fun ℤ).1 hpow
+  exact ⟨cc, hcc.symm⟩
+
 /-- **Theorem D, every degree** (all roots `c`-units). -/
 theorem floor_pow_prime_pow_add_not_prime_general (f : ℤ[X]) (hmon : f.Monic)
     (hirr : Irreducible f) (hdeg : 2 ≤ f.natDegree) {α : ℝ} (hroot : aeval α f = 0)
