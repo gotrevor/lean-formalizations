@@ -180,6 +180,14 @@ Then `⌊α^(c^n + s)⌋` is composite for infinitely many `n`.
 - the quadratic case via exact identities: `d = 2` needs no Galois, since `Λ = ζ₁ α₁^s + ζ₂ α₂^s` can be handled by the norm/trace of `ℚ(√D)`.
 A reasonable first Lean target: **Theorem D for quadratic Pisot `α`**.
 
+### Theorem C_D: prime-free intervals around `⌊α^(c^n + s)⌋` (paper math, 02:25)
+Combine the engine (phase 41) with Theorem D's Galois step.  For `(D1)` with half-width `H`, each window must be visited only finitely often for every `|h| ≤ H`, i.e. `Λ_r ∉ {ζ′ − h − ε}`.
+- If `Λ_r ∈ ℚ(ζ)`, step 4 of Theorem D forces all `ζ_k` equal, and then `Λ_r = z·tr C^s` with `z ∈ {0, ±1}`.
+- So outside the **unipotent classes** `f ≡ (X ∓ 1)^d` or `X^d (mod c)`, `Λ_r ∉ ℚ(ζ)` and every shift is eventually outside its window.
+- Hence **for Pisot `α` outside the unipotent classes (and the abelian exceptions (i)), there are prime-free intervals of every fixed length around `⌊α^(c^n + s)⌋`, infinitely often.**
+- Inside a unipotent class exactly one shift, `h = z·tr C^s ± 1 − ε`, is a survivor, so intervals fail by construction for that `h`.
+- Lean: needs the Galois step, so it goes with Theorem D (paper first).
+
 ### Theorem E (candidate): transcendence of shifted Mills constants with SMALL first term (2026-09-30 02:10)
 Saito 2025 (arXiv:2508.16068) Theorem 2.6 (Type C): under `(C1)–(C5)` and short-interval primes `(2.2)` (for `c = 3` this is unconditional by MTY24), `ξ(C_k)` is transcendental OR `ξ^g` is a cubic Pisot number `≤ (2x₀^(1/9) + 1)^(g/c₁)`, with `g ∣ agcd(C_k)`.  He kills the Pisot branch **by size only**, hence his Theorem 1.9(C) needs `r ≥ 4.003·10¹⁴` for `C_k = r·3^k − 1`.
 
@@ -251,7 +259,9 @@ Working title: *Composite values of linear recurrences along prime-power towers.
 2. The filter, and the limit-point framework (survivors vs. intervals).
 3. Binary recurrences: the sign flip (inert), exact composition (all primes), and Theorem B's classification for traces.
 4. Theorem A: order `d`, inert primes (Tribonacci).
-5. Theorem C: prime-free intervals for non-reversible towers.
+5. Theorem C: prime-free intervals for non-reversible towers (engine; Fibonacci/Lucas at every prime; C′ Galois for `d ≥ 3`; C_D for Pisot floors).
+5b. **Theorem D: Saito's Problem 1.7 for `R(n) = c^n + s`**, every Pisot `α` outside the unipotent/Mersenne class and the abelian exceptions; plus the proof that congruence methods cannot reach the Mersenne class (so 1.7 in full needs a new idea).
+5c. **Theorem E: transcendence of `ξ(3^k − 2)`** outside E1–E3 (Saito Type C + Theorem D).  Also the template for `ξ(r·3^k − 1)` at every `r`.
 6. Survivors: Fermat, `L(2^n)`, Mills; the fixed-point picture; open problems.
 
 Everything is Lean-checked (link the repo), but the paper stands on its own mathematics.  Credit Saito's (C4) argument for the easy form of the filter (see `FINDING-SAITO-PROBLEM-1-8.md`).
