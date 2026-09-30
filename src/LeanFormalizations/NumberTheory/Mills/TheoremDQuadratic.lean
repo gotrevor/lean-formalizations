@@ -139,6 +139,71 @@ theorem floor_pow_eq_lucasV_add (a b : ℤ) {α β : ℝ} (hsum : α + β = a) (
     · push_cast; linarith
     · push_cast; linarith
 
+/-! ### Step 1b (Lemma 2): the prime-as-modulus filter
+
+If `p` is a prime not dividing `b = det C` and `M` annihilates the order of `C` mod `p`, then
+`M ∣ N' - N` forces `p ∣ V_(N') - V_(N)`.  Splitting `M = c^A · o` and taking `j` with
+`c^j ≡ 1 (mod o)` gives the periodicity along `R(n) = c^n + s` once `A ≤ n`.
+-/
+
+/-- Trace congruence from an order bound: `M ∣ N' - N` gives `p ∣ V_(N')(a,b) - V_N(a,b)`. -/
+theorem lucasV_congr_of_order (a b : ℤ) {p : ℕ} (hp : p.Prime) (hpb : ¬ (p : ℤ) ∣ b)
+    {M : ℕ} (hord : ∀ D : GL (Fin 2) (ZMod p),
+      (D : Matrix (Fin 2) (Fin 2) (ZMod p)) =
+        (Int.castRingHom (ZMod p)).mapMatrix (compMat a b) → orderOf D ∣ M)
+    {N N' : ℕ} (hle : N ≤ N') (hdvd : M ∣ N' - N) :
+    (p : ℤ) ∣ lucasV a b N' - lucasV a b N := by
+  have := TheoremDGround.dvd_trace_sub_of_orderOf_dvd (compMat a b) hp
+    (by simpa using hpb) hle (fun D hD => (hord D hD).trans hdvd)
+  rwa [trace_compMat_pow, trace_compMat_pow] at this
+
+/-- **Lemma 2 (the filter).**  With `A = v_c(M) ≤ n`, the values `V(c^(n+kj) + s)` are all
+congruent to `V(c^n + s)` mod `p`, for a fixed period `j ≥ 1`. -/
+theorem lucasV_stuck_period (a b : ℤ) {p : ℕ} (hp : p.Prime) (hpb : ¬ (p : ℤ) ∣ b)
+    {c : ℕ} (hc : c.Prime) {M : ℕ} (hM0 : 0 < M)
+    (hord : ∀ D : GL (Fin 2) (ZMod p),
+      (D : Matrix (Fin 2) (Fin 2) (ZMod p)) =
+        (Int.castRingHom (ZMod p)).mapMatrix (compMat a b) → orderOf D ∣ M)
+    {n : ℕ} (hA : M.factorization c ≤ n) (s : ℕ) :
+    ∃ j, 1 ≤ j ∧ ∀ k, 1 ≤ k →
+      (p : ℤ) ∣ lucasV a b (c ^ (n + k * j) + s) - lucasV a b (c ^ n + s) := by
+  set A := M.factorization c with hAdef
+  set o := M / c ^ A with hodef
+  have hsplit : c ^ A * o = M := by
+    rw [hAdef, hodef]; exact Nat.ordProj_mul_ordCompl_eq_self M c
+  have hcno : ¬ c ∣ o := by rw [hodef, hAdef]; exact Nat.not_dvd_ordCompl hc hM0.ne'
+  have hopos : 0 < o := by
+    rcases Nat.eq_zero_or_pos o with h | h
+    · rw [h, mul_zero] at hsplit; omega
+    · exact h
+  have hcop : Nat.Coprime c o := (Nat.Prime.coprime_iff_not_dvd hc).2 hcno
+  refine ⟨o.totient, Nat.totient_pos.2 hopos, fun k hk => ?_⟩
+  -- `o ∣ c ^ (k * totient o) - 1`
+  have hpow : c ^ (k * o.totient) % o = 1 % o := by
+    have h1 : c ^ o.totient ≡ 1 [MOD o] := Nat.ModEq.pow_totient hcop
+    have := h1.pow k
+    rw [← pow_mul, one_pow] at this
+    rw [mul_comm k o.totient]
+    exact this
+  obtain ⟨Y, hY⟩ : ∃ Y, c ^ (k * o.totient) = Y + 1 := by
+    have : 1 ≤ c ^ (k * o.totient) := Nat.one_le_pow _ _ hc.pos
+    exact ⟨c ^ (k * o.totient) - 1, by omega⟩
+  have hoY : o ∣ Y := by
+    have h2 : Nat.ModEq o 1 (c ^ (k * o.totient)) := hpow.symm
+    have h3 := (Nat.modEq_iff_dvd' (by omega : 1 ≤ c ^ (k * o.totient))).1 h2
+    rw [hY] at h3
+    simpa using h3
+  -- the exponent difference
+  have hNN : c ^ (n + k * o.totient) + s - (c ^ n + s) = c ^ n * Y := by
+    rw [pow_add, hY]; ring_nf; omega
+  have hle : c ^ n + s ≤ c ^ (n + k * o.totient) + s := by
+    have : c ^ n ≤ c ^ (n + k * o.totient) :=
+      Nat.pow_le_pow_right hc.one_le (by omega)
+    omega
+  refine lucasV_congr_of_order a b hp hpb hord hle ?_
+  rw [hNN, ← hsplit]
+  exact Nat.mul_dvd_mul (pow_dvd_pow c hA) hoY
+
 /-! ### Step 5 (size): the archimedean obstruction
 
 These two lemmas are the endgame of the proof and are **fully proved**: once the number-theoretic
