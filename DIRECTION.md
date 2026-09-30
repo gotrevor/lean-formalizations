@@ -2,7 +2,11 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## 🎯 (phase 38, CURRENT): `U_(c^n)(P, ±1) + h` composite i.o. at every odd prime `c ∤ D` — target `NumberTheory/Mills/LucasUnitAllPrimes.lean` (4 frozen statements + frozen def `lucasOddPoly`, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+## 🎯 (phase 40, CURRENT): prime-free intervals around `F(2^n)` — Dubickas's (D1) for a non-reversible tower — target `NumberTheory/Mills/FibonacciCovering.lean` (4 frozen statements, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
+
+Theorem C of `ROADMAP-PRIME-TOWERS.md` (read §1 Theorem C).  Saito's stated wish in arXiv:2504.14968 ("remove the reversibility"), for Fibonacci along `2^n`.  Phase 39 (quadratic Pisot floor corollary) is deferred behind this one.
+
+## ✅ DONE (phase 38, `c4628d5`): `U_(c^n)(P, ±1) + h` composite i.o. at every odd prime `c ∤ D` — target `NumberTheory/Mills/LucasUnitAllPrimes.lean` (4 frozen statements + frozen def `lucasOddPoly`, route in header; frozen also: all earlier Mills phase files' statements, Literature/; stop: that file sorry-free, then `scripts/fact-graph`)
 
 Phase 37's exact-composition route for all Lucas `U(P, ±1)`: split and inert `c` alike.
 

@@ -161,6 +161,7 @@ import LeanFormalizations.NumberTheory.Mills.LucasPrimePow
 import LeanFormalizations.NumberTheory.Mills.FibonacciAllPrimes
 import LeanFormalizations.NumberTheory.Mills.LucasInert
 import LeanFormalizations.NumberTheory.Mills.LucasUnitAllPrimes
+import LeanFormalizations.NumberTheory.Mills.FibonacciCovering
 import LeanFormalizations.NumberTheory.Transcendence.MultisetGraeffe
 import LeanFormalizations.NumberTheory.Transcendence.MultisetNewton
 import LeanFormalizations.NumberTheory.Transcendence.DubickasBRec
