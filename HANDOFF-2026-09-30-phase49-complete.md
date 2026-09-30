@@ -56,6 +56,22 @@ Reusable pieces (none `private`):
   `Fintype.prod_equiv (finCongr h)` instead (`prod_ofNat_mod`).
 - `congr 2` on `u (Fin.ofNat M x) = u (Fin.ofNat M y)` strips too much; use `congrArg u`.
 
+## Beyond the frozen statements: the FULL Dold congruence is now proved too
+
+`dold_congruence` / `dold_congruence'`: for every integer matrix `C` and every `n ≥ 1`,
+
+    n ∣ Σ_{x ∣ n} μ(x) tr(C^(n/x))   =   Σ_{d ∣ n} μ(n/d) tr(C^d)
+
+(axiom-clean).  Route: `gaussCongruence_mul` (the headline applied to `C^m`) plus an elementary
+divisor pairing, per prime `p` with `a = v_p(n)`: non-squarefree `x` drop out (`μ x = 0`), so
+`v_p(x) ≤ 1`, the map `y ↦ p·y` is a bijection from the `p ∤ x` half of the divisor sum onto the
+`p ∣ x` half, `μ(p y) = −μ y`, and each paired term is `μ y · (tr(C^(c p^a)) − tr(C^(c p^(a−1))))`
+with `c = m/y` — divisible by `p^a`.  `Nat.dvd_iff_prime_pow_dvd_dvd` assembles the primes.
+
+This is the general form the `Literature/GaussCongruence.lean` docstring names, and it is what a
+COMPOSITE-base descent has to use: the naive composite form `c^(k+1) ∣ tr(C^(c^(k+1))) − tr(C^(c^k))`
+is FALSE (`gauss_anchor_composite`, `c = 9`).
+
 ## NEXT
 
 Phase 49's stop condition is met.  Open frontier for the Mills campaign is unchanged:

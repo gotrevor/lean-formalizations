@@ -616,6 +616,137 @@ theorem gaussCongruence_mul {n : ℕ} (C : Matrix (Fin n) (Fin n) ℤ) (m p k : 
   rwa [← pow_mul, ← pow_mul] at h
 
 
+/-! ## The full Gauss–Dold congruence for every modulus
+
+The `Literature` docstring notes that `GaussCongruenceTrace` is the `n = p^(k+1)` case of the Dold
+congruence `Σ_{d ∣ n} μ(n/d) tr(C^d) ≡ 0 (mod n)`.  With the prime-power case proved, the general
+statement follows by an elementary divisor pairing: only divisors `x` of `n` with `μ x ≠ 0` (hence
+`v_p(x) ≤ 1`) contribute, the map `y ↦ p·y` matches the `p ∤ x` half of the sum with the `p ∣ x`
+half, `μ(p y) = −μ y`, and each paired term is `μ y · (tr(C^(c p^a)) − tr(C^(c p^(a−1))))` with
+`a = v_p(n)` — divisible by `p^a` by `gaussCongruence_mul`.  Doing this for every prime gives `n`.
+-/
+
+section Dold
+
+open ArithmeticFunction ArithmeticFunction.Moebius
+
+
+/-- the `p`-part of the Möbius sum -/
+lemma prime_pow_dvd_moebius_sum {nd : ℕ} (C : Matrix (Fin nd) (Fin nd) ℤ) {n : ℕ} (hn : n ≠ 0)
+    {p : ℕ} (hp : p.Prime) :
+    ((p : ℤ) ^ (n.factorization p)) ∣
+      ∑ x ∈ n.divisors, (μ x : ℤ) * (C ^ (n / x)).trace := by
+  classical
+  rcases Nat.eq_zero_or_pos (n.factorization p) with h0 | hpos
+  · simp [h0]
+  set a := n.factorization p with ha
+  obtain ⟨m, hpm, hpnd⟩ : ∃ m, p ^ a * m = n ∧ ¬ p ∣ m :=
+    ⟨n / p ^ a, Nat.ordProj_mul_ordCompl_eq_self n p, Nat.not_dvd_ordCompl hp hn⟩
+  -- drop the non-squarefree terms
+  have hsq : ∑ x ∈ n.divisors.filter (fun x => Squarefree x), (μ x : ℤ) * (C ^ (n / x)).trace
+      = ∑ x ∈ n.divisors, (μ x : ℤ) * (C ^ (n / x)).trace := by
+    refine Finset.sum_filter_of_ne (fun x _ hne => ?_)
+    by_contra hns
+    rw [ArithmeticFunction.moebius_eq_zero_of_not_squarefree hns] at hne
+    simp at hne
+  rw [← hsq]
+  set s := n.divisors.filter (fun x => Squarefree x) with hs
+  rw [← Finset.sum_filter_add_sum_filter_not s (fun x => p ∣ x)]
+  have hmemB : ∀ y ∈ s.filter (fun x => ¬ p ∣ x), y ∣ m ∧ Squarefree y ∧ ¬ p ∣ y := by
+    intro y hy
+    simp only [hs, Finset.mem_filter, Nat.mem_divisors] at hy
+    obtain ⟨⟨⟨hyn, _⟩, hysq⟩, hpy⟩ := hy
+    refine ⟨?_, hysq, hpy⟩
+    have hcop : Nat.Coprime y (p ^ a) :=
+      (Nat.Prime.coprime_iff_not_dvd hp).2 hpy |>.symm.pow_right a
+    exact hcop.dvd_of_dvd_mul_left (by rwa [hpm])
+  -- reindex the `p ∣ x` half
+  have hbij : ∑ x ∈ s.filter (fun x => p ∣ x), (μ x : ℤ) * (C ^ (n / x)).trace
+      = ∑ y ∈ s.filter (fun x => ¬ p ∣ x), (μ (p * y) : ℤ) * (C ^ (n / (p * y))).trace := by
+    refine Finset.sum_nbij' (fun x => x / p) (fun y => p * y) ?_ ?_ ?_ ?_ ?_
+    · intro x hx
+      simp only [hs, Finset.mem_filter, Nat.mem_divisors] at hx ⊢
+      obtain ⟨⟨⟨hxn, _⟩, hxsq⟩, hpx⟩ := hx
+      obtain ⟨c, rfl⟩ := hpx
+      have hcsq : Squarefree c := hxsq.of_mul_right
+      have hpc : ¬ p ∣ c := by
+        intro hc
+        obtain ⟨e, rfl⟩ := hc
+        exact hp.not_isUnit (hxsq p ⟨e, by ring⟩)
+      rw [Nat.mul_div_cancel_left _ hp.pos]
+      exact ⟨⟨⟨dvd_trans ⟨p, by ring⟩ hxn, hn⟩, hcsq⟩, hpc⟩
+    · intro y hy
+      obtain ⟨hym, hysq, hpy⟩ := hmemB y hy
+      simp only [hs, Finset.mem_filter, Nat.mem_divisors]
+      refine ⟨⟨⟨?_, hn⟩, ?_⟩, Dvd.intro y rfl⟩
+      · calc p * y ∣ p ^ a * m := mul_dvd_mul (dvd_pow_self p (by omega)) hym
+          _ = n := hpm
+      · rw [Nat.squarefree_mul ((Nat.Prime.coprime_iff_not_dvd hp).2 hpy)]
+        exact ⟨hp.squarefree, hysq⟩
+    · intro x hx
+      simp only [hs, Finset.mem_filter] at hx
+      exact Nat.mul_div_cancel' hx.2
+    · intro y hy
+      exact Nat.mul_div_cancel_left _ hp.pos
+    · intro x hx
+      simp only [hs, Finset.mem_filter] at hx
+      rw [Nat.mul_div_cancel' hx.2]
+  rw [hbij, ← Finset.sum_add_distrib]
+  refine Finset.dvd_sum (fun y hy => ?_)
+  obtain ⟨hym, hysq, hpy⟩ := hmemB y hy
+  have hmu : (μ (p * y) : ℤ) = - (μ y : ℤ) := by
+    rw [ArithmeticFunction.isMultiplicative_moebius.map_mul_of_coprime
+      ((Nat.Prime.coprime_iff_not_dvd hp).2 hpy), ArithmeticFunction.moebius_apply_prime hp]
+    ring
+  have hm0 : m ≠ 0 := by
+    intro h
+    rw [h, mul_zero] at hpm
+    exact hn hpm.symm
+  have hy0 : y ≠ 0 := fun h => hm0 (Nat.eq_zero_of_zero_dvd (h ▸ hym))
+  obtain ⟨c, rfl⟩ := hym
+  have hny : n / y = c * p ^ a := by
+    rw [← hpm, show p ^ a * (y * c) = y * (c * p ^ a) from by ring,
+      Nat.mul_div_cancel_left _ (Nat.pos_of_ne_zero hy0)]
+  have hnpy : n / (p * y) = c * p ^ (a - 1) := by
+    rw [mul_comm p y, ← Nat.div_div_eq_div_mul, hny,
+      show a = (a - 1) + 1 from by omega, pow_succ,
+      show c * (p ^ (a - 1) * p) = (c * p ^ (a - 1)) * p from by ring,
+      Nat.mul_div_cancel _ hp.pos]
+    congr 2
+  have hdvd := gaussCongruence_mul C c p (a - 1) hp
+  rw [show a - 1 + 1 = a from by omega] at hdvd
+  rw [hmu, hny, hnpy,
+    show -(μ y : ℤ) * (C ^ (c * p ^ (a - 1))).trace + (μ y : ℤ) * (C ^ (c * p ^ a)).trace
+      = (μ y : ℤ) * ((C ^ (c * p ^ a)).trace - (C ^ (c * p ^ (a - 1))).trace) from by ring]
+  exact Dvd.dvd.mul_left hdvd _
+
+/-- **The full Gauss–Dold congruence.**  For every integer matrix `C` and every `n ≥ 1`,
+`n ∣ Σ_{x ∣ n} μ(x) tr(C^(n/x))`. -/
+theorem dold_congruence {nd : ℕ} (C : Matrix (Fin nd) (Fin nd) ℤ) {n : ℕ} (hn : n ≠ 0) :
+    (n : ℤ) ∣ ∑ x ∈ n.divisors, (μ x : ℤ) * (C ^ (n / x)).trace := by
+  refine Int.ofNat_dvd_left.mpr ((Nat.dvd_iff_prime_pow_dvd_dvd _ n).2 ?_)
+  intro p k hpp hk
+  have hkle : k ≤ n.factorization p := (Nat.Prime.pow_dvd_iff_le_factorization hpp hn).1 hk
+  have hz : ((p ^ k : ℕ) : ℤ) ∣ ∑ x ∈ n.divisors, (μ x : ℤ) * (C ^ (n / x)).trace := by
+    refine dvd_trans ?_ (prime_pow_dvd_moebius_sum C hn hpp)
+    push_cast
+    exact pow_dvd_pow _ hkle
+  exact Int.ofNat_dvd_left.mp hz
+
+/-- the classical shape of the Gauss–Dold congruence: `n ∣ Σ_{d ∣ n} μ(n/d) tr(C^d)`. -/
+theorem dold_congruence' {nd : ℕ} (C : Matrix (Fin nd) (Fin nd) ℤ) {n : ℕ} (hn : n ≠ 0) :
+    (n : ℤ) ∣ ∑ d ∈ n.divisors, (μ (n / d) : ℤ) * (C ^ d).trace := by
+  have hre : ∑ x ∈ n.divisors, (μ x : ℤ) * (C ^ (n / x)).trace
+      = ∑ d ∈ n.divisors, (μ (n / d) : ℤ) * (C ^ d).trace := by
+    rw [← Nat.sum_div_divisors n (fun d => (μ (n / d) : ℤ) * (C ^ d).trace)]
+    refine Finset.sum_congr rfl (fun d hd => ?_)
+    rw [Nat.div_div_self (Nat.mem_divisors.1 hd).1 hn]
+  rw [← hre]
+  exact dold_congruence C hn
+
+
+end Dold
+
 /-! ## Numeric anchors (faithfulness of the frozen statement)
 
 `GaussCongruenceTrace` is a `Literature` def we are not allowed to restate, so these four

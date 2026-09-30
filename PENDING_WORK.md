@@ -5,8 +5,9 @@
 and every progression of exponents (`gaussCongruence_mul`), but **not** for composite `c`:
 `gauss_anchor_composite` in `GaussCongruenceProof.lean` exhibits `C = !![1,2;3,4]` with
 `9^2 ∤ tr(C^(9^2)) − tr(C^9)`.  So any engine step that wants composite `c` must go through the
-full Möbius form `n ∣ Σ_{d ∣ n} μ(n/d) tr(C^d)` (still open here; it needs the primitive-period
-orbit decomposition that the phase-49 route deliberately sidesteps).
+full Möbius form `n ∣ Σ_{d ∣ n} μ(n/d) tr(C^d)` — which is now PROVED and axiom-clean in the same
+file (`dold_congruence` / `dold_congruence'`), by divisor pairing off `gaussCongruence_mul`, with no
+primitive-period decomposition needed.
 
 ## phase 49 DONE (2026-09-30): Gauss/Dold congruence for matrix traces PROVED
 
