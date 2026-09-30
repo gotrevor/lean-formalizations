@@ -371,6 +371,102 @@ theorem eq_prod_X_sub_C_of_roots {ι : Type*} [DecidableEq ι] (p : T[X]) (hp : 
 
 end Factorization
 
+
+section FrobeniusOrbit
+
+open Polynomial
+
+/-- `AdjoinRoot f` for a monic `f` over `ZMod c` has `c ^ deg f` elements. -/
+theorem adjoinRoot_card_of_monic {c : ℕ} [Fact c.Prime] {f : (ZMod c)[X]} (hm : f.Monic)
+    [Fintype (AdjoinRoot f)] : Fintype.card (AdjoinRoot f) = c ^ f.natDegree := by
+  have hfr : Module.finrank (ZMod c) (AdjoinRoot f) = f.natDegree := by
+    rw [(AdjoinRoot.powerBasis' hm).finrank, AdjoinRoot.powerBasis'_dim]
+  rw [Module.card_eq_pow_finrank (K := ZMod c), hfr, ZMod.card]
+
+/-- **The Frobenius orbit of the generator is free:** in the field `AdjoinRoot f` of order
+`c ^ deg f`, the elements `root f ^ (c ^ i)` for `i < deg f` are pairwise distinct. -/
+theorem root_pow_frobenius_injOn {c : ℕ} [Fact c.Prime] {f : (ZMod c)[X]} (hm : f.Monic)
+    (hirr : Irreducible f) {i j : ℕ} (hi : i < f.natDegree) (hj : j < f.natDegree) (hij : i ≠ j) :
+    (AdjoinRoot.root f) ^ (c ^ i) ≠ (AdjoinRoot.root f) ^ (c ^ j) := by
+  haveI : Fact (Irreducible f) := ⟨hirr⟩
+  set K := AdjoinRoot f with hK
+  set y : K := AdjoinRoot.root f with hy
+  haveI : Module.Finite (ZMod c) K := Module.Finite.of_basis (AdjoinRoot.powerBasis' hm).basis
+  haveI : Finite K := Module.finite_of_finite (ZMod c)
+  haveI : Fintype K := Fintype.ofFinite _
+  have hcard : Fintype.card K = c ^ f.natDegree := adjoinRoot_card_of_monic hm
+  haveI : CharP K c := charP_of_injective_algebraMap (algebraMap (ZMod c) K).injective c
+  haveI : ExpChar K c := ExpChar.prime Fact.out
+  -- the crux: `y ^ (c ^ m) = y` with `1 ≤ m < deg f` is impossible
+  have crux : ∀ m : ℕ, 0 < m → m < f.natDegree → y ^ (c ^ m) ≠ y := by
+    intro m hm0 hmd hfix
+    have hψ : ∀ z : K, z ^ (c ^ m) = z := by
+      intro z
+      obtain ⟨p, rfl⟩ := AdjoinRoot.mk_surjective (g := f) z
+      have hcomp : (iterateFrobenius K c m).comp (algebraMap (ZMod c) K)
+          = algebraMap (ZMod c) K := by
+        ext a
+        rw [RingHom.comp_apply, iterateFrobenius_def, ← map_pow, ZMod.pow_card_pow]
+      have h1 : iterateFrobenius K c m (Polynomial.aeval y p)
+          = Polynomial.eval₂ ((iterateFrobenius K c m).comp (algebraMap (ZMod c) K))
+            (iterateFrobenius K c m y) p := by
+        rw [Polynomial.aeval_def]
+        exact Polynomial.hom_eval₂ p _ _ y
+      have h2 : iterateFrobenius K c m y = y := by rw [iterateFrobenius_def]; exact hfix
+      rw [hcomp, h2, ← Polynomial.aeval_def] at h1
+      rw [← AdjoinRoot.aeval_eq p, ← iterateFrobenius_def]
+      exact h1
+    -- every element is a root of `X ^ (c ^ m) - X`
+    set P : K[X] := X ^ (c ^ m) - X with hP
+    have hcm : 1 < c ^ m := by
+      have : 1 < c := Fact.out (p := c.Prime) |>.one_lt
+      exact Nat.one_lt_pow (by omega) this
+    have hPdeg : P.natDegree = c ^ m := by
+      have hXd : (X : K[X]).natDegree < ((X : K[X]) ^ (c ^ m)).natDegree := by
+        rw [Polynomial.natDegree_X_pow, Polynomial.natDegree_X]; omega
+      rw [hP, Polynomial.natDegree_sub_eq_left_of_natDegree_lt hXd, Polynomial.natDegree_X_pow]
+    have hPne : P ≠ 0 := fun h => by
+      have := congrArg (fun q => Polynomial.coeff q (c ^ m)) h
+      simp [hP, Polynomial.coeff_X, show (1 : ℕ) ≠ c ^ m by omega] at this
+    have hsub : (Finset.univ : Finset K) ⊆ P.roots.toFinset := by
+      intro z _
+      rw [Multiset.mem_toFinset, Polynomial.mem_roots hPne]
+      simp [hP, Polynomial.IsRoot, hψ z]
+    have hle : (Fintype.card K) ≤ c ^ m := by
+      calc (Fintype.card K) = (Finset.univ : Finset K).card := by simp
+        _ ≤ P.roots.toFinset.card := Finset.card_le_card hsub
+        _ ≤ Multiset.card P.roots := P.roots.toFinset_card_le
+        _ ≤ P.natDegree := P.card_roots'
+        _ = c ^ m := hPdeg
+    rw [hcard] at hle
+    have : c ^ m < c ^ f.natDegree :=
+      Nat.pow_lt_pow_right (Fact.out (p := c.Prime)).one_lt hmd
+    omega
+  intro heq
+  rcases lt_or_gt_of_ne hij with h | h
+  · have hinj : Function.Injective (fun z : K => z ^ (c ^ i)) := by
+      intro a b hab
+      have hb : iterateFrobenius K c i a = iterateFrobenius K c i b := by
+        simp only [iterateFrobenius_def]; exact hab
+      exact (iterateFrobenius K c i).injective hb
+    refine crux (j - i) (by omega) (by omega) (hinj ?_)
+    show (y ^ c ^ (j - i)) ^ c ^ i = y ^ c ^ i
+    rw [← pow_mul, ← pow_add]
+    rw [show j - i + i = j by omega]
+    exact heq.symm
+  · have hinj : Function.Injective (fun z : K => z ^ (c ^ j)) := by
+      intro a b hab
+      have hb : iterateFrobenius K c j a = iterateFrobenius K c j b := by
+        simp only [iterateFrobenius_def]; exact hab
+      exact (iterateFrobenius K c j).injective hb
+    refine crux (i - j) (by omega) (by omega) (hinj ?_)
+    show (y ^ c ^ (i - j)) ^ c ^ j = y ^ c ^ j
+    rw [← pow_mul, ← pow_add]
+    rw [show i - j + j = i by omega]
+    exact heq
+
+end FrobeniusOrbit
+
 /-- **Period:** with `χ_A` irreducible mod `c`, `A^(c^(n+d)) ≡ A^(c^n) (mod c^(n+1))`. -/
 theorem pow_prime_pow_add_card_congr {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ) {c : ℕ}
     (hc : c.Prime) (hirr : Irreducible (A.charpoly.map (Int.castRingHom (ZMod c)))) (n : ℕ)
