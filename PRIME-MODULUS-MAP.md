@@ -39,7 +39,7 @@ One page, one row per theorem.  Everything here was proved 2026-09-29/30, uncond
 
 ## Paper theorems, not yet in Lean
 - **Theorem D** (`PROOF-THEOREM-D.md`): Saito's Problem 1.7 for `R(n) = c^n + s`; every Pisot `α` outside `f ≡ X^d (mod c)` and finitely many abelian fields.  Referee pass: Lemmas OK.
-- **Theorem E / E+** (`PROOF-THEOREM-E.md`): the least `A` with `⌊A^(3^k + s)⌋` prime `∀k` is **transcendental** for every even `s ≠ 0` with `3 ∤ s`.  Unshifted Mills (`s = 0`) fails both steps.  Two referee passes, patches applied; ≈75–80%.
+- **Theorem E / E+** (`PROOF-THEOREM-E.md`): the least `A` with `⌊A^(3^k + s)⌋` prime `∀k` is **transcendental** for every even `s ≠ 0` (draft 3), and for odd `s` except E1 at `g = 2` (the conductor-13 field for `ξ²`).  Unshifted Mills (`s = 0`) fails both steps.  Three referee passes, patches applied; ≈72–80%.
 
 ## Where it stops (Maze rows, `src/LeanFormalizations/Maze.lean`)
 - **Traces at `c = 2`**: `L(2^n)` (`h = 0`) and the Fermat numbers are exactly the survivors.  These are the classical open problems, so the method fails precisely where it should.

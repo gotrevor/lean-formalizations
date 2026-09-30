@@ -76,7 +76,7 @@ The only cubic subfield of `ℚ(ζ₁₀₄)` is `K`, the cyclic cubic field of 
 
 ### E+ for even `s` with `3 ∣ s` (draft 3, 2026-09-30; closes all even `s ≠ 0`)
 Let `s ≠ 0` be even with `a₀ = v₃(s) ≥ 1`, and start the index where every ratio is `≥ 2` and `C_k ≥ 1` (for `s > 0`: `3^k ≥ s`; for `s < 0`: `3^k + s ≥ 1`), reindexed so that `k = 1` is the first term.
-- **`(B5′)` holds.**  For `m > a₀`, `v₃(C_m) = a₀`; for `m ≤ a₀`, `v₃(C_m) = m`.  Write `C_m = 3^(v)·u` with `3 ∤ u`.  For every `k > m`, `v₃(C_k) = min(k, a₀) ≥ v`.  Take `t = ord_u(3)`; then `u ∣ 3^m(3^t − 1) = C_(m+t) − C_m`, so `C_m ∣ C_(m+t)`, and every ratio is `≥ 2.9` once `3^k ≫ |s|`.
+- **`(B5′)` holds.**  `s` is even, so `|s| ≥ 2·3^(a₀)`, and the start rule (`3^k ≥ s`, or `3^k + s ≥ 1`) forces every index in range to have `k > a₀`.  Hence `v₃(C_k) = a₀` for all `k` (*referee 3*: draft 3 wrongly had `v₃(C_m) = m` for `m ≤ a₀`, a harmless misstatement because those indices never occur).  Write `C_m = 3^(a₀)·u` with `3 ∤ u`, and take `t = ord_u(3)`.  Then `u ∣ 3^m(3^t − 1) = C_(m+t) − C_m`, so `C_m ∣ C_(m+jt)` for every `j`, and `j` large gives the `≥ 29/10` ratio.
 - **`agcd`.**  `gcd(C_m, C_(m+1)) ∣ 3C_m − C_(m+1) = 2s`.  The `C_k` are odd, and an odd prime `q ≠ 3` with `q ∣ s` and `q ∣ 3^m + s` would divide `3^m`.  So only `3` survives, and `gcd_(k ≥ K) C_k = 3^(a₀)` for large `K`.  Type B gives `g ∣ C_k` for all large `k`, so `g = 3^a` with `0 ≤ a ≤ a₀`.
 - **Reduce to `β = ξ^(3^a)`**, cubic Pisot, with `⌊ξ^(C_k)⌋ = tr(β^(N_k))` for large `k` (Prop 3.1(iv), as in our `Saito2025TypeBTrace` conclusion), `N_k = 3^(k−a) + s′`, `s′ = s/3^a`.  Here `s′` is even and **nonzero**, and may still be divisible by 3.
 - **Steps 3–5 for `β` with shift `s′`.**  None of them uses `3 ∤ s′`, and none uses minimality of `β`.
@@ -89,6 +89,10 @@ Let `s ≠ 0` be even with `a₀ = v₃(s) ≥ 1`, and start the index where eve
 
 ### E+ for odd `s` (draft 3; partial)
 `C_k = 3^k + s` is even.  `agcd = 2·3^(v₃(s))`: the odd part is as above, and `v₂(3^m + s)` equals 1 for one parity of `m`.  After the `3^a` reduction above (which needs no parity), `g ∈ {1, 2}`.
+- **Patches (*referee 3*).**
+  - `(B5′)` for odd `s`: take `t = lcm(ord_u 3, ord_(2^b) 3)`, where `2^b ∥ C_m`.  This is needed because `v₂(3^k + s)` is unbounded along one parity when `−s ∈ ⟨3⟩ ⊂ ℤ₂^×`.
+  - The `g = 2` filter needs `o ∣ 3^n(3^t − 1)/2`: take `t` a multiple of `ord_(2o)(3)`.
+  - The hypothesis "`f_β` irreducible over `E`" in the generic case is redundant (`F` irreducible already gives transitivity), but it is harmless.
 - **`g = 1`:** E+ verbatim.  Step 5's congruence `T = tr(ξ^s) ≡ 3z^s ≡ 0` does not care about parity.
 - **`g = 2`,** `β = ξ²` cubic Pisot, `N_n = (3^n + s)/2`.  The Teichmüller part `ω(β_k)^(N_n)` is periodic in `n`.  `⟨β_k⟩^(N_n) → ⟨β_k⟩^(s/2)` (`s/2 ∈ ℤ₃`; `1 + 𝔪` is a pro-3 group).  `⟨β_k⟩^(s/2)` is a root of `Y² = β_k^s ω(β_k)^(−s)`, so it is algebraic, and after fixing square roots `δ_k` of `β_k`:
   `Λ_r = Σ_k a_k δ_k^s = ω`, with `a_k ∈ μ_(2m) ∪ {0}` and `m ∣ 26` or `m ∣ 8`.  All of this lies in `E(δ₁, δ₂, δ₃)` with `E = ℚ(μ_M)`, `M ∣ 208`.
@@ -99,7 +103,8 @@ Let `s ≠ 0` be even with `a₀ = v₃(s) ≥ 1`, and start the index where eve
     - `u = 0`: **`ξ = √d·γ`** with `γ ∈ F`, `d > 1` squarefree (`ξ` and `γ` are real), and `ℚ(√d) ⊂ ℚ(μ_208)`, i.e. `d ∈ {2, 13, 26}`.  The `E`-conjugates of `ξ` are `√d·γ_k`; re-sign the `a_k` (odd `s`) so that `δ_k = √d·γ_k`.  Then `Σ_k a_k γ_k^s = ω·d^(−s/2)`, and `G = Gal(E(β)/E)` permutes the `γ_k` transitively while fixing `a_k`, `√d` and `ω`.  **Step 4's rigidity** applies verbatim with weights `w_k = γ_k^s`: they are non-constant because the moduli differ, `3 ∤ 208` covers the `C₃` subcase, and `T″ := Σ γ_k^s = tr_(F/ℚ)(γ^s) ∈ ℚ` is nonzero because the summed equation has a nonzero right side.  So `a_k = z` for all `k` and `z·T″ = ω·d^(−s/2)`.  `z = 0` is impossible; otherwise `|z| = 1` in `ℂ` gives **`|T″| = d^(−s/2) ∉ ℚ`** (`s` odd, `d > 1` squarefree): **contradiction.**  *(Closed 2026-09-30, draft 3b.)*
   - So for odd `s`, the only open case is **E1 at `g = 2`**: `ℚ(ξ²)` is the conductor-13 cyclic cubic field.  It needs a finite certificate in the style of Step 6 over `ℚ(ζ₁₃, √d)`, `d ∈ {1, 2, 13, 26}`.
 - Once E1 at `g = 2` closes: **E+ for every `s ≠ 0`.**
-- **Next:** a second independent read of the even-`s`, `3 ∣ s` paragraph and the odd-`s` generic case.
+- **Referee 3 (2026-09-30, subagent):** no error.  The two gaps above are patched.  Confidence: all even `s ≠ 0` ~78%; odd-`s` generic step ~85%; odd `s` except E1 at `g = 2` ~72% (all conditional on Saito).  Numeric control: at `s = 1` the window hit for `X³ − 4X² + 1` mod `3^8` disappears at `3^15`, `3^30` and `3^60` (the limits flip sign with period 6, matching the odd `δ^s` structure).
+- **Lead for E1 at `g = 2`, `s > 0`:** `K` is totally real, and in ℂ the local-trace identity `θ₁ + θ₂ + θ₃ = ±1` has `|θ_j| = |β_j|^(s/2)`.  So `β₁^(s/2) < 3`.  That leaves finitely many `(β, s)`, a computer check.  `s < 0` needs a different argument (the two large terms must nearly cancel).
 
 ## Variants
 - **`ξ(r·3^k − 1)` for even `r`: NOT established** (*referee 2*; draft-1 claim withdrawn).  The limit points carry `ζ_k^(r·3^m)`, and for even `r` the map `x ↦ x^r` is not injective on the (even-order) Teichmüller roots.  So `z_k = ±1` no longer forces equal `ζ_k`, and `f ≡ (X − 1)^a (X + 1)^b (mod 3)` survives the congruence step.  The `b = 0` reduction of Step 6 breaks the same way (e.g. `13 ∣ r`).  Odd `r` has `agcd = 2`.  Open.

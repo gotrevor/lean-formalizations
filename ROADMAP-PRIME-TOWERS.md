@@ -219,6 +219,11 @@ Combine the engine (phase 41) with Theorem D's Galois step.  For `(D1)` with hal
 - Lean: needs the Galois step, so it goes with Theorem D (paper first).
 
 ### ⭐⭐ Theorem E+ (see `PROOF-THEOREM-E.md`): `ξ(3^k + s)` is transcendental for every even `s ≠ 0` with `3 ∤ s` (index starting where `3^k ≥ s` when `s > 0`).  The unshifted Mills constant fails both the reduction and the rigidity step.  Two referee passes: no fatal error; referee 2 put it at ~80% for `s < 0` and ~75% for `s > 0` after the reindexing patch.  The `r·3^k − 1` family is **withdrawn**.
+- **Draft 3 (2026-09-30):**
+  - **All even `s ≠ 0`** (`3 ∣ s` reduces to the shift `s/3^a`).
+  - **Odd `s`** is done except E1 at `g = 2`.  `g = 2` is closed generically by a trace-zero argument, and in the Kummer-degenerate case `ξ = √d·γ` by `|tr γ^s| = d^(−s/2) ∉ ℚ`.
+  - Referee 3 found no error, with two one-line patches (applied).  Confidence ~78% for even `s`, ~72% for odd `s`.
+  - Open node: **E1 at `g = 2`** (the conductor-13 field for `ξ²`).  For `s > 0` it reduces to a finite search, since `β^(s/2) < 3`.
 
 ### ⭐ Theorem E, current form (see `PROOF-THEOREM-E.md`): `ξ(3^k − 2)` is transcendental, unconditionally (draft proof; E1 closed by the finite certificate `scripts/theorem-e-e1-certificate.py`; confidence ≈ 70%)
 (The `ξ(r·3^k − 1)` extension was withdrawn after referee 2: `x ↦ x^r` is not injective on even-order roots of unity.)  The ingredients: Saito Type C, Theorem D with a negative shift, minimality plus BHP (forcing `ε = 0`), and a mod-3 congruence on `tr(ξ^(−2))`.  The original candidate write-up follows.
