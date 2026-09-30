@@ -31,3 +31,50 @@
   - For `c = 2`, the integer survivors are exactly the classical open cases, such as `L(2^n)` (`h = 0`).
   - For odd `c`, the survivors are usually non-integral.  `L(7^n) + h` would then be settled for every `h`, but that needs the non-integrality proof.  A route when `Q = ±1`: `V(c^(n+1)) = D_c(V(c^n), Q)` exactly, where `D_c` is the Dickson polynomial.  An integer limit is then an integer root of `D_c(x, Q) − x`, and there are finitely many to check.
 - **Entries at inert `c`** always give two limit points, so every `h` is settled whenever `c ∤ Q` and `c` is inert in `ℚ(√(P² − 4Q))`.  This is the natural general theorem after phase 34.
+
+## § Phase 34 — DONE (2026-09-30, 1 lap)
+
+`NumberTheory/Mills/FibonacciPrimePow.lean` is sorry-free; all six frozen statements are
+`#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`).  Both halves of the table above
+are now theorems: **for every inert prime `c` (`c % 5 ∈ {2,3}`, including `c = 2`) and every
+integer `h`, `F(c^n) + h` is composite for infinitely many `n`**, and likewise for the ramified
+prime `c = 5`.  Nothing in the header's route failed; formalization notes:
+
+- **Step 1 (`fib_frobenius_inert`) needs no Cayley–Hamilton.**  The header suggested going through
+  `F ∣` polynomial divisibility plus Cayley–Hamilton as in phase 31.  That is unnecessary: in
+  `K = AdjoinRoot (X²−X−1)` the identity `x^(N+1) = F(N+1)·x + F(N)` (`pow_eq_fib`, one-step
+  induction, valid in *any* commutative ring with `x² = x+1`) turns `x^(c+1) = −1` directly into
+  the two coefficient equations.  Linear independence of `1, x` is a **degree** argument: from
+  `a·x + b = 0` one gets `f ∣ C a * X + C b`, and `2 ≤ 1` if `a ≠ 0`.  Much shorter than a power
+  basis.
+- **`x^c = x` is the only fork**, and it is killed by re-deriving phase 31's private
+  `exists_algebraMap_eq_of_pow_eq` (fixed points of the `c`-power map on a finite field are
+  scalars) — a verbatim copy, made public here.
+- **Step 2's LTE works in the noncommutative matrix ring via `ℤ[X]`.**  The lifting step needs
+  `(1 − ε)^k = 1 − kε + ε²D`.  Proving that by induction inside the matrix ring fights `smul`
+  and non-commutativity; instead prove it in `ℤ[X]` (where `ring` closes it) and transport with
+  `Polynomial.aeval ε`.  `aeval` is available for a noncommutative `ℤ`-algebra, so this is free.
+  `one_sub_pow_expand` is stated for an arbitrary ring and is reusable.
+- **Dividing `A^(c^n(c+1))` down to `A^(c^(n+1))` uses an explicit inverse, not `Matrix.inv`.**
+  `fibMinv Q := !![F Q − F(Q+1), F Q; F Q, −F(Q+1)]` satisfies `A^Q * fibMinv Q = 1` for **odd**
+  `Q` by Cassini alone (`fibM_pow_mul_fibMinv`).  Odd `Q = c^n` is exactly where oddness of `c` is
+  consumed.
+- **`h = ±1` at an odd inert `c` is elementary**, and does not need the filter: `F(c^n) ≡ (−1)^n
+  (mod c)` (telescope step 2 modulo `c`), so `c ∣ F(c^n)+1` for odd `n` and `c ∣ F(c^n)−1` for even
+  `n`.  Both hold for `c = 2` too, so the case split in the main theorem is only `h = 0`,
+  `h = ±1`, `|h| ≥ 2`; the parity argument phase 32 used for odd `h` has no analogue at odd `c`
+  (`2 ∣ F(N)` iff `3 ∣ N`) and is not needed.
+- **`|h| ≥ 2` is cleaner than phase 32's endgame.**  The filter at `n` and `n+1` plus the sign flip
+  gives `c^(n/2) ∣ s + s' − 2h` with `s, s' ∈ {±1}`; for large `n` that forces `2h = s + s'`, hence
+  `|h| ≤ 1`.  No parity case split.
+- **`c = 5`**: `five_pow_dvd_fib_five_pow` comes from the quintuplication formula
+  `F(5m) = F(m)(25F(m)^4 + 25(−1)^m F(m)^2 + 5)`, which is the `(0,1)` entry of `(A^m)^5` — the
+  polynomial identity is `Φ = 25f₀^5 + 25f₀³N + 5f₀N²` with `N = f₁² − f₁f₀ − f₀²`, so the only
+  extra input is Cassini and `((−1)^m)² = 1`.  Then `5^n ∣ F(5^n)` collapses the filter to
+  `h = ±1`, killed by `F(4k+1) + 1 = F(2k+1)L(2k)` and `F(4k+1) − 1 = F(2k)L(2k+1)` (both from
+  `Nat.fib_two_mul_add_one` plus Cassini, one `linear_combination` each).
+
+**Still open (Maze-row material):** the split primes `c ≡ ±1 (mod 5)` (11, 19, 29, 31, 41, …),
+where the sweep's survivors look non-integral.  There the `c`-adic limit of `F(c^n)` is a single
+point and proving it is not an integer needs an algebraic argument, not the Frobenius sign flip.
+The Dickson-polynomial route noted above for traces is the closest available idea.

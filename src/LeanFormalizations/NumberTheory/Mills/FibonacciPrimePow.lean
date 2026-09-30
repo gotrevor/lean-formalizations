@@ -588,13 +588,6 @@ theorem fib_prime_pow_add_not_prime {c : ℕ} (hc : c.Prime) (h5 : c % 5 = 2 ∨
     · intro hEq
       have : (c : ℤ) = ((t n).toNat : ℤ) := by rw [← hEq]
       omega
-  have hdetp : ∀ p : ℕ, p.Prime → ¬ (p : ℤ) ∣ fibM.det := by
-    intro p hp hdd
-    rw [fibM_det] at hdd
-    have h1 : (p : ℤ) ∣ 1 := (dvd_neg.mp hdd)
-    have h2 : (p : ℤ) ≤ 1 := Int.le_of_dvd one_pos h1
-    have := hp.two_le
-    omega
   have hstep2 : ∀ n ≥ N, ∀ p : ℕ, p.Prime → (p : ℤ) = t n →
       ¬ (padicValNat c (glCard 2 p) ≤ n) := by
     intro n hn p hp hpv hv
@@ -695,9 +688,195 @@ theorem five_pow_dvd_fib_five_pow (n : ℕ) : (5 : ℤ) ^ n ∣ Nat.fib (5 ^ n) 
       refine mul_dvd_mul ih ⟨5 * (Nat.fib (5 ^ n) : ℤ) ^ 4
         + 5 * (-1) ^ (5 ^ n) * (Nat.fib (5 ^ n) : ℤ) ^ 2 + 1, by ring⟩
 
+/-- The Lucas companion `L m = 2F(m+1) − F(m)`, as an integer. -/
+def lucasZ (m : ℕ) : ℤ := 2 * Nat.fib (m + 1) - Nat.fib m
+
+theorem two_le_lucasZ {m : ℕ} (hm : 2 ≤ m) : 2 ≤ lucasZ m := by
+  have h1 : Nat.fib m ≤ Nat.fib (m + 1) := Nat.fib_mono (by omega)
+  have h2 : Nat.fib 2 ≤ Nat.fib (m + 1) := Nat.fib_mono (by omega)
+  have h3 : Nat.fib 2 = 1 := by decide
+  have h4 : 2 ≤ Nat.fib (m + 1) := by
+    have h5 : Nat.fib 3 ≤ Nat.fib (m + 1) := Nat.fib_mono (by omega)
+    have h6 : Nat.fib 3 = 2 := by decide
+    omega
+  rw [lucasZ]
+  have h1' : (Nat.fib m : ℤ) ≤ (Nat.fib (m + 1) : ℤ) := by exact_mod_cast h1
+  have h4' : (2 : ℤ) ≤ (Nat.fib (m + 1) : ℤ) := by exact_mod_cast h4
+  linarith
+
+theorem two_le_fib {m : ℕ} (hm : 3 ≤ m) : 2 ≤ (Nat.fib m : ℤ) := by
+  have h5 : Nat.fib 3 ≤ Nat.fib m := Nat.fib_mono hm
+  have h6 : Nat.fib 3 = 2 := by decide
+  have : 2 ≤ Nat.fib m := by omega
+  exact_mod_cast this
+
+/-- `F(4k+1) + 1 = F(2k+1)·L(2k)`. -/
+theorem fib_four_mul_add_one_add_one (k : ℕ) :
+    (Nat.fib (4 * k + 1) : ℤ) + 1 = (Nat.fib (2 * k + 1) : ℤ) * lucasZ (2 * k) := by
+  have hsq : (Nat.fib (4 * k + 1) : ℤ)
+      = (Nat.fib (2 * k + 1) : ℤ) ^ 2 + (Nat.fib (2 * k) : ℤ) ^ 2 := by
+    rw [show 4 * k + 1 = 2 * (2 * k) + 1 from by ring]
+    exact_mod_cast congrArg (Nat.cast : ℕ → ℤ) (Nat.fib_two_mul_add_one (2 * k))
+  have hc1 := cassini_int (2 * k)
+  rw [(even_two_mul k).neg_one_pow] at hc1
+  rw [lucasZ]
+  linear_combination hsq - hc1
+
+/-- `F(4k+1) − 1 = F(2k)·L(2k+1)`. -/
+theorem fib_four_mul_add_one_sub_one (k : ℕ) :
+    (Nat.fib (4 * k + 1) : ℤ) - 1 = (Nat.fib (2 * k) : ℤ) * lucasZ (2 * k + 1) := by
+  have hsq : (Nat.fib (4 * k + 1) : ℤ)
+      = (Nat.fib (2 * k + 1) : ℤ) ^ 2 + (Nat.fib (2 * k) : ℤ) ^ 2 := by
+    rw [show 4 * k + 1 = 2 * (2 * k) + 1 from by ring]
+    exact_mod_cast congrArg (Nat.cast : ℕ → ℤ) (Nat.fib_two_mul_add_one (2 * k))
+  have hc1 := cassini_int (2 * k)
+  rw [(even_two_mul k).neg_one_pow] at hc1
+  have hf : (Nat.fib (2 * k + 1 + 1) : ℤ) = (Nat.fib (2 * k) : ℤ) + (Nat.fib (2 * k + 1) : ℤ) := by
+    exact_mod_cast congrArg (Nat.cast : ℕ → ℤ) (Nat.fib_add_two (n := 2 * k))
+  rw [lucasZ, hf]
+  linear_combination hsq + hc1
+
+theorem not_prime_of_mul {a b : ℤ} (ha : 2 ≤ a) (hb : 2 ≤ b) : ¬ Prime (a * b) := by
+  intro hp
+  rcases hp.irreducible.isUnit_or_isUnit (rfl : a * b = a * b) with hu | hu <;>
+    rcases Int.isUnit_iff.1 hu with hh | hh <;> omega
+
 /-- **`F(5^n) + h` is composite infinitely often, for every `h`.** -/
 theorem fib_five_pow_add_not_prime (h : ℤ) :
     ∃ᶠ n in atTop, ¬ Prime ((Nat.fib (5 ^ n) : ℤ) + h) := by
-  sorry
+  have hc : Nat.Prime 5 := by norm_num
+  have hcle : (2 : ℕ) ≤ 5 := by norm_num
+  have hmod : ∀ n : ℕ, ∃ k, 5 ^ n = 4 * k + 1 := by
+    intro n
+    induction n with
+    | zero => exact ⟨0, by norm_num⟩
+    | succ n ih =>
+        obtain ⟨k, hk⟩ := ih
+        exact ⟨5 * k + 1, by rw [pow_succ, hk]; ring⟩
+  rcases eq_or_ne h 0 with rfl | h0
+  · refine Filter.Eventually.frequently (eventually_atTop.2 ⟨2, fun n hn => ?_⟩)
+    have hdvd : Nat.fib (5 ^ 1) ∣ Nat.fib (5 ^ n) := Nat.fib_dvd _ _ (pow_dvd_pow 5 (by omega))
+    have hlt : Nat.fib (5 ^ 1) < Nat.fib (5 ^ n) := fib_prime_pow_lt hcle (by omega) (by omega)
+    have hone : 1 < Nat.fib (5 ^ 1) := by norm_num
+    intro hpr
+    rw [add_zero] at hpr
+    have hnp : (Nat.fib (5 ^ n)).Prime := Nat.prime_iff_prime_int.2 hpr
+    rcases hnp.eq_one_or_self_of_dvd _ hdvd with hh | hh <;> omega
+  rcases eq_or_ne h 1 with rfl | h1
+  · refine Filter.Eventually.frequently (eventually_atTop.2 ⟨2, fun n hn => ?_⟩)
+    obtain ⟨k, hk⟩ := hmod n
+    have h25 : (25 : ℕ) ≤ 5 ^ n := by
+      calc (25 : ℕ) = 5 ^ 2 := by norm_num
+      _ ≤ 5 ^ n := Nat.pow_le_pow_right (by norm_num) hn
+    have hk2 : 2 ≤ k := by omega
+    rw [hk, fib_four_mul_add_one_add_one k]
+    exact not_prime_of_mul (two_le_fib (by omega)) (two_le_lucasZ (by omega))
+  rcases eq_or_ne h (-1) with rfl | hm1
+  · refine Filter.Eventually.frequently (eventually_atTop.2 ⟨2, fun n hn => ?_⟩)
+    obtain ⟨k, hk⟩ := hmod n
+    have h25 : (25 : ℕ) ≤ 5 ^ n := by
+      calc (25 : ℕ) = 5 ^ 2 := by norm_num
+      _ ≤ 5 ^ n := Nat.pow_le_pow_right (by norm_num) hn
+    have hk2 : 2 ≤ k := by omega
+    have hrw : (Nat.fib (5 ^ n) : ℤ) + -1 = (Nat.fib (4 * k + 1) : ℤ) - 1 := by rw [hk]; ring
+    rw [hrw, fib_four_mul_add_one_sub_one k]
+    exact not_prime_of_mul (two_le_fib (by omega)) (two_le_lucasZ (by omega))
+  -- the filter argument
+  by_contra hcon
+  rw [Filter.not_frequently] at hcon
+  simp only [not_not] at hcon
+  obtain ⟨n₀, hn₀⟩ := eventually_atTop.1 hcon
+  set t : ℕ → ℤ := fun n => (Nat.fib (5 ^ n) : ℤ) + h with ht
+  set H : ℕ := h.natAbs with hH
+  set N : ℕ := max (max 5 n₀) (H + 12) with hNdef
+  have hN5 : 5 ≤ N := le_trans (le_max_left _ _) (le_max_left _ _)
+  have hNn₀ : n₀ ≤ N := le_trans (le_max_right _ _) (le_max_left _ _)
+  have hNH : H + 12 ≤ N := le_max_right _ _
+  have hbig : ∀ n ≥ N, (5 : ℤ) < t n := by
+    intro n hn
+    have hn5 : 5 ≤ n := le_trans hN5 hn
+    have hgrow : (n : ℤ) ≤ (Nat.fib (5 ^ n) : ℤ) := by
+      exact_mod_cast le_fib_prime_pow hcle hn5
+    have hlow : (H : ℤ) + 12 ≤ (n : ℤ) := by
+      have h1 : ((H + 12 : ℕ) : ℤ) ≤ (N : ℤ) := by exact_mod_cast hNH
+      have h2 : (N : ℤ) ≤ (n : ℤ) := by exact_mod_cast hn
+      push_cast at h1
+      omega
+    have habs : -(H : ℤ) ≤ h := by omega
+    simp only [ht]
+    omega
+  have hprime : ∀ n ≥ N, Prime (t n) := fun n hn => hn₀ n (le_trans hNn₀ hn)
+  have htmono : ∀ {m n : ℕ}, N ≤ m → m < n → t m < t n := by
+    intro m n hm hmn
+    have h1 := fib_prime_pow_lt hcle (show 1 ≤ m by omega) hmn
+    have h2 : (Nat.fib (5 ^ m) : ℤ) < (Nat.fib (5 ^ n) : ℤ) := by exact_mod_cast h1
+    simp only [ht]
+    omega
+  have hnat : ∀ n ≥ N, ∃ p : ℕ, p.Prime ∧ p ≠ 5 ∧ (p : ℤ) = t n := by
+    intro n hn
+    have hb := hbig n hn
+    refine ⟨(t n).toNat, ?_, ?_, by omega⟩
+    · have := hprime n hn
+      rw [Int.prime_iff_natAbs_prime] at this
+      have hEq : (t n).natAbs = (t n).toNat := by omega
+      rwa [hEq] at this
+    · intro hEq
+      omega
+  have hstep2 : ∀ n ≥ N, ∀ p : ℕ, p.Prime → (p : ℤ) = t n →
+      ¬ (padicValNat 5 (glCard 2 p) ≤ n) := by
+    intro n hn p hp hpv hv
+    obtain ⟨j, hj1, hj01⟩ := exists_fib_prime_pow_congr hp hc hv
+    have hdvd : (p : ℤ) ∣ t (n + j) := by
+      have h1 : (p : ℤ) ∣ t n := by rw [hpv]
+      have h2 : t (n + j) - t n = (Nat.fib (5 ^ (n + j)) : ℤ) - Nat.fib (5 ^ n) := by
+        simp only [ht]; ring
+      have h3 := dvd_add hj01 h1
+      rw [← h2] at h3
+      simpa using h3
+    have hgt : t n < t (n + j) := htmono hn (by omega)
+    have hq := hprime (n + j) (by omega)
+    have hqpos : 0 < t (n + j) := by have := hbig n hn; omega
+    obtain ⟨q, hqv⟩ : ∃ q : ℕ, (q : ℤ) = t (n + j) := ⟨(t (n + j)).toNat, by omega⟩
+    have hqnat : q.Prime := by
+      rw [Int.prime_iff_natAbs_prime] at hq
+      have hEq : (t (n + j)).natAbs = q := by omega
+      rwa [hEq] at hq
+    have hdq : p ∣ q := by
+      have : (p : ℤ) ∣ (q : ℤ) := by rw [hqv]; exact hdvd
+      exact_mod_cast this
+    have hp1 : 1 < p := hp.one_lt
+    rcases hqnat.eq_one_or_self_of_dvd p hdq with hh | hh <;> omega
+  have hstep3 : ∀ n ≥ N, ∃ s : ℤ, (s = 1 ∨ s = -1) ∧ (5 : ℤ) ^ (n / 2) ∣ t n - s := by
+    intro n hn
+    obtain ⟨p, hp, hpc, hpv⟩ := hnat n hn
+    have hlt : n < padicValNat 5 (glCard 2 p) := by
+      by_contra hle
+      exact hstep2 n hn p hp hpv (by omega)
+    rcases pow_dvd_sub_or_add_of_lt_padicValNat hc (by norm_num) hp hpc hlt with hd | hd
+    · exact ⟨1, Or.inl rfl, by rw [← hpv]; exact hd⟩
+    · refine ⟨-1, Or.inr rfl, ?_⟩
+      rw [← hpv]
+      simpa using hd
+  set n : ℕ := 2 * (H + 3) + N with hn
+  set e : ℕ := n / 2 with he
+  obtain ⟨s, hs, hsd⟩ := hstep3 n (by omega)
+  have hdiv : (5 : ℤ) ^ e ∣ (Nat.fib (5 ^ n) : ℤ) :=
+    dvd_trans (pow_dvd_pow 5 (by omega)) (five_pow_dvd_fib_five_pow n)
+  have hhs : (5 : ℤ) ^ e ∣ h - s := by
+    have h1 : h - s = (t n - s) - (Nat.fib (5 ^ n) : ℤ) := by simp only [ht]; ring
+    rw [h1]
+    exact dvd_sub hsd hdiv
+  have hlt : (H : ℤ) + 1 < (5 : ℤ) ^ e := by
+    have h1 : e < 2 ^ e := Nat.lt_two_pow_self
+    have h2 : (2 : ℕ) ^ e ≤ 5 ^ e := Nat.pow_le_pow_left (by norm_num) e
+    have h3 : H + 1 < 5 ^ e := by omega
+    exact_mod_cast h3
+  have hzero : h - s = 0 := by
+    by_contra hne
+    have hle := Int.le_of_dvd (abs_pos.2 hne) ((dvd_abs _ _).2 hhs)
+    have hb : |h - s| ≤ (H : ℤ) + 1 := by
+      rcases hs with rfl | rfl <;> rw [abs_le] <;> omega
+    omega
+  rcases hs with rfl | rfl <;> omega
 
 end LeanFormalizations.Mills.FibonacciPrimePow
