@@ -147,6 +147,8 @@ Then `⌊α^(c^n + s)⌋` is composite for infinitely many `n`.
 - `s = 0`: 48 survivors of 244 at `c = 3` (the Mills residual classes, the known-answer control) and 73 of 183 at `c = 2`.
 - `s ≥ 2`: **0 genuine survivors** at either `c` (the only hit, `(x − 1)²`, is not Pisot).
 - The predicted exception family survives: `2 + √2`, `1 + √3` at `c = 2`; `3 + √6`, `x² − 3x − 3` at `c = 3`.
+- **Degree 4** (coefficients in `[−4, 4]`, 2026-09-30 02:00): `s = 0` gives 27 of 201 survivors at `c = 2` and 33 of 271 at `c = 3`; `s ≥ 2` gives **0 at both**.
+- **Exception (i) looks like a proof artifact.**  The cyclic cubic Pisot numbers of conductor 7 (the exceptional field at `c = 2`: `(−6, 5, −1)`, `(−3, −4, −1)`, …) have **no survivors at any `s`, even `s = 0`**.  `2` is inert there, so traces are sums like `ζ₇ + ζ₇² + ζ₇⁴ = (−1 + √−7)/2`, which are irrational.  A decomposition-group version of step 4 should remove (i).
 
 **The exception (ii) is a genuine obstruction for congruence methods.**
 - If `f ≡ X^d (mod c)`, then `⌊α^N⌋ ≡ ε_N (mod c^(big))`.
@@ -157,6 +159,14 @@ Then `⌊α^(c^n + s)⌋` is composite for infinitely many `n`.
 **Exceptions (i).**  Abelian fields inside `ℚ(ζ_M)`: finitely many, e.g. for `c = 2`, `d ≤ 3`, `M ∣ 21`: `ℚ(√21)` and the cubic subfield of `ℚ(ζ₇)`.  These need a separate argument; the numerics suggest no survivors there either.
 
 **Complementarity with Mills.**  At `s = 0` the unconditional wall is the totally real cubic case.  At `s ≥ s₀`, Theorem D handles totally real and complex cubics alike.  The obstruction for Mills is exactly the `s = 0` trace structure.
+
+**Step-by-step re-check (2026-09-30 01:55):**
+- Filter: `R(n+kj) − R(n) = c^n (c^(kj) − 1)` ✓.
+- Window: `Σ_i v_c(p^i − 1) > n ⇒ ∃ i ≤ d`, `p ≡ ω(p) (mod c^(n/d − v_c(i)))` ✓.
+- Teichmüller limits in ramified extensions: `⟨u⟩^(c^n) → 1` ✓.
+- Pull-back `ι⁻¹` ✓.
+- The Galois dominance step needs one complex embedding only, since the Pisot property is a property of the root set ✓.
+- `s₀(d) = ⌈log(d + 1)/log 1.3247⌉` suffices (`α^s > d + 1` gives both `α^s > d − 1` and `|tr C^s| ≥ 3`).
 
 **To verify before the paper:**
 - the Teichmüller limit formula when `C` is not semisimple mod `c`;
