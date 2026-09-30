@@ -81,7 +81,7 @@ The only cubic subfield of `ℚ(ζ₁₀₄)` is `K`, the cyclic cubic field of 
   - So `Λ_r = Σ_k ζ″_k δ_k^s` with `δ_k = ±√β_k` (consistent choices) and odd `s`.
   - Galois: `H = Gal(L / K(ζ))`, `L = K(ζ, √β₁, √β₂, √β₃)`, fixes the `ζ″_k` and the `β_k` and flips signs of the `δ_k`.
     - A **single flip** gives `2ζ″_k δ_k^s = 0`: impossible.
-    - A **pair flip** involving the Pisot index gives `|δ_a|^s = |δ_b|^s`: impossible, as `|√β| > 1 > |√β_j|`.  A pair not involving it needs a further look.
+    - A **pair flip** involving the Pisot index gives `|δ_a|^s = |δ_b|^s`: impossible, as `|√β| > 1 > |√β_j|`.  A pair not involving it (`δ₂, δ₃`): subtracting gives `ζ″₂δ₂^s + ζ″₃δ₃^s = 0`, hence `ζ″₁δ₁^s = t`, so `±ξ^s` is a root of unity times `t`.  All its conjugates would then have equal modulus, which is impossible for a power of a Pisot number.
     - The **triple flip** gives `2t = 0`, but `t = ω ≠ 0`.
   - If `H` is trivial, every `√β_k ∈ K(ζ)`, so `ξ` itself has degree 3 with conjugates `±√β_j` of modulus `< 1`.  Then `ξ` is Pisot and the `g = 1` analysis applies.
   - If this holds up: **E+ for every `s ≠ 0`** (with the `3 ∣ s` reduction below).
