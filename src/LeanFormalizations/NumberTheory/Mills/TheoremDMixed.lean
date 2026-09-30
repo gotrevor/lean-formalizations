@@ -604,6 +604,161 @@ theorem exists_polyVal_pow_eq_one {K : Type*} [Field K] (f : ℤ[X]) (hmon : f.M
   obtain ⟨i, _, hi⟩ := Finset.prod_eq_zero_iff.1 hz
   exact ⟨i, by linear_combination -hi⟩
 
+
+/-! ### Step 2c: the integer system and its solution over the algebraic numbers -/
+
+/-- The field of algebraic numbers inside `ℂ`.  The integer system is solved here, not in `ℂ`,
+because step 3 conjugates the solution by an automorphism over `ℚ`. -/
+noncomputable abbrev AlgQ := ↥(algebraicClosure ℚ ℂ)
+
+noncomputable instance : IsAlgClosure ℚ AlgQ := algebraicClosure.isAlgClosure ℚ ℂ
+
+noncomputable instance : IsAlgClosed AlgQ := IsAlgClosure.isAlgClosed ℚ
+
+theorem map_matrix_one {n R S : Type*} [Fintype n] [DecidableEq n] [CommRing R] [CommRing S]
+    (φ : R →+* S) : (1 : Matrix n n R).map φ = 1 := by
+  ext i j
+  by_cases hij : i = j <;> simp [Matrix.one_apply, Matrix.map_apply, hij]
+
+theorem map_one_sub_polyMat_pow {R S : Type*} [CommRing R] [CommRing S] (φ : R →+* S)
+    (f : ℤ[X]) (x : Fin f.natDegree → R) (Q : ℕ) :
+    (1 - polyMat R f x ^ Q).map φ = 1 - polyMat S f (fun t => φ (x t)) ^ Q := by
+  rw [map_matrix_sub, map_matrix_one, map_matrix_pow, polyMat_map]
+
+theorem map_polyMat_det {R S : Type*} [CommRing R] [CommRing S] (φ : R →+* S)
+    (f : ℤ[X]) (x : Fin f.natDegree → R) (Q : ℕ) :
+    φ ((1 - polyMat R f x ^ Q).det) = (1 - polyMat S f (fun t => φ (x t)) ^ Q).det := by
+  rw [RingHom.map_det, RingHom.mapMatrix_apply, map_one_sub_polyMat_pow]
+
+theorem map_polyMat_pow_succ_sub {R S : Type*} [CommRing R] [CommRing S] (φ : R →+* S)
+    (f : ℤ[X]) (x : Fin f.natDegree → R) (Q : ℕ) (i j : Fin f.natDegree) :
+    φ ((polyMat R f x ^ (Q + 1) - polyMat R f x) i j)
+      = (polyMat S f (fun t => φ (x t)) ^ (Q + 1) - polyMat S f (fun t => φ (x t))) i j := by
+  have hh : (polyMat R f x ^ (Q + 1) - polyMat R f x).map φ
+      = polyMat S f (fun t => φ (x t)) ^ (Q + 1) - polyMat S f (fun t => φ (x t)) := by
+    rw [map_matrix_sub, map_matrix_pow, polyMat_map]
+  simpa [Matrix.map_apply] using congrFun (congrFun hh i) j
+
+/-- **Steps 5–6, mixed.**  The `d² + 3` equation system — `T^(Q+1) = T`, `det (1 - T^Q) = 0`,
+`w^m = 1` and the window equation — solvable modulo `c^k` at every level, has a solution in the
+algebraic numbers. -/
+theorem exists_spectral_solution_mixed (f : ℤ[X]) (hd : 1 ≤ f.natDegree) {c : ℕ} (hc : c.Prime)
+    {Q n₀ s m : ℕ}
+    (hmix : ∀ ν : ℕ, n₀ ≤ ν →
+      (∀ i j, (c : ℤ) ^ (ν - n₀ + 1) ∣
+          ((compM ℤ f ^ (c ^ ν)) ^ (Q + 1) - compM ℤ f ^ (c ^ ν)) i j) ∧
+      (c : ℤ) ^ (ν - n₀ + 1) ∣ (1 - (compM ℤ f ^ (c ^ ν)) ^ Q).det)
+    {ε : ℤ}
+    (hcong : ∀ k : ℕ, ∃ n, k ≤ n ∧ ∃ w : ℤ, (c : ℤ) ^ k ∣ w ^ m - 1 ∧
+        (c : ℤ) ^ k ∣ traceSeq f (c ^ n + s) - (w - ε)) :
+    ∃ (x : Fin f.natDegree → AlgQ) (w : AlgQ),
+      polyMat AlgQ f x ^ (Q + 1) = polyMat AlgQ f x ∧
+      (1 - polyMat AlgQ f x ^ Q).det = 0 ∧ w ^ m = 1 ∧
+      (polyMat AlgQ f x * compM AlgQ f ^ s).trace = w - (ε : AlgQ) := by
+  classical
+  set d := f.natDegree with hdd
+  set σ := Option (Fin d) with hσ
+  set Xv : Fin d → MvPolynomial σ ℤ := fun j => MvPolynomial.X (some j) with hXv
+  set W : MvPolynomial σ ℤ := MvPolynomial.X none with hW
+  set Fsys : Option ((Fin d × Fin d) ⊕ Bool) → MvPolynomial σ ℤ := fun o =>
+    o.elim (1 - polyMat (MvPolynomial σ ℤ) f Xv ^ Q).det
+      (Sum.elim
+        (fun ij => (polyMat (MvPolynomial σ ℤ) f Xv ^ (Q + 1)
+          - polyMat (MvPolynomial σ ℤ) f Xv) ij.1 ij.2)
+        (fun b => if b then W ^ m - ((1 : ℤ) : MvPolynomial σ ℤ)
+          else (∑ j, Xv j * ((traceSeq f ((j : ℕ) + s) : ℤ) : MvPolynomial σ ℤ)) - W
+            + ((ε : ℤ) : MvPolynomial σ ℤ))) with hFsys
+  -- evaluation at an integer point
+  have hevalZ : ∀ p : σ → ℤ,
+      MvPolynomial.eval p (Fsys none)
+          = (1 - polyMat ℤ f (fun t => p (some t)) ^ Q).det ∧
+      (∀ i j : Fin d, MvPolynomial.eval p (Fsys (some (Sum.inl (i, j))))
+        = (polyMat ℤ f (fun t => p (some t)) ^ (Q + 1)
+            - polyMat ℤ f (fun t => p (some t))) i j) ∧
+      MvPolynomial.eval p (Fsys (some (Sum.inr true))) = (p none) ^ m - 1 ∧
+      MvPolynomial.eval p (Fsys (some (Sum.inr false)))
+        = (∑ j, p (some j) * traceSeq f ((j : ℕ) + s)) - p none + ε := by
+    intro p
+    refine ⟨?_, fun i j => ?_, ?_, ?_⟩
+    · have := map_polyMat_det (MvPolynomial.eval p) f Xv Q
+      simpa [hFsys, hXv] using this
+    · have := map_polyMat_pow_succ_sub (MvPolynomial.eval p) f Xv Q i j
+      simpa [hFsys, hXv] using this
+    · simp [hFsys, hW]
+    · simp [hFsys, hXv, hW]
+  -- evaluation at a point of `AlgQ`
+  have hevalA : ∀ q : σ → AlgQ,
+      MvPolynomial.eval₂ (Int.castRingHom AlgQ) q (Fsys none)
+          = (1 - polyMat AlgQ f (fun t => q (some t)) ^ Q).det ∧
+      (∀ i j : Fin d, MvPolynomial.eval₂ (Int.castRingHom AlgQ) q (Fsys (some (Sum.inl (i, j))))
+        = (polyMat AlgQ f (fun t => q (some t)) ^ (Q + 1)
+            - polyMat AlgQ f (fun t => q (some t))) i j) ∧
+      MvPolynomial.eval₂ (Int.castRingHom AlgQ) q (Fsys (some (Sum.inr true)))
+          = (q none) ^ m - 1 ∧
+      MvPolynomial.eval₂ (Int.castRingHom AlgQ) q (Fsys (some (Sum.inr false)))
+        = (∑ j, q (some j) * ((traceSeq f ((j : ℕ) + s) : ℤ) : AlgQ)) - q none + (ε : AlgQ) := by
+    intro q
+    refine ⟨?_, fun i j => ?_, ?_, ?_⟩
+    · have := map_polyMat_det (MvPolynomial.eval₂Hom (Int.castRingHom AlgQ) q) f Xv Q
+      simpa [hFsys, hXv, ← MvPolynomial.coe_eval₂Hom] using this
+    · have := map_polyMat_pow_succ_sub
+        (MvPolynomial.eval₂Hom (Int.castRingHom AlgQ) q) f Xv Q i j
+      simpa [hFsys, hXv, ← MvPolynomial.coe_eval₂Hom] using this
+    · simp [hFsys, hW, ← MvPolynomial.coe_eval₂Hom]
+    · simp [hFsys, hXv, hW, ← MvPolynomial.coe_eval₂Hom]
+  -- the levels
+  have hlev : ∀ k : ℕ, ∃ p : σ → ℤ, ∀ i, (c : ℤ) ^ k ∣ MvPolynomial.eval p (Fsys i) := by
+    intro k
+    obtain ⟨n, hnk, w, hw, hV⟩ := hcong (k + n₀)
+    obtain ⟨x, hx⟩ := exists_coords f hd (c ^ n)
+    obtain ⟨hm1, hm2⟩ := hmix n (by omega)
+    have hlevk : k ≤ n - n₀ + 1 := by omega
+    refine ⟨fun o => Option.elim o w x, ?_⟩
+    obtain ⟨h0, h1, h2, h3⟩ := hevalZ (fun o => Option.elim o w x)
+    intro i
+    rcases i with _ | i
+    · rw [h0]
+      simp only [Option.elim]
+      rw [← hx]
+      exact dvd_trans (pow_dvd_pow (c : ℤ) hlevk) hm2
+    · rcases i with ⟨i, j⟩ | b
+      · rw [h1 i j]
+        simp only [Option.elim]
+        rw [← hx]
+        exact dvd_trans (pow_dvd_pow (c : ℤ) hlevk) (hm1 i j)
+      · rcases b with _ | _
+        · rw [h3]
+          have htr : (∑ j, x j * traceSeq f ((j : ℕ) + s)) = traceSeq f (c ^ n + s) := by
+            have h4 := trace_polyMat_mul f x s
+            rw [← hx, ← pow_add] at h4
+            exact h4.symm
+          simp only [Option.elim]
+          rw [htr]
+          have hrw : traceSeq f (c ^ n + s) - w + ε
+              = traceSeq f (c ^ n + s) - (w - ε) := by ring
+          rw [hrw]
+          exact dvd_trans (pow_dvd_pow (c : ℤ) (by omega)) hV
+        · rw [h2]
+          simp only [Option.elim]
+          exact dvd_trans (pow_dvd_pow (c : ℤ) (by omega)) hw
+  obtain ⟨q, hq⟩ := exists_zero_of_family (K := AlgQ) (σ := σ) hc.two_le Fsys hlev
+  obtain ⟨h0, h1, h2, h3⟩ := hevalA q
+  refine ⟨fun t => q (some t), q none, ?_, ?_, ?_, ?_⟩
+  · have hz : polyMat AlgQ f (fun t => q (some t)) ^ (Q + 1)
+        - polyMat AlgQ f (fun t => q (some t)) = 0 := by
+      ext i j
+      rw [← h1 i j, hq (some (Sum.inl (i, j)))]
+      simp
+    exact sub_eq_zero.1 hz
+  · rw [← h0]; exact hq none
+  · have := hq (some (Sum.inr true))
+    rw [h2] at this
+    exact sub_eq_zero.1 this
+  · have := hq (some (Sum.inr false))
+    rw [h3] at this
+    rw [trace_polyMat_mul]
+    linear_combination this
+
 /-- **Theorem D (full):** some root of `f` is a `c`-unit, i.e. `f ≢ X^d (mod c)`. -/
 theorem floor_pow_prime_pow_add_not_prime_full (f : ℤ[X]) (hmon : f.Monic)
     (hirr : Irreducible f) (hdeg : 2 ≤ f.natDegree) {α : ℝ} (hroot : aeval α f = 0)
