@@ -75,7 +75,16 @@ The only cubic subfield of `ℚ(ζ₁₀₄)` is `K`, the cyclic cubic field of 
 - **The unshifted case `s = 0` (Mills' constant; outside this family, since `3 ∣ 0`) fails twice.**  The reduction fails: `agcd(3^k) = ∞`, so Type B only gives some `ξ^(3^j)` Pisot, not `ξ`.  The rigidity fails too: `w_k = α_k^0 = 1` is constant, the trace is Frobenius-invariant, and the phase-29 residual classes survive.  (Saito: transcendental under RH/DH.)
 
 **Still to do:**
-- odd `s` (`agcd = 2`; `ξ²` Pisot: redo Lemma 5 with exponent `(3^n + s)/2`);
+- odd `s` (`agcd = 2`).  **Sketch, 2026-09-30, unverified.**
+  - If `g = 1`, the E+ argument applies verbatim.
+  - If `g = 2`, then `β = ξ²` is cubic Pisot and the exponent is `N = (3^n + s)/2`.  The Teichmüller part `ω(β_k)^N` is periodic in `n` (it depends on `3^n + s (mod 2m)`); the unit part `⟨β_k⟩^N → ⟨β_k⟩^(s/2)` (`s/2 ∈ ℤ₃`; square roots are well defined in `1 + 3𝒪`).
+  - So `Λ_r = Σ_k ζ″_k δ_k^s` with `δ_k = ±√β_k` (consistent choices) and odd `s`.
+  - Galois: `H = Gal(L / K(ζ))`, `L = K(ζ, √β₁, √β₂, √β₃)`, fixes the `ζ″_k` and the `β_k` and flips signs of the `δ_k`.
+    - A **single flip** gives `2ζ″_k δ_k^s = 0`: impossible.
+    - A **pair flip** involving the Pisot index gives `|δ_a|^s = |δ_b|^s`: impossible, as `|√β| > 1 > |√β_j|`.  A pair not involving it needs a further look.
+    - The **triple flip** gives `2t = 0`, but `t = ω ≠ 0`.
+  - If `H` is trivial, every `√β_k ∈ K(ζ)`, so `ξ` itself has degree 3 with conjugates `±√β_j` of modulus `< 1`.  Then `ξ` is Pisot and the `g = 1` analysis applies.
+  - If this holds up: **E+ for every `s ≠ 0`** (with the `3 ∣ s` reduction below).
 - `3 ∣ s` (`agcd ∈ {3, 6}`).  **Likely easy.**  For even `s`, `agcd = 3^(v₃(s))` (divides `2s`, odd part only via 3).  So `g = 3^a` with `a ≤ v₃(s)`, and `β = ξ^(3^a)` satisfies `⌊β^(3^(k−a) + s/3^a)⌋` prime: the same shape with shift `s/3^a`.  Run the E+ argument on `β` (the Theorem D machinery never needs minimality of `β` itself, and Prop 3.1(iv) is stated for `β^(C_k/g)`).  If `s/3^a ≠ 0` the weights `β_k^(s/3^a)` are non-constant and the mod-3 congruence holds.  To write out: this would give **all even `s ≠ 0`**.  (Also check the case `g = 1` with `3 ∣ s`: the weights `α^s` are non-constant and `T ≡ 0 (mod 3)`, so fine.)
 - a second independent read.
 
