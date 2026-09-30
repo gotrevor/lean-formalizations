@@ -31,6 +31,10 @@ Saito (arXiv:2504.14968) asked whether `F(2^n) + h` is composite for infinitely 
 - **Theorem 4.3 (Lucas numbers).**  `L(c^n) + h`, and `V_(c^n)(P, −1) + h` for `c ∤ P`, are composite i.o. at every odd prime `c` (**[Lean]** `LucasPrimePow`).  At `c = 2` the method stops exactly at `L(2^n)`, a Fermat-type problem.
 - **Corollary 4.4.**  `⌊φ^(c^n)⌋ + h` is composite i.o. for every odd prime `c` and every `h` (`φ` the golden ratio), and likewise for every quadratic Pisot unit of norm `−1` (**[Lean]** `QuadraticPisotFloor`).
 
+## 4b. Theorem A: order `d` at inert primes  **[Lean]** `ExteriorDold`, `OrbitSum`, `TheoremA`
+**Theorem 4.5.**  Let `A ∈ M_d(ℤ)` with `χ_A` irreducible mod the prime `c`, `d` odd, and `μ_(≤d)(ℤ_c) = {±1}`.  Let `u(N) = (A^N)_(ij)` with `i ≠ j`, with `|u(c^n)| → ∞` and `c ∤ u(c^r)` for some `r < d`.  Then `u(c^n) + h` is composite i.o. for every `h`.  In particular **`T(3^n) + h` and `T(5^n) + h` (Tribonacci)** are composite i.o.
+*Key identity.*  `Σ_(k<d) A^(c^(n+k)) ≡ tr(A^(c^n))·I (mod c^(n+1))`, the order-`d` sign flip.  It comes from the Dold congruence for every characteristic-polynomial coefficient (via compound matrices) and a factorization over the Galois ring `(ℤ/c^(n+1))[X]/χ`.
+
 ## 5. Traces of 2×2 matrices: a classification  **[Lean]** `TraceClassification`
 **Theorem 5.1.**  Let `C ∈ M_2(ℤ)`, `c` an odd prime, `det C ≡ ε = ±1 (mod c)`, `c ∤ tr C · disc C`.  Then `tr C^(c^n) + h` is composite i.o. for every `h`, unless `ε = 1` and `tr C ≡ ±1 (mod c)`.  In that exceptional case `c^(n+1) ∣ tr C^(c^n) ∓ 1`, so the shifts `h ∈ {0, ∓2}` are genuine survivors of the method.
 *Remark.*  At `c = 2`, every `2×2` trace has survivors (`τ = −1` or `2`); `L(2^n)` is the prototype.  The staircase is: `1×1` folklore; `2×2` classified; `3×3` at `c = 3` is Mills (§9).
@@ -41,6 +45,7 @@ Saito (arXiv:2504.14968) asked whether `F(2^n) + h` is composite for infinitely 
 *Example.*  `F(2^(4 + 60k)) + h` is composite for all `|h| ≤ 6` and all `k ≥ 1`, divisible by one of `2, 3, 23, 197, 983, 991`.
 *Remark (quantitative).*  The bookkeeping gives intervals of length `≫ (log n)^(1/5)` around `F(2^n)` [paper; not optimized].  Saito's reversible theorems give `log n/(2d)`.
 *Remark (higher order).*  For order `d ≥ 3` entries (Tribonacci), the needed non-integrality of the limit points follows from linear disjointness of `ℚ(α)` and `ℚ(ζ_n)` [paper, `ROADMAP` Theorem C′].
+*Example (order 3).*  For every `n ≡ 95 (mod 1980)`, `T(3^n) + h` is composite for all `|h| ≤ 3`, divisible by one of 5, 7, 13, 47, 53, 593 **[Lean]** `TribonacciCovering.trib_three_pow_prime_free`.
 
 ## 7. Saito's Problem 1.7 for `R(n) = c^n + s`  **[paper]** `PROOF-THEOREM-D.md`
 **Theorem 7.1.**  Let `c` be prime and `s ≥ s₀(d) = ⌈log(d+1)/log κ⌉`.  For every Pisot `α` of degree `d` with `f ≢ X^d (mod c)`, the number `⌊α^(c^n + s)⌋` is composite for infinitely many `n`.

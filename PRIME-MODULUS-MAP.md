@@ -40,7 +40,8 @@ One page, one row per theorem.  Everything here was proved 2026-09-29/30, uncond
 ## Theorem A route (phases 50–52)
 - `ExteriorDold` (phase 50): `χ_(A^(p^(k+1))) ≡ χ_(A^(p^k)) (mod p^(k+1))` coefficientwise, via compound matrices; plus `χ_B(B^p) ≡ 0`.
 - `OrbitSum` (phase 51): for `χ_A` irreducible mod `c`, `A^(c^(n+d)) ≡ A^(c^n)` and **`Σ_(k<d) A^(c^(n+k)) ≡ tr(A^(c^n))·I (mod c^(n+1))`**, exact even when `c ∣ d` (factorization over the Galois ring).
-- `TheoremA` (phase 52, in progress): order-`d` entries at inert primes; Tribonacci `T(3^n) + h`, `T(5^n) + h`.
+- **`TheoremA` (phase 52): `entry_prime_pow_add_not_prime`.**  Order-`d` entries `u(c^n) + h` are composite i.o. for every `h`, given: `χ_A` irreducible mod `c`, odd `d`, `μ_(≤d)(ℤ_c) = {±1}`, and `c ∤ u(c^r)` for some `r < d`.  Corollaries: **Tribonacci `T(3^n) + h` and `T(5^n) + h`** (`trib_three_pow_add_not_prime`, `trib_five_pow_add_not_prime`).
+- **`TribonacciCovering` (phase 53):** `[T(3^n) − 3, T(3^n) + 3]` contains no prime for every `n ≡ 95 (mod 1980)` (`trib_three_pow_prime_free`, `trib_three_pow_prime_free_often`).  Certificate primes: 5, 7, 13, 47, 53, 593.
 
 ## Paper theorems, not yet in Lean
 - **Theorem D** (`PROOF-THEOREM-D.md`): Saito's Problem 1.7 for `R(n) = c^n + s`; every Pisot `α` outside `f ≡ X^d (mod c)` (draft 2 removes the abelian-field exception by a one-automorphism size argument).  Referee pass: Lemmas OK.
