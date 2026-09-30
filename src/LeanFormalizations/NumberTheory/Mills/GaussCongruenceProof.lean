@@ -606,6 +606,16 @@ theorem transcendental_of_not_pm_one' (hB : BakerHarmanPintz2001) (hM : Matomaki
     Transcendental ℚ A :=
   ThreeAdic.transcendental_of_not_pm_one gaussCongruenceTrace_holds hB hM hD hG hA h
 
+/-- **The Gauss congruence along any progression of exponents `m·p^k`** (immediate from the
+headline applied to `C^m`).  This is the form the covering engine wants: the `c`-adic descent
+`tr(C^(m c^(k+1))) ≡ tr(C^(m c^k)) (mod c^(k+1))` for a PRIME `c`.  It genuinely needs `c` prime:
+`gauss_anchor_composite` refutes the `c = 9` case. -/
+theorem gaussCongruence_mul {n : ℕ} (C : Matrix (Fin n) (Fin n) ℤ) (m p k : ℕ) (hp : p.Prime) :
+    ((p : ℤ) ^ (k + 1)) ∣ (C ^ (m * p ^ (k + 1))).trace - (C ^ (m * p ^ k)).trace := by
+  have h := gaussCongruenceTrace_holds n (C ^ m) p k hp
+  rwa [← pow_mul, ← pow_mul] at h
+
+
 /-! ## Numeric anchors (faithfulness of the frozen statement)
 
 `GaussCongruenceTrace` is a `Literature` def we are not allowed to restate, so these four
