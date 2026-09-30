@@ -388,6 +388,208 @@ theorem exists_mixed_limit (f : ℤ[X]) (hmon : f.Monic) (hd : 1 ≤ f.natDegree
     ((1 - (compM ℤ f ^ (L * c ^ n)) ^ Q).det) (c ^ (n + 1))).1 (by simpa [hψ] using hmapdet)
   exact_mod_cast this
 
+
+/-! ### Step 2: the transfer, over the algebraic numbers
+
+The system is solved over `AlgQ`, the algebraic numbers inside `ℂ`, not over `ℂ`: step 3 conjugates
+the solution by an automorphism, and that is only available on algebraic numbers.  Both phase 56
+lemmas generalize verbatim from `ℂ` to any algebraically closed field of characteristic zero. -/
+
+theorem exists_zero_of_family {K : Type*} [Field K] [IsAlgClosed K] [CharZero K]
+    {σ ι : Type*} [Finite σ] [Fintype ι] {c : ℕ} (hc : 2 ≤ c)
+    (F : ι → MvPolynomial σ ℤ)
+    (hlev : ∀ k : ℕ, ∃ p : σ → ℤ, ∀ i, (c : ℤ) ^ k ∣ MvPolynomial.eval p (F i)) :
+    ∃ q : σ → K, ∀ i, MvPolynomial.eval₂ (Int.castRingHom K) q (F i) = 0 := by
+  classical
+  by_contra hcon
+  push_neg at hcon
+  set φ : ℤ →+* ℚ := Int.castRingHom ℚ with hφ
+  set G : ι → MvPolynomial σ ℚ := fun i => (F i).map φ with hG
+  have hbridge : ∀ (q : MvPolynomial σ ℤ) (x : σ → K),
+      MvPolynomial.aeval x (q.map φ) = MvPolynomial.eval₂ (Int.castRingHom K) x q := by
+    intro q x
+    rw [MvPolynomial.aeval_def, MvPolynomial.eval₂_map]
+    congr 1
+    exact RingHom.ext fun n => by simp [hφ]
+  have hzl : MvPolynomial.zeroLocus K (Ideal.span (Set.range G)) = ∅ := by
+    ext x
+    simp only [Set.mem_empty_iff_false, iff_false]
+    intro hx
+    obtain ⟨i, hi⟩ := hcon x
+    have hxi := hx (G i) (Ideal.subset_span ⟨i, rfl⟩)
+    rw [hG] at hxi
+    exact hi (by rw [← hbridge]; exact hxi)
+  have htop : Ideal.span (Set.range G) = ⊤ := by
+    have h := MvPolynomial.vanishingIdeal_zeroLocus_eq_radical (K := K) (Ideal.span (Set.range G))
+    rw [hzl, MvPolynomial.vanishingIdeal_empty] at h
+    exact Ideal.radical_eq_top.1 h.symm
+  have hone : (1 : MvPolynomial σ ℚ) ∈ Ideal.span (Set.range G) := htop ▸ Submodule.mem_top
+  obtain ⟨g, hg⟩ := Ideal.mem_span_range_iff_exists_fun.1 hone
+  choose D hD hDz using fun i => TheoremDQuadratic.exists_denominator (g i)
+  set Dp : ℤ := ∏ i, D i with hDp
+  have hDpne : Dp ≠ 0 := by
+    rw [hDp]; exact Finset.prod_ne_zero_iff.2 fun i _ => hD i
+  have hdvd : ∀ k : ℕ, (c : ℤ) ^ k ∣ Dp := by
+    intro k
+    obtain ⟨p, hp⟩ := hlev k
+    choose m hm using fun i => hp i
+    choose z hz using fun i => hDz i p
+    refine ⟨∑ i, (∏ j ∈ Finset.univ.erase i, D j) * z i * m i, ?_⟩
+    have hpt : ∀ q : MvPolynomial σ ℤ,
+        MvPolynomial.eval (fun t => ((p t : ℤ) : ℚ)) (q.map φ)
+          = ((MvPolynomial.eval p q : ℤ) : ℚ) := by
+      intro q
+      rw [MvPolynomial.eval_map]
+      exact (MvPolynomial.eval₂_comp φ p q).symm
+    have heval : (1 : ℚ) = ∑ i, MvPolynomial.eval (fun t => ((p t : ℤ) : ℚ)) (g i)
+        * ((MvPolynomial.eval p (F i) : ℤ) : ℚ) := by
+      have h := congrArg (MvPolynomial.eval (fun t => ((p t : ℤ) : ℚ))) hg
+      rw [map_one, map_sum] at h
+      rw [← h]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [map_mul, hG, hpt (F i)]
+    have hid : (∏ i, (D i : ℚ))
+        = (c : ℚ) ^ k * ∑ i, (∏ j ∈ Finset.univ.erase i, (D j : ℚ)) * (z i : ℚ) * (m i : ℚ) := by
+      rw [Finset.mul_sum]
+      calc (∏ i, (D i : ℚ)) = (∏ i, (D i : ℚ)) * 1 := by ring
+        _ = ∑ i, (∏ t, (D t : ℚ)) * (MvPolynomial.eval (fun t => ((p t : ℤ) : ℚ)) (g i)
+              * ((MvPolynomial.eval p (F i) : ℤ) : ℚ)) := by rw [heval, Finset.mul_sum]
+        _ = ∑ i, (c : ℚ) ^ k
+              * ((∏ j ∈ Finset.univ.erase i, (D j : ℚ)) * (z i : ℚ) * (m i : ℚ)) := by
+            refine Finset.sum_congr rfl fun i _ => ?_
+            have hprod : (∏ t, (D t : ℚ))
+                = (D i : ℚ) * ∏ j ∈ Finset.univ.erase i, (D j : ℚ) :=
+              (Finset.mul_prod_erase _ (fun t => (D t : ℚ)) (Finset.mem_univ i)).symm
+            have hFi : ((MvPolynomial.eval p (F i) : ℤ) : ℚ) = (c : ℚ) ^ k * (m i : ℚ) := by
+              rw [hm i]; push_cast; ring
+            rw [hprod, hFi]
+            linear_combination
+              ((∏ j ∈ Finset.univ.erase i, (D j : ℚ)) * (c : ℚ) ^ k * (m i : ℚ)) * (hz i)
+    have hcast : ((Dp : ℤ) : ℚ)
+        = ((((c : ℤ) ^ k * ∑ i, (∏ j ∈ Finset.univ.erase i, D j) * z i * m i : ℤ)) : ℚ) := by
+      push_cast [hDp]
+      exact hid
+    exact_mod_cast hcast
+  obtain ⟨k, hk⟩ : ∃ k : ℕ, |Dp| < (c : ℤ) ^ k := by
+    refine ⟨(|Dp|).toNat + 1, ?_⟩
+    calc |Dp| < ((|Dp|).toNat + 1 : ℕ) := by
+          have := Int.toNat_of_nonneg (abs_nonneg Dp); push_cast; omega
+      _ ≤ (2 : ℤ) ^ ((|Dp|).toNat + 1) := by exact_mod_cast Nat.lt_two_pow_self.le
+      _ ≤ (c : ℤ) ^ ((|Dp|).toNat + 1) := by
+          refine pow_le_pow_left₀ (by norm_num) ?_ _
+          exact_mod_cast hc
+  have := Int.le_of_dvd (abs_pos.2 hDpne) ((dvd_abs _ _).2 (hdvd k))
+  omega
+
+theorem exists_root_enum_field {K : Type*} [Field K] [IsAlgClosed K] [CharZero K]
+    (f : ℤ[X]) (hmon : f.Monic) (hirr : Irreducible f) :
+    ∃ e : Fin f.natDegree → K, Function.Injective e ∧
+      (∀ i, (f.map (Int.castRingHom K)).eval (e i) = 0) ∧
+      ∀ z : K, (f.map (Int.castRingHom K)).eval z = 0 → ∃ i, e i = z := by
+  classical
+  set fC := f.map (Int.castRingHom K) with hfCdef
+  have hfC0 : fC ≠ 0 := (hmon.map (Int.castRingHom K)).ne_zero
+  have hnd : fC.natDegree = f.natDegree := hmon.natDegree_map _
+  have hcard : fC.roots.card = f.natDegree := by
+    rw [← hnd]; exact Polynomial.splits_iff_card_roots.1 (IsAlgClosed.splits fC)
+  -- separability, via irreducibility over `ℚ`
+  have hsepQ : (f.map (Int.castRingHom ℚ)).Separable := by
+    have hirrQ : Irreducible (f.map (Int.castRingHom ℚ)) :=
+      (Polynomial.IsPrimitive.Int.irreducible_iff_irreducible_map_cast hmon.isPrimitive).1 hirr
+    exact hirrQ.separable
+  have hsepC : fC.Separable := by
+    have hcomp : (algebraMap ℚ K).comp (Int.castRingHom ℚ) = Int.castRingHom K :=
+      RingHom.ext fun n => by simp
+    have hfe : fC = (f.map (Int.castRingHom ℚ)).map (algebraMap ℚ K) := by
+      rw [Polynomial.map_map, hcomp]
+    rw [hfe]
+    exact hsepQ.map
+  have hnodup : fC.roots.Nodup := Polynomial.nodup_roots hsepC
+  obtain ⟨S, hS⟩ : ∃ S : Finset K, S = fC.roots.toFinset := ⟨_, rfl⟩
+  have hScard : S.card = f.natDegree := by
+    rw [hS, Multiset.toFinset_card_of_nodup hnodup, hcard]
+  have hSroot : ∀ z ∈ S, fC.eval z = 0 := by
+    intro z hz
+    rw [hS, Multiset.mem_toFinset] at hz
+    exact Polynomial.isRoot_of_mem_roots hz
+  have hSmem : ∀ z : K, fC.eval z = 0 → z ∈ S := by
+    intro z hz
+    rw [hS, Multiset.mem_toFinset]
+    exact (Polynomial.mem_roots hfC0).2 hz
+  set E := S.equivFin with hE
+  refine ⟨fun i => (E.symm (Fin.cast hScard.symm i)  : K), ?_, ?_, ?_⟩
+  · intro i j hij
+    have := E.symm.injective (Subtype.ext hij)
+    exact Fin.cast_injective _ this
+  · intro i
+    exact hSroot _ (E.symm (Fin.cast hScard.symm i)).2
+  · intro z hz
+    refine ⟨Fin.cast hScard (E ⟨z, hSmem z hz⟩), ?_⟩
+    simp
+
+
+/-! ### Step 2b: the two mixed payoffs of the Vandermonde conjugation
+
+Phase 56 read off `P(e k)^Q = 1` from `T^Q = 1`.  In the mixed case `T` is not torsion, and the two
+facts to read off the conjugation are `P(e k)^(Q+1) = P(e k)` (so `P(e k) ∈ {0} ∪ μ_Q`) and
+`∏_k (1 - P(e k)^Q) = det (1 - T^Q) = 0` (so *some* `P(e k)` is a `Q`-th root of unity). -/
+
+/-- Right cancellation by an invertible matrix. -/
+theorem right_cancel_of_isUnit_det {n K : Type*} [Fintype n] [DecidableEq n] [Field K]
+    {A B V : Matrix n n K} (hV : IsUnit V.det) (h : A * V = B * V) : A = B := by
+  have hinv : V * V⁻¹ = 1 := Matrix.mul_nonsing_inv V hV
+  calc A = A * (V * V⁻¹) := by rw [hinv, Matrix.mul_one]
+    _ = (A * V) * V⁻¹ := by rw [Matrix.mul_assoc]
+    _ = (B * V) * V⁻¹ := by rw [h]
+    _ = B * (V * V⁻¹) := by rw [Matrix.mul_assoc]
+    _ = B := by rw [hinv, Matrix.mul_one]
+
+/-- **Mixed payoff 1.**  `T^(Q+1) = T` forces `P(e k)^(Q+1) = P(e k)` at every root. -/
+theorem polyVal_pow_succ_eq {K : Type*} [Field K] (f : ℤ[X]) (hmon : f.Monic)
+    (e : Fin f.natDegree → K) (he : ∀ i, (f.map (Int.castRingHom K)).eval (e i) = 0)
+    (hinj : Function.Injective e) (x : Fin f.natDegree → K) {Q : ℕ}
+    (hQ : polyMat K f x ^ (Q + 1) = polyMat K f x) (i : Fin f.natDegree) :
+    polyVal x (e i) ^ (Q + 1) = polyVal x (e i) := by
+  classical
+  set V := Matrix.vandermonde e with hV
+  set Δ := Matrix.diagonal (fun i => polyVal x (e i)) with hΔ
+  have hconj : V * polyMat K f x = Δ * V := vandermonde_mul_polyMat f hmon e he x
+  have hpow := conj_pow V (polyMat K f x) Δ hconj (Q + 1)
+  rw [hQ, hconj] at hpow
+  have hdiag : Δ ^ (Q + 1) = Δ :=
+    right_cancel_of_isUnit_det (vandermonde_isUnit_det e hinj) hpow.symm
+  rw [hΔ, Matrix.diagonal_pow] at hdiag
+  have := congrArg (fun M : Matrix (Fin f.natDegree) (Fin f.natDegree) K => M i i) hdiag
+  simpa using this
+
+/-- **Mixed payoff 2.**  `det (1 - T^Q) = 0` forces `P(e k)^Q = 1` for some root, i.e. *some*
+spectral value of `T` is nonzero. -/
+theorem exists_polyVal_pow_eq_one {K : Type*} [Field K] (f : ℤ[X]) (hmon : f.Monic)
+    (e : Fin f.natDegree → K) (he : ∀ i, (f.map (Int.castRingHom K)).eval (e i) = 0)
+    (hinj : Function.Injective e) (x : Fin f.natDegree → K) {Q : ℕ}
+    (hdet : (1 - polyMat K f x ^ Q).det = 0) : ∃ i, polyVal x (e i) ^ Q = 1 := by
+  classical
+  set V := Matrix.vandermonde e with hV
+  set Δ := Matrix.diagonal (fun i => polyVal x (e i)) with hΔ
+  have hconj : V * polyMat K f x = Δ * V := vandermonde_mul_polyMat f hmon e he x
+  have hpow := conj_pow V (polyMat K f x) Δ hconj Q
+  have hsub : V * (1 - polyMat K f x ^ Q) = (1 - Δ ^ Q) * V := by
+    rw [Matrix.mul_sub, Matrix.sub_mul, Matrix.mul_one, Matrix.one_mul, hpow]
+  have hdets := congrArg Matrix.det hsub
+  rw [Matrix.det_mul, Matrix.det_mul, hdet, mul_zero] at hdets
+  have hVu := vandermonde_isUnit_det e hinj
+  have hz : (1 - Δ ^ Q).det = 0 := by
+    rcases mul_eq_zero.1 hdets.symm with h | h
+    · exact h
+    · exact absurd h (isUnit_iff_ne_zero.1 hVu)
+  have hdd : (1 - Δ ^ Q) = Matrix.diagonal (fun i => 1 - polyVal x (e i) ^ Q) := by
+    rw [hΔ, Matrix.diagonal_pow]
+    ext i j
+    by_cases hij : i = j <;> simp [hij, Matrix.one_apply, Matrix.diagonal_apply]
+  rw [hdd, Matrix.det_diagonal] at hz
+  obtain ⟨i, _, hi⟩ := Finset.prod_eq_zero_iff.1 hz
+  exact ⟨i, by linear_combination -hi⟩
+
 /-- **Theorem D (full):** some root of `f` is a `c`-unit, i.e. `f ≢ X^d (mod c)`. -/
 theorem floor_pow_prime_pow_add_not_prime_full (f : ℤ[X]) (hmon : f.Monic)
     (hirr : Irreducible f) (hdeg : 2 ≤ f.natDegree) {α : ℝ} (hroot : aeval α f = 0)
