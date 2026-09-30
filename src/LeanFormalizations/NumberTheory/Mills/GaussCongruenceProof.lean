@@ -221,6 +221,137 @@ lemma dvd_sum_of_free (hgN : g ^ N = 1) (hN : 0 < N) (F : X → ℤ)
   exact mul_dvd_mul_left (N : ℤ) (hq x₀)
 
 
+lemma trace_pow_eq_sum_cw' (N : ℕ) [NeZero N] :
+    (C ^ N).trace = ∑ w : Fin N → Fin n, cw C N w := by
+  obtain ⟨m, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (NeZero.ne N)
+  exact trace_pow_eq_sum_cw C m
+
+
+
+/-- rotation of words -/
+def rotE (N n : ℕ) [NeZero N] : Equiv.Perm (Fin N → Fin n) where
+  toFun w := fun t => w (t + 1)
+  invFun w := fun t => w (t - 1)
+  left_inv w := funext fun t => by simp
+  right_inv w := funext fun t => by simp
+
+variable {N : ℕ} [NeZero N]
+
+lemma ofNat_succ (j : ℕ) : Fin.ofNat N (j + 1) = Fin.ofNat N j + 1 := by
+  ext; simp [Fin.ofNat, Fin.val_add, Nat.add_mod]
+
+lemma ofNat_zero' : Fin.ofNat N 0 = 0 := by ext; simp [Fin.ofNat]
+
+lemma rotE_pow (j : ℕ) : ∀ (w : Fin N → Fin n) (t : Fin N),
+    ((rotE N n) ^ j) w t = w (t + Fin.ofNat N j) := by
+  induction j with
+  | zero => intro w t; rw [ofNat_zero', add_zero, pow_zero]; rfl
+  | succ j ih =>
+    intro w t
+    rw [pow_succ, Equiv.Perm.mul_apply, ih ((rotE N n) w) t, ofNat_succ]
+    show w (t + Fin.ofNat N j + 1) = w (t + (Fin.ofNat N j + 1))
+    rw [add_assoc]
+
+lemma cw_rotE (w : Fin N → Fin n) : cw C N ((rotE N n) w) = cw C N w := by
+  rw [cw, cw]
+  exact Equiv.prod_comp (Equiv.addRight (1 : Fin N)) (fun t => C (w t) (w (t + 1)))
+
+/-- if a word has a period `j` with `0 < j < N` and `N = p^(k+1)`, it has period `p^k`. -/
+lemma pow_dvd_period {p k : ℕ} (hp : p.Prime) (hN : N = p ^ (k + 1))
+    (w : Fin N → Fin n) (j : ℕ) (hj : 0 < j) (hjN : j < N)
+    (hfix : ((rotE N n) ^ j) w = w) : ((rotE N n) ^ (p ^ k)) w = w := by
+  classical
+  set g := rotE N n with hg
+  have hgN : g ^ N = 1 := by
+    ext w t
+    rw [hg, rotE_pow]
+    have : Fin.ofNat N N = 0 := by ext; simp [Fin.ofNat]
+    rw [this, add_zero]
+    rfl
+  -- multiples of a period are periods
+  have hmul : ∀ d : ℕ, (g ^ d) w = w → ∀ q : ℕ, (g ^ (d * q)) w = w := by
+    intro d hd q
+    induction q with
+    | zero => simp
+    | succ q ih =>
+      have : d * (q + 1) = d * q + d := by ring
+      rw [this, pow_add, Equiv.Perm.mul_apply, hd, ih]
+  -- minimal period
+  have hex : ∃ d, 0 < d ∧ (g ^ d) w = w := ⟨j, hj, hfix⟩
+  classical
+  let d := Nat.find hex
+  have hd : 0 < d ∧ (g ^ d) w = w := Nat.find_spec hex
+  have hmin : ∀ e, e < d → ¬ (0 < e ∧ (g ^ e) w = w) := fun e he => Nat.find_min hex he
+  have hdvd : ∀ e : ℕ, (g ^ e) w = w → d ∣ e := by
+    intro e he
+    have h1 : (g ^ (e % d)) w = w := by
+      have heq : e = e % d + d * (e / d) := (Nat.mod_add_div e d).symm
+      have h2 : (g ^ (e % d + d * (e / d))) w = w := by rw [← heq]; exact he
+      rw [pow_add, Equiv.Perm.mul_apply, hmul d hd.2 (e / d)] at h2
+      exact h2
+    by_contra hnd
+    have : 0 < e % d := Nat.pos_of_ne_zero (fun h => hnd (Nat.dvd_of_mod_eq_zero h))
+    exact hmin _ (Nat.mod_lt _ hd.1) ⟨this, h1⟩
+  -- d divides N = p^(k+1) and d ≤ j < N, so d ∣ p^k
+  have hdN : d ∣ p ^ (k + 1) := hN ▸ hdvd N (by rw [hgN]; rfl)
+  have hdj : d ≤ j := Nat.find_le ⟨hj, hfix⟩
+  obtain ⟨i, hik, hdi⟩ := (Nat.dvd_prime_pow hp).1 hdN
+  have hik' : i ≤ k := by
+    by_contra hc
+    have hik2 : i = k + 1 := by omega
+    rw [hik2] at hdi
+    omega
+  have : d * p ^ (k - i) = p ^ k := by
+    rw [hdi, ← pow_add]
+    congr 1
+    omega
+  rw [← this]
+  exact hmul d hd.2 (p ^ (k - i))
+
+
+
+
+lemma ofNat_add (N : ℕ) [NeZero N] (a b : ℕ) :
+    Fin.ofNat N (a + b) = Fin.ofNat N a + Fin.ofNat N b := by
+  ext; simp [Fin.ofNat, Fin.val_add, Nat.add_mod]
+
+lemma ofNat_val_lt {N : ℕ} [NeZero N] (t : Fin N) : Fin.ofNat N t.val = t := by
+  ext; simp [Fin.ofNat, Nat.mod_eq_of_lt t.isLt]
+
+lemma ofNat_mod_dvd {M N : ℕ} [NeZero M] [NeZero N] (hMN : M ∣ N) (a : ℕ) :
+    Fin.ofNat M (Fin.ofNat N a).val = Fin.ofNat M a := by
+  ext
+  simp only [Fin.ofNat, Fin.val_mk]
+  exact Nat.mod_mod_of_dvd a hMN
+
+/-- the `p`-fold repetition of a word of length `M` -/
+def repw (M p n : ℕ) [NeZero M] (u : Fin M → Fin n) : Fin (M * p) → Fin n :=
+  fun t => u (Fin.ofNat M t.val)
+
+/-- restriction of a word of length `M * p` to its first `M` letters -/
+def resw (M p n : ℕ) [NeZero (M * p)] (w : Fin (M * p) → Fin n) : Fin M → Fin n :=
+  fun s => w (Fin.ofNat (M * p) s.val)
+
+lemma prod_ofNat_mod (M : ℕ) [NeZero M] (H : Fin M → ℤ) (p : ℕ) :
+    ∏ t : Fin (M * p), H (Fin.ofNat M t.val) = (∏ s : Fin M, H s) ^ p := by
+  induction p with
+  | zero => simp
+  | succ p ih =>
+    have h : M * (p + 1) = M * p + M := Nat.mul_succ M p
+    rw [Fintype.prod_equiv (finCongr h) (fun t : Fin (M * (p+1)) => H (Fin.ofNat M t.val))
+      (fun t : Fin (M * p + M) => H (Fin.ofNat M t.val)) (fun t => by simp)]
+    rw [Fin.prod_univ_add]
+    have e1 : ∀ i : Fin (M * p), H (Fin.ofNat M (Fin.castAdd M i).val) = H (Fin.ofNat M i.val) :=
+      fun i => by simp
+    have e2 : ∀ i : Fin M, H (Fin.ofNat M (Fin.natAdd (M * p) i).val) = H i := by
+      intro i
+      congr 1
+      ext
+      simp [Fin.ofNat, Nat.mod_eq_of_lt i.isLt]
+    rw [Finset.prod_congr rfl (fun i _ => e1 i), Finset.prod_congr rfl (fun i _ => e2 i), ih,
+      pow_succ]
+
+
 end Necklace
 
 /-- **The Gauss congruence for traces holds** (discharging the Literature hypothesis). -/
