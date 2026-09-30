@@ -59,6 +59,15 @@ The obstacle for Theorem C at `d ≥ 3` is that no exact composition is availabl
 - The larger-window version would also re-derive Theorem A at `c ≡ 1 (mod 3)`, where the elementary orbit-sum count does not reach (the window contains `ω`).
 - **Lean path.**  The full Galois argument is paper-only for now; formalizing linear disjointness is heavy.  Lean-sized substitute: for each FIXED `H`, the statement "no limit point lies in `{s − h : |h| ≤ H}`" is a finite congruence check mod `c^K`.  So "(D1) for Tribonacci with `H = 10`" is a `decide`-able certificate, plus the general mechanism from phase 40.
 
+### Theorem B at `c = 2` (why the staircase has a Fermat step at every size)
+- With `det` odd, `V(2^(n+1)) ≡ V(2^n)² − 2 (mod 2^(n+2))`.  The integer orbits of `x ↦ x² − 2` inside a window `{a, a − 2}` are the fixed points `−1` and `2`.
+- `P, Q` odd: `α (mod 2) ∈ 𝔽₄ ∖ 𝔽₂`, so `τ = ζ₃ + ζ₃² = −1` and the survivors are `h ∈ {0, 2}`.  The prototype is `L(2^n)`.
+- `P` even: `τ = 2`, survivors `h ∈ {−1, −3}`.
+- So **every** 2×2 trace at `c = 2` has Fermat-type survivors, while at odd `c` Theorem B leaves only the `Φ₃`/`Φ₆` classes.
+
+### Theorem C for traces at odd `c` (Lucas numbers)
+A trace has a single limit point `τ`.  If `τ ∈ ℤ`, then phase 35's exact `V_c(τ, −1) = τ` forces `τ = 0`, contradicting `τ ≡ P ≢ 0 (mod c)`.  So `τ ∉ ℤ`, and **prime-free intervals of any fixed length surround `L(c^n)` (and `V_(c^n)(P, −1)`, `c ∤ P`) infinitely often.**  All pieces are in Lean already.
+
 ## 2. Conjectures, each with its difficulty check
 
 | Conjecture | Proved implications | Unproved premise | Mechanism for the premise |
@@ -79,7 +88,8 @@ The obstacle for Theorem C at `d ≥ 3` is that no exact composition is availabl
 1. Phase 38 (running): Lucas `U(P, ±1)`, odd `c ∤ D`.
 2. Phase 39 (drafted): `⌊α^(c^n)⌋ + h` for quadratic Pisot units of norm `−1` (cheap corollary; communicative value).
 3. **Phase 40: Theorem C, Fibonacci, `c = 2`**: `∀ H, ∃ m L (p : ℤ → ℕ), ∀ |h| ≤ H, ∀ k, p h ∣ F(2^(Lk+m)) + h`, plus the interval corollary.
-4. Phase 41: Theorem C for Fibonacci at every prime (`Φ_j` with `c²`; `c = 5` via factorizations).
+4. **Phase 41: the Theorem C ENGINE.**  A general `d × d` statement with an abstract hypothesis: `A ∈ M_d(ℤ)` with `det` a unit mod every relevant `p`, prime `c`, entry or trace `u`, and `∀ |h| ≤ H, ∀ᶠ n, ∃ prime p ∣ u(c^n) + h` with `v_c(glCard d p) ≤ n`.  Conclusion: (D1) plus prime-free intervals.  Refactor phase 40's mechanism into it.
+   - Instances, each only needing `exists_good_prime_factor`: Fibonacci at every prime (`Φ_j` with `2j + 1 = c²`; `c = 5` via factorizations); Lucas at odd `c` (phase 35 fixed point); `U(P, ±1)` (phase 38); Tribonacci for a fixed `H` by a `decide` certificate.
 5. Phase 42: Theorem B (2×2 traces, odd `c`, `det ≡ ±1`), plus the `Φ₃`/`Φ₆` exception stated as a frozen survivor fact.
 6. Phases 43–44: Theorem A (general `d`, inert), with the Tribonacci corollary.
 7. Stretch: a quantitative Theorem C statement (`(log n)^(1/5)`), if the bookkeeping is clean.
