@@ -208,10 +208,135 @@ theorem fib_frobenius_inert {c : ℕ} (hc : c.Prime) (h5 : c % 5 = 2 ∨ c % 5 =
     push_cast
     exact h2
 
+/-! ### Step 2: the sign flip, by lifting the exponent -/
+
+/-- The Fibonacci companion matrix. -/
+def fibM : Matrix (Fin 2) (Fin 2) ℤ := !![1, 1; 1, 0]
+
+theorem fibM_pow (N : ℕ) :
+    fibM ^ N = !![(Nat.fib (N + 1) : ℤ), (Nat.fib N : ℤ);
+                  (Nat.fib N : ℤ), (Nat.fib (N + 1) : ℤ) - (Nat.fib N : ℤ)] := by
+  induction N with
+  | zero =>
+      norm_num
+      exact Matrix.one_fin_two
+  | succ N ih =>
+      have hf : (Nat.fib (N + 2) : ℤ) = (Nat.fib N : ℤ) + (Nat.fib (N + 1) : ℤ) := by
+        exact_mod_cast congrArg (Nat.cast : ℕ → ℤ) (Nat.fib_add_two (n := N))
+      rw [pow_succ, ih, fibM, Matrix.mul_fin_two]
+      rw [show N + 1 + 1 = N + 2 from rfl, hf]
+      norm_num
+      ring_nf
+
+/-- Cassini's identity over `ℤ`. -/
+theorem cassini_int (m : ℕ) :
+    (Nat.fib (m + 1) : ℤ) ^ 2 - Nat.fib (m + 1) * Nat.fib m - (Nat.fib m : ℤ) ^ 2 = (-1) ^ m := by
+  induction m with
+  | zero => simp
+  | succ m ih =>
+      have h : (Nat.fib (m + 2) : ℤ) = Nat.fib m + Nat.fib (m + 1) := by
+        exact_mod_cast congrArg (Nat.cast : ℕ → ℤ) (Nat.fib_add_two (n := m))
+      rw [h, pow_succ]
+      ring_nf
+      ring_nf at ih
+      linarith [ih]
+
+/-- Binomial expansion to second order: `(1 − ε)^k = 1 − kε + ε²·D`, valid in any ring. -/
+theorem one_sub_pow_expand {R : Type*} [Ring R] (ε : R) (k : ℕ) :
+    ∃ D : R, (1 - ε) ^ k = 1 - (k : ℤ) • ε + ε ^ 2 * D := by
+  have key : ∃ D : Polynomial ℤ,
+      (1 - Polynomial.X : Polynomial ℤ) ^ k
+        = 1 - (k : ℤ) • Polynomial.X + Polynomial.X ^ 2 * D := by
+    induction k with
+    | zero => exact ⟨0, by simp⟩
+    | succ k ih =>
+        obtain ⟨D, hD⟩ := ih
+        refine ⟨(k : ℤ) • 1 + D - Polynomial.X * D, ?_⟩
+        rw [pow_succ, hD]
+        push_cast
+        simp only [zsmul_eq_mul]
+        push_cast
+        ring
+  obtain ⟨D, hD⟩ := key
+  refine ⟨Polynomial.aeval ε D, ?_⟩
+  have h := congrArg (Polynomial.aeval ε) hD
+  simpa using h
+
+/-- The inverse of `fibM ^ Q` for odd `Q`, written out in Fibonacci numbers. -/
+def fibMinv (Q : ℕ) : Matrix (Fin 2) (Fin 2) ℤ :=
+  !![(Nat.fib Q : ℤ) - (Nat.fib (Q + 1) : ℤ), (Nat.fib Q : ℤ);
+     (Nat.fib Q : ℤ), -(Nat.fib (Q + 1) : ℤ)]
+
+theorem fibM_pow_mul_fibMinv {Q : ℕ} (hQ : Odd Q) : fibM ^ Q * fibMinv Q = 1 := by
+  have hc := cassini_int Q
+  have hneg : ((-1 : ℤ)) ^ Q = -1 := hQ.neg_one_pow
+  rw [hneg] at hc
+  rw [fibM_pow, fibMinv, Matrix.mul_fin_two, Matrix.one_fin_two]
+  ext i j
+  fin_cases i <;> fin_cases j <;> norm_num <;> linarith [hc]
+
+/-- **The inductive form of the sign flip**: `A^(c^n (c+1)) ≡ −I (mod c^(n+1))`. -/
+theorem fibM_pow_eq_neg_one_add {c : ℕ} (hc : c.Prime) (hc2 : c ≠ 2)
+    (h5 : c % 5 = 2 ∨ c % 5 = 3) (n : ℕ) :
+    ∃ B : Matrix (Fin 2) (Fin 2) ℤ,
+      fibM ^ (c ^ n * (c + 1)) = -1 + (c : ℤ) ^ (n + 1) • B := by
+  have hodd : Odd c := hc.odd_of_ne_two hc2
+  induction n with
+  | zero =>
+      obtain ⟨ha, hb⟩ := fib_frobenius_inert hc h5
+      obtain ⟨a, ha'⟩ := ha
+      obtain ⟨b, hb'⟩ := hb
+      refine ⟨!![a + b, a; a, b], ?_⟩
+      have hf2 : (Nat.fib (c + 2) : ℤ) = (Nat.fib c : ℤ) + (Nat.fib (c + 1) : ℤ) := by
+        exact_mod_cast congrArg (Nat.cast : ℕ → ℤ) (Nat.fib_add_two (n := c))
+      rw [show c ^ 0 * (c + 1) = c + 1 from by ring, fibM_pow]
+      rw [show c + 1 + 1 = c + 2 from rfl, hf2]
+      rw [Matrix.one_fin_two]
+      ext i j
+      fin_cases i <;> fin_cases j <;>
+        simp [Matrix.smul_apply, Matrix.add_apply, Matrix.neg_apply] <;> linarith [ha', hb']
+  | succ n ih =>
+      obtain ⟨B, hB⟩ := ih
+      obtain ⟨D, hD⟩ := one_sub_pow_expand ((c : ℤ) ^ (n + 1) • B) c
+      refine ⟨B - (c : ℤ) ^ n • (B ^ 2 * D), ?_⟩
+      have hsplit : c ^ (n + 1) * (c + 1) = (c ^ n * (c + 1)) * c := by ring
+      rw [hsplit, pow_mul, hB]
+      have hneg : (-1 + (c : ℤ) ^ (n + 1) • B) = -(1 - (c : ℤ) ^ (n + 1) • B) := by abel
+      rw [hneg, hodd.neg_pow, hD]
+      have hsm : ((c : ℤ) • ((c : ℤ) ^ (n + 1) • B)) = (c : ℤ) ^ (n + 1 + 1) • B := by
+        rw [smul_smul]; congr 1; ring
+      have he2 : ((c : ℤ) ^ (n + 1) • B) ^ 2 * D
+          = (c : ℤ) ^ (n + 1 + 1) • ((c : ℤ) ^ n • (B ^ 2 * D)) := by
+        rw [_root_.smul_pow, smul_mul_assoc, smul_smul]
+        congr 1
+        ring
+      rw [hsm, he2, smul_sub, smul_smul]
+      abel
+
 /-- **The sign flip at an inert prime.** -/
 theorem fib_prime_pow_succ_add {c : ℕ} (hc : c.Prime) (h5 : c % 5 = 2 ∨ c % 5 = 3) (n : ℕ) :
     (c : ℤ) ^ (n + 1) ∣ (Nat.fib (c ^ (n + 1)) : ℤ) + Nat.fib (c ^ n) := by
-  sorry
+  rcases eq_or_ne c 2 with rfl | hc2
+  · rcases Nat.eq_zero_or_pos n with rfl | hn
+    · norm_num
+    · exact SaitoFibonacci.two_pow_dvd_fib_two_pow_succ_add n hn
+  have hodd : Odd c := hc.odd_of_ne_two hc2
+  obtain ⟨B, hB⟩ := fibM_pow_eq_neg_one_add hc hc2 h5 n
+  have hQodd : Odd (c ^ n) := hodd.pow
+  have hinv := fibM_pow_mul_fibMinv hQodd
+  have hpa : fibM ^ (c ^ n * (c + 1)) = fibM ^ (c ^ (n + 1)) * fibM ^ (c ^ n) := by
+    rw [← pow_add]
+    congr 1
+  have hkey : fibM ^ (c ^ (n + 1)) = (-1 + (c : ℤ) ^ (n + 1) • B) * fibMinv (c ^ n) := by
+    rw [← hB, hpa, mul_assoc, hinv, mul_one]
+  obtain ⟨W, hW⟩ : ∃ W : Matrix (Fin 2) (Fin 2) ℤ, W = B * fibMinv (c ^ n) := ⟨_, rfl⟩
+  have hd : fibM ^ (c ^ (n + 1)) + fibMinv (c ^ n) = (c : ℤ) ^ (n + 1) • W := by
+    rw [hW, hkey, Matrix.add_mul, neg_one_mul, Matrix.smul_mul]
+    abel
+  refine ⟨W 0 1, ?_⟩
+  have h01 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℤ => M 0 1) hd
+  simp only [Matrix.add_apply, Matrix.smul_apply, smul_eq_mul, fibM_pow, fibMinv] at h01
+  simpa using h01
 
 /-- The filter's `c`-adic output for an odd prime `c`. -/
 theorem pow_dvd_sub_or_add_of_lt_padicValNat {c p k : ℕ} (hc : c.Prime) (hc2 : c ≠ 2)
