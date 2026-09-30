@@ -158,11 +158,221 @@ theorem prime_free_of_good {d : ℕ} (A : Matrix (Fin d) (Fin d) ℤ)
     (fun h hh => shifts_bound hh) hgrow hL (fun h hh => hp h (shifts_bound hh))
   exact this.mono (fun n hn h hb => hn h (mem_shifts hb))
 
+
+/-! ### The Lucas companion sequence `V(c^n)` -/
+
+lemma dvd_trace_of_entries {d : ℕ} {a : ℤ} {M : Matrix (Fin d) (Fin d) ℤ}
+    (h : ∀ i j, a ∣ M i j) : a ∣ M.trace := by
+  simp only [Matrix.trace, Matrix.diag_apply]
+  exact Finset.dvd_sum (fun i _ => h i i)
+
+/-- **`c`-adic convergence of the companion sequence.**  There is a shift `d ≥ 1` with
+`V(c^(n+d)) ≡ V(c^n) (mod c^n)` for every `n ≥ 1`. -/
+theorem exists_shift_lucasV_prime_pow_congr {c : ℕ} (hc : c.Prime) (P : ℤ) :
+    ∃ d : ℕ, 1 ≤ d ∧ ∀ n : ℕ, 1 ≤ n →
+      (c : ℤ) ^ n ∣ lucasV P (-1) (c ^ (n + d)) - lucasV P (-1) (c ^ n) := by
+  have hdet : ¬ (c : ℤ) ∣ (lucasM P).det := by
+    rw [lucasM_det]
+    intro hdd
+    have h1 : (c : ℤ) ≤ 1 := Int.le_of_dvd one_pos (dvd_neg.mp hdd)
+    have h2 : (2 : ℤ) ≤ (c : ℤ) := by exact_mod_cast hc.two_le
+    omega
+  obtain ⟨d, s, hd, hsle, hmain⟩ := exists_shift_pow_congr (lucasM P) hc hdet
+  have hs1 : s ≤ 1 := by rwa [padicValNat_glCard_two_self hc] at hsle
+  refine ⟨d, hd, fun n hn => ?_⟩
+  have hkey : (c : ℤ) ^ (n - s + 1) ∣
+      lucasV P (-1) (c ^ (n + d)) - lucasV P (-1) (c ^ n) := by
+    rw [← trace_lucasM_pow, ← trace_lucasM_pow, ← Matrix.trace_sub]
+    exact dvd_trace_of_entries (fun i j => by
+      have := hmain n (by omega) i j
+      simpa using this)
+  exact dvd_trans (pow_dvd_pow _ (by omega)) hkey
+
+/-- **Step 2 for the companion sequence.**  For `n` large relative to `|h|`, some prime factor of
+`V(c^n) + h` has a small `c`-part of `|GL₂(𝔽_p)|`.
+
+If every prime factor were bad then `V(c^n) ≡ x (mod c^(n/2))` with `x = s − h`, `s = ±1`; the
+composition `V(c^(n+d)) = V_(c^d)(V(c^n))` and the `c`-adic convergence above turn this into
+`c^(n/2) ∣ V_(c^d)(x) − x`, a fixed nonzero integer (`lucasV_neg_one_growth`, with `x ≠ 0` because
+`c ∤ V(c^n)`). -/
+theorem exists_good_lucasV_prime_factor {c : ℕ} (hc : c.Prime) (hc2 : c ≠ 2) {P : ℤ}
+    (hP1 : 1 ≤ P) (hPc : ¬ (c : ℤ) ∣ P) (h : ℤ) :
+    ∀ᶠ n in atTop, ∃ p : ℕ, p.Prime ∧ (p : ℤ) ∣ lucasV P (-1) (c ^ n) + h ∧
+      padicValNat c (glCard 2 p) ≤ n := by
+  have hcodd : Odd c := hc.odd_of_ne_two hc2
+  have hc3 : 3 ≤ c := by
+    have := hc.two_le
+    rcases Nat.lt_or_ge c 3 with hx | hx
+    · interval_cases c <;> simp_all
+    · exact hx
+  obtain ⟨d, hd1, hconv⟩ := exists_shift_lucasV_prime_pow_congr hc P
+  have hWodd : Odd (c ^ d) := hcodd.pow
+  have hW3 : 3 ≤ c ^ d := by
+    calc 3 ≤ c := hc3
+    _ = c ^ 1 := (pow_one c).symm
+    _ ≤ c ^ d := Nat.pow_le_pow_right (by omega) hd1
+  obtain ⟨B, hB⟩ : ∃ B : ℕ, ∀ s : ℤ, (s = 1 ∨ s = -1) →
+      |lucasV (s - h) (-1) (c ^ d) - (s - h)| ≤ (B : ℤ) := by
+    refine ⟨(max |lucasV (1 - h) (-1) (c ^ d) - (1 - h)|
+      |lucasV (-1 - h) (-1) (c ^ d) - (-1 - h)|).toNat, fun s hs => ?_⟩
+    have hnn : (0 : ℤ) ≤ max |lucasV (1 - h) (-1) (c ^ d) - (1 - h)|
+        |lucasV (-1 - h) (-1) (c ^ d) - (-1 - h)| :=
+      le_trans (abs_nonneg _) (le_max_left _ _)
+    rw [Int.toNat_of_nonneg hnn]
+    rcases hs with rfl | rfl
+    · exact le_max_left _ _
+    · exact le_max_right _ _
+  have hVn : ∀ n : ℕ, (n : ℤ) ≤ lucasV P (-1) (c ^ n) := by
+    intro n
+    have h1 : n ≤ c ^ n :=
+      le_trans (Nat.le_of_lt Nat.lt_two_pow_self) (Nat.pow_le_pow_left (by omega) n)
+    have h2 : ((c ^ n : ℕ) : ℤ) ≤ lucasV P (-1) (c ^ n) :=
+      nat_le_lucasV hP1 (Nat.one_le_pow _ _ hc.pos)
+    have h3 : (n : ℤ) ≤ ((c ^ n : ℕ) : ℤ) := by exact_mod_cast h1
+    omega
+  refine eventually_atTop.2 ⟨max 5 (2 * B + 2 * h.natAbs + 8), fun n hn => ?_⟩
+  have hn5 : 5 ≤ n := le_trans (le_max_left _ _) hn
+  have hnB : 2 * B + 2 * h.natAbs + 8 ≤ n := le_trans (le_max_right _ _) hn
+  obtain ⟨e, hedef⟩ : ∃ e, e = n / 2 := ⟨_, rfl⟩
+  have he1 : 1 ≤ e := by omega
+  have hen : e ≤ n := by omega
+  have heB : (B : ℤ) < (c : ℤ) ^ e := by
+    have h1 : B + 2 ≤ e := by omega
+    have h2 : e < 2 ^ e := Nat.lt_two_pow_self
+    have h3 : (2 : ℕ) ^ e ≤ c ^ e := Nat.pow_le_pow_left (by omega) e
+    have : B < c ^ e := by omega
+    exact_mod_cast this
+  by_contra hcon
+  have hfac : ∀ q : ℕ, q.Prime → (q : ℤ) ∣ lucasV P (-1) (c ^ n) + h →
+      PmOneMod ((c : ℤ) ^ e) (q : ℤ) := by
+    intro q hq hqd
+    have hvq : ¬ (padicValNat c (glCard 2 q) ≤ n) := fun hv => hcon ⟨q, hq, hqd, hv⟩
+    have hqc : q ≠ c := by
+      intro hx
+      rw [hx, padicValNat_glCard_two_self hc] at hvq
+      omega
+    have := pow_dvd_sub_or_add_of_lt_padicValNat_odd hc hc2 hq hqc (n := n) (by omega)
+    rw [← hedef] at this
+    exact this
+  have hbig : (h.natAbs : ℤ) < lucasV P (-1) (c ^ n) := by
+    have h1 := hVn n
+    have h2 : ((2 * B + 2 * h.natAbs + 8 : ℕ) : ℤ) ≤ (n : ℤ) := by exact_mod_cast hnB
+    push_cast at h2
+    omega
+  have hval : (0 : ℤ) < lucasV P (-1) (c ^ n) + h := by
+    have h4 : |h| = (h.natAbs : ℤ) := Int.abs_eq_natAbs h
+    have h5 : -|h| ≤ h := neg_abs_le h
+    omega
+  obtain ⟨M, hM⟩ : ∃ M : ℕ, (M : ℤ) = lucasV P (-1) (c ^ n) + h :=
+    ⟨(lucasV P (-1) (c ^ n) + h).toNat, by omega⟩
+  have hM1 : 1 ≤ M := by
+    have : (0 : ℤ) < (M : ℤ) := by rw [hM]; exact hval
+    exact_mod_cast this
+  have hpm : PmOneMod ((c : ℤ) ^ e) (lucasV P (-1) (c ^ n) + h) := by
+    rw [← hM]
+    exact PmOneMod.of_prime_factors _ M hM1 (by
+      intro q hq hqd
+      exact hfac q hq (by rw [← hM]; exact_mod_cast Int.natCast_dvd_natCast.2 hqd))
+  obtain ⟨s, hs, hsd⟩ := hpm.exists_sign
+  obtain ⟨x, hx⟩ : ∃ x : ℤ, x = s - h := ⟨_, rfl⟩
+  have hxd : (c : ℤ) ^ e ∣ lucasV P (-1) (c ^ n) - x := by
+    have hrw : lucasV P (-1) (c ^ n) - x = (lucasV P (-1) (c ^ n) + h) - s := by rw [hx]; ring
+    rw [hrw]; exact hsd
+  have hx0 : x ≠ 0 := by
+    intro hxz
+    rw [hxz, sub_zero] at hxd
+    have hcd : (c : ℤ) ∣ lucasV P (-1) (c ^ n) :=
+      dvd_trans (dvd_pow_self (c : ℤ) (by omega : e ≠ 0)) hxd
+    exact hPc (by
+      have := dvd_sub hcd (lucasV_prime_pow_mod hc hc2 P n)
+      simpa using this)
+  have hcomp : lucasV P (-1) (c ^ (n + d)) = lucasV (lucasV P (-1) (c ^ n)) (-1) (c ^ d) := by
+    have hidx : c ^ d * c ^ n = c ^ (n + d) := by rw [← pow_add]; ring_nf
+    rw [← hidx]
+    exact lucasV_mul_odd P (c ^ d) hcodd.pow
+  have hΦ : (c : ℤ) ^ e ∣
+      lucasV (lucasV P (-1) (c ^ n)) (-1) (c ^ d) - lucasV x (-1) (c ^ d) :=
+    dvd_lucasV_sub hxd (c ^ d)
+  have hshift : (c : ℤ) ^ e ∣ lucasV P (-1) (c ^ (n + d)) - lucasV P (-1) (c ^ n) :=
+    dvd_trans (pow_dvd_pow _ hen) (hconv n (by omega))
+  have hfinal : (c : ℤ) ^ e ∣ lucasV x (-1) (c ^ d) - x := by
+    have hsum : lucasV x (-1) (c ^ d) - x
+        = -(lucasV (lucasV P (-1) (c ^ n)) (-1) (c ^ d) - lucasV x (-1) (c ^ d))
+          + (lucasV P (-1) (c ^ (n + d)) - lucasV P (-1) (c ^ n))
+          + (lucasV P (-1) (c ^ n) - x) := by rw [hcomp]; ring
+    rw [hsum]
+    exact dvd_add (dvd_add (dvd_neg.2 hΦ) hshift) hxd
+  have hgr := lucasV_neg_one_growth hWodd hW3 hx0
+  have hne : lucasV x (-1) (c ^ d) - x ≠ 0 := by
+    intro hz
+    have : |lucasV x (-1) (c ^ d)| = |x| := by rw [show lucasV x (-1) (c ^ d) = x by omega]
+    omega
+  have hle := Int.le_of_dvd (abs_pos.2 hne) ((dvd_abs _ _).2 hfinal)
+  have hbd : |lucasV x (-1) (c ^ d) - x| ≤ (B : ℤ) := by rw [hx]; exact hB s hs
+  omega
+
+/-- The `P ≥ 1` case of the theorem below, obtained from the engine with `A = lucasM P` and
+`ℓ = trace`. -/
+theorem lucasV_prime_pow_prime_free_pos {c : ℕ} (hc : c.Prime) (hc2 : c ≠ 2) {P : ℤ}
+    (hP1 : 1 ≤ P) (hPc : ¬ (c : ℤ) ∣ P) (H : ℕ) :
+    ∃ᶠ n in atTop, ∀ h : ℤ, |h| ≤ H → ¬ Prime (lucasV P (-1) (c ^ n) + h) := by
+  have hc2' : 2 ≤ c := hc.two_le
+  have htr : ∀ n : ℕ,
+      (Matrix.traceLinearMap (Fin 2) ℤ ℤ) ((lucasM P) ^ (c ^ n)) = lucasV P (-1) (c ^ n) :=
+    fun n => trace_lucasM_pow P _
+  have hVn : ∀ n : ℕ, (n : ℤ) ≤ lucasV P (-1) (c ^ n) := by
+    intro n
+    have h1 : n ≤ c ^ n :=
+      le_trans (Nat.le_of_lt Nat.lt_two_pow_self) (Nat.pow_le_pow_left (by omega) n)
+    have h2 : ((c ^ n : ℕ) : ℤ) ≤ lucasV P (-1) (c ^ n) :=
+      nat_le_lucasV hP1 (Nat.one_le_pow _ _ hc.pos)
+    have h3 : (n : ℤ) ≤ ((c ^ n : ℕ) : ℤ) := by exact_mod_cast h1
+    omega
+  have hgrow : Tendsto
+      (fun n : ℕ => |(Matrix.traceLinearMap (Fin 2) ℤ ℤ) ((lucasM P) ^ (c ^ n))|) atTop atTop := by
+    refine tendsto_atTop_mono (f := fun n : ℕ => (n : ℤ)) (fun n => ?_)
+      tendsto_natCast_atTop_atTop
+    rw [htr n]
+    have := hVn n
+    have : (0 : ℤ) ≤ (n : ℤ) := Int.natCast_nonneg n
+    rw [abs_of_nonneg (by have := hVn n; omega)]
+    exact hVn n
+  have hgood : ∀ h : ℤ, |h| ≤ H → ∀ᶠ n in atTop, ∃ p : ℕ, p.Prime ∧
+      ¬ (p : ℤ) ∣ (lucasM P).det ∧
+      (p : ℤ) ∣ (Matrix.traceLinearMap (Fin 2) ℤ ℤ) ((lucasM P) ^ (c ^ n)) + h ∧
+      padicValNat c (glCard 2 p) ≤ n := by
+    intro h _
+    refine (exists_good_lucasV_prime_factor hc hc2 hP1 hPc h).mono ?_
+    rintro n ⟨p, hp, hpd, hpv⟩
+    refine ⟨p, hp, ?_, by rw [htr n]; exact hpd, hpv⟩
+    rw [lucasM_det]
+    intro hdd
+    have h1 : (p : ℤ) ≤ 1 := Int.le_of_dvd one_pos (dvd_neg.mp hdd)
+    have h2 : (2 : ℤ) ≤ (p : ℤ) := by exact_mod_cast hp.two_le
+    omega
+  refine (prime_free_of_good (lucasM P) (Matrix.traceLinearMap (Fin 2) ℤ ℤ) hc H hgrow
+    hgood).mono ?_
+  intro n hn h hb
+  rw [← htr n]
+  exact hn h hb
+
 /-- **Prime-free intervals around `V_(c^n)(P, −1)`** (e.g. Lucas numbers `P = 1`), odd prime `c ∤ P`. -/
 theorem lucasV_prime_pow_prime_free {c : ℕ} (hc : c.Prime) (hc2 : c ≠ 2) {P : ℤ}
     (hP : ¬ (c : ℤ) ∣ P) (H : ℕ) :
     ∃ᶠ n in atTop, ∀ h : ℤ, |h| ≤ H → ¬ Prime (lucasV P (-1) (c ^ n) + h) := by
-  sorry
+  have hcodd : Odd c := hc.odd_of_ne_two hc2
+  have hP0 : P ≠ 0 := fun hz => hP (by simp [hz])
+  rcases lt_or_gt_of_ne hP0 with hneg | hpos
+  · have hP' : ¬ (c : ℤ) ∣ -P := fun hd => hP (dvd_neg.1 hd)
+    refine (lucasV_prime_pow_prime_free_pos hc hc2 (by omega : (1:ℤ) ≤ -P) hP' H).mono ?_
+    intro n hn h hb hpr
+    refine hn (-h) (by rwa [abs_neg]) ?_
+    have hflip : lucasV (-P) (-1) (c ^ n) = -lucasV P (-1) (c ^ n) := by
+      rw [lucasV_neg, (hcodd.pow (n := n)).neg_one_pow]
+      ring
+    rw [hflip, show -lucasV P (-1) (c ^ n) + -h = -(lucasV P (-1) (c ^ n) + h) by ring]
+    exact hpr.neg
+  · exact lucasV_prime_pow_prime_free_pos hc hc2 hpos hP H
 
 /-- **Prime-free intervals around `F(c^n)`**, every prime `c ≠ 5`. -/
 theorem fib_prime_pow_prime_free {c : ℕ} (hc : c.Prime) (h5 : c ≠ 5) (H : ℕ) :
