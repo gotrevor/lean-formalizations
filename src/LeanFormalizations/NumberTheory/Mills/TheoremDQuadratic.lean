@@ -955,7 +955,78 @@ theorem exists_complex_of_all_levels (a b : ℤ) {c : ℕ} (hc : c.Prime) {Q : �
     ∃ x y : ℂ, (torsionPair (a : ℂ) (b : ℂ) x y Q).1 = 1 ∧
       (torsionPair (a : ℂ) (b : ℂ) x y Q).2 = 0 ∧
       x * (w₁ : ℂ) + y * (w₂ : ℂ) = (t : ℂ) := by
-  sorry
+  classical
+  -- the three polynomials, over `ℤ`
+  set F₁ : MvPolynomial (Fin 2) ℤ :=
+    (torsionPair ((a : ℤ) : MvPolynomial (Fin 2) ℤ) ((b : ℤ) : MvPolynomial (Fin 2) ℤ)
+      (MvPolynomial.X 0) (MvPolynomial.X 1) Q).1 - 1 with hF₁
+  set F₂ : MvPolynomial (Fin 2) ℤ :=
+    (torsionPair ((a : ℤ) : MvPolynomial (Fin 2) ℤ) ((b : ℤ) : MvPolynomial (Fin 2) ℤ)
+      (MvPolynomial.X 0) (MvPolynomial.X 1) Q).2 with hF₂
+  set F₃ : MvPolynomial (Fin 2) ℤ :=
+    ((w₁ : ℤ) : MvPolynomial (Fin 2) ℤ) * MvPolynomial.X 0
+      + ((w₂ : ℤ) : MvPolynomial (Fin 2) ℤ) * MvPolynomial.X 1
+      - ((t : ℤ) : MvPolynomial (Fin 2) ℤ) with hF₃
+  -- evaluation over `ℤ`
+  have hevZ : ∀ p : Fin 2 → ℤ,
+      MvPolynomial.eval p F₁ = (torsionPair a b (p 0) (p 1) Q).1 - 1 ∧
+      MvPolynomial.eval p F₂ = (torsionPair a b (p 0) (p 1) Q).2 ∧
+      MvPolynomial.eval p F₃ = (p 0) * w₁ + (p 1) * w₂ - t := by
+    intro p
+    obtain ⟨h1, h2⟩ := torsionPair_map (MvPolynomial.eval p)
+      ((a : ℤ) : MvPolynomial (Fin 2) ℤ) ((b : ℤ) : MvPolynomial (Fin 2) ℤ)
+      (MvPolynomial.X 0) (MvPolynomial.X 1) Q
+    simp only [map_intCast, MvPolynomial.eval_X, Int.cast_id] at h1 h2
+    refine ⟨?_, h2.symm, ?_⟩
+    · rw [hF₁, map_sub, map_one, ← h1]
+    · rw [hF₃]
+      simp only [map_sub, map_add, map_mul, map_intCast, MvPolynomial.eval_X, Int.cast_id]
+      ring
+  -- evaluation over `ℂ`
+  have hevC : ∀ q : Fin 2 → ℂ,
+      MvPolynomial.eval₂ (Int.castRingHom ℂ) q F₁
+        = (torsionPair (a : ℂ) (b : ℂ) (q 0) (q 1) Q).1 - 1 ∧
+      MvPolynomial.eval₂ (Int.castRingHom ℂ) q F₂
+        = (torsionPair (a : ℂ) (b : ℂ) (q 0) (q 1) Q).2 ∧
+      MvPolynomial.eval₂ (Int.castRingHom ℂ) q F₃
+        = (q 0) * (w₁ : ℂ) + (q 1) * (w₂ : ℂ) - (t : ℂ) := by
+    intro q
+    obtain ⟨h1, h2⟩ := torsionPair_map (MvPolynomial.eval₂Hom (Int.castRingHom ℂ) q)
+      ((a : ℤ) : MvPolynomial (Fin 2) ℤ) ((b : ℤ) : MvPolynomial (Fin 2) ℤ)
+      (MvPolynomial.X 0) (MvPolynomial.X 1) Q
+    simp only [map_intCast, MvPolynomial.eval₂Hom_X'] at h1 h2
+    refine ⟨?_, ?_, ?_⟩
+    · rw [hF₁]
+      simp only [← MvPolynomial.coe_eval₂Hom, map_sub, map_one]
+      rw [← h1]
+    · rw [hF₂]
+      simp only [← MvPolynomial.coe_eval₂Hom]
+      rw [← h2]
+    · rw [hF₃]
+      simp only [← MvPolynomial.coe_eval₂Hom, map_sub, map_add, map_mul,
+        map_intCast, MvPolynomial.eval₂Hom_X']
+      ring
+  -- the levels, transported to the polynomials
+  have hlev' : ∀ k : ℕ, ∃ p : Fin 2 → ℤ,
+      (c : ℤ) ^ k ∣ MvPolynomial.eval p F₁ ∧ (c : ℤ) ^ k ∣ MvPolynomial.eval p F₂ ∧
+      (c : ℤ) ^ k ∣ MvPolynomial.eval p F₃ := by
+    intro k
+    obtain ⟨x, y, h1, h2, h3⟩ := hlev k
+    refine ⟨![x, y], ?_, ?_, ?_⟩ <;>
+      obtain ⟨e1, e2, e3⟩ := hevZ ![x, y]
+    · rw [e1]; simpa using h1
+    · rw [e2]; simpa using h2
+    · rw [e3]
+      have : (![x, y] : Fin 2 → ℤ) 0 * w₁ + (![x, y] : Fin 2 → ℤ) 1 * w₂ - t
+          = x * w₁ + y * w₂ - t := by simp
+      rw [this]
+      exact h3
+  obtain ⟨q, hq1, hq2, hq3⟩ := exists_complex_zero_of_all_levels hc.two_le F₁ F₂ F₃ hlev'
+  obtain ⟨e1, e2, e3⟩ := hevC q
+  rw [e1] at hq1
+  rw [e2] at hq2
+  rw [e3] at hq3
+  exact ⟨q 0, q 1, by linear_combination hq1, hq2, by linear_combination hq3⟩
 
 /-- **The crux, assembled.**  Steps 2 and 3 together give the spectral identity: along the
 residue class, the trace congruences force a pair of roots of unity `u, v` with
