@@ -26,7 +26,7 @@ Let `χ_A` be irreducible mod `c` (degree `d`), take `u(N) = (A^N)_ij` with `i �
 For `C ∈ M_2(ℤ)`, an odd prime `c` with `det C ≡ ε = ±1 (mod c)`, and `c ∤ tr C · disc C`: **`tr C^(c^n) + h` is composite i.o. for every `h`**, with exactly one exception: `χ_C ≡ X² ∓ X + 1 (mod c)` with `ε = +1`.  In that case `τ = ±1` exactly (sixth or third roots of unity), the survivors are `h ∈ {0, ∓2}`, and it is a genuine Fermat-type case.
 - Route: lifting the exponent gives `det^(c^n) ≡ ε (mod c^(n+1))`, so `tr C^(c^(n+1)) ≡ V_c(tr C^(c^n), ε) (mod c^(n+1))`.  The finite window then forces an integer fixed point `V_c(x, ε) = x` (or a 2-cycle inside `{x, x ± 2}`).  With `ε = −1`, `|V_c(x, −1)| ≥ |x| + 3`.  With `ε = +1`, `V_c(x, 1) = 2T_c(x/2)`: `|x| ≥ 3` grows, `x = 0, ±2` are excluded by `c ∤ tr·disc`, and `x = ±1` is exactly the `Φ_6` / `Φ_3` exception.
 - The sweep's table matches: `V(4,1)` at `c = 5` has survivors `{0, 2}`, and `X² − 4X + 1 ≡ X² + X + 1 (mod 5)`.
-- **Classification tested (2026-09-30 01:15):** 1276 cases (`c ∈ {3,5,7,11,13}`, `|P| ≤ 12`, `|Q| ≤ 30` with `Q ≡ ±1 (mod c)`, `c ∤ P·D`).  Survivors appear **exactly** in the 216 predicted `Φ₃`/`Φ₆` classes: 0 mismatches.  Non-unit determinants are included (e.g. `Q = 4` at `c = 3, 5`).
+- **Classification tested (2026-09-30):** 1276 cases (`c ∈ {3,5,7,11,13}`, `|P| ≤ 12`, `|Q| ≤ 30` with `Q ≡ ±1 (mod c)`, `c ∤ P·D`).  Survivors appear **exactly** in the 216 predicted `Φ₃`/`Φ₆` classes: 0 mismatches.  Non-unit determinants are included (e.g. `Q = 4` at `c = 3, 5`).
 - Generalizes phase 35 (`Q = −1` exactly).  About 1 phase.
 - **Consequence for the conjecture graph:** `DoubleExpTraceComposite` is folklore for `n = 1`.  Theorem B proves it for `n = 2`, every odd `c` with `det ≡ ±1`, except the `Φ₃`/`Φ₆` classes, which are provably survivors.  For `n = 3, c = 3` the residual classes are Mills.  That is a clean staircase for the paper.
 
@@ -99,7 +99,7 @@ This is Saito's actual wish in arXiv:2504.14968: *"We desire to remove the rever
   **`fib_prime_pow_prime_free_all`: for EVERY prime `c` and every `H`, `[F(c^n) − H, F(c^n) + H]`
   contains no prime for infinitely many `n`.**  Theorem C is closed.
 
-### Theorem C′: non-integrality of limit points for `d ≥ 3` (paper math, written 2026-09-30 01:30)
+### Theorem C′: non-integrality of limit points for `d ≥ 3` (paper math, written 2026-09-30)
 The obstacle for Theorem C at `d ≥ 3` is that no exact composition is available.  Galois theory replaces it.
 - Let `K` be the splitting field of `χ_A` (irreducible over `ℚ`), with eigenvalues `α_k` and spectral projectors `E_k ∈ M_d(K)`.  The Teichmüller lifts are `ω(α_k) = ζ^(c^k)`, where `ζ` is a root of unity of order `n ∣ c^d − 1` (`c` inert).
 - Then `lim A^(c^(dn + r)) = Σ_k ζ^(c^(k+r)) E_k`, and the limit point `λ_r = Σ_k (E_k)_ij ζ^(c^(k+r))` lies in `K(ζ_n) ∩ ℚ_c`.
@@ -123,7 +123,7 @@ The obstacle for Theorem C at `d ≥ 3` is that no exact composition is availabl
 ### Theorem C for traces at odd `c` (Lucas numbers)
 A trace has a single limit point `τ`.  If `τ ∈ ℤ`, then phase 35's exact `V_c(τ, −1) = τ` forces `τ = 0`, contradicting `τ ≡ P ≢ 0 (mod c)`.  So `τ ∉ ℤ`, and **prime-free intervals of any fixed length surround `L(c^n)` (and `V_(c^n)(P, −1)`, `c ∤ P`) infinitely often.**  All pieces are in Lean already.
 
-### Theorem D: a partial answer to Saito's Problem 1.7 (paper math, 2026-09-30 01:45; numerics ✅, proof sketch below, to verify)
+### Theorem D: a partial answer to Saito's Problem 1.7 (paper math, 2026-09-30; numerics ✅, proof sketch below, to verify)
 Saito's Problem 1.7: *find a non-reversible ILRS `R` such that for every Pisot `α` (especially degree 3), `⌊α^(R(n))⌋` is composite for infinitely many `n`.*
 
 **Candidate `R(n) = c^n + s`** (`R(n+1) = c R(n) − (c − 1)s`; `a₀ = c ≠ ±1`, so non-reversible).
@@ -148,7 +148,7 @@ Then `⌊α^(c^n + s)⌋` is composite for infinitely many `n`.
 - `s ≥ 2`: **0 genuine survivors** at either `c` (the only hit, `(x − 1)²`, is not Pisot).
 - The predicted exception family survives: `2 + √2`, `1 + √3` at `c = 2`; `3 + √6`, `x² − 3x − 3` at `c = 3`.
 - **`c = 5, 7`** (cubic, coefficients in `[−6, 6]`, full window `μ_(≤3)`, which contains `ω` at `c = 7`; 02:35): `s = 0` gives 35 of 241 and 33 of 263 survivors; **`s ≥ 1` gives 0 at both**.
-- **Degree 4** (coefficients in `[−4, 4]`, 2026-09-30 02:00): `s = 0` gives 27 of 201 survivors at `c = 2` and 33 of 271 at `c = 3`; `s ≥ 2` gives **0 at both**.
+- **Degree 4** (coefficients in `[−4, 4]`, 2026-09-30): `s = 0` gives 27 of 201 survivors at `c = 2` and 33 of 271 at `c = 3`; `s ≥ 2` gives **0 at both**.
 - **Exception (i) looks like a proof artifact.**  The cyclic cubic Pisot numbers of conductor 7 (the exceptional field at `c = 2`: `(−6, 5, −1)`, `(−3, −4, −1)`, …) have **no survivors at any `s`, even `s = 0`**.  `2` is inert there, so traces are sums like `ζ₇ + ζ₇² + ζ₇⁴ = (−1 + √−7)/2`, which are irrational.  A decomposition-group version of step 4 should remove (i).
 
 **The exception (ii) is a genuine obstruction for congruence methods.**
@@ -161,7 +161,7 @@ Then `⌊α^(c^n + s)⌋` is composite for infinitely many `n`.
 
 **Complementarity with Mills.**  At `s = 0` the unconditional wall is the totally real cubic case.  At `s ≥ s₀`, Theorem D handles totally real and complex cubics alike.  The obstruction for Mills is exactly the `s = 0` trace structure.
 
-**Step-by-step re-check (2026-09-30 01:55):**
+**Step-by-step re-check (2026-09-30):**
 - Filter: `R(n+kj) − R(n) = c^n (c^(kj) − 1)` ✓.
 - Window: `Σ_i v_c(p^i − 1) > n ⇒ ∃ i ≤ d`, `p ≡ ω(p) (mod c^(n/d − v_c(i)))` ✓.
 - Teichmüller limits in ramified extensions: `⟨u⟩^(c^n) → 1` ✓.
@@ -181,7 +181,7 @@ Then `⌊α^(c^n + s)⌋` is composite for infinitely many `n`.
 - the quadratic case via exact identities: `d = 2` needs no Galois, since `Λ = ζ₁ α₁^s + ζ₂ α₂^s` can be handled by the norm/trace of `ℚ(√D)`.
 A reasonable first Lean target: **Theorem D for quadratic Pisot `α`**.
 
-### Theorem C_D: prime-free intervals around `⌊α^(c^n + s)⌋` (paper math, 02:25)
+### Theorem C_D: prime-free intervals around `⌊α^(c^n + s)⌋` (paper math)
 Combine the engine (phase 41) with Theorem D's Galois step.  For `(D1)` with half-width `H`, each window must be visited only finitely often for every `|h| ≤ H`, i.e. `Λ_r ∉ {ζ′ − h − ε}`.
 - If `Λ_r ∈ ℚ(ζ)`, step 4 of Theorem D forces all `ζ_k` equal, and then `Λ_r = z·tr C^s` with `z ∈ {0, ±1}`.
 - So outside the **unipotent classes** `f ≡ (X ∓ 1)^d` or `X^d (mod c)`, `Λ_r ∉ ℚ(ζ)` and every shift is eventually outside its window.
@@ -189,7 +189,7 @@ Combine the engine (phase 41) with Theorem D's Galois step.  For `(D1)` with hal
 - Inside a unipotent class exactly one shift, `h = z·tr C^s ± 1 − ε`, is a survivor, so intervals fail by construction for that `h`.
 - Lean: needs the Galois step, so it goes with Theorem D (paper first).
 
-### Theorem E (candidate): transcendence of shifted Mills constants with SMALL first term (2026-09-30 02:10)
+### Theorem E (candidate): transcendence of shifted Mills constants with SMALL first term (2026-09-30)
 Saito 2025 (arXiv:2508.16068) Theorem 2.6 (Type C): under `(C1)–(C5)` and short-interval primes `(2.2)` (for `c = 3` this is unconditional by MTY24), `ξ(C_k)` is transcendental OR `ξ^g` is a cubic Pisot number `≤ (2x₀^(1/9) + 1)^(g/c₁)`, with `g ∣ agcd(C_k)`.  He kills the Pisot branch **by size only**, hence his Theorem 1.9(C) needs `r ≥ 4.003·10¹⁴` for `C_k = r·3^k − 1`.
 
 **`C_k = 3^k − 2` satisfies `(C1)–(C5)`:**
@@ -210,7 +210,7 @@ So `ξ := ξ(3^k − 2)` is transcendental or itself a cubic Pisot number with `
 
 **Candidate statement:** `ξ(3^k − 2)` is transcendental unless `ξ ∈ E1 ∪ E2 ∪ E3`.
 
-**Numerics (02:15):** all irreducible cubic Pisot `f` with coefficients in `[−9, 9]` (867 of them), at `c = 3`, `R = 3^n − 2`, precision `3^10`, with the true floor offset `ε_n` computed from the conjugates (`n = 4..15`).
+**Numerics :** all irreducible cubic Pisot `f` with coefficients in `[−9, 9]` (867 of them), at `c = 3`, `R = 3^n − 2`, precision `3^10`, with the true floor offset `ε_n` computed from the conjugates (`n = 4..15`).
 - 41 pass the window test.
 - 37 of those are killed by `ε_n = 0 ⇒ 3 ∣ value`.
 - **The 4 genuine-looking survivors are all E3 with a positive dominant conjugate**: `x³ − 9x² + 3`, `x³ − 9x² + 6`, `x³ − 9x² + 3x + 3`, `x³ − 6x² + 3` (coefficient tuples `(−9,0,3)`, `(−9,0,6)`, `(−9,3,3)`, `(−6,0,3)`).
@@ -219,7 +219,7 @@ So `ξ := ξ(3^k − 2)` is transcendental or itself a cubic Pisot number with `
 **Honest weight.**
 - Saito's own Mills exceptions are a size window (`(1.3)`); ours are congruence classes mod 3 plus a trace condition.  Neither is empty, so this is a *different* partial result, not a completion.
 - E3 is Mersenne-shaped and probably genuinely out of reach of congruences.
-- **Checked against Saito's text (§9, 02:05):**
+- **Checked against Saito's text (§9):**
   - Theorem 2.6 allows real `c_k` (only `C_k ∈ ℕ`); our `(C4)` witness `k = m + φ(C_m) > m` is exactly his pattern for `r·3^k − 1`.
   - The proof routes through Type B (Theorem 2.3), which already forces degree `ℓ = 3` (quadratic excluded) and `g ∣ agcd = 1`.
   - So the branch is exactly "`ξ` is cubic Pisot with `⌊ξ^(3^k − 2)⌋` prime `∀k`".
