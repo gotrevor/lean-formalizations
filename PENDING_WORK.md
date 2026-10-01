@@ -11,6 +11,8 @@ Headline-path open leaves (PowerSaving/): `localZeroDetect_of_richert` (ZeroDete
      c = 1 + 1/log P (|H| ≤ 3 log P via `logDeriv_zeta_dirichlet_bound`); split at L; shift to
      σ₁ = 1 − η₂, η₂ = η + 3 loglog P/log P; Mellin bounds from `mellin_pointwise` (y^{−4}).
  Then the transport (ZeroCount.lean header).
+ PROGRESS (325b5f7): (a) PROVED (`local_logDeriv_bound`); (b) PROVED (`rect_shift_gen`); (c) started:
+ `box_H_bound`, `zc_tail`, `zc_eventually` proved in ZeroContour.lean; next zc_rect1/zc_split/zc_rect2.
 
 ## ✅ (2026-10-01, session B): LinearSieve SCOPE COMPLETE.  `aLow_ge_fl'` (FLLowerB.lean) proved:
 Buchstab from 2 + `siftMax_le_fl` per prime + `sum_Vw_div` telescoping + `rankin_error_sum`

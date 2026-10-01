@@ -1,3 +1,3 @@
-# HANDOFF → see HANDOFF-2026-10-01-erdos385-E9-review.md
+# HANDOFF → see HANDOFF-2026-10-01-erdos385-E9-crux-a.md
 
-Erdős #385 E9b review lap: crux re-routed to `localZeroDetect_of_richert` (PowerSaving/ZeroDetect.lean).
+Erdős #385 E9b: crux step (a) done; next = contour assembly in PowerSaving/ZeroContour.lean.
