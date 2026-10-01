@@ -2069,3 +2069,12 @@ trust base + the same 4 literature Props.  Mechanism: `card_le_of_windows` (cove
 N₀ uniform in E and η), apply it to E ∩ [2√X, ∞) where every window Z ≥ √X has the single rate
 η = A exp(−c'(log √X)^{1/10}); head n < 2√X absorbed by `sqrt_le_rate`.  Next: exponent 1/3−ε
 needs Vinogradov–Korobov-strength long average (new phase), or the Literature `not_…` controls.
+
+## E2e lap 1 (2026-10-01)
+Landau.lean: both frozen statements now proved modulo two named halves —
+`vk_large_height` (crux: Landau's method from Richert) and `vk_small_height` (compactness,
+unconditional).  Gluing (vkW antitone, constants) proved.  PNT+ check: `FinalBound`
+(local zero-sum formula for f'/f from Borel–Carathéodory) is sorry-free and generic; its
+`ZeroInequality` (classical region) IS sorried — so the 3-4-1 argument must be built here.
+Next: split `vk_large_height` into (a) growth `|ζ| ≤ (log t)^K` on σ ≥ 1−θ(t), (b) rescaled
+FinalBound for ζ at centre 1+θ+it, (c) 3-4-1 zero-free, (d) log-deriv bound.
