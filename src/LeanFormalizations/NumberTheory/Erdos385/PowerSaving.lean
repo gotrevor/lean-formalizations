@@ -105,9 +105,14 @@ theorem longAveragePower_of_lit (h3 : ShortIntervalPrimesLower) {δ : ℝ} (hδ 
 
 /-- **Large values of the short prime sum** (`LargeValueBound`, see its docstring): few, and
 little `L¹` mass of `A` near them.  From `NearOneLargeValues` + VK.  65%. -/
-theorem largeValueBound_of_lit (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity) {δ : ℝ}
-    (hδ : 0 < δ) (hδ' : δ < 1 / 4) : LargeValueBound δ := by
+theorem largeValueBoundP_of_lit (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity) {δ : ℝ}
+    (hδ : 0 < δ) (hδ' : δ < 1 / 4) : LargeValueBoundP δ := by
   sorry
+
+/-- `LargeValueBound` from its `P`-only form (`|A| ≤ |P|/log Z`). -/
+theorem largeValueBound_of_lit (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity) {δ : ℝ}
+    (hδ : 0 < δ) (hδ' : δ < 1 / 4) : LargeValueBound δ :=
+  largeValueBound_of_P hδ hδ' (largeValueBoundP_of_lit h1 h2 hδ hδ')
 
 /-- **The near-set leaf**: covering + pigeonhole (`nearSetLeaf_of_largeValueBound`). -/
 theorem nearSetLeaf_of_lit (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity) {δ : ℝ}
