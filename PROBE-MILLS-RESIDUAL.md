@@ -43,7 +43,7 @@ The test: a lever must use something Mills has that these siblings lack.
 3. So `U^(p^n) = 1`, and the order of `C̄` divides `p^n (p − 1)`, which is coprime to c.
 4. `c^J ≡ 1` modulo that order (Euler).  So `C̄^(c^(m+J)) = C̄^(c^m)`. ∎
 
-This needs no projective quotient and no squarefree hypothesis.  For c = 3 the coprimality is exactly `p ≡ 2 (mod 3)`.  (For c = 2 it never holds, consistent with Fermat.)  Lean: phase 60, `NumberTheory/Mills/Kronecker.lean`.
+This needs no projective quotient and no squarefree hypothesis.  For c = 3 the coprimality is exactly `p ≡ 2 (mod 3)`.  (For c = 2 it never holds, consistent with Fermat.)  Lean: phase 60, `NumberTheory/Mills/Kronecker.lean`, PROVED in one lap (2026-10-01): the periodicity lemma, the cubic splitting criterion, the eventual non-square statement, the finite Jacobi certificate `composite_of_jacobi_hit`, and `mills_kronecker` (from BHP + Matomäki + Dubickas, Saito's inputs).
 
 **Lemma K (original form).**  Let f be a monic irreducible integer cubic with discriminant D and companion matrix C, and let `T_j = tr C^(3^j)`.  Let p be a prime with `p ∤ 3·D·f(0)` and `p ≡ 2 (mod 3)`.  Suppose f splits completely mod p and `p | T_j`.  Then `p | T_(j+J)` for some J ≥ 1, and hence for infinitely many indices.
 
