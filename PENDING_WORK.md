@@ -2033,3 +2033,32 @@ split is `ring`, only P_lo+P_mid = 𝓕⁻(1_all 𝓕Φ) needs 𝓕⁻-additivit
 Band-indicator a.e. continuity: `ae_continuousAt_indicator` (locally constant off a null set).
 Next: remaining lit inputs of `almost_all_F385`: `MontgomeryVaughanMVT`, `VKZeroFreeLogDeriv`,
 `MediumPNTStatement` (wire PNT+ `MediumPNT`).
+## Erdős #385 E3 (2026-10-01): headline wired; leaves W3d/e/f + VK edge + VK control open
+See HANDOFF-2026-10-01-erdos385-E3-W3-assembled.md.  Next attack: W3e/W3f (MVT), then W3d, then VK edge.
+
+## Erdős #385 E3 crux (2026-10-01): `smoothPrimeSumVK_of_VKZ` decomposed
+Edge now PROVED from three named leaves in `AlmostAll.lean` (all other AlmostAll sorries closed this lap:
+W3d/W3e/W3f + control 3d).  Proved helpers: `xDeriv`, `mellin_xDeriv` (M[xf'] = −s M[f]),
+`mellin_strip_bound`, **`mellin_strip_decay`** (‖s‖^k |F(s)| bounded on strips, by induction via xDeriv),
+`exists_support_Icc`.  Open leaves:
+- V6 `smoothTwist_smallP` (aP<1: finite sum, all O(1)) — easy.
+- V4 `smoothTwist_sub_main_eq` (Perron at Re s = 2 minus main term, H = ζ'/ζ + 1/(w−1)) — moderate:
+  `mellinInv_mellin_eq`, Fubini, `LSeries_vonMangoldt_eq_deriv_riemannZeta_div`, ∫_1^∞ x^{-s-it}.
+- V5 `vertical_integral_bound` (contour shift under VK) — THE crux.  Next: split into
+  (i) H(·) holomorphic on VK rectangle (removable sing. at 1 via boundedness from hypothesis,
+  `Complex.differentiableOn_update_limUnder_of_bddAbove`), (ii) rectangle identity
+  (`Complex.integral_boundary_rect_eq_zero_of_differentiableOn`), (iii) left side / horizontals / tails
+  bounds via `mellin_strip_decay` k=3, (iv) width comparison c₀/(L^{2/3}(log L)^{1/3}) ≥ L^{−2/3−ε}.
+- 2026-10-01 later: **V5 `vertical_integral_bound` PROVED** (contour shift via `rect_shift_norm` on
+  F(s)P^s·Ĥ(s+it), Ĥ = removable-singularity update of zetaH at 1; tails via k=4 decay; left side
+  P^{σ₁} ≤ P e via `vk_width_eventually`; bounded T via trivial P² bound).  Remaining: V4, V6.
+
+## Erdős #385 E3 DONE (2026-10-01, review lap, `e819725`)
+`AlmostAll.lean` sorry-free; `almost_all_F385` = trust base + 4 literature Props.  V4 closed by
+`twist_inversion` + `smoothTwist_eq_vertical` (Fubini via `integral_tsum_of_summable_integral_norm`,
+dominated by `‖term Λ 2 n‖ · P² ∫‖F(2+iy)‖`) + `LSeries_vonMangoldt_eq_deriv_riemannZeta_div`.
+Remaining Erdős-385 open items (outside E3 scope): the five Literature controls `not_…` in
+`Literature/Erdos385AlmostAll.lean` (teeth tests: each refutes a wrong transcription), and E4
+(paper only).  Discharge candidates for the 🟡 hypotheses: `MediumPNTStatement` from PNT+ `MediumPNT`
+(olean unbuilt at this pin); `MontgomeryVaughanMVT` (Hilbert inequality, elementary but long).
+

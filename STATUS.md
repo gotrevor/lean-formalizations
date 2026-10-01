@@ -1,7 +1,7 @@
 # STATUS — lean-formalizations 📊
 
 **Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized
-in Lean 4 + mathlib.** · **Build**: 🟢 green (**8708 jobs**) · `src/`: **3 disclosed crux `sorry`s**
+in Lean 4 + mathlib.** · **Build**: 🟢 green (**8789 jobs**, branch `erdos-385`, 2026-10-01, `e819725`) · `src/`: **3 disclosed crux `sorry`s**
 (all in `DubickasNoSubspace.lean`, the phase-9 probe; every *headline* is clean) ·
 **MATH AXIOMS: 0** · **Updated**: review lap #2 · 2026-09-28 · phase 9 probe · `6577c47`
 
@@ -102,6 +102,15 @@ _(historical header of the goodstein expedition: lap 14 review, 2026-06-19, `cd5
 > resolved (`norm_seqONote_le`: budget is free on the descent). The five threads below are frozen.
 
 ## Where it stands
+**As of 2026-10-01 (branch `erdos-385`, phase E3 review lap).**  Erdős #385 phases E1–E3 are done:
+`Erdos385.almost_all_F385` (`F(n) ≥ n + (1 − δ)√n` for almost all `n`, every `δ ∈ (0, 1/4)`) is
+proved from four literature Props (`MR16Lemma14`, `MontgomeryVaughanMVT`, `VKZeroFreeLogDeriv`,
+`MediumPNTStatement`) with `#print axioms` = trust base.  The whole analytic chain (smoothed
+Chebyshev/Perron at `Re s = 2`, the VK contour shift, MVT leaves, the variance-to-density covering)
+is machine-checked.  Open in the Erdős files: only the five known-false Literature controls
+(`not_MR16Lemma14OneSided`, `not_MR16Lemma14NoH2Bound`, `not_MVTNoLengthTerm`,
+`not_VKZeroFreeAnyWidth`, `not_VKLogDerivNoPole`), outside the E3 scope.
+
 **As of 2026-09-28 (phase 9 probe, review lap #2).**  Phase 9's *probe* objective is MET: Dubickas's
 Lemma 6 is dissected in `PROBE-DUBICKAS-NOSUBSPACE.md` into (a) fully-formalized elementary steps,
 (b) `Ridout1957` for the rational-power case, (c) Corvaja–Zannier's Lemma 4 — reduced to one local
@@ -127,6 +136,11 @@ finite-support `b`-recursion.  Nine threads are complete and axiom-clean (see th
 The repo declares **no custom axioms** (`grep '^axiom' src/` is empty), and every headline `#print axioms` is the bare trust base `[propext, Classical.choice, Quot.sound]` - with one disclosed exception: the Goodstein growth closures additionally carry `Lean.ofReduceBool` from their finite base-case `native_decide` (`DominationBaseCases.lean`). Three independent threads, all green and `src/` **sorry-free**. **Curtis 1990** (no polynomial formula for the Frobenius number of a triple), the **power-tower** theorem — now the **SHARP iff** (`x>0` converges **iff** `x ∈ [e^(-e), e^(1/e)]`; both endpoints, both divergence directions) — and the **constructible-numbers / Wantzel** thread (full algebra⇔geometry iff, five classical impossibilities + two positive constructions) are complete and axiom-clean. **Transcendence of `e`** (Hermite 1873) and **transcendence of `π`** (Lindemann 1882) are now **both fully proved and axiom-clean**: `e` from the analytic part of Lindemann–Weierstrass (`exp_polynomial_approx`); `π` from the FULL Lindemann assembly — analytic engine over an arbitrary conjugate polynomial + the algebraic part (symmetric functions over the Galois conjugates of `iπ`, via the fundamental theorem of symmetric polynomials). Consequently **squaring the circle is now unconditional AND axiom-clean** (`squaring_the_circle_impossible_uncond`). The previously cited `hermite_lindemann` axiom has been **discharged and deleted**.
 
 ## What's happened (newest first)
+- **2026-10-01 review lap (phase E3 CLOSED, branch `erdos-385`):** the last `AlmostAll.lean` sorry,
+  V4 `smoothTwist_sub_main_eq`, fell in one pass: per-`n` Mellin inversion (`twist_inversion`), Fubini
+  of `∑' n` against `∫ dy` dominated by `Λ(n) n^{-2} · P² ∫|F|` (`smoothTwist_eq_vertical`), then
+  `L(Λ, w) = −ζ'/ζ(w)` on `Re w = 2` minus `mainTerm_eq_vertical`.  `almost_all_F385` is now
+  `[propext, Classical.choice, Quot.sound]` + 4 literature hypotheses.
 - **2026-09-28 review lap #2 (phase 9 probe: the wall is NAMED, and the residual sparsity becomes an
   inequality):** seven grind laps dissected Dubickas's Lemma 6.  Verdict recorded in `DIRECTION.md` →
   CURRENT DIRECTIVE: `corvajaZannier_dichotomy` = Corvaja–Zannier 2004's main theorem = the `p`-adic
@@ -449,6 +463,7 @@ For the Goodstein thread, the charter ladder is COMPLETE (A1–A4, B1–B4-finit
 ## Axiom ledger (the fidelity spine)
 | headline theorem | paper claim | `#print axioms` shows | status |
 |---|---|---|---|
+| `Erdos385.almost_all_F385` | **Erdős #385, almost all**: `#{n ≤ X : F(n) < n + (1−δ)√n} = o(X)` for `δ ∈ (0,1/4)` (new; sharper than Tao 2024), **cond.** on `MR16Lemma14`, `MontgomeryVaughanMVT`, `VKZeroFreeLogDeriv`, `MediumPNTStatement` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms; 4 hypotheses, all 🟡 published (Matomäki–Radziwiłł 2016 / Teräväinen, Montgomery–Vaughan 1974, Vinogradov–Korobov + Titchmarsh 3.11, PNT+ `MediumPNT`) |
 | `Transcendence.Dubickas.theorem1` | **Dubickas 2022, Theorem 1**: κ, ζ, Sylvester γ, η, τ are transcendental; **cond.** on `Dubickas2022` (his Lemma 6) — his Lemma 8 is NO LONGER needed | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms; 1 hypothesis (🟠 `Dubickas2022` = Corvaja–Zannier ⇒ `p`-adic Subspace Theorem; current chip = a heights/places prerequisite) |
 | `Transcendence.Dubickas.oeis_constants` | **OEIS A076949, A077124, A076393 (Vardi's constant) are transcendental**; same single hypothesis | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — ⚓ OEIS-linked file; comparator challenge matches (`comparator-probe Dubickas` identical) |
 | `Transcendence.Dubickas.transcendental_growth_of_monic_quadratic` | **Theorem 2 for monic quadratics**: `α = lim x_n^(1/2ⁿ)` transcendental unless `a₁²−2a₁−4a₂ ∈ {0,8}` | `[propext, Classical.choice, Quot.sound]` | ✅ 0 math axioms — `hG` dropped 2026-09-28 |

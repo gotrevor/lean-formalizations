@@ -2,13 +2,14 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## (phase E2d, PLANTED 2026-10-01, branch `erdos-385-brun`, worktree `~/src/lean-formalizations-erdos385-brun`): **discharge `Literature.MR16Lemma14`** - target `src/LeanFormalizations/NumberTheory/Erdos385/ShortSumParseval.lean`, 1 frozen statement `mr16Lemma14_holds` (Plancherel-in-log-coordinates route in the header; mathlib `Lp.norm_fourier_eq`).  Afterwards E3's headline depends only on `VKZeroFreeLogDeriv`.  Frozen also: all earlier statements, everything in `Literature/`.  Stop: ShortSumParseval.lean sorry-free.  Phase E3 runs concurrently on branch `erdos-385` in another worktree: touch only ShortSumParseval.lean (+ new helper files under `Erdos385/Parseval/` if needed).
+## ✅ (phase E2d, DONE 2026-10-01 in 2 laps, `mr16Lemma14_holds` axiom-clean, helpers in `Erdos385/Parseval/`; merged E3 in and composed `Headline.almost_all_F385_of_VK : VKZeroFreeLogDeriv → AlmostAllF385`, axiom-clean; PLANTED 2026-10-01, branch `erdos-385-brun`, worktree `~/src/lean-formalizations-erdos385-brun`): **discharge `Literature.MR16Lemma14`** - target `src/LeanFormalizations/NumberTheory/Erdos385/ShortSumParseval.lean`, 1 frozen statement `mr16Lemma14_holds` (Plancherel-in-log-coordinates route in the header; mathlib `Lp.norm_fourier_eq`).  Afterwards E3's headline depends only on `VKZeroFreeLogDeriv`.  Frozen also: all earlier statements, everything in `Literature/`.  Stop: ShortSumParseval.lean sorry-free.  Phase E3 runs concurrently on branch `erdos-385` in another worktree: touch only ShortSumParseval.lean (+ new helper files under `Erdos385/Parseval/` if needed).
 
 ## ✅ (phase E2c, DONE 2026-10-01 in one lap: all 3 axiom-clean, MVT via Fejér majorant in `Erdos385/MeanValue.lean`; PLANTED 2026-10-01, branch `erdos-385-brun`, worktree `~/src/lean-formalizations-erdos385-brun`): **discharge literature Props** - target `src/LeanFormalizations/NumberTheory/Erdos385/Discharge.lean`, 3 frozen statements: `card_bad_le_unconditional` (one line from `card_bad_le brunUniformGap_holds`), `mediumPNTStatement_holds` (PNT+ `MediumPNT`; add the import, long first build expected), `montgomeryVaughanMVT_holds` (Fejér-weight route in the header).  Frozen also: all earlier statements, everything in `Literature/`.  Stop: Discharge.lean sorry-free.  Phase E3 runs concurrently on branch `erdos-385` in another worktree: touch only Discharge.lean (+ new helper files under `Erdos385/MVT/` if needed).
 
 ## ✅ (phase E2b, DONE 2026-10-01 in one lap, `brunUniformGap_holds` axiom-clean, helpers in `Erdos385/Brun/`; PLANTED 2026-10-01, branch `erdos-385-brun`, worktree `~/src/lean-formalizations-erdos385-brun`): **discharge `Literature.BrunUniformGap`** (side quest: makes `card_bad_le` unconditional) - target `src/LeanFormalizations/NumberTheory/Erdos385/BrunPairs.lean` (1 frozen statement `brunUniformGap_holds`; Selberg-sieve route in header via `Mathlib/NumberTheory/SelbergSieve.lean`).  Frozen also: all earlier statements, Literature/ (do NOT edit `BrunUniformGap`); stop: BrunPairs.lean sorry-free.  Phase E3 runs concurrently on branch `erdos-385` in another worktree: touch only BrunPairs.lean (+ new helper files under `Erdos385/Brun/` if needed).
 
 ## (phase E3, PLANTED 2026-10-01, branch `erdos-385`): **Erdős #385 almost-all: `F(n) ≥ n + (1 − δ)√n` for almost all `n`** (new math; Tao's 2024 "within reach" remark, sharper) - target `src/LeanFormalizations/NumberTheory/Erdos385/AlmostAll.lean` (defs `ShortIntervalPNT`, `SmoothPrimeSumVK`, `Admissible`, `coeffA`, `shortSum`, `param*`, `variance`, `badWindow` + frozen statements: edges `shortIntervalPNT_of_mediumPNT`, `smoothPrimeSumVK_of_VKZ`; controls `not_shortIntervalPNTUnitWindow`, `not_smoothPrimeSumVKMRNorm_of_VK`; wiring W0 `exists_admissible`, W1 `witness_margin`, W2 `card_badWindow_le`, W2′ `longAverage_lower`, W3 `variance_small`; headline `almost_all_F385` (concludes the Graph node `AlmostAllF385`)); route in header, scaffolding `PROOF-ERDOS-385-ALMOST-ALL.md` on `main` (Lean parameters: `T₀ = exp(κ (log Z)^{1/10})`, the MediumPNT choice).  Literature inputs (statements only, `src/LeanFormalizations/Literature/Erdos385AlmostAll.lean`): `MR16Lemma14`, `MontgomeryVaughanMVT`, `VKZeroFreeLogDeriv`, `MediumPNTStatement` (dischargeable from PNT+ `MediumPNT`, not wired: olean unbuilt at this pin), each with a known-false control `not_…` to prove (teeth tests).  Order: W0, W1, W2 (elementary) first; then W2′ and the PNT edge; then W3 and the headline; the VK edge last (contour argument, port PNT+'s smoothed-Chebyshev code).  Frozen also: all earlier statements, Literature/; stop: AlmostAll.lean sorry-free (the Literature Props stay hypotheses).  **Decomposing into named sub-lemmas is progress**; a hard leaf may stay a NAMED `sorry` with an English paragraph and a confidence.
+## ✅ (phase E3, DONE 2026-10-01, `e819725`; `almost_all_F385` axiom-clean modulo the 4 literature Props): (planted 2026-10-01, branch `erdos-385`) **Erdős #385 almost-all: `F(n) ≥ n + (1 − δ)√n` for almost all `n`** (new math; Tao's 2024 "within reach" remark, sharper) - target `src/LeanFormalizations/NumberTheory/Erdos385/AlmostAll.lean` (defs `ShortIntervalPNT`, `SmoothPrimeSumVK`, `Admissible`, `coeffA`, `shortSum`, `param*`, `variance`, `badWindow` + frozen statements: edges `shortIntervalPNT_of_mediumPNT`, `smoothPrimeSumVK_of_VKZ`; controls `not_shortIntervalPNTUnitWindow`, `not_smoothPrimeSumVKMRNorm_of_VK`; wiring W0 `exists_admissible`, W1 `witness_margin`, W2 `card_badWindow_le`, W2′ `longAverage_lower`, W3 `variance_small`; headline `almost_all_F385` (concludes the Graph node `AlmostAllF385`)); route in header, scaffolding `PROOF-ERDOS-385-ALMOST-ALL.md` on `main` (Lean parameters: `T₀ = exp(κ (log Z)^{1/10})`, the MediumPNT choice).  Literature inputs (statements only, `src/LeanFormalizations/Literature/Erdos385AlmostAll.lean`): `MR16Lemma14`, `MontgomeryVaughanMVT`, `VKZeroFreeLogDeriv`, `MediumPNTStatement` (dischargeable from PNT+ `MediumPNT`, not wired: olean unbuilt at this pin), each with a known-false control `not_…` to prove (teeth tests).  Order: W0, W1, W2 (elementary) first; then W2′ and the PNT edge; then W3 and the headline; the VK edge last (contour argument, port PNT+'s smoothed-Chebyshev code).  Frozen also: all earlier statements, Literature/; stop: AlmostAll.lean sorry-free (the Literature Props stay hypotheses).  **Decomposing into named sub-lemmas is progress**; a hard leaf may stay a NAMED `sorry` with an English paragraph and a confidence.
 
 ## ✅ (phase E2, DONE 2026-10-01, 1 lap; `card_bad_le` axiom-clean; Graph edges still open): **Erdős #385 bad-n count** - target `src/LeanFormalizations/NumberTheory/Erdos385/Count.lean` (`card_bad_le` as planted in `1d3b2b0`: #{bad n ≤ X} ≪ X·loglog X/(log X)² from `Literature.BrunUniformGap` + `primorial_dvd_or_exists_prime_pair_of_bad`, route in header), then the 3 edges in `Graph.lean` (`noCarrier_of_bad`, `eventually_not_bad_of_crossScaleRepulsion`, `sieveOnlySibling_of_FGKMT`).  Frozen also: all earlier statements incl. Rigidity.lean + FunctionField.lean, Literature/; stop: Count.lean sorry-free.  If the Brun-to-count summation gets hard, leave it as a NAMED sub-lemma with `sorry` and an English paragraph with a confidence - acceptable finish.
 
@@ -514,41 +515,28 @@ Stop condition: `NumberTheory/Transcendence/` sorry-free.
 
 ---
 
-## ⚡ CURRENT DIRECTIVE (set 2026-09-28, review lap #2 of phase 9; OUTRANKS every HANDOFF)
+## ⚡ CURRENT DIRECTIVE (set 2026-10-01, review lap of phase E3, branch `erdos-385`; OUTRANKS every HANDOFF)
 
-**Phase 9's PROBE objective is MET.**  `PROBE-DUBICKAS-NOSUBSPACE.md` now carries a precise,
-multiply-confirmed obstruction: Dubickas's Lemma 6 = (his Lemma 3 = **Corvaja–Zannier 2004's main
-theorem**) ∨ (his Lemma 5, fully formalized).  Lemma 3 is the `p`-adic Subspace Theorem and **stays a
-disclosed leaf**: the reason is structural, not a gap in effort — the object to bound is
-`∏_σ(σ(α)^N − k_N)`, i.e. a *linear form in the `d` monomials* `σ(α)^N`, which is exactly what forces
-Subspace over Roth/Ridout, and the one-dimensional (archimedean-Liouville / Ridout) route provably
-only re-derives `M(α) ≥ α` (vacuous).  `hD` therefore stays on the three `Dubickas.lean` headlines.
+**✅ MET 2026-10-01 (`e819725`): `AlmostAll.lean` is sorry-free; `almost_all_F385` = trust base.
+Until a new phase is planted, the next altitude lap picks among: the five `Literature/Erdos385AlmostAll`
+controls (teeth tests), discharging `MediumPNTStatement` from PNT+, or E4 (paper).**
 
-**THE SINGLE OBJECTIVE now: collapse `DubickasNoSubspace.lean` from THREE disclosed leaves to ONE**
-— `corvajaZannier_dichotomy` (a named published theorem) — by proving `corvajaZannier_lemma4` and
-its local leaf `valuation_sum_unit_pow_nondegenerate` in the forms the call site can actually supply.
+**THE single objective (was):** `NumberTheory/Erdos385/AlmostAll.lean` sorry-free.  Exactly one `sorry`
+remained: `smoothTwist_sub_main_eq` (V4, the prime-sum half of the Perron identity at `Re s = 2`).
+It is the only thing between `almost_all_F385` and `[propext, Classical.choice, Quot.sound]` +
+the four literature Props (`#print axioms` 2026-10-01: headline and `smoothPrimeSumVK_of_VKZ` show
+`sorryAx`; `vertical_integral_bound`, `variance_small` are clean).
 
-**Mandated next moves, in order** (detail + the new handle in `PENDING_WORK.md` §PHASE 9):
-1. **General-`k` Newton collapse.**  Extend the `k = 2` Graeffe closure to any tie size via
-   `multiset_mul_esymm_eq_sum` (already in `MultisetNewton.lean`): `v(j! e_j) ≤ max_{l ≤ k} v(p_l)`
-   by induction, and `e_k = ∏ u_i` is a unit.  Closes the local leaf for every exponent set closed
-   under multiplication by `1, …, k` — **no nondegeneracy hypothesis**.
-2. **`den(U_N) ∣ D^N`** — `D α` is an algebraic integer for some `D`, so `D^N U_N = Tr((Dα)^N) ∈ ℤ`.
-   This is the *upper* bound on the denominator that the sixth lap was missing.
-3. **The cofiniteness dichotomy.**  Pair 2 with the already-proved `tracePowSum_near_int` +
-   `one_div_den_le_dist_int`: if `D · max(α⁻¹, ρ) < 1` then `2 U_(2^n) ∈ ℤ` for **all** large `n`,
-   so the exponent set is cofinite, so 1 applies *and* the degenerate descent iterates.  The
-   residual "sparsity" obstruction thereby upgrades to the single concrete inequality
-   `D ≥ min(α, ρ⁻¹)` — a statement about the Mahler measure, recordable and attackable.
+**Mandated next move:** prove it as the HANDOFF plans: per-`n` Mellin inversion
+(`mellin_inversion_two` at `x = n/P`), swap `∑'`/`∫` (`integral_tsum_of_summable_integral_norm`,
+dominated by `Λ(n) n^{-2} P² K π`), identify `∑ Λ(n) n^{-w} = −ζ'/ζ(w)` on `Re w = 2`, and subtract
+`mainTerm_eq_vertical`.  Then headline `#print axioms`, STATUS ledger, `box done`.
 
-**Forbidden drift:** do NOT attempt Lemma 3 / the Subspace Theorem itself; do NOT add any `Prop` to
-`Literature/` (frozen — propose it in the PROBE write-up instead); do NOT route a `Dubickas.lean`
-headline through a `sorry`; do NOT move the three active-crux `sorry`s to `wip/` (that games the
-gate).  `Dubickas.lean` keeps its path and every public name (⚓ OEIS-linked).
+**Forbidden drift:** editing frozen statements or `Literature/`; Graph.lean / other-file side quests
+before AlmostAll is clean; discharging the literature Props (out of this phase's scope).
 
-**Why:** the headline crux is a confirmed literature wall, so the remaining *decidable* value is
-fidelity bookkeeping of the sharpest kind — reducing three vaguely-strong leaves to one citable
-published theorem, and turning "the index set might be sparse" into a named inequality.
+**Why:** a 95%-confidence Fubini/Perron bookkeeping identity is all that stands between the phase
+and its stop condition; every analytic crux (VK contour shift V5, small-P V6, MVT leaves) is done.
 
 **Directive history**
 - 2026-09-28 (review lap): phase 8 CLOSED — Lemma 8 dropped from the Dubickas headlines; next
@@ -556,6 +544,8 @@ published theorem, and turning "the index set might be sparse" into a named ineq
 - 2026-09-28 (review lap #2): phase 9's probe goal MET; Lemma 3 is the Subspace Theorem and stays a
   disclosed leaf.  New objective = THREE leaves → ONE, via the general-`k` Newton collapse + the
   `den(U_N) ∣ D^N` upper bound + the cofiniteness dichotomy.
+- 2026-10-01 (review lap, phase E3, `erdos-385`): one `sorry` left (V4 `smoothTwist_sub_main_eq`);
+  objective = close it, nothing else.  Closed the same lap (`e819725`).
 
 ---
 
