@@ -38,7 +38,7 @@ remainder in two forms.
   `n − pq` is a window for `q − p` of length `≍ √N` at position `≍ √(t)√N` (higher-order terms are
   `O(n^{−1/4})`).  75% each.  The shared obstruction is the binary barrier: the main term and the
   Parseval mass of the error have the same size, so a proof needs phase cancellation in a
-  two-prime sum (Maze rows anchored at `HyperbolaPrimePairs`, `GoldbachWindow`).
+  two-prime sum (Maze rows anchored at `HyperbolaPrimePairs` and `good_iff_exists_prime_floor`).
   `GoldbachWindow` is stronger than Goldbach (one `N`, one window), so it is a convenient single
   hypothesis, not the weakest one; the conceptual unifier is "prime pairs equidistribute in every
   strip of width `≥ 1` around a smooth curve of length `≍ N`" (the line `p + q = N` for Goldbach,
