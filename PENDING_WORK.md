@@ -1,3 +1,6 @@
+## phase E4b DONE (2026-10-01): `Literature.McDiarmidFinite` discharged
+`mcDiarmidFinite_holds` axiom-clean.  Key move: average over coordinates in `s` by `s.piecewise z x` with `z` ranging over the full product (no sub-product types); the coordinate-swap involution on `Ω × Ω` gives both the tower property and the mean-zero condition for Hoeffding.  E4 (`Exceptional.lean`, branch `erdos-385-brun`) now needs only `ArithLargeSieve` and `LinearSieveIntervalLower` once merged.
+
 ## phase 57 DONE (2026-09-30) — Theorem D in full: PROVED and axiom-clean
 
 ## Phase 60 DONE (2026-10-01)
