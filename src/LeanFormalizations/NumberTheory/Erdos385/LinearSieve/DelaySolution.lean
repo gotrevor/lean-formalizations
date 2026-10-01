@@ -5,6 +5,7 @@ Authors: Trevor Morris
 -/
 import Mathlib
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.DelayP
+import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.DelayQ
 
 /-!
 # The Jurkat–Richert comparison functions from the delay equations (phase E5, step 4)
@@ -51,8 +52,8 @@ theorem solP_decay : ∃ M : ℝ, 0 ≤ M ∧ ∀ s, 2 ≤ s → Delay.sol (-1) 
 `s u(s) = (s−1)u(s−1) + ∫_{s−2}^{s−1} u`; values stay in the hull of the previous two-window,
 whose width `L` obeys `L(n+1) ≤ L(n−1)/(n−1) + L(n)/n`). -/
 theorem solQ_conv : ∃ ω M : ℝ, 0 < ω ∧ 0 ≤ M ∧ ∀ s, 2 ≤ s →
-    |Delay.sol 1 s - 2 * ω * s| ≤ M * Real.exp (-s) := by
-  sorry
+    |Delay.sol 1 s - 2 * ω * s| ≤ M * Real.exp (-s) :=
+  Delay.Q_conv
 
 /-- Existence, positivity and exponential convergence of the delay pair. -/
 theorem delay_solution : ∃ Q P : ℝ → ℝ, IsDelayPair Q P ∧ (∀ s, 0 < Q s ∧ 0 < P s) ∧

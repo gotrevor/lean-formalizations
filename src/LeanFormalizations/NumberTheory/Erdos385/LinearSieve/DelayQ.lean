@@ -134,4 +134,142 @@ lemma band_step {x m L : ℝ} (hx : 3 ≤ x) (hB : Band (x - 2) x m L) :
   · have : u x - 2 * L / x + 4 * L / x = u x + 2 * L / x := by ring
     linarith
 
+lemma band_widen {a b m L L' : ℝ} (hB : Band a b m L) (hL : L ≤ L') : Band a b m L' :=
+  fun t h1 h2 => ⟨(hB t h1 h2).1, (hB t h1 h2).2.trans (by linarith)⟩
+
+/-- **Convergence of `u`** with rate `e^{−2s}`, and the resulting estimate for `Q`. -/
+theorem Q_conv : ∃ ω M : ℝ, 0 < ω ∧ 0 ≤ M ∧ ∀ s, 2 ≤ s →
+    |Q s - 2 * ω * s| ≤ M * Real.exp (-s) := by
+  set x0 : ℝ := 300
+  set r : ℝ := Real.exp (-4)
+  have hr0 : 0 < r := Real.exp_pos _
+  have he4 : Real.exp 4 ≤ 75 := by
+    have h1 := Real.exp_one_lt_d9
+    have : Real.exp 4 = Real.exp 1 ^ 4 := by rw [← Real.exp_nat_mul]; norm_num
+    rw [this]
+    have h0 : 0 ≤ Real.exp 1 := (Real.exp_pos 1).le
+    nlinarith [pow_le_pow_left₀ h0 h1.le 4]
+  have hr1 : r ≤ 1 / 2 := by
+    have : r * Real.exp 4 = 1 := by rw [← Real.exp_add]; norm_num
+    have : 1 ≤ Real.exp 4 * (1 / 2) := by
+      have := Real.add_one_le_exp 4; linarith
+    nlinarith
+  have hr4 : ∀ x : ℝ, x0 ≤ x → 4 / x ≤ r := by
+    intro x hx
+    have : r * Real.exp 4 = 1 := by rw [← Real.exp_add]; norm_num
+    rw [div_le_iff₀ (by norm_num [x0] at hx ⊢; linarith)]
+    nlinarith
+  -- initial band on [x0 - 2, x0]
+  obtain ⟨tmin, htmin, hmin⟩ := isCompact_Icc.exists_isMinOn (nonempty_Icc.mpr (by norm_num))
+    (u_cont_on (a := x0 - 2) (b := x0) (by norm_num [x0]))
+  obtain ⟨tmax, htmax, hmax⟩ := isCompact_Icc.exists_isMaxOn (nonempty_Icc.mpr (by norm_num))
+    (u_cont_on (a := x0 - 2) (b := x0) (by norm_num [x0]))
+  set m0 := u tmin
+  set L0 := u tmax - u tmin
+  have hm0 : 0 < m0 := u_pos (by linarith [htmin.1])
+  have hL0 : 0 ≤ L0 := by have := hmax htmin; simp only [mem_setOf_eq] at this; linarith
+  have hB0 : Band (x0 - 2) x0 m0 L0 := fun t h1 h2 =>
+    ⟨hmin ⟨h1, h2⟩, by have := hmax ⟨h1, h2⟩; simp only [mem_setOf_eq] at this; linarith⟩
+  have hx03 : (3 : ℝ) ≤ x0 := by norm_num
+  have bands : ∀ k : ℕ, ∃ m, Band (x0 + 2 * k - 2) (x0 + 2 * k) m (L0 * r ^ k) := by
+    intro k
+    induction k with
+    | zero => exact ⟨m0, by simpa using hB0⟩
+    | succ k ih =>
+      obtain ⟨m, hm⟩ := ih
+      have hxk : x0 ≤ x0 + 2 * k := by linarith [(Nat.cast_nonneg k : (0 : ℝ) ≤ k)]
+      have hstep := band_step (by linarith) hm
+      refine ⟨u (x0 + 2 * k) - 2 * (L0 * r ^ k) / (x0 + 2 * k), ?_⟩
+      have e1 : x0 + 2 * ((k + 1 : ℕ) : ℝ) - 2 = x0 + 2 * k := by push_cast; ring
+      have e2 : x0 + 2 * ((k + 1 : ℕ) : ℝ) = x0 + 2 * k + 2 := by push_cast; ring
+      rw [e1, e2]
+      refine band_widen hstep ?_
+      have hpos : 0 < x0 + 2 * k := by linarith
+      have := hr4 _ hxk
+      have hLk : 0 ≤ L0 * r ^ k := by positivity
+      calc 4 * (L0 * r ^ k) / (x0 + 2 * k) = 4 / (x0 + 2 * k) * (L0 * r ^ k) := by ring
+        _ ≤ r * (L0 * r ^ k) := mul_le_mul_of_nonneg_right this hLk
+        _ = L0 * r ^ (k + 1) := by ring
+  have forever : ∀ k : ℕ, ∀ t, x0 + 2 * k - 2 ≤ t → ∀ t', x0 + 2 * k - 2 ≤ t' →
+      |u t - u t'| ≤ L0 * r ^ k := by
+    intro k t ht t' ht'
+    obtain ⟨m, hm⟩ := bands k
+    have hF := band_forever (x := x0 + 2 * (k : ℝ))
+      (by linarith [(Nat.cast_nonneg k : (0 : ℝ) ≤ k)]) hm
+    have h1 := hF t (by linarith)
+    have h2 := hF t' (by linarith)
+    rw [abs_le]; constructor <;> linarith [h1.1, h1.2, h2.1, h2.2]
+  set a : ℕ → ℝ := fun k => u (x0 + 2 * k)
+  have hgeom : ∀ k, dist (a k) (a (k + 1)) ≤ L0 * r ^ k := by
+    intro k
+    rw [Real.dist_eq]
+    refine forever k _ (by linarith) _ (by push_cast; linarith)
+  have hr1' : r < 1 := by linarith
+  obtain ⟨l, hl⟩ := cauchySeq_tendsto_of_complete (cauchySeq_of_le_geometric r L0 hr1' hgeom)
+  have hdl : ∀ k, |a k - l| ≤ L0 * r ^ k / (1 - r) := fun k => by
+    rw [← Real.dist_eq]; exact dist_le_of_le_geometric_of_tendsto r L0 hr1' hgeom hl k
+  have hlpos : m0 ≤ l := by
+    refine ge_of_tendsto hl (Eventually.of_forall fun k => ?_)
+    have := band_forever hx03 hB0 (x0 + 2 * k) (by linarith [(Nat.cast_nonneg k : (0 : ℝ) ≤ k)])
+    exact this.1
+  -- tail estimate
+  have htail : ∀ s, x0 ≤ s → |u s - l| ≤ 3 * L0 * Real.exp (2 * x0 + 4) * Real.exp (-2 * s) := by
+    intro s hs
+    set k := ⌊(s - x0) / 2⌋₊
+    have hk1 : (k : ℝ) ≤ (s - x0) / 2 := Nat.floor_le (by linarith)
+    have hk2 : (s - x0) / 2 < k + 1 := Nat.lt_floor_add_one _
+    have h1 := forever k s (by linarith) (x0 + 2 * k) (by linarith)
+    have h2 := hdl k
+    have hrk : r ^ k = Real.exp (-4 * k) := by
+      rw [← Real.exp_nat_mul]; ring_nf
+    have hexp : Real.exp (-4 * k) ≤ Real.exp (2 * x0 + 4) * Real.exp (-2 * s) := by
+      rw [← Real.exp_add]; exact Real.exp_le_exp.mpr (by linarith)
+    have h1r : 1 / (1 - r) ≤ 2 := by rw [div_le_iff₀ (by linarith)]; linarith
+    have hLr : 0 ≤ L0 * r ^ k := by positivity
+    calc |u s - l| ≤ |u s - a k| + |a k - l| := abs_sub_le _ _ _
+      _ ≤ L0 * r ^ k + L0 * r ^ k / (1 - r) := add_le_add h1 h2
+      _ = L0 * r ^ k * (1 + 1 / (1 - r)) := by ring
+      _ ≤ L0 * r ^ k * 3 := mul_le_mul_of_nonneg_left (by linarith) hLr
+      _ = 3 * L0 * Real.exp (-4 * k) := by rw [hrk]; ring
+      _ ≤ 3 * L0 * (Real.exp (2 * x0 + 4) * Real.exp (-2 * s)) :=
+          mul_le_mul_of_nonneg_left hexp (by positivity)
+      _ = _ := by ring
+  -- compact part
+  obtain ⟨B, hB⟩ := isCompact_Icc.exists_bound_of_continuousOn
+    (((sol_continuous 1).sub (continuous_const.mul continuous_id)).continuousOn
+      (s := Icc (2 : ℝ) x0) (f := fun s => Q s - l * s))
+  refine ⟨l / 2, 3 * L0 * Real.exp (2 * x0 + 4) + |B| * Real.exp x0, by linarith, by positivity,
+    fun s hs => ?_⟩
+  have hl2 : 2 * (l / 2) * s = l * s := by ring
+  rw [hl2]
+  have hes : 0 < Real.exp (-s) := Real.exp_pos _
+  rcases le_total s x0 with h | h
+  · have := hB s ⟨hs, h⟩
+    rw [Real.norm_eq_abs] at this
+    have h1 : 1 ≤ Real.exp x0 * Real.exp (-s) := by
+      rw [← Real.exp_add]; exact Real.one_le_exp (by linarith)
+    have h2 : 0 ≤ 3 * L0 * Real.exp (2 * x0 + 4) * Real.exp (-s) := by positivity
+    nlinarith [le_abs_self B, abs_nonneg B]
+  · have ht := htail s h
+    have hspos : 0 < s := by linarith
+    have hQ : Q s - l * s = s * (u s - l) := by
+      unfold u; field_simp
+    rw [hQ, abs_mul, abs_of_pos hspos]
+    have hse : s * Real.exp (-2 * s) ≤ Real.exp (-s) := by
+      have h1 : s ≤ Real.exp s := by linarith [Real.add_one_le_exp s]
+      have : Real.exp (-2 * s) = Real.exp (-s) * Real.exp (-s) := by
+        rw [← Real.exp_add]; ring_nf
+      rw [this]
+      have h2 : Real.exp s * Real.exp (-s) = 1 := by rw [← Real.exp_add]; simp
+      nlinarith
+    have hC : 0 ≤ 3 * L0 * Real.exp (2 * x0 + 4) := by positivity
+    calc s * |u s - l| ≤ s * (3 * L0 * Real.exp (2 * x0 + 4) * Real.exp (-2 * s)) :=
+          mul_le_mul_of_nonneg_left ht hspos.le
+      _ = 3 * L0 * Real.exp (2 * x0 + 4) * (s * Real.exp (-2 * s)) := by ring
+      _ ≤ 3 * L0 * Real.exp (2 * x0 + 4) * Real.exp (-s) := mul_le_mul_of_nonneg_left hse hC
+      _ ≤ _ := by
+          have h0 : 0 ≤ |B| * Real.exp x0 * Real.exp (-s) := by positivity
+          linarith [show (3 * L0 * Real.exp (2 * x0 + 4) + |B| * Real.exp x0) * Real.exp (-s) =
+            3 * L0 * Real.exp (2 * x0 + 4) * Real.exp (-s) + |B| * Real.exp x0 * Real.exp (-s) by ring]
+
 end LeanFormalizations.Erdos385.LinearSieve.Delay
