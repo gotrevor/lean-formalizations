@@ -10,6 +10,6 @@
 - `ExceptionalWeak/Main.lean`: `eventually_bad_le_weak`, bound `(3 + 2C) X e^{−L^θ}`.
 Full build green (8859 jobs).
 
-Branch , HEAD  (proof commit).
-Next: once E5 (, branch ) lands, merge it and compose
- unconditionally.
+Branch `erdos-385-brun`, proof commit `d2223cb`.
+Next: once E5 (`linearSieveIntervalLower_holds`, branch `erdos-385`) lands, merge it and compose
+`badCountExpBound_of_linearSieve linearSieveIntervalLower_holds : BadCountExpBound` unconditionally.
