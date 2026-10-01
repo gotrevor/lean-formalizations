@@ -13,3 +13,6 @@ Route (helpers in `Erdos385/PNTFromVK/`):
   bound needed; Λ(1)=0 and e^{2η}<2), sandwich ψ(Be^{∓η}); main line beats 5√L since
   (1−σ₁)L ≥ (4√L)^{−3/4}L.
 Next (other branch): E2e Landau.lean (VK from Richert).
+
+Branch erdos-385, HEAD d8111a1 (E3e commit). Run stopped by host after scoped target met.
+Exact next steps: (1) E2e on erdos-385-brun: Landau.lean `vkZeroFreeLogDeriv_of_richert`; (2) compose with `almost_all_F385_rate_of_VK` so Theorem A rests only on RichertZetaGrowth.
