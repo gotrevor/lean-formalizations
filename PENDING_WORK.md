@@ -2007,3 +2007,8 @@ Selberg Λ² with optimal weights on top of mathlib's `SelbergSieve` scaffolding
   decouple coprimality with `∑_{a∈S} F ≤ (∑_{d∣m sqfree} F d)·∑_{(a,m)=1} F` (costs `m/φ(m)`),
   and `∑_{a≤t sqfree} 1/a ≥ log t / 2` via `n = b²a`.
 - |w_d| ≤ g(d)/ν(d) ≤ d crude bound suffices with level y², y = t², t = ⌊X^{1/16}⌋ (error ≤ y⁶).
+
+## 2026-10-01 E2c DONE
+Discharge.lean sorry-free, axiom-clean (see HANDOFF-2026-10-01-erdos385-E2c-discharge-complete.md).
+Reusable: positivity of the Fejér transform is NOT needed — only `|J| ≤ min(T, 1/(Tλ²))`
+plus pointwise `w ≥ 1_{[0,T]}`; the single row weight `2TN²/(T²k²+N²)` absorbs the min.

@@ -8,6 +8,7 @@ import LeanFormalizations.Literature.Erdos385AlmostAll
 import LeanFormalizations.NumberTheory.Erdos385.Count
 import LeanFormalizations.NumberTheory.Erdos385.BrunPairs
 import PrimeNumberTheoremAnd.MediumPNT
+import LeanFormalizations.NumberTheory.Erdos385.MeanValue
 
 /-!
 # Erdős #385: discharging literature Props (phase E2c)
@@ -64,7 +65,11 @@ theorem mediumPNTStatement_holds : MediumPNTStatement :=
   MediumPNT
 
 /-- The Montgomery–Vaughan mean value theorem (upper half, unspecified constant). -/
-theorem montgomeryVaughanMVT_holds : MontgomeryVaughanMVT := by
-  sorry
+theorem montgomeryVaughanMVT_holds : MontgomeryVaughanMVT :=
+  ⟨32, MVT.mvt⟩
+
+#print axioms card_bad_le_unconditional
+#print axioms mediumPNTStatement_holds
+#print axioms montgomeryVaughanMVT_holds
 
 end Erdos385
