@@ -36,6 +36,7 @@ import LeanFormalizations.Literature.GelfondSchneider
 import LeanFormalizations.NumberTheory.Mills.Wright
 import LeanFormalizations.NumberTheory.Erdos385.FunctionField
 import LeanFormalizations.NumberTheory.Erdos385.Graph
+import LeanFormalizations.NumberTheory.Erdos385.Hyperbola
 import LeanFormalizations.NumberTheory.Mills.PairedRoot
 
 namespace LeanFormalizations.Maze
@@ -232,6 +233,20 @@ def register : List Row := [
       repulsion).  Edge Erdos385.eventually_not_bad_of_crossScaleRepulsion"
     reopenIf := "a mechanism by which an empty scale forces a carrier at another scale that \
       survives the positive cross-scale coupling seen in the data" },
+  { route := "Erdős #385(i) for every n via prime pairs on the strip pq < n < pq + p \
+      (Erdos385.HyperbolaPrimePairs, edges eventually_not_bad_of_hyperbolaPrimePairs, \
+      erdos430_of_hyperbolaPrimePairs)"
+    verdict := .needsNewIdea, tier := .frozen
+    anchor := some ``LeanFormalizations.Erdos385.HyperbolaPrimePairs
+    evidence := "Hyperbola.lean header: near p ≈ √n, ⌊n/p⌋ = 2A + c(p) − p, so the statement is \
+      binary Goldbach with p in a window of length ≍ n^{1/4}.  The Dirichlet-polynomial bound for \
+      the strip count in a window of length ≍ √n is ∫|P Q| ≤ (∫|P|²∫|Q|²)^{1/2} ≍ 1/log n against a \
+      main term ≍ 1/log² n, and the L² norms are sharp even under RH, so no hypothesis on zeros \
+      alone closes it.  Data (scripts/erdos385-hyperbola-probe.py): W(n) = 0 last at 267689 ≤ 10^8, \
+      min W = 27 on [10^7, 10^8)"
+    reopenIf := "pointwise cancellation in the Type II × Type II term near the diagonal \
+      (Σ α_a β_b γ_c δ_d 1[ab = ⌊n/(cd)⌋]), i.e. a binary-problem mechanism; the curved range \
+      p ≪ √n needs ⌊n/p⌋ p-rough, which the sieve-only row already blocks" },
   { route := "Linear sieve s > 2 (phase E5) from ONE Buchstab step on Selberg's Λ² upper bound"
     verdict := .needsNewIdea, tier := .cited, anchor := none
     evidence := "scripts/linear-sieve-onestep.py: S(z) = N − Σ_{p<z} S(A_p, p) with Selberg's \
