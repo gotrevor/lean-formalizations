@@ -31,10 +31,11 @@ heights `T₀ + 1 ≤ |t| ≤ 8X` where the short prime factor `P(1+it)` of `A =
 `T ≤ 8X`; for `T > 8X` the MVT for `A` itself gives `X/(h₁T)·(T/X)/log Z ≪ 1/h₁ ≪ Z^{−1/2}`. -/
 def NearFarInput (δ : ℝ) : Prop :=
   ∃ cmax : ℝ, 0 < cmax ∧ ∀ c₀ : ℝ, 0 < c₀ → c₀ ≤ cmax → ∀ g : ℝ → ℝ, Admissible δ g →
-    ∃ c C : ℝ, 0 < c ∧ ∀ᶠ Z : ℝ in atTop, ∃ S : Finset ℝ, (∀ s ∈ S, Z ^ c₀ + 1 ≤ |s|) ∧
+    ∃ c C : ℝ, 0 < c ∧ ∀ᶠ Z : ℝ in atTop, ∃ T₀ : ℝ, Z ^ c₀ / 2 ≤ T₀ ∧ T₀ ≤ Z ^ c₀ ∧
+      ∃ S : Finset ℝ, (∀ s ∈ S, T₀ + 1 ≤ |s|) ∧
       (∫ t in nearSet S 1, ‖LSeries (fun m ↦ (coeffA δ g Z m : ℂ)) (1 + t * I)‖) ≤
         1 / Real.log Z ^ 3 ∧
-      (∫ t in {t : ℝ | Z ^ c₀ ≤ |t| ∧ |t| ≤ paramX δ Z / paramH1 δ Z} \ nearSet S 1,
+      (∫ t in {t : ℝ | T₀ ≤ |t| ∧ |t| ≤ paramX δ Z / paramH1 δ Z} \ nearSet S 1,
           ‖LSeries (fun m ↦ (coeffA δ g Z m : ℂ)) (1 + t * I)‖ ^ 2) ≤ C * Z ^ (-c) ∧
       ∀ T : ℝ, paramX δ Z / (2 * paramH1 δ Z) ≤ T →
         paramX δ Z / (paramH1 δ Z * T) * ∫ t in {t : ℝ | T ≤ |t| ∧ |t| ≤ 2 * T} \ nearSet S 1,
@@ -44,15 +45,15 @@ def NearFarInput (δ : ℝ) : Prop :=
 theorem powerH_params {δ c₀ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) (hc₀ : 0 < c₀)
     (hc₀' : c₀ ≤ 1 / 12) :
     ∀ᶠ Z : ℝ in atTop, 2 ≤ paramX δ Z ∧ 2 ≤ paramH1 δ Z ∧ paramH1 δ Z ≤ powerH c₀ δ Z ∧
-      powerH c₀ δ Z = paramX δ Z / (Z ^ c₀) ^ 3 ∧ 1 ≤ Z ^ c₀ ∧ 1 < Z := by
-  filter_upwards [variance_params (κ := 1) hδ hδ' one_pos, eventually_ge_atTop (2 ^ 12)]
-    with Z hv hZ
+      powerH c₀ δ Z = paramX δ Z / (Z ^ c₀) ^ 3 ∧ 2 ≤ Z ^ c₀ ∧ 1 < Z := by
+  filter_upwards [variance_params (κ := 1) hδ hδ' one_pos, eventually_ge_atTop (2 ^ 12),
+    (tendsto_rpow_atTop hc₀).eventually_ge_atTop 2] with Z hv hZ hZc
   obtain ⟨hZ16, -, hX2, hH2, -, hH1hi, -⟩ := hv
   have hZ0 : 0 < Z := by linarith
   have hZ1 : 1 ≤ Z := by linarith
   have hpow : (Z ^ c₀) ^ 3 = Z ^ (3 * c₀) := by
     rw [← Real.rpow_natCast, ← Real.rpow_mul hZ0.le]; ring_nf
-  refine ⟨hX2, hH2, ?_, by rw [powerH, hpow], Real.one_le_rpow hZ1 hc₀.le, by linarith⟩
+  refine ⟨hX2, hH2, ?_, by rw [powerH, hpow], hZc, by linarith⟩
   -- `h₁ ≤ √Z ≤ X/Z^{1/4} ≤ X/Z^{3c₀}`
   have hR : Z ^ (3 * c₀) ≤ Z ^ ((1 : ℝ) / 4) := Real.rpow_le_rpow_of_exponent_le hZ1 (by linarith)
   have hR0 : 0 < Z ^ (3 * c₀) := by positivity
@@ -87,13 +88,18 @@ theorem differenceSplit_of_nearFar {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4)
   refine ⟨min m (1 / 12), lt_min hm (by norm_num), fun c₀ hc₀ hc₀m g hg => ?_⟩
   obtain ⟨c, C, hc, hev⟩ := hN c₀ hc₀ (hc₀m.trans (min_le_left _ _)) g hg
   set c' := min c c₀
-  refine ⟨c', 500 * (1 + 2 * |C|), lt_min hc hc₀, ?_⟩
+  refine ⟨c', 500 * (2 + 2 * |C|), lt_min hc hc₀, ?_⟩
   filter_upwards [hev, powerH_params hδ hδ' hc₀ (hc₀m.trans (min_le_right _ _))] with Z hS hp
-  obtain ⟨S, hSs, hnear, hmid, htail⟩ := hS
-  obtain ⟨hX2, hH2, h12, hHeq, hT1, hZ1⟩ := hp
+  obtain ⟨T₀, hT₀lo, hT₀hi, S, hSs, hnear, hmid, htail⟩ := hS
+  obtain ⟨hX2, hH2, h12, hHeq, hT2, hZ1⟩ := hp
+  have hT1 : 1 ≤ T₀ := by linarith
+  have h2X : powerH c₀ δ Z ≤ paramX δ Z / T₀ ^ 3 := by
+    rw [hHeq]
+    exact div_le_div_of_nonneg_left (by linarith) (by positivity)
+      (pow_le_pow_left₀ (by linarith) hT₀hi 3)
   have hfacts := coeffA_facts hδ hδ' hZ1 hg
   obtain ⟨Dfar, hint, hD, hfar⟩ := far_split (a := coeffA δ g Z) (X := paramX δ Z)
-    (T₀ := Z ^ c₀) (h₁ := paramH1 δ Z) (h₂ := powerH c₀ δ Z) hX2 hT1 hH2 h12 hHeq.le
+    (T₀ := T₀) (h₁ := paramH1 δ Z) (h₂ := powerH c₀ δ Z) hX2 hT1 hH2 h12 h2X
     (fun m => by
       rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hfacts m).1]
       linarith [(hfacts m).2.1])
@@ -111,16 +117,20 @@ theorem differenceSplit_of_nearFar {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4)
   have hZc₀ : 1 / Z ^ c₀ ≤ Z ^ (-c') := by
     rw [one_div, ← Real.rpow_neg hZ0.le]
     exact Real.rpow_le_rpow_of_exponent_le hZ1.le (by simp [c'])
+  have hT₀inv : 1 / T₀ ≤ 2 * (1 / Z ^ c₀) := by
+    rw [one_div_le (by linarith) (by positivity)]
+    have : 0 < Z ^ c₀ := by positivity
+    field_simp; linarith
   have hpos : 0 ≤ Z ^ (-c) := by positivity
   have hCc : C * Z ^ (-c) ≤ |C| * Z ^ (-c') :=
     (mul_le_mul_of_nonneg_right (le_abs_self C) hpos).trans
       (mul_le_mul_of_nonneg_left hZc (abs_nonneg C))
-  have : 1 / Z ^ c₀ + C * Z ^ (-c) + C * Z ^ (-c) ≤ (1 + 2 * |C|) * Z ^ (-c') := by
+  have : 1 / T₀ + C * Z ^ (-c) + C * Z ^ (-c) ≤ (2 + 2 * |C|) * Z ^ (-c') := by
     linarith
-  calc paramX δ Z * (500 * (1 / Z ^ c₀ + (∫ t in {t : ℝ | Z ^ c₀ ≤ |t| ∧
+  calc paramX δ Z * (500 * (1 / T₀ + (∫ t in {t : ℝ | T₀ ≤ |t| ∧
           |t| ≤ paramX δ Z / paramH1 δ Z} \ nearSet S 1,
           ‖LSeries (fun m ↦ (coeffA δ g Z m : ℂ)) (1 + t * I)‖ ^ 2) + C * Z ^ (-c)))
-      ≤ paramX δ Z * (500 * ((1 + 2 * |C|) * Z ^ (-c'))) := by gcongr; linarith
-    _ = 500 * (1 + 2 * |C|) * paramX δ Z * Z ^ (-c') := by ring
+      ≤ paramX δ Z * (500 * ((2 + 2 * |C|) * Z ^ (-c'))) := by gcongr; linarith
+    _ = 500 * (2 + 2 * |C|) * paramX δ Z * Z ^ (-c') := by ring
 
 end LeanFormalizations.Erdos385

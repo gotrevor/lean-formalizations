@@ -30,10 +30,11 @@ the unit neighbourhoods is immediate from maximality (every `t` with `|P| > Z^{�
 of `S`), no derivative bound needed. -/
 def NearSetLeaf (δ : ℝ) : Prop :=
   ∃ η : ℝ, 0 < η ∧ ∃ cmax : ℝ, 0 < cmax ∧ ∀ c₀ : ℝ, 0 < c₀ → c₀ ≤ cmax → ∀ g : ℝ → ℝ,
-    Admissible δ g → ∀ᶠ Z : ℝ in atTop, ∃ S : Finset ℝ, (∀ s ∈ S, Z ^ c₀ + 1 ≤ |s|) ∧
+    Admissible δ g → ∀ᶠ Z : ℝ in atTop, ∃ T₀ : ℝ, Z ^ c₀ / 2 ≤ T₀ ∧ T₀ ≤ Z ^ c₀ ∧
+      ∃ S : Finset ℝ, (∀ s ∈ S, T₀ + 1 ≤ |s|) ∧
       (∫ t in nearSet S 1, ‖LSeries (fun m ↦ (coeffA δ g Z m : ℂ)) (1 + t * I)‖) ≤
         1 / Real.log Z ^ 3 ∧
-      ∀ t : ℝ, Z ^ c₀ ≤ |t| → |t| ≤ 16 * paramX δ Z → t ∉ nearSet S 1 →
+      ∀ t : ℝ, T₀ ≤ |t| → |t| ≤ 16 * paramX δ Z → t ∉ nearSet S 1 →
         ‖primeP g Z (1 + t * I)‖ ≤ Z ^ (-η)
 
 section
@@ -121,7 +122,7 @@ theorem nearFarInput_of_nearSetLeaf {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4
   refine ⟨min (2 * η) (1 / 2), 100 * K * (1 + 1 / δ), lt_min (by positivity) (by norm_num), ?_⟩
   filter_upwards [hL c₀ hc₀ (hc₀m.trans (min_le_left _ _)) g hg, hKQ, hKA,
     variance_params (κ := 1) hδ hδ' one_pos] with Z hS hQ hA hv
-  obtain ⟨S, hSs, hnear, hP⟩ := hS
+  obtain ⟨T₀, hT₀lo, hT₀hi, S, hSs, hnear, hP⟩ := hS
   clear hL hKQ hKA
   obtain ⟨hZ16, hlog, hX2, hH2, hH1lo, hH1hi, -⟩ := hv
   have hZ0 : 0 < Z := by linarith
@@ -149,7 +150,8 @@ theorem nearFarInput_of_nearSetLeaf {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4
     rw [Real.sqrt_eq_rpow, one_div, ← Real.rpow_neg hZ0.le]
     exact Real.rpow_le_rpow_of_exponent_le hZ1.le (by simp [hcdef])
   have hZc0 : 0 ≤ Z ^ (-c) := by positivity
-  have hc₀s : Z ^ c₀ ≤ √Z := by
+  have hc₀s : T₀ ≤ √Z := by
+    refine hT₀hi.trans ?_
     rw [Real.sqrt_eq_rpow]
     exact Real.rpow_le_rpow_of_exponent_le hZ1.le
       (by linarith [hc₀m.trans (min_le_right _ _)])
@@ -164,7 +166,7 @@ theorem nearFarInput_of_nearSetLeaf {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4
   have h16 : (1 + 1 / δ) * 16 ≤ 16 + 16 / δ := by
     rw [add_mul, one_mul, div_mul_eq_mul_div, one_mul]
   have hδinv : 0 ≤ 1 / δ := by positivity
-  refine ⟨S, hSs, hnear, ?_, fun T hT => ?_⟩
+  refine ⟨T₀, hT₀lo, hT₀hi, S, hSs, hnear, ?_, fun T hT => ?_⟩
   · -- mid band
     obtain ⟨U, hUdef⟩ : ∃ U, U = X / h₁ := ⟨_, rfl⟩
     rw [← hUdef]
@@ -174,8 +176,8 @@ theorem nearFarInput_of_nearSetLeaf {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4
       rw [this]
       calc X / (h₁ * √Z) * √Z ≤ 16 / δ * √Z := mul_le_mul_of_nonneg_right hXh hsZ.le
         _ = _ := by ring
-    have hmid := masked_le hδ hδ' hZ1 hg hlog (measurableSet_band (Z ^ c₀) U S) (by linarith)
-      (band_subset (Z ^ c₀) U S) hε0 (fun t ht => by
+    have hmid := masked_le hδ hδ' hZ1 hg hlog (measurableSet_band T₀ U S) (by linarith)
+      (band_subset T₀ U S) hε0 (fun t ht => by
         refine hP t ht.1.1 (ht.1.2.trans ?_) ht.2
         have : U ≤ X := by rw [hUdef]; exact div_le_self (by linarith) (by linarith)
         linarith)
