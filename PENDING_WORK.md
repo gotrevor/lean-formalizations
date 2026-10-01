@@ -2186,3 +2186,4 @@ reuse with T₀ = Z^{c₀}; (ii) long average via ShortIntervalPrimesLower; (iii
 - `Parseval.mr16_masked` PROVED axiom-clean (PowerSaving/Masked.lean). Remaining for step 2: the
   coeffA-level inputs (near integral ∫_E|Â| small; masked mid/blocks ≤ C Z^{−c}) + DifferenceSplit
   assembly (D_far := D − Re winDif(𝓕⁻(1_E F)), real/complex bridge via coeffC, a.e. x ∉ ℕ).
+- `Parseval.far_split` (PowerSaving/Bridge.lean) PROVED axiom-clean: D = D_far + D_near for real coeffs, |D_near| ≤ ∫_{Et}|A|, ∫D_far² ≤ 500X(1/T₀+M_masked+B). Left: coeffA analytic inputs (NearFarInput) + DifferenceSplit wiring.
