@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Trevor Morris
 -/
 import Mathlib
+import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.DelayConstruct
 
 /-!
 # The Jurkat–Richert comparison functions from the delay equations (phase E5, step 4)
@@ -39,11 +40,38 @@ def IsDelayPair (Q P : ℝ → ℝ) : Prop :=
     Q s' = Q s + ∫ t in s..s', Q (t - 1) / (t - 1) ∧
     P s = P s' + ∫ t in s..s', P (t - 1) / (t - 1)
 
-/-- Leaf: existence, positivity and exponential convergence of the delay pair. -/
+/-- Leaf: positivity of `P = m` (route: `(s−1)P(s) = ∫_{s−1}^s P`, first-zero contradiction). -/
+theorem solP_pos : ∀ s, 0 < Delay.sol (-1) s := by
+  sorry
+
+/-- Leaf: decay of `P` (route: `P(s) ≤ P(s−1)/(s−1)` from the same identity and `P` decreasing). -/
+theorem solP_decay : ∃ M : ℝ, 0 ≤ M ∧ ∀ s, 2 ≤ s → Delay.sol (-1) s ≤ M * Real.exp (-s) := by
+  sorry
+
+/-- Leaf: `Q/(2s) → ω` exponentially (route: `u = Q/s` satisfies
+`s u(s) = (s−1)u(s−1) + ∫_{s−2}^{s−1} u`; values stay in the hull of the previous two-window,
+whose width `L` obeys `L(n+1) ≤ L(n−1)/(n−1) + L(n)/n`). -/
+theorem solQ_conv : ∃ ω M : ℝ, 0 < ω ∧ 0 ≤ M ∧ ∀ s, 2 ≤ s →
+    |Delay.sol 1 s - 2 * ω * s| ≤ M * Real.exp (-s) := by
+  sorry
+
+/-- Existence, positivity and exponential convergence of the delay pair. -/
 theorem delay_solution : ∃ Q P : ℝ → ℝ, IsDelayPair Q P ∧ (∀ s, 0 < Q s ∧ 0 < P s) ∧
     ∃ ω M : ℝ, 0 < ω ∧ 0 ≤ M ∧ ∀ s, 2 ≤ s →
       |Q s - 2 * ω * s| ≤ M * Real.exp (-s) ∧ |P s| ≤ M * Real.exp (-s) := by
-  sorry
+  obtain ⟨ω, M1, hω, hM1, hQ⟩ := solQ_conv
+  obtain ⟨M2, hM2, hP⟩ := solP_decay
+  refine ⟨Delay.sol 1, Delay.sol (-1), ⟨Delay.sol_continuous 1, Delay.sol_continuous (-1),
+    fun s hs => ⟨Delay.sol_init 1 hs, Delay.sol_init (-1) hs⟩, fun s s' hs hss => ⟨?_, ?_⟩⟩,
+    fun s => ⟨by linarith [Delay.solQ_ge_two s], solP_pos s⟩, ω, M1 + M2, hω, by positivity,
+    fun s hs => ⟨?_, ?_⟩⟩
+  · rw [Delay.sol_two_point 1 hs hss, one_mul]
+  · rw [Delay.sol_two_point (-1) hs hss]; ring
+  · have he := (Real.exp_pos (-s)).le
+    exact (hQ s hs).trans (by nlinarith)
+  · have he := (Real.exp_pos (-s)).le
+    rw [abs_of_pos (solP_pos s)]
+    exact (hP s hs).trans (by nlinarith)
 
 /-- Leaf: `ω∞ ≤ e^{−γ}` (Buchstab's limit; equality is classical). -/
 theorem omega_le : ∀ Q P : ℝ → ℝ, IsDelayPair Q P → ∀ ω M : ℝ, 0 < ω →
