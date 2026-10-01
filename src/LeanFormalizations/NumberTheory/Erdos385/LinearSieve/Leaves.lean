@@ -8,6 +8,7 @@ import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.UpperBoundary
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Assembly
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.DelaySolution
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Bounded
+import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.BuchstabLimitA
 
 /-!
 # The named leaves of `aLow_pos` (phase E5, steps 2–5)
@@ -40,8 +41,8 @@ theorem bUp_mono : MonotoneOn bUp (Ioi 0) := bUp_mono'
 
 /-- Leaf (step 2): the lower Buchstab inequality in the limit. -/
 theorem buchstab_limit_a : ∀ s s' : ℝ, 2 ≤ s → s ≤ s' →
-    aLow s' - ∫ t in s..s', bUp (t - 1) / (t - 1) ≤ aLow s := by
-  sorry
+    aLow s' - ∫ t in s..s', bUp (t - 1) / (t - 1) ≤ aLow s :=
+  fun _ _ hs hss' => buchstab_limit_a' hs hss'
 
 /-- Leaf (step 2): the upper Buchstab inequality in the limit. -/
 theorem buchstab_limit_b : ∀ s s' : ℝ, 2 ≤ s → s ≤ s' →
