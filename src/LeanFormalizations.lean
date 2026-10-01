@@ -204,5 +204,6 @@ import LeanFormalizations.NumberTheory.Erdos385.Count
 import LeanFormalizations.NumberTheory.Erdos385.BrunPairs
 import LeanFormalizations.NumberTheory.Erdos385.MeanValue
 import LeanFormalizations.NumberTheory.Erdos385.Discharge
+import LeanFormalizations.NumberTheory.Erdos385.ShortSumParseval
 import LeanFormalizations.Literature.Erdos385AlmostAll
 import LeanFormalizations.NumberTheory.Erdos385.AlmostAll
