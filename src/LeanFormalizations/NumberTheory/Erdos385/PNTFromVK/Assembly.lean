@@ -184,10 +184,255 @@ theorem mainLine_eventually :
         mul_le_mul_of_nonneg_left hexp (by linarith)
     _ ≤ 1 := h1
 
+/-- **The three contour error terms are `≪ x η`.** -/
+theorem err_le {K₀ K₃ C x η r T X Xc XS E1 lT : ℝ} (hK₀ : 0 ≤ K₀) (hK₃ : 0 ≤ K₃) (hC : 0 ≤ C)
+    (hx : 0 < x) (hη0 : 0 < η) (hη1 : η ≤ 1) (hr : 0 ≤ r) (hrη : r * η ≤ 1) (hT : T = η⁻¹ ^ 4)
+    (hX : X = 2 * x) (hXc : Xc = Real.exp 1 * X) (hlT : lT = 4 * r) (hXS : XS ≤ X * E1)
+    (hE1 : T * E1 * r ≤ η) (hE1p : 0 ≤ E1) :
+    2 * T * (4 * K₀) * XS * (C * lT) + 4 * (2 * K₃ * η⁻¹ ^ 3) * Xc * (C * lT) / T ^ 4 +
+      2 * π * (2 * K₃ * η⁻¹ ^ 3) * Xc * C / T ≤
+      (64 * K₀ * C + 192 * K₃ * C + 96 * K₃ * C) * (x * η) := by
+  subst hT hX hXc hlT
+  have hηi : 0 < η⁻¹ := inv_pos.2 hη0
+  have hT0 : 0 ≤ η⁻¹ ^ 4 := by positivity
+  have he3 : Real.exp 1 ≤ 3 := by have := Real.exp_one_lt_d9; linarith
+  have hπ : π ≤ 4 := by linarith [Real.pi_lt_four]
+  have t1 : 2 * η⁻¹ ^ 4 * (4 * K₀) * XS * (C * (4 * r)) ≤ 64 * K₀ * C * (x * η) := by
+    have h1 : 2 * η⁻¹ ^ 4 * (4 * K₀) * XS * (C * (4 * r)) ≤
+        2 * η⁻¹ ^ 4 * (4 * K₀) * (2 * x * E1) * (C * (4 * r)) := by
+      have : 0 ≤ 2 * η⁻¹ ^ 4 * (4 * K₀) := by positivity
+      have h2 : 0 ≤ C * (4 * r) := by positivity
+      exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hXS this) h2
+    have h2 : 2 * η⁻¹ ^ 4 * (4 * K₀) * (2 * x * E1) * (C * (4 * r)) =
+        64 * K₀ * C * x * (η⁻¹ ^ 4 * E1 * r) := by ring
+    have h3 : 64 * K₀ * C * x * (η⁻¹ ^ 4 * E1 * r) ≤ 64 * K₀ * C * x * η :=
+      mul_le_mul_of_nonneg_left hE1 (by positivity)
+    linarith
+  have t2 : 4 * (2 * K₃ * η⁻¹ ^ 3) * (Real.exp 1 * (2 * x)) * (C * (4 * r)) / (η⁻¹ ^ 4) ^ 4 ≤
+      192 * K₃ * C * (x * η) := by
+    have e : 4 * (2 * K₃ * η⁻¹ ^ 3) * (Real.exp 1 * (2 * x)) * (C * (4 * r)) / (η⁻¹ ^ 4) ^ 4 =
+        64 * Real.exp 1 * (K₃ * C * x) * ((r * η) * η ^ 12) := by
+      field_simp; ring
+    rw [e]
+    have h12 : (r * η) * η ^ 12 ≤ 1 :=
+      mul_le_one₀ hrη (by positivity) (pow_le_one₀ hη0.le hη1)
+    have hb : 0 ≤ K₃ * C * x := by positivity
+    have h4 : (r * η) * η ^ 12 ≤ η := by
+      have : η ^ 12 ≤ 1 := pow_le_one₀ hη0.le hη1
+      calc (r * η) * η ^ 12 = (r * η) * η ^ 11 * η := by ring
+        _ ≤ 1 * 1 * η := by
+          gcongr
+          exact pow_le_one₀ hη0.le hη1
+        _ = η := by ring
+    have : 64 * Real.exp 1 * (K₃ * C * x) * ((r * η) * η ^ 12) ≤ 64 * 3 * (K₃ * C * x) * η := by
+      gcongr
+    nlinarith
+  have t3 : 2 * π * (2 * K₃ * η⁻¹ ^ 3) * (Real.exp 1 * (2 * x)) * C / η⁻¹ ^ 4 ≤
+      96 * K₃ * C * (x * η) := by
+    have e : 2 * π * (2 * K₃ * η⁻¹ ^ 3) * (Real.exp 1 * (2 * x)) * C / η⁻¹ ^ 4 =
+        8 * (π * Real.exp 1) * (K₃ * C * x * η) := by
+      field_simp; ring
+    rw [e]
+    have hpe : π * Real.exp 1 ≤ 12 := by nlinarith [Real.pi_pos, Real.exp_pos 1]
+    have : 0 ≤ K₃ * C * x * η := by positivity
+    nlinarith
+  nlinarith
+
+set_option maxHeartbeats 1000000 in
 /-- **PNT with error `x η`, `η = exp(−√log x)`.** -/
 theorem psi_sub_le (h : VKZeroFreeLogDeriv) :
     ∃ K : ℝ, ∀ᶠ x : ℝ in atTop, |ψ x - x| ≤ K * (x * Real.exp (-Real.sqrt (Real.log x))) := by
-  sorry
+  obtain ⟨c₀, hc₀, C, hC, hcont⟩ := contour_estimate h
+  obtain ⟨K₀, K₃, hK₀, hK₃, hwb⟩ := wt_mellin_bounds
+  refine ⟨64 * K₀ * C + 192 * K₃ * C + 96 * K₃ * C + 6, ?_⟩
+  have hTt : Tendsto (fun x : ℝ => Real.exp (4 * Real.sqrt (Real.log x))) atTop atTop :=
+    Real.tendsto_exp_atTop.comp ((Real.tendsto_sqrt_atTop.comp Real.tendsto_log_atTop).const_mul_atTop
+      (by norm_num))
+  have hvk := hTt.eventually ((vk_width_eventually hc₀ (ε := 1 / 12) (by norm_num)).and
+    (eventually_ge_atTop (3 : ℝ)))
+  have hml := Real.tendsto_log_atTop.eventually mainLine_eventually
+  have hsq : ∀ᶠ x : ℝ in atTop, Real.log 4 ≤ Real.sqrt (Real.log x) :=
+    (Real.tendsto_sqrt_atTop.comp Real.tendsto_log_atTop).eventually (eventually_ge_atTop _)
+  have hlog1 : ∀ᶠ x : ℝ in atTop, 1 ≤ Real.log x :=
+    Real.tendsto_log_atTop.eventually (eventually_ge_atTop 1)
+  filter_upwards [hvk, hml, hsq, hlog1, eventually_ge_atTop (3 : ℝ)] with x hvx hmlx hsqx hL1 hx3
+  obtain ⟨⟨hv1, hv2⟩, hT3⟩ := hvx
+  obtain ⟨L, hL⟩ : ∃ L, L = Real.log x := ⟨_, rfl⟩
+  obtain ⟨r, hr⟩ : ∃ r, r = Real.sqrt L := ⟨_, rfl⟩
+  obtain ⟨η, hη⟩ : ∃ η, η = Real.exp (-r) := ⟨_, rfl⟩
+  obtain ⟨T, hT⟩ : ∃ T, T = Real.exp (4 * r) := ⟨_, rfl⟩
+  rw [← hL] at hmlx hsqx hL1
+  rw [← hr] at hmlx hsqx
+  rw [← hL, ← hr, ← hT] at hv1 hv2 hT3
+  rw [← hL, ← hr, ← hη]
+  have hx0 : 0 < x := by linarith
+  have hr1 : 1 ≤ r := by rw [hr, show (1:ℝ) = Real.sqrt 1 by simp]; exact Real.sqrt_le_sqrt hL1
+  have hη0 : 0 < η := by rw [hη]; exact Real.exp_pos _
+  have hη4 : η ≤ 1 / 4 := by
+    rw [hη, show (1 / 4 : ℝ) = Real.exp (-Real.log 4) by
+      rw [Real.exp_neg, Real.exp_log (by norm_num)]; norm_num]
+    exact Real.exp_le_exp.2 (by linarith)
+  have hη1 : η ≤ 1 := by linarith
+  have hrη : r * η ≤ 1 := by
+    rw [hη, Real.exp_neg, mul_inv_le_iff₀ (Real.exp_pos _), one_mul]; linarith [Real.add_one_le_exp r]
+  have hTη : T = η⁻¹ ^ 4 := by
+    rw [hT, hη, Real.exp_neg, inv_inv, ← Real.exp_nat_mul]; norm_num
+  have hlogT : Real.log T = 4 * r := by rw [hT, Real.log_exp]
+  obtain ⟨X, hX⟩ : ∃ X, X = 2 * x := ⟨_, rfl⟩
+  have hX0 : 0 < X := by rw [hX]; positivity
+  have hlogX : L ≤ Real.log X := by rw [hL, hX]; exact Real.log_le_log hx0 (by linarith)
+  have hlX1 : 1 ≤ Real.log X := le_trans hL1 hlogX
+  obtain ⟨c, hc⟩ : ∃ c, c = 1 + 1 / Real.log X := ⟨_, rfl⟩
+  have hc1 : 1 < c := by
+    have : 0 < 1 / Real.log X := by positivity
+    linarith
+  have hc2 : c ≤ 2 := by
+    have : 1 / Real.log X ≤ 1 := by rw [div_le_one (by linarith)]; exact hlX1
+    linarith
+  have hXc : X ^ c = Real.exp 1 * X := by
+    rw [Real.rpow_def_of_pos hX0, show Real.log X * c = Real.log X + 1 by
+      rw [hc]; field_simp, Real.exp_add, Real.exp_log hX0, mul_comm]
+  set ηT := c₀ / (Real.log T ^ ((2 : ℝ) / 3) * Real.log (Real.log T) ^ ((1 : ℝ) / 3)) with hηTdef
+  have hσ : vkSigma c₀ T = 1 - ηT := rfl
+  have hηT : (4 * r) ^ (-(3 / 4 : ℝ)) ≤ ηT := by
+    rw [Real.rpow_neg (by positivity), ← hlogT]
+    have : ((2 : ℝ) / 3 + 1 / 12) = 3 / 4 := by norm_num
+    rw [this] at hv1; exact hv1
+  have hσhalf : 1 / 2 ≤ vkSigma c₀ T := by rw [hσ]; linarith
+  set E1 := Real.exp (-((4 * r) ^ (-(3 / 4 : ℝ)) * L)) with hE1def
+  have hXσ : X ^ vkSigma c₀ T ≤ X * E1 := by
+    rw [hσ, Real.rpow_def_of_pos hX0, show Real.log X * (1 - ηT) = Real.log X + -(ηT * Real.log X) by ring,
+      Real.exp_add, Real.exp_log hX0]
+    refine mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 ?_) hX0.le
+    have h0 : 0 ≤ (4 * r) ^ (-(3 / 4 : ℝ)) := by positivity
+    have : (4 * r) ^ (-(3 / 4 : ℝ)) * L ≤ ηT * Real.log X :=
+      mul_le_mul hηT hlogX (by linarith) (h0.trans hηT)
+    linarith
+  have hE1 : T * E1 * r ≤ η := by
+    have : T * E1 * r = η * (r * Real.exp (5 * r - (4 * r) ^ (-(3 / 4 : ℝ)) * L)) := by
+      rw [hT, hη, hE1def, show 5 * r - (4 * r) ^ (-(3 / 4 : ℝ)) * L =
+        r + 4 * r + -((4 * r) ^ (-(3 / 4 : ℝ)) * L) by ring, Real.exp_add, Real.exp_add, Real.exp_neg r]
+      field_simp
+    rw [this]; exact mul_le_of_le_one_right hη0.le hmlx
+  have hErr := err_le (XS := X ^ vkSigma c₀ T) (lT := Real.log T) hK₀ hK₃ hC hx0 hη0 hη1
+    (by rw [hr]; exact Real.sqrt_nonneg _) hrη hTη hX hXc hlogT hXσ hE1 (Real.exp_pos _).le
+  set Err := 64 * K₀ * C + 192 * K₃ * C + 96 * K₃ * C
+  -- e^{2η} < 2
+  have he2 : Real.exp (2 * η) ≤ 2 := by
+    have h1 : Real.exp (2 * η) ≤ Real.exp (1 / 2) := Real.exp_le_exp.2 (by linarith)
+    have h2 : Real.exp (1 / 2) ^ 2 = Real.exp 1 := by rw [← Real.exp_nat_mul]; norm_num
+    have h3 := Real.exp_one_lt_d9
+    nlinarith [Real.exp_pos (1 / 2)]
+  -- one side
+  have key : ∀ B : ℝ, Real.exp (2 * η) * Real.exp η ≤ B → B ≤ x * Real.exp η →
+      |(smoothTwist (wt (Real.exp η) B η) 1 0).re - (mellin (wt (Real.exp η) B η) 1).re| ≤
+        Err * (x * η) := by
+    intro B hB1 hB2
+    have hAe : Real.exp η ≤ Real.exp (2 * η) * Real.exp η := by
+      have := Real.one_le_exp (show 0 ≤ 2 * η by linarith)
+      exact le_mul_of_one_le_left (Real.exp_pos η).le this
+    have hAB : Real.exp η ≤ B := hAe.trans hB1
+    have hBp : 0 < B := lt_of_lt_of_le (Real.exp_pos _) hAB
+    have hBX : B ≤ X := by
+      rw [hX]
+      have : Real.exp η ≤ 2 := le_trans (Real.exp_le_exp.2 (by linarith)) he2
+      have := mul_le_mul_of_nonneg_left this hx0.le
+      linarith
+    have hsupp : ∀ y, wt (Real.exp η) B η y ≠ 0 → 1 ≤ y ∧ y ≤ B * Real.exp η := by
+      intro y hy
+      have := wt_support (Real.exp_pos η) hAB hη0 hy
+      rw [← Real.exp_add, add_neg_cancel, Real.exp_zero] at this
+      exact this
+    have hb : 1 ≤ B * Real.exp η := by
+      have h1 := Real.one_le_exp hη0.le
+      exact one_le_mul_of_one_le_of_one_le (h1.trans hAB) h1
+    have hT3' : 3 ≤ T := hT3
+    have hc0 := hcont (wt (Real.exp η) B η) (wt_contDiff (Real.exp_pos η) hAB hη0) 1 (B * Real.exp η)
+      le_rfl hb hsupp c T X (4 * K₀) (2 * K₃ * η⁻¹ ^ 3) hc1 hc2 hT3' (by linarith) hσhalf
+      (fun s h1 h2 => (hwb _ B η X (Real.exp_pos η) hAB hη0 hη1 hBX s (by linarith) (by linarith)).1)
+      (fun s h1 h2 => (hwb _ B η X (Real.exp_pos η) hAB hη0 hη1 hBX s (by linarith) (by linarith)).2)
+    calc _ = |(smoothTwist (wt (Real.exp η) B η) 1 0 - mellin (wt (Real.exp η) B η) 1).re| := by
+          rw [Complex.sub_re]
+      _ ≤ ‖smoothTwist (wt (Real.exp η) B η) 1 0 - mellin (wt (Real.exp η) B η) 1‖ :=
+          Complex.abs_re_le_norm _
+      _ ≤ _ := hc0
+      _ ≤ _ := hErr
+  have hee : ∀ u : ℝ, Real.exp u * Real.exp (-u) = 1 := fun u => by
+    rw [← Real.exp_add, add_neg_cancel, Real.exp_zero]
+  have hx2η : Real.exp (2 * η) ≤ x := by linarith
+  have hx4η : Real.exp (4 * η) ≤ x := by
+    have := Real.exp_le_exp.2 (show 4 * η ≤ 1 by linarith)
+    have := Real.exp_one_lt_d9; linarith
+  have e2 : Real.exp (2 * η) = Real.exp η * Real.exp η := by rw [← Real.exp_add]; ring_nf
+  have em2 : Real.exp (-(2 * η)) = Real.exp (-η) * Real.exp (-η) := by rw [← Real.exp_add]; ring_nf
+  have h4 : |2 * η| ≤ 1 := by rw [abs_of_pos (by linarith)]; linarith
+  have h4' : |-(2 * η)| ≤ 1 := by rw [abs_neg]; exact h4
+  have hup := abs_exp_sub_one_le h4
+  have hdn := abs_exp_sub_one_le h4'
+  rw [abs_of_pos (by linarith : 0 < 2 * η)] at hup
+  rw [abs_neg, abs_of_pos (by linarith : 0 < 2 * η)] at hdn
+  have hxη : 1 ≤ x * η := by
+    have hrL : r ≤ L := by
+      rw [hr]; calc Real.sqrt L ≤ Real.sqrt (L ^ 2) := Real.sqrt_le_sqrt (by nlinarith)
+        _ = L := Real.sqrt_sq (by linarith)
+    rw [hη, show x = Real.exp L by rw [hL, Real.exp_log hx0], ← Real.exp_add]
+    exact Real.one_le_exp (by linarith)
+  have hErr0 : 0 ≤ Err * (x * η) := by positivity
+  -- upper bound
+  have hU : ψ x - x ≤ (4 + Err) * (x * η) := by
+    set B := x * Real.exp η
+    have hB1 : Real.exp (2 * η) * Real.exp η ≤ B := mul_le_mul_of_nonneg_right hx2η (Real.exp_pos _).le
+    have k := key B hB1 le_rfl
+    have sw := smoothTwist_wt_sandwich hη0 hη4 ((le_mul_of_one_le_left (Real.exp_pos η).le
+      (Real.one_le_exp (by linarith))).trans hB1)
+    have hBx : B * Real.exp (-η) = x := by rw [mul_assoc, hee, mul_one]
+    rw [hBx] at sw
+    have mw := mellin_wt_one (Real.exp_pos η) (A := Real.exp η) (B := B)
+      (by rw [hBx, ← e2]; exact hx2η) hη0
+    have hm : (mellin (wt (Real.exp η) B η) 1).re ≤ x * Real.exp (2 * η) := by
+      have := mw.2.2
+      have : B * Real.exp η = x * Real.exp (2 * η) := by rw [e2]; ring
+      have : 0 ≤ Real.exp η * Real.exp (-η) := by positivity
+      linarith
+    have := (abs_le.1 k).2
+    have hp : x * (Real.exp (2 * η) - 1) ≤ x * (2 * (2 * η)) :=
+      mul_le_mul_of_nonneg_left (le_abs_self _ |>.trans hup) hx0.le
+    linarith [sw.2.1]
+  -- lower bound
+  have hD : x - ψ x ≤ (6 + Err) * (x * η) := by
+    set B := x * Real.exp (-η)
+    have hB1 : Real.exp (2 * η) * Real.exp η ≤ B := by
+      have : Real.exp (2 * η) * Real.exp η * Real.exp η ≤ x := by
+        rw [mul_assoc, ← e2, ← Real.exp_add]; ring_nf; ring_nf at hx4η; exact hx4η
+      calc _ = Real.exp (2 * η) * Real.exp η * Real.exp η * Real.exp (-η) := by
+            rw [mul_assoc _ (Real.exp η), hee, mul_one]
+        _ ≤ x * Real.exp (-η) := mul_le_mul_of_nonneg_right this (Real.exp_pos _).le
+    have hB2 : B ≤ x * Real.exp η :=
+      mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 (by linarith)) hx0.le
+    have k := key B hB1 hB2
+    have sw := smoothTwist_wt_sandwich hη0 hη4 ((le_mul_of_one_le_left (Real.exp_pos η).le
+      (Real.one_le_exp (by linarith))).trans hB1)
+    have hBx : B * Real.exp η = x := by rw [mul_assoc, mul_comm (Real.exp (-η)), hee, mul_one]
+    rw [hBx] at sw
+    have hBm : B * Real.exp (-η) = x * Real.exp (-(2 * η)) := by rw [em2]; ring
+    have hAB' : Real.exp η * Real.exp η ≤ B * Real.exp (-η) := by
+      rw [← e2, hBm]
+      calc Real.exp (2 * η) = Real.exp (4 * η) * Real.exp (-(2 * η)) := by
+            rw [← Real.exp_add]; ring_nf
+        _ ≤ x * Real.exp (-(2 * η)) := mul_le_mul_of_nonneg_right hx4η (Real.exp_pos _).le
+    have mw := mellin_wt_one (Real.exp_pos η) hAB' hη0
+    have hm : x * Real.exp (-(2 * η)) - 2 ≤ (mellin (wt (Real.exp η) B η) 1).re := by
+      have := mw.2.1
+      have : B * Real.exp (-η) = x * Real.exp (-(2 * η)) := by rw [em2]; ring
+      have : Real.exp η * Real.exp η ≤ 2 := by rw [← e2]; exact he2
+      linarith
+    have := (abs_le.1 k).1
+    have hp : x * (1 - Real.exp (-(2 * η))) ≤ x * (2 * (2 * η)) := by
+      refine mul_le_mul_of_nonneg_left ?_ hx0.le
+      have := neg_abs_le (Real.exp (-(2 * η)) - 1); linarith
+    linarith [sw.2.2]
+  rw [abs_le]
+  constructor <;> linarith
 
 theorem dlvp_of_VK (h : VKZeroFreeLogDeriv) : DLVPStatement := by
   obtain ⟨K, hK⟩ := psi_sub_le h

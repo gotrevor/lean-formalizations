@@ -62,3 +62,6 @@ theorem almost_all_F385_rate_of_VK (h3 : VKZeroFreeLogDeriv) {δ : ℝ} (hδ : 0
   exact almost_all_F385_rate_VK h3 (dlvpStatement_of_VK h3) hδ hδ' ε hε
 
 end LeanFormalizations.Erdos385
+
+#print axioms LeanFormalizations.Erdos385.dlvpStatement_of_VK
+#print axioms LeanFormalizations.Erdos385.almost_all_F385_rate_of_VK
