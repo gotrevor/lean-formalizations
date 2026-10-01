@@ -7,6 +7,7 @@ import Mathlib
 import LeanFormalizations.Literature.Erdos385AlmostAll
 import LeanFormalizations.NumberTheory.Erdos385.Count
 import LeanFormalizations.NumberTheory.Erdos385.BrunPairs
+import PrimeNumberTheoremAnd.MediumPNT
 
 /-!
 # Erdős #385: discharging literature Props (phase E2c)
@@ -55,12 +56,12 @@ open Real Finset Filter Asymptotics LeanFormalizations.Literature
 theorem card_bad_le_unconditional :
     ∃ C : ℝ, ∀ X : ℕ, 16 ≤ X →
       ({n : ℕ | n ≤ X ∧ 5 ≤ n ∧ LeanFormalizations.Erdos385.Bad n}.ncard : ℝ)
-        ≤ C * X * Real.log (Real.log X) / Real.log X ^ 2 := by
-  sorry
+        ≤ C * X * Real.log (Real.log X) / Real.log X ^ 2 :=
+  LeanFormalizations.Erdos385.card_bad_le brunUniformGap_holds
 
 /-- PNT+ `MediumPNT` discharges `Literature.MediumPNTStatement`. -/
-theorem mediumPNTStatement_holds : MediumPNTStatement := by
-  sorry
+theorem mediumPNTStatement_holds : MediumPNTStatement :=
+  MediumPNT
 
 /-- The Montgomery–Vaughan mean value theorem (upper half, unspecified constant). -/
 theorem montgomeryVaughanMVT_holds : MontgomeryVaughanMVT := by
