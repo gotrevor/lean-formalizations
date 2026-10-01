@@ -73,21 +73,48 @@ def PrimePairsUpMargin (f : ℕ → ℝ) : Prop :=
   ∀ᶠ n : ℕ in atTop, ∃ p q : ℕ, p.Prime ∧ q.Prime ∧ p < q ∧
     (n : ℝ) + f n < ((p * q : ℕ) : ℝ) ∧ p * q < n + p
 
+/-- The least prime factor of a product of primes `p < q` is `p`. -/
+theorem minFac_mul_primes {p q : ℕ} (hp : p.Prime) (hq : q.Prime) (hpq : p < q) :
+    (p * q).minFac = p := by
+  have hne : p * q ≠ 1 := by
+    have := hp.two_le; have := hq.two_le; nlinarith
+  have hle : (p * q).minFac ≤ p :=
+    Nat.minFac_le_of_dvd hp.two_le (dvd_mul_right p q)
+  have hpr := Nat.minFac_prime hne
+  rcases (Nat.Prime.dvd_mul hpr).1 (Nat.minFac_dvd _) with h | h
+  · exact (Nat.prime_dvd_prime_iff_eq hpr hp).1 h
+  · have := (Nat.prime_dvd_prime_iff_eq hpr hq).1 h; omega
+
+/-- A product of primes `p < q` is composite. -/
+theorem composite_mul_primes {p q : ℕ} (hp : p.Prime) (hq : q.Prime) :
+    Composite (p * q) := by
+  refine ⟨by have := hp.two_le; have := hq.two_le; nlinarith, fun h => ?_⟩
+  exact Nat.not_prime_mul hp.ne_one hq.ne_one h
+
 /-- Edge: a down-margin tending to infinity gives #385(ii), `F(n) − n → ∞`. -/
 theorem erdos385_ii_of_downMargin {f : ℕ → ℝ} (hf : Tendsto f atTop atTop)
     (h : PrimePairsDownMargin f) : Tendsto (fun n : ℕ => (F n : ℝ) - n) atTop atTop := by
-  sorry
+  refine tendsto_atTop_mono' _ ?_ hf
+  filter_upwards [h] with n ⟨p, q, hp, hq, hpq, h1, h2⟩
+  have hF := add_minFac_le_F h1 (composite_mul_primes hp hq)
+  rw [minFac_mul_primes hp hq hpq] at hF
+  have : ((p * q + p : ℕ) : ℝ) ≤ F n := by exact_mod_cast hF
+  linarith
 
 /-- Edge: an up-margin tending to infinity gives #463 (formal-conjectures shape, real `f`). -/
 theorem erdos463_of_upMargin {f : ℕ → ℝ} (hf : Tendsto f atTop atTop)
     (h : PrimePairsUpMargin f) :
     ∀ᶠ n : ℕ in atTop, ∃ m : ℕ, Composite m ∧ (n : ℝ) + f n < m ∧ m < n + m.minFac := by
-  sorry
+  filter_upwards [h] with n ⟨p, q, hp, hq, hpq, h1, h2⟩
+  exact ⟨p * q, composite_mul_primes hp hq, h1, by rw [minFac_mul_primes hp hq hpq]; exact h2⟩
 
 /-- Edge: the zero margin is `HyperbolaPrimePairs`. -/
 theorem hyperbolaPrimePairs_of_downMargin_zero (h : PrimePairsDownMargin 0) :
     HyperbolaPrimePairs := by
-  sorry
+  filter_upwards [h] with n ⟨p, q, hp, hq, hpq, h1, h2⟩
+  refine ⟨p, q, hp, hq, hpq, h1, ?_⟩
+  have : (n : ℝ) < ((p * q + p : ℕ) : ℝ) := by simpa using h2
+  exact_mod_cast this
 
 /-- **Goldbach in a gap window** (open; implies binary Goldbach for large `N`): for fixed
 `0 ≤ a < b ≤ 3`, every large even `N` is `p + q` with `a√N ≤ q − p ≤ b√N`. -/
@@ -99,7 +126,9 @@ def GoldbachWindow : Prop :=
 /-- Edge: `GoldbachWindow` gives Goldbach for all large even `N`. -/
 theorem goldbach_of_goldbachWindow (h : GoldbachWindow) :
     ∀ᶠ N : ℕ in atTop, Even N → ∃ p q : ℕ, p.Prime ∧ q.Prime ∧ p + q = N := by
-  sorry
+  filter_upwards [h 0 1 le_rfl one_pos (by norm_num)] with N hN hev
+  obtain ⟨p, q, hp, hq, hs, -⟩ := hN hev
+  exact ⟨p, q, hp, hq, hs⟩
 
 /-- Edge: `GoldbachWindow` gives prime pairs on the hyperbolic strip (#385(i), #430). -/
 theorem hyperbolaPrimePairs_of_goldbachWindow (h : GoldbachWindow) : HyperbolaPrimePairs := by
