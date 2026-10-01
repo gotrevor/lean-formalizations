@@ -9,3 +9,9 @@ Remainder.lean is sorry-free; every frozen statement `#print axioms` = [propext,
   EES uses K ≈ 2/ε; #463 uses K = 1 with f(n) = √n/4.
 - Margin edges via `minFac_mul_primes`, `composite_mul_primes`.
 Open: nothing in scope.  Off-scope designated-open: `nearOneLargeValues_of_density` (OFF path).
+
+Branch `erdos-385-d`, HEAD 5bf3fe2 (before this note).
+## Next (for an altitude lap)
+- Update DIRECTION.md: its top CURRENT DIRECTIVE still names E9b's (proved) `localZeroDetect_of_richert`; mark E10 ✅.
+- Candidate next phases: weaken `GoldbachWindow` to the single window actually used (gap ∈ [a√N,b√N] for a
+  finite family suffices — `eventually_mesh_windows`), or a power-saving EES variant reusing Erdos463Power.
