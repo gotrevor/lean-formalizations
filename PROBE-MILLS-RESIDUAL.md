@@ -35,7 +35,17 @@ The test: a lever must use something Mills has that these siblings lack.
 
 ## 3. The Kronecker lemma (new)
 
-**Lemma K.**  Let f be a monic irreducible integer cubic with discriminant D and companion matrix C, and let `T_j = tr C^(3^j)`.  Let p be a prime with `p ∤ 3·D·f(0)` and `p ≡ 2 (mod 3)`.  Suppose f splits completely mod p and `p | T_j`.  Then `p | T_(j+J)` for some J ≥ 1, and hence for infinitely many indices.
+**Lemma K (sharpened, 2026-10-01).**  Let C be an n×n integer matrix and p a prime with `p ∤ det C`, and let c be coprime to `p(p − 1)`.  If the charpoly of C splits mod p, with any multiplicities, then `tr C^(c^m) mod p` is purely periodic in m.
+
+*Proof.*
+1. Each root λ lies in `𝔽_p^×`, so `(X − λ) ∣ X^(p−1) − 1`.  Hence `χ ∣ (X^(p−1) − 1)^n`.
+2. Cayley–Hamilton then makes `U = C̄^(p−1)` unipotent.
+3. So `U^(p^n) = 1`, and the order of `C̄` divides `p^n (p − 1)`, which is coprime to c.
+4. `c^J ≡ 1` modulo that order (Euler).  So `C̄^(c^(m+J)) = C̄^(c^m)`. ∎
+
+This needs no projective quotient and no squarefree hypothesis.  For c = 3 the coprimality is exactly `p ≡ 2 (mod 3)`.  (For c = 2 it never holds, consistent with Fermat.)  Lean: phase 60, `NumberTheory/Mills/Kronecker.lean`.
+
+**Lemma K (original form).**  Let f be a monic irreducible integer cubic with discriminant D and companion matrix C, and let `T_j = tr C^(3^j)`.  Let p be a prime with `p ∤ 3·D·f(0)` and `p ≡ 2 (mod 3)`.  Suppose f splits completely mod p and `p | T_j`.  Then `p | T_(j+J)` for some J ≥ 1, and hence for infinitely many indices.
 
 *Proof.*
 1. Mod p, `α = C^(3^j)` corresponds to `(a₁, a₂, a₃) ∈ (𝔽_p^×)³`.  Its class modulo scalars is `(a₂/a₁, a₃/a₁)`, whose order L divides `p − 1`.
