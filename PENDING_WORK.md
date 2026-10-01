@@ -2069,3 +2069,30 @@ trust base + the same 4 literature Props.  Mechanism: `card_le_of_windows` (cove
 N₀ uniform in E and η), apply it to E ∩ [2√X, ∞) where every window Z ≥ √X has the single rate
 η = A exp(−c'(log √X)^{1/10}); head n < 2√X absorbed by `sqrt_le_rate`.  Next: exponent 1/3−ε
 needs Vinogradov–Korobov-strength long average (new phase), or the Literature `not_…` controls.
+
+## E2e lap 1 (2026-10-01)
+Landau.lean: both frozen statements now proved modulo two named halves —
+`vk_large_height` (crux: Landau's method from Richert) and `vk_small_height` (compactness,
+unconditional).  Gluing (vkW antitone, constants) proved.  PNT+ check: `FinalBound`
+(local zero-sum formula for f'/f from Borel–Carathéodory) is sorry-free and generic; its
+`ZeroInequality` (classical region) IS sorried — so the 3-4-1 argument must be built here.
+Next: split `vk_large_height` into (a) growth `|ζ| ≤ (log t)^K` on σ ≥ 1−θ(t), (b) rescaled
+FinalBound for ζ at centre 1+θ+it, (c) 3-4-1 zero-free, (d) log-deriv bound.
+
+## E2e lap 2 (2026-10-01)
+`vk_large_height` PROVED from five named interfaces in `Erdos385/Landau/Basic.lean`:
+`vk_asymp` (elementary asymptotics), `logDeriv_zeta_dirichlet_bound` (D3),
+`three_four_one` (D2), `landau_neg_re_upper` (Z1), `landau_logderiv_bound` (Z2).
+`Landau/ZeroFree.lean` (sorry-free modulo those): `vk_zero_free` (3-4-1 ⇒ β < 1 − c·vkW|γ|,
+c = 3/(104(1+6K))) and `vk_large_height_of`.  Remaining crux = Z1/Z2 (FinalBound rescaled for ζ
+at centre 1+θ+it, radius 2θ; growth via Richert + PNT+ ZetaUpperBnd; lower via ZetaLowerBound3).
+Plus `vk_small_height` (PNT+ ZetaNoZerosInBox + riemannZetaLogDerivResidue + compactness).
+- lap 3: `Landau/Local.lean` `local_landau` PROVED (FinalBound+ZerosBound rescaled to any disc;
+  multiplicities ≥ 1 via finiteness).  Interfaces adjusted: zero ball 15/8·θ, Z2 needs σ ≥ 1−θ/4,
+  disc = closedBall(1+θ+it, 3θ).  Next: Zeta.lean deriving Z1/Z2 from local_landau + growth
+  (Richert + ZetaUpperBnd) + lower (ZetaLowerBound3) + finiteness of ζ-zeros in a disc.
+- lap 4: `Landau/Zeta.lean`: `zeta_local`, Z1, Z2 PROVED from `local_landau` + 3 leaves.
+  Open leaves now (7): Zeta.lean `zeta_zeros_finite`, `zeta_disc_growth` (Richert+ZetaUpperBnd),
+  `zeta_center_lower` (ZetaLowerBound3); Basic.lean `vk_asymp`, D3, D2; Landau.lean `vk_small_height`.
+  Everything left is classical/elementary — the Landau crux itself is assembled.
+- E2e DONE 2026-10-01: Landau.lean sorry-free + axiom-clean (see HANDOFF-2026-10-01-erdos385-E2e-done.md).
