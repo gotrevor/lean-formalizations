@@ -2159,3 +2159,10 @@ Plus `vk_small_height` (PNT+ ZetaNoZerosInBox + riemannZetaLogDerivResidue + com
   `zeta_center_lower` (ZetaLowerBound3); Basic.lean `vk_asymp`, D3, D2; Landau.lean `vk_small_height`.
   Everything left is classical/elementary — the Landau crux itself is assembled.
 - E2e DONE 2026-10-01: Landau.lean sorry-free + axiom-clean (see HANDOFF-2026-10-01-erdos385-E2e-done.md).
+
+## E9 (2026-10-01, erdos-385-c): Hyperbola.lean DONE; PowerSaving reduced to the per-window crux
+`almost_all_F385_powerSaving` ⇐ `badWindowPowerSaving_of_lit` (sorry, the near/far split) via
+`PowerSaving/Assembly.lean` `almost_all_of_badWindowPowerSaving` (proved). `badCount_powerSaving` proved.
+Next attack: decompose `badWindowPowerSaving_of_lit` along `Gen.badWindow_rate`: (i) `card_badWindow_le`
+reuse with T₀ = Z^{c₀}; (ii) long average via ShortIntervalPrimesLower; (iii) far mean square;
+(iv) near pointwise via NearOneLargeValues. Also `nearOneLargeValues_of_density` open.

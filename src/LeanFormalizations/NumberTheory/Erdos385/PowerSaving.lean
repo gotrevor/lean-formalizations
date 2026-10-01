@@ -7,6 +7,7 @@ import Mathlib
 import LeanFormalizations.Literature.Erdos385VK
 import LeanFormalizations.NumberTheory.Erdos385.Endpoint
 import LeanFormalizations.NumberTheory.Erdos385.BadCount
+import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Assembly
 
 /-!
 # Erdős #385: Theorem A with a power saving (phase E9b, new mathematics)
@@ -92,13 +93,20 @@ theorem nearOneLargeValues_of_density (h1 : RichertZetaGrowth) (h2 : NearOneZero
     NearOneLargeValues := by
   sorry
 
+/-- **The per-window power saving** (the analytic crux: steps 1–3 of the header, the near/far
+frequency split).  Global count from it: `almost_all_of_badWindowPowerSaving`.  70%. -/
+theorem badWindowPowerSaving_of_lit (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity)
+    (h3 : ShortIntervalPrimesLower) {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) :
+    BadWindowPowerSaving δ := by
+  sorry
+
 /-- **Theorem A with a power saving.** -/
 theorem almost_all_F385_powerSaving (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity)
     (h3 : ShortIntervalPrimesLower) {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) :
     ∃ c C : ℝ, 0 < c ∧ ∀ X : ℕ, 2 ≤ X →
       ({n : ℕ | n ≤ X ∧ (F n : ℝ) < n + (1 - δ) * Real.sqrt n}.ncard : ℝ) ≤
-        C * (X : ℝ) ^ (1 - c) := by
-  sorry
+        C * (X : ℝ) ^ (1 - c) :=
+  almost_all_of_badWindowPowerSaving hδ hδ' (badWindowPowerSaving_of_lit h1 h2 h3 hδ hδ')
 
 /-- **The bad set has a power saving.** -/
 theorem badCount_powerSaving (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity)
