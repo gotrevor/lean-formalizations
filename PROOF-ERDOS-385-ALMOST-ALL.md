@@ -1,8 +1,9 @@
 # Erdős #385: $F(n) = n + (1+o(1))\sqrt n$ for almost all $n$
 
-Draft 1, 2026-10-01.  Unrefereed (one self-referee pass, §8).  Companion to
-`DOOR-ALMOSTALL-ERDOS-385.md` (outline + source checks) and `LIT-ERDOS-385.md` (prior art).
-Overall confidence that the proof is correct as written: **~80%** (§8 lists the soft spots).
+Draft 2, 2026-10-01.  One self-referee pass (§8), one independent referee pass (end of file), and a
+revision addressing every referee issue (§9).  Companion to `DOOR-ALMOSTALL-ERDOS-385.md` (outline,
+source checks, corrected E3 literature Props) and `LIT-ERDOS-385.md` (prior art).
+Overall confidence that the proof is correct as written: **~90%** (§9 has the updated soft spots).
 
 ## 0. Statement
 
@@ -28,7 +29,9 @@ should be within reach.  Theorem A is the sharper $(1 - \delta)\sqrt n$ form.  I
 **(MVT) Mean value theorem.**  Matomäki–Radziwiłł, *Multiplicative functions in short intervals*,
 Annals 2016, arXiv:1501.04585 (hereafter MR16), **Lemma 6**, verbatim: "Let $A(s) = \sum_{n\le N} a_n n^{-s}$.
 Then $\int_{-T}^{T} |A(it)|^2\,dt = (T + O(N)) \sum_{n \le N} |a_n|^2$.  Proof.  See [IK, Theorem 9.1]."
-We use only the upper bound.
+We use only the upper bound, in the safe form $\int_{-T}^{T}|A(it)|^2dt \le C(T + N)\sum|a_n|^2$ with $C$
+absolute (MR print $T + O(N)$ where Montgomery–Vaughan have $2T + O(N)$ over $[-T,T]$; the constant
+$C$ absorbs either).
 
 **(PAR) Parseval bound for short sums.**  MR16 **Lemma 14**, verbatim:
 
@@ -43,8 +46,20 @@ paper [15] (except that we do not specify the value of $T_0$)."  We therefore us
 
 > **(PAR′)**  Let $|a_m| \le 1$ be real, supported on $[X, 4X]$, $T_0 \ge 1$, $2 \le h_1 \le h_2 \le X/T_0^3$.
 > With $S_j$ and $A$ as above,
-> $$\frac1X\int_X^{2X}\Big|\frac{S_1(x)}{h_1} - \frac{S_2(x)}{h_2}\Big|^2 dx \ll \frac1{T_0} + \int_{T_0}^{X/h_1}|A(1+it)|^2 dt + \max_{T\ge X/h_1}\frac{X}{h_1 T}\int_T^{2T}|A(1+it)|^2 dt,$$
+> $$\frac1X\int_X^{2X}\Big|\frac{S_1(x)}{h_1} - \frac{S_2(x)}{h_2}\Big|^2 dx \ll \frac1{T_0} + \int_{T_0}^{X/h_1}|A(1+it)|^2 dt + \max_{T\ge X/(2h_1)}\frac{X}{h_1 T}\int_T^{2T}|A(1+it)|^2 dt,$$
 > with an absolute implied constant.
+
+Two hygiene points (independent referee, issues 4 and 6).  (i) The printed lemmas allow complex $a_m$
+but integrate over $t > 0$ only; MR's proof treats the negative half "completely similarly", which is
+valid because $|A(1-it)| = |A(1+it)|$ for **real** $a_m$.  For complex $a_m$ the statement is false
+as printed ($a_m = m^{-i\tau}$, see DOOR §"E3 literature Props", control 1a), and the correct form
+integrates over $T_0 \le |t| \le X/h_1$ and $T \le |t| \le 2T$.  Our $a_m$ are real.  (ii) MR's
+display (19) (re-read in the PDF this revision) gives the tail as $\max_{T \ge X/(2h_j)}$; the
+lemma statement prints $T \ge X/h_1$.  We use the weaker threshold $X/(2h_1)$ that the proof
+actually delivers.  The $j = 2$ high-frequency part is $(X/h_2)^2\int_{X/h_2}^\infty|A|^2t^{-2}dt$ in
+MR's (19); split it at $X/h_1$: the piece on $[X/h_2, X/h_1]$ is $\le \int_{X/h_2}^{X/h_1}|A|^2$, inside
+the middle term because $X/h_2 \ge T_0^3 \ge T_0$, and the rest is $\le (h_1/h_2)^2$ times the $j = 1$
+part.  A dyadic split of $\int_{X/h_1}^\infty |A|^2t^{-2}$ gives the max over $T \ge X/(2h_1)$.
 
 Two transcription notes.  (a) Teräväinen writes $F(s) = \sum_{n \sim X}$ ($X \le n < 2X$) and normalises
 $S_h$ by $1/h$ twice (a typo); his proof is MR's, which uses the $[X, 4X]$ support.  Our coefficients
@@ -55,19 +70,54 @@ $|U_1/h_1 - U_2/h_2| \ll T_0^2 h_2/X$ for the part $|t| \le T_0$ of Perron's for
 quoted: "$\frac1{h_1}U_1(x) - \frac1{h_2}U_2(x) \ll T_0^2 x \frac{h_2}{X^2}$").  With $h_2 \le X/T_0^3$
 this is $\le 1/T_0$, giving the first term.
 
-**(VK) Smoothed prime sums.**  MR16, proof of **Lemma 11**, equation (15) and the display after it.  For
-a smooth compactly supported $f$ with Mellin-type transform $\tilde f$ satisfying
-$\tilde f(x+iy) \ll_{A,B} (1+|y|)^{-B}$ for $|x| \le A$:
-$$\sum_n \Lambda(n) n^{it} f\Big(\frac nP\Big) = -\frac1{2\pi i}\int_{2-i\infty}^{2+i\infty}\tilde f(s)\frac{\zeta'}{\zeta}(s-it)\frac{P^s}{s}\,ds \quad (15)$$
-"We truncate the integral at $|t| = T$ ... shift the contour to $\sigma = 1 - c(\log T)^{-2/3+\varepsilon}$,
-staying in the zero-free region of the $\zeta$-function, and use [Ivić (1.52)] ... It follows that (15) is
-equal to
-$$\frac{\tilde f(1+it)}{1+it}\cdot P^{1+it} + O\Big(P\exp\Big(-\frac{\log P}{(\log T)^{2/3+\varepsilon}}\Big)(\log T)^2\Big)."$$
-MR apply this with $t$ replaced by differences $t - t'$ of points in $[-T, T]$, and with one specific $f$.
-The derivation uses only that $f$ is smooth and compactly supported in $(0,\infty)$ (through the decay of
-$\tilde f$); the implied constant depends on $f$ and $\varepsilon$.  We use it for $|t| \le T$, one
-fixed $f$ depending only on $\delta$, and both signs of $t$.  ⚠️ This is a displayed step, not a numbered
-lemma (see §8, item 1).
+**(VKZ) Vinogradov–Korobov zero-free region with a log-derivative bound.**  There are absolute
+constants $c_0 > 0$, $C_0$ such that for $T \ge 3$ and
+$$\sigma \ge 1 - \frac{c_0}{(\log T)^{2/3}(\log\log T)^{1/3}},\qquad |y| \le T,$$
+$\zeta(\sigma+iy) \ne 0$ and $\big|\frac{\zeta'}{\zeta}(\sigma+iy) + \frac{1}{\sigma+iy-1}\big| \le C_0\log T$.
+Sources: the zero-free region is Titchmarsh, *The Theory of the Riemann Zeta-Function* (2nd ed.),
+Theorem 6.19; the log-derivative bound in (half of) that region follows from Titchmarsh's general
+Theorem 3.11 (zero-free region plus growth bound gives $\zeta'/\zeta \ll \phi/\theta$), shrinking $c_0$.
+⚠️ Theorem numbers from memory, not re-opened this session (80%); the statement itself is textbook.
+The bound $C_0\log T$ is deliberately weaker than the sharp $(\log T)^{2/3}(\log\log T)^{1/3}$.
+This replaces the earlier quotation of MR16's proof of Lemma 11, whose contour line
+"$\sigma = 1 - c(\log T)^{-2/3+\varepsilon}$" is a typo (independent referee, issue 1): that line lies
+*outside* the VK region; MR's own error term is consistent only with exponent $-2/3-\varepsilon$.
+
+**Lemma VK (smoothed prime sums; numbered here, proved below).**  Let $f : (0,\infty) \to \mathbb C$
+be smooth with compact support in $[a, b] \subset (0, \infty)$, and let
+$\tilde f(s) = \int_0^\infty f(x)x^{s-1}dx$ be its standard Mellin transform.  For every
+$\varepsilon > 0$ there is $C = C(f,\varepsilon)$ such that for all $P \ge 2$, $T \ge 3$ with
+$P \le T$, and all real $t$ with $|t| \le T/2$:
+$$\Big|\sum_n \Lambda(n)\, n^{-it} f\Big(\frac nP\Big) - \tilde f(1-it)\,P^{1-it}\Big| \le C\Big(P\exp\Big(-\frac{\log P}{(\log T)^{2/3+\varepsilon}}\Big)\log T + 1\Big).$$
+Note the main term carries **no** factor $1/(1-it)$: MR16's (15) writes $P^s/s$, i.e. a different
+normalisation of the transform, and transcribing their main term under the standard Mellin convention
+would be false (independent referee, issue 2; DOOR control 3b).
+
+*Proof.*  (a) *Decay.*  Integrating by parts $B$ times, $\tilde f(s) = \frac{(-1)^B}{s(s+1)\cdots(s+B-1)}\int f^{(B)}(x)x^{s+B-1}dx$,
+so $|\tilde f(\sigma+iy)| \ll_{f,B} (1+|y|)^{-B}$ uniformly for $\sigma \in [\frac12, 2]$.
+(b) *Mellin inversion.*  With $\sigma_0 = 1 + 1/\log P$ and $f(x) = \frac1{2\pi i}\int_{(\sigma_0)}\tilde f(s)x^{-s}ds$,
+$$\Sigma := \sum_n \Lambda(n)n^{-it}f(n/P) = \frac1{2\pi i}\int_{(\sigma_0)}\tilde f(s)\,P^s\Big(-\frac{\zeta'}{\zeta}\Big)(s+it)\,ds,$$
+the interchange being justified by absolute convergence ($\sum\Lambda(n)n^{-\sigma_0} \ll \log P$ and (a)).
+(c) *Truncation.*  On $\sigma_0$, $|P^s| = eP$ and $|\zeta'/\zeta(s+it)| \le \frac{1}{\sigma_0-1} + O(1) \ll \log P$.
+By (a) with $B = 3$ the part $|\mathrm{Im}\,s| > T$ is $\ll_f P\log P\cdot T^{-2} \ll 1$, using $P \le T$.
+(d) *Contour shift.*  Put $\sigma_1 = 1 - (\log T)^{-2/3-\varepsilon}$; for $T \ge T_1(\varepsilon)$ this is
+to the right of the (VKZ) boundary at height $2T$ (as $(\log 2T)^{2/3}(\log\log 2T)^{1/3}/c_0 \le (\log T)^{2/3+\varepsilon}$),
+and for $3 \le T < T_1(\varepsilon)$ the lemma is trivial after enlarging $C$: then $P \le T < T_1$, so the left side is bounded in terms of $f$ and $\varepsilon$ alone.
+Shift the segment $[\sigma_0 - iT, \sigma_0 + iT]$ to $[\sigma_1 - iT, \sigma_1 + iT]$.  On the closed
+rectangle, $s + it$ has $|\mathrm{Im}(s+it)| \le \frac32 T \le 2T$, so (VKZ) applies; the only pole is
+at $s + it = 1$, i.e. $s = 1 - it$, which lies inside since $|t| \le T/2 < T$.  Its residue is
+$\tilde f(1-it)P^{1-it}$ (as $-\zeta'/\zeta$ has residue $+1$ at $1$).
+(e) *Bounds.*  On the horizontal sides ($|\mathrm{Im}\,s| = T$), $|\mathrm{Im}(s+it)| \ge T/2 \ge 1$, so
+$|\zeta'/\zeta(s+it)| \le C_0\log 2T + 2$; with $|\tilde f| \ll_f T^{-3}$ and $|P^s| \le eP$ these
+contribute $\ll_f P T^{-3}\log T \ll 1$.  On the left side, $|P^s| = P\exp(-\log P/(\log T)^{2/3+\varepsilon})$,
+$|\zeta'/\zeta(s+it)| \le C_0\log 2T + |s + it - 1|^{-1} \le C_0\log 2T + (\log T)^{2/3+\varepsilon}$, and
+$\int|\tilde f(\sigma_1+iy)|dy \ll_f 1$ by (a); this contributes $\ll_{f} P\exp(-\log P/(\log T)^{2/3+\varepsilon})\log T$.
+Collecting (c)–(e) gives the claim.  $\square$
+
+Teräväinen's **Lemma 8** ($k = 1$: $|P(1+it)| \ll \exp(-(\log N)^{1/10})$ for $\exp((\log N)^{1/3}) \le |t| \le N^{A\log\log N}$)
+is a numbered alternative, but it is stated for sharp dyadic sums over $n \sim N$; our $p$-range
+$[(1-\frac\delta2)\sqrt Z, (1-\frac\delta4)\sqrt Z]$ is sub-dyadic and smoothly weighted, so it does
+not apply verbatim.  Lemma VK is the clean input.
 
 **(PNT) Prime number theorem with classical error.**  $\psi(y) = y + O(y\exp(-c\sqrt{\log y}))$ for an
 absolute $c > 0$ (de la Vallée Poussin; e.g. Davenport, *Multiplicative Number Theory*, ch. 18).  Consequence
@@ -75,6 +125,17 @@ used: for $y \ge y_0$ and $y \exp(-4(\log y)^{1/3}) \le H \le y$,
 $$\pi(y + H) - \pi(y) \ge \frac{H}{2\log(2y)},$$
 since the error $O(y e^{-c\sqrt{\log y}})$ is $o(H)$ and prime powers contribute $O(\sqrt{y}\log y)$.
 (Not re-opened this session; textbook.)
+
+*Lean note (this revision).*  The PNT the repo already has is PNT+'s `MediumPNT`,
+$\psi(x) - x = O(x\exp(-c(\log x)^{1/10}))$ for some $c > 0$ (checked in the pinned package; its
+`StrongPNT` with $\exp(-c\sqrt{\log x})$ is still commented out there).  That error is **not** $o(H)$
+for $H = y\exp(-4(\log y)^{1/3})$, so with `MediumPNT` alone Lemma 3 fails at the parameters of §2.
+It is repaired by one parameter change: take $T_0 = \exp(\kappa(\log Z)^{1/10})$ with $\kappa = c/8$.
+Then $H \ge y/(4T_0^3) \ge y\exp(-\frac c2(\log y)^{1/10})$ for large $Z$, which beats the `MediumPNT`
+error by a factor $\exp(\frac c2(\log y)^{1/10})/\log y \to \infty$.  The rest is unchanged except that
+$1/T_0$ (in Lemma 4's main term and in Proposition 6's first term) is now $\exp(-\kappa(\log Z)^{1/10})$,
+so the exceptional set becomes $\ll Y\exp(-c'(\log Y)^{1/10})$ for some $c' > 0$.  This is still $o(Y)$:
+Theorem A's density-zero content and Corollary B survive, with the weaker rate.
 
 ## 2. Set-up
 
@@ -140,17 +201,19 @@ $\log\frac{1-5\delta/16}{1-7\delta/16} \ge \frac{\delta}{8}$.  $\square$
 **Lemma 4.**  For $T_0 \le |t| \le 8X$ and any $\varepsilon > 0$,
 $$|P(1+it)| \ll_{\delta,\varepsilon} \eta_Z := \exp\big(-(\log Z)^{1/3-\varepsilon}\big).$$
 
-*Proof.*  Let $g_0(u) = g(u)/u$, smooth with the same support.  Then
+*Proof.*  Let $g_0(u) = g(u)/u$, smooth with support in $[1-\frac\delta2, 1-\frac\delta4]$.  Then
 $$P(1+it) = \sum_n \Lambda(n)\, g\Big(\frac{n}{\sqrt Z}\Big)n^{-1-it} - \sum_{k\ge2}\sum_{p}(\log p)\,g\Big(\frac{p^k}{\sqrt Z}\Big)p^{-k(1+it)},$$
 where the second sum removes the prime powers $p^k$, $k \ge 2$, in the support (this identity is exact,
 since $P$ runs over primes only).  The $k \ge 2$ part has $O(Z^{1/4}\log Z)$ terms, each
 $\ll \log Z/\sqrt Z$, so it is $\ll Z^{-1/4}\log^2 Z$.  For the main part,
 $$\sum_n \Lambda(n) g\Big(\frac n{\sqrt Z}\Big) n^{-1-it} = \frac{1}{\sqrt Z}\sum_n \Lambda(n)\, n^{-it} g_0\Big(\frac{n}{\sqrt Z}\Big).$$
-Apply (VK) with $f = g_0$, $P = \sqrt Z$, $t \to -t$, $T = 16Z \ge 8X$:
-$$\frac{1}{\sqrt Z}\Big[\frac{\tilde g_0(1-it)}{1-it}\,\sqrt Z^{\,1-it} + O\Big(\sqrt Z\exp\Big(-\frac{\log\sqrt Z}{(\log 16Z)^{2/3+\varepsilon}}\Big)\log^2(16Z)\Big)\Big].$$
-The first term is $\ll_B (1+|t|)^{-B} \le T_0^{-1}$ for $|t| \ge T_0$ (take $B = 1$).  The second is
-$\ll \exp(-\frac13(\log Z)^{1/3-\varepsilon})\log^2 Z$.  All three contributions are $\ll \eta_Z$ after
-renaming $\varepsilon$.  $\square$
+Apply Lemma VK with $f = g_0$, $P = \sqrt Z$, $T = 16Z$.  Its hypotheses hold: $P \le T$, and
+$|t| \le 8X < 8Z = T/2$.  So the main part is
+$$\frac{1}{\sqrt Z}\Big[\tilde g_0(1-it)\,\sqrt Z^{\,1-it} + O_{\delta,\varepsilon}\Big(\sqrt Z\exp\Big(-\frac{\log\sqrt Z}{(\log 16Z)^{2/3+\varepsilon}}\Big)\log(16Z) + 1\Big)\Big].$$
+The first term has modulus $|\tilde g_0(1-it)| \ll_\delta (1+|t|)^{-1} \le T_0^{-1}$ for $|t| \ge T_0$
+(Lemma VK proof, step (a), $B = 1$).  Since $\frac12\log Z/(\log 16Z)^{2/3+\varepsilon} \ge (\log Z)^{1/3-2\varepsilon}$
+for large $Z$, the second is $\ll \exp(-(\log Z)^{1/3-2\varepsilon})\log Z + Z^{-1/2}$.  All
+contributions are $\ll \eta_Z$ after renaming $\varepsilon$ (note $T_0^{-1} = \exp(-(\log Z)^{1/3}) \le \eta_Z$).  $\square$
 
 **Lemma 5 (mean square of $Q$).**  For $U \ge 1$, $\int_{-U}^{U}|Q(1+it)|^2 dt \ll \dfrac{U + \sqrt Z}{\sqrt Z \log Z}$.
 
@@ -169,8 +232,8 @@ $2 \le h_1 \le h_2 = X/T_0^3$ for large $Z$.  The three terms:
 2. $\int_{T_0}^{X/h_1}|A(1+it)|^2dt \le \frac{1}{\log^2 Z}\sup_{T_0\le|t|\le X/h_1}|P(1+it)|^2\int_{-X/h_1}^{X/h_1}|Q(1+it)|^2dt$.
    Here $X/h_1 \le 16\sqrt Z/\delta \le 8X$, so Lemma 4 applies, and Lemma 5 with $U = X/h_1 \ll \sqrt Z/\delta$ gives
    $\ll \eta_Z^2\,\delta^{-1}(\log Z)^{-3}$.
-3. For $X/h_1 \le T \le 4X$: $\frac{X}{h_1T}\int_T^{2T}|A|^2 \le \frac{X}{h_1 T}\cdot\frac{\eta_Z^2}{\log^2 Z}\cdot\frac{2T + O(\sqrt Z)}{\sqrt Z\log Z} \ll \eta_Z^2\delta^{-1}(\log Z)^{-3}$
-   (Lemmas 4, 5; $|t| \le 8X$ holds).  For $T > 4X$: by (MVT) applied to $A$ itself (length $\le 2X$),
+3. For $X/(2h_1) \le T \le 4X$: $\frac{X}{h_1T}\int_T^{2T}|A|^2 \le \frac{X}{h_1 T}\cdot\frac{\eta_Z^2}{\log^2 Z}\cdot\frac{2T + O(\sqrt Z)}{\sqrt Z\log Z} \ll \eta_Z^2\delta^{-1}(\log Z)^{-3}$
+   (Lemmas 4, 5; $[T, 2T] \subset [T_0, 8X]$ since $X/(2h_1) \ge T_0$, and $\frac{X}{h_1T} \le 2$).  For $T > 4X$: by (MVT) applied to $A$ itself (length $\le 2X$),
    $\int_T^{2T}|A(1+it)|^2 \le (2T + O(X))\sum_m a_m^2m^{-2} \ll T/X$, so the term is $\ll 1/h_1 \ll Z^{-1/2}$.
 
 Summing, $\mathcal D \ll e^{-(\log Z)^{1/3}} + \eta_Z^2 + Z^{-1/2} \ll \exp(-(\log Z)^{1/3-\varepsilon})$.  $\square$
@@ -194,8 +257,12 @@ $\varepsilon$.  $\square$
 *Corollary B.*  Let $E_k = \{n : F(n) < n + (1-\frac1k)\sqrt n\}$ ($k \ge 5$), each of density $0$ by
 Theorem A.  Choose $N_5 < N_6 < \dots$ with $\#(E_k \cap [1,Y]) \le Y/k$ for all $Y \ge N_k$.  Put
 $\delta(n) = 1/k$ for $N_k \le n < N_{k+1}$ and $\mathcal E = \bigcup_k (E_k \cap [N_k, N_{k+1}))$.  For
-$N_k \le Y < N_{k+1}$: $\#(\mathcal E \cap [1, Y]) \le \sum_{j < k}\#(E_j\cap[1, N_{j+1}]) + Y/k$; choosing
-$N_{k+1}$ also large enough that $\sum_{j\le k}\#(E_j \cap [1, N_{j+1}]) \le N_{k+1}/k$ makes this $\le 2Y/(k-1) \to 0$.
+$N_k \le Y < N_{k+1}$: $\#(\mathcal E \cap [1, Y]) \le \sum_{j < k}\#(E_j\cap[1, N_{j+1}]) + \#(E_k \cap [1,Y])$.
+Note $E_j \subset E_{j+1}$ (a smaller margin is easier to miss).  Choose $N_5 < N_6 < \cdots$ inductively
+with $\#(E_k \cap [1, Y]) \le Y/k^2$ for all $Y \ge N_k$ (possible since $E_k$ has density $0$); this
+condition involves only $N_k$, so there is no circularity.  Then
+$\sum_{j<k}\#(E_j\cap[1,N_{j+1}]) \le (k-5)\,\#(E_{k-1}\cap[1,N_k]) \le (k-5)N_k/(k-1)^2 \le Y/k$ for $k$ large,
+and $\#(E_k\cap[1,Y]) \le Y/k^2$, so $\#(\mathcal E \cap [1,Y]) \le 2Y/k \to 0$.
 For $n \notin \mathcal E$, $n \in [N_k, N_{k+1})$: $n \notin E_k$, i.e. $F(n) \ge n + (1-\delta(n))\sqrt n$.
 With $F(n) < n + \sqrt n$ this is $F(n) = n + (1+o(1))\sqrt n$ off $\mathcal E$.  $\square$
 
@@ -224,16 +291,14 @@ With $F(n) < n + \sqrt n$ this is $F(n) = n + (1+o(1))\sqrt n$ off $\mathcal E$.
 
 ## 8. Referee pass (hostile reread)
 
-1. **(VK) is a displayed step, not a numbered lemma.**  MR16 state it inside the proof of Lemma 11, for
-   their specific $f$ and for arguments $t - t'$ with $t, t' \in [-T, T]$.  We use it for our $g_0$ and
-   $|t| \le T$.  The derivation (Mellin inversion, truncation at height $T$, contour shift into the
-   Vinogradov–Korobov zero-free region, Ivić (1.52)) uses only smoothness and compact support of $f$, so the
-   transfer is routine, but a referee would want a numbered citation.  Candidates: Iwaniec–Kowalski ch. 8
-   (VK region) plus a two-line Mellin argument; or prove it inline.  **Soft spot, 85%.**  Note the
-   theorem only needs *some* $o(1)$ pointwise saving beating $\log^4 Z$ (any $\exp(-(\log Z)^{c})$), so even
-   a weaker zero-free region (de la Vallée Poussin, giving $\exp(-c\sqrt{\log Z}/\ldots)$ only for
-   $|t| \le \exp(\sqrt{\log Z})$) would NOT suffice, because $|t|$ runs up to $\asymp \sqrt Z/\delta$.  VK (or
-   any region $1 - c/(\log T)^{1-\kappa}$) is genuinely used.
+1. **(VK) input.**  *Superseded in draft 2:* the displayed step from MR16's proof of Lemma 11 is replaced
+   by Lemma VK (§1), stated with hypotheses ($P \le T$, $|t| \le T/2$, standard Mellin) and proved
+   inline from the textbook region (VKZ).  What is genuinely needed (corrected per independent referee
+   issue 5): term 2 of §6 divided by $\mu_Z^2$ is $\asymp \sup|P|^2\log Z/\delta^3$, so density zero
+   needs only $\sup_{T_0\le|t|\le X/h_1}|P(1+it)| = o((\log Z)^{-1/2})$.  The classical
+   de la Vallée Poussin region gives **no** saving here, because $\log T \asymp \log P$ makes
+   $\exp(-c\log P/\log T)$ a constant; a region of width $(\log T)^{-1+\kappa}$ for some $\kappa > 0$, such
+   as VK, is what produces the $o(1)$.
 2. **(PAR′) parameters.**  We rely on Teräväinen's printed Lemma 1, whose proof is MR's.  I checked in MR's
    proof that the parameters enter only through the low-frequency display (quoted in §1).  The $|a_m| \le 1$
    hypothesis is used there and holds.  **OK, 95%.**
@@ -245,16 +310,61 @@ With $F(n) < n + \sqrt n$ this is $F(n) = n + (1+o(1))\sqrt n$ off $\mathcal E$.
    on $\delta$.  **OK.**
 5. **Lemmas 2-4 display slips** found on reread (a garbled constant chain, a dangling fraction, a stray
    symbol $R$) were fixed in place.  No mathematical change.
-7. **Measure vs integers in Chebyshev.**  $\mathcal V_Z$ is a union of intervals (as $S_1$ is a step function
+6. **Measure vs integers in Chebyshev.**  $\mathcal V_Z$ is a union of intervals (as $S_1$ is a step function
    of $x$), so it is measurable; fine.
-8. **Is the $(1-\delta)$ constant right?**  Lemma 1 gives margin $(1-\frac{3\delta}4)\sqrt Z \ge (1-\delta)\sqrt n$
+7. **Is the $(1-\delta)$ constant right?**  Lemma 1 gives margin $(1-\frac{3\delta}4)\sqrt Z \ge (1-\delta)\sqrt n$
    on the range.  The witness factor $p \ge (1-\frac\delta2)\sqrt Z$ while the window is $\frac\delta4\sqrt Z$;
    both choices are inside the $\delta$ budget.  **OK.**
-9. **Novelty.**  Routine for an expert in the MR/Teräväinen school (85%); not found written (LIT sweep,
+8. **Novelty.**  Routine for an expert in the MR/Teräväinen school (85%); not found written (LIT sweep,
    2026-10-01), and sharper than Tao's stated $n^{1/2+o(1)}$.  `papers followups` on 1510.06005 and
    2207.05038 still to run before calling it new in public.
 
 **Overall: ~80% correct as written; the one substantive dependency to firm up is (VK) as a citable lemma.**
+
+## 9. Revision after the independent referee (draft 2, 2026-10-01)
+
+Every numbered issue of the independent referee (below) and where it is addressed:
+
+| # | Issue | Resolution |
+|---|---|---|
+| 1 | MR16's contour line $1 - c(\log T)^{-2/3+\varepsilon}$ is a typo (outside the VK region) | No longer quoted.  §1 now states (VKZ) from the textbook and proves **Lemma VK** inline with $\sigma_1 = 1 - (\log T)^{-2/3-\varepsilon}$, inside the region. |
+| 2 | Mellin convention: MR's main term $\tilde f(1+it)P^{1+it}/(1+it)$ is wrong under the standard transform | Lemma VK uses the standard $\tilde f(s) = \int f(x)x^{s-1}dx$ and main term $\tilde f(1-it)P^{1-it}$, no $1/(1-it)$.  The paper only used decay in $|t|$, which holds either way. |
+| 3 | DOOR Prop 3 lacked $P \le T$ (false at $T = 2$) | Lemma VK assumes $P \le T$, used in step (c).  DOOR's corrected Prop 3 is now the textbook region (VKZ), and Lemma VK is a wiring node, not a literature Prop (see DOOR §"E3 literature Props"). |
+| 4 | DOOR Prop 1 false for complex $a_n$ with one-sided integrals | (PAR′) notes the real-coefficient restriction; DOOR's corrected Prop 1 integrates over $|t|$ for complex $a_m$, with the counterexample as control 1a. |
+| 5 | §8 item 1 overstated what is needed | Rewritten (§8 item 1). |
+| 6 | MR's proof gives the tail $\max_{T \ge X/(2h_j)}$; MVT constant $T$ vs $2T$ | (PAR′) now uses $X/(2h_1)$; Proposition 6 term 3 starts at $X/(2h_1) \ge T_0$; MVT stated with an absolute $C$. |
+| 7 | Corollary B's choice of $N_{k+1}$ self-referential | Rewritten with the single condition $\#(E_k\cap[1,Y]) \le Y/k^2$ for $Y \ge N_k$ and $E_j \subset E_{j+1}$. |
+| 8 | Cosmetic (§8 numbering, unused hypothesis, sharper rate) | Numbering fixed.  The sharper rate $Y\exp(-c(\log Y)^{1/3}(\log\log Y)^{-1/3})$ is available but not pursued. |
+
+**Related work** (added per referee "Novelty"; abstract opened 2026-10-01).  Xu Zhang, *On the sum of
+least prime factors in short intervals*, arXiv:2608.24930 (2026-08-22): for composites $n$ in
+$[x, x + Cx^{1/2}(\log x)^2]$, the window sums $\mu_C(x) = \sum p(n)/n$ have mean $4C$ and variance
+$O_C((\log X)^{-2})$, so $\mu_C(x) = 4C + o(1)$ for almost all $x$ (an Erdős–Graham question);
+uniformity is shown under a Cramér-type hypothesis.  Its windows are longer by $(\log x)^2$ and it
+does not localise $p(n)$ near $\sqrt x$, so it neither implies nor is implied by Theorem A, but it is
+the nearest published neighbour and should be cited.
+
+**Self-referee of the changed parts.**
+- *Lemma VK, step (c):* tail bound $\int_{|y|>T}|\tilde f(\sigma_0+iy)|\,eP\log P\,dy \ll_f P\log P\,T^{-2}$
+  with $B = 3$; with $P \le T$ this is $\ll \log P/P \ll 1$.  ✓.
+- *Step (d):* pole location $s = 1-it$ has $|\mathrm{Im}\,s| = |t| \le T/2 < T$, inside the rectangle;
+  on the rectangle $|\mathrm{Im}(s+it)| \le T + T/2 \le 2T$, within (VKZ) at height $2T$.  ✓.  The
+  small-$T$ range $T < T_1(\varepsilon)$ is absorbed into $C$ because $P \le T$ then bounds $P$, hence the
+  whole left side (this is the second use of $P \le T$; without it, bounded $T$ and huge $P$ would
+  claim a power saving in the smoothed PNT, which is false).  ✓.
+- *Step (e):* the left-side bound needs $|s+it-1| \ge 1 - \sigma_1 = (\log T)^{-2/3-\varepsilon}$, true on
+  $\mathrm{Re}\,s = \sigma_1$.  ✓.
+- *Lemma 4 application:* $T = 16Z \ge \sqrt Z = P$; $|t| \le 8X = 8(1-\frac\delta2)Z < 8Z$.  The
+  conversion $\frac12\log Z/(\log 16Z)^{2/3+\varepsilon} \ge (\log Z)^{1/3-2\varepsilon}$ holds for large $Z$.  ✓.
+- *Proposition 6 term 3 from $X/(2h_1)$:* $X/(2h_1) \ge X/h \asymp \sqrt Z/\delta \ge T_0$, and for
+  $T \in [X/(2h_1), X/h_1]$ the factor $X/(h_1T) \le 2$, so the bound is as before.  ✓.
+- *MediumPNT variant:* $T_0 = \exp(\kappa(\log Z)^{1/10})$ still satisfies $T_0 \le X/(2h_1)$, $h_2 = X/T_0^3 \ge h_1$,
+  and $1/T_0 \le$ the new rate; Lemma 4's first term is $\le 1/T_0$.  ✓.
+- *Unchanged risk:* (VKZ) and (PNT) theorem numbers not re-opened (textbook facts; 80% on the numbers,
+  ~99% on the statements).
+
+**Overall after revision: ~90%** that Theorem A and Corollary B are correct as written; the residual
+risk is in un-reopened textbook citations, not in the argument.
 
 ## Independent referee (2026-10-01)
 
