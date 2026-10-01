@@ -1998,3 +1998,12 @@ case `n < y+2` via Lemma R at `y' = n−2` + Bertrand ⇒ `n = 2p`, pair `(p, p)
 `ffGood_of_natDegree_lt_card`, and the BBR wiring edge `ffWitness_of_BBR` (count ≥ 2 via
 `q^{m+1} = q^{m+1/2}·√q`; coefficient-injectivity picks a shift with `g ≠ f`).
 Next: `Graph.lean` edges (`noCarrier_of_bad`, repulsion ⇒ (i), FGKMT ⇒ sieve sibling), then E2 `Count.lean`.
+
+## 2026-10-01 Erdős #385 E2b DONE — `BrunUniformGap` discharged
+`brunUniformGap_holds` axiom-clean (C = 20000), so `card_bad_le` is now unconditional via
+`card_bad_le brunUniformGap_holds`.  Files `Erdos385/Brun/{GLower,Density,Selberg,PairSieve}.lean`:
+Selberg Λ² with optimal weights on top of mathlib's `SelbergSieve` scaffolding.  Reusable ideas:
+- G(z) lower bound without Euler products: `g(p) ≥ g₁(p)+g₂(p)` ⇒ `g ≥ g₁*g₂` on squarefree, then
+  decouple coprimality with `∑_{a∈S} F ≤ (∑_{d∣m sqfree} F d)·∑_{(a,m)=1} F` (costs `m/φ(m)`),
+  and `∑_{a≤t sqfree} 1/a ≥ log t / 2` via `n = b²a`.
+- |w_d| ≤ g(d)/ν(d) ≤ d crude bound suffices with level y², y = t², t = ⌊X^{1/16}⌋ (error ≤ y⁶).
