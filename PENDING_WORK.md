@@ -2078,3 +2078,12 @@ unconditional).  Gluing (vkW antitone, constants) proved.  PNT+ check: `FinalBou
 `ZeroInequality` (classical region) IS sorried — so the 3-4-1 argument must be built here.
 Next: split `vk_large_height` into (a) growth `|ζ| ≤ (log t)^K` on σ ≥ 1−θ(t), (b) rescaled
 FinalBound for ζ at centre 1+θ+it, (c) 3-4-1 zero-free, (d) log-deriv bound.
+
+## E2e lap 2 (2026-10-01)
+`vk_large_height` PROVED from five named interfaces in `Erdos385/Landau/Basic.lean`:
+`vk_asymp` (elementary asymptotics), `logDeriv_zeta_dirichlet_bound` (D3),
+`three_four_one` (D2), `landau_neg_re_upper` (Z1), `landau_logderiv_bound` (Z2).
+`Landau/ZeroFree.lean` (sorry-free modulo those): `vk_zero_free` (3-4-1 ⇒ β < 1 − c·vkW|γ|,
+c = 3/(104(1+6K))) and `vk_large_height_of`.  Remaining crux = Z1/Z2 (FinalBound rescaled for ζ
+at centre 1+θ+it, radius 2θ; growth via Richert + PNT+ ZetaUpperBnd; lower via ZetaLowerBound3).
+Plus `vk_small_height` (PNT+ ZetaNoZerosInBox + riemannZetaLogDerivResidue + compactness).

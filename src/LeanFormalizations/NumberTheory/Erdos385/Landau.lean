@@ -7,6 +7,7 @@ import Mathlib
 import LeanFormalizations.Literature.Erdos385AlmostAll
 import LeanFormalizations.Literature.Erdos385VK
 import LeanFormalizations.NumberTheory.Erdos385.Headline
+import LeanFormalizations.NumberTheory.Erdos385.Landau.ZeroFree
 
 /-!
 # Erdős #385: Vinogradov–Korobov from Richert's growth bound (phase E2e)
@@ -63,39 +64,6 @@ open LeanFormalizations.Literature Complex
   zero-free with `ζ'/ζ + 1/(s−1)` bounded.  Unconditional (no Richert).
 The gluing (`vkW` antitone, constants) is proved below. -/
 
-/-- The VK width `1 / ((log T)^{2/3} (log log T)^{1/3})`. -/
-noncomputable def vkW (T : ℝ) : ℝ :=
-  1 / (Real.log T ^ ((2 : ℝ) / 3) * Real.log (Real.log T) ^ ((1 : ℝ) / 3))
-
-lemma one_lt_log_three : 1 < Real.log 3 := by
-  rw [Real.lt_log_iff_exp_lt (by norm_num)]
-  have := Real.exp_one_lt_d9
-  linarith
-
-lemma vkW_denom_pos {T : ℝ} (hT : 3 ≤ T) :
-    0 < Real.log T ^ ((2 : ℝ) / 3) * Real.log (Real.log T) ^ ((1 : ℝ) / 3) := by
-  have h1 : 1 < Real.log T :=
-    one_lt_log_three.trans_le (Real.log_le_log (by norm_num) hT)
-  have h2 : 0 < Real.log (Real.log T) := Real.log_pos h1
-  positivity
-
-lemma vkW_pos {T : ℝ} (hT : 3 ≤ T) : 0 < vkW T := by
-  unfold vkW; exact one_div_pos.mpr (vkW_denom_pos hT)
-
-lemma vkW_anti {a b : ℝ} (ha : 3 ≤ a) (hab : a ≤ b) : vkW b ≤ vkW a := by
-  unfold vkW
-  apply one_div_le_one_div_of_le (vkW_denom_pos ha)
-  have h1 : 1 < Real.log a := one_lt_log_three.trans_le (Real.log_le_log (by norm_num) ha)
-  have hl : Real.log a ≤ Real.log b := Real.log_le_log (by linarith) hab
-  have hll : Real.log (Real.log a) ≤ Real.log (Real.log b) := Real.log_le_log (by linarith) hl
-  have h2 : 0 < Real.log (Real.log a) := Real.log_pos h1
-  apply mul_le_mul (Real.rpow_le_rpow (by linarith) hl (by norm_num))
-    (Real.rpow_le_rpow h2.le hll (by norm_num)) (by positivity)
-    (Real.rpow_nonneg (by linarith) _)
-
-lemma inVKRegion_iff (c₀ T σ : ℝ) : InVKRegion c₀ T σ ↔ 1 - c₀ * vkW T ≤ σ := by
-  unfold InVKRegion vkW; rw [mul_one_div]
-
 /-- **Large height (the crux; Landau's method).**  Steps 1–4 and 6 of the route: from Richert's
 growth bound, Borel–Carathéodory (PNT+ `FinalBound`, sorry-free) gives the local zero-sum formula
 for `ζ'/ζ` on discs of radius `≍ θ(t) = (log log t / log t)^{2/3}`, the 3-4-1 inequality gives the
@@ -105,7 +73,7 @@ theorem vk_large_height (h : RichertZetaGrowth) :
     ∃ c₁ : ℝ, 0 < c₁ ∧ ∃ C₁ t₁ : ℝ, 3 ≤ t₁ ∧ ∀ σ y : ℝ, t₁ ≤ |y| → InVKRegion c₁ |y| σ →
       riemannZeta (σ + y * I) ≠ 0 ∧
         ‖deriv riemannZeta (σ + y * I) / riemannZeta (σ + y * I)‖ ≤ C₁ * Real.log |y| := by
-  sorry
+  exact vk_large_height_of h
 
 /-- **Small height (compactness).**  `ζ ≠ 0` on `Re s ≥ 1` (`riemannZeta_ne_zero_of_one_le_re`),
 `(s−1)ζ(s) → 1` at the pole, and continuity on the compact box `[1−c, 2] × [−t₁, t₁]`; for `σ ≥ 2`
