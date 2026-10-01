@@ -6,6 +6,7 @@ Authors: Trevor Morris
 import Mathlib
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.LargeValues
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Floor
+import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.MellinDecay
 
 /-!
 # Erdős #385 power saving: `LargeValueBoundP` from a large-value count (phase E9b)
