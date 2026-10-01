@@ -9,6 +9,7 @@ import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Assembly
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.RoughOmega
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Bounded
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.BuchstabLimitB
+import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.FLUpper
 
 /-!
 # The named leaves of `aLow_pos` (phase E5, steps 2–5)
@@ -49,10 +50,24 @@ theorem buchstab_limit_b : ∀ s s' : ℝ, 2 ≤ s → s ≤ s' →
     bUp s ≤ bUp s' - ∫ t in s..s', aLow (t - 1) / (t - 1) :=
   fun _ _ hs hss' => buchstab_limit_b' hs hss'
 
+/-- Leaf (step 3, lower half): `a(s) ≥ e^{−γ}s − M e^{−s}`.  Plan: Buchstab from `w = 2`,
+`S⁻(N, z) ≥ N − Σ_{p<z} S⁺(N/p+1, p)`, each term by `siftMax_mul_le` (level `(N/p)^{1/3}`),
+`Σ_{p<z} V(p)/p = 1 − V(z)` (telescoping), and the Rankin error
+`Σ_{p<z} (L/(p log p)) e^{−2(L/log p − 1)} ≤ D e^{−s}(1/s + B/L)` via `u e^{−2u} ≤ D e^{−s}/u`
+(`u = L/log p ≥ s`) and Mertens' first theorem — no dyadic decomposition needed. -/
+theorem aLow_ge_fl : ∃ M : ℝ, 0 ≤ M ∧ ∀ s : ℝ, 2 ≤ s → mertC * s - M * Real.exp (-s) ≤ aLow s := by
+  sorry
+
 /-- Leaf (step 3): the fundamental lemma, with an exponentially small error. -/
 theorem fundamental_lemma : ∃ M : ℝ, 0 ≤ M ∧ ∀ s : ℝ, 2 ≤ s →
     mertC * s - M * Real.exp (-s) ≤ aLow s ∧ bUp s ≤ mertC * s + M * Real.exp (-s) := by
-  sorry
+  obtain ⟨M₁, hM₁, h₁⟩ := aLow_ge_fl
+  obtain ⟨M₂, hM₂, h₂⟩ := bUp_le_fl
+  refine ⟨max M₁ M₂, le_max_of_le_left hM₁, fun s hs => ⟨?_, ?_⟩⟩
+  · have := mul_le_mul_of_nonneg_right (le_max_left M₁ M₂) (Real.exp_pos (-s)).le
+    linarith [h₁ s hs]
+  · have := mul_le_mul_of_nonneg_right (le_max_right M₁ M₂) (Real.exp_pos (-s)).le
+    linarith [h₂ s hs]
 
 /-- **Assembly**: the comparison principle turns the leaves into `a(s) ≥ α(s) > 0`. -/
 theorem aLow_pos_of_leaves : ∀ s : ℝ, 2 < s → 0 < aLow s := by

@@ -1,3 +1,11 @@
+## (2026-10-01, session B): FL UPPER HALF DONE, axiom-clean.  `bUp_le_fl` (FLUpper.lean):
+b(s) ≤ e^{−γ}s + M e^{−s}.  Step (b) for session A = `siftMax_mul_le` (FLUniform.lean):
+  S⁺(M,w)·(1 − e^K ξ^{−8/log w}) ≤ M/Π(w−1) + selE w ξ²   for all w ≥ 2, ξ ≥ 1  (K = rankK).
+(Multiplicative form — no division; with log ξ ≥ log M/4 the factor is ≥ 1 − e^K e^{−2 log M/log w}.)
+`fundamental_lemma` is now wired from `bUp_le_fl` + the single leaf `aLow_ge_fl` (Leaves.lean, A's).
+Tip for A: the dyadic sum is avoidable — with u = L/log p ≥ s, u e^{−2u} ≤ D e^{−s}/u, so the error is
+≤ D e^{−s} Σ_{p<z} log p/(pL) ≤ D e^{−s}(1/s + B/L) by `sum_log_div_le` (FLUniform).
+
 ## CLAIMS (2026-10-01, session A): `phi_buchstab` + `buchstab_limit_b` DONE (A).  A now takes FL
 lower half (B's plan step (d)) in a NEW file `LinearSieve/FLLower.lean`, stated against an explicit
 hypothesis `UpperFLHyp` (B's step (b) shape: S⁺(M,w) ≤ M·V(w)(1+K e^{−c log ξ/log w}) + (Cξ log ξ)²).
