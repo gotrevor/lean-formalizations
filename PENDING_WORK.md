@@ -5,7 +5,7 @@ aLow_nonneg, aLow_mono, bUp_mono, buchstab_limit_a/b, fundamental_lemma (|·−C
 comparison_functions (α,β), and the assembly `aLow_pos_of_leaves` (comparison_principle on
 K = max(α−a, b−β, 0)).  ⚠ two sessions worked this branch concurrently; lap-2's note says λ ≥ 1 is
 not needed — but K = 0 on (1,2] needs b ≤ β = 2λ there, so with b ≤ 2 we do need λ ≥ 1 (ω_∞ = e^{−γ}).
-Next: prove the assembly `aLow_pos_of_leaves` (pure analysis, no number theory).
+Assembly `aLow_pos_of_leaves` PROVED (Assembly.lean `pos_of_delay_system`).  Next: bookkeeping leaves (aLow_nonneg, monotonicity), then buchstab_limit_a/b.
 
 ## ⚠ COLLISION (2026-10-01 11:xx): two writers in this worktree
 Another session (not visible to ListAgents) commits to `erdos-385` here concurrently, with its own

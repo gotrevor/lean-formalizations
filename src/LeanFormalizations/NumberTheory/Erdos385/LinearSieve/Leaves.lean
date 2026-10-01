@@ -5,7 +5,7 @@ Authors: Trevor Morris
 -/
 import Mathlib
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.UpperBoundary
-import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Comparison
+import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Assembly
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.UpperAt
 
 /-!
@@ -71,6 +71,46 @@ theorem comparison_functions : ∃ α β : ℝ → ℝ, Continuous α ∧ Contin
 
 /-- **Assembly**: the comparison principle turns the leaves into `a(s) ≥ α(s) > 0`. -/
 theorem aLow_pos_of_leaves : ∀ s : ℝ, 2 < s → 0 < aLow s := by
-  sorry
+  obtain ⟨α, β, hα, hβ, h12, hαβ, ⟨M2, hM2, hdec2⟩, hpos⟩ := comparison_functions
+  obtain ⟨M1, hM1, hdec1⟩ := fundamental_lemma
+  set a' : ℝ → ℝ := fun s => aLow (max s 1)
+  set b' : ℝ → ℝ := fun s => bUp (max s 1)
+  have hmax : ∀ s : ℝ, 1 ≤ s → max s 1 = s := fun s hs => max_eq_left hs
+  have ha' : Monotone a' := fun x y h =>
+    aLow_mono (show (0:ℝ) < max x 1 by positivity) (show (0:ℝ) < max y 1 by positivity)
+      (max_le_max h le_rfl)
+  have hb' : Monotone b' := fun x y h =>
+    bUp_mono (show (0:ℝ) < max x 1 by positivity) (show (0:ℝ) < max y 1 by positivity)
+      (max_le_max h le_rfl)
+  have hcongr : ∀ (f : ℝ → ℝ) (s s' : ℝ), 2 ≤ s → s ≤ s' →
+      ∫ t in s..s', f (max (t - 1) 1) / (t - 1) = ∫ t in s..s', f (t - 1) / (t - 1) := by
+    intro f s s' hs hss
+    refine intervalIntegral.integral_congr fun t ht => ?_
+    rw [uIcc_of_le hss] at ht
+    simp only [hmax (t - 1) (by linarith [ht.1])]
+  have key := pos_of_delay_system a' b' α β (M1 + M2) ha' hb' hα hβ
+    (fun u hu1 hu2 => by
+      simp only [a', b', hmax u hu1.le]
+      obtain ⟨h1, h2⟩ := h12 u hu1 hu2
+      exact ⟨h1.trans (aLow_nonneg u (by linarith)), (bUp_le_two (by linarith) hu2).trans h2⟩)
+    (fun s s' hs hss => by
+      simp only [a', b', hmax s (by linarith), hmax s' (by linarith), hcongr bUp s s' hs hss]
+      exact buchstab_limit_a s s' hs hss)
+    (fun s s' hs hss => by
+      simp only [a', b', hmax s (by linarith), hmax s' (by linarith), hcongr aLow s s' hs hss]
+      exact buchstab_limit_b s s' hs hss)
+    hαβ
+    (fun s hs => by
+      unfold discK
+      simp only [a', b', hmax s (by linarith)]
+      obtain ⟨h1, h2⟩ := hdec1 s hs
+      obtain ⟨h3, h4⟩ := hdec2 s hs
+      rw [abs_le] at h1 h2 h3 h4
+      have he := (Real.exp_pos (-s)).le
+      refine max_le (max_le (by nlinarith) (by nlinarith)) (by positivity))
+  intro s hs
+  have := key s hs.le
+  simp only [a', hmax s (by linarith)] at this
+  linarith [hpos s hs]
 
 end LeanFormalizations.Erdos385.LinearSieve

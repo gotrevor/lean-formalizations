@@ -103,6 +103,82 @@ theorem pos_of_delay_system (a b α β : ℝ → ℝ) (M : ℝ)
     refine max_le (max_le ?_ ?_) (by linarith)
     · linarith
     · linarith
-  sorry
+  -- unshifted integrability of k u / u on [x, y], 1 ≤ x ≤ y
+  have hkdiv : ∀ x y, 1 ≤ x → x ≤ y → IntervalIntegrable (fun u => k u / u) volume x y := by
+    intro x y hx hxy
+    have h0 : IntervalIntegrable k volume x y := by
+      have h1 := (hα.intervalIntegrable (μ := volume) x y).sub
+        (ha.intervalIntegrable (μ := volume) (a := x) (b := y))
+      have h2 := (hb.intervalIntegrable (μ := volume) (a := x) (b := y)).sub
+        (hβ.intervalIntegrable (μ := volume) x y)
+      exact ii_sup (ii_sup h1 h2) intervalIntegrable_const
+    simp_rw [div_eq_mul_inv]
+    refine h0.mul_continuousOn (ContinuousOn.inv₀ continuousOn_id fun t ht => ?_)
+    rw [uIcc_of_le hxy] at ht
+    show t ≠ 0; linarith [ht.1]
+  set K : ℝ → ENNReal := fun u => ENNReal.ofReal (k u) with hK
+  have hcp := comparison_principle K (ENNReal.measurable_ofReal.comp hkmeas) ?h12 ?hrec ?hfin
+  · intro s hs
+    have h0 := hcp s hs
+    simp only [hK, ENNReal.ofReal_eq_zero] at h0
+    have : α s - a s ≤ k s := (le_max_left _ _).trans (le_max_left _ _)
+    linarith
+  case h12 =>
+    intro u hu1 hu2
+    obtain ⟨h1, h2⟩ := h12 u hu1 hu2
+    simp only [hK, ENNReal.ofReal_eq_zero]
+    exact max_le (max_le (by linarith) (by linarith)) le_rfl
+  case hrec =>
+    intro s hs
+    set L := ∫⁻ u in Ioi (s - 1), K u / ENNReal.ofReal u
+    by_cases hL : L = ⊤
+    · rw [hL]; exact le_top
+    have hbound : ∀ s', s ≤ s' → k s ≤ M * Real.exp (-s') + L.toReal := by
+      intro s' hss
+      have h1 := hrecR s s' hs hss
+      have hI : ∫ t in s..s', k (t - 1) / (t - 1) = ∫ u in (s - 1)..(s' - 1), k u / u :=
+        intervalIntegral.integral_comp_sub_right (fun u => k u / u) 1
+      have hint := hkdiv (s - 1) (s' - 1) (by linarith) (by linarith)
+      have h2 : ∫ u in (s - 1)..(s' - 1), k u / u ≤ L.toReal := by
+        rw [intervalIntegral.integral_of_le (by linarith)]
+        rw [← ENNReal.ofReal_le_iff_le_toReal hL]
+        rw [ofReal_integral_eq_lintegral_ofReal]
+        · calc ∫⁻ u in Ioc (s - 1) (s' - 1), ENNReal.ofReal (k u / u)
+              = ∫⁻ u in Ioc (s - 1) (s' - 1), K u / ENNReal.ofReal u := by
+                refine setLIntegral_congr_fun measurableSet_Ioc fun u hu => ?_
+                rw [hK]; exact ENNReal.ofReal_div_of_pos (by linarith [hu.1])
+            _ ≤ L := lintegral_mono_set Ioc_subset_Ioi_self
+        · exact hint.1
+        · filter_upwards [ae_restrict_mem measurableSet_Ioc] with u hu
+          exact div_nonneg (discK_nonneg _ _ _ _ _) (by linarith [hu.1])
+      linarith
+    have hT : Tendsto (fun s' => M * Real.exp (-s') + L.toReal) atTop (nhds (0 * M + L.toReal)) := by
+      have := (Real.tendsto_exp_neg_atTop_nhds_zero.const_mul M)
+      rw [mul_zero] at this
+      simpa using this.add_const L.toReal
+    have hle : k s ≤ L.toReal := by
+      have := ge_of_tendsto hT (eventually_atTop.mpr ⟨s, hbound⟩)
+      simpa using this
+    calc K s = ENNReal.ofReal (k s) := rfl
+      _ ≤ ENNReal.ofReal L.toReal := ENNReal.ofReal_le_ofReal hle
+      _ = L := ENNReal.ofReal_toReal hL
+  case hfin =>
+    have hg : IntegrableOn (fun x : ℝ => |M| * (Real.exp (-x) * x ^ ((2 : ℝ) - 1))) (Ioi 2) :=
+      ((Real.GammaIntegral_convergent (by norm_num : (0 : ℝ) < 2)).mono_set
+        (Ioi_subset_Ioi (by norm_num))).const_mul |M|
+    refine (lt_of_le_of_lt ?_ hg.lintegral_lt_top).ne
+    refine setLIntegral_mono (by fun_prop) fun u hu => ?_
+    have hu2 : (2 : ℝ) < u := hu
+    rw [hK, ← ENNReal.ofReal_mul (discK_nonneg _ _ _ _ _)]
+    refine ENNReal.ofReal_le_ofReal ?_
+    have hd := hdec u hu2.le
+    have : u ^ ((2 : ℝ) - 1) = u := by norm_num
+    rw [this]
+    have hM : M * Real.exp (-u) ≤ |M| * Real.exp (-u) :=
+      mul_le_mul_of_nonneg_right (le_abs_self M) (Real.exp_pos _).le
+    have hu1 : u - 1 ≤ u := by linarith
+    calc k u * (u - 1) ≤ |M| * Real.exp (-u) * u := by
+          apply mul_le_mul (hd.trans hM) hu1 (by linarith) (by positivity)
+      _ = _ := by ring
 
 end LeanFormalizations.Erdos385.LinearSieve
