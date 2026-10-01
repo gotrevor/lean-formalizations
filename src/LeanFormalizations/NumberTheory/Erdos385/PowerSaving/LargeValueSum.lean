@@ -32,7 +32,7 @@ smooth), and the Mellin main term `≪_k |t|^{−k}` (`mellin_one_sub_mul_I_deca
 once `η' ≤ η₀ = 1/(16B'²)`; points with `|t| < u^{−1/4}` number `≤ 2u^{−1/4} + 2`. -/
 def LargeValueCount (δ : ℝ) : Prop :=
   ∀ g : ℝ → ℝ, Admissible δ g → ∃ η₀ C : ℝ, 0 < η₀ ∧ 0 ≤ C ∧ ∀ᶠ Z : ℝ in atTop, ∀ u : ℝ,
-    Z ^ (-η₀) ≤ u → ∀ T : Finset ℝ, Separated T →
+    Z ^ (-η₀) ≤ u → u ≤ 1 → ∀ T : Finset ℝ, Separated T →
       (∀ t ∈ T, 1 ≤ |t| ∧ |t| ≤ 8 * paramX δ Z ∧ u ≤ ‖primeP g Z (1 + t * I)‖) →
       (T.card : ℝ) ≤ C * Real.log Z ^ C * u ^ (-(1 / 2 : ℝ))
 
@@ -129,7 +129,9 @@ theorem largeValueBoundP_of_count {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4)
   refine ⟨η, hη, ?_⟩
   filter_upwards [hcount, hK, ev_log_rpow_le hC0 (half_pos hc₀),
     ev_log_exp_le (A := 16 * C * √K') (by positivity) hC0, ev_exp_le_rpow hc₀,
-    eventually_ge_atTop (16 : ℝ)] with Z hcnt hflr hE1 hE2 hE3 hZ16 S hS hSv
+    eventually_ge_atTop (16 : ℝ),
+    (((tendsto_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 4)).comp Real.tendsto_log_atTop).comp
+      tendsto_id).eventually_ge_atTop K'] with Z hcnt hflr hE1 hE2 hE3 hZ16 hT1K S hS hSv
   have hZ1 : 1 ≤ Z := by linarith
   have hZ0 : 0 < Z := by linarith
   have hX : 1 ≤ paramX δ Z := by unfold paramX; nlinarith
@@ -151,7 +153,7 @@ theorem largeValueBoundP_of_count {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4)
     ⟨(hSv s hs).1, (hSv s hs).2.1⟩
   have hcardS : (S.card : ℝ) ≤ C * L ^ C * Z ^ (η / 2) := by
     rw [← hpowη]
-    exact hcnt _ hZη S hS fun s hs => ⟨by linarith [(hsrange s hs).1, hT10],
+    exact hcnt _ hZη (Real.rpow_le_one_of_one_le_of_nonpos hZ1 (by linarith)) S hS fun s hs => ⟨by linarith [(hsrange s hs).1, hT10],
       by linarith [(hsrange s hs).2], (hSv s hs).2.2.le⟩
   refine ⟨?_, ?_⟩
   · -- the card
@@ -182,6 +184,11 @@ theorem largeValueBoundP_of_count {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4)
       linarith [(hτabs s hs).2, (hsrange s hs).2]
     obtain ⟨V, hV⟩ : ∃ V, V = K' / T1 := ⟨_, rfl⟩
     have hV0 : 0 < V := by rw [hV]; positivity
+    have hV1 : V ≤ 1 := by
+      rw [hV, div_le_one hT10, hT1]
+      simp only [Function.comp, id] at hT1K
+      rw [← hL] at hT1K
+      exact hT1K.trans (Real.add_one_le_exp _ |>.trans' (by linarith))
     have hvV : ∀ s ∈ S, w (τ s) ≤ V := fun s hs => by
       have := hflr (τ s) (hτlo s hs) (hτhi s hs)
       rw [hV]
@@ -189,11 +196,11 @@ theorem largeValueBoundP_of_count {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4)
       rw [hK']; linarith [le_abs_self K]
     have hN : ∀ u, 0 < u → u ≤ V → ((S.filter fun s => u < w (τ s)).card : ℝ) ≤
         (4 * (C * L ^ C)) * u ^ (-(1 / 2 : ℝ)) := by
-      intro u hu _
+      intro u hu hu1
       by_cases hZu : Z ^ (-η) ≤ u
       · have := card_filter_le_four_mul hS τ hτ1 (fun s => u < w (τ s))
           (B := C * L ^ C * u ^ (-(1 / 2 : ℝ))) fun T hT hTm =>
-            hcnt u (hZη.trans hZu) T hT fun t ht => by
+            hcnt u (hZη.trans hZu) (hu1.trans hV1) T hT fun t ht => by
               obtain ⟨s, hs, rfl, hp⟩ := hTm t ht
               exact ⟨by linarith [hτlo s hs, Real.one_le_exp (show 0 ≤ L ^ (1 / 4 : ℝ) by
                 positivity), hT1], hτhi s hs, hp.le⟩
