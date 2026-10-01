@@ -894,6 +894,69 @@ theorem longAverage_lower (hPNT : MediumPNTStatement) {δ : ℝ} (hδ : 0 < δ) 
   rw [this, div_le_iff₀ hlZ]
   exact hfin
 
+/-! ## W3 decomposition (PROOF §5–6)
+
+`A(s) = ∑ a_m m^{-s}` is `LSeries (coeffC δ g Z)`; it factors as `P(s) Q(s) / log Z` (fact 3).  The
+three analytic inputs are the pointwise bound on `P(1 + it)` (Lemma 4, from Lemma VK), the mean square
+of `Q` (Lemma 5, from the MVT), and the mean square of `A` itself (the far tail, from the MVT).
+Everything else is bookkeeping. -/
+
+/-- The witness coefficients as complex numbers. -/
+noncomputable def coeffC (δ : ℝ) (g : ℝ → ℝ) (Z : ℝ) (m : ℕ) : ℂ := (coeffA δ g Z m : ℂ)
+
+/-- `P(s) = ∑_p (log p) g(p/√Z) p^{-s}` over primes `p ≤ √Z`. -/
+noncomputable def primeP (g : ℝ → ℝ) (Z : ℝ) (s : ℂ) : ℂ :=
+  ∑ p ∈ (Finset.range (⌊√Z⌋₊ + 1)).filter Nat.Prime,
+    ((Real.log p * g (p / √Z) : ℝ) : ℂ) * (p : ℂ) ^ (-s)
+
+/-- `Q(s) = ∑_q q^{-s}` over primes `√Z ≤ q ≤ (1 + 2δ)√Z`. -/
+noncomputable def primeQ (δ Z : ℝ) (s : ℂ) : ℂ :=
+  ∑ q ∈ (Finset.range (⌊(1 + 2 * δ) * √Z⌋₊ + 1)).filter (fun q : ℕ => q.Prime ∧ √Z ≤ (q : ℝ)),
+    (q : ℂ) ^ (-s)
+
+/-- **W3a.**  The variance in the norm form of `MR16Lemma14`. -/
+theorem variance_eq_norm (δ κ : ℝ) (g : ℝ → ℝ) (Z : ℝ) :
+    variance δ κ g Z = (1 / paramX δ Z) * ∫ x in (paramX δ Z)..(2 * paramX δ Z),
+      ‖shortSumC (coeffC δ g Z) x (paramH1 δ Z) / (paramH1 δ Z : ℂ) -
+        shortSumC (coeffC δ g Z) x (paramH2 δ κ Z) / (paramH2 δ κ Z : ℂ)‖ ^ 2 := by
+  sorry
+
+/-- **W3b (fact 1–2).**  `0 ≤ a_m ≤ 1/2`, and `a_m ≠ 0` forces `X ≤ m < 2X`. -/
+theorem coeffA_facts {δ Z : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) (hZ : 1 < Z) {g : ℝ → ℝ}
+    (hg : Admissible δ g) (m : ℕ) :
+    0 ≤ coeffA δ g Z m ∧ coeffA δ g Z m ≤ 1 / 2 ∧
+      (coeffA δ g Z m ≠ 0 → paramX δ Z ≤ m ∧ (m : ℝ) < 2 * paramX δ Z) := by
+  sorry
+
+/-- **W3c (fact 3).**  `A(s) = P(s) Q(s) / log Z`. -/
+theorem LSeries_coeffC_eq {δ Z : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) (hZ : 1 < Z) {g : ℝ → ℝ}
+    (hg : Admissible δ g) (s : ℂ) :
+    LSeries (coeffC δ g Z) s = primeP g Z s * primeQ δ Z s / (Real.log Z : ℂ) := by
+  sorry
+
+/-- **W3d (Lemma 4).**  `|P(1 + it)| ≪ 1/T₀` for `T₀ ≤ |t| ≤ 8X`: the Mellin main term decays like
+`1/|t|`, the VK error and the prime powers are smaller.  Confidence 90% (PROOF Lemma 4). -/
+theorem primeP_small (hVK : SmoothPrimeSumVK) {δ κ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4)
+    (hκ : 0 < κ) (hκ' : κ ≤ 1) {g : ℝ → ℝ} (hg : Admissible δ g) :
+    ∃ K : ℝ, ∀ᶠ Z : ℝ in atTop, ∀ t : ℝ, paramT0 κ Z ≤ |t| → |t| ≤ 8 * paramX δ Z →
+      ‖primeP g Z (1 + t * I)‖ ≤ K / paramT0 κ Z := by
+  sorry
+
+/-- **W3e (Lemma 5).**  `∫_{-U}^{U} |Q(1 + it)|² dt ≪ (U + √Z)/√Z`, from the MVT with `a_q = 1/q`
+and `∑ q^{-2} ≤ 1/√Z`.  (The PROOF's extra `1/log Z` is not needed.) -/
+theorem primeQ_meanSquare (hMVT : MontgomeryVaughanMVT) {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) :
+    ∃ K : ℝ, ∀ᶠ Z : ℝ in atTop, ∀ U : ℝ, 1 ≤ U →
+      ∫ t in (-U)..U, ‖primeQ δ Z (1 + t * I)‖ ^ 2 ≤ K * (U + √Z) / √Z := by
+  sorry
+
+/-- **W3f (the far tail).**  `∫_{-T}^{T} |A(1 + it)|² dt ≪ (T + Z)/Z`, from the MVT with
+`|a_m/m| ≤ 1/X` on `[X, 2X)`. -/
+theorem coeffC_meanSquare (hMVT : MontgomeryVaughanMVT) {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4)
+    {g : ℝ → ℝ} (hg : Admissible δ g) :
+    ∃ K : ℝ, ∀ᶠ Z : ℝ in atTop, ∀ T : ℝ, 1 ≤ T →
+      ∫ t in (-T)..T, ‖LSeries (coeffC δ g Z) (1 + t * I)‖ ^ 2 ≤ K * (T + Z) / Z := by
+  sorry
+
 /-- **W3 (Lemmas 4, 5, Proposition 6).**  `D ≤ C exp(−(κ/2)(log Z)^{1/10})` for large `Z`. -/
 theorem variance_small (h1 : MR16Lemma14) (h2 : MontgomeryVaughanMVT) (hVK : SmoothPrimeSumVK)
     (hPNT : MediumPNTStatement) {δ κ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) (hκ : 0 < κ)
