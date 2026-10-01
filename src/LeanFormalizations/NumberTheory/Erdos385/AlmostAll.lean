@@ -503,6 +503,70 @@ theorem zetaH_extends (h : VKZeroFreeLogDeriv) :
     filter_upwards [isOpen_compl_singleton.mem_nhds hw1] with v hv
     exact Function.update_of_ne hv _ _
 
+/-- **Contour shift (norm form).**  Cauchy on the rectangle `[σ₁, 2] × [−U, U]`. -/
+theorem rect_shift_norm {G : ℂ → ℂ} {σ₁ U : ℝ} (hσ : σ₁ ≤ 2) (hU : 0 ≤ U)
+    (hd : ∀ s : ℂ, σ₁ ≤ s.re → s.re ≤ 2 → |s.im| ≤ U → DifferentiableAt ℂ G s) :
+    ‖∫ y in (-U)..U, G (2 + y * I)‖ ≤ ‖∫ y in (-U)..U, G (σ₁ + y * I)‖ +
+      ‖∫ x in σ₁..2, G (x + U * I)‖ + ‖∫ x in σ₁..2, G (x - U * I)‖ := by
+  have hrect := Complex.integral_boundary_rect_eq_zero_of_differentiableOn G
+    (σ₁ + (-U) * I) (2 + U * I) (by
+      intro s hs
+      rw [Complex.mem_reProdIm] at hs
+      norm_num at hs
+      rw [Set.uIcc_of_le hσ, Set.uIcc_of_le (by linarith)] at hs
+      exact (hd s hs.1.1 hs.1.2 (abs_le.2 ⟨hs.2.1, hs.2.2⟩)).differentiableWithinAt)
+  norm_num at hrect
+  simp only [← sub_eq_add_neg] at hrect
+  have hI : ∀ z : ℂ, ‖I • z‖ = ‖z‖ := fun z => by rw [smul_eq_mul, norm_mul, Complex.norm_I, one_mul]
+  set A := ∫ y in (-U)..U, G (2 + y * I)
+  set B := ∫ y in (-U)..U, G (σ₁ + y * I)
+  set Tp := ∫ x in σ₁..2, G (x + U * I)
+  set Bt := ∫ x in σ₁..2, G (x - U * I)
+  have hA : I • A = I • B - Bt + Tp := by
+    linear_combination hrect
+  calc ‖A‖ = ‖I • A‖ := (hI A).symm
+    _ = ‖I • B - Bt + Tp‖ := by rw [hA]
+    _ ≤ ‖I • B‖ + ‖Bt‖ + ‖Tp‖ := (norm_add_le _ _).trans (by gcongr; exact norm_sub_le _ _)
+    _ = ‖B‖ + ‖Tp‖ + ‖Bt‖ := by rw [hI]; ring
+
+/-- **VK width vs the target width.**  For large `T`, with `L = log T`,
+`L^{−(2/3+ε)} ≤ c₀/(L^{2/3} (log L)^{1/3}) ≤ 1/2`. -/
+theorem vk_width_eventually {c₀ ε : ℝ} (hc₀ : 0 < c₀) (hε : 0 < ε) :
+    ∀ᶠ T : ℝ in atTop, (Real.log T ^ ((2 : ℝ) / 3 + ε))⁻¹ ≤
+        c₀ / (Real.log T ^ ((2 : ℝ) / 3) * Real.log (Real.log T) ^ ((1 : ℝ) / 3)) ∧
+      c₀ / (Real.log T ^ ((2 : ℝ) / 3) * Real.log (Real.log T) ^ ((1 : ℝ) / 3)) ≤ 1 / 2 := by
+  have h1 : ∀ᶠ L : ℝ in atTop, Real.log L ≤ c₀ ^ 3 * L ^ (3 * ε) := by
+    filter_upwards [(isLittleO_log_rpow_atTop (by positivity : 0 < 3 * ε)).bound
+      (by positivity : 0 < c₀ ^ 3), eventually_ge_atTop (0:ℝ)] with L hL hL0
+    rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hL0 _)] at hL
+    exact (le_abs_self _).trans hL
+  have h2 : ∀ᶠ L : ℝ in atTop, 2 * c₀ ≤ L ^ ((2 : ℝ) / 3) :=
+    (tendsto_rpow_atTop (by norm_num)).eventually (eventually_ge_atTop _)
+  have h3 : ∀ᶠ L : ℝ in atTop, 1 ≤ Real.log L :=
+    Real.tendsto_log_atTop.eventually (eventually_ge_atTop 1)
+  filter_upwards [Real.tendsto_log_atTop.eventually (h1.and (h2.and (h3.and (eventually_gt_atTop 0))))]
+    with T ⟨ha, hb, hc, hL0⟩
+  set L := Real.log T
+  have hl0 : 0 ≤ Real.log L := by linarith
+  have hcube : Real.log L ^ ((1 : ℝ) / 3) ≤ c₀ * L ^ ε := by
+    calc Real.log L ^ ((1 : ℝ) / 3) ≤ (c₀ ^ 3 * L ^ (3 * ε)) ^ ((1 : ℝ) / 3) :=
+          Real.rpow_le_rpow hl0 ha (by norm_num)
+      _ = c₀ * L ^ ε := by
+          rw [Real.mul_rpow (by positivity) (by positivity), ← Real.rpow_natCast,
+            ← Real.rpow_mul hc₀.le, ← Real.rpow_mul hL0.le]
+          rw [show (3 * ε) * (1 / 3) = ε by ring]; norm_num
+  have hA : 0 < L ^ ((2 : ℝ) / 3) := by positivity
+  have hB : 1 ≤ Real.log L ^ ((1 : ℝ) / 3) := Real.one_le_rpow hc (by norm_num)
+  have hden : 0 < L ^ ((2 : ℝ) / 3) * Real.log L ^ ((1 : ℝ) / 3) := by positivity
+  constructor
+  · rw [le_div_iff₀ hden, inv_mul_eq_div, div_le_iff₀ (by positivity),
+      show L ^ ((2 : ℝ) / 3 + ε) = L ^ ((2 : ℝ) / 3) * L ^ ε from Real.rpow_add hL0 _ _]
+    calc L ^ ((2 : ℝ) / 3) * Real.log L ^ ((1 : ℝ) / 3) ≤ L ^ ((2 : ℝ) / 3) * (c₀ * L ^ ε) :=
+          mul_le_mul_of_nonneg_left hcube hA.le
+      _ = c₀ * (L ^ ((2 : ℝ) / 3) * L ^ ε) := by ring
+  · rw [div_le_iff₀ hden]
+    nlinarith
+
 /-- **Crux leaf V4 (Perron at `Re s = 2`, main term subtracted).**  Once `f(x/P)` vanishes for
 `x ≤ 1` (`a P ≥ 1`): `S − F(1 − it) P^{1−it} = −(1/2π) ∫ F(2+iy) P^{2+iy} H(2+iy+it) dy`.
 English proof: Mellin inversion `mellinInv_mellin_eq` at `x = n/P`, Fubini against
