@@ -14,7 +14,7 @@ Scope: `src/LeanFormalizations/NumberTheory/Erdos385/AlmostAll.lean` sorry-free.
 ## Open leaves (the only `sorry`s in AlmostAll.lean)
 1. ~~`primeQ_meanSquare` (W3e)~~ PROVED (lap 2026-10-01b; a_q=1/q, K=12|C|).
    Need primeQ(1+it) = ∑_{n ≤ N} a_n n^{-it} (q^{-(1+it)} = q⁻¹ q^{-it}).  Easy-moderate.
-2. `coeffC_meanSquare` (W3f): MVT on a_m/m, N = ⌊2X⌋; LSeries = finite sum (support [X,2X), W3b);
+2. ~~`coeffC_meanSquare` (W3f)~~ PROVED (K=2|C|, Z≥2).
    ∑ (a_m/m)² ≤ (2X)·(1/4)/X² .  Easy-moderate.
 3. `primeP_small` (W3d): g0(u) = g(u)/u (ContDiff via local-zero near 0); Lemma VK at P=√Z,
    T=16Z; Mellin decay |mellin g0 (1−it)| ≪ 1/|t| (one integration by parts); prime powers via

@@ -1207,7 +1207,85 @@ theorem coeffC_meanSquare (hMVT : MontgomeryVaughanMVT) {δ : ℝ} (hδ : 0 < δ
     {g : ℝ → ℝ} (hg : Admissible δ g) :
     ∃ K : ℝ, ∀ᶠ Z : ℝ in atTop, ∀ T : ℝ, 1 ≤ T →
       ∫ t in (-T)..T, ‖LSeries (coeffC δ g Z) (1 + t * I)‖ ^ 2 ≤ K * (T + Z) / Z := by
-  sorry
+  obtain ⟨C, hC⟩ := hMVT
+  refine ⟨2 * |C|, ?_⟩
+  filter_upwards [eventually_ge_atTop (2 : ℝ)] with Z hZ T hT
+  classical
+  have hZ1 : 1 < Z := by linarith
+  set X := paramX δ Z with hX
+  have hXlo : 7 / 8 * Z ≤ X := by rw [hX, paramX]; nlinarith
+  have hXhi : X ≤ Z := by rw [hX, paramX]; nlinarith
+  set N : ℕ := ⌊2 * X⌋₊ with hN
+  have hN1 : 1 ≤ N := Nat.le_floor (by push_cast; linarith)
+  have hNle : (N : ℝ) ≤ 2 * Z := (Nat.floor_le (by linarith)).trans (by linarith)
+  set a : ℕ → ℂ := fun n => coeffC δ g Z n * ((n : ℂ))⁻¹ with ha
+  have hfacts := coeffA_facts hδ hδ' hZ1 hg
+  have hc0 : ∀ n, (n = 0 ∨ N < n) → coeffA δ g Z n = 0 := by
+    intro n hn
+    by_contra h
+    obtain ⟨h1, h2⟩ := (hfacts n).2.2 h
+    rcases hn with rfl | hn
+    · push_cast at h1; linarith
+    · have : n ≤ N := Nat.le_floor h2.le
+      omega
+  have hsupp : ∀ n, (n = 0 ∨ N < n) → a n = 0 := by
+    intro n hn; simp [ha, coeffC, hc0 n hn]
+  have hL : ∀ t : ℝ, LSeries (coeffC δ g Z) (1 + t * I) =
+      ∑ n ∈ Finset.range (N + 1), a n * (n : ℂ) ^ (-((t : ℂ) * I)) := by
+    intro t
+    rw [LSeries, tsum_eq_sum (s := Finset.range (N + 1))]
+    · refine Finset.sum_congr rfl fun n _ => ?_
+      rcases Nat.eq_zero_or_pos n with rfl | hn
+      · simp [hsupp 0 (Or.inl rfl)]
+      · have hn0 : (n : ℂ) ≠ 0 := by exact_mod_cast hn.ne'
+        rw [LSeries.term_of_ne_zero hn.ne', ha]
+        simp only
+        rw [show (1 + (t : ℂ) * I) = 1 + -(-((t : ℂ) * I)) by ring,
+          Complex.cpow_add _ _ hn0, Complex.cpow_one, Complex.cpow_neg]
+        field_simp
+    · intro n hn
+      rw [Finset.mem_range, not_lt] at hn
+      have : coeffC δ g Z n = 0 := by simp [coeffC, hc0 n (Or.inr (by omega))]
+      simp [LSeries.term, this]
+  have hsq : ∑ n ∈ Finset.range (N + 1), ‖a n‖ ^ 2 ≤ 1 / Z := by
+    calc ∑ n ∈ Finset.range (N + 1), ‖a n‖ ^ 2
+        ≤ ∑ _n ∈ Finset.range (N + 1), 1 / (4 * X ^ 2) := by
+          refine Finset.sum_le_sum fun n _ => ?_
+          by_cases h : coeffA δ g Z n = 0
+          · simp [ha, coeffC, h]; positivity
+          · obtain ⟨h1, -⟩ := (hfacts n).2.2 h
+            obtain ⟨h0, hhalf, -⟩ := hfacts n
+            have hX0 : 0 < X := by linarith
+            have hn : 0 < (n : ℝ) := by linarith
+            simp only [ha, coeffC, norm_mul, norm_inv, Complex.norm_natCast, Complex.norm_real,
+              Real.norm_eq_abs, abs_of_nonneg h0]
+            rw [mul_pow, inv_pow]
+            have : coeffA δ g Z n ^ 2 ≤ 1 / 4 := by nlinarith
+            have : ((n : ℝ) ^ 2)⁻¹ ≤ (X ^ 2)⁻¹ :=
+              inv_anti₀ (by positivity) (pow_le_pow_left₀ hX0.le h1 2)
+            calc coeffA δ g Z n ^ 2 * ((n : ℝ) ^ 2)⁻¹ ≤ 1 / 4 * (X ^ 2)⁻¹ :=
+                  mul_le_mul (by assumption) this (by positivity) (by norm_num)
+              _ = _ := by field_simp
+      _ = (N + 1) / (4 * X ^ 2) := by simp; ring
+      _ ≤ 1 / Z := by
+          have hX0 : 0 < X := by linarith
+          rw [div_le_div_iff₀ (by positivity) (by linarith)]
+          nlinarith
+  have hint := hC N T a hN1 (by linarith) hsupp
+  simp_rw [hL]
+  refine hint.trans ?_
+  have hsum0 : 0 ≤ ∑ n ∈ Finset.range (N + 1), ‖a n‖ ^ 2 := by positivity
+  have hZpos : 0 < Z := by linarith
+  calc C * (T + N) * ∑ n ∈ Finset.range (N + 1), ‖a n‖ ^ 2
+      ≤ |C| * (T + N) * (1 / Z) := by
+        have h0 : 0 ≤ T + N := by positivity
+        calc C * (T + N) * _ ≤ |C| * (T + N) * _ :=
+              mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_abs_self C) h0) hsum0
+          _ ≤ _ := mul_le_mul_of_nonneg_left hsq (by positivity)
+    _ ≤ |C| * (2 * (T + Z)) * (1 / Z) := by
+        apply mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (by linarith) (abs_nonneg _))
+        positivity
+    _ = 2 * |C| * (T + Z) / Z := by ring
 
 /-- The eventual parameter facts behind `variance_small`. -/
 theorem variance_params {δ κ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) (hκ : 0 < κ) :
