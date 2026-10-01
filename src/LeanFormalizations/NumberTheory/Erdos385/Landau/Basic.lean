@@ -76,7 +76,7 @@ lemma zeta_zero_re_lt_one {ρ : ℂ} (hρ : riemannZeta ρ = 0) : ρ.re < 1 := b
 /-- **Elementary asymptotics** of `L, φ, w` (all as `T → ∞`). -/
 lemma vk_asymp (C : ℝ) : ∃ T₀ : ℝ, 3 ≤ T₀ ∧ ∀ T, T₀ ≤ T →
     1 ≤ Real.log (Real.log T) ∧ vkW T / 2 ≤ vkW (2 * T) ∧ 1 / vkW T ≤ Real.log T ∧
-    Real.log (Real.log T) / vkW T ≤ Real.log T ∧ vkTheta T ≤ 1 / 2 ∧ C * vkW T ≤ 1 := by
+    Real.log (Real.log T) / vkW T ≤ Real.log T ∧ vkTheta T ≤ 1 / 8 ∧ C * vkW T ≤ 1 := by
   sorry
 
 /-- **(D3) Dirichlet-series bound** for `σ > 1`. -/

@@ -38,10 +38,137 @@ lemma zeta_zeros_finite {c₀ : ℂ} {δ : ℝ} (h1 : (1 : ℂ) ∉ closedBall c
     {ρ | ρ ∈ closedBall c₀ δ ∧ riemannZeta ρ = 0}.Finite := by
   sorry
 
+lemma vkTheta_rpow {T : ℝ} (hT : 3 ≤ T) :
+    vkTheta T ^ ((3 : ℝ) / 2) = Real.log (Real.log T) / Real.log T := by
+  have hL : 1 < Real.log T := one_lt_log_three.trans_le (Real.log_le_log (by norm_num) hT)
+  have hφ : 0 < Real.log (Real.log T) := Real.log_pos hL
+  have hL0 : 0 < Real.log T := by linarith
+  have e : vkTheta T = (Real.log (Real.log T) / Real.log T) ^ ((2 : ℝ) / 3) := by
+    unfold vkTheta vkW
+    rw [Real.div_rpow hφ.le hL0.le]
+    have hsplit : Real.log (Real.log T) =
+        Real.log (Real.log T) ^ ((1 : ℝ) / 3) * Real.log (Real.log T) ^ ((2 : ℝ) / 3) := by
+      rw [← Real.rpow_add hφ]; norm_num
+    have h1 : 0 < Real.log (Real.log T) ^ ((1 : ℝ) / 3) := Real.rpow_pos_of_pos hφ _
+    have h2 : 0 < Real.log T ^ ((2 : ℝ) / 3) := Real.rpow_pos_of_pos hL0 _
+    nth_rewrite 1 [hsplit]
+    field_simp
+  rw [e, ← Real.rpow_mul (div_pos hφ hL0).le]; norm_num
+
 /-- Growth of `ζ` on the Landau disc. -/
 lemma zeta_disc_growth (h : RichertZetaGrowth) : ∃ K t₁ : ℝ, 0 ≤ K ∧ ∀ t : ℝ, t₁ ≤ |t| →
     ∀ s ∈ closedBall (lc t) (3 * vkTheta |t|), ‖riemannZeta s‖ ≤ Real.log |t| ^ K := by
-  sorry
+  obtain ⟨A, B, hR⟩ := h
+  obtain ⟨A', hA', C, hC, hU⟩ := ZetaUpperBnd
+  obtain ⟨T₀, hT₀3, hT₀⟩ := vk_asymp 0
+  set Bp := max B 0
+  have hBp : 0 ≤ Bp := le_max_right _ _
+  set Ap := max A 1
+  set Cp := max C 1
+  set k := 2 * Bp * (2 : ℝ) ^ ((3 : ℝ) / 2)
+  have hk : 0 ≤ k := by positivity
+  refine ⟨k + 3, max T₀ (Real.exp (max Ap (2 * Cp) + 2)) + 5, by linarith, ?_⟩
+  intro t ht s hs
+  set T := |t| with hT
+  have hT4 : 5 ≤ T := by
+    have := le_max_left T₀ (Real.exp (max Ap (2 * Cp) + 2)); linarith
+  have hTT₀ : T₀ ≤ T := by
+    have := le_max_left T₀ (Real.exp (max Ap (2 * Cp) + 2)); linarith
+  obtain ⟨hφ1, -, -, -, hθ8, -⟩ := hT₀ T hTT₀
+  set L := Real.log T with hLdef
+  have hLbig : max Ap (2 * Cp) + 2 ≤ L := by
+    rw [hLdef, Real.le_log_iff_exp_le (by linarith)]
+    have := le_max_right T₀ (Real.exp (max Ap (2 * Cp) + 2)); linarith
+  have hAp : Ap ≤ L := by have := le_max_left Ap (2 * Cp); linarith
+  have hCp : 2 * Cp ≤ L := by have := le_max_right Ap (2 * Cp); linarith
+  have hL2 : 2 ≤ L := by have := le_max_left Ap (2 * Cp); have := le_max_right A 1; linarith
+  have hL0 : 0 < L := by linarith
+  set θ := vkTheta T with hθdef
+  have hθ0 : 0 < θ := by
+    rw [hθdef, vkTheta]
+    exact mul_pos (by linarith) (vkW_pos (by linarith))
+  -- coordinates of s
+  rw [mem_closedBall, dist_eq_norm] at hs
+  set σ := s.re
+  set τ := s.im
+  have hseq : s = (σ : ℂ) + τ * I := (Complex.re_add_im s).symm
+  have hre : |σ - (1 + θ)| ≤ 3 * θ := by
+    have := Complex.abs_re_le_norm (s - lc t)
+    have e : (s - lc t).re = σ - (1 + θ) := by simp [lc, σ, θ, hT]
+    rw [e] at this
+    linarith
+  have him : |τ - t| ≤ 3 * θ := by
+    have := Complex.abs_im_le_norm (s - lc t)
+    have e : (s - lc t).im = τ - t := by simp [lc, τ]
+    rw [e] at this
+    linarith
+  have hτlo : T - 1 ≤ |τ| := by
+    have := abs_sub_abs_le_abs_sub t τ; rw [abs_sub_comm] at this; linarith
+  have hτhi : |τ| ≤ T + 1 := by
+    have := abs_sub_abs_le_abs_sub τ t; linarith
+  have hτ3 : 3 ≤ |τ| := by linarith
+  have hlτ : Real.log |τ| ≤ 2 * L := by
+    rw [hLdef, ← Real.log_rpow (by linarith)]
+    exact Real.log_le_log (by linarith) (by norm_num; nlinarith)
+  have hlτ1 : 1 ≤ Real.log |τ| :=
+    (one_lt_log_three.trans_le (Real.log_le_log (by norm_num) hτ3)).le
+  have hLK : L ^ (3 : ℝ) ≤ L ^ (k + 3) :=
+    Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith)
+  have hL3 : L ^ (3 : ℝ) = L * L * L := by
+    rw [show (3 : ℝ) = ((3 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]; ring
+  by_cases hσ1 : σ ≤ 1
+  · have hσh : 1 / 2 ≤ σ := by have := (abs_le.mp hre).1; linarith
+    have hb := hR σ τ hσh hσ1 hτ3
+    rw [← hseq] at hb
+    -- exponent
+    have hx : (1 - σ) ^ ((3 : ℝ) / 2) ≤ (2 * θ) ^ ((3 : ℝ) / 2) :=
+      Real.rpow_le_rpow (by linarith) (by have := (abs_le.mp hre).1; linarith) (by norm_num)
+    have h2θ : (2 * θ) ^ ((3 : ℝ) / 2) = (2 : ℝ) ^ ((3 : ℝ) / 2) * (Real.log L / L) := by
+      rw [Real.mul_rpow (by norm_num) hθ0.le, hθdef, vkTheta_rpow (by linarith)]
+    have hE : B * (1 - σ) ^ ((3 : ℝ) / 2) ≤ Bp * ((2 : ℝ) ^ ((3 : ℝ) / 2) * (Real.log L / L)) := by
+      rw [← h2θ]
+      calc B * (1 - σ) ^ ((3 : ℝ) / 2) ≤ Bp * (1 - σ) ^ ((3 : ℝ) / 2) :=
+            mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.rpow_nonneg (by linarith) _)
+        _ ≤ Bp * (2 * θ) ^ ((3 : ℝ) / 2) := mul_le_mul_of_nonneg_left hx hBp
+    have hX : |τ| ^ (B * (1 - σ) ^ ((3 : ℝ) / 2)) ≤ L ^ k := by
+      rw [Real.rpow_def_of_pos (by linarith), Real.rpow_def_of_pos hL0]
+      apply Real.exp_le_exp.mpr
+      have hlogL : 0 ≤ Real.log L := Real.log_nonneg (by linarith)
+      calc Real.log |τ| * (B * (1 - σ) ^ ((3 : ℝ) / 2))
+          ≤ Real.log |τ| * (Bp * ((2 : ℝ) ^ ((3 : ℝ) / 2) * (Real.log L / L))) :=
+            mul_le_mul_of_nonneg_left hE (by linarith)
+        _ ≤ (2 * L) * (Bp * ((2 : ℝ) ^ ((3 : ℝ) / 2) * (Real.log L / L))) :=
+            mul_le_mul_of_nonneg_right hlτ (by positivity)
+        _ = Real.log L * k := by rw [show k = 2 * Bp * (2 : ℝ) ^ ((3 : ℝ) / 2) from rfl]; field_simp
+    have hY : Real.log |τ| ^ ((2 : ℝ) / 3) ≤ L * L := by
+      have := Real.rpow_le_rpow_of_exponent_le hlτ1 (show (2 : ℝ) / 3 ≤ 1 by norm_num)
+      rw [Real.rpow_one] at this
+      nlinarith
+    have hX0 : 0 ≤ |τ| ^ (B * (1 - σ) ^ ((3 : ℝ) / 2)) := Real.rpow_nonneg (by linarith) _
+    have hY0 : 0 ≤ Real.log |τ| ^ ((2 : ℝ) / 3) := Real.rpow_nonneg (by linarith) _
+    calc ‖riemannZeta s‖ ≤ A * |τ| ^ (B * (1 - σ) ^ ((3 : ℝ) / 2)) *
+          Real.log |τ| ^ ((2 : ℝ) / 3) := hb
+      _ ≤ L * L ^ k * (L * L) := by
+          have hA : A ≤ L := (le_max_left A 1).trans hAp
+          have hLk : 0 ≤ L ^ k := Real.rpow_nonneg hL0.le _
+          have := mul_le_mul hX hY hY0 hLk
+          have h2 : A * (|τ| ^ (B * (1 - σ) ^ ((3 : ℝ) / 2)) * Real.log |τ| ^ ((2 : ℝ) / 3))
+              ≤ L * (|τ| ^ (B * (1 - σ) ^ ((3 : ℝ) / 2)) * Real.log |τ| ^ ((2 : ℝ) / 3)) :=
+            mul_le_mul_of_nonneg_right hA (mul_nonneg hX0 hY0)
+          nlinarith
+      _ = L ^ (k + 3) := by
+          rw [Real.rpow_add hL0, hL3]; ring
+  · push Not at hσ1
+    have hσ2 : σ ≤ 2 := by have := (abs_le.mp hre).2; linarith
+    have hb := hU σ τ (by linarith) ⟨by
+      have : 0 ≤ A' / Real.log |τ| := div_nonneg hA'.1.le (by linarith)
+      linarith, hσ2⟩
+    rw [← hseq] at hb
+    have hCC : C ≤ Cp := le_max_left _ _
+    calc ‖riemannZeta s‖ ≤ C * Real.log |τ| := hb
+      _ ≤ Cp * (2 * L) := mul_le_mul hCC hlτ (by linarith) (by positivity)
+      _ ≤ L * L * L := by nlinarith
+      _ ≤ L ^ (k + 3) := by rw [← hL3]; exact hLK
 
 /-- Lower bound for `ζ` at the centre of the Landau disc. -/
 lemma zeta_center_lower : ∃ K t₁ : ℝ, 0 ≤ K ∧ ∀ t : ℝ, t₁ ≤ |t| →
