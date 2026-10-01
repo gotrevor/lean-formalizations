@@ -16,7 +16,7 @@ per bin), sum with this window lemma, then upper Riemann sums of the monotone `b
 -/
 
 namespace LeanFormalizations.Erdos385.LinearSieve
-open Filter Topology
+open Filter Topology Finset
 
 /-- `log ⌊N^a⌋ / log N → a`. -/
 lemma tendsto_log_floor_rpow_div {a : ℝ} (ha : 0 < a) :
@@ -83,5 +83,55 @@ theorem tendsto_primeRecip_window {t t' : ℝ} (ht : 0 < t) (htt' : t ≤ t') :
   simp only [Function.comp_apply] at e3 ⊢
   rw [Real.log_div (by linarith) e3.ne', Real.log_div (by linarith) e3.ne']
   ring
+
+lemma primeRecipSum_sub (w z : ℕ) (h : w ≤ z) :
+    LeanFormalizations.Mertens.primeRecipSum z - LeanFormalizations.Mertens.primeRecipSum w =
+      ∑ p ∈ (Ioc w z).filter Nat.Prime, (p : ℝ)⁻¹ := by
+  unfold LeanFormalizations.Mertens.primeRecipSum
+  rw [sum_filter, sum_filter, sum_filter, sub_eq_iff_eq_add,
+    ← sum_Ioc_consecutive _ (Nat.zero_le w) h]
+  ring
+
+lemma sum_Ico_inv_le (w z : ℕ) (hw : 1 ≤ w) (h : w ≤ z) :
+    ∑ p ∈ (Ico w z).filter Nat.Prime, (p : ℝ)⁻¹ ≤
+      LeanFormalizations.Mertens.primeRecipSum z - LeanFormalizations.Mertens.primeRecipSum w +
+        (w : ℝ)⁻¹ := by
+  rw [primeRecipSum_sub w z h]
+  have hsub : (Ico w z).filter Nat.Prime ⊆ insert w ((Ioc w z).filter Nat.Prime) := by
+    intro p hp
+    simp only [mem_filter, mem_Ico, mem_insert, mem_Ioc] at hp ⊢
+    rcases eq_or_lt_of_le hp.1.1 with h | h
+    · left; exact h.symm
+    · right; exact ⟨⟨h, hp.1.2.le⟩, hp.2⟩
+  calc ∑ p ∈ (Ico w z).filter Nat.Prime, (p : ℝ)⁻¹
+      ≤ ∑ p ∈ insert w ((Ioc w z).filter Nat.Prime), (p : ℝ)⁻¹ :=
+        sum_le_sum_of_subset_of_nonneg hsub (fun _ _ _ => by positivity)
+    _ ≤ (w : ℝ)⁻¹ + ∑ p ∈ (Ioc w z).filter Nat.Prime, (p : ℝ)⁻¹ := by
+          by_cases hw' : w ∈ (Ioc w z).filter Nat.Prime
+          · rw [insert_eq_of_mem hw']; have : (0 : ℝ) ≤ (w : ℝ)⁻¹ := by positivity
+            linarith
+          · rw [sum_insert hw']
+    _ = _ := by ring
+
+/-- Eventually `Σ_{⌊N^{1/t'}⌋ ≤ p < ⌊N^{1/t}⌋} 1/p ≤ log(t'/t) + δ`. -/
+lemma eventually_sum_window_le {t t' δ : ℝ} (ht : 0 < t) (htt' : t ≤ t') (hδ : 0 < δ) :
+    ∀ᶠ N : ℕ in atTop, ∑ p ∈ (Ico ⌊(N : ℝ) ^ (1 / t')⌋₊ ⌊(N : ℝ) ^ (1 / t)⌋₊).filter Nat.Prime,
+      (p : ℝ)⁻¹ ≤ Real.log (t' / t) + δ := by
+  have ht' : 0 < t' := ht.trans_le htt'
+  have hN : Tendsto (fun N : ℕ => (N : ℝ)) atTop atTop := tendsto_natCast_atTop_atTop
+  have hw : Tendsto (fun N : ℕ => ⌊(N : ℝ) ^ (1 / t')⌋₊) atTop atTop :=
+    tendsto_nat_floor_atTop.comp ((tendsto_rpow_atTop (by positivity)).comp hN)
+  have hinv : ∀ᶠ N : ℕ in atTop, ((⌊(N : ℝ) ^ (1 / t')⌋₊ : ℕ) : ℝ)⁻¹ ≤ δ / 2 := by
+    have := (tendsto_inv_atTop_zero.comp (tendsto_natCast_atTop_atTop.comp hw)).eventually
+      (ge_mem_nhds (show (0 : ℝ) < δ / 2 by positivity))
+    exact this
+  have hwin := (tendsto_primeRecip_window ht htt').eventually
+    (ge_mem_nhds (show Real.log (t' / t) < Real.log (t' / t) + δ / 2 by linarith))
+  filter_upwards [hinv, hwin, hw.eventually_ge_atTop 1, eventually_ge_atTop 1] with N h1 h2 h3 h4
+  have hle : ⌊(N : ℝ) ^ (1 / t')⌋₊ ≤ ⌊(N : ℝ) ^ (1 / t)⌋₊ :=
+    Nat.floor_le_floor (Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast h4)
+      (one_div_le_one_div_of_le ht htt'))
+  have := sum_Ico_inv_le _ _ h3 hle
+  linarith
 
 end LeanFormalizations.Erdos385.LinearSieve
