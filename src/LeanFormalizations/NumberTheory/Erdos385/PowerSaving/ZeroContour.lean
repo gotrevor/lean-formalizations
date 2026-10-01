@@ -328,4 +328,197 @@ lemma zc_tail {f : ℝ → ℂ} (hFd : Differentiable ℂ (mellin f)) {K₃ H₂
           (Eventually.of_forall fun y => by positivity)
     _ = K₃ * |H₂| * π := by rw [integral_const_mul, integral_univ_inv_one_add_sq]
 
+/-- Horizontal pieces at height `±U`, `Re ∈ [c, 2]`: `‖F‖ P^x ‖H‖ ≤ K₃ Hc` once `P ≤ 1 + U²`. -/
+lemma zc_horiz_right {f : ℝ → ℂ} {K₃ Hc : ℝ}
+    (hK₃ : ∀ s : ℂ, 1 / 2 ≤ s.re → s.re ≤ 2 → ‖mellin f s‖ * (1 + s.im ^ 2) ^ 3 ≤ K₃)
+    {c P t U : ℝ} (hc : 1 / 2 ≤ c) (hc2 : c ≤ 2) (hP : 1 ≤ P) (hPU : P ≤ 1 + U ^ 2)
+    (hH : ∀ w : ℂ, c ≤ w.re → w.re ≤ 2 → ‖zetaH w‖ ≤ Hc) (x : ℝ) (hx : c ≤ x) (hx2 : x ≤ 2)
+    (v : ℝ) (hv : |v| = U) :
+    ‖zcG f P t (x + v * I)‖ ≤ K₃ * Hc := by
+  have hP0 : 0 < P := by linarith
+  rw [zcG_norm hP0]
+  have hre : ((x : ℂ) + v * I).re = x := by simp
+  have him : ((x : ℂ) + v * I).im = v := by simp
+  rw [hre]
+  have hv2 : v ^ 2 = U ^ 2 := by rw [← sq_abs, hv]
+  have hF := mellin_cube_le hK₃ (s := x + v * I) (by rw [hre]; linarith) (by rw [hre]; exact hx2)
+    (M := P) (by rw [him, hv2]; nlinarith [sq_nonneg U])
+  rw [him, hv2] at hF
+  have hPx : P ^ x ≤ (1 + U ^ 2) * P := by
+    calc P ^ x ≤ P ^ (2 : ℝ) := Real.rpow_le_rpow_of_exponent_le hP hx2
+      _ = P * P := by rw [show (2 : ℝ) = (1 : ℝ) + 1 by norm_num, Real.rpow_add hP0]; simp
+      _ ≤ (1 + U ^ 2) * P := by gcongr
+  have hHw := hH (x + v * I + t * I) (by simp; linarith) (by simp; linarith)
+  have hHc : 0 ≤ Hc := (norm_nonneg _).trans hHw
+  calc ‖mellin f (x + v * I)‖ * P ^ x * ‖zetaH (x + v * I + t * I)‖
+      ≤ ‖mellin f (x + v * I)‖ * ((1 + U ^ 2) * P) * Hc := by gcongr
+    _ ≤ K₃ * Hc := by gcongr
+
+/-- **Piece 2: shift `[c, 2] × [−P, P]`.** -/
+lemma zc_rect1 {f : ℝ → ℂ} (hFd : Differentiable ℂ (mellin f)) {K₃ Hc : ℝ}
+    (hK₃ : ∀ s : ℂ, 1 / 2 ≤ s.re → s.re ≤ 2 → ‖mellin f s‖ * (1 + s.im ^ 2) ^ 3 ≤ K₃)
+    {c P t : ℝ} (hc : 1 < c) (hc2 : c ≤ 2) (hP : 1 ≤ P)
+    (hH : ∀ w : ℂ, c ≤ w.re → w.re ≤ 2 → ‖zetaH w‖ ≤ Hc) :
+    ‖∫ y in (-P)..P, zcG f P t (2 + y * I)‖ ≤
+      ‖∫ y in (-P)..P, zcG f P t (c + y * I)‖ + 2 * (K₃ * Hc) := by
+  have hP0 : 0 < P := by linarith
+  have hr := rect_shift_gen (G := zcG f P t) (σ₁ := c) (σ₂ := 2) (U := P) hc2 hP0.le
+    (fun s hs1 _ _ => zcG_right hFd hP0 (by linarith))
+  have hPU : P ≤ 1 + P ^ 2 := by nlinarith
+  have hb : ∀ v : ℝ, |v| = P → ‖∫ x in c..2, zcG f P t (x + v * I)‖ ≤ K₃ * Hc := by
+    intro v hv
+    have h := intervalIntegral.norm_integral_le_of_norm_le_const (a := c) (b := 2)
+      (f := fun x : ℝ => zcG f P t (x + v * I)) (C := K₃ * Hc) (fun x hx => by
+        rw [Set.uIoc_of_le hc2] at hx
+        exact zc_horiz_right hK₃ (by linarith) hc2 hP hPU hH x hx.1.le hx.2 v hv)
+    have hl : |2 - c| ≤ 1 := abs_le.2 ⟨by linarith, by linarith⟩
+    have h0 : 0 ≤ K₃ * Hc := (norm_nonneg _).trans
+      (zc_horiz_right hK₃ (by linarith) hc2 hP hPU hH c le_rfl hc2 v hv (t := t))
+    calc _ ≤ K₃ * Hc * |2 - c| := h
+      _ ≤ K₃ * Hc * 1 := by gcongr
+      _ = K₃ * Hc := mul_one _
+  have h1 := hb P (abs_of_pos hP0)
+  have h2 := hb (-P) (by rw [abs_neg, abs_of_pos hP0])
+  have e : (fun x : ℝ => zcG f P t (x - P * I)) = fun x : ℝ => zcG f P t (x + ((-P : ℝ) : ℂ) * I) := by
+    funext x; push_cast; ring_nf
+  have e2 : (fun y : ℝ => zcG f P t ((2 : ℝ) + y * I)) = fun y : ℝ => zcG f P t (2 + y * I) := by
+    funext y; push_cast; rfl
+  rw [e, e2] at hr
+  linarith
+
+/-- **Piece 3: split `Re s = c` at `±L`**; the outer parts are `≤ K₃ E Hc π / L⁴` each. -/
+lemma zc_split {f : ℝ → ℂ} (hFd : Differentiable ℂ (mellin f)) {K₃ Hc E : ℝ}
+    (hK₃ : ∀ s : ℂ, 1 / 2 ≤ s.re → s.re ≤ 2 → ‖mellin f s‖ * (1 + s.im ^ 2) ^ 3 ≤ K₃)
+    {c P t L : ℝ} (hc : 1 < c) (hc2 : c ≤ 2) (hP : 1 ≤ P) (hL : 0 < L) (hLP : L ≤ P)
+    (hE : P ^ c ≤ E) (hH : ∀ w : ℂ, w.re = c → ‖zetaH w‖ ≤ Hc) :
+    ‖∫ y in (-P)..P, zcG f P t (c + y * I)‖ ≤
+      ‖∫ y in (-L)..L, zcG f P t (c + y * I)‖ + 2 * (K₃ * E * Hc / L ^ 4 * π) := by
+  have hP0 : 0 < P := by linarith
+  have hcont := continuous_zcG_line hFd hP0 (t := t) hc
+  have hii : ∀ u v : ℝ, IntervalIntegrable (fun y : ℝ => zcG f P t (c + y * I)) volume u v :=
+    fun u v => hcont.intervalIntegrable u v
+  have hsplit : (∫ y in (-P)..P, zcG f P t (c + y * I)) =
+      (∫ y in (-P)..(-L), zcG f P t (c + y * I)) + (∫ y in (-L)..L, zcG f P t (c + y * I)) +
+        ∫ y in L..P, zcG f P t (c + y * I) := by
+    rw [intervalIntegral.integral_add_adjacent_intervals (hii _ _) (hii _ _),
+      intervalIntegral.integral_add_adjacent_intervals (hii _ _) (hii _ _)]
+  have hpt : ∀ y : ℝ, L ≤ |y| → ‖zcG f P t (c + y * I)‖ ≤ K₃ * E * Hc / L ^ 4 * (1 + y ^ 2)⁻¹ := by
+    intro y hy
+    rw [zcG_norm hP0]
+    have hre : ((c : ℂ) + y * I).re = c := by simp
+    have him : ((c : ℂ) + y * I).im = y := by simp
+    rw [hre]
+    have hM : L ^ 4 ≤ (1 + y ^ 2) ^ 2 := by
+      have h1 : L ^ 2 ≤ y ^ 2 := by rw [← sq_abs y]; exact pow_le_pow_left₀ hL.le hy 2
+      nlinarith [sq_nonneg L]
+    have hF := mellin_cube_le hK₃ (s := c + y * I) (by rw [hre]; linarith) (by rw [hre]; exact hc2)
+      (M := L ^ 4) (by rw [him]; exact hM)
+    rw [him] at hF
+    have hHw := hH (c + y * I + t * I) (by simp)
+    have hHc : 0 ≤ Hc := (norm_nonneg _).trans hHw
+    have hy0 : 0 < 1 + y ^ 2 := by positivity
+    have hL4 : 0 < L ^ 4 := by positivity
+    have hPc : 0 ≤ P ^ c := by positivity
+    have hK0 : 0 ≤ K₃ := (by positivity : (0:ℝ) ≤ ‖mellin f (c + y * I)‖ * ((1 + y ^ 2) * L ^ 4)).trans hF
+    rw [le_mul_inv_iff₀ hy0, le_div_iff₀ hL4]
+    calc ‖mellin f (c + y * I)‖ * P ^ c * ‖zetaH (c + y * I + t * I)‖ * (1 + y ^ 2) * L ^ 4
+        = (‖mellin f (c + y * I)‖ * ((1 + y ^ 2) * L ^ 4)) * P ^ c * ‖zetaH (c + y * I + t * I)‖ := by
+          ring
+      _ ≤ K₃ * E * Hc := by
+          have : 0 ≤ E := hPc.trans hE
+          gcongr
+  have hB : 0 ≤ K₃ * E * Hc / L ^ 4 := by
+    have := hpt P (by rw [abs_of_pos hP0]; exact hLP)
+    have h2 : 0 ≤ K₃ * E * Hc / L ^ 4 * (1 + P ^ 2)⁻¹ := (norm_nonneg _).trans this
+    exact nonneg_of_mul_nonneg_left h2 (by positivity)
+  have hout1 := norm_intervalIntegral_le_pi (φ := fun y : ℝ => zcG f P t (c + y * I))
+    (u := L) (v := P) hLP hB (fun y hy _ => hpt y (by rw [abs_of_pos (by linarith)]; exact hy))
+  have hout2 := norm_intervalIntegral_le_pi (φ := fun y : ℝ => zcG f P t (c + y * I))
+    (u := -P) (v := -L) (by linarith) hB (fun y _ hy => hpt y (by rw [abs_of_neg (by linarith)]; linarith))
+  rw [hsplit]
+  calc _ ≤ ‖(∫ y in (-P)..(-L), zcG f P t (c + y * I)) + (∫ y in (-L)..L, zcG f P t (c + y * I))‖ +
+        ‖∫ y in L..P, zcG f P t (c + y * I)‖ := norm_add_le _ _
+    _ ≤ ‖∫ y in (-P)..(-L), zcG f P t (c + y * I)‖ + ‖∫ y in (-L)..L, zcG f P t (c + y * I)‖ +
+        ‖∫ y in L..P, zcG f P t (c + y * I)‖ := by gcongr; exact norm_add_le _ _
+    _ ≤ _ := by linarith
+
+/-- **Piece 4: shift `[σ₁, c] × [−L, L]`** across the zero-free box: left side `≤ K P^{σ₁} H₁ π`,
+horizontals `≤ K₃ E H₁ / L⁶` each. -/
+lemma zc_rect2 {f : ℝ → ℂ} (hFd : Differentiable ℂ (mellin f)) {K K₃ H₁ E : ℝ}
+    (hK : ∀ s : ℂ, 1 / 2 ≤ s.re → s.re ≤ 2 → ‖mellin f s‖ ≤ K * (1 + s.im ^ 2)⁻¹)
+    (hK₃ : ∀ s : ℂ, 1 / 2 ≤ s.re → s.re ≤ 2 → ‖mellin f s‖ * (1 + s.im ^ 2) ^ 3 ≤ K₃)
+    {σ₁ c P t L : ℝ} (hσ₁ : 1 / 2 ≤ σ₁) (hσc : σ₁ ≤ c) (hc : c ≤ σ₁ + 1) (hc2 : c ≤ 2)
+    (hP : 1 ≤ P) (hL : 0 < L) (hE : P ^ c ≤ E)
+    (hbox : ∀ w : ℂ, σ₁ ≤ w.re → w.re ≤ c → |w.im - t| ≤ L →
+      riemannZeta w ≠ 0 ∧ w ≠ 1 ∧ ‖zetaH w‖ ≤ H₁) :
+    ‖∫ y in (-L)..L, zcG f P t (c + y * I)‖ ≤
+      K * P ^ σ₁ * H₁ * π + 2 * (K₃ * E * H₁ / L ^ 6) := by
+  have hP0 : 0 < P := by linarith
+  have hw : ∀ s : ℂ, σ₁ ≤ s.re → s.re ≤ c → |s.im| ≤ L →
+      riemannZeta (s + t * I) ≠ 0 ∧ s + t * I ≠ 1 ∧ ‖zetaH (s + t * I)‖ ≤ H₁ := by
+    intro s h1 h2 h3
+    exact hbox _ (by simpa using h1) (by simpa using h2) (by simpa using h3)
+  have hr := rect_shift_gen (G := zcG f P t) (σ₁ := σ₁) (σ₂ := c) (U := L) hσc hL.le
+    (fun s h1 h2 h3 => zcG_differentiableAt hFd hP0 (hw s h1 h2 h3).2.1 (hw s h1 h2 h3).1)
+  have hH0 : 0 ≤ H₁ := (norm_nonneg _).trans (hw (σ₁ : ℂ) (by simp) (by simpa using hσc)
+    (by simpa using hL.le)).2.2
+  have hleft : ‖∫ y in (-L)..L, zcG f P t (σ₁ + y * I)‖ ≤ K * P ^ σ₁ * H₁ * π := by
+    have hK0 : 0 ≤ K := by
+      have := hK (σ₁ : ℂ) (by simpa using hσ₁) (by simp; linarith)
+      have h2 : 0 ≤ K * (1 + ((σ₁ : ℂ)).im ^ 2)⁻¹ := (norm_nonneg _).trans this
+      exact nonneg_of_mul_nonneg_left h2 (by positivity)
+    refine norm_intervalIntegral_le_pi (by linarith) (by positivity) fun y hy1 hy2 => ?_
+    rw [zcG_norm hP0]
+    have hre : ((σ₁ : ℂ) + y * I).re = σ₁ := by simp
+    have him : ((σ₁ : ℂ) + y * I).im = y := by simp
+    rw [hre]
+    have hF := hK (σ₁ + y * I) (by rw [hre]; exact hσ₁) (by rw [hre]; linarith)
+    rw [him] at hF
+    have hHw := (hw (σ₁ + y * I) (by rw [hre]) (by rw [hre]; exact hσc)
+      (by rw [him]; exact abs_le.2 ⟨hy1, hy2⟩)).2.2
+    calc ‖mellin f (σ₁ + y * I)‖ * P ^ σ₁ * ‖zetaH (σ₁ + y * I + t * I)‖
+        ≤ K * (1 + y ^ 2)⁻¹ * P ^ σ₁ * H₁ := by gcongr
+      _ = K * P ^ σ₁ * H₁ * (1 + y ^ 2)⁻¹ := by ring
+  have hpt : ∀ x v : ℝ, σ₁ ≤ x → x ≤ c → |v| = L →
+      ‖zcG f P t (x + v * I)‖ ≤ K₃ * E * H₁ / L ^ 6 := by
+    intro x v hx1 hx2 hv
+    rw [zcG_norm hP0]
+    have hre : ((x : ℂ) + v * I).re = x := by simp
+    have him : ((x : ℂ) + v * I).im = v := by simp
+    rw [hre]
+    have hv2 : v ^ 2 = L ^ 2 := by rw [← sq_abs, hv]
+    have hF := hK₃ (x + v * I) (by rw [hre]; linarith) (by rw [hre]; linarith)
+    rw [him, hv2] at hF
+    have hHw := (hw (x + v * I) (by rw [hre]; exact hx1) (by rw [hre]; exact hx2)
+      (by rw [him, hv])).2.2
+    have hPx : P ^ x ≤ E := (Real.rpow_le_rpow_of_exponent_le hP hx2).trans hE
+    have hL6 : L ^ 6 ≤ (1 + L ^ 2) ^ 3 := by
+      have : L ^ 2 ≤ 1 + L ^ 2 := by linarith
+      calc L ^ 6 = (L ^ 2) ^ 3 := by ring
+        _ ≤ (1 + L ^ 2) ^ 3 := pow_le_pow_left₀ (by positivity) this 3
+    have hK30 : 0 ≤ K₃ := (by positivity : (0:ℝ) ≤ ‖mellin f (x + v * I)‖ * (1 + L ^ 2) ^ 3).trans hF
+    have hE0 : 0 ≤ E := (by positivity : (0:ℝ) ≤ P ^ c).trans hE
+    rw [le_div_iff₀ (by positivity)]
+    calc ‖mellin f (x + v * I)‖ * P ^ x * ‖zetaH (x + v * I + t * I)‖ * L ^ 6
+        = (‖mellin f (x + v * I)‖ * L ^ 6) * P ^ x * ‖zetaH (x + v * I + t * I)‖ := by ring
+      _ ≤ (‖mellin f (x + v * I)‖ * (1 + L ^ 2) ^ 3) * E * H₁ := by gcongr
+      _ ≤ K₃ * E * H₁ := by gcongr
+  have hb : ∀ v : ℝ, |v| = L → ‖∫ x in σ₁..c, zcG f P t (x + v * I)‖ ≤ K₃ * E * H₁ / L ^ 6 := by
+    intro v hv
+    have h := intervalIntegral.norm_integral_le_of_norm_le_const (a := σ₁) (b := c)
+      (f := fun x : ℝ => zcG f P t (x + v * I)) (C := K₃ * E * H₁ / L ^ 6) (fun x hx => by
+        rw [Set.uIoc_of_le hσc] at hx
+        exact hpt x v hx.1.le hx.2 hv)
+    have hl : |c - σ₁| ≤ 1 := abs_le.2 ⟨by linarith, by linarith⟩
+    have h0 : 0 ≤ K₃ * E * H₁ / L ^ 6 := (norm_nonneg _).trans (hpt σ₁ v le_rfl hσc hv)
+    calc _ ≤ K₃ * E * H₁ / L ^ 6 * |c - σ₁| := h
+      _ ≤ K₃ * E * H₁ / L ^ 6 * 1 := by gcongr
+      _ = _ := mul_one _
+  have h1 := hb L (abs_of_pos hL)
+  have h2 := hb (-L) (by rw [abs_neg, abs_of_pos hL])
+  have e : (fun x : ℝ => zcG f P t (x - L * I)) = fun x : ℝ => zcG f P t (x + ((-L : ℝ) : ℂ) * I) := by
+    funext x; push_cast; ring_nf
+  rw [e] at hr
+  linarith
+
 end LeanFormalizations.Erdos385
