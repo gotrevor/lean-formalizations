@@ -51,7 +51,7 @@ in `src/LeanFormalizations/Literature/Erdos385.lean`.  Data checks:
 
 ## Phase queue
 
-**E1 (PLANTED 2026-10-01): elementary rigidity.**
+**E1 (DONE 2026-10-01, axiom-clean): elementary rigidity.**
 - Target: `Rigidity.lean`; stop when that file is sorry-free.
 - Route: in the file header.  Lemma R is a strong induction over primes; R′ and the dichotomy
   follow from Lemma R; #430 unpacks `terms`.

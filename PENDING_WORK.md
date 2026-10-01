@@ -1987,3 +1987,8 @@ All four frozen statements proved, file sorry-free, axiom-clean.  Notes for the 
   `G : ℕ → ℕ → Prop`); `dvd_linearMap_of_entries` is what lets entries and the trace share one
   proof.  Both are ready for roadmap §1 Theorems A and B — only the certificate is missing there.
 * `DIRECTION.md` still lists phase 41 as CURRENT; an altitude lap owns marking it DONE.
+
+## 2026-10-01 — Erdős #385 E1 DONE
+`Erdos385/Rigidity.lean` sorry-free, axiom-clean (Lemma R by strong induction over primes; R′ small
+case `n < y+2` via Lemma R at `y' = n−2` + Bertrand ⇒ `n = 2p`, pair `(p, p)`).  Next: E1b
+(`FunctionField.lean`, `Graph.lean` edges), then E2 `card_bad_le`, then plant E3.
