@@ -13,10 +13,10 @@ import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Cover
 
 `nearFarInput_of_nearSetLeaf`: `NearFarInput δ` follows from `NearSetLeaf δ`, which asks only for
 a finite set `S` of heights whose unit neighbourhoods carry little `L¹` mass of `A(1+it)`, and off
-which the short prime sum is pointwise small: `|P(1+it)| ≤ Z^{−η}` for `Z^{c₀} ≤ |t| ≤ 8X`.
+which the short prime sum is pointwise small: `|P(1+it)| ≤ Z^{−η}` for `Z^{c₀} ≤ |t| ≤ 7X`.
 
 Off the near set `|A|² = |P|²|Q|²/log² Z ≤ Z^{−2η}|Q|²`, and the MVT for `Q` (`primeQ_meanSquare`)
-gives the mid band and every tail band with `T ≤ 4X`; for `T > 4X` the MVT for `A` itself
+gives the mid band and every tail band with `T ≤ 3X`; for `T > 3X` the MVT for `A` itself
 (`coeffC_meanSquare`) gives `X/(h₁T)·3T/Z ≪ 1/h₁ ≪ Z^{−1/2}`.
 -/
 
@@ -25,7 +25,7 @@ namespace LeanFormalizations.Erdos385
 open Real Filter MeasureTheory Complex LeanFormalizations.Literature Erdos385.Parseval
 
 /-- **The near-set leaf.**  Believed (65%), see `NearFarInput`'s docstring: `S` = a maximal
-`1`-separated set of large values of `P` on `Z^{c₀}+1 ≤ |t| ≤ 8X`; the `L¹` bound from
+`1`-separated set of large values of `P` on `Z^{c₀}+1 ≤ |t| ≤ 7X`; the `L¹` bound from
 `NearOneLargeValues` levels (applied to the per-interval sup points) + VK; the pointwise bound off
 the unit neighbourhoods is immediate from maximality (every `t` with `|P| > Z^{−η}` is within `1`
 of `S`), no derivative bound needed. -/
@@ -35,7 +35,7 @@ def NearSetLeaf (δ : ℝ) : Prop :=
       ∃ S : Finset ℝ, (∀ s ∈ S, T₀ + 1 ≤ |s|) ∧
       (∫ t in nearSet S 1, ‖LSeries (fun m ↦ (coeffA δ g Z m : ℂ)) (1 + t * I)‖) ≤
         1 / Real.log Z ^ 3 ∧
-      ∀ t : ℝ, T₀ ≤ |t| → |t| ≤ 8 * paramX δ Z → t ∉ nearSet S 1 →
+      ∀ t : ℝ, T₀ ≤ |t| → |t| ≤ 7 * paramX δ Z → t ∉ nearSet S 1 →
         ‖primeP g Z (1 + t * I)‖ ≤ Z ^ (-η)
 
 section
@@ -219,11 +219,11 @@ theorem nearFarInput_of_nearSetLeaf {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4
     have hI0 : 0 ≤ ∫ t in {t : ℝ | T ≤ |t| ∧ |t| ≤ 2 * T} \ nearSet S 1,
         ‖LSeries (fun m ↦ (coeffA δ g Z m : ℂ)) (1 + t * I)‖ ^ 2 :=
       setIntegral_nonneg (measurableSet_band _ _ S) fun t _ => by positivity
-    rcases le_or_gt T (4 * X) with hT8 | hT8
+    rcases le_or_gt T (3 * X) with hT8 | hT8
     · have hmid := masked_le hδ hδ' hZ1 hg hlog (measurableSet_band T (2 * T) S)
         (by linarith only [hT0]) (band_subset T (2 * T) S) hε0
         (fun t ht => hP t (hc₀s.trans (hTlo.trans ht.1.1))
-          (by linarith only [ht.1.2, hT8]) ht.2)
+          (by linarith only [ht.1.2, hT8, hX2]) ht.2)
       have hq := hQ (2 * T) (by linarith only [hTlo, hs4])
       have hq' : KQ * (2 * T + √Z) / √Z ≤ K * (3 * T) / √Z := by
         apply div_le_div_of_nonneg_right _ hsZ.le

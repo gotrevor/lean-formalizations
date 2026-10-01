@@ -13,7 +13,7 @@ import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.LayerCake
 
 `nearSetLeaf_of_largeValueBound`: `NearSetLeaf δ` follows from `LargeValueBound δ`, a statement
 about `1`-separated sets `S` of large values of the short prime sum (`|P(1+is)| > Z^{−η}`,
-`Z^{c₀}/2 ≤ |s| ≤ 8X`): they number `≤ Z^{c₀}/8`, and `A` has `L¹` mass `≤ 1/log³ Z` on their
+`Z^{c₀}/2 ≤ |s| ≤ 7X`): they number `≤ Z^{c₀}/8`, and `A` has `L¹` mass `≤ 1/log³ Z` on their
 unit neighbourhoods.
 
 Combinatorics: `exists_separated_cover` gives a maximal separated set of large values; by
@@ -34,7 +34,7 @@ level contributing `≪ Z^{B(2η')^{3/2} − η'} log^C Z`, summable. -/
 def LargeValueBound (δ : ℝ) : Prop :=
   ∃ cmax : ℝ, 0 < cmax ∧ ∀ c₀ : ℝ, 0 < c₀ → c₀ ≤ cmax → ∀ g : ℝ → ℝ, Admissible δ g →
     ∃ η : ℝ, 0 < η ∧ ∀ᶠ Z : ℝ in atTop, ∀ S : Finset ℝ, Separated S →
-      (∀ s ∈ S, Z ^ c₀ / 2 ≤ |s| ∧ |s| ≤ 8 * paramX δ Z ∧
+      (∀ s ∈ S, Z ^ c₀ / 2 ≤ |s| ∧ |s| ≤ 7 * paramX δ Z ∧
         Z ^ (-η) < ‖primeP g Z (1 + s * I)‖) →
       (S.card : ℝ) ≤ Z ^ c₀ / 8 ∧
       (∫ t in nearSet S 1, ‖LSeries (fun m ↦ (coeffA δ g Z m : ℂ)) (1 + t * I)‖) ≤
@@ -66,8 +66,8 @@ theorem nearSetLeaf_of_largeValueBound {δ : ℝ} (hL : LargeValueBound δ) : Ne
   filter_upwards [hev, (tendsto_rpow_atTop hc₀).eventually_ge_atTop 64] with Z hZ hZc
   classical
   set a := Z ^ c₀ / 2 with ha
-  let E : Set ℝ := {t | a ≤ |t| ∧ |t| ≤ 8 * paramX δ Z ∧ Z ^ (-η) < ‖primeP g Z (1 + t * I)‖}
-  obtain ⟨S, hSE, hSs, hcov⟩ := exists_separated_cover (E := E) (R := 8 * paramX δ Z)
+  let E : Set ℝ := {t | a ≤ |t| ∧ |t| ≤ 7 * paramX δ Z ∧ Z ^ (-η) < ‖primeP g Z (1 + t * I)‖}
+  obtain ⟨S, hSE, hSs, hcov⟩ := exists_separated_cover (E := E) (R := 7 * paramX δ Z)
     fun t ht => ht.2.1
   have hcard := (hZ S hSs fun s hs => hSE hs).1
   -- windows
@@ -168,7 +168,7 @@ the short prime sum `P` itself is `≤ 1/log² Z`.  Same confidence and route as
 def LargeValueBoundP (δ : ℝ) : Prop :=
   ∃ cmax : ℝ, 0 < cmax ∧ ∀ c₀ : ℝ, 0 < c₀ → c₀ ≤ cmax → ∀ g : ℝ → ℝ, Admissible δ g →
     ∃ η : ℝ, 0 < η ∧ ∀ᶠ Z : ℝ in atTop, ∀ S : Finset ℝ, Separated S →
-      (∀ s ∈ S, Z ^ c₀ / 2 ≤ |s| ∧ |s| ≤ 8 * paramX δ Z ∧
+      (∀ s ∈ S, Z ^ c₀ / 2 ≤ |s| ∧ |s| ≤ 7 * paramX δ Z ∧
         Z ^ (-η) < ‖primeP g Z (1 + s * I)‖) →
       (S.card : ℝ) ≤ Z ^ c₀ / 8 ∧
       (∫ t in nearSet S 1, ‖primeP g Z (1 + t * I)‖) ≤ 1 / Real.log Z ^ 2
