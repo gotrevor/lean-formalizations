@@ -32,12 +32,10 @@ open MeasureTheory Set Filter
 noncomputable def mertC : ℝ := Real.exp (-Real.eulerMascheroniConstant)
 
 /-- Leaf: `a ≥ 0`.  (Bookkeeping; needs coboundedness from `siftMin ≤ siftMax`.) -/
-theorem aLow_nonneg : ∀ s : ℝ, 0 < s → 0 ≤ aLow s := by
-  sorry
+theorem aLow_nonneg : ∀ s : ℝ, 0 < s → 0 ≤ aLow s := fun _ hs => aLow_nonneg' hs
 
 /-- Leaf: `a` is monotone on `(0, ∞)` (larger `s` = smaller `z` = more survivors). -/
-theorem aLow_mono : MonotoneOn aLow (Ioi 0) := by
-  sorry
+theorem aLow_mono : MonotoneOn aLow (Ioi 0) := aLow_mono'
 
 /-- Leaf: `b` is monotone on `(0, ∞)`. -/
 theorem bUp_mono : MonotoneOn bUp (Ioi 0) := bUp_mono'

@@ -94,4 +94,52 @@ theorem bUp_mono' : MonotoneOn bUp (Set.Ioi 0) := by
     exact_mod_cast this
   exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right this hlog) (by positivity)
 
+/-- The normalised lower sequence at level `s`. -/
+noncomputable def aSeq (s : ℝ) (N : ℕ) : ℝ :=
+  (siftMin N ⌊(N : ℝ) ^ (1 / s)⌋₊ : ℝ) * Real.log N / N
+
+lemma aSeq_nonneg (s : ℝ) (N : ℕ) : 0 ≤ aSeq s N := by
+  unfold aSeq
+  rcases Nat.eq_zero_or_pos N with rfl | hN
+  · simp
+  · have : (1 : ℝ) ≤ N := by exact_mod_cast hN
+    have := Real.log_nonneg this
+    positivity
+
+lemma aSeq_le_bSeq (s : ℝ) (N : ℕ) : aSeq s N ≤ bSeq s N := by
+  unfold aSeq bSeq
+  rcases Nat.eq_zero_or_pos N with rfl | hN
+  · simp
+  have : (1 : ℝ) ≤ N := by exact_mod_cast hN
+  have hlog := Real.log_nonneg this
+  obtain ⟨lo, r, hr⟩ := exists_sift_eq_siftMin N ⌊(N : ℝ) ^ (1 / s)⌋₊
+  have h : (siftMin N ⌊(N : ℝ) ^ (1 / s)⌋₊ : ℝ) ≤ siftMax N ⌊(N : ℝ) ^ (1 / s)⌋₊ := by
+    rw [← hr]; exact_mod_cast le_siftMax lo N r _
+  exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right h hlog) (by positivity)
+
+lemma aSeq_cobdd {s : ℝ} (hs : 0 < s) : IsCoboundedUnder (· ≥ ·) atTop (aSeq s) := by
+  obtain ⟨B, hB⟩ := bSeq_bdd hs
+  exact isCoboundedUnder_ge_of_eventually_le atTop
+    ((eventually_map.mp hB).mono fun N h => (aSeq_le_bSeq s N).trans h)
+
+theorem aLow_nonneg' {s : ℝ} (hs : 0 < s) : 0 ≤ aLow s :=
+  le_liminf_of_le (aSeq_cobdd hs) (Eventually.of_forall (aSeq_nonneg s))
+
+theorem aLow_mono' : MonotoneOn aLow (Set.Ioi 0) := by
+  intro s hs s' hs' hss'
+  have hs0 : (0 : ℝ) < s := hs
+  change liminf (aSeq s) atTop ≤ liminf (aSeq s') atTop
+  refine liminf_le_liminf (Eventually.of_forall fun N => ?_)
+    (isBoundedUnder_of ⟨0, aSeq_nonneg s⟩) (aSeq_cobdd hs')
+  unfold aSeq
+  rcases Nat.eq_zero_or_pos N with rfl | hN
+  · simp
+  have h1 : (1 : ℝ) ≤ N := by exact_mod_cast hN
+  have hlog := Real.log_nonneg h1
+  have hfl : ⌊(N : ℝ) ^ (1 / s')⌋₊ ≤ ⌊(N : ℝ) ^ (1 / s)⌋₊ :=
+    Nat.floor_le_floor (Real.rpow_le_rpow_of_exponent_le h1 (one_div_le_one_div_of_le hs0 hss'))
+  have : (siftMin N ⌊(N : ℝ) ^ (1 / s)⌋₊ : ℝ) ≤ siftMin N ⌊(N : ℝ) ^ (1 / s')⌋₊ := by
+    exact_mod_cast siftMin_anti_z N hfl
+  exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right this hlog) (by positivity)
+
 end LeanFormalizations.Erdos385.LinearSieve
