@@ -13,6 +13,9 @@ Headline-path open leaves (PowerSaving/): `localZeroDetect_of_richert` (ZeroDete
  Then the transport (ZeroCount.lean header).
  PROGRESS (325b5f7): (a) PROVED (`local_logDeriv_bound`); (b) PROVED (`rect_shift_gen`); (c) started:
  `box_H_bound`, `zc_tail`, `zc_eventually` proved in ZeroContour.lean; next zc_rect1/zc_split/zc_rect2.
+ ✅ CRUX PROVED (2026-10-01): `localZeroDetect_of_richert` axiom-clean ([propext, choice, Quot.sound]),
+ A = 8, via `zc_rect1`/`zc_split`/`zc_rect2` (ZeroContour.lean), `zc_numeric` + `vkDev_lt_of_zeroFree`
+ (ZeroDetect.lean).  NEXT = transport `largeValueCount_of_zeroDetect` (ZeroCount.lean:34).
 
 ## ✅ (2026-10-01, session B): LinearSieve SCOPE COMPLETE.  `aLow_ge_fl'` (FLLowerB.lean) proved:
 Buchstab from 2 + `siftMax_le_fl` per prime + `sum_Vw_div` telescoping + `rankin_error_sum`
