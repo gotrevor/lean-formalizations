@@ -28,7 +28,7 @@ remainder `R ≪ z² · (log z)^k` by the level-`z²` error terms (each `|r_d| �
 NOT acceptable here: the bound must be `X / log² X` up to the `h/φ(h)` factor).
 
 If the `G(z)` lower bound or the remainder bookkeeping gets hard, leave it as a NAMED sub-lemma with
-`sorry` and an English paragraph with a confidence; that is an acceptable finish.
+a disclosed hole and an English paragraph with a confidence; that is an acceptable finish.
 -/
 
 namespace Erdos385
