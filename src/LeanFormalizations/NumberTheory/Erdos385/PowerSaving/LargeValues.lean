@@ -6,6 +6,7 @@ Authors: Trevor Morris
 import Mathlib
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.NearSet
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Cover
+import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.LayerCake
 
 /-!
 # Erdős #385 power saving: `NearSetLeaf` from a large-value bound (phase E9b)
