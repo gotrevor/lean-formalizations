@@ -567,6 +567,37 @@ theorem vk_width_eventually {c₀ ε : ℝ} (hc₀ : 0 < c₀) (hε : 0 < ε) :
   · rw [div_le_iff₀ hden]
     nlinarith
 
+/-- `H` is bounded on the line `Re w = 2`. -/
+theorem zetaH_bound_two : ∃ B : ℝ, ∀ w : ℂ, w.re = 2 → ‖zetaH w‖ ≤ B := by
+  have hs2 : LSeriesSummable (fun n => (ArithmeticFunction.vonMangoldt n : ℂ)) 2 :=
+    ArithmeticFunction.LSeriesSummable_vonMangoldt (by norm_num)
+  set B0 := ∑' n, ‖LSeries.term (fun n => (ArithmeticFunction.vonMangoldt n : ℂ)) 2 n‖
+  refine ⟨B0 + 1, fun w hw => ?_⟩
+  have hw1 : 1 < w.re := by rw [hw]; norm_num
+  have hL := ArithmeticFunction.LSeries_vonMangoldt_eq_deriv_riemannZeta_div hw1
+  have hterm : ∀ n, ‖LSeries.term (fun n => (ArithmeticFunction.vonMangoldt n : ℂ)) w n‖ =
+      ‖LSeries.term (fun n => (ArithmeticFunction.vonMangoldt n : ℂ)) 2 n‖ := by
+    intro n; rw [LSeries.norm_term_eq, LSeries.norm_term_eq, hw]; norm_num
+  have hsum : Summable fun n => ‖LSeries.term (fun n => (ArithmeticFunction.vonMangoldt n : ℂ)) 2 n‖ :=
+    summable_norm_iff.mpr hs2
+  have hLb : ‖LSeries (fun n => (ArithmeticFunction.vonMangoldt n : ℂ)) w‖ ≤ B0 := by
+    rw [LSeries]
+    refine (norm_tsum_le_tsum_norm ?_).trans (le_of_eq (tsum_congr hterm))
+    exact hsum.congr fun n => (hterm n).symm
+  have hinv : ‖1 / (w - 1)‖ ≤ 1 := by
+    rw [norm_div, norm_one, div_le_one (norm_pos_iff.2 (fun h => by
+      have := congrArg Complex.re h; simp at this; linarith))]
+    have := Complex.abs_re_le_norm (w - 1)
+    simp only [sub_re, one_re, hw] at this; norm_num at this; linarith
+  unfold zetaH
+  have : deriv riemannZeta w / riemannZeta w =
+      -LSeries (fun n => (ArithmeticFunction.vonMangoldt n : ℂ)) w := by
+    rw [hL]; ring
+  rw [this]
+  calc ‖-LSeries _ w + 1 / (w - 1)‖ ≤ ‖LSeries (fun n => (ArithmeticFunction.vonMangoldt n : ℂ)) w‖ +
+        ‖1 / (w - 1)‖ := by rw [← norm_neg (LSeries _ w)]; exact norm_add_le _ _
+    _ ≤ B0 + 1 := add_le_add hLb hinv
+
 /-- **Crux leaf V4 (Perron at `Re s = 2`, main term subtracted).**  Once `f(x/P)` vanishes for
 `x ≤ 1` (`a P ≥ 1`): `S − F(1 − it) P^{1−it} = −(1/2π) ∫ F(2+iy) P^{2+iy} H(2+iy+it) dy`.
 English proof: Mellin inversion `mellinInv_mellin_eq` at `x = n/P`, Fubini against
