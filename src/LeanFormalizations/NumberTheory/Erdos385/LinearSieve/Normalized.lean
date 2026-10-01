@@ -10,8 +10,8 @@ import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Buchstab
 # Normalised extremal sieve functions (phase E5)
 
 `aLow s = liminf_N S⁻(N, ⌊N^{1/s}⌋) log N / N`, `bUp s = limsup_N S⁺(N, ⌊N^{1/s}⌋) log N / N`.
-The crux `siftMin_lower` reduces (`siftMin_lower_of_aLow_pos`) to `aLow s > 0` for `s > 2`,
-which is the Jurkat–Richert lower bound `a(s) ≥ 2 log(s−1) · (const)`.
+`lower_of_aLow_pos`: `a(s) > 0` gives the crux's normal form `LowerAt`.  Positivity for `s > 2`
+(`Leaves.aLow_pos_of_leaves`) is the Jurkat–Richert lower bound `a(s) ≥ 2 log(s−1) · (const)`.
 -/
 
 namespace LeanFormalizations.Erdos385.LinearSieve
@@ -40,11 +40,6 @@ noncomputable def aLow (s : ℝ) : ℝ :=
 noncomputable def bUp (s : ℝ) : ℝ :=
   limsup (fun N : ℕ => (siftMax N ⌊(N : ℝ) ^ (1 / s)⌋₊ : ℝ) * Real.log N / N) atTop
 
-/-- **The Jurkat–Richert positivity** `a(s) > 0` for `s > 2` (steps 2–5 of the route in
-`LinearSieve.lean`).  Disclosed `sorry`: the content of phase E5. -/
-theorem aLow_pos : ∀ s : ℝ, 2 < s → 0 < aLow s := by
-  sorry
-
 /-- The crux follows from `aLow_pos` by monotonicity in the sifting limit. -/
 theorem siftMin_lower_of_aLow_pos (ha : ∀ s : ℝ, 2 < s → 0 < aLow s) :
     ∀ ε : ℝ, 0 < ε → ∃ c : ℝ, 0 < c ∧ ∃ N₀ : ℕ, ∀ N : ℕ, N₀ ≤ N →
@@ -72,6 +67,28 @@ theorem siftMin_lower_of_aLow_pos (ha : ∀ s : ℝ, 2 < s → 0 < aLow s) :
     rw [h1s]
     refine hz.trans (Real.rpow_le_rpow_of_exponent_le (by linarith) ?_)
     linarith [min_le_left ε (1 / 4 : ℝ)]
+  have hmono : (siftMin N ⌊(N : ℝ) ^ (1 / s)⌋₊ : ℝ) ≤ siftMin N z := by
+    exact_mod_cast siftMin_anti_z N hzle
+  have key : aLow s / 2 * N / Real.log N ≤ siftMin N ⌊(N : ℝ) ^ (1 / s)⌋₊ := by
+    rw [div_le_iff₀ hlog]
+    have := hN1'.le
+    rw [le_div_iff₀ hNpos] at this
+    linarith
+  linarith
+
+/-- From `a(s) > 0`: a uniform lower constant for every `z ≤ N^{1/s}`. -/
+theorem lower_of_aLow_pos {s : ℝ} (hs : 0 < s) (ha : 0 < aLow s) :
+    ∃ c : ℝ, 0 < c ∧ ∃ N₀ : ℕ, ∀ N : ℕ, N₀ ≤ N → ∀ z : ℕ, (z : ℝ) ≤ (N : ℝ) ^ (1 / s) →
+      c * N / Real.log N ≤ siftMin N z := by
+  have hev := eventually_lt_of_lt_liminf (show aLow s / 2 < aLow s by linarith)
+    (isBoundedUnder_of ⟨0, fun N => by positivity⟩)
+  obtain ⟨N1, hN1⟩ := eventually_atTop.mp hev
+  refine ⟨aLow s / 2, by positivity, max N1 2, fun N hN z hz => ?_⟩
+  have hN1' := hN1 N ((le_max_left _ _).trans hN)
+  have hN2 : (2 : ℝ) ≤ N := by exact_mod_cast (le_max_right _ _).trans hN
+  have hlog : 0 < Real.log N := Real.log_pos (by linarith)
+  have hNpos : (0 : ℝ) < N := by linarith
+  have hzle : z ≤ ⌊(N : ℝ) ^ (1 / s)⌋₊ := Nat.le_floor hz
   have hmono : (siftMin N ⌊(N : ℝ) ^ (1 / s)⌋₊ : ℝ) ≤ siftMin N z := by
     exact_mod_cast siftMin_anti_z N hzle
   have key : aLow s / 2 * N / Real.log N ≤ siftMin N ⌊(N : ℝ) ^ (1 / s)⌋₊ := by

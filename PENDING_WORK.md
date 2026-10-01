@@ -1,3 +1,17 @@
+## phase E5 lap 3 (2026-10-01): crux decomposed into named leaves (`LinearSieve/Leaves.lean`)
+`lowerAt_pos` proved from `aLow_pos_of_leaves` via `lower_of_aLow_pos` (Normalized.lean; aLow/bUp =
+liminf/limsup normalisations).  `bUp_le_two` PROVED (UpperBoundary.lean).  Open leaves (sorry):
+aLow_nonneg, aLow_mono, bUp_mono, buchstab_limit_a/b, fundamental_lemma (|·−Cs| ≤ M e^{−s}),
+comparison_functions (α,β), and the assembly `aLow_pos_of_leaves` (comparison_principle on
+K = max(α−a, b−β, 0)).  ⚠ two sessions worked this branch concurrently; lap-2's note says λ ≥ 1 is
+not needed — but K = 0 on (1,2] needs b ≤ β = 2λ there, so with b ≤ 2 we do need λ ≥ 1 (ω_∞ = e^{−γ}).
+Next: prove the assembly `aLow_pos_of_leaves` (pure analysis, no number theory).
+
+## ⚠ COLLISION (2026-10-01 11:xx): two writers in this worktree
+Another session (not visible to ListAgents) commits to `erdos-385` here concurrently, with its own
+design (`Normalized.lean`/`Leaves.lean`: aLow/bUp liminf, leaf sorries).  Duplicates landed:
+`upperAt_two` (Crux.lean) ≈ the other side's `bUp ≤ 2` (92dcceb).  Host: run only one session.
+
 ## phase E5 lap 2 (2026-10-01): crux normalised to `lowerAt_pos`
 `siftMin_lower` proved from `lowerAt_pos : ∀ s > 2, ∃ c > 0, LowerAt s c` (Crux.lean; `LowerAt`/`UpperAt`
 are the ε–N₀ normal forms of a(s), b(s)).  Insight: positivity of α = λ(sω − m/2) on (2,3] is
