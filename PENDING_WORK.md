@@ -2091,3 +2091,7 @@ Plus `vk_small_height` (PNT+ ZetaNoZerosInBox + riemannZetaLogDerivResidue + com
   multiplicities ≥ 1 via finiteness).  Interfaces adjusted: zero ball 15/8·θ, Z2 needs σ ≥ 1−θ/4,
   disc = closedBall(1+θ+it, 3θ).  Next: Zeta.lean deriving Z1/Z2 from local_landau + growth
   (Richert + ZetaUpperBnd) + lower (ZetaLowerBound3) + finiteness of ζ-zeros in a disc.
+- lap 4: `Landau/Zeta.lean`: `zeta_local`, Z1, Z2 PROVED from `local_landau` + 3 leaves.
+  Open leaves now (7): Zeta.lean `zeta_zeros_finite`, `zeta_disc_growth` (Richert+ZetaUpperBnd),
+  `zeta_center_lower` (ZetaLowerBound3); Basic.lean `vk_asymp`, D3, D2; Landau.lean `vk_small_height`.
+  Everything left is classical/elementary — the Landau crux itself is assembled.

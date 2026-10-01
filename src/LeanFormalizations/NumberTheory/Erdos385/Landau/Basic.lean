@@ -66,6 +66,13 @@ lemma vkW_anti {a b : ℝ} (ha : 3 ≤ a) (hab : a ≤ b) : vkW b ≤ vkW a := b
 lemma inVKRegion_iff (c₀ T σ : ℝ) : InVKRegion c₀ T σ ↔ 1 - c₀ * vkW T ≤ σ := by
   unfold InVKRegion vkW; rw [mul_one_div]
 
+lemma re_neg_le_norm (z : ℂ) : (-z).re ≤ ‖z‖ := by
+  simpa [norm_neg] using Complex.re_le_norm (-z)
+
+lemma zeta_zero_re_lt_one {ρ : ℂ} (hρ : riemannZeta ρ = 0) : ρ.re < 1 := by
+  by_contra h
+  exact riemannZeta_ne_zero_of_one_le_re (not_lt.mp h) hρ
+
 /-- **Elementary asymptotics** of `L, φ, w` (all as `T → ∞`). -/
 lemma vk_asymp (C : ℝ) : ∃ T₀ : ℝ, 3 ≤ T₀ ∧ ∀ T, T₀ ≤ T →
     1 ≤ Real.log (Real.log T) ∧ vkW T / 2 ≤ vkW (2 * T) ∧ 1 / vkW T ≤ Real.log T ∧
@@ -80,26 +87,6 @@ lemma logDeriv_zeta_dirichlet_bound : ∃ C : ℝ, ∀ σ t : ℝ, 1 < σ →
 /-- **(D2) The 3-4-1 inequality.** -/
 lemma three_four_one (σ t : ℝ) (hσ : 1 < σ) :
     0 ≤ 3 * (-zLD σ).re + 4 * (-zLD (σ + t * I)).re + (-zLD (σ + (2 * t : ℝ) * I)).re := by
-  sorry
-
-/-- **(Z1) Landau's local formula, one-sided.**  `FinalBound` (PNT+, sorry-free) for
-`f(z) = ζ(s₀ + 2θz)/ζ(s₀)`, `s₀ = 1 + θ + it`, with `log B ≪ φ` from Richert (upper) and
-`ZetaLowerBound3` (lower, at `s₀`); every zero term has `Re(1/(s−ρ)) ≥ 0` because `Re ρ < 1 < σ`,
-so all but those in `S` may be dropped. -/
-lemma landau_neg_re_upper (h : RichertZetaGrowth) : ∃ K t₁ : ℝ, ∀ t σ : ℝ, t₁ ≤ |t| → 1 < σ →
-    σ ≤ 1 + vkTheta |t| → ∀ S : Finset ℂ, (∀ ρ ∈ S, riemannZeta ρ = 0 ∧
-      ‖ρ - (1 + vkTheta |t| + t * I)‖ ≤ 15 / 8 * vkTheta |t|) →
-    (-zLD (σ + t * I)).re ≤ K / vkW |t| - ∑ ρ ∈ S, (1 / ((σ : ℂ) + t * I - ρ)).re := by
-  sorry
-
-/-- **(Z2) Landau's local formula, two-sided** (zeros at distance `≥ η`; `ZerosBound` counts
-`≪ φ` of them). -/
-lemma landau_logderiv_bound (h : RichertZetaGrowth) : ∃ K t₁ : ℝ, ∀ t σ η : ℝ, t₁ ≤ |t| →
-    1 - vkTheta |t| / 4 ≤ σ → σ ≤ 1 + vkTheta |t| → 0 < η →
-    (∀ ρ : ℂ, riemannZeta ρ = 0 → ‖ρ - (1 + vkTheta |t| + t * I)‖ ≤ 15 / 8 * vkTheta |t| →
-      η ≤ ‖(σ : ℂ) + t * I - ρ‖) →
-    riemannZeta (σ + t * I) ≠ 0 →
-    ‖zLD (σ + t * I)‖ ≤ K / vkW |t| + K * Real.log (Real.log |t|) / η := by
   sorry
 
 end LeanFormalizations.Erdos385

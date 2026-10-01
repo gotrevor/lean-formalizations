@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Trevor Morris
 -/
 import Mathlib
-import LeanFormalizations.NumberTheory.Erdos385.Landau.Basic
+import LeanFormalizations.NumberTheory.Erdos385.Landau.Zeta
 
 /-!
 # Landau's method, layer 2: zero-free region and log-derivative bound (phase E2e)
@@ -22,13 +22,6 @@ From the layer-1 interfaces:
 namespace LeanFormalizations.Erdos385
 
 open LeanFormalizations.Literature Complex
-
-lemma re_neg_le_norm (z : ℂ) : (-z).re ≤ ‖z‖ := by
-  simpa [norm_neg] using Complex.re_le_norm (-z)
-
-lemma zeta_zero_re_lt_one {ρ : ℂ} (hρ : riemannZeta ρ = 0) : ρ.re < 1 := by
-  by_contra h
-  exact riemannZeta_ne_zero_of_one_le_re (not_lt.mp h) hρ
 
 /-- **The VK zero-free region** (3-4-1 with Landau's local formula). -/
 theorem vk_zero_free (h : RichertZetaGrowth) : ∃ c t₀ : ℝ, 0 < c ∧ 3 ≤ t₀ ∧
