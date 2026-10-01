@@ -228,7 +228,14 @@ def register : List Row := [
       failure 'no carrier with p ≤ 512' is 23× the product of the marginals (conspiracy, not \
       repulsion).  Edge Erdos385.eventually_not_bad_of_crossScaleRepulsion"
     reopenIf := "a mechanism by which an empty scale forces a carrier at another scale that \
-      survives the positive cross-scale coupling seen in the data" }
+      survives the positive cross-scale coupling seen in the data" },
+  { route := "Linear sieve s > 2 (phase E5) from ONE Buchstab step on Selberg's Λ² upper bound"
+    verdict := .needsNewIdea, tier := .cited, anchor := none
+    evidence := "scripts/linear-sieve-onestep.py: S(z) = N − Σ_{p<z} S(A_p, p) with Selberg's \
+      F_S(t) = e^γ / ∫_0^{t/2} ρ gives f₁(s) < 0 for s ≤ 2.05 (control: JR f(s) = 2e^γ log(s−1)/s \
+      > 0 there).  Selberg is sharp only for t ≤ 2; the loss for t > 3 costs a constant, and the \
+      margin at s = 2 + ε is O(ε).  E5 uses the full JR comparison instead (LinearSieve.lean)"
+    reopenIf := "an upper bound matching Jurkat–Richert's F(t) for all t > 1 without iteration" }
 ]
 
 end LeanFormalizations.Maze

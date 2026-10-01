@@ -1,3 +1,13 @@
+## phase E5 lap 1 (2026-10-01): linear sieve reduced to one crux, route fixed
+`linearSieveIntervalLower_holds` is proved from `LinearSieve.siftMin_lower` (Crux.lean, disclosed sorry).
+`LinearSieve/Buchstab.lean` (sorry-free): self-similar problem class, exact Buchstab identity,
+`siftMin_buchstab` / `siftMax_buchstab`.  Refuted: one Buchstab step on Selberg reaches only s ≳ 2.05
+(Maze row).  Route for the crux (5 steps, LinearSieve.lean header): Selberg 1-dim, limit Buchstab
+inequalities, fundamental lemma, JR comparison functions with λ = e^{-γ}/ω_∞ ≥ 1 via forward
+rough-number Buchstab + PNT, and a derivative-free comparison principle (weight u − 1, Tonelli).
+Next attack: plant the named statements of steps 1–5 in `LinearSieve/`, then step 5 (pure analysis,
+most novel) and step 1 (copy of Brun/PairSieve).
+
 ## phase E4b DONE (2026-10-01): `Literature.McDiarmidFinite` discharged
 `mcDiarmidFinite_holds` axiom-clean.  Key move: average over coordinates in `s` by `s.piecewise z x` with `z` ranging over the full product (no sub-product types); the coordinate-swap involution on `Ω × Ω` gives both the tower property and the mean-zero condition for Hoeffding.  E4 (`Exceptional.lean`, branch `erdos-385-brun`) now needs only `ArithLargeSieve` and `LinearSieveIntervalLower` once merged.
 
