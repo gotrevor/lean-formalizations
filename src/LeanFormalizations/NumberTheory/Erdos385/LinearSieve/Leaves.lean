@@ -6,6 +6,7 @@ Authors: Trevor Morris
 import Mathlib
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.UpperBoundary
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Comparison
+import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.UpperAt
 
 /-!
 # The named leaves of `aLow_pos` (phase E5, steps 2–5)
