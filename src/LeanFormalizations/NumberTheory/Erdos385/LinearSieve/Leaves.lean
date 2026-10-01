@@ -8,7 +8,7 @@ import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.UpperBoundary
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Assembly
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.RoughOmega
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Bounded
-import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.BuchstabLimitA
+import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.BuchstabLimitB
 
 /-!
 # The named leaves of `aLow_pos` (phase E5, steps 2–5)
@@ -16,7 +16,7 @@ import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.BuchstabLimitA
 `aLow_pos` follows (`aLow_pos_of_leaves`) from:
 * `aLow_nonneg`, `aLow_mono`, `bUp_mono`: bookkeeping on the liminf/limsup;
 * `buchstab_limit_a`, `buchstab_limit_b`: Buchstab's identity in the limit (Mertens' 2nd theorem);
-* `fundamental_lemma`: `|a(s) − Cs|, |b(s) − Cs| ≤ M e^{−s}` for `s ≥ 2`, `C = e^{−γ}`;
+* `fundamental_lemma` (one-sided, all that is used): `a(s) ≥ Cs − M e^{−s}`, `b(s) ≤ Cs + M e^{−s}` for `s ≥ 2`, `C = e^{−γ}`;
 * `comparison_functions` (proved in `DelaySolution.lean` from `delay_solution`, `omega_le`): Jurkat–Richert's `f, F` (scaled by `s/ (e^γ)`… i.e. `α = Cs·f`,
   `β = Cs·F`), which solve the delay system with equality, have `α ≤ 0 ≤ … , β ≥ 2` on `(1, 2]`,
   the same exponential approach to `Cs`, and `α > 0` on `(2, ∞)`;
@@ -46,19 +46,19 @@ theorem buchstab_limit_a : ∀ s s' : ℝ, 2 ≤ s → s ≤ s' →
 
 /-- Leaf (step 2): the upper Buchstab inequality in the limit. -/
 theorem buchstab_limit_b : ∀ s s' : ℝ, 2 ≤ s → s ≤ s' →
-    bUp s ≤ bUp s' - ∫ t in s..s', aLow (t - 1) / (t - 1) := by
-  sorry
+    bUp s ≤ bUp s' - ∫ t in s..s', aLow (t - 1) / (t - 1) :=
+  fun _ _ hs hss' => buchstab_limit_b' hs hss'
 
 /-- Leaf (step 3): the fundamental lemma, with an exponentially small error. -/
 theorem fundamental_lemma : ∃ M : ℝ, 0 ≤ M ∧ ∀ s : ℝ, 2 ≤ s →
-    |aLow s - mertC * s| ≤ M * Real.exp (-s) ∧ |bUp s - mertC * s| ≤ M * Real.exp (-s) := by
+    mertC * s - M * Real.exp (-s) ≤ aLow s ∧ bUp s ≤ mertC * s + M * Real.exp (-s) := by
   sorry
 
 /-- **Assembly**: the comparison principle turns the leaves into `a(s) ≥ α(s) > 0`. -/
 theorem aLow_pos_of_leaves : ∀ s : ℝ, 2 < s → 0 < aLow s := by
   obtain ⟨M1, hM1, hdec1⟩ := fundamental_lemma
   obtain ⟨α, β, hα, hβ, h12, hαβ, ⟨M2, hM2, hdec2⟩, hpos⟩ := comparison_functions
-    (omegaLe_of_bUp ⟨M1, fun s hs => by linarith [(abs_le.mp (hdec1 s hs).2).2]⟩)
+    (omegaLe_of_bUp ⟨M1, fun s hs => (hdec1 s hs).2⟩)
   set a' : ℝ → ℝ := fun s => aLow (max s 1)
   set b' : ℝ → ℝ := fun s => bUp (max s 1)
   have hmax : ∀ s : ℝ, 1 ≤ s → max s 1 = s := fun s hs => max_eq_left hs
@@ -91,7 +91,7 @@ theorem aLow_pos_of_leaves : ∀ s : ℝ, 2 < s → 0 < aLow s := by
       simp only [a', b', hmax s (by linarith)]
       obtain ⟨h1, h2⟩ := hdec1 s hs
       obtain ⟨h3, h4⟩ := hdec2 s hs
-      rw [abs_le] at h1 h2 h3 h4
+      rw [abs_le] at h3 h4
       have he := (Real.exp_pos (-s)).le
       refine max_le (max_le (by nlinarith) (by nlinarith)) (by positivity))
   intro s hs
