@@ -7,3 +7,9 @@ Branch `erdos-385-brun`. `Erdos385/Discharge.lean` sorry-free; all three frozen 
   on `[0,2T]` after folding `t ↦ -t`; explicit `J(λ)=(1-cos 2Tλ)/(2Tλ²)`; row sums by
   telescoping `T/(Tj+N)`).  Constant 32.
 Nothing open in scope.
+
+## Final checkpoint
+HEAD 7af316c on `erdos-385-brun` (green, `box done --green` issued).
+Next steps (outside scope): merge `erdos-385-brun` into `erdos-385`; downstream consumers of
+`MediumPNTStatement` / `MontgomeryVaughanMVT` hypotheses can now take `Erdos385.mediumPNTStatement_holds`
+and `Erdos385.montgomeryVaughanMVT_holds`.
