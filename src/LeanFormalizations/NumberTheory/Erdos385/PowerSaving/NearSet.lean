@@ -30,8 +30,8 @@ open Real Filter MeasureTheory Complex LeanFormalizations.Literature Erdos385.Pa
 the unit neighbourhoods is immediate from maximality (every `t` with `|P| > Z^{−η}` is within `1`
 of `S`), no derivative bound needed. -/
 def NearSetLeaf (δ : ℝ) : Prop :=
-  ∃ η : ℝ, 0 < η ∧ ∃ cmax : ℝ, 0 < cmax ∧ ∀ c₀ : ℝ, 0 < c₀ → c₀ ≤ cmax → ∀ g : ℝ → ℝ,
-    Admissible δ g → ∀ᶠ Z : ℝ in atTop, ∃ T₀ : ℝ, Z ^ c₀ / 2 ≤ T₀ ∧ T₀ ≤ Z ^ c₀ ∧
+  ∃ cmax : ℝ, 0 < cmax ∧ ∀ c₀ : ℝ, 0 < c₀ → c₀ ≤ cmax → ∀ g : ℝ → ℝ,
+    Admissible δ g → ∃ η : ℝ, 0 < η ∧ ∀ᶠ Z : ℝ in atTop, ∃ T₀ : ℝ, Z ^ c₀ / 2 ≤ T₀ ∧ T₀ ≤ Z ^ c₀ ∧
       ∃ S : Finset ℝ, (∀ s ∈ S, T₀ + 1 ≤ |s|) ∧
       (∫ t in nearSet S 1, ‖LSeries (fun m ↦ (coeffA δ g Z m : ℂ)) (1 + t * I)‖) ≤
         1 / Real.log Z ^ 3 ∧
@@ -113,15 +113,16 @@ set_option maxHeartbeats 1600000 in
 /-- **`NearFarInput` from the near-set leaf** (MVT for `Q` off the near set, MVT for `A` far out). -/
 theorem nearFarInput_of_nearSetLeaf {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4)
     (hL : NearSetLeaf δ) : NearFarInput δ := by
-  obtain ⟨η, hη, m, hm, hL⟩ := hL
+  obtain ⟨m, hm, hL⟩ := hL
   have hMVT : MontgomeryVaughanMVT := ⟨32, Erdos385.MVT.mvt⟩
   obtain ⟨KQ, hKQ⟩ := primeQ_meanSquare hMVT hδ hδ'
   refine ⟨min m (1 / 12), lt_min hm (by norm_num), fun c₀ hc₀ hc₀m g hg => ?_⟩
   obtain ⟨KA, hKA⟩ := coeffC_meanSquare hMVT hδ hδ' hg
+  obtain ⟨η, hη, hL⟩ := hL c₀ hc₀ (hc₀m.trans (min_le_left _ _)) g hg
   obtain ⟨K, hK⟩ : ∃ K, K = |KQ| + |KA| := ⟨_, rfl⟩
   have hK0 : 0 ≤ K := by rw [hK]; positivity
   refine ⟨min (2 * η) (1 / 2), 100 * K * (1 + 1 / δ), lt_min (by positivity) (by norm_num), ?_⟩
-  filter_upwards [hL c₀ hc₀ (hc₀m.trans (min_le_left _ _)) g hg, hKQ, hKA,
+  filter_upwards [hL, hKQ, hKA,
     variance_params (κ := 1) hδ hδ' one_pos] with Z hS hQ hA hv
   obtain ⟨T₀, hT₀lo, hT₀hi, S, hSs, hnear, hP⟩ := hS
   clear hL hKQ hKA
