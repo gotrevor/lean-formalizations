@@ -190,6 +190,42 @@ noncomputable def variance (δ κ : ℝ) (g : ℝ → ℝ) (Z : ℝ) : ℝ :=
 def badWindow (δ Z : ℝ) : Set ℕ :=
   {n | Z + paramH δ Z ≤ n ∧ (n : ℝ) ≤ (1 + δ / 2) * Z ∧ (F n : ℝ) < n + (1 - δ) * √n}
 
+/-! ## Measure-theoretic helpers for the short sums -/
+
+theorem measurable_shortSum (a : ℕ → ℝ) (h : ℝ) : Measurable fun x => shortSum a x h := by
+  have hf : Measurable fun p : ℕ × ℕ => ∑ m ∈ Finset.Icc p.1 p.2, a m := measurable_of_countable _
+  exact hf.comp (measurable_id.nat_ceil.prodMk (measurable_id.add_const h).nat_floor)
+
+theorem abs_shortSum_le (a : ℕ → ℝ) {h U x : ℝ} (hx : x ≤ U) (hh : 0 ≤ h) :
+    |shortSum a x h| ≤ ∑ m ∈ Finset.range (⌊U + h⌋₊ + 1), |a m| := by
+  unfold shortSum
+  refine (Finset.abs_sum_le_sum_abs _ _).trans (Finset.sum_le_sum_of_subset_of_nonneg ?_ ?_)
+  · intro m hm
+    rw [Finset.mem_Icc] at hm
+    rw [Finset.mem_range]
+    have := Nat.floor_le_floor (show x + h ≤ U + h by linarith)
+    omega
+  · intros; exact abs_nonneg _
+
+theorem integrableOn_sq_shortSum (a : ℕ → ℝ) {h₁ h₂ L U : ℝ} (hh₁ : 0 ≤ h₁) (hh₂ : 0 ≤ h₂) :
+    IntegrableOn (fun x => (shortSum a x h₁ / h₁ - shortSum a x h₂ / h₂) ^ 2) (Set.Ioc L U) := by
+  set B₁ := ∑ m ∈ Finset.range (⌊U + h₁⌋₊ + 1), |a m|
+  set B₂ := ∑ m ∈ Finset.range (⌊U + h₂⌋₊ + 1), |a m|
+  refine Measure.integrableOn_of_bounded (M := (|B₁ / h₁| + |B₂ / h₂|) ^ 2) measure_Ioc_lt_top.ne
+    ((((measurable_shortSum a h₁).div_const _).sub
+      ((measurable_shortSum a h₂).div_const _)).pow_const 2).aestronglyMeasurable ?_
+  rw [ae_restrict_iff' measurableSet_Ioc]
+  refine Filter.Eventually.of_forall fun x hx => ?_
+  have e1 := abs_shortSum_le a hx.2 hh₁
+  have e2 := abs_shortSum_le a hx.2 hh₂
+  rw [Real.norm_eq_abs, abs_pow]
+  apply pow_le_pow_left₀ (abs_nonneg _)
+  refine (abs_sub _ _).trans (add_le_add ?_ ?_)
+  · rw [abs_div, abs_div]
+    exact div_le_div_of_nonneg_right (e1.trans (le_abs_self _)) (abs_nonneg _)
+  · rw [abs_div, abs_div]
+    exact div_le_div_of_nonneg_right (e2.trans (le_abs_self _)) (abs_nonneg _)
+
 /-! ## Wiring -/
 
 /-- **W0.** An admissible cutoff exists (e.g. from `ContDiffBump`). -/
@@ -270,7 +306,105 @@ theorem card_badWindow_le {δ κ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) (hκ 
       (∀ x, Z ≤ x → x ≤ (1 + δ / 2) * Z →
         μ ≤ shortSum (coeffA δ g Z) x (paramH2 δ κ Z) / paramH2 δ κ Z) →
       ((badWindow δ Z).ncard : ℝ) ≤ 2 * paramX δ Z * variance δ κ g Z / μ ^ 2 := by
-  sorry
+  have hsq : Tendsto (fun Z : ℝ => δ / 4 * √Z) atTop atTop :=
+    Real.tendsto_sqrt_atTop.const_mul_atTop (by positivity)
+  filter_upwards [eventually_gt_atTop 1, hsq.eventually_ge_atTop 2] with Z hZ hh μ hμ hlong
+  set h := paramH δ Z with hhdef
+  have hh' : 2 ≤ h := hh
+  set X := paramX δ Z with hX
+  have hX0 : 0 < X := by rw [hX, paramX]; nlinarith
+  set f := fun x => (shortSum (coeffA δ g Z) x (paramH1 δ Z) / paramH1 δ Z -
+      shortSum (coeffA δ g Z) x (paramH2 δ κ Z) / paramH2 δ κ Z) ^ 2 with hf
+  have hH1 : paramH1 δ Z ≤ h / 2 - 1 := by
+    unfold paramH1; have := Nat.floor_le (show 0 ≤ paramH δ Z / 2 by linarith); linarith
+  have hH1' : 0 ≤ paramH1 δ Z := by
+    unfold paramH1
+    have : (1 : ℝ) ≤ ⌊paramH δ Z / 2⌋₊ := by
+      have : 1 ≤ ⌊paramH δ Z / 2⌋₊ := Nat.le_floor (by push_cast; linarith)
+      exact_mod_cast this
+    linarith
+  have hH2 : 0 ≤ paramH2 δ κ Z := by unfold paramH2; rw [← hX]; exact div_nonneg hX0.le (by unfold paramT0; positivity)
+  -- the bad set is finite
+  classical
+  set N := ⌊(1 + δ / 2) * Z⌋₊ + 1
+  set T := (Finset.range N).filter (· ∈ badWindow δ Z)
+  have hBT : badWindow δ Z = ↑T := by
+    ext n; simp only [T, Finset.coe_filter, Finset.mem_range, Set.mem_setOf_eq]
+    constructor
+    · intro hn; refine ⟨?_, hn⟩
+      have := Nat.le_floor hn.2.1; omega
+    · exact fun h => h.2
+  rw [hBT, Set.ncard_coe_finset]
+  -- unit intervals
+  set J : ℕ → Set ℝ := fun n => Set.Ico ((n : ℝ) - h) ((n : ℝ) - h + 1)
+  have hJ : ∀ n ∈ T, ∀ x ∈ J n, μ ^ 2 ≤ f x ∧ X < x ∧ x ≤ 2 * X := by
+    intro n hn x hx
+    obtain ⟨hn1, hn2, hn3⟩ := (Finset.mem_filter.1 hn).2
+    obtain ⟨hx1, hx2⟩ := hx
+    have hxZ : Z ≤ x := by linarith
+    have hxZ' : x ≤ (1 + δ / 2) * Z := by linarith
+    refine ⟨?_, ?_, ?_⟩
+    · have hS1 : shortSum (coeffA δ g Z) x (paramH1 δ Z) = 0 := by
+        unfold shortSum
+        refine Finset.sum_eq_zero fun m hm => ?_
+        by_contra ha
+        rw [Finset.mem_Icc] at hm
+        have hm1 : x ≤ m := (Nat.ceil_le).1 hm.1
+        have hm2 : (m : ℝ) ≤ x + paramH1 δ Z :=
+          (Nat.le_floor_iff (by linarith)).1 hm.2
+        have hmn : m < n := by
+          have : (m : ℝ) < n := by linarith
+          exact_mod_cast this
+        have := witness_margin hδ hδ' hZ hg hn1 hn2 (by linarith) hmn ha
+        linarith
+      have := hlong x hxZ hxZ'
+      simp only [hf, hS1, zero_div, zero_sub, neg_sq]
+      exact pow_le_pow_left₀ hμ.le this 2
+    · have : X < Z := by rw [hX, paramX]; nlinarith
+      linarith
+    · have : (1 + δ / 2) * Z ≤ 2 * X := by rw [hX, paramX]; nlinarith
+      linarith
+  have hdisj : Set.Pairwise (↑T) (Function.onFun Disjoint J) := by
+    intro n _ m _ hnm
+    rw [Function.onFun, Set.disjoint_left]
+    rintro x ⟨h1, h2⟩ ⟨h3, h4⟩
+    rcases lt_or_gt_of_ne hnm with h | h
+    · have : (n : ℝ) + 1 ≤ m := by exact_mod_cast h
+      linarith
+    · have : (m : ℝ) + 1 ≤ n := by exact_mod_cast h
+      linarith
+  have hint := integrableOn_sq_shortSum (coeffA δ g Z) (L := X) (U := 2 * X) hH1' hH2
+  have hsub : (⋃ n ∈ T, J n) ⊆ Set.Ioc X (2 * X) := by
+    intro x hx
+    simp only [Set.mem_iUnion] at hx
+    obtain ⟨n, hn, hx⟩ := hx
+    exact ⟨(hJ n hn x hx).2.1, (hJ n hn x hx).2.2⟩
+  have hfnn : ∀ x, 0 ≤ f x := fun x => sq_nonneg _
+  have key : (T.card : ℝ) * μ ^ 2 ≤ ∫ x in X..(2 * X), f x := by
+    rw [intervalIntegral.integral_of_le (by linarith)]
+    calc (T.card : ℝ) * μ ^ 2 = ∑ n ∈ T, μ ^ 2 * volume.real (J n) := by
+          rw [Finset.sum_congr rfl fun n _ => by
+            rw [show volume.real (J n) = 1 by
+              simp only [J, Real.volume_real_Ico]; rw [max_eq_left (by linarith)]; ring, mul_one]]
+          simp [mul_comm]
+      _ ≤ ∑ n ∈ T, ∫ x in J n, f x := Finset.sum_le_sum fun n hn =>
+          setIntegral_ge_of_const_le_real measurableSet_Ico measure_Ico_lt_top.ne
+            (fun x hx => (hJ n hn x hx).1) (hint.mono_set fun x hx => hsub (by
+              simp only [Set.mem_iUnion]; exact ⟨n, hn, hx⟩))
+      _ = ∫ x in ⋃ n ∈ T, J n, f x := (integral_biUnion_finset T (fun _ _ => measurableSet_Ico)
+          hdisj fun n hn => hint.mono_set fun x hx => hsub (by
+            simp only [Set.mem_iUnion]; exact ⟨n, hn, hx⟩)).symm
+      _ ≤ ∫ x in Set.Ioc X (2 * X), f x :=
+          setIntegral_mono_set hint (Filter.Eventually.of_forall fun x => hfnn x)
+            (Filter.Eventually.of_forall hsub)
+  have hI0 : 0 ≤ ∫ x in X..(2 * X), f x :=
+    intervalIntegral.integral_nonneg (by linarith) fun x _ => hfnn x
+  unfold variance
+  change (T.card : ℝ) ≤ 2 * X * (1 / X * ∫ x in X..(2 * X), f x) / μ ^ 2
+  rw [show 2 * X * (1 / X * ∫ x in X..(2 * X), f x) = 2 * ∫ x in X..(2 * X), f x by
+    field_simp]
+  rw [le_div_iff₀ (by positivity)]
+  linarith
 
 /-- **W2′ (Lemma 3).**  For `κ` small against `MediumPNT`'s constant, the long average is
 `≥ c₁ δ / log² Z` on `[Z, (1 + δ/2) Z]`. -/
