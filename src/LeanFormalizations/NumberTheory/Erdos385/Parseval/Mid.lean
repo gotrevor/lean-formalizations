@@ -140,6 +140,25 @@ lemma integral_window_le {ψ : ℝ → ℝ} (hψ : Continuous ψ) (hnn : ∀ v, 
 lemma continuous_fourierInv_of_integrable {G : ℝ → ℂ} (hG : Integrable G) : Continuous (𝓕⁻ G) :=
   VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar continuous_inner.neg hG
 
+/-- Window differences of a continuous `g` are continuous on `[X, 2X]`. -/
+lemma continuousOn_winDif {g : ℝ → ℂ} (hgc : Continuous g) {X h₁ h₂ : ℝ} (hX : 0 < X)
+    (hh₁ : 0 ≤ h₁) (hh₂ : 0 ≤ h₂) : ContinuousOn (winDif g h₁ h₂) (Icc X (2 * X)) := by
+  have hlc : ∀ h : ℝ, Continuous fun x : ℝ ↦ Real.log (max (x + h) X) := fun h ↦
+    Real.continuousOn_log.comp_continuous ((continuous_add_const h).max continuous_const)
+      (fun v ↦ by simp only [mem_compl_iff, mem_singleton_iff]; positivity)
+  let D : ℝ → ℂ := fun x ↦
+    ((((x + h₁ : ℝ) : ℂ) * g (Real.log (max (x + h₁) X)) -
+      (x : ℂ) * g (Real.log (max (x + 0) X))) / h₁ -
+    (((x + h₂ : ℝ) : ℂ) * g (Real.log (max (x + h₂) X)) -
+      (x : ℂ) * g (Real.log (max (x + 0) X))) / h₂)
+  have hDc : Continuous D := by
+    have := hgc.comp (hlc h₁); have := hgc.comp (hlc h₂); have := hgc.comp (hlc 0)
+    fun_prop
+  refine hDc.continuousOn.congr ?_
+  intro x hx
+  simp only [D, winDif, winDelta, add_zero, max_eq_left hx.1,
+    max_eq_left (by linarith [hx.1] : X ≤ x + h₁), max_eq_left (by linarith [hx.1] : X ≤ x + h₂)]
+
 /-- `∫_X^{3X} ‖𝓕⁻G(log v)‖² ≤ 3X ∫‖G‖²`. -/
 lemma integral_log_band_le {G : ℝ → ℂ} (hG : Integrable G) {K : ℝ} (hK : ∀ ξ, ‖G ξ‖ ≤ K)
     (hc : ∀ᵐ ξ, ContinuousAt G ξ) {X : ℝ} (hX : 0 < X) :
@@ -238,23 +257,10 @@ theorem integral_winDif_mid_le {G : ℝ → ℂ} (hG : Integrable G) {K : ℝ} (
       have := Complex.abs_re_le_norm (sArg ξ)
       rw [sArg_re, abs_one] at this; exact this
   have hgc : Continuous g := continuous_fourierInv_of_integrable hF
-  have hlc : ∀ h : ℝ, Continuous fun x : ℝ ↦ Real.log (max (x + h) X) := fun h ↦
-    Real.continuousOn_log.comp_continuous ((continuous_add_const h).max continuous_const)
-      (fun v ↦ by simp only [mem_compl_iff, mem_singleton_iff]; positivity)
   have hLi : IntervalIntegrable (fun x ↦ ‖winDif g h₁ h₂ x‖ ^ 2) volume X (2 * X) := by
-    let D : ℝ → ℂ := fun x ↦
-      ((((x + h₁ : ℝ) : ℂ) * g (Real.log (max (x + h₁) X)) -
-        (x : ℂ) * g (Real.log (max (x + 0) X))) / h₁ -
-      (((x + h₂ : ℝ) : ℂ) * g (Real.log (max (x + h₂) X)) -
-        (x : ℂ) * g (Real.log (max (x + 0) X))) / h₂)
-    have hDc : Continuous D := by
-      have := hgc.comp (hlc h₁); have := hgc.comp (hlc h₂); have := hgc.comp (hlc 0)
-      fun_prop
-    refine ContinuousOn.intervalIntegrable ((hDc.norm.pow 2).continuousOn.congr ?_)
-    intro x hx
-    rw [uIcc_of_le (by linarith)] at hx
-    simp only [D, winDif, winDelta, add_zero, max_eq_left hx.1,
-      max_eq_left (by linarith [hx.1] : X ≤ x + h₁), max_eq_left (by linarith [hx.1] : X ≤ x + h₂)]
+    refine ContinuousOn.intervalIntegrable ?_
+    rw [uIcc_of_le (by linarith)]
+    exact ((continuousOn_winDif hgc hX hh₁.le hh₂.le).norm).pow 2
   have hRi : ∀ h, IntervalIntegrable (fun x ↦ 2 * (W h x / h)) volume X (2 * X) := fun h ↦
     ((continuous_const.mul ((hWc h).div_const h))).intervalIntegrable _ _
   calc ∫ x in X..2 * X, ‖winDif g h₁ h₂ x‖ ^ 2
