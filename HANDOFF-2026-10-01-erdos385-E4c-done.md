@@ -13,3 +13,5 @@
 
 Next: E4 (`Exceptional.lean`, branch `erdos-385-brun`) can now take `arithLargeSieveWeak_holds`
 once it is restated against the weak constant.
+
+Branch `erdos-385`, proof commit `9ec5151`. Run stopped by host after scoped target met.
