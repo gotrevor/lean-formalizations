@@ -248,6 +248,19 @@ def register : List Row := [
     reopenIf := "pointwise cancellation in the Type II × Type II term near the diagonal \
       (Σ α_a β_b γ_c δ_d 1[ab = ⌊n/(cd)⌋]), i.e. a binary-problem mechanism; the curved range \
       p ≪ √n needs ⌊n/p⌋ p-rough, which the sieve-only row already blocks" },
+  { route := "Erdős #385(i) by witnesses with three or more prime factors (a 'ternary escape' \
+      from the binary prime-pair problem)"
+    verdict := .needsNewIdea, tier := .cited
+    anchor := some ``LeanFormalizations.Erdos385.good_iff_exists_prime_floor
+    evidence := "By Erdos385.good_iff_exists_prime_floor a witness with least prime p is \
+      p ⌊n/p⌋, inside a window of length p.  With k factors of size n^{1/k} the window is n^{1/k} \
+      and the Mellin height n^{1−1/k} exceeds each factor's length n^{1/k}, so for k ≥ 3 the \
+      pointwise Hölder/mean-value bound loses a power of n (k = 3: ∫|P|³ ≫ n^{1/6}): more \
+      variables shrink the window faster than they add freedom.  The widest window, √n, is \
+      the two-prime case (Erdos385.HyperbolaPrimePairs), which is binary"
+    reopenIf := "a witness family whose window is not bounded by its least prime factor, or \
+      a pointwise mechanism for two primes near a hyperbola (open even for ⌊p^c⌋, where only \
+      almost-prime values are known)" },
   { route := "Linear sieve s > 2 (phase E5) from ONE Buchstab step on Selberg's Λ² upper bound"
     verdict := .needsNewIdea, tier := .cited, anchor := none
     evidence := "scripts/linear-sieve-onestep.py: S(z) = N − Σ_{p<z} S(A_p, p) with Selberg's \
