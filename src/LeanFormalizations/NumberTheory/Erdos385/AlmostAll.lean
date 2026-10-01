@@ -1025,11 +1025,96 @@ theorem coeffA_facts {δ Z : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) (hZ : 1 < Z
       have : 0 < Z := by linarith
       nlinarith
 
+/-- The `p`-range of `P`. -/
+noncomputable def setP (Z : ℝ) : Finset ℕ := (Finset.range (⌊√Z⌋₊ + 1)).filter Nat.Prime
+
+/-- The `q`-range of `Q`. -/
+noncomputable def setQ (δ Z : ℝ) : Finset ℕ :=
+  (Finset.range (⌊(1 + 2 * δ) * √Z⌋₊ + 1)).filter (fun q : ℕ => q.Prime ∧ √Z ≤ (q : ℝ))
+
+theorem mem_setQ {δ Z : ℝ} (hδ : 0 < δ) {q : ℕ} :
+    q ∈ setQ δ Z ↔ q.Prime ∧ √Z ≤ (q : ℝ) ∧ (q : ℝ) ≤ (1 + 2 * δ) * √Z := by
+  rw [setQ, Finset.mem_filter, Finset.mem_range, Nat.lt_succ_iff]
+  constructor
+  · rintro ⟨h1, h2, h3⟩
+    refine ⟨h2, h3, ?_⟩
+    have : 0 ≤ (1 + 2 * δ) * √Z := by positivity
+    exact (Nat.le_floor_iff this).1 h1
+  · rintro ⟨h1, h2, h3⟩
+    exact ⟨Nat.le_floor h3, h1, h2⟩
+
+/-- `a_m log Z = ∑_{p ∈ P-range} [p ∣ m, m/p ∈ Q-range] (log p) g(p/√Z)`. -/
+theorem coeffA_mul_log_eq {δ Z : ℝ} (hδ : 0 < δ) (hZ : 1 < Z) {g : ℝ → ℝ} (hg : Admissible δ g)
+    (m : ℕ) :
+    coeffA δ g Z m * Real.log Z = ∑ p ∈ setP Z,
+      (if p ∣ m ∧ m / p ∈ setQ δ Z then Real.log p * g (p / √Z) else 0) := by
+  have hlZ : 0 < Real.log Z := Real.log_pos hZ
+  have hsZ : 0 < √Z := Real.sqrt_pos.2 (by linarith)
+  rw [coeffA, div_mul_cancel₀ _ hlZ.ne']
+  refine Finset.sum_bij_ne_zero (fun p _ _ => p) ?_ (fun _ _ _ _ _ _ h => h) ?_ ?_
+  · intro p hpm hne
+    obtain ⟨-, -, -, -, hp2, -, -⟩ := coeffA_term_ne_zero hZ hg hδ hpm hne
+    rw [setP, Finset.mem_filter, Finset.mem_range, Nat.lt_succ_iff]
+    exact ⟨Nat.le_floor (hp2.trans (by nlinarith)), Nat.prime_of_mem_primeFactors hpm⟩
+  · intro p hp hne
+    split_ifs at hne with hc
+    · obtain ⟨hpd, hq⟩ := hc
+      obtain ⟨hqp, -, -⟩ := (mem_setQ hδ).1 hq
+      have hpp : p.Prime := (Finset.mem_filter.1 hp).2
+      have hm0 : m ≠ 0 := by
+        rintro rfl; rw [Nat.zero_div] at hqp; exact Nat.not_prime_zero hqp
+      exact ⟨p, Nat.mem_primeFactors.2 ⟨hpp, hpd, hm0⟩, by
+        rw [if_pos ((mem_setQ hδ).1 hq)]; exact hne, rfl⟩
+    · exact absurd rfl hne
+  · intro p hpm hne
+    have h := coeffA_term_ne_zero hZ hg hδ hpm hne
+    rw [if_pos ⟨h.1, h.2.1, h.2.2.1⟩, if_pos ⟨Nat.dvd_of_mem_primeFactors hpm,
+      (mem_setQ hδ).2 ⟨h.1, h.2.1, h.2.2.1⟩⟩]
+
 /-- **W3c (fact 3).**  `A(s) = P(s) Q(s) / log Z`. -/
 theorem LSeries_coeffC_eq {δ Z : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) (hZ : 1 < Z) {g : ℝ → ℝ}
     (hg : Admissible δ g) (s : ℂ) :
     LSeries (coeffC δ g Z) s = primeP g Z s * primeQ δ Z s / (Real.log Z : ℂ) := by
-  sorry
+  classical
+  have hlZ : (Real.log Z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.2 (Real.log_pos hZ).ne'
+  set w : ℕ → ℂ := fun p => ((Real.log p * g (p / √Z) : ℝ) : ℂ) with hw
+  set f : ℕ → ℕ → ℂ := fun p m =>
+    (if p ∣ m ∧ m / p ∈ setQ δ Z then w p else 0) * (m : ℂ) ^ (-s) with hf
+  have hc0 : coeffC δ g Z 0 = 0 := by simp [coeffC, coeffA]
+  have hterm : ∀ m, LSeries.term (coeffC δ g Z) s m = (∑ p ∈ setP Z, f p m) / (Real.log Z : ℂ) := by
+    intro m
+    rw [LSeries.term_def₀ hc0, coeffC]
+    have h := coeffA_mul_log_eq hδ hZ hg m
+    have : (coeffA δ g Z m : ℂ) = (∑ p ∈ setP Z,
+        (if p ∣ m ∧ m / p ∈ setQ δ Z then w p else 0)) / (Real.log Z : ℂ) := by
+      rw [eq_div_iff hlZ]
+      have := congrArg (fun r : ℝ => (r : ℂ)) h
+      simp only [Complex.ofReal_mul, Complex.ofReal_sum] at this
+      rw [this]
+      refine Finset.sum_congr rfl fun p _ => ?_
+      split_ifs <;> simp [hw]
+    rw [this, div_mul_eq_mul_div, Finset.sum_mul]
+  -- each `f p` is supported on `p · Q`
+  have hsupp : ∀ p ∈ setP Z, ∀ m ∉ (setQ δ Z).image (fun q => p * q), f p m = 0 := by
+    intro p _ m hm
+    simp only [hf]
+    rw [if_neg, zero_mul]
+    rintro ⟨hpd, hq⟩
+    exact hm (Finset.mem_image.2 ⟨m / p, hq, Nat.mul_div_cancel' hpd⟩)
+  have hsum1 : ∀ p ∈ setP Z, Summable (f p) := fun p hp =>
+    summable_of_ne_finset_zero (hsupp p hp)
+  have hfp : ∀ p ∈ setP Z, ∑' m, f p m = ∑ q ∈ setQ δ Z, w p * (p : ℂ) ^ (-s) * (q : ℂ) ^ (-s) := by
+    intro p hp
+    have hp0 : 0 < p := (Finset.mem_filter.1 hp).2.pos
+    rw [tsum_eq_sum (hsupp p hp), Finset.sum_image (fun a _ b _ h => Nat.eq_of_mul_eq_mul_left hp0 h)]
+    refine Finset.sum_congr rfl fun q hq => ?_
+    simp only [hf]
+    rw [if_pos ⟨dvd_mul_right p q, by rw [Nat.mul_div_cancel_left q hp0]; exact hq⟩]
+    push_cast
+    rw [Complex.natCast_mul_natCast_cpow]; ring
+  rw [LSeries, tsum_congr hterm, tsum_div_const, Summable.tsum_finsetSum hsum1,
+    Finset.sum_congr rfl hfp, primeP, primeQ, Finset.sum_mul_sum]
+  rfl
 
 /-- **W3d (Lemma 4).**  `|P(1 + it)| ≪ 1/T₀` for `T₀ ≤ |t| ≤ 8X`: the Mellin main term decays like
 `1/|t|`, the VK error and the prime powers are smaller.  Confidence 90% (PROOF Lemma 4). -/
