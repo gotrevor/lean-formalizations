@@ -625,6 +625,147 @@ theorem mellin_pointwise {f : ℝ → ℂ} (hf : ∀ k : ℕ, ContDiff ℝ k f) 
     have hF := norm_nonneg (mellin f s)
     nlinarith [le_abs_self K4, abs_nonneg K0, abs_nonneg K2, mul_le_mul_of_nonneg_left hy hF]
 
+/-- `y ↦ mellin f (2 + iy)` is continuous, integrable, and `≤ K/(1+y²)`. -/
+theorem mellin_vertical_facts {f : ℝ → ℂ} (hf : ∀ k : ℕ, ContDiff ℝ k f) {a b : ℝ} (ha : 0 < a)
+    (hab : a ≤ b) (hs : ∀ x, f x ≠ 0 → a ≤ x ∧ x ≤ b) :
+    ∃ K : ℝ, 0 ≤ K ∧ (∀ y : ℝ, ‖mellin f (2 + y * I)‖ ≤ K * (1 + y ^ 2)⁻¹) ∧
+      Continuous (fun y : ℝ => mellin f (2 + y * I)) ∧
+      Integrable (fun y : ℝ => mellin f (2 + y * I)) := by
+  obtain ⟨K, hK0, hK⟩ := mellin_pointwise hf ha hab hs
+  have hb : ∀ y : ℝ, ‖mellin f (2 + y * I)‖ ≤ K * (1 + y ^ 2)⁻¹ := by
+    intro y
+    have := (hK (2 + y * I) (by simp; norm_num) (by simp)).1
+    simpa using this
+  have hc : Continuous (fun y : ℝ => mellin f (2 + y * I)) :=
+    (mellin_differentiable (hf 0).continuous ha hs).continuous.comp (by fun_prop)
+  exact ⟨K, hK0, hb, hc, (integrable_inv_one_add_sq.const_mul K).mono' hc.aestronglyMeasurable
+    (Eventually.of_forall hb)⟩
+
+/-- **Mellin inversion on `Re s = 2`.** -/
+theorem mellin_inversion_two {f : ℝ → ℂ} (hf : ∀ k : ℕ, ContDiff ℝ k f) {a b : ℝ} (ha : 0 < a)
+    (hab : a ≤ b) (hs : ∀ x, f x ≠ 0 → a ≤ x ∧ x ≤ b) {x : ℝ} (hx : 0 < x) :
+    f x = ((1 / (2 * π) : ℝ) : ℂ) * ∫ y : ℝ, (x : ℂ) ^ (-(2 + y * I)) * mellin f (2 + y * I) := by
+  obtain ⟨K, -, -, -, hint⟩ := mellin_vertical_facts hf ha hab hs
+  have hconv : MellinConvergent f (2 : ℝ) := by
+    unfold MellinConvergent
+    have hcont : ContinuousOn (fun t : ℝ => (t : ℂ) ^ (((2 : ℝ) : ℂ) - 1) • f t) (Set.Icc a b) := by
+      intro u hu
+      apply ContinuousAt.continuousWithinAt
+      exact (continuousAt_ofReal_cpow_const u _ (Or.inr (by linarith [hu.1]))).smul
+        (hf 0).continuous.continuousAt
+    refine (hcont.integrableOn_Icc).of_forall_sdiff_eq_zero measurableSet_Ioi fun u hu => ?_
+    have : f u = 0 := by by_contra h; exact hu.2 (hs u h)
+    simp [this]
+  have hvert : VerticalIntegrable (mellin f) (2 : ℝ) := by
+    unfold VerticalIntegrable; push_cast; exact hint
+  have := mellinInv_mellin_eq (2 : ℝ) f hx hconv hvert (hf 0).continuous.continuousAt
+  rw [← this, mellinInv]
+  push_cast
+  simp only [smul_eq_mul]
+  rw [Complex.real_smul]; push_cast; ring
+
+/-- **V4, main-term half.**  If `f(x/P) = 0` for `x < 1`, then
+`F(1 − it) P^{1−it} = (1/2π) ∫ F(2+iy) P^{2+iy} / (2+iy+it−1) dy`. -/
+theorem mainTerm_eq_vertical {f : ℝ → ℂ} (hf : ∀ k : ℕ, ContDiff ℝ k f) {a b : ℝ} (ha : 0 < a)
+    (hab : a ≤ b) (hs : ∀ x, f x ≠ 0 → a ≤ x ∧ x ≤ b) {P : ℝ} (hP : 1 ≤ a * P) (t : ℝ) :
+    mellin f (1 - t * I) * (P : ℂ) ^ (1 - t * I) =
+      ((1 / (2 * π) : ℝ) : ℂ) * ∫ y : ℝ, mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I) /
+        (2 + y * I + t * I - 1) := by
+  obtain ⟨K, hK0, hKb, hKc, hKi⟩ := mellin_vertical_facts hf ha hab hs
+  have hP0 : 0 < P := by
+    by_contra h; push Not at h; nlinarith
+  have hPc : (P : ℂ) ≠ 0 := by exact_mod_cast hP0.ne'
+  set c : ℂ := ((1 / (2 * π) : ℝ) : ℂ)
+  set s : ℝ → ℂ := fun y => 2 + y * I with hs_def
+  set Φ : ℝ → ℝ → ℂ := fun x y => (x : ℂ) ^ (-(s y + t * I)) * (mellin f (s y) * (P : ℂ) ^ (s y))
+    with hΦ
+  -- Claim 1: inversion inside the `x`-integral
+  have hc1 : ∀ x : ℝ, 0 < x → (x : ℂ) ^ (-(t * I)) * f (x / P) = c * ∫ y, Φ x y := by
+    intro x hx
+    rw [mellin_inversion_two hf ha hab hs (div_pos hx hP0), ← mul_assoc, mul_comm _ c, mul_assoc,
+      ← integral_const_mul]
+    congr 1
+    refine integral_congr_ae (Eventually.of_forall fun y => ?_)
+    have hx0 : (x : ℂ) ≠ 0 := by exact_mod_cast hx.ne'
+    simp only [hΦ, hs_def]
+    rw [show ((x / P : ℝ) : ℂ) = (x : ℂ) * ((P⁻¹ : ℝ) : ℂ) by push_cast; ring,
+      mul_cpow_ofReal_nonneg hx.le (inv_nonneg.2 hP0.le), Complex.ofReal_inv,
+      inv_cpow _ _ (by rw [Complex.arg_ofReal_of_nonneg hP0.le]; exact Real.pi_pos.ne),
+      Complex.cpow_neg (P : ℂ), inv_inv,
+      show -((2 : ℂ) + y * I + t * I) = -(2 + y * I) + -(t * I) by ring,
+      Complex.cpow_add _ _ hx0]
+    ring
+  -- Claim 2: the inner `x`-integral
+  have hc2 : ∀ y : ℝ, ∫ x in Set.Ioi (1 : ℝ), Φ x y =
+      mellin f (s y) * (P : ℂ) ^ (s y) / (s y + t * I - 1) := by
+    intro y
+    simp only [hΦ]
+    rw [integral_mul_const, integral_Ioi_cpow_of_lt (by simp [hs_def]) one_pos]
+    have hne : -(s y + t * I) + 1 ≠ 0 := by
+      intro h; have := congrArg Complex.re h; simp [hs_def] at this; norm_num at this
+    have hne' : s y + t * I - 1 ≠ 0 := by
+      intro h; apply hne; linear_combination -h
+    rw [Complex.ofReal_one, Complex.one_cpow]
+    field_simp
+    ring
+  -- Claim 3: Fubini
+  have hint : Integrable (Function.uncurry Φ) ((volume.restrict (Set.Ioi (1 : ℝ))).prod volume) := by
+    have hbound : Integrable (fun z : ℝ × ℝ => z.1 ^ (-2 : ℝ) * (K * P ^ 2 * (1 + z.2 ^ 2)⁻¹))
+        ((volume.restrict (Set.Ioi (1 : ℝ))).prod volume) :=
+      Integrable.mul_prod (integrableOn_Ioi_rpow_of_lt (by norm_num) one_pos)
+        (integrable_inv_one_add_sq.const_mul _)
+    have hm : Measurable fun y : ℝ => mellin f (2 + y * I) := hKc.measurable
+    have hmeas : Measurable (Function.uncurry Φ) := by
+      show Measurable fun z : ℝ × ℝ => (z.1 : ℂ) ^ (-(2 + (z.2 : ℂ) * I + t * I)) *
+        (mellin f (2 + z.2 * I) * (P : ℂ) ^ (2 + (z.2 : ℂ) * I))
+      refine Measurable.mul (Measurable.pow (measurable_ofReal.comp measurable_fst) ?_)
+        ((hm.comp measurable_snd).mul (Measurable.pow measurable_const ?_)) <;> fun_prop
+    refine hbound.mono' hmeas.aestronglyMeasurable ?_
+    · rw [Measure.ae_prod_iff_ae_ae]
+      · refine (ae_restrict_iff' measurableSet_Ioi).2 (Eventually.of_forall fun x hx => ?_)
+        refine Eventually.of_forall fun y => ?_
+        have hx0 : 0 < x := by linarith [show (1:ℝ) < x from hx]
+        simp only [Function.uncurry, hΦ, hs_def, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx0,
+          Complex.norm_cpow_eq_rpow_re_of_pos hP0]
+        have hre1 : (-((2:ℂ) + y * I + t * I)).re = -2 := by simp
+        have hre2 : ((2:ℂ) + y * I).re = 2 := by simp
+        rw [hre1, hre2, show P ^ (2:ℝ) = P ^ 2 by norm_cast]
+        have := hKb y
+        have h0 : 0 ≤ x ^ (-2:ℝ) := Real.rpow_nonneg hx0.le _
+        calc x ^ (-2:ℝ) * (‖mellin f (2 + y * I)‖ * P ^ 2)
+            ≤ x ^ (-2:ℝ) * (K * (1 + y ^ 2)⁻¹ * P ^ 2) := by gcongr
+          _ = _ := by ring
+      · exact measurableSet_le hmeas.norm (by fun_prop)
+  -- Claim 4: the left side as an `x`-integral over `(1, ∞)`
+  have hPinv : ((P⁻¹ : ℝ) : ℂ) ^ (-(1 - t * I)) = (P : ℂ) ^ (1 - t * I) := by
+    rw [Complex.ofReal_inv, inv_cpow _ _ (by rw [Complex.arg_ofReal_of_nonneg hP0.le]; exact Real.pi_pos.ne),
+      Complex.cpow_neg, inv_inv]
+  have hL : mellin f (1 - t * I) * (P : ℂ) ^ (1 - t * I) =
+      ∫ x in Set.Ioi (1 : ℝ), (x : ℂ) ^ (-(t * I)) * f (x / P) := by
+    have h1 := mellin_comp_mul_left f (1 - t * I) (inv_pos.2 hP0)
+    rw [hPinv, smul_eq_mul] at h1
+    rw [mul_comm, ← h1, mellin]
+    rw [setIntegral_eq_of_subset_of_ae_sdiff_eq_zero measurableSet_Ioi.nullMeasurableSet
+      (fun x (hx : (1:ℝ) < x) => show (0:ℝ) < x by linarith)]
+    · refine setIntegral_congr_fun measurableSet_Ioi fun x _ => ?_
+      simp only [smul_eq_mul]
+      rw [show 1 - (t : ℂ) * I - 1 = -(t * I) by ring, div_eq_inv_mul]
+    · have : ∀ᵐ x : ℝ, x ≠ 1 := by rw [ae_iff]; simp
+      filter_upwards [this] with x hx1 hx
+      have hx' : x < 1 := lt_of_le_of_ne (not_lt.1 hx.2) hx1
+      have : f (P⁻¹ * x) = 0 := by
+        by_contra h
+        have := (hs _ h).1
+        have : a * P ≤ x := by
+          calc a * P ≤ P⁻¹ * x * P := mul_le_mul_of_nonneg_right this hP0.le
+            _ = x := by field_simp
+        linarith
+      simp [this]
+  rw [hL, setIntegral_congr_fun measurableSet_Ioi (fun x hx => hc1 x (by
+      linarith [show (1:ℝ) < x from hx])), integral_const_mul, integral_integral_swap hint]
+  congr 1
+  exact integral_congr_ae (Eventually.of_forall hc2)
+
 /-- **Crux leaf V4 (Perron at `Re s = 2`, main term subtracted).**  Once `f(x/P)` vanishes for
 `x ≤ 1` (`a P ≥ 1`): `S − F(1 − it) P^{1−it} = −(1/2π) ∫ F(2+iy) P^{2+iy} H(2+iy+it) dy`.
 English proof: Mellin inversion `mellinInv_mellin_eq` at `x = n/P`, Fubini against
