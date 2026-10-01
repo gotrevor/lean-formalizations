@@ -156,4 +156,42 @@ theorem log_le_selG {z ξ : ℕ} (hξz : ξ < z) : Real.log ξ ≤ selG z ξ := 
         have : (1 : ℝ) < p := by exact_mod_cast (Nat.prime_of_mem_primeFactors hp).one_lt
         field_simp
 
+/-- `Π(ξ) = ∏_{p ≤ ξ} p/(p−1)`. -/
+noncomputable def mertensP (ξ : ℕ) : ℝ :=
+  ∏ p ∈ (range (ξ + 1)).filter Nat.Prime, (p : ℝ) / ((p : ℝ) - 1)
+
+/-- **The Selberg error sum**: `E ≤ ξ · Π(ξ)`. -/
+theorem selE_le (z ξ : ℕ) : selE z ξ ≤ ξ * mertensP ξ := by
+  classical
+  have hterm : ∀ d ∈ levelL z ξ, ∏ p ∈ d.primeFactors, (p : ℝ) / ((p : ℝ) - 1) ≤ mertensP ξ := by
+    intro d hd
+    have hdξ : d ≤ ξ := (mem_filter.mp hd).2
+    have hd0 : d ≠ 0 := by
+      rintro rfl; simp [levelL] at hd
+    unfold mertensP
+    refine prod_le_prod_of_subset_of_one_le (fun p hp => ?_) (fun p hp => ?_) (fun p hp _ => ?_)
+    · simp only [mem_filter, mem_range]
+      have := Nat.le_of_mem_primeFactors hp
+      have := Nat.le_of_dvd (Nat.pos_of_ne_zero hd0) (Nat.dvd_of_mem_primeFactors hp)
+      exact ⟨by omega, Nat.prime_of_mem_primeFactors hp⟩
+    · have : (1 : ℝ) < p := by exact_mod_cast (Nat.prime_of_mem_primeFactors hp).one_lt
+      exact div_nonneg (by linarith) (by linarith)
+    · have : (1 : ℝ) < p := by exact_mod_cast (mem_filter.mp hp).2.one_lt
+      rw [le_div_iff₀ (by linarith)]; linarith
+  have hcard : ((levelL z ξ).card : ℝ) ≤ ξ := by
+    have : (levelL z ξ).card ≤ ξ := by
+      have hsub : levelL z ξ ⊆ Icc 1 ξ := by
+        intro d hd
+        obtain ⟨hd1, hd2⟩ := mem_filter.mp hd
+        have := Nat.pos_of_mem_divisors hd1
+        exact mem_Icc.mpr ⟨this, hd2⟩
+      exact (card_le_card hsub).trans (by simp)
+    exact_mod_cast this
+  have hP : 0 ≤ mertensP ξ := prod_nonneg fun p hp => by
+    have : (1 : ℝ) < p := by exact_mod_cast (mem_filter.mp hp).2.one_lt
+    exact div_nonneg (by linarith) (by linarith)
+  calc selE z ξ ≤ ∑ d ∈ levelL z ξ, mertensP ξ := sum_le_sum hterm
+    _ = (levelL z ξ).card * mertensP ξ := by rw [sum_const, nsmul_eq_mul]
+    _ ≤ ξ * mertensP ξ := mul_le_mul_of_nonneg_right hcard hP
+
 end LeanFormalizations.Erdos385.LinearSieve
