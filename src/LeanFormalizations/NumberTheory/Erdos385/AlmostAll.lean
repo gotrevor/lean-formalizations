@@ -1251,6 +1251,63 @@ theorem LSeries_coeffC_eq {δ Z : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) (hZ : 
     Finset.sum_congr rfl hfp, primeP, primeQ, Finset.sum_mul_sum]
   rfl
 
+/-- **W3d, Mellin decay.**  For `f` of class `C¹` vanishing off `(a, b) ⊂ (0, ∞)`,
+`|t| · |mellin f (1 − it)|` is bounded: one integration by parts against `x^{1−it}`. -/
+theorem mellin_one_sub_mul_I_decay {f : ℝ → ℂ} (hf : ContDiff ℝ 1 f) {a b : ℝ} (ha : 0 < a)
+    (hab : a ≤ b) (hs : ∀ x, f x ≠ 0 → a < x ∧ x < b) :
+    ∃ K : ℝ, ∀ t : ℝ, ‖mellin f (1 - t * I)‖ * |t| ≤ K := by
+  have hfa : f a = 0 := by by_contra h; exact lt_irrefl _ (hs a h).1
+  have hfb : f b = 0 := by by_contra h; exact lt_irrefl _ (hs b h).2
+  have hdc : Continuous (deriv f) := hf.continuous_deriv le_rfl
+  obtain ⟨M, hM⟩ := (isCompact_Icc (a := a) (b := b)).exists_bound_of_continuousOn
+    (hdc.norm.continuousOn)
+  refine ⟨(b - a) * (|M| * b), fun t => ?_⟩
+  set s : ℂ := 1 - t * I with hsdef
+  have hs0 : s ≠ 0 := by intro h; have := congrArg Complex.re h; simp [hsdef] at this
+  have hab' : Set.uIcc a b = Set.Icc a b := Set.uIcc_of_le hab
+  -- the Mellin integral is an integral over `[a, b]`
+  have hmel : mellin f s = ∫ x in a..b, f x * (s * (x : ℂ) ^ (s - 1)) / s := by
+    rw [mellin, intervalIntegral.integral_of_le hab,
+      setIntegral_eq_of_subset_of_forall_sdiff_eq_zero (s := Set.Ioc a b) measurableSet_Ioi
+      (fun x hx => show 0 < x by linarith [hx.1])]
+    · refine setIntegral_congr_fun measurableSet_Ioc fun x _ => ?_
+      rw [smul_eq_mul]; field_simp
+    · intro x hx
+      have : f x = 0 := by
+        by_contra h; exact hx.2 ⟨(hs x h).1, (hs x h).2.le⟩
+      simp [this]
+  have hibp : ∫ x in a..b, f x * (s * (x : ℂ) ^ (s - 1)) =
+      f b * (b : ℂ) ^ s - f a * (a : ℂ) ^ s - ∫ x in a..b, deriv f x * (x : ℂ) ^ s := by
+    apply intervalIntegral.integral_mul_deriv_eq_deriv_mul
+    · intro x _
+      exact (hf.differentiable one_ne_zero x).hasDerivAt
+    · intro x hx
+      rw [hab'] at hx
+      exact hasDerivAt_ofReal_cpow_const (ne_of_gt (by linarith [hx.1])) hs0
+    · exact hdc.intervalIntegrable _ _
+    · apply ContinuousOn.intervalIntegrable
+      rw [hab']
+      intro x hx
+      apply ContinuousAt.continuousWithinAt
+      exact continuousAt_const.mul (continuousAt_ofReal_cpow_const x _ (Or.inr (by linarith [hx.1])))
+  have hkey : mellin f s * s = -∫ x in a..b, deriv f x * (x : ℂ) ^ s := by
+    rw [hmel, intervalIntegral.integral_div, div_mul_cancel₀ _ hs0, hibp, hfa, hfb]; ring
+  have hts : |t| ≤ ‖s‖ := by
+    have := Complex.abs_im_le_norm s; simpa [hsdef] using this
+  have hbound : ‖∫ x in a..b, deriv f x * (x : ℂ) ^ s‖ ≤ |M| * b * |b - a| := by
+    apply intervalIntegral.norm_integral_le_of_norm_le_const
+    intro x hx
+    rw [Set.uIoc_of_le hab] at hx
+    have hx0 : 0 < x := by linarith [hx.1]
+    rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx0]
+    have hre : s.re = 1 := by simp [hsdef]
+    rw [hre, Real.rpow_one]
+    exact mul_le_mul ((by simpa using hM x ⟨hx.1.le, hx.2⟩ : ‖deriv f x‖ ≤ M).trans (le_abs_self M)) hx.2 hx0.le (abs_nonneg _)
+  calc ‖mellin f s‖ * |t| ≤ ‖mellin f s‖ * ‖s‖ := mul_le_mul_of_nonneg_left hts (norm_nonneg _)
+    _ = ‖mellin f s * s‖ := (norm_mul _ _).symm
+    _ ≤ |M| * b * |b - a| := by rw [hkey, norm_neg]; exact hbound
+    _ = (b - a) * (|M| * b) := by rw [abs_of_nonneg (sub_nonneg.2 hab)]; ring
+
 /-- **W3d (Lemma 4).**  `|P(1 + it)| ≪ 1/T₀` for `T₀ ≤ |t| ≤ 8X`: the Mellin main term decays like
 `1/|t|`, the VK error and the prime powers are smaller.  Confidence 90% (PROOF Lemma 4). -/
 theorem primeP_small (hVK : SmoothPrimeSumVK) {δ κ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4)
