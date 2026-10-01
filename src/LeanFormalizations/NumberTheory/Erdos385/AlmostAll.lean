@@ -1308,6 +1308,112 @@ theorem mellin_one_sub_mul_I_decay {f : ℝ → ℂ} (hf : ContDiff ℝ 1 f) {a 
     _ ≤ |M| * b * |b - a| := by rw [hkey, norm_neg]; exact hbound
     _ = (b - a) * (|M| * b) := by rw [abs_of_nonneg (sub_nonneg.2 hab)]; ring
 
+/-- The cutoff `g₀(u) = g(u)/u` that turns `P(1 + it)` into a Lemma-VK sum. -/
+noncomputable def cutoffDiv (g : ℝ → ℝ) : ℝ → ℂ := fun u => ((g u / u : ℝ) : ℂ)
+
+theorem cutoffDiv_facts {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) {g : ℝ → ℝ} (hg : Admissible δ g) :
+    (∀ k : ℕ, ContDiff ℝ k (cutoffDiv g)) ∧ HasCompactSupport (cutoffDiv g) ∧
+      tsupport (cutoffDiv g) ⊆ Set.Ioi 0 ∧ (∀ u, cutoffDiv g u ≠ 0 → 1 / 2 < u ∧ u < 1) ∧
+      ∀ u, ‖cutoffDiv g u‖ ≤ 2 := by
+  obtain ⟨hs, hb, hsupp, -⟩ := hg
+  have hz : ∀ u, cutoffDiv g u ≠ 0 → 1 - δ / 2 ≤ u ∧ u ≤ 1 - δ / 4 := by
+    intro u hu
+    apply hsupp
+    intro h0; apply hu; simp [cutoffDiv, h0]
+  have hsub : Function.support (cutoffDiv g) ⊆ Set.Icc (1 - δ / 2) (1 - δ / 4) :=
+    fun u hu => hz u hu
+  have hts : tsupport (cutoffDiv g) ⊆ Set.Icc (1 - δ / 2) (1 - δ / 4) :=
+    closure_minimal hsub isClosed_Icc
+  refine ⟨fun k => ?_, HasCompactSupport.of_support_subset_isCompact (isCompact_Icc (a := 1 - δ / 2) (b := 1 - δ / 4)) hsub, ?_, ?_, ?_⟩
+  · have hr : ContDiff ℝ k (fun u => g u / u) := by
+      rw [contDiff_iff_contDiffAt]
+      intro u
+      rcases eq_or_ne u 0 with rfl | hu
+      · apply contDiffAt_const (c := (0:ℝ)).congr_of_eventuallyEq
+        filter_upwards [Iio_mem_nhds (show (0:ℝ) < 1 / 2 by norm_num)] with v hv
+        by_contra h
+        have h1 : g v ≠ 0 := fun h0 => h (by simp [h0])
+        have := (hsupp v h1).1; simp at hv; linarith
+      · exact ((hs k).contDiffAt).div contDiffAt_id hu
+    exact Complex.ofRealCLM.contDiff.comp hr
+
+  · exact hts.trans fun u hu => show (0:ℝ) < u by linarith [hu.1]
+  · intro u hu
+    have := hz u hu; constructor <;> linarith [this.1, this.2]
+  · intro u
+    by_cases hu : cutoffDiv g u = 0
+    · rw [hu, norm_zero]; norm_num
+    · have h1 := hz u hu
+      have hu0 : 1 / 2 < u := by linarith [h1.1]
+      simp only [cutoffDiv, Complex.norm_real, Real.norm_eq_abs, abs_div]
+      rw [abs_of_nonneg (hb u).1, abs_of_pos (by linarith), div_le_iff₀ (by linarith)]
+      linarith [(hb u).2]
+
+/-- **W3d, decomposition.**  `√Z · P(1 + it)` is the Lemma-VK sum for `g₀ = cutoffDiv g` at
+`P = √Z`, up to the prime powers, which cost at most `2(ψ − θ)(√Z)`. -/
+theorem primeP_decomp {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) {g : ℝ → ℝ} (hg : Admissible δ g)
+    {Z : ℝ} (hZ : 1 ≤ Z) (t : ℝ) :
+    ‖(√Z : ℂ) * primeP g Z (1 + t * I) - ∑' n : ℕ, (ArithmeticFunction.vonMangoldt n : ℂ) *
+        (n : ℂ) ^ (-((t : ℂ) * I)) * cutoffDiv g (n / √Z)‖ ≤ 2 * (ψ √Z - θ √Z) := by
+  classical
+  obtain ⟨-, -, -, hsupp, hbd⟩ := cutoffDiv_facts hδ hδ' hg
+  set P := √Z with hP
+  have hP1 : 1 ≤ P := Real.one_le_sqrt.2 hZ
+  set N := ⌊P⌋₊ with hN
+  set F : ℕ → ℂ := fun n => (ArithmeticFunction.vonMangoldt n : ℂ) *
+        (n : ℂ) ^ (-((t : ℂ) * I)) * cutoffDiv g (n / P) with hF
+  have htsum : ∑' n, F n = ∑ n ∈ Finset.Ioc 0 N, F n := by
+    apply tsum_eq_sum
+    intro n hn
+    rw [Finset.mem_Ioc, not_and_or, not_lt, not_le] at hn
+    rcases hn with hn | hn
+    · simp [hF, Nat.le_zero.1 hn]
+    · have : cutoffDiv g (n / P) = 0 := by
+        by_contra h
+        have h1 := (hsupp _ h).2
+        rw [div_lt_one (by linarith)] at h1
+        have : (N : ℝ) + 1 ≤ n := by exact_mod_cast hn
+        linarith [Nat.lt_floor_add_one P]
+      simp [hF, this]
+  rw [htsum, ← Finset.sum_filter_add_sum_filter_not (Finset.Ioc 0 N) Nat.Prime]
+  have hprime : (P : ℂ) * primeP g Z (1 + t * I) = ∑ n ∈ (Finset.Ioc 0 N).filter Nat.Prime, F n := by
+    rw [primeP, Finset.mul_sum, ← hP, ← hN]
+    have hset : (Finset.range (N + 1)).filter Nat.Prime = (Finset.Ioc 0 N).filter Nat.Prime := by
+      ext p; simp only [Finset.mem_filter, Finset.mem_range, Finset.mem_Ioc]
+      constructor
+      · rintro ⟨h1, h2⟩; exact ⟨⟨h2.pos, by omega⟩, h2⟩
+      · rintro ⟨h1, h2⟩; exact ⟨by omega, h2⟩
+    rw [hset]
+    refine Finset.sum_congr rfl fun p hp => ?_
+    have hpp := (Finset.mem_filter.1 hp).2
+    have hp0 : (0 : ℝ) < p := by exact_mod_cast hpp.pos
+    have hpc : (p : ℂ) ≠ 0 := by exact_mod_cast hp0.ne'
+    have hPc : (P : ℂ) ≠ 0 := by exact_mod_cast (by linarith : (0:ℝ) < P).ne'
+    simp only [hF, cutoffDiv, ArithmeticFunction.vonMangoldt_apply_prime hpp]
+    rw [show -(1 + (t : ℂ) * I) = -1 + -((t : ℂ) * I) by ring, Complex.cpow_add _ _ hpc,
+      Complex.cpow_neg_one]
+    push_cast
+    field_simp
+  rw [← hprime, sub_add_cancel_left, norm_neg]
+  calc ‖∑ n ∈ (Finset.Ioc 0 N).filter (fun n => ¬ n.Prime), F n‖
+      ≤ ∑ n ∈ (Finset.Ioc 0 N).filter (fun n => ¬ n.Prime), 2 * ArithmeticFunction.vonMangoldt n := by
+        refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun n hn => ?_)
+        have hn0 : 0 < n := (Finset.mem_Ioc.1 (Finset.mem_filter.1 hn).1).1
+        simp only [hF, norm_mul, Complex.norm_real, Real.norm_eq_abs,
+          abs_of_nonneg ArithmeticFunction.vonMangoldt_nonneg, norm_natCast_cpow_of_pos hn0]
+        simp only [neg_re, mul_re, ofReal_re, I_re, mul_zero, ofReal_im, I_im, mul_one, sub_self,
+          neg_zero, Real.rpow_zero, mul_one]
+        nlinarith [hbd (n / P), ArithmeticFunction.vonMangoldt_nonneg (n := n)]
+    _ = 2 * (ψ P - θ P) := by
+        rw [← Finset.mul_sum, Chebyshev.psi, Chebyshev.theta,
+          ← Finset.sum_filter_add_sum_filter_not (Finset.Ioc 0 ⌊P⌋₊) Nat.Prime]
+        congr 1
+        have : ∑ x ∈ Finset.Ioc 0 ⌊P⌋₊ with Nat.Prime x, ArithmeticFunction.vonMangoldt x =
+            ∑ p ∈ Finset.Ioc 0 ⌊P⌋₊ with Nat.Prime p, Real.log ↑p :=
+          Finset.sum_congr rfl fun p hp =>
+            ArithmeticFunction.vonMangoldt_apply_prime (Finset.mem_filter.1 hp).2
+        rw [this]; ring
+
 /-- **W3d (Lemma 4).**  `|P(1 + it)| ≪ 1/T₀` for `T₀ ≤ |t| ≤ 8X`: the Mellin main term decays like
 `1/|t|`, the VK error and the prime powers are smaller.  Confidence 90% (PROOF Lemma 4). -/
 theorem primeP_small (hVK : SmoothPrimeSumVK) {δ κ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4)
