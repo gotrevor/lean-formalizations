@@ -9,3 +9,7 @@
 - `ExceptionalWeak/Count.lean`: `bad_count_le_weak`.
 - `ExceptionalWeak/Main.lean`: `eventually_bad_le_weak`, bound `(3 + 2C) X e^{−L^θ}`.
 Full build green (8859 jobs).
+
+Branch , HEAD  (proof commit).
+Next: once E5 (, branch ) lands, merge it and compose
+ unconditionally.
