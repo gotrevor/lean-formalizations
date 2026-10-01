@@ -206,6 +206,7 @@ import LeanFormalizations.NumberTheory.Erdos385.MeanValue
 import LeanFormalizations.NumberTheory.Erdos385.Discharge
 import LeanFormalizations.NumberTheory.Erdos385.Parseval.Plancherel
 import LeanFormalizations.NumberTheory.Erdos385.Parseval.Mellin
+import LeanFormalizations.NumberTheory.Erdos385.Parseval.Bands
 import LeanFormalizations.NumberTheory.Erdos385.ShortSumParseval
 import LeanFormalizations.Literature.Erdos385AlmostAll
 import LeanFormalizations.NumberTheory.Erdos385.AlmostAll
