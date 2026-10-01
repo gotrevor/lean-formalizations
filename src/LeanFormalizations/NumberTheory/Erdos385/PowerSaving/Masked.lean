@@ -14,7 +14,7 @@ union of closed intervals inside `T₀ ≤ |t|` (the near-1 large-value frequenc
 loses the frequencies of `Eₜ`: the middle integral and the dyadic block integrals run over
 `t ∉ Eₜ` only.
 
-Proof plan (85%): rerun `mr16_core` with `Pmid' = 𝓕⁻(1_{mid∖E} F)` and
+Proof: rerun `mr16_core` with `Pmid' = 𝓕⁻(1_{mid∖E} F)` and
 `Phh' = Φ − 𝓕⁻(1_{all ∪ E} F)` in place of `Pmid`, `Phh`; `Plo` is unchanged because `Eₜ` avoids
 `|t| < T₀`.  The inputs carry over: `integral_winDif_mid_le` needs only `‖G‖ ≤ 4` and a.e.
 continuity of the masked indicator (the frontier of `mid ∖ E` is finite), and
@@ -248,13 +248,273 @@ theorem mr16_masked {a : ℕ → ℂ} {X T₀ h₁ h₂ : ℝ} (hX : 2 ≤ X) (h
     (hsupp : ∀ m : ℕ, ((m : ℝ) < X ∨ 4 * X < m) → a m = 0)
     (S : Finset ℝ) (r : ℝ) (hr : 0 ≤ r) (hS : ∀ s ∈ S, T₀ + r ≤ |s|) {B : ℝ}
     (hB : ∀ T : ℝ, X / (2 * h₁) ≤ T →
-        X / (h₁ * T) * ∫ t in {t : ℝ | T ≤ |t| ∧ |t| ≤ 2 * T} \ ⋃ s ∈ S, Icc (s - r) (s + r),
+        X / (h₁ * T) * ∫ t in {t : ℝ | T ≤ |t| ∧ |t| ≤ 2 * T} \ nearSet S r,
           ‖LSeries a (1 + t * I)‖ ^ 2 ≤ B) :
     (1 / X) * ∫ x in Ioc X (2 * X),
-        ‖winDif (fun u ↦ Phi a ⌊4 * X⌋₊ u - 𝓕⁻ ((tSet (⋃ s ∈ S, Icc (s - r) (s + r))).indicator
+        ‖winDif (fun u ↦ Phi a ⌊4 * X⌋₊ u - 𝓕⁻ ((tSet (nearSet S r)).indicator
           fun ξ ↦ LSeries a (sArg ξ) / sArg ξ) u) h₁ h₂ x‖ ^ 2 ≤
-      500 * (1 / T₀ + (∫ t in {t : ℝ | T₀ ≤ |t| ∧ |t| ≤ X / h₁} \ ⋃ s ∈ S, Icc (s - r) (s + r),
+      500 * (1 / T₀ + (∫ t in {t : ℝ | T₀ ≤ |t| ∧ |t| ≤ X / h₁} \ nearSet S r,
         ‖LSeries a (1 + t * I)‖ ^ 2) + B) := by
-  sorry
+  have hX0 : 0 < X := by linarith
+  have hh₁0 : 0 < h₁ := by linarith
+  have hh₂0 : 0 < h₂ := by linarith
+  have hT0 : 0 < T₀ := by linarith
+  have hT3 : 1 ≤ T₀ ^ 3 := one_le_pow₀ hT₀
+  have hh2X' : h₂ * T₀ ^ 3 ≤ X := by rwa [le_div_iff₀ (by positivity)] at h2X
+  have h2X1 : h₂ ≤ X := by nlinarith
+  set Y := X / h₁ with hYdef
+  have hY : 0 < Y := by positivity
+  have hTY : T₀ ≤ Y := by
+    rw [hYdef, le_div_iff₀ hh₁0]
+    have : T₀ ≤ T₀ ^ 3 := by nlinarith [mul_nonneg hT0.le (by nlinarith : (0:ℝ) ≤ T₀ ^ 2 - 1)]
+    nlinarith
+  set N := ⌊4 * X⌋₊
+  have hsN := supp_floor hX0 hsupp
+  set Et := nearSet S r with hEtdef
+  have hEt : MeasurableSet Et := measurableSet_nearSet S r
+  set E := tSet Et with hEdef
+  have hE : MeasurableSet E := hEt.preimage (by fun_prop)
+  set Φ := Phi a N with hΦ
+  set Ahat : ℝ → ℂ := fun ξ ↦ LSeries a (sArg ξ) with hAhat
+  set F : ℝ → ℂ := fun ξ ↦ Ahat ξ / sArg ξ with hFdef
+  have hFΦ : 𝓕 Φ = F := funext (fourier_Phi hsN)
+  have hAc : Continuous Ahat := continuous_LSeries_sArg hX0 hsupp
+  have hFc : Continuous F := continuous_LSeries_div_sArg hX0 hsupp
+  have hAb : ∀ ξ, ‖Ahat ξ‖ ≤ 4 := fun ξ ↦ by
+    simp only [Ahat]; rw [sArg_eq]; exact norm_LSeries_line_le (by linarith) ha1 hsupp _
+  have hint : ∀ {S : Set ℝ} {c : ℝ}, MeasurableSet S → S ⊆ {ξ | |2 * Real.pi * ξ| ≤ c} →
+      ∀ {G : ℝ → ℂ}, Continuous G → Integrable (S.indicator G) := fun hS hSc _ hG ↦
+    (integrable_indicator_iff hS).2
+      (hG.integrableOn_Icc.mono_set fun ξ hξ ↦ abs_le_sub_Icc (hSc hξ))
+  set R := ∑ s ∈ S, |s| + |r|
+  have hESub : E ⊆ {ξ | |2 * Real.pi * ξ| ≤ R} := fun ξ hξ ↦ nearSet_subset S r hξ
+  have hELo : ∀ ξ ∈ E, ξ ∉ bandLo T₀ := by
+    intro ξ hξ hlo
+    simp only [hEdef, tSet, hEtdef, nearSet, mem_setOf_eq, mem_iUnion, mem_Icc,
+      exists_prop] at hξ
+    obtain ⟨s, hs, h1, h2⟩ := hξ
+    have := hS s hs
+    have hlo' : |2 * Real.pi * ξ| < T₀ := hlo
+    rw [abs_lt] at hlo'
+    cases abs_cases s <;> linarith
+  have hLoSub : bandLo T₀ ⊆ {ξ | |2 * Real.pi * ξ| ≤ T₀} := fun ξ hξ ↦
+    (show |2 * Real.pi * ξ| < T₀ from hξ).le
+  have hMidSub : bandMid T₀ Y ∩ Eᶜ ⊆ {ξ | |2 * Real.pi * ξ| ≤ Y} := fun ξ hξ ↦ hξ.1.2
+  have hmidE : MeasurableSet (bandMid T₀ Y ∩ Eᶜ) := (measurableSet_bandMid T₀ Y).inter hE.compl
+  have hallE : MeasurableSet (bandAll Y ∪ E) := (measurableSet_bandAll Y).union hE
+  have hAllESub : bandAll Y ∪ E ⊆ {ξ | |2 * Real.pi * ξ| ≤ max Y R} := by
+    rintro ξ (h | h)
+    · exact (show |2 * Real.pi * ξ| ≤ Y from h).trans (le_max_left _ _)
+    · exact (show |2 * Real.pi * ξ| ≤ R from hESub h).trans (le_max_right _ _)
+  have iLo := hint (measurableSet_bandLo T₀) hLoSub hFc
+  have iMid := hint hmidE hMidSub hFc
+  have iE := hint hE hESub hFc
+  have iAllE := hint hallE hAllESub hFc
+  -- a.e. continuity of the masked indicators
+  set Z0 := {ξ : ℝ | |2 * Real.pi * ξ| = T₀} ∪ {ξ : ℝ | |2 * Real.pi * ξ| = Y} ∪
+    tSet (nearEnds S r : Set ℝ)
+  have hZ0 : volume Z0 = 0 :=
+    measure_union_null (measure_union_null (null_abs_eq _) (null_abs_eq _)) (null_tSet_finset _)
+  have hcabs : Continuous fun ξ : ℝ ↦ |2 * Real.pi * ξ| := by fun_prop
+  have key : ∀ ξ ∉ Z0, ∀ᶠ η in 𝓝 ξ, ((|2 * Real.pi * η| ≤ T₀ ↔ |2 * Real.pi * ξ| ≤ T₀) ∧
+      (|2 * Real.pi * η| < T₀ ↔ |2 * Real.pi * ξ| < T₀)) ∧
+      ((|2 * Real.pi * η| ≤ Y ↔ |2 * Real.pi * ξ| ≤ Y) ∧
+      (|2 * Real.pi * η| < Y ↔ |2 * Real.pi * ξ| < Y)) ∧ (η ∈ E ↔ ξ ∈ E) := by
+    intro ξ hξ
+    simp only [Z0, mem_union, mem_setOf_eq, not_or] at hξ
+    exact (hcabs.continuousAt.eventually (eventually_side hξ.1.1)).and
+      ((hcabs.continuousAt.eventually (eventually_side hξ.1.2)).and
+        (tSet_nearSet_loc S r hξ.2))
+  have cMid : ∀ {G : ℝ → ℂ}, Continuous G →
+      ∀ᵐ ξ, ContinuousAt ((bandMid T₀ Y ∩ Eᶜ).indicator G) ξ := fun hG ↦
+    ae_continuousAt_indicator hG hZ0 fun ξ hξ ↦ by
+      filter_upwards [key ξ hξ] with η hη
+      simp only [bandMid, mem_inter_iff, mem_setOf_eq, mem_compl_iff, hη.2.2]
+      simp only [← not_lt (b := T₀), hη.1.2, hη.2.1.1]
+  have cAllE : ∀ᵐ ξ, ContinuousAt ((bandAll Y ∪ E).indicator F) ξ :=
+    ae_continuousAt_indicator hFc hZ0 fun ξ hξ ↦ by
+      filter_upwards [key ξ hξ] with η hη
+      simp only [bandAll, mem_union, mem_setOf_eq, hη.2.1.1, hη.2.2]
+  -- the decomposition
+  set Plo := 𝓕⁻ ((bandLo T₀).indicator F) with hPlo
+  set Pmid := 𝓕⁻ ((bandMid T₀ Y ∩ Eᶜ).indicator F) with hPmid
+  set PE := 𝓕⁻ (E.indicator F) with hPE
+  set Q : ℝ → ℂ := fun u ↦ Φ u - PE u with hQ
+  set Phh : ℝ → ℂ := fun u ↦ Q u - Plo u - Pmid u with hPhh
+  have hPloc : Continuous Plo := continuous_fourierInv_of_integrable iLo
+  have hPmidc : Continuous Pmid := continuous_fourierInv_of_integrable iMid
+  have hPEc : Continuous PE := continuous_fourierInv_of_integrable iE
+  have hQm : Measurable Q := (measurable_Phi a N).sub hPEc.measurable
+  have hPhhm : Measurable Phh := (hQm.sub hPloc.measurable).sub hPmidc.measurable
+  have hsplit : Q = Plo + Pmid + Phh := by funext u; simp only [Pi.add_apply, Phh]; ring
+  have hind : (bandAll Y ∪ E).indicator F =
+      ((bandLo T₀).indicator F + (bandMid T₀ Y ∩ Eᶜ).indicator F) + E.indicator F := by
+    funext ξ
+    simp only [Pi.add_apply]
+    by_cases hξE : ξ ∈ E
+    · rw [indicator_of_mem (show ξ ∈ bandAll Y ∪ E from Or.inr hξE), indicator_of_notMem (hELo ξ hξE),
+        indicator_of_notMem (fun h ↦ h.2 hξE), indicator_of_mem hξE]
+      simp
+    · by_cases h1 : ξ ∈ bandLo T₀
+      · have h1' : |2 * Real.pi * ξ| < T₀ := h1
+        rw [indicator_of_mem (show ξ ∈ bandAll Y ∪ E from Or.inl (show |2 * Real.pi * ξ| ≤ Y from h1'.le.trans hTY)),
+          indicator_of_mem h1, indicator_of_notMem (fun h ↦ not_le.2 h1' h.1.1),
+          indicator_of_notMem hξE]
+        simp
+      · have h1' : ¬ |2 * Real.pi * ξ| < T₀ := h1
+        by_cases h2 : ξ ∈ bandAll Y
+        · rw [indicator_of_mem (show ξ ∈ bandAll Y ∪ E from Or.inl h2), indicator_of_notMem h1,
+            indicator_of_mem (show ξ ∈ bandMid T₀ Y ∩ Eᶜ from ⟨⟨not_lt.1 h1', h2⟩, hξE⟩), indicator_of_notMem hξE]
+          simp
+        · rw [indicator_of_notMem (show ξ ∉ bandAll Y ∪ E by rintro (h | h); exacts [h2 h, hξE h]),
+            indicator_of_notMem h1, indicator_of_notMem (fun h ↦ h2 h.1.2),
+            indicator_of_notMem hξE]
+          simp
+  have hPall : Plo + Pmid + PE = 𝓕⁻ ((bandAll Y ∪ E).indicator F) := by
+    rw [hind, fourierInv_add_of_integrable (iLo.add iMid) iE,
+      fourierInv_add_of_integrable iLo iMid]
+  set M := ∫ t in {t : ℝ | T₀ ≤ |t| ∧ |t| ≤ X / h₁} \ Et, ‖LSeries a (1 + t * I)‖ ^ 2 with hM
+  have hM0 : 0 ≤ M := integral_nonneg fun _ ↦ by positivity
+  have hπ3 : 3 < Real.pi := Real.pi_gt_three
+  have hπ : (0 : ℝ) < 2 * Real.pi := by positivity
+  have hB' : ∀ T : ℝ, Y ≤ T →
+      ∫ t in {t : ℝ | T ≤ |t| ∧ |t| ≤ 2 * T} \ Et, ‖LSeries a (1 + t * I)‖ ^ 2 ≤ B * T / Y := by
+    intro T hT
+    have hT0 : 0 < T := hY.trans_le hT
+    have hXT : X / (2 * h₁) ≤ T := by
+      refine le_trans ?_ hT
+      rw [hYdef]; exact div_le_div_of_nonneg_left hX0.le hh₁0 (by linarith)
+    have h := hB T hXT
+    set I0 := ∫ t in {t : ℝ | T ≤ |t| ∧ |t| ≤ 2 * T} \ Et, ‖LSeries a (1 + t * I)‖ ^ 2
+    rw [le_div_iff₀ hY]
+    have e : X / (h₁ * T) * I0 * T = I0 * Y := by rw [hYdef]; field_simp
+    rw [← e]
+    exact mul_le_mul_of_nonneg_right h hT0.le
+  have hB0 : 0 ≤ B := by
+    have h1 := hB' Y le_rfl
+    have h0 : 0 ≤ ∫ t in {t : ℝ | Y ≤ |t| ∧ |t| ≤ 2 * Y} \ Et, ‖LSeries a (1 + t * I)‖ ^ 2 :=
+      integral_nonneg fun _ ↦ by positivity
+    rw [mul_div_assoc, div_self hY.ne', mul_one] at h1
+    linarith
+  set μ := volume.restrict (Ioc X (2 * X))
+  have hlo : ∫⁻ x, ENNReal.ofReal (‖winDif Plo h₁ h₂ x‖ ^ 2) ∂μ ≤ ENNReal.ofReal (9 / T₀ * X) := by
+    have hpt : ∀ x ∈ Ioc X (2 * X), ENNReal.ofReal (‖winDif Plo h₁ h₂ x‖ ^ 2) ≤
+        ENNReal.ofReal (9 / T₀) := by
+      intro x hx
+      have hx0 : 0 < x := hX0.trans hx.1
+      have h := norm_winDif_low (G := Ahat) (K := 4) (R := T₀ / (2 * Real.pi)) hAb
+        (by positivity) (fun ξ hξ ↦ abs_le_sub_Icc (hLoSub hξ)) iLo hx0 hh₁0 h12
+      have e : 2 * (T₀ / (2 * Real.pi)) * (4 * (2 * (2 * Real.pi * (T₀ / (2 * Real.pi))) * h₂ / x))
+          = 8 * T₀ ^ 2 * h₂ / (Real.pi * x) := by field_simp; ring
+      rw [e] at h
+      have h3 : 8 * T₀ ^ 2 * h₂ / (Real.pi * x) ≤ 3 / T₀ := by
+        rw [div_le_div_iff₀ (by positivity) hT0]
+        have : 8 * (h₂ * T₀ ^ 3) ≤ 8 * x := by linarith [hx.1]
+        nlinarith
+      refine ENNReal.ofReal_le_ofReal ?_
+      have hn := (h.trans h3)
+      calc ‖winDif Plo h₁ h₂ x‖ ^ 2 ≤ (3 / T₀) ^ 2 :=
+            pow_le_pow_left₀ (norm_nonneg _) hn 2
+        _ = 9 / T₀ / T₀ := by ring
+        _ ≤ 9 / T₀ := div_le_self (by positivity) hT₀
+    calc _ ≤ ∫⁻ _ in Ioc X (2 * X), ENNReal.ofReal (9 / T₀) := setLIntegral_mono measurable_const hpt
+      _ = ENNReal.ofReal (9 / T₀ * X) := by
+        rw [setLIntegral_const, Real.volume_Ioc, ← ENNReal.ofReal_mul (by positivity)]
+        congr 1; ring
+  have hmid : ∫⁻ x, ENNReal.ofReal (‖winDif Pmid h₁ h₂ x‖ ^ 2) ∂μ ≤
+      ENNReal.ofReal (12 * X * ((2 * Real.pi)⁻¹ * M)) := by
+    set G := (bandMid T₀ Y ∩ Eᶜ).indicator Ahat
+    have hG : Integrable G := hint hmidE hMidSub hAc
+    have hK : ∀ ξ, ‖G ξ‖ ≤ 4 := fun ξ ↦
+      (norm_indicator_le_norm_self (s := bandMid T₀ Y ∩ Eᶜ) (f := Ahat) (a := ξ)).trans (hAb ξ)
+    have hc := cMid hAc
+    have h := integral_winDif_mid_le hG hK hc hX0 hh₁0 h12 h2X1
+    have hPm : 𝓕⁻ (fun ξ ↦ G ξ / sArg ξ) = Pmid := by
+      rw [hPmid]; congr 1; funext ξ
+      simp only [G, F, indicator]; split_ifs <;> simp
+    rw [hPm, integral_bandMid_masked hEt] at h
+    have hcont := continuousOn_winDif hPmidc hX0 hh₁0.le hh₂0.le
+    have hio : IntegrableOn (fun x ↦ ‖winDif Pmid h₁ h₂ x‖ ^ 2) (Ioc X (2 * X)) :=
+      ((hcont.norm.pow 2).integrableOn_compact isCompact_Icc).mono_set Ioc_subset_Icc_self
+    rw [← ofReal_integral_eq_lintegral_ofReal hio (ae_of_all _ fun _ ↦ by positivity)]
+    refine ENNReal.ofReal_le_ofReal ?_
+    rw [← intervalIntegral.integral_of_le (by linarith)]
+    exact h
+  have hhi : ∫⁻ x, ENNReal.ofReal (‖winDif Phh h₁ h₂ x‖ ^ 2) ∂μ ≤
+      ENNReal.ofReal (432 * X ^ 3 / h₁ ^ 2 * ((2 * Real.pi)⁻¹ * (2 * B / Y ^ 2))) := by
+    have henorm : ∀ z : ℂ, ENNReal.ofReal (‖z‖ ^ 2) = ‖z‖ₑ ^ 2 := fun z ↦ by
+      rw [ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm]
+    simp_rw [henorm]
+    have hW := lintegral_winDif_le hPhhm hX0 hh₁0 h12 h2X1
+    have hcont := cAllE
+    rw [← hFΦ] at iAllE hcont
+    obtain ⟨hi1, hi2⟩ := integral_norm_sub_proj (integrable_Phi a N) (norm_Phi_le a N)
+      (ae_continuousAt_Phi a N) hallE iAllE hcont
+    rw [hFΦ] at hi1 hi2
+    have hPhh' : Phh = fun u ↦ Φ u - 𝓕⁻ ((bandAll Y ∪ E).indicator F) u := by
+      funext u; rw [← hPall]; simp only [Phh, Q, Pi.add_apply]; ring
+    have hL2 : ∫⁻ u, ‖Phh u‖ₑ ^ 2 ≤ ENNReal.ofReal ((2 * Real.pi)⁻¹ * (2 * B / Y ^ 2)) := by
+      simp_rw [← henorm, hPhh']
+      rw [← ofReal_integral_eq_lintegral_ofReal hi1 (ae_of_all _ fun _ ↦ by positivity), hi2,
+        compl_union]
+      exact ENNReal.ofReal_le_ofReal (integral_tail_le_masked hX0 hsupp hEt hY hB')
+    calc ∫⁻ x, ‖winDif Phh h₁ h₂ x‖ₑ ^ 2 ∂μ
+        ≤ ∫⁻ x in Icc X (2 * X), ‖winDif Phh h₁ h₂ x‖ₑ ^ 2 :=
+          lintegral_mono_set Ioc_subset_Icc_self
+      _ ≤ _ := hW
+      _ ≤ ENNReal.ofReal (432 * X ^ 3 / h₁ ^ 2) *
+          ENNReal.ofReal ((2 * Real.pi)⁻¹ * (2 * B / Y ^ 2)) := by gcongr
+      _ = _ := (ENNReal.ofReal_mul (by positivity)).symm
+  -- combine
+  have hmeas : ∀ g : ℝ → ℂ, Measurable g →
+      Measurable fun x ↦ ENNReal.ofReal (‖winDif g h₁ h₂ x‖ ^ 2) := fun g hg ↦
+    ((measurable_winDif hg h₁ h₂).norm.pow_const 2).ennreal_ofReal
+  change (1 / X) * ∫ x, ‖winDif Q h₁ h₂ x‖ ^ 2 ∂μ ≤ _
+  rw [integral_eq_lintegral_of_nonneg_ae (ae_of_all _ fun _ ↦ by positivity)
+    ((measurable_winDif hQm h₁ h₂).norm.pow_const 2).aestronglyMeasurable]
+  set R' := 3 * (9 / T₀ * X + 12 * X * ((2 * Real.pi)⁻¹ * M) +
+    432 * X ^ 3 / h₁ ^ 2 * ((2 * Real.pi)⁻¹ * (2 * B / Y ^ 2))) with hRdef
+  have hL : ∫⁻ x, ENNReal.ofReal (‖winDif Q h₁ h₂ x‖ ^ 2) ∂μ ≤ ENNReal.ofReal R' := by
+    have hpt : ∀ x, ENNReal.ofReal (‖winDif Q h₁ h₂ x‖ ^ 2) ≤ ENNReal.ofReal 3 *
+        (ENNReal.ofReal (‖winDif Plo h₁ h₂ x‖ ^ 2) + ENNReal.ofReal (‖winDif Pmid h₁ h₂ x‖ ^ 2) +
+          ENNReal.ofReal (‖winDif Phh h₁ h₂ x‖ ^ 2)) := by
+      intro x
+      have e : winDif Q h₁ h₂ x = winDif Plo h₁ h₂ x + winDif Pmid h₁ h₂ x + winDif Phh h₁ h₂ x := by
+        rw [hsplit, winDif_add, winDif_add]
+      rw [e, ← ENNReal.ofReal_add (by positivity) (by positivity),
+        ← ENNReal.ofReal_add (by positivity) (by positivity),
+        ← ENNReal.ofReal_mul (by norm_num)]
+      exact ENNReal.ofReal_le_ofReal (norm_add3_sq_le _ _ _)
+    calc _ ≤ ∫⁻ x, ENNReal.ofReal 3 *
+        (ENNReal.ofReal (‖winDif Plo h₁ h₂ x‖ ^ 2) + ENNReal.ofReal (‖winDif Pmid h₁ h₂ x‖ ^ 2) +
+          ENNReal.ofReal (‖winDif Phh h₁ h₂ x‖ ^ 2)) ∂μ := lintegral_mono hpt
+      _ = ENNReal.ofReal 3 * (∫⁻ x, ENNReal.ofReal (‖winDif Plo h₁ h₂ x‖ ^ 2) ∂μ +
+          ∫⁻ x, ENNReal.ofReal (‖winDif Pmid h₁ h₂ x‖ ^ 2) ∂μ +
+          ∫⁻ x, ENNReal.ofReal (‖winDif Phh h₁ h₂ x‖ ^ 2) ∂μ) := by
+        rw [lintegral_const_mul _ (((hmeas _ hPloc.measurable).add
+          (hmeas _ hPmidc.measurable)).add (hmeas _ hPhhm)),
+          lintegral_add_left ((hmeas _ hPloc.measurable).add (hmeas _ hPmidc.measurable)),
+          lintegral_add_left (hmeas _ hPloc.measurable)]
+      _ ≤ ENNReal.ofReal 3 * (ENNReal.ofReal (9 / T₀ * X) +
+          ENNReal.ofReal (12 * X * ((2 * Real.pi)⁻¹ * M)) +
+          ENNReal.ofReal (432 * X ^ 3 / h₁ ^ 2 * ((2 * Real.pi)⁻¹ * (2 * B / Y ^ 2)))) := by
+        gcongr
+      _ = ENNReal.ofReal R' := by
+        rw [← ENNReal.ofReal_add (by positivity) (by positivity),
+          ← ENNReal.ofReal_add (by positivity) (by positivity),
+          ← ENNReal.ofReal_mul (by norm_num)]
+  have hR0 : 0 ≤ R' := by positivity
+  have hRX : R' = X * (27 / T₀ + 18 / Real.pi * M + 1296 / Real.pi * B) := by
+    rw [hRdef, hYdef]; field_simp; ring
+  have hbound := ENNReal.toReal_le_of_le_ofReal hR0 hL
+  have h18 : 18 / Real.pi ≤ 500 := by rw [div_le_iff₀ (by positivity)]; nlinarith
+  have h1296 : 1296 / Real.pi ≤ 500 := by rw [div_le_iff₀ (by positivity)]; nlinarith
+  have h27 : 27 / T₀ ≤ 500 * (1 / T₀) := by rw [mul_one_div]; gcongr; norm_num
+  calc 1 / X * (∫⁻ x, ENNReal.ofReal (‖winDif Q h₁ h₂ x‖ ^ 2) ∂μ).toReal ≤ 1 / X * R' :=
+        mul_le_mul_of_nonneg_left hbound (by positivity)
+    _ = 27 / T₀ + 18 / Real.pi * M + 1296 / Real.pi * B := by
+        rw [hRX]; field_simp
+    _ ≤ 500 * (1 / T₀ + M + B) := by
+        nlinarith [mul_le_mul_of_nonneg_right h18 hM0, mul_le_mul_of_nonneg_right h1296 hB0]
 
 end Erdos385.Parseval

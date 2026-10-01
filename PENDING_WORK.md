@@ -2183,3 +2183,6 @@ reuse with T₀ = Z^{c₀}; (ii) long average via ShortIntervalPrimesLower; (iii
     VK η_min]; (ii) mid∖E and block integrals ≤ C Z^{−c} [|P| ≤ Z^{−η₀/2} off E + MVT for Q; T>4X
     via coeffC_meanSquare]; then assemble DifferenceSplit. Insight: near part only needs
     exp(−(log Z)^{1/3}) pointwise (≪ μ/2), far part gets the power saving in mean square.
+- `Parseval.mr16_masked` PROVED axiom-clean (PowerSaving/Masked.lean). Remaining for step 2: the
+  coeffA-level inputs (near integral ∫_E|Â| small; masked mid/blocks ≤ C Z^{−c}) + DifferenceSplit
+  assembly (D_far := D − Re winDif(𝓕⁻(1_E F)), real/complex bridge via coeffC, a.e. x ∉ ℕ).
