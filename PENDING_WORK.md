@@ -2015,3 +2015,6 @@ W3d/W3e/W3f + control 3d).  Proved helpers: `xDeriv`, `mellin_xDeriv` (M[xf'] = 
   `Complex.differentiableOn_update_limUnder_of_bddAbove`), (ii) rectangle identity
   (`Complex.integral_boundary_rect_eq_zero_of_differentiableOn`), (iii) left side / horizontals / tails
   bounds via `mellin_strip_decay` k=3, (iv) width comparison c₀/(L^{2/3}(log L)^{1/3}) ≥ L^{−2/3−ε}.
+- 2026-10-01 later: **V5 `vertical_integral_bound` PROVED** (contour shift via `rect_shift_norm` on
+  F(s)P^s·Ĥ(s+it), Ĥ = removable-singularity update of zetaH at 1; tails via k=4 decay; left side
+  P^{σ₁} ≤ P e via `vk_width_eventually`; bounded T via trivial P² bound).  Remaining: V4, V6.

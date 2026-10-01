@@ -598,6 +598,33 @@ theorem zetaH_bound_two : ∃ B : ℝ, ∀ w : ℂ, w.re = 2 → ‖zetaH w‖ �
         ‖1 / (w - 1)‖ := by rw [← norm_neg (LSeries _ w)]; exact norm_add_le _ _
     _ ≤ B0 + 1 := add_le_add hLb hinv
 
+/-- Pointwise Mellin bounds on the strip `1/2 ≤ Re s ≤ 2`: `‖F s‖ ≤ K/(1 + y²)` and
+`‖F s‖ y⁴ ≤ K`, `y = Im s`. -/
+theorem mellin_pointwise {f : ℝ → ℂ} (hf : ∀ k : ℕ, ContDiff ℝ k f) {a b : ℝ} (ha : 0 < a)
+    (hab : a ≤ b) (hs : ∀ x, f x ≠ 0 → a ≤ x ∧ x ≤ b) :
+    ∃ K : ℝ, 0 ≤ K ∧ ∀ s : ℂ, 1 / 2 ≤ s.re → s.re ≤ 2 →
+      ‖mellin f s‖ ≤ K * (1 + s.im ^ 2)⁻¹ ∧ ‖mellin f s‖ * s.im ^ 4 ≤ K := by
+  obtain ⟨K0, h0⟩ := mellin_strip_decay 0 hf ha hab hs (1/2) 2
+  obtain ⟨K2, h2⟩ := mellin_strip_decay 2 hf ha hab hs (1/2) 2
+  obtain ⟨K4, h4⟩ := mellin_strip_decay 4 hf ha hab hs (1/2) 2
+  refine ⟨|K0| + |K2| + |K4|, by positivity, fun s hs0 hs1 => ⟨?_, ?_⟩⟩
+  · have e0 := h0 s hs0 hs1
+    have e2 := h2 s hs0 hs1
+    simp only [pow_zero, one_mul] at e0
+    have hy : s.im ^ 2 ≤ ‖s‖ ^ 2 := by
+      have := Complex.abs_im_le_norm s
+      nlinarith [abs_nonneg s.im, sq_abs s.im]
+    rw [le_mul_inv_iff₀ (by positivity)]
+    have hF := norm_nonneg (mellin f s)
+    nlinarith [le_abs_self K0, le_abs_self K2, abs_nonneg K4, mul_le_mul_of_nonneg_right hy hF]
+  · have e4 := h4 s hs0 hs1
+    have hy : s.im ^ 4 ≤ ‖s‖ ^ 4 := by
+      have := Complex.abs_im_le_norm s
+      have h2 : s.im ^ 4 = |s.im| ^ 4 := (Even.pow_abs ⟨2, rfl⟩ s.im).symm
+      rw [h2]; exact pow_le_pow_left₀ (abs_nonneg _) this 4
+    have hF := norm_nonneg (mellin f s)
+    nlinarith [le_abs_self K4, abs_nonneg K0, abs_nonneg K2, mul_le_mul_of_nonneg_left hy hF]
+
 /-- **Crux leaf V4 (Perron at `Re s = 2`, main term subtracted).**  Once `f(x/P)` vanishes for
 `x ≤ 1` (`a P ≥ 1`): `S − F(1 − it) P^{1−it} = −(1/2π) ∫ F(2+iy) P^{2+iy} H(2+iy+it) dy`.
 English proof: Mellin inversion `mellinInv_mellin_eq` at `x = n/P`, Fubini against
@@ -612,6 +639,7 @@ theorem smoothTwist_sub_main_eq {f : ℝ → ℂ} (hf : ∀ k : ℕ, ContDiff �
         zetaH (2 + y * I + t * I) := by
   sorry
 
+set_option maxHeartbeats 4000000 in
 /-- **Crux leaf V5 (contour shift + estimates).**  Under VK, the vertical integral of V4 is
 `≪ P exp(−log P/(log T)^{2/3+ε}) log T + 1`.  English proof: `H(· + it)` is holomorphic on
 `[σ₁, 2] × [−T/2, T/2]`, `σ₁ = 1 − c₀/((log T)^{2/3}(log log T)^{1/3})` (VK: no zeros, the
@@ -627,7 +655,285 @@ theorem vertical_integral_bound (h : VKZeroFreeLogDeriv) {f : ℝ → ℂ}
     ∃ C : ℝ, ∀ P T t : ℝ, 2 ≤ P → 3 ≤ T → P ≤ T → |t| ≤ T / 2 →
       ‖∫ y : ℝ, mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I) * zetaH (2 + y * I + t * I)‖ ≤
         C * (P * Real.exp (-(Real.log P / Real.log T ^ ((2 : ℝ) / 3 + ε))) * Real.log T + 1) := by
-  sorry
+  obtain ⟨L0, hL0⟩ := zetaH_extends h
+  obtain ⟨c₀, hc₀, C₀, hVK⟩ := h
+  obtain ⟨B, hB⟩ := zetaH_bound_two
+  obtain ⟨K, hK0, hK⟩ := mellin_pointwise hf ha hab hs
+  obtain ⟨T₁, hT₁⟩ := Filter.eventually_atTop.1 ((vk_width_eventually hc₀ hε).and
+    (eventually_ge_atTop (3:ℝ)))
+  have hFd : Differentiable ℂ (mellin f) := mellin_differentiable (hf 0).continuous ha hs
+  set Ctriv := T₁ ^ 2 * |B| * K * π
+  set Cbig := K * π * |C₀| + 64 * K * |C₀| + 8 * K * π * |B|
+  have hCtriv : 0 ≤ Ctriv := by positivity
+  have hCbig : 0 ≤ Cbig := by positivity
+  refine ⟨Ctriv + Cbig, fun P T t hP hT hPT ht => ?_⟩
+  have hP0 : 0 < P := by linarith
+  have hP1 : 1 ≤ P := by linarith
+  set L := Real.log T with hLdef
+  have hL1 : 1 ≤ L := by
+    have : (1:ℝ) < Real.log 3 := by
+      rw [Real.lt_log_iff_exp_lt (by norm_num)]; have := Real.exp_one_lt_d9; linarith
+    linarith [Real.log_le_log (by norm_num) hT]
+  have hLpos : 0 < L := by linarith
+  set Lp := L ^ ((2 : ℝ) / 3 + ε) with hLp
+  have hLp1 : 1 ≤ Lp := Real.one_le_rpow hL1 (by positivity)
+  have hlogP : 0 ≤ Real.log P := Real.log_nonneg hP1
+  set e := Real.exp (-(Real.log P / Lp)) with he
+  have hPe : 1 ≤ P * e := by
+    have : P * e = Real.exp (Real.log P - Real.log P / Lp) := by
+      rw [he, sub_eq_add_neg, Real.exp_add, Real.exp_log hP0]
+    rw [this]; apply Real.one_le_exp
+    have : Real.log P / Lp ≤ Real.log P := div_le_self hlogP hLp1
+    linarith
+  set E := P * e * L + 1 with hE
+  have hE1 : 1 ≤ E := by have : 0 ≤ P * e * L := by positivity
+                         linarith
+  have hLE : L ≤ P * e * L := by nlinarith
+  -- the integrand on `Re s = 2`
+  set g : ℝ → ℂ := fun y => mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I) *
+    zetaH (2 + y * I + t * I) with hg
+  have hcpow : ∀ s : ℂ, ‖(P : ℂ) ^ s‖ = P ^ s.re := fun s =>
+    Complex.norm_cpow_eq_rpow_re_of_pos hP0 s
+  have hgb : ∀ y : ℝ, ‖g y‖ ≤ K * P ^ 2 * |B| * (1 + y ^ 2)⁻¹ := by
+    intro y
+    have h1 := (hK (2 + y * I) (by simp; norm_num) (by simp)).1
+    simp only [add_im, mul_im, ofReal_re, I_im, mul_one, ofReal_im, I_re, mul_zero, add_zero,
+      zero_add, Complex.re_ofNat, Complex.im_ofNat] at h1
+    have h2 := hB (2 + y * I + t * I) (by simp)
+    simp only [hg, norm_mul, hcpow]
+    have hre : (2 + (y : ℂ) * I).re = 2 := by simp
+    have him : (2 + (y : ℂ) * I).im = y := by simp
+    rw [hre, him] at *
+    rw [show P ^ (2:ℝ) = P ^ 2 by norm_cast] 
+    have : 0 ≤ (1 + y ^ 2)⁻¹ := by positivity
+    calc ‖mellin f (2 + y * I)‖ * P ^ 2 * ‖zetaH (2 + y * I + t * I)‖
+        ≤ (K * (1 + y ^ 2)⁻¹) * P ^ 2 * |B| :=
+          mul_le_mul (mul_le_mul_of_nonneg_right h1 (by positivity)) (h2.trans (le_abs_self B))
+            (norm_nonneg _) (by positivity)
+      _ = _ := by ring
+  have hgc : Continuous g := by
+    apply Continuous.mul
+    · apply Continuous.mul
+      · exact hFd.continuous.comp (by fun_prop)
+      · exact continuous_iff_continuousAt.2 fun y =>
+          (continuous_const.add (continuous_ofReal.mul continuous_const)).continuousAt.const_cpow
+            (Or.inl (by exact_mod_cast hP0.ne'))
+    · refine continuous_iff_continuousAt.2 fun y => ?_
+      have hw : (2 + (y : ℂ) * I + t * I) ≠ 1 := fun h => by
+        have := congrArg Complex.re h; simp at this
+      have hz : riemannZeta (2 + (y : ℂ) * I + t * I) ≠ 0 :=
+        riemannZeta_ne_zero_of_one_lt_re (by simp)
+      exact (zetaH_differentiableAt hw hz).continuousAt.comp (f := fun y : ℝ => 2 + (y : ℂ) * I + t * I)
+        (by fun_prop)
+  have hgi : Integrable g :=
+    (integrable_inv_one_add_sq.const_mul (K * P ^ 2 * |B|)).mono' hgc.aestronglyMeasurable
+      (Eventually.of_forall hgb)
+  have htriv : ‖∫ y, g y‖ ≤ K * P ^ 2 * |B| * π := by
+    calc ‖∫ y, g y‖ ≤ ∫ y, K * P ^ 2 * |B| * (1 + y ^ 2)⁻¹ :=
+          norm_integral_le_of_norm_le (integrable_inv_one_add_sq.const_mul _)
+            (Eventually.of_forall hgb)
+      _ = _ := by rw [integral_const_mul, integral_univ_inv_one_add_sq]
+  change ‖∫ y, g y‖ ≤ (Ctriv + Cbig) * E
+  rcases lt_or_ge T T₁ with hTT | hTT
+  · -- bounded `T`
+    calc ‖∫ y, g y‖ ≤ K * P ^ 2 * |B| * π := htriv
+      _ ≤ Ctriv := by
+          have : P ^ 2 ≤ T₁ ^ 2 := pow_le_pow_left₀ hP0.le (by linarith) 2
+          simp only [Ctriv]
+          have hKB : 0 ≤ K * |B| * π := by positivity
+          nlinarith
+      _ ≤ (Ctriv + Cbig) * E := by nlinarith
+  · obtain ⟨⟨hη1, hη2⟩, -⟩ := hT₁ T hTT
+    set η := c₀ / (Real.log T ^ ((2 : ℝ) / 3) * Real.log (Real.log T) ^ ((1 : ℝ) / 3)) with hη
+    have hη0 : 0 < η := lt_of_lt_of_le (inv_pos.2 (by positivity)) hη1
+    set σ₁ := 1 - η with hσ₁
+    set U := T / 2 with hU
+    have hU1 : 1 ≤ U := by rw [hU]; linarith
+    have hT0 : 0 < T := by linarith
+    -- VK in usable form
+    have hreg : ∀ w : ℂ, σ₁ ≤ w.re → |w.im| ≤ T → w ≠ 1 →
+        riemannZeta w ≠ 0 ∧ ‖zetaH w‖ ≤ |C₀| * L := by
+      intro w hw him hw1
+      have hw' : ((w.re : ℂ) + w.im * I) = w := Complex.re_add_im w
+      have := hVK T w.re w.im hT (by unfold InVKRegion; rw [← hη]; linarith) him (by rwa [hw'])
+      rw [hw'] at this
+      refine ⟨this.1, ?_⟩
+      have h2 := this.2
+      simp only [zetaH]
+      exact h2.trans (mul_le_mul_of_nonneg_right (le_abs_self _) hLpos.le)
+    set Hh := Function.update zetaH 1 L0 with hHh
+    set G : ℂ → ℂ := fun s => mellin f s * (P : ℂ) ^ s * Hh (s + t * I) with hG
+    have hGd : ∀ s : ℂ, σ₁ ≤ s.re → s.re ≤ 2 → |s.im| ≤ U → DifferentiableAt ℂ G s := by
+      intro s h1 h2 h3
+      have hw : s + t * I = 1 ∨ riemannZeta (s + t * I) ≠ 0 := by
+        by_cases h : s + t * I = 1
+        · exact Or.inl h
+        · refine Or.inr (hreg _ (by simpa using h1) ?_ h).1
+          simp only [add_im, mul_im, ofReal_re, I_im, mul_one, ofReal_im, I_re, mul_zero, add_zero]
+          calc |s.im + t| ≤ |s.im| + |t| := abs_add_le _ _
+            _ ≤ T := by linarith
+      exact ((hFd s).mul ((differentiableAt_id).const_cpow (Or.inl (by exact_mod_cast hP0.ne')))).mul
+        ((hL0 _ hw).comp s (differentiableAt_id.add_const _))
+    have hshift := rect_shift_norm (G := G) (σ₁ := σ₁) (U := U) (by linarith) (by linarith) hGd
+    have hGg : ∫ y in (-U)..U, G (2 + y * I) = ∫ y in (-U)..U, g y := by
+      refine intervalIntegral.integral_congr fun y _ => ?_
+      have hw : (2 + (y : ℂ) * I + t * I) ≠ 1 := fun h => by
+        have := congrArg Complex.re h; simp at this
+      simp only [hG, hg, hHh, Function.update_of_ne hw]
+    rw [hGg] at hshift
+    -- (1) tails
+    have hsplit : ∫ y, g y = (∫ y in (-U)..U, g y) + ∫ y in (Set.Ioc (-U) U)ᶜ, g y := by
+      rw [intervalIntegral.integral_of_le (by linarith), integral_add_compl measurableSet_Ioc hgi]
+    set c2 := 2 * K * P ^ 2 * |B| / U ^ 2 with hc2
+    have htailpt : ∀ y ∈ (Set.Ioc (-U) U)ᶜ, ‖g y‖ ≤ c2 * (1 + y ^ 2)⁻¹ := by
+      intro y hy
+      have hyU : U ≤ |y| := by
+        simp only [Set.mem_compl_iff, Set.mem_Ioc, not_and_or, not_lt, not_le] at hy
+        rcases hy with hy | hy
+        · rw [abs_of_neg (by linarith)]; linarith
+        · rw [abs_of_pos (by linarith)]; linarith
+      have hy1 : 1 ≤ y ^ 2 := by nlinarith [abs_nonneg y, sq_abs y]
+      have hyU2 : U ^ 2 ≤ y ^ 2 := by nlinarith [abs_nonneg y, sq_abs y]
+      have h1 := (hK (2 + y * I) (by simp; norm_num) (by simp)).2
+      simp only [add_im, mul_im, ofReal_re, I_im, mul_one, ofReal_im, I_re, mul_zero, add_zero,
+        zero_add, Complex.im_ofNat] at h1
+      have h2 := hB (2 + y * I + t * I) (by simp)
+      have hF : ‖mellin f (2 + y * I)‖ ≤ 2 * K / U ^ 2 * (1 + y ^ 2)⁻¹ := by
+        rw [div_mul_eq_mul_div, le_div_iff₀ (by positivity), mul_assoc, mul_comm _ (U ^ 2),
+          ← mul_assoc, le_mul_inv_iff₀ (by positivity)]
+        have hFn := norm_nonneg (mellin f (2 + y * I))
+        have : y ^ 4 = y ^ 2 * y ^ 2 := by ring
+        nlinarith [mul_le_mul_of_nonneg_left hyU2 hFn, mul_le_mul_of_nonneg_left hy1 hFn]
+      simp only [hg, norm_mul, hcpow]
+      have hre : (2 + (y : ℂ) * I).re = 2 := by simp
+      rw [hre, show P ^ (2:ℝ) = P ^ 2 by norm_cast]
+      calc ‖mellin f (2 + y * I)‖ * P ^ 2 * ‖zetaH (2 + y * I + t * I)‖
+          ≤ (2 * K / U ^ 2 * (1 + y ^ 2)⁻¹) * P ^ 2 * |B| :=
+            mul_le_mul (mul_le_mul_of_nonneg_right hF (by positivity)) (h2.trans (le_abs_self B))
+              (norm_nonneg _) (by positivity)
+        _ = c2 * (1 + y ^ 2)⁻¹ := by rw [hc2]; ring
+    have htail : ‖∫ y in (Set.Ioc (-U) U)ᶜ, g y‖ ≤ 8 * K * π * |B| := by
+      calc ‖∫ y in (Set.Ioc (-U) U)ᶜ, g y‖ ≤ ∫ y in (Set.Ioc (-U) U)ᶜ, c2 * (1 + y ^ 2)⁻¹ :=
+            norm_integral_le_of_norm_le (integrable_inv_one_add_sq.const_mul _).integrableOn
+              ((ae_restrict_iff' measurableSet_Ioc.compl).2 (Eventually.of_forall htailpt))
+        _ ≤ ∫ y, c2 * (1 + y ^ 2)⁻¹ :=
+            setIntegral_le_integral (integrable_inv_one_add_sq.const_mul _)
+              (Eventually.of_forall fun y => by positivity)
+        _ = c2 * π := by rw [integral_const_mul, integral_univ_inv_one_add_sq]
+        _ ≤ 8 * K * π * |B| := by
+            rw [hc2, hU]
+            have : P ^ 2 ≤ T ^ 2 := pow_le_pow_left₀ hP0.le hPT 2
+            rw [div_mul_eq_mul_div, div_le_iff₀ (by positivity)]
+            have hKB : 0 ≤ K * |B| * π := by positivity
+            nlinarith
+    have hσ₁lo : 1 / 2 ≤ σ₁ := by rw [hσ₁]; linarith
+    have hσ₁hi : σ₁ < 1 := by rw [hσ₁]; linarith
+    have hPσ : P ^ σ₁ ≤ P * e := by
+      have e1 : P * e = Real.exp (Real.log P - Real.log P / Lp) := by
+        rw [he, sub_eq_add_neg, Real.exp_add, Real.exp_log hP0]
+      rw [e1, Real.rpow_def_of_pos hP0]
+      apply Real.exp_le_exp.2
+      have : Real.log P / Lp ≤ Real.log P * η := by
+        rw [div_eq_mul_inv]; exact mul_le_mul_of_nonneg_left hη1 hlogP
+      rw [hσ₁]; nlinarith
+    -- (2) the left side
+    have hleftpt : ∀ y : ℝ, |y| ≤ U → ‖G (σ₁ + y * I)‖ ≤ (K * (P * e) * (|C₀| * L)) * (1 + y ^ 2)⁻¹ := by
+      intro y hy
+      have h1 := (hK (σ₁ + y * I) (by simpa using hσ₁lo) (by simp; linarith)).1
+      simp only [add_im, mul_im, ofReal_re, I_im, mul_one, ofReal_im, I_re, mul_zero, add_zero,
+        zero_add] at h1
+      have hw1 : σ₁ + (y : ℂ) * I + t * I ≠ 1 := fun h => by
+        have := congrArg Complex.re h; simp at this; linarith
+      have h3 := (hreg (σ₁ + y * I + t * I) (by simp) (by
+        simp only [add_im, mul_im, ofReal_re, I_im, mul_one, ofReal_im, I_re, mul_zero, add_zero,
+          zero_add]
+        calc |y + t| ≤ |y| + |t| := abs_add_le _ _
+          _ ≤ T := by linarith) hw1).2
+      simp only [hG, hHh, Function.update_of_ne hw1, norm_mul, hcpow]
+      have hre : (σ₁ + (y : ℂ) * I).re = σ₁ := by simp
+      rw [hre]
+      calc ‖mellin f (σ₁ + y * I)‖ * P ^ σ₁ * ‖zetaH (σ₁ + y * I + t * I)‖
+          ≤ (K * (1 + y ^ 2)⁻¹) * (P * e) * (|C₀| * L) :=
+            mul_le_mul (mul_le_mul h1 hPσ (by positivity) (by positivity)) h3 (norm_nonneg _)
+              (by positivity)
+        _ = _ := by ring
+    have hleft : ‖∫ y in (-U)..U, G (σ₁ + y * I)‖ ≤ K * (P * e) * (|C₀| * L) * π := by
+      set c1 := K * (P * e) * (|C₀| * L)
+      calc ‖∫ y in (-U)..U, G (σ₁ + y * I)‖ ≤ ∫ y in (-U)..U, c1 * (1 + y ^ 2)⁻¹ :=
+            intervalIntegral.norm_integral_le_of_norm_le (by linarith)
+              (Eventually.of_forall fun y hy => hleftpt y (abs_le.2 ⟨hy.1.le, hy.2⟩))
+              ((integrable_inv_one_add_sq.const_mul _).intervalIntegrable)
+        _ ≤ ∫ y, c1 * (1 + y ^ 2)⁻¹ := by
+            rw [intervalIntegral.integral_of_le (by linarith)]
+            exact setIntegral_le_integral (integrable_inv_one_add_sq.const_mul _)
+              (Eventually.of_forall fun y => by positivity)
+        _ = c1 * π := by rw [integral_const_mul, integral_univ_inv_one_add_sq]
+    -- (3) the horizontal sides
+    have hae : ∀ᵐ x : ℝ, x ≠ 1 := by
+      rw [ae_iff]; simp
+    have hhor : ∀ v : ℝ, |v| = U → ‖∫ x in σ₁..2, G (x + v * I)‖ ≤ 32 * K * |C₀| * L := by
+      intro v hv
+      set c3 := K / U ^ 4 * P ^ 2 * (|C₀| * L) with hc3
+      have hpt : ∀ᵐ x : ℝ, x ∈ Set.uIoc σ₁ 2 → ‖G (x + v * I)‖ ≤ c3 := by
+        filter_upwards [hae] with x hx1 hx
+        rw [Set.uIoc_of_le (by linarith)] at hx
+        have h1 := (hK (x + v * I) (by simp; linarith [hx.1]) (by simp; linarith [hx.2])).2
+        simp only [add_im, mul_im, ofReal_re, I_im, mul_one, ofReal_im, I_re, mul_zero, add_zero,
+          zero_add] at h1
+        have hv4 : v ^ 4 = U ^ 4 := by rw [← hv]; exact (Even.pow_abs ⟨2, rfl⟩ v).symm
+        rw [hv4] at h1
+        have hF : ‖mellin f (x + v * I)‖ ≤ K / U ^ 4 := by
+          rw [le_div_iff₀ (by positivity)]; exact h1
+        have hw1 : (x : ℂ) + v * I + t * I ≠ 1 := fun h => by
+          have := congrArg Complex.re h; simp at this; exact hx1 this
+        have h3 := (hreg ((x : ℂ) + v * I + t * I) (by simp; linarith [hx.1]) (by
+          simp only [add_im, mul_im, ofReal_re, I_im, mul_one, ofReal_im, I_re, mul_zero, add_zero,
+            zero_add]
+          calc |v + t| ≤ |v| + |t| := abs_add_le _ _
+            _ ≤ T := by linarith) hw1).2
+        simp only [hG, hHh, Function.update_of_ne hw1, norm_mul, hcpow]
+        have hre : ((x : ℂ) + v * I).re = x := by simp
+        rw [hre]
+        have hPx : P ^ x ≤ P ^ 2 := by
+          rw [show P ^ 2 = P ^ (2:ℝ) by norm_cast]
+          exact Real.rpow_le_rpow_of_exponent_le hP1 hx.2
+        exact mul_le_mul (mul_le_mul hF hPx (by positivity) (by positivity)) h3 (norm_nonneg _)
+                (by positivity)
+      calc ‖∫ x in σ₁..2, G (x + v * I)‖ ≤ c3 * |2 - σ₁| :=
+            intervalIntegral.norm_integral_le_of_norm_le_const_ae hpt
+        _ ≤ c3 * 2 := by
+            apply mul_le_mul_of_nonneg_left _ (by positivity)
+            rw [abs_of_pos (by linarith)]; linarith
+        _ ≤ 32 * K * |C₀| * L := by
+            rw [hc3, hU]
+            have hP2 : P ^ 2 ≤ T ^ 4 := by
+              have : P ^ 2 ≤ T ^ 2 := pow_le_pow_left₀ hP0.le hPT 2
+              have : T ^ 2 ≤ T ^ 4 := pow_le_pow_right₀ (by linarith) (by norm_num)
+              linarith
+            have hT4 : 0 < (T / 2) ^ 4 := by positivity
+            rw [div_mul_eq_mul_div, div_mul_eq_mul_div, div_mul_eq_mul_div, div_le_iff₀ hT4]
+            have hKCL : 0 ≤ K * (|C₀| * L) := by positivity
+            nlinarith
+    have htop := hhor U (abs_of_pos (by linarith))
+    have hbot := hhor (-U) (by rw [abs_neg, abs_of_pos (by linarith)])
+    have hbot' : ∫ x in σ₁..2, G (x - U * I) = ∫ x in σ₁..2, G (x + (-U : ℝ) * I) := by
+      refine intervalIntegral.integral_congr fun x _ => ?_
+      congr 1; push_cast; ring
+    rw [← hbot'] at hbot
+    -- (4) assemble
+    calc ‖∫ y, g y‖ ≤ ‖∫ y in (-U)..U, g y‖ + ‖∫ y in (Set.Ioc (-U) U)ᶜ, g y‖ := by
+          rw [hsplit]; exact norm_add_le _ _
+      _ ≤ (K * (P * e) * (|C₀| * L) * π + 32 * K * |C₀| * L + 32 * K * |C₀| * L) +
+            8 * K * π * |B| := by
+          gcongr
+          linarith
+      _ ≤ Cbig * E := by
+          simp only [Cbig, hE]
+          have h1 : 0 ≤ K * π * |C₀| := by positivity
+          have h2 : 0 ≤ K * |C₀| := by positivity
+          have h3 : 0 ≤ K * π * |B| := by positivity
+          nlinarith
+      _ ≤ (Ctriv + Cbig) * E := by nlinarith
 
 /-- **Crux leaf V6 (small `P`).**  For `a P < 1`, `P ≤ 1/a` is bounded, the sum has `n ≤ b/a`
 terms, and both sides are `O(1)` uniformly in `t` (`‖n^{−it}‖ = 1`, `‖P^{1−it}‖ = P`,
