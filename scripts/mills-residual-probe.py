@@ -23,7 +23,15 @@ Claims checked:
   tau-minus     Exhaustive census of the three tau = -1 classes in a coefficient box: covering q <= 31,
                 then Kronecker, then the first covering prime beyond 31 for any survivor.
 
-Usage: mills-residual-probe.py {kron-control|filter|saito|tau-minus|all}
+  pair-control  PAIRED-ROOT LEMMA (§7).  At a (1)(2) prime T_j with v_3(T_j - 1) = j + 1 and N(beta) a
+                cube, the projective 3-order is <= j and p | T_(j+J); checked by a direct matrix power.
+                Control: s >= j + 2, no prediction.
+  tau-plus      tau = +1 S3 census: the 3-adic rate c_j, and the paired-root Jacobi filter on unit
+                cubics with c_j = 1.
+  hard-core     [box c0max J cmin]: depth of the root ratios at prime T_j against random primes
+                with the same v_3(p - 1) and splitting type.  Is anything forced?
+
+Usage: mills-residual-probe.py {kron-control|filter|saito|tau-minus|pair-control|tau-plus|hard-core|all}
 """
 import sys
 from math import gcd, isqrt, lcm
@@ -438,6 +446,237 @@ def tau_minus():
         print(f"  survivor x^3{c[0]:+}x^2{c[1]:+}x{c[2]:+}: first covering prime {first_cover_prime(c)}")
 
 
+# ---------------------------------------------------------------------------------------------
+def v3(n):
+    v = 0
+    while n % 3 == 0:
+        n //= 3
+        v += 1
+    return v
+
+
+def hard_core(box=40, c0max=4, J=3, cmin=1, seed=1):
+    """The hard core: tau = +1 classes with K an S3 field.  At p = T_j prime the recurrence
+    p | T_(j+k) is excluded iff v_3(projective order of beta mod p) > j (PROBE §3).  With
+    s = v_3(p - 1) and v that 3-adic valuation, record d = s - v (the depth to which the root
+    ratios are 3-power residues; split + s = j + 1 means d = 0 iff the cube classes of the roots
+    are not all equal).  Is d at the Mills-like primes p = T_j distributed like d at random
+    primes q with the same s and the same splitting type in K (the control)?"""
+    import random
+    from collections import Counter
+    rng = random.Random(seed)
+    obs, ctl = Counter(), Counter()
+    corr = Counter()
+    n_f = 0
+    for c2 in range(-box, box + 1):
+        for c1 in range(-box, box + 1):
+            for c0 in range(-c0max, c0max + 1):
+                c = (c2, c1, c0)
+                k = cls(c)
+                if k is None or k[1] != 1 or c0 == 0 or not irreducible(c):
+                    continue
+                D = disc(c)
+                if D <= 0 or isqrt(D) ** 2 == D:
+                    continue
+                pat = c_of(c)
+                if pat is None or max(pat) < cmin:
+                    continue
+                n_f += 1
+                T = traces_exact(c, J)
+                for j in range(1, J + 1):
+                    p = T[j]
+                    if p < 10**4 or not isprime(p) or D % p == 0 or c0 % p == 0:
+                        continue
+                    if pat[j % 2] < cmin:
+                        continue
+                    s = v3(p - 1)
+                    v, degs = proj3order(c, p)
+                    if degs not in ([1, 1, 1], [1, 2]):
+                        continue
+                    typ = "split" if degs == [1, 1, 1] else "(1)(2)"
+                    obs[(typ, s - j, min(s - v, 3), v > j)] += 1
+                    corr[(typ, s - j, ((p - 1) // 3**s) % 3, s - v)] += 1
+                    # control: random primes q with v_3(q - 1) = s, same size, same type in K
+                    got = 0
+                    while got < 3:
+                        u = rng.randrange(max(1, p // 3**s // 2), p // 3**s + 2)
+                        if u % 3 == 0:
+                            continue
+                        q = 1 + 3**s * u
+                        if not isprime(q) or D % q == 0 or c0 % q == 0:
+                            continue
+                        vq, dq = proj3order(c, q)
+                        if dq != degs:
+                            continue
+                        ctl[(typ, s - j, min(s - vq, 3), vq > j)] += 1
+                        got += 1
+    print(f"hard-core: {n_f} S3 cubics in the tau = +1 classes with 3-adic rate c_j >= {cmin} (at the j used), "
+          f"|c2|,|c1| <= {box}, |c0| <= {c0max}; "
+          f"primes p = T_j (1 <= j <= {J}, p > 10^4) of type split / (1)(2)")
+    print(f"  {'type':7} {'c=s-j':>5} {'d=s-v':>6} {'v>j':>5} {'obs':>6} {'ctl/3':>7}")
+    keys = sorted(set(obs) | set(ctl), key=str)
+    for key in keys:
+        print(f"  {key[0]:7} {key[1]:5} {key[2]:6} {str(key[3]):>5} {obs[key]:6} {ctl[key] / 3:7.1f}")
+    for typ in ("split", "(1)(2)"):
+        o = sum(n for kk, n in obs.items() if kk[0] == typ)
+        ob = sum(n for kk, n in obs.items() if kk[0] == typ and not kk[3])
+        cc = sum(n for kk, n in ctl.items() if kk[0] == typ)
+        cb = sum(n for kk, n in ctl.items() if kk[0] == typ and not kk[3])
+        print(f"  {typ}: recurrence (v <= j) at p = T_j in {ob}/{o}; control {cb}/{cc}")
+    print("  correlation of d with (p-1)/3^s mod 3 at p = T_j (type, c, residue, d): count")
+    for key in sorted(corr, key=str):
+        print(f"    {key}: {corr[key]}")
+
+
+def c_of(c, K=60, j0=26, j1=33):
+    """The 3-adic rate c_j = v_3(T_j - 1) - j for large j, as (c at even j, c at odd j).  In
+    (x-1)(x^2+1) with x^2+1 inert at 3 it alternates (the Teichmuller roots +-i swap under
+    cubing), elsewhere it is constant.  None if not yet periodic within 3^K."""
+    n = 3**K
+    M = tuple(tuple(x % n for x in r) for r in comp(c))
+    vals = {}
+    for j in range(j1 + 1):
+        if j >= j0:
+            t = (tr(M) - 1) % n
+            vals.setdefault(j % 2, set()).add((v3(t) if t else K) - j)
+        M = cube(M, n)
+    if any(len(v) != 1 for v in vals.values()):
+        return None
+    pat = (min(vals[0]), min(vals[1]))
+    return pat if max(pat) + j1 < K else None
+
+
+def pair_control(box=12, c0s=(-1, 1)):
+    """PAIRED-ROOT LEMMA.  A Frobenius-conjugate pair of roots in F_(p^2) has one cube class
+    (rho^p = rho * rho^(p-1) and p = 1 mod 3), so if N(beta) is a cube mod p the third root
+    shares it too.  Hence at p = T_j of type (1)(2) with v_3(p - 1) = j + 1, the projective order
+    has v_3 <= j and p | T_(j+J) for some J >= 1.  Checked by iterating M -> M^3 mod p (an
+    independent route).  Control: (1)(2) primes T_j with v_3(p - 1) >= j + 2, where the lemma
+    makes no prediction."""
+    hit = miss = 0
+    ctl = ctl_rec = 0
+    for c2 in range(-box, box + 1):
+        for c1 in range(-box, box + 1):
+            for c0 in c0s:
+                c = (c2, c1, c0)
+                D = disc(c)
+                if not irreducible(c) or D == 0 or isqrt(abs(D)) ** 2 == D:
+                    continue
+                T = traces_exact(c, 2)
+                for j in (1, 2):
+                    p = T[j]
+                    if p < 5 or p > 10**7 or p % 3 != 1 or not isprime(p) or D % p == 0:
+                        continue
+                    v, degs = proj3order(c, p)
+                    if degs != [1, 2]:
+                        continue
+                    s = v3(p - 1)
+                    if s == j + 1:
+                        # predicted: v <= j, so x = beta^(3^j) has projective order L prime to 3;
+                        # verify independently: T_(j+J) = 0 mod p with J = ord_L(3), via M^(3^(j+J))
+                        # with the exponent reduced mod p^2 - 1 (M is semisimple mod p).
+                        L = proj_order(c, p, 3**j)
+                        rec = False
+                        if L % 3:
+                            J = n_order(3, L) if L > 1 else 1
+                            e = pow(3, j + J, p * p - 1)
+                            rec = tr(mat_pow(comp(c), e, p)) % p == 0
+                        hit += rec and v <= j
+                        miss += not (rec and v <= j)
+                    elif s >= j + 2:
+                        ctl += 1
+                        ctl_rec += v <= j
+    print(f"pair-control: (1)(2) prime traces T_j = 1 mod 3 with v_3(T_j - 1) = j + 1, unit beta: "
+          f"{hit} have v <= j and p | T_(j+J) (checked by matrix power), {miss} do not")
+    print(f"  control v_3(T_j - 1) >= j + 2: {ctl} primes; v <= j (recurrence) in {ctl_rec}, "
+          f"no prediction in {ctl - ctl_rec}")
+
+
+def mat_pow(A, e, n):
+    R = ((1, 0, 0), (0, 1, 0), (0, 0, 1))
+    A = tuple(tuple(x % n for x in r) for r in A)
+    while e:
+        if e & 1:
+            R = mul(R, A, n)
+        A = mul(A, A, n)
+        e >>= 1
+    return R
+
+
+def proj_order(c, p, k):
+    """Order of beta^k in (F_p[x]/f)^* / F_p^*, for (1)(2) primes (the group has exponent p^2 - 1)."""
+    from sympy import factorint
+    def scalar(M):
+        return M[0][1] == M[0][2] == M[1][0] == M[1][2] == M[2][0] == M[2][1] == 0 and M[0][0] == M[1][1] == M[2][2]
+    X0 = mat_pow(comp(c), k, p)
+    L = p * p - 1
+    for q, e in factorint(L).items():
+        for _ in range(e):
+            if scalar(mat_pow(X0, L // q, p)):
+                L //= q
+            else:
+                break
+    return L
+
+
+
+def plus_killed(c, par, pre=60, cap=20000):
+    """tau = +1, S3, unit beta.  At every large j with c_j = 1 (j mod 2 in par), the prime T_j
+    cannot have type (1)(2) (paired-root lemma) or (3) (projective lemma), so it splits
+    completely and (D / T_j) = +1.  One such cycle value of T_j mod |D| with (D/.) in {0, -1}
+    kills f.  The state is (M^(3^j) mod |D|, j mod 2)."""
+    D = disc(c)
+    n = abs(D)
+    M = tuple(tuple(x % n for x in r) for r in comp(c))
+    seen = {}
+    for j in range(cap):
+        if j >= pre:
+            if j % 2 in par and kron(D, tr(M) % n, n) != 1:
+                return "kron"
+            if (M, j % 2) in seen:
+                return "ok"
+            seen[(M, j % 2)] = j
+        M = cube(M, n)
+    return "undetermined"
+
+
+def tau_plus(box=30, c0max=10):
+    """The tau = +1 S3 census: distribution of the 3-adic rate pattern (c_even, c_odd), and the
+    paired-root Jacobi filter on unit f with c_j = 1 at some parity, alone and after covering."""
+    from collections import Counter
+    cdist = Counter()
+    unit = Counter()
+    for c2 in range(-box, box + 1):
+        for c1 in range(-box, box + 1):
+            for c0 in range(-c0max, c0max + 1):
+                c = (c2, c1, c0)
+                k = cls(c)
+                if k is None or k[1] != 1 or c0 == 0 or not irreducible(c):
+                    continue
+                D = disc(c)
+                if D <= 0 or isqrt(D) ** 2 == D:
+                    continue
+                pat = c_of(c)
+                cdist[(k[0], "c=1 some parity" if pat and 1 in pat else pat and "c>=2")] += 1
+                if abs(c0) != 1:
+                    continue
+                par = {i for i in (0, 1) if pat and pat[i] == 1}
+                key = (k[0], "c=1" if par else "c>=2")
+                unit[key + ("n",)] += 1
+                r = plus_killed(c, par) if par else "n/a"
+                unit[key + ("kron kills",)] += r == "kron"
+                unit[key + ("undetermined",)] += r == "undetermined"
+                cov = covered(c, (2, 5, 7, 11, 13))
+                unit[key + ("cover<=13 surv",)] += not cov
+                unit[key + ("cover<=13 then kron surv",)] += not cov and r != "kron"
+    print(f"tau-plus: totally real S3 cubics, tau = +1, |c2|,|c1| <= {box}, |c0| <= {c0max}")
+    print("  3-adic rate pattern (None: not periodic within the window):")
+    for key in sorted(cdist, key=str):
+        print(f"    {key}: {cdist[key]}")
+    print("  unit f (|c0| = 1): paired-root Jacobi filter")
+    for key in sorted(unit, key=str):
+        print(f"    {key}: {unit[key]}")
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "all"
     if cmd in ("kron-control", "all"):
@@ -448,3 +687,9 @@ if __name__ == "__main__":
         saito()
     if cmd in ("tau-minus", "all"):
         tau_minus()
+    if cmd == "pair-control":
+        pair_control(*(int(a) for a in sys.argv[2:3]))
+    if cmd == "tau-plus":
+        tau_plus(*(int(a) for a in sys.argv[2:]))
+    if cmd == "hard-core":
+        hard_core(*(int(a) for a in sys.argv[2:]))

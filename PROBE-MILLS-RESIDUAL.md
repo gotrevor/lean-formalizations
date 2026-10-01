@@ -4,6 +4,7 @@
 1. **One new local lemma** (the Kronecker lemma, §3).  It splits the six classes into an abelian half and a hard core.
 2. **A sharper map of the wall** (§5a).  The local route is *not* Fermat-blocked.  Every explicit residual cubic we tried dies to a small certificate: all 184,513 totally real cubic Pisot β ≲ 6000 with Saito's (1.3), and all 2.4 million τ = −1 cubics in a box, die by q ≤ 47.  Fermat numbers, by contrast, structurally have no certificate at any prime.  What blocks the local route is *uniformity*: the Mills β is hypothetical, so one needs a certificate for every residual cubic at once.  That is Saito's Problem 1.1 restricted to these classes, with only an Artin-type heuristic behind it.
 3. **The only Mills-specific lever, least-ness, is gap-bound limited** (§4).  Its exponent sits strictly between the BHP exponent and the RH exponent.
+4. **The hard core shrank (§7, 2026-10-01).**  A second local lemma (paired roots) kills type (1)(2) at `T_j` whenever the 3-adic rate is c = 1 and `N(β)` is a cube mod `T_j`.  So unit β with c = 1 gets a Jacobi certificate as well; alone it kills 436 of 442 such cubics in a box.  What is left is c ≥ 2 (a mod-9/27 condition on f) or a non-cube norm.  There, the cube classes at `p = T_j` match random primes: nothing is forced.
 
 Script: `scripts/mills-residual-probe.py {kron-control|filter|saito}`.  Prior work: `FINDING-MILLS-3ADIC.md` (phase 29, the six classes), `PROBE-MILLS-PROJECTIVE.md` (inert primes excluded), `PROBE-MILLS-TRANSCENDENCE.md` (Saito 2025, Theorems 1.7–1.8).
 
@@ -61,7 +62,7 @@ The projective lemma (`PROBE-MILLS-PROJECTIVE.md`) excludes inert p for j ≥ 1.
   - **K cannot be a cyclic cubic field.**  There D is a square, so `(D/p) = +1`, and both allowed types are excluded.
   - In the S3 case, `(D / p_k) = −1` for every large Mills prime.  `T_j mod |D|` is eventually periodic, so this is a **finite check on f**: the eventual cycle must avoid `(D/·) ∈ {0, +1}`.
 - In the three **τ = +1 classes** with K cyclic, every large Mills prime splits completely.  This too is a congruence condition on `T_j`, because the cubic character has conductor dividing `√D`.
-- The **hard core** is τ = +1 with K an S3 field.  There the allowed Frobenius classes {1, transpositions} map onto `Gal^ab = C₂`, so no congruence condition on `T_j` exists.  The remaining exact condition is Kummer-theoretic: at a prime `T_j`, `v₃(projective order of β mod T_j) > j`.  That condition lives over `L(ζ_(3^c))` and is non-abelian over ℚ.
+- The **hard core** is τ = +1 with K an S3 field.  There the allowed Frobenius classes {1, transpositions} map onto `Gal^ab = C₂`, so no congruence condition on `T_j` exists.  *(Corrected in §7: when c = 1 and `N(β)` is a cube mod `T_j`, transpositions are excluded too, and `(D/T_j) = +1` is a congruence condition after all.)*  The remaining exact condition is Kummer-theoretic: at a prime `T_j`, `v₃(projective order of β mod T_j) > j`.  That condition lives over `L(ζ_(3^c))` and is non-abelian over ℚ.
 
 The exact condition for `p = T_j` (with `T_(j+i)` prime for all i ≥ 1) is `v₃(ord of β in (𝔽_p[x]/f)^× / 𝔽_p^×) > j`.  This single condition contains phase 29 (the GL₃ bound), the projective lemma (inert type), and Lemma K (split type at `p ≡ 2 (mod 3)`).
 
@@ -132,4 +133,52 @@ In the algebraic branch the prime-free interval is `[(y − |s|)³, y³)` with `
 ## 6. What would reopen it
 
 - **(LC), even restricted to totally real Pisot with (1.3), or to τ = −1:** some way to produce the certificate prime from f.  The Fermat sibling does not refute it (§5a), but it is Artin-type and uniform in f.
-- **Hard core (τ = +1, S3):** any coupling of (P1) and (P2) that uses `T = Tr β^(3^j)`.  For example, an algebraic family of integers inside `(T³, T_(j+1))` with a forced prime value, or a zero-density input below exponent 21/40 for cubes of Pisot traces.
+- **Hard core (τ = +1, S3; after §7: c ≥ 2 or non-cube norm):** a law forcing the cubic residue symbol of β at the primes dividing `Tr β^(3^j)` (for instance a usable generator of 𝔭 | T_j).  Alternatively, any coupling of (P1) and (P2) that uses `T = Tr β^(3^j)`.  For example, an algebraic family of integers inside `(T³, T_(j+1))` with a forced prime value, or a zero-density input below exponent 21/40 for cubes of Pisot traces.
+
+## 7. The hard core (2026-10-01): the paired-root lemma, and where it stops
+
+Setting: τ = +1, K an S3 field, `p = T_j` prime, `s = v₃(p − 1)`, `v = v₃(projective order of β mod p)`.  Recurrence (`p | T_(j+J)`) is excluded iff `v > j` (§3).  Write the **3-adic rate** `c_j = s − j` for large j.  It is ≥ 1 because `T_j → 1` 3-adically in all three τ = +1 classes (Teichmüller residues 1+1−1, 0+0+1, 1+i−i).  For large j it is periodic in j with period ≤ 2, and it alternates only in `(x−1)(x²+1)` with `x²+1` inert at 3, where cubing swaps ±i.
+
+**Paired-root lemma.**  Let p ≡ 1 (mod 3) with p ∤ D·N(β), and suppose f has type (1)(2) mod p: a root r ∈ 𝔽_p and a conjugate pair ρ, ρ^p ∈ 𝔽_(p²).  If `N(β)` is a cube mod p, then `v ≤ s − 1`.  Hence at `p = T_j` with `c_j = 1`, the prime p recurs, and `T_(j+J)` is composite.
+
+*Proof.*
+1. The projective group `(𝔽_p × 𝔽_(p²))^× / 𝔽_p^×` is isomorphic to `𝔽_(p²)^×` via `(r, ρ) ↦ ρ/r`.
+2. Since 3 ∤ p + 1, the 3-part of z ∈ `𝔽_(p²)^×` has the same order as the 3-part of `N(z) = z^(p+1)`.
+3. Here `N(ρ/r) = ρρ^p / r² = N(β)/r³`, which is a cube in 𝔽_p^×, so its 3-part has order at most `3^(s−1)`. ∎
+
+In words: a Frobenius-conjugate pair of roots has a single cube class, because `ρ^p = ρ · ρ^(p−1)` and p ≡ 1 (mod 3).  The norm relation then forces the third root into the same class.  This is the "all three cube classes equal" pattern of the split case, but here it is forced.
+
+**Consequence.**  For unit β, and for any β whose norm is ± a cube, at every large j with `c_j = 1` the prime `T_j` must split completely: inert is excluded by the projective lemma, and (1)(2) by this lemma.  So `(D / T_j) = +1`.  The τ = −1 Jacobi certificate (§3) therefore extends to these τ = +1 cubics: one value with `(D/·) ∈ {0, −1}` on the eventual cycle of `(T_j mod |D|, j mod 2)` at the c = 1 parities kills f.
+
+**Numerics** (`scripts/mills-residual-probe.py {pair-control|tau-plus|hard-core}`):
+
+- **`pair-control`** (all classes, `|c₂|, |c₁| ≤ 30`, unit, j = 1, 2, `p < 10⁷`): for every (1)(2) prime `T_j` with `s = j + 1`, **48 of 48** have `v ≤ j`.  In each, `p | T_(j+J)` with `J = ord_L(3)` was confirmed by a direct matrix power mod p, an independent route.  **Control:** for (1)(2) primes with `s ≥ j + 2`, only 6 of 24 have `v ≤ j`.
+- **`tau-plus`** (totally real S3, τ = +1, `|c₂|, |c₁| ≤ 30`, `|c₀| ≤ 10`): c ≥ 2 at both parities in 166/1565 of `(x−1)(x²+1)`, 462/1402 of `(x−1)²(x+1)`, and 408/1370 of `x²(x−1)`.
+  - In `(x−1)²(x+1)` (units, box 40), c ≥ 2 ⟺ `f(−1) ≡ 0 (mod 9)`, exactly, in 676 of 676 cases.  That is, the 3-adic root near −1 is a 3-adic cube.  A heuristic expansion agrees: `T_j − 1 ≈ −2·3^j log(−γ₃)`.
+  - In `(x−1)(x²+1)`, `f(1) ≡ 0 (mod 9)` is necessary but not sufficient.
+  - The filter on unit c = 1 cubics, on its own, kills **254/256** of `(x−1)(x²+1)` and **182/186** of `(x−1)²(x+1)`.  After covering at q ≤ 13 nothing survives.  `x²(x−1)` has no units (3 | c₀), so the lemma applies there only when `−c₀` is ± a cube.
+- **`hard-core 60 1 4 2`** asks whether anything is forced at c ≥ 2.  It takes unit cubics with `c_j ≥ 2` and primes `T_j` with j ≤ 4, and compares each with 3 random primes having the same s and the same splitting type.
+  - (1)(2) with `s − j = 2`: the root r is a non-cube (d = 1, no recurrence) in 30/46.  The control gives 28/46, and the heuristic is 2/3.
+  - Split: the cube-class patterns match the control row by row.
+  - **Nothing is forced:** the trace relation `x₁ + x₂ + x₃ ≡ 0` leaves the Kummer data at `T_j` looking random.
+
+**What is left (the new hard core).**  τ = +1, K an S3 field, and either:
+- (i) `c_j ≥ 2` at every parity (a congruence on f mod 9 or 27), or
+- (ii) `N(β)` not a cube mod `T_j`.
+
+In both cases the surviving local condition is a cubic residue symbol at the primes dividing `T_j`:
+- (i): in the split case, the root ratios are not all `3^c`-th powers; in the (1)(2) case, r is not a `3^(c−1)`-th power.
+- (ii): `(N(β) / T_j)₃ ≠ 1` whenever `(D/T_j) = −1`.
+
+These are Frobenius conditions in `K(ζ₃, β^(1/3), β′^(1/3))`, which is non-abelian over ℚ.
+
+**Why no reciprocity closes it.**
+- β is a unit, so `K(ζ₃, β^(1/3))` is unramified outside 3.  The symbol at 𝔭 | p therefore depends on 𝔭's ray class mod `3^a`.
+- `p ≡ 1 (mod 3^(j+c))` pins only the norm of that class, which is the cyclotomic part.
+- The only other datum is `Tr β^(3^j) = p`.  That says nothing about any individual 𝔭, and no generator of 𝔭 is known.
+- 3-adic data alone forces the symbol only if β is a local cube at *every* place above 3.  When 3 ∤ h(K(ζ₃)), that makes β a global cube, so after re-indexing to a primitive base it never happens.
+- Partial local cube-ness (case (i)) is exactly what fails to determine the symbol, and the numerics confirm it.
+
+**Difficulty check.**  Like Lemma K, the paired-root lemma holds for every eventually-prime trace sequence (S1), so it burns down density and does not separate Mills.  Confidence: lemma correct 97%.  Novelty: the "Frobenius pair shares a cube class" step is elementary; I know of no source applying it to Mills (60%).
+
+Lean: not planted.  It is a natural phase-60 sibling (`𝔽_(p²)` norm plus the projective identification) if wanted.
