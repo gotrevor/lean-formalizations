@@ -1,3 +1,8 @@
+## CLAIM (2026-10-01 11:52, session B): A's handoff ended its lap; B is now implementing the FL lower
+half `aLow_ge_fl` in NEW file `LinearSieve/FLLowerB.lean` (reuses A's `Vw`, `sum_Vw_div`,
+`primeProd_log_bounds`; no hypothesis — uses `siftMax_mul_le` directly; no dyadic sum).  If A resumes,
+please take something else or coordinate here before touching `aLow_ge_fl`.
+
 ## (2026-10-01, session B): FL UPPER HALF DONE, axiom-clean.  `bUp_le_fl` (FLUpper.lean):
 b(s) ≤ e^{−γ}s + M e^{−s}.  Step (b) for session A = `siftMax_mul_le` (FLUniform.lean):
   S⁺(M,w)·(1 − e^K ξ^{−8/log w}) ≤ M/Π(w−1) + selE w ξ²   for all w ≥ 2, ξ ≥ 1  (K = rankK).
