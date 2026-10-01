@@ -2012,3 +2012,13 @@ Selberg Λ² with optimal weights on top of mathlib's `SelbergSieve` scaffolding
 Discharge.lean sorry-free, axiom-clean (see HANDOFF-2026-10-01-erdos385-E2c-discharge-complete.md).
 Reusable: positivity of the Fejér transform is NOT needed — only `|J| ≤ min(T, 1/(Tλ²))`
 plus pointwise `w ≥ 1_{[0,T]}`; the single row weight `2TN²/(T²k²+N²)` absorbs the min.
+
+## 2026-10-01 E2d lap 1 — Plancherel crux CLOSED
+`Erdos385/Parseval/Plancherel.lean`: `plancherel_lintegral` (∫⁻‖𝓕f‖ₑ² = ∫⁻‖f‖ₑ² for f integrable,
+bounded, a.e. continuous), axiom-clean.  Gaussian regularization + multiplication formula
+(`integral_sesq_fourierIntegral_eq_neg_flip`) + `Real.tendsto_integral_gaussian_smul'`.
+Route decision (refines header): SHARP bands are fine — every function Plancherel is applied to is
+bounded/integrable/a.e.-continuous: Φ itself, F_lo = Φ̂·1_lo, F_mid = A·1_mid.  The high part needs
+no integrability of Φ_hi: ‖Φ−P‖² = ‖Φ‖² − 2Re⟨Φ,P⟩ + ‖P‖² with P = 𝓕⁻(Φ̂·1_{|ξ|≤T₁}) and
+⟨Φ,P⟩ = ∫|Φ̂|²1 (multiplication formula), giving ∫|Φ̂|²1_hi.  No convolution, no kernels.
+Next: Φ and 𝓕Φ = A(1+2πiξ)/(1+2πiξ); a.e. identity for shortSumC; low/mid/high bounds.
