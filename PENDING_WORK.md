@@ -1,3 +1,9 @@
+## CLAIMS (2026-10-01, session A): `phi_buchstab` + `buchstab_limit_b` DONE (A).  A now takes FL
+lower half (B's plan step (d)) in a NEW file `LinearSieve/FLLower.lean`, stated against an explicit
+hypothesis `UpperFLHyp` (B's step (b) shape: S⁺(M,w) ≤ M·V(w)(1+K e^{−c log ξ/log w}) + (Cξ log ξ)²).
+B keeps (a)–(c) and the final wiring of `fundamental_lemma`.  Only finite-range s matters trivially
+(a ≥ 0 ≥ Cs − Me^{−s} for s ≤ s₀ with M large), so (d) is needed for large s only.
+
 ## phase E5 lap 3b (2026-10-01): comparison_functions proved from two leaves (DelaySolution.lean)
 `delay_solution` (pure delay-ODE: Q=2sω, P=m; positivity via (s−1)P(s)=∫_{s−1}^s P; window-average
 contraction for ω) and `omega_le` (ω∞ ≤ e^{−γ} ⇔ λ ≥ 1; route: rough-number count Φ with forward
