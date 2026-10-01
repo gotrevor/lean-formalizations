@@ -1998,3 +1998,6 @@ case `n < y+2` via Lemma R at `y' = n−2` + Bertrand ⇒ `n = 2p`, pair `(p, p)
 `ffGood_of_natDegree_lt_card`, and the BBR wiring edge `ffWitness_of_BBR` (count ≥ 2 via
 `q^{m+1} = q^{m+1/2}·√q`; coefficient-injectivity picks a shift with `g ≠ f`).
 Next: `Graph.lean` edges (`noCarrier_of_bad`, repulsion ⇒ (i), FGKMT ⇒ sieve sibling), then E2 `Count.lean`.
+
+## Erdős #385 E3 (2026-10-01): headline wired; leaves W3d/e/f + VK edge + VK control open
+See HANDOFF-2026-10-01-erdos385-E3-W3-assembled.md.  Next attack: W3e/W3f (MVT), then W3d, then VK edge.

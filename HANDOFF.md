@@ -1,6 +1,4 @@
-# HANDOFF 2026-10-01 — Erdős #385 E2 (Count) COMPLETE
-Branch `erdos-385`.  `Count.lean` sorry-free; `card_bad_le` axiom-clean
-(`[propext, Classical.choice, Quot.sound]`), conditional only on `Literature.BrunUniformGap`.
+# HANDOFF → see HANDOFF-2026-10-01-erdos385-E3-W3-assembled.md
 
 Route as planned, two simplifications worth reusing:
 - `h/φ(h) ≤ 1 + log₂ h` (`div_totient_le`) via the telescoping `∏ s/(s−1) ≤ |S|+1`
