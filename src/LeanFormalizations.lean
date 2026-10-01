@@ -226,4 +226,6 @@ import LeanFormalizations.NumberTheory.Erdos385.Landau.Basic
 import LeanFormalizations.NumberTheory.Erdos385.Landau.Zeta
 import LeanFormalizations.NumberTheory.Erdos385.Landau.ZeroFree
 import LeanFormalizations.NumberTheory.Erdos385.Landau
+import LeanFormalizations.Literature.Erdos385Exceptional
+import LeanFormalizations.NumberTheory.Erdos385.Exceptional
 import LeanFormalizations.NumberTheory.Erdos385.RateVK
