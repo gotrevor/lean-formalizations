@@ -422,6 +422,87 @@ noncomputable def zetaH (w : ℂ) : ℂ := deriv riemannZeta w / riemannZeta w +
 noncomputable def smoothTwist (f : ℝ → ℂ) (P t : ℝ) : ℂ :=
   ∑' n : ℕ, (ArithmeticFunction.vonMangoldt n : ℂ) * (n : ℂ) ^ (-((t : ℂ) * I)) * f (n / P)
 
+/-- The Mellin transform of a continuous function vanishing off `[a, b] ⊂ (0, ∞)` is entire. -/
+theorem mellin_differentiable {f : ℝ → ℂ} (hf : Continuous f) {a b : ℝ} (ha : 0 < a)
+    (hs : ∀ x, f x ≠ 0 → a ≤ x ∧ x ≤ b) : Differentiable ℂ (mellin f) := by
+  intro s
+  have htop : ∀ c : ℝ, f =O[atTop] (· ^ c) := by
+    intro c
+    apply Asymptotics.IsBigO.of_bound 0
+    filter_upwards [eventually_gt_atTop b] with x hx
+    have : f x = 0 := by by_contra h; linarith [(hs x h).2]
+    simp [this]
+  have hbot : ∀ c : ℝ, f =O[nhdsWithin 0 (Set.Ioi 0)] (· ^ c) := by
+    intro c
+    apply Asymptotics.IsBigO.of_bound 0
+    filter_upwards [nhdsWithin_le_nhds (Iio_mem_nhds ha)] with x hx
+    have : f x = 0 := by by_contra h; linarith [(hs x h).1, show x < a from hx]
+    simp [this]
+  exact mellin_differentiableAt_of_isBigO_rpow (a := s.re + 1) (b := s.re - 1)
+    (hf.locallyIntegrable.locallyIntegrableOn _) (htop _) (by linarith) (hbot _) (by linarith)
+
+/-- `H = ζ'/ζ + 1/(w−1)` is differentiable wherever `w ≠ 1` and `ζ(w) ≠ 0`. -/
+theorem zetaH_differentiableAt {w : ℂ} (hw : w ≠ 1) (hz : riemannZeta w ≠ 0) :
+    DifferentiableAt ℂ zetaH w := by
+  have hd : DifferentiableAt ℂ (deriv riemannZeta) w :=
+    ((differentiableOn_riemannZeta.deriv isOpen_compl_singleton) w hw).differentiableAt
+      (isOpen_compl_singleton.mem_nhds hw)
+  have hw1 : w - 1 ≠ 0 := sub_ne_zero.2 hw
+  unfold zetaH
+  exact (hd.div (differentiableAt_riemannZeta hw) hz).add
+    ((differentiableAt_const _).div (differentiableAt_id.sub_const _) hw1)
+
+open LeanFormalizations.Literature in
+/-- **VK ⇒ `H` extends holomorphically across `w = 1`.**  The hypothesis at `T = 3` bounds `H` on
+a punctured disc around `1`; Riemann's removable-singularity theorem does the rest. -/
+theorem zetaH_extends (h : VKZeroFreeLogDeriv) :
+    ∃ L : ℂ, ∀ w : ℂ, (w = 1 ∨ riemannZeta w ≠ 0) →
+      DifferentiableAt ℂ (Function.update zetaH 1 L) w := by
+  obtain ⟨c₀, hc₀, C₀, hVK⟩ := h
+  set η := c₀ / (Real.log 3 ^ ((2 : ℝ) / 3) * Real.log (Real.log 3) ^ ((1 : ℝ) / 3))
+  have hl3 : 1 < Real.log 3 := by
+    rw [Real.lt_log_iff_exp_lt (by norm_num)]; have := Real.exp_one_lt_d9; linarith
+  have hη : 0 < η := by
+    have : 0 < Real.log (Real.log 3) := Real.log_pos hl3
+    positivity
+  set r := min η 1
+  have hr : 0 < r := lt_min hη one_pos
+  -- on the punctured disc, VK at `T = 3` applies
+  have hdisc : ∀ w ∈ Metric.ball (1 : ℂ) r, w ≠ 1 →
+      riemannZeta w ≠ 0 ∧ ‖zetaH w‖ ≤ C₀ * Real.log 3 := by
+    intro w hw hw1
+    have hd : ‖w - 1‖ < r := by rwa [Metric.mem_ball, dist_eq_norm] at hw
+    have hre : |w.re - 1| < r := by
+      have := Complex.abs_re_le_norm (w - 1); simp at this; linarith
+    have him : |w.im| < r := by
+      have := Complex.abs_im_le_norm (w - 1); simp at this; linarith
+    have hreg : InVKRegion c₀ 3 w.re := by
+      unfold InVKRegion
+      have := (abs_lt.1 hre).1
+      have : r ≤ η := min_le_left _ _
+      linarith
+    have hy : |w.im| ≤ 3 := by linarith [min_le_right η 1]
+    have hw' : ((w.re : ℂ) + w.im * I) = w := Complex.re_add_im w
+    have := hVK 3 w.re w.im le_rfl hreg hy (by rwa [hw'])
+    rw [hw'] at this
+    exact ⟨this.1, by simpa [zetaH] using this.2⟩
+  set S := Metric.ball (1 : ℂ) r
+  have hS : S ∈ nhds (1 : ℂ) := Metric.ball_mem_nhds _ hr
+  have hdiffS : DifferentiableOn ℂ zetaH (S \ {1}) := fun w hw =>
+    (zetaH_differentiableAt hw.2 (hdisc w hw.1 hw.2).1).differentiableWithinAt
+  have hbdd : BddAbove (norm ∘ zetaH '' (S \ {1})) := by
+    refine ⟨C₀ * Real.log 3, ?_⟩
+    rintro _ ⟨w, hw, rfl⟩
+    exact (hdisc w hw.1 hw.2).2
+  refine ⟨limUnder (nhdsWithin 1 {1}ᶜ) zetaH, fun w hw => ?_⟩
+  have hrem := Complex.differentiableOn_update_limUnder_of_bddAbove hS hdiffS hbdd
+  rcases eq_or_ne w 1 with rfl | hw1
+  · exact hrem.differentiableAt hS
+  · have hz : riemannZeta w ≠ 0 := hw.resolve_left hw1
+    apply (zetaH_differentiableAt hw1 hz).congr_of_eventuallyEq
+    filter_upwards [isOpen_compl_singleton.mem_nhds hw1] with v hv
+    exact Function.update_of_ne hv _ _
+
 /-- **Crux leaf V4 (Perron at `Re s = 2`, main term subtracted).**  Once `f(x/P)` vanishes for
 `x ≤ 1` (`a P ≥ 1`): `S − F(1 − it) P^{1−it} = −(1/2π) ∫ F(2+iy) P^{2+iy} H(2+iy+it) dy`.
 English proof: Mellin inversion `mellinInv_mellin_eq` at `x = n/P`, Fubini against
