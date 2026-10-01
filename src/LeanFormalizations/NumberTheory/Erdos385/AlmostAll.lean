@@ -904,10 +904,202 @@ theorem variance_small (h1 : MR16Lemma14) (h2 : MontgomeryVaughanMVT) (hVK : Smo
 
 /-! ## Headline -/
 
+/-- One geometric step of the window covering: `rZ + h(rZ) ≤ (1 + δ/2) Z` for `r = 1 + δ/4`. -/
+theorem window_step {δ Z : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) (hZ : 2 ≤ Z) :
+    (1 + δ / 4) * Z + paramH δ ((1 + δ / 4) * Z) ≤ (1 + δ / 2) * Z := by
+  unfold paramH
+  have : √((1 + δ / 4) * Z) ≤ Z := by
+    rw [Real.sqrt_le_left (by linarith)]; nlinarith
+  nlinarith
+
+/-- **Covering by geometric windows.**  If every window `[Z + h, (1 + δ/2) Z]` carries at most `η Z`
+elements of `E` for large `Z`, for every `η > 0`, then `E` has density zero. -/
+theorem tendsto_density_zero_of_windows {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) (E : Set ℕ)
+    (hW : ∀ η : ℝ, 0 < η → ∀ᶠ Z : ℝ in atTop,
+      ({n : ℕ | n ∈ E ∧ Z + paramH δ Z ≤ n ∧ (n : ℝ) ≤ (1 + δ / 2) * Z}.ncard : ℝ) ≤ η * Z) :
+    Tendsto (fun X : ℕ => ({n : ℕ | n ≤ X ∧ n ∈ E}.ncard : ℝ) / X) atTop (nhds 0) := by
+  classical
+  rw [tendsto_order]
+  refine ⟨fun a ha => Eventually.of_forall fun X => lt_of_lt_of_le ha (by positivity),
+    fun η hη => ?_⟩
+  set r : ℝ := 1 + δ / 4 with hr
+  have hr1 : 1 < r := by rw [hr]; linarith
+  set η' : ℝ := η * (r - 1) / (4 * r) with hη'
+  have hη'0 : 0 < η' := by rw [hη']; apply div_pos (mul_pos hη (by linarith)) (by linarith)
+  obtain ⟨Z₁, hZ₁⟩ := eventually_atTop.1 (hW η' hη'0)
+  set Z₀ : ℝ := max Z₁ (max 16 (4 / δ)) with hZ₀
+  have hZ₀16 : 16 ≤ Z₀ := (le_max_left _ _).trans (le_max_right _ _)
+  have hZ₀δ : 1 ≤ Z₀ * (δ / 4) := by
+    have : 4 / δ ≤ Z₀ := (le_max_right _ _).trans (le_max_right _ _)
+    rw [div_le_iff₀ hδ] at this; linarith
+  set Zs : ℕ → ℝ := fun j => Z₀ * r ^ j with hZs
+  have hZs_ge : ∀ j, Z₀ ≤ Zs j := fun j => le_mul_of_one_le_right (by linarith)
+    (one_le_pow₀ hr1.le)
+  have hZs_succ : ∀ j, Zs (j + 1) = r * Zs j := fun j => by simp only [hZs, pow_succ]; ring
+  have hZs_big : ∀ j : ℕ, (j : ℝ) ≤ Zs j := fun j => by
+    have h1 : 1 + (j : ℝ) * (δ / 4) ≤ r ^ j := by
+      rw [hr]; exact one_add_mul_le_pow (by linarith) j
+    have : (j : ℝ) ≤ Z₀ * (1 + j * (δ / 4)) := by nlinarith
+    exact this.trans (mul_le_mul_of_nonneg_left h1 (by linarith))
+  have hH0 : ∀ Z : ℝ, 0 ≤ paramH δ Z := fun Z => by unfold paramH; positivity
+  set W : ℝ → Set ℕ := fun Z => {n : ℕ | n ∈ E ∧ Z + paramH δ Z ≤ n ∧ (n : ℝ) ≤ (1 + δ / 2) * Z}
+  have hWfin : ∀ Z, (W Z).Finite := fun Z =>
+    (Set.finite_Iic ⌊(1 + δ / 2) * Z⌋₊).subset fun n hn => by
+      simp only [Set.mem_Iic]; exact Nat.le_floor hn.2.2
+  set N₀ : ℕ := ⌈Z₀ + paramH δ Z₀⌉₊ with hN₀
+  set P : ℕ → ℕ → Prop := fun X j => Zs j + paramH δ (Zs j) ≤ X with hP
+  -- the covering
+  have hcover : ∀ X n : ℕ, n ∈ E → N₀ ≤ n → n ≤ X →
+      ∃ j ≤ Nat.findGreatest (P X) X, n ∈ W (Zs j) := by
+    intro X n hnE hn hnX
+    set j := Nat.findGreatest (P n) n with hj
+    have hP0 : P n 0 := by
+      simp only [hP, hZs, pow_zero, mul_one]
+      exact (Nat.le_ceil _).trans (by exact_mod_cast hn)
+    have hPj : P n j := Nat.findGreatest_spec (Nat.zero_le n) hP0
+    have hjn : j ≤ n := Nat.findGreatest_le n
+    refine ⟨j, Nat.le_findGreatest (hjn.trans hnX) ((show (P n j) from hPj).trans
+      (by exact_mod_cast hnX)), hnE, hPj, ?_⟩
+    by_contra hcon
+    push Not at hcon
+    have hstep := window_step hδ hδ' ((show (2 : ℝ) ≤ 16 by norm_num).trans
+      (hZ₀16.trans (hZs_ge j)))
+    rw [← hZs_succ] at hstep
+    have hPj1 : P n (j + 1) := by simp only [hP]; linarith
+    by_cases hj1 : j + 1 ≤ n
+    · exact Nat.findGreatest_is_greatest (by omega) hj1 hPj1
+    · have := hZs_big (j + 1)
+      have : Zs (j + 1) ≤ n := le_trans (le_add_of_nonneg_right (hH0 _)) hPj1
+      have : (n : ℝ) < (j + 1 : ℕ) := by exact_mod_cast (by omega : n < j + 1)
+      linarith
+  -- the count
+  have hcount : ∀ X : ℕ, N₀ ≤ X →
+      ({n : ℕ | n ≤ X ∧ n ∈ E}.ncard : ℝ) ≤ N₀ + η * X / 4 := by
+    intro X hX
+    set J := Nat.findGreatest (P X) X
+    have hsub : {n : ℕ | n ≤ X ∧ n ∈ E} ⊆ Set.Iio N₀ ∪ ⋃ j ∈ Finset.range (J + 1), W (Zs j) := by
+      intro n ⟨hnX, hnE⟩
+      by_cases hn : n < N₀
+      · exact Or.inl hn
+      · obtain ⟨j, hj, hW'⟩ := hcover X n hnE (by omega) hnX
+        exact Or.inr (Set.mem_biUnion (Finset.mem_range.2 (by omega)) hW')
+    have hfin : (Set.Iio N₀ ∪ ⋃ j ∈ Finset.range (J + 1), W (Zs j)).Finite :=
+      (Set.finite_Iio N₀).union (Set.Finite.biUnion (Finset.finite_toSet _) fun j _ => hWfin _)
+    have h1 := Set.ncard_le_ncard hsub hfin
+    have h2 := Set.ncard_union_le (Set.Iio N₀) (⋃ j ∈ Finset.range (J + 1), W (Zs j))
+    have h3 := Finset.set_ncard_biUnion_le (Finset.range (J + 1)) (fun j => W (Zs j))
+    have hN : (Set.Iio N₀).ncard = N₀ := by
+      rw [show Set.Iio N₀ = ↑(Finset.range N₀) by ext; simp, Set.ncard_coe_finset,
+        Finset.card_range]
+    have hsumW : (∑ j ∈ Finset.range (J + 1), ((W (Zs j)).ncard : ℝ)) ≤
+        ∑ j ∈ Finset.range (J + 1), η' * Zs j :=
+      Finset.sum_le_sum fun j _ => hZ₁ (Zs j) ((le_max_left _ _).trans (hZs_ge j))
+    have hgeom : ∑ j ∈ Finset.range (J + 1), Zs j ≤ r * Zs J / (r - 1) := by
+      simp only [hZs]
+      rw [← Finset.mul_sum, geom_sum_eq hr1.ne', ← mul_div_assoc]
+      apply div_le_div_of_nonneg_right _ (by linarith)
+      have : 0 ≤ Z₀ := by linarith
+      rw [pow_succ]
+      nlinarith [pow_pos (show 0 < r by linarith) J]
+    have hJX : Zs J ≤ X := by
+      have hP0 : P X 0 := by
+        simp only [hP, hZs, pow_zero, mul_one]
+        exact (Nat.le_ceil _).trans (by exact_mod_cast hX)
+      have := Nat.findGreatest_spec (Nat.zero_le X) hP0
+      exact le_trans (le_add_of_nonneg_right (hH0 _)) this
+    have hcast : ((⋃ j ∈ Finset.range (J + 1), W (Zs j)).ncard : ℝ) ≤
+        ∑ j ∈ Finset.range (J + 1), ((W (Zs j)).ncard : ℝ) := by exact_mod_cast h3
+    have : η' * (r * Zs J / (r - 1)) ≤ η * X / 4 := by
+      rw [hη']
+      have hr0 : r - 1 ≠ 0 := ne_of_gt (by linarith)
+      have hr0' : r ≠ 0 := ne_of_gt (by linarith)
+      have : η * (r - 1) / (4 * r) * (r * Zs J / (r - 1)) = η * Zs J / 4 := by
+        field_simp
+      rw [this]; nlinarith
+    calc ({n : ℕ | n ≤ X ∧ n ∈ E}.ncard : ℝ)
+        ≤ ((Set.Iio N₀ ∪ ⋃ j ∈ Finset.range (J + 1), W (Zs j)).ncard : ℝ) := by exact_mod_cast h1
+      _ ≤ (Set.Iio N₀).ncard + ((⋃ j ∈ Finset.range (J + 1), W (Zs j)).ncard : ℝ) := by
+          exact_mod_cast h2
+      _ ≤ N₀ + η' * (r * Zs J / (r - 1)) := by
+          rw [hN]
+          have := hsumW.trans_eq (Finset.mul_sum _ _ _).symm
+          have := mul_le_mul_of_nonneg_left hgeom hη'0.le
+          linarith
+      _ ≤ N₀ + η * X / 4 := by linarith
+  filter_upwards [eventually_ge_atTop N₀, eventually_gt_atTop ⌈4 * N₀ / η⌉₊] with X hX hX'
+  have hX0 : (0 : ℝ) < X := by
+    have : 0 < X := lt_of_le_of_lt (Nat.zero_le _) hX'
+    exact_mod_cast this
+  have hXb : 4 * N₀ / η < X := lt_of_le_of_lt (Nat.le_ceil _) (by exact_mod_cast hX')
+  rw [div_lt_iff₀ hX0]
+  have := hcount X hX
+  rw [div_lt_iff₀ hη] at hXb
+  nlinarith
+
+/-- `(log Z)^4 exp(−a (log Z)^{1/10}) → 0`. -/
+theorem tendsto_log_pow_four_mul_exp {a : ℝ} (ha : 0 < a) :
+    Tendsto (fun Z : ℝ => Real.log Z ^ 4 * Real.exp (-a * Real.log Z ^ ((1 : ℝ) / 10)))
+      atTop (nhds 0) := by
+  have hu : Tendsto (fun Z : ℝ => Real.log Z ^ ((1 : ℝ) / 10)) atTop atTop :=
+    (tendsto_rpow_atTop (by norm_num)).comp Real.tendsto_log_atTop
+  have hv : Tendsto (fun v : ℝ => v ^ 40 * Real.exp (-a * v)) atTop (nhds 0) := by
+    have h := (tendsto_pow_mul_exp_neg_atTop_nhds_zero 40).comp (tendsto_id.const_mul_atTop ha)
+    have h' := h.const_mul (1 / a ^ 40)
+    rw [mul_zero] at h'
+    refine h'.congr fun v => ?_
+    simp only [Function.comp, id]
+    field_simp
+  refine (hv.comp hu).congr' ?_
+  filter_upwards [eventually_ge_atTop 1] with Z hZ
+  simp only [Function.comp]
+  congr 1
+  rw [← Real.rpow_natCast, ← Real.rpow_mul (Real.log_nonneg hZ)]
+  norm_num
+
 /-- **Theorem A (Lean form): `F(n) ≥ n + (1 − δ)√n` for almost all `n`**, i.e. the graph node
 `AlmostAllF385`, from the four literature Props. -/
 theorem almost_all_F385 (h1 : MR16Lemma14) (h2 : MontgomeryVaughanMVT) (h3 : VKZeroFreeLogDeriv)
     (h4 : MediumPNTStatement) : AlmostAllF385 := by
-  sorry
+  intro δ hδ hδ'
+  obtain ⟨g, hg⟩ := exists_admissible hδ hδ'
+  obtain ⟨κ₀, hκ₀, hW2'⟩ := longAverage_lower h4 hδ hδ'
+  have hκ : 0 < min κ₀ 1 := lt_min hκ₀ one_pos
+  obtain ⟨c₁, hc₁, hlong⟩ := hW2' (min κ₀ 1) hκ (min_le_left _ _) g hg
+  obtain ⟨C, hvar⟩ := variance_small h1 h2 (smoothPrimeSumVK_of_VKZ h3) h4 hδ hδ' hκ
+    (min_le_right _ _) hg
+  have hbad := card_badWindow_le hδ hδ' hκ (min_le_right _ _) hg
+  set κ := min κ₀ 1
+  refine tendsto_density_zero_of_windows hδ hδ' {n | (F n : ℝ) < n + (1 - δ) * √n} ?_
+  intro η hη
+  have hε := (tendsto_log_pow_four_mul_exp (show 0 < κ / 2 by positivity)).const_mul
+    (2 * C / (c₁ * δ) ^ 2)
+  rw [mul_zero] at hε
+  filter_upwards [hbad, hlong, hvar, hε.eventually (eventually_lt_nhds hη),
+    eventually_gt_atTop 1] with Z hb hl hv hε' hZ
+  have hset : {n : ℕ | (F n : ℝ) < n + (1 - δ) * √n ∧ Z + paramH δ Z ≤ n ∧
+      (n : ℝ) ≤ (1 + δ / 2) * Z} = badWindow δ Z := by
+    ext n; simp only [badWindow, Set.mem_setOf_eq]; tauto
+  rw [hset]
+  have hlZ : 0 < Real.log Z := Real.log_pos hZ
+  set μ := c₁ * δ / Real.log Z ^ 2 with hμ
+  have hμ0 : 0 < μ := by positivity
+  have hb' := hb μ hμ0 hl
+  have hD0 : 0 ≤ variance δ κ g Z := by
+    unfold variance
+    have : 0 < paramX δ Z := by unfold paramX; nlinarith
+    apply mul_nonneg (by positivity)
+    exact intervalIntegral.integral_nonneg (by linarith) fun x _ => sq_nonneg _
+  have hX : paramX δ Z ≤ Z := by unfold paramX; nlinarith
+  have hX0 : 0 ≤ paramX δ Z := by unfold paramX; nlinarith
+  set e := Real.exp (-(κ / 2) * Real.log Z ^ ((1 : ℝ) / 10))
+  have hCe : 0 ≤ C * e := hD0.trans hv
+  calc ((badWindow δ Z).ncard : ℝ) ≤ 2 * paramX δ Z * variance δ κ g Z / μ ^ 2 := hb'
+    _ ≤ 2 * Z * (C * e) / μ ^ 2 := by
+        apply div_le_div_of_nonneg_right _ (by positivity)
+        have := mul_le_mul hX hv hD0 (by linarith)
+        linarith
+    _ = Z * (2 * C / (c₁ * δ) ^ 2 * (Real.log Z ^ 4 * e)) := by
+        rw [hμ]; field_simp
+    _ ≤ η * Z := by rw [mul_comm η]; exact mul_le_mul_of_nonneg_left hε'.le (by linarith)
 
 end LeanFormalizations.Erdos385
