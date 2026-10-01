@@ -5,6 +5,8 @@ Authors: Trevor Morris
 -/
 import Mathlib
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Buchstab
+import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.MertensBound
+import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Comparison
 
 /-!
 # The crux of phase E5: `S⁻(N, N^{1/2−ε}) ≫_ε N / log N`

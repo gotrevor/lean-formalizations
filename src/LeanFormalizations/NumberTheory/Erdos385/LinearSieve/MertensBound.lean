@@ -48,4 +48,51 @@ theorem mertensP_le_log : ∃ C : ℝ, 0 < C ∧ ∃ ξ₀ : ℕ, ∀ ξ : ℕ, 
         mul_le_mul_of_nonneg_left h.le (by positivity)
     _ = _ := by ring
 
+/-- **Selberg in usable form**: for `2 ≤ ξ < z` (and `ξ ≥ ξ₀`),
+`S⁺(N, z) ≤ N / log ξ + (C ξ log ξ)²`. -/
+theorem siftMax_le_log : ∃ C : ℝ, 0 < C ∧ ∃ ξ₀ : ℕ, ∀ N z ξ : ℕ, ξ₀ ≤ ξ → 2 ≤ ξ → ξ < z →
+    (siftMax N z : ℝ) ≤ N / Real.log ξ + (C * ξ * Real.log ξ) ^ 2 := by
+  obtain ⟨C, hC, ξ₀, hξ₀⟩ := mertensP_le_log
+  refine ⟨C, hC, ξ₀, fun N z ξ hξ hξ2 hξz => ?_⟩
+  have hlog : 0 < Real.log ξ := Real.log_pos (by exact_mod_cast hξ2)
+  have h1 := siftMax_le_selberg N z ξ (by omega)
+  have hG := log_le_selG hξz
+  have hE := selE_le z ξ
+  have hE0 : 0 ≤ selE z ξ := sum_nonneg fun d _ => prod_nonneg fun p hp => by
+    have : (1 : ℝ) < p := by exact_mod_cast (Nat.prime_of_mem_primeFactors hp).one_lt
+    exact div_nonneg (by linarith) (by linarith)
+  have hE' : selE z ξ ≤ C * ξ * Real.log ξ := by
+    calc selE z ξ ≤ ξ * mertensP ξ := hE
+      _ ≤ ξ * (C * Real.log ξ) := mul_le_mul_of_nonneg_left (hξ₀ ξ hξ) (by positivity)
+      _ = _ := by ring
+  have h2 : (N : ℝ) / selG z ξ ≤ N / Real.log ξ :=
+    div_le_div_of_nonneg_left (by positivity) hlog hG
+  have h3 : selE z ξ ^ 2 ≤ (C * ξ * Real.log ξ) ^ 2 := pow_le_pow_left₀ hE0 hE' 2
+  linarith
+
+/-- **Explicit Selberg upper bound**: for `ξ₀ ≤ ξ < z`,
+`S⁺(N, z) ≤ N / log ξ + (C ξ log ξ)²`. -/
+theorem siftMax_le_explicit : ∃ C : ℝ, 0 < C ∧ ∃ ξ₀ : ℕ, 2 ≤ ξ₀ ∧ ∀ N z ξ : ℕ, ξ₀ ≤ ξ → ξ < z →
+    (siftMax N z : ℝ) ≤ N / Real.log ξ + (C * ξ * Real.log ξ) ^ 2 := by
+  obtain ⟨C, hC, ξ₁, hξ₁⟩ := mertensP_le_log
+  refine ⟨C, hC, max ξ₁ 2, le_max_right _ _, fun N z ξ hξ hξz => ?_⟩
+  have h2 : (2 : ℝ) ≤ ξ := by exact_mod_cast (le_max_right _ _).trans hξ
+  have hlog : 0 < Real.log ξ := Real.log_pos (by linarith)
+  have hG := log_le_selG hξz
+  have hS := siftMax_le_selberg N z ξ (by omega)
+  have hE0 : 0 ≤ selE z ξ := by
+    unfold selE
+    refine Finset.sum_nonneg fun d hd => Finset.prod_nonneg fun p hp => ?_
+    have : (1 : ℝ) < p := by exact_mod_cast (Nat.prime_of_mem_primeFactors hp).one_lt
+    exact div_nonneg (by linarith) (by linarith)
+  have hE : selE z ξ ≤ C * ξ * Real.log ξ := by
+    calc selE z ξ ≤ ξ * mertensP ξ := selE_le z ξ
+      _ ≤ ξ * (C * Real.log ξ) :=
+          mul_le_mul_of_nonneg_left (hξ₁ ξ ((le_max_left _ _).trans hξ)) (by linarith)
+      _ = _ := by ring
+  have h1 : (N : ℝ) / selG z ξ ≤ N / Real.log ξ :=
+    div_le_div_of_nonneg_left (Nat.cast_nonneg _) hlog hG
+  have h3 : selE z ξ ^ 2 ≤ (C * ξ * Real.log ξ) ^ 2 := pow_le_pow_left₀ hE0 hE 2
+  linarith
+
 end LeanFormalizations.Erdos385.LinearSieve
