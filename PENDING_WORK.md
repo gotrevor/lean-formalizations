@@ -5,7 +5,7 @@
 (Maze row).  Route for the crux (5 steps, LinearSieve.lean header): Selberg 1-dim, limit Buchstab
 inequalities, fundamental lemma, JR comparison functions with λ = e^{-γ}/ω_∞ ≥ 1 via forward
 rough-number Buchstab + PNT, and a derivative-free comparison principle (weight u − 1, Tonelli).
-Next attack: plant the named statements of steps 1–5 in `LinearSieve/`, then step 5 (pure analysis,
+Step 5 DONE: `LinearSieve/Comparison.lean` `comparison_principle` (sorry-free).  Next: steps 1–4 statements; step 1 (Selberg) first;
 most novel) and step 1 (copy of Brun/PairSieve).
 
 ## phase E4b DONE (2026-10-01): `Literature.McDiarmidFinite` discharged
