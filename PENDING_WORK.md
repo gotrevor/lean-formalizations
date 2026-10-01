@@ -2095,3 +2095,4 @@ Plus `vk_small_height` (PNT+ ZetaNoZerosInBox + riemannZetaLogDerivResidue + com
   Open leaves now (7): Zeta.lean `zeta_zeros_finite`, `zeta_disc_growth` (Richert+ZetaUpperBnd),
   `zeta_center_lower` (ZetaLowerBound3); Basic.lean `vk_asymp`, D3, D2; Landau.lean `vk_small_height`.
   Everything left is classical/elementary — the Landau crux itself is assembled.
+- E2e DONE 2026-10-01: Landau.lean sorry-free + axiom-clean (see HANDOFF-2026-10-01-erdos385-E2e-done.md).

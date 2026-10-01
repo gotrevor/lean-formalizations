@@ -83,7 +83,69 @@ theorem vk_small_height (t₁ : ℝ) :
       ((σ : ℂ) + y * I) ≠ 1 →
       riemannZeta (σ + y * I) ≠ 0 ∧
         ‖deriv riemannZeta (σ + y * I) / riemannZeta (σ + y * I) + 1 / (σ + y * I - 1)‖ ≤ C₂ := by
-  sorry
+  obtain ⟨σ₀, hσ₀, hZ⟩ := ZetaNoZerosInBox t₁
+  obtain ⟨U, hU, hB⟩ := riemannZetaLogDerivResidue
+  obtain ⟨r, hr, hball⟩ := Metric.mem_nhds_iff.mp hU
+  rw [bddAbove_def] at hB
+  obtain ⟨B, hB⟩ := hB
+  obtain ⟨C₃, hD3⟩ := logDeriv_zeta_dirichlet_bound
+  set c₂ := (1 - σ₀) / 2 with hc₂
+  have hc₂0 : 0 < c₂ := by rw [hc₂]; linarith
+  set g : ℂ → ℂ := fun s => zLD s + 1 / (s - 1) with hg
+  set K := (Set.Icc (1 - c₂) 2 ×ℂ Set.Icc (-t₁) t₁) ∩ {s | r ≤ ‖s - 1‖} with hK
+  have hKc : IsCompact K :=
+    (isCompact_Icc.reProdIm isCompact_Icc).inter_right
+      (isClosed_le continuous_const (continuous_norm.comp (continuous_id.sub continuous_const)))
+  have hzK : ∀ s ∈ K, s ≠ 1 ∧ riemannZeta s ≠ 0 := by
+    intro s hs
+    have h1 : s ≠ 1 := by
+      intro h; have := hs.2; simp [h] at this; linarith
+    refine ⟨h1, ?_⟩
+    have := hZ s.im (abs_le.mpr ⟨hs.1.2.1, hs.1.2.2⟩) s.re (by have := hs.1.1.1; linarith)
+    rwa [Complex.re_add_im] at this
+  have hgc : ContinuousOn g K := by
+    intro s hs
+    obtain ⟨h1, h0⟩ := hzK s hs
+    have hd : DifferentiableOn ℂ riemannZeta {1}ᶜ :=
+      fun z hz => (differentiableAt_riemannZeta hz).differentiableWithinAt
+    have ha : AnalyticAt ℂ riemannZeta s := hd.analyticAt (isOpen_compl_singleton.mem_nhds h1)
+    have hsub : s - 1 ≠ 0 := sub_ne_zero.mpr h1
+    apply ContinuousAt.continuousWithinAt
+    exact (ha.deriv.continuousAt.div ha.continuousAt h0).add
+      (continuousAt_const.div (continuousAt_id.sub continuousAt_const) hsub)
+  obtain ⟨M, hM⟩ := hKc.exists_bound_of_continuousOn hgc
+  refine ⟨c₂, hc₂0, max (max M B) (2 + C₃), fun σ y hy hσ hs1 => ?_⟩
+  refine ⟨hZ y (abs_le.mpr ⟨by linarith [neg_abs_le y, le_abs_self y], hy.trans' (le_abs_self y)⟩)
+    σ (by linarith), ?_⟩
+  set s : ℂ := σ + y * I with hs
+  have hsre : s.re = σ := by simp [hs]
+  have hsim : s.im = y := by simp [hs]
+  change ‖g s‖ ≤ _
+  by_cases h2 : 2 < σ
+  · have hb := hD3 σ y (by linarith)
+    have hp : ‖1 / (s - 1)‖ ≤ 1 := by
+      rw [norm_div, norm_one]
+      have := Complex.abs_re_le_norm (s - 1)
+      simp only [Complex.sub_re, hsre, Complex.one_re] at this
+      rw [abs_of_pos (by linarith)] at this
+      rw [div_le_one (by linarith)]; linarith
+    have h1 : 1 / (σ - 1) ≤ 1 := by rw [div_le_one (by linarith)]; linarith
+    calc ‖g s‖ ≤ ‖zLD s‖ + ‖1 / (s - 1)‖ := norm_add_le _ _
+      _ ≤ 2 + C₃ := by linarith
+      _ ≤ _ := le_max_right _ _
+  · push Not at h2
+    by_cases hr' : ‖s - 1‖ < r
+    · have hmem : s ∈ U \ {1} := ⟨hball (by rwa [Metric.mem_ball, dist_eq_norm]), hs1⟩
+      have hb := hB _ ⟨s, hmem, rfl⟩
+      simp only [Function.comp_apply, Pi.sub_apply, Pi.neg_apply, Pi.div_apply] at hb
+      have e : g s = -(-(deriv riemannZeta s / riemannZeta s) - (s - 1)⁻¹) := by
+        simp only [hg, zLD, one_div]; ring
+      rw [e, norm_neg]
+      exact hb.trans ((le_max_right M B).trans (le_max_left _ _))
+    · push Not at hr'
+      have hK' : s ∈ K := ⟨⟨⟨by rw [hsre]; linarith, by rw [hsre]; exact h2⟩,
+        ⟨by rw [hsim]; linarith [neg_abs_le y], by rw [hsim]; linarith [le_abs_self y]⟩⟩, hr'⟩
+      exact (hM s hK').trans ((le_max_left M B).trans (le_max_left _ _))
 
 /-- **Vinogradov–Korobov with a log-derivative bound, from Richert's growth bound** (Landau). -/
 theorem vkZeroFreeLogDeriv_of_richert (h : RichertZetaGrowth) : VKZeroFreeLogDeriv := by
