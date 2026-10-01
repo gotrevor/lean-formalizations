@@ -6,6 +6,7 @@ Authors: Trevor Morris
 import Mathlib
 import LeanFormalizations.Literature.Erdos385VK
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Deviation
+import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.ZeroContour
 
 /-!
 # Erdős #385 power saving: local zero detection (phase E9b, the crux)
