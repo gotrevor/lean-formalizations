@@ -1,5 +1,7 @@
 # HANDOFF 2026-10-01 — Erdős #385 E4 DONE (bad set exponentially thin)
 
+Branch `erdos-385-brun`, HEAD `0917b9d` (plus this note). Worktree clean; `box done --green` accepted.
+
 `badCountExpBound_of_lit : ArithLargeSieve → LinearSieveIntervalLower → McDiarmidFinite →
 BadCountExpBound` proved; `#print axioms` = [propext, Classical.choice, Quot.sound].
 `Exceptional.lean` sorry-free.  Helpers in `Erdos385/Exceptional/`:
