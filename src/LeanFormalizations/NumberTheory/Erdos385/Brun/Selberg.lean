@@ -215,4 +215,46 @@ theorem abs_selbergW_le {d : ℕ} (hd : d ∈ L) (hL1 : 1 ∈ L) :
 
 end Weights
 
+/-- The Λ² error sum is bounded by the double sum over `(d₁, d₂)`. -/
+theorem errSum_lambdaSquared_le (s : BoundingSieve) (w : ℕ → ℝ) :
+    s.errSum (BoundingSieve.lambdaSquared w) ≤
+      ∑ d1 ∈ s.prodPrimes.divisors, ∑ d2 ∈ s.prodPrimes.divisors,
+        |w d1| * |w d2| * |s.rem (Nat.lcm d1 d2)| := by
+  classical
+  unfold BoundingSieve.errSum BoundingSieve.lambdaSquared
+  set P := s.prodPrimes
+  have h1 : ∀ d ∈ P.divisors,
+      |∑ d1 ∈ d.divisors, ∑ d2 ∈ d.divisors, if d = Nat.lcm d1 d2 then w d1 * w d2 else 0| *
+        |s.rem d| ≤
+      ∑ d1 ∈ P.divisors, ∑ d2 ∈ P.divisors,
+        if d = Nat.lcm d1 d2 then |w d1| * |w d2| * |s.rem d| else 0 := by
+    intro d hd
+    have hsub : d.divisors ⊆ P.divisors :=
+      Nat.divisors_subset_of_dvd BoundingSieve.prodPrimes_ne_zero (Nat.mem_divisors.mp hd).1
+    have hnn : ∀ d1 d2 : ℕ, 0 ≤ (if d = Nat.lcm d1 d2 then |w d1| * |w d2| * |s.rem d| else 0) :=
+      fun d1 d2 => by split_ifs <;> positivity
+    calc _ ≤ (∑ d1 ∈ d.divisors, ∑ d2 ∈ d.divisors,
+            |if d = Nat.lcm d1 d2 then w d1 * w d2 else 0|) * |s.rem d| := by
+          gcongr
+          exact (abs_sum_le_sum_abs _ _).trans (sum_le_sum fun _ _ => abs_sum_le_sum_abs _ _)
+      _ = ∑ d1 ∈ d.divisors, ∑ d2 ∈ d.divisors,
+            if d = Nat.lcm d1 d2 then |w d1| * |w d2| * |s.rem d| else 0 := by
+          rw [sum_mul]; refine sum_congr rfl fun _ _ => ?_
+          rw [sum_mul]; refine sum_congr rfl fun _ _ => ?_
+          split_ifs <;> simp [abs_mul]
+      _ ≤ ∑ d1 ∈ d.divisors, ∑ d2 ∈ P.divisors,
+            if d = Nat.lcm d1 d2 then |w d1| * |w d2| * |s.rem d| else 0 :=
+          sum_le_sum fun _ _ => sum_le_sum_of_subset_of_nonneg hsub fun _ _ _ => hnn _ _
+      _ ≤ _ := sum_le_sum_of_subset_of_nonneg hsub fun _ _ _ =>
+          sum_nonneg fun _ _ => hnn _ _
+  refine (sum_le_sum h1).trans (le_of_eq ?_)
+  rw [sum_comm]
+  refine sum_congr rfl fun d1 hd1 => ?_
+  rw [sum_comm]
+  refine sum_congr rfl fun d2 hd2 => ?_
+  rw [sum_ite_eq_of_mem']
+  rw [Nat.mem_divisors, Nat.lcm_dvd_iff]
+  exact ⟨⟨(Nat.mem_divisors.mp hd1).1, (Nat.mem_divisors.mp hd2).1⟩,
+    BoundingSieve.prodPrimes_ne_zero⟩
+
 end Erdos385.Brun
