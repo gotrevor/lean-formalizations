@@ -64,14 +64,14 @@ def terms (n : ℕ) : Finset ℕ :=
   (Finset.Ioo 1 n).filter fun m => ∀ p ∈ m.primeFactors, n - m < p
 
 
-private lemma bddAbove_F (n : ℕ) :
+theorem bddAbove_F (n : ℕ) :
     BddAbove {m + m.minFac | (m < n) (_ : Composite m)} := by
   refine ⟨2 * n, ?_⟩
   rintro x ⟨m, hm, hc, rfl⟩
   have := Nat.minFac_le (show 0 < m by omega)
   omega
 
-private lemma add_minFac_le_F {n m : ℕ} (hm : m < n) (hc : Composite m) :
+theorem add_minFac_le_F {n m : ℕ} (hm : m < n) (hc : Composite m) :
     m + m.minFac ≤ F n :=
   le_csSup (bddAbove_F n) ⟨m, hm, hc, rfl⟩
 
