@@ -246,4 +246,43 @@ theorem aLow_ge_bins_delta {s s' : ℝ} (hs : 2 ≤ s) (hss' : s < s') {k : ℕ}
   change aLow s' - ε / 2 - C ≤ aLow s at this
   linarith [hε]
 
+/-- **Finite Buchstab, liminf form** (`δ → 0`, `log(1+x) ≤ x`). -/
+theorem aLow_ge_bins {s s' : ℝ} (hs : 2 ≤ s) (hss' : s < s') {k : ℕ} (hk : 0 < k) :
+    aLow s' - ∑ i ∈ range k, bUp (s + (i + 2) * ((s' - s) / k) - 1) * ((s' - s) / k) /
+      (s + i * ((s' - s) / k) - 1) ≤ aLow s := by
+  set h := (s' - s) / k with hh
+  have hkr : (0 : ℝ) < k := by exact_mod_cast hk
+  have hpos : 0 < h := div_pos (by linarith) hkr
+  have hcont : Continuous (fun δ : ℝ => ∑ i ∈ range k, binC s h δ i) := by
+    unfold binC; fun_prop
+  have hlim : Tendsto (fun δ : ℝ => ∑ i ∈ range k, binC s h δ i) (𝓝[>] 0)
+      (𝓝 (∑ i ∈ range k, binC s h 0 i)) :=
+    (hcont.tendsto 0).mono_left nhdsWithin_le_nhds
+  have hge : aLow s' - aLow s ≤ ∑ i ∈ range k, binC s h 0 i :=
+    ge_of_tendsto hlim (eventually_nhdsWithin_of_forall fun δ hδ => by
+      have := aLow_ge_bins_delta hs hss' hk (δ := δ) hδ
+      linarith)
+  have hterm : ∀ i ∈ range k, binC s h 0 i ≤
+      bUp (s + (i + 2) * h - 1) * h / (s + i * h - 1) := by
+    intro i _
+    have hi : (0 : ℝ) ≤ i * h := by positivity
+    have ht1 : 0 < s + i * h - 1 := by linarith
+    have ht0 : 0 < s + i * h := by linarith
+    have hb : 0 ≤ bUp (s + (i + 2) * h - 1) := bUp_nonneg (by nlinarith)
+    have hlog : Real.log ((s + (i + 1) * h) / (s + i * h)) ≤ h / (s + i * h) := by
+      have := Real.log_le_sub_one_of_pos (show 0 < (s + (i + 1) * h) / (s + i * h) by
+        apply div_pos <;> nlinarith)
+      have e : (s + (i + 1) * h) / (s + i * h) - 1 = h / (s + i * h) := by field_simp; ring
+      linarith
+    have harg : s + (i + 1) * h - 1 + h = s + (i + 2) * h - 1 := by ring
+    unfold binC
+    simp only [harg, add_zero, mul_one]
+    calc bUp (s + (i + 2) * h - 1) * ((s + i * h) / (s + i * h - 1)) *
+          Real.log ((s + (i + 1) * h) / (s + i * h))
+        ≤ bUp (s + (i + 2) * h - 1) * ((s + i * h) / (s + i * h - 1)) * (h / (s + i * h)) :=
+          mul_le_mul_of_nonneg_left hlog (by positivity)
+      _ = bUp (s + (i + 2) * h - 1) * h / (s + i * h - 1) := by field_simp
+  have := sum_le_sum hterm
+  linarith
+
 end LeanFormalizations.Erdos385.LinearSieve
