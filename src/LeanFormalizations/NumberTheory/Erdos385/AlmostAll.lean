@@ -942,7 +942,60 @@ theorem smoothTwist_smallP {f : ℝ → ℂ} (hf : ∀ k : ℕ, ContDiff ℝ k f
     (hab : a ≤ b) (hs : ∀ x, f x ≠ 0 → a ≤ x ∧ x ≤ b) :
     ∃ C : ℝ, ∀ P t : ℝ, 0 < P → a * P < 1 →
       ‖smoothTwist f P t - mellin f (1 - t * I) * (P : ℂ) ^ (1 - t * I)‖ ≤ C := by
-  sorry
+  obtain ⟨M, hM⟩ := (isCompact_Icc (a := a) (b := b)).exists_bound_of_continuousOn
+    (hf 0).continuous.continuousOn
+  have hMf : ∀ x, ‖f x‖ ≤ |M| := by
+    intro x
+    by_cases hx : f x = 0
+    · rw [hx, norm_zero]; exact abs_nonneg _
+    · exact (hM x (hs x hx)).trans (le_abs_self _)
+  obtain ⟨K0, hK0⟩ := mellin_strip_bound (hf 0).continuous ha hab hs 1 1
+  set N : ℕ := ⌈b / a⌉₊ + 1
+  refine ⟨(N : ℝ) * (N * |M|) + |K0| * (1 / a), fun P t hP haP => ?_⟩
+  have hPa : P < 1 / a := by rw [lt_div_iff₀ ha]; linarith
+  have hzero : ∀ n ∉ Finset.range N, (ArithmeticFunction.vonMangoldt n : ℂ) *
+      (n : ℂ) ^ (-((t : ℂ) * I)) * f (n / P) = 0 := by
+    intro n hn
+    rw [Finset.mem_range, not_lt] at hn
+    have : f (n / P) = 0 := by
+      by_contra h
+      have h2 := (hs _ h).2
+      rw [div_le_iff₀ hP] at h2
+      have hN : (b / a : ℝ) + 1 ≤ N := by
+        simp only [N]; push_cast; linarith [Nat.le_ceil (b / a)]
+      have hb : b * P < b / a := by
+        rw [lt_div_iff₀ ha]; nlinarith [le_trans ha.le hab]
+      have : (N : ℝ) ≤ n := by exact_mod_cast hn
+      linarith
+    simp [this]
+  have hsum : ‖smoothTwist f P t‖ ≤ N * (N * |M|) := by
+    rw [smoothTwist, tsum_eq_sum hzero]
+    refine (norm_sum_le _ _).trans ?_
+    calc ∑ n ∈ Finset.range N, ‖(ArithmeticFunction.vonMangoldt n : ℂ) *
+          (n : ℂ) ^ (-((t : ℂ) * I)) * f (n / P)‖ ≤ ∑ _n ∈ Finset.range N, (N * |M|) := by
+          refine Finset.sum_le_sum fun n hn => ?_
+          rw [Finset.mem_range] at hn
+          rcases Nat.eq_zero_or_pos n with rfl | hn0
+          · simp; positivity
+          rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_eq_abs,
+            abs_of_nonneg ArithmeticFunction.vonMangoldt_nonneg, norm_natCast_cpow_of_pos hn0]
+          simp only [neg_re, mul_re, ofReal_re, I_re, mul_zero, ofReal_im, I_im, mul_one, sub_self,
+            neg_zero, Real.rpow_zero, mul_one]
+          have hΛ : ArithmeticFunction.vonMangoldt n ≤ N := by
+            have := ArithmeticFunction.vonMangoldt_le_log (n := n)
+            have h2 : Real.log n ≤ n := (Real.log_le_sub_one_of_pos (by exact_mod_cast hn0)).trans
+              (by linarith)
+            have h3 : (n : ℝ) ≤ N := by exact_mod_cast hn.le
+            linarith
+          exact mul_le_mul hΛ (hMf _) (norm_nonneg _) (by positivity)
+      _ = N * (N * |M|) := by simp
+  have hmain : ‖mellin f (1 - t * I) * (P : ℂ) ^ (1 - t * I)‖ ≤ |K0| * (1 / a) := by
+    rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hP]
+    have h1 := hK0 (1 - t * I) (by simp) (by simp)
+    simp only [sub_re, one_re, mul_re, ofReal_re, I_re, mul_zero, ofReal_im, I_im, mul_one,
+      sub_self, sub_zero, Real.rpow_one]
+    exact mul_le_mul (h1.trans (le_abs_self _)) hPa.le hP.le (abs_nonneg _)
+  exact (norm_sub_le _ _).trans (add_le_add hsum hmain)
 
 /-- **Edge: VK region ⇒ Lemma VK.**  Mellin inversion on `Re s = 1 + 1/log P`, shift to
 `σ₁ = 1 − (log T)^{−2/3−ε}` inside the region, residue `mellin f (1 − it) P^{1−it}` at `s = 1 − it`,
