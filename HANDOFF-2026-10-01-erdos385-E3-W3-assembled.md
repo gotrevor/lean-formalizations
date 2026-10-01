@@ -12,7 +12,7 @@ Scope: `src/LeanFormalizations/NumberTheory/Erdos385/AlmostAll.lean` sorry-free.
   W3 `variance_small` (assembled from MR16 + the leaves).
 
 ## Open leaves (the only `sorry`s in AlmostAll.lean)
-1. `primeQ_meanSquare` (W3e): MVT with a_q = 1/q on setQ, N = ⌊(1+2δ)√Z⌋; ∑ q⁻² ≤ #/Z ≤ 1/√Z.
+1. ~~`primeQ_meanSquare` (W3e)~~ PROVED (lap 2026-10-01b; a_q=1/q, K=12|C|).
    Need primeQ(1+it) = ∑_{n ≤ N} a_n n^{-it} (q^{-(1+it)} = q⁻¹ q^{-it}).  Easy-moderate.
 2. `coeffC_meanSquare` (W3f): MVT on a_m/m, N = ⌊2X⌋; LSeries = finite sum (support [X,2X), W3b);
    ∑ (a_m/m)² ≤ (2X)·(1/4)/X² .  Easy-moderate.

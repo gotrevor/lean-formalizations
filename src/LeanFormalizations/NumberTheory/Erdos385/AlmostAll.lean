@@ -1129,7 +1129,77 @@ and `∑ q^{-2} ≤ 1/√Z`.  (The PROOF's extra `1/log Z` is not needed.) -/
 theorem primeQ_meanSquare (hMVT : MontgomeryVaughanMVT) {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) :
     ∃ K : ℝ, ∀ᶠ Z : ℝ in atTop, ∀ U : ℝ, 1 ≤ U →
       ∫ t in (-U)..U, ‖primeQ δ Z (1 + t * I)‖ ^ 2 ≤ K * (U + √Z) / √Z := by
-  sorry
+  obtain ⟨C, hC⟩ := hMVT
+  refine ⟨12 * |C|, ?_⟩
+  filter_upwards [eventually_ge_atTop (1 : ℝ)] with Z hZ U hU
+  classical
+  set N : ℕ := ⌊(1 + 2 * δ) * √Z⌋₊ with hN
+  have hsZ : 1 ≤ √Z := Real.one_le_sqrt.2 hZ
+  have hN1 : 1 ≤ N := Nat.le_floor (by push_cast; nlinarith)
+  have hNle : (N : ℝ) ≤ 3 * √Z := (Nat.floor_le (by positivity)).trans (by nlinarith)
+  set a : ℕ → ℂ := fun n => if n ∈ setQ δ Z then ((n : ℂ))⁻¹ else 0 with ha
+  have hsupp : ∀ n, (n = 0 ∨ N < n) → a n = 0 := by
+    intro n hn
+    simp only [ha]
+    rw [if_neg]
+    intro hq
+    have := (mem_setQ hδ).1 hq
+    rcases hn with rfl | hn
+    · exact Nat.not_prime_zero this.1
+    · have : (n : ℝ) ≤ N := by
+        rw [hN]; exact_mod_cast Nat.le_floor this.2.2
+      exact absurd (by exact_mod_cast this : n ≤ N) (by omega)
+  have hQ : ∀ t : ℝ, primeQ δ Z (1 + t * I) =
+      ∑ n ∈ Finset.range (N + 1), a n * (n : ℂ) ^ (-((t : ℂ) * I)) := by
+    intro t
+    rw [primeQ]
+    have hsub : (Finset.range (N + 1)).filter (fun q : ℕ => q.Prime ∧ √Z ≤ (q : ℝ)) = setQ δ Z := rfl
+    rw [hsub, ← Finset.sum_filter_add_sum_filter_not (Finset.range (N + 1)) (· ∈ setQ δ Z)]
+    rw [Finset.sum_eq_zero (s := (Finset.range (N + 1)).filter (fun n => n ∉ setQ δ Z))
+      (fun n hn => by simp only [ha]; rw [if_neg (Finset.mem_filter.1 hn).2, zero_mul]), add_zero]
+    have : (Finset.range (N + 1)).filter (· ∈ setQ δ Z) = setQ δ Z := by
+      ext n; simp only [Finset.mem_filter]
+      constructor
+      · exact fun h => h.2
+      · intro h; exact ⟨(Finset.mem_filter.1 h).1, h⟩
+    rw [this]
+    refine Finset.sum_congr rfl fun n hn => ?_
+    simp only [ha]; rw [if_pos hn]
+    have hn0 : (n : ℂ) ≠ 0 := by
+      have := ((mem_setQ hδ).1 hn).1.pos; exact_mod_cast this.ne'
+    rw [show -(1 + (t : ℂ) * I) = -1 + -((t : ℂ) * I) by ring,
+      Complex.cpow_add _ _ hn0, Complex.cpow_neg_one]
+  have hsq : ∑ n ∈ Finset.range (N + 1), ‖a n‖ ^ 2 ≤ (N + 1) / Z := by
+    calc ∑ n ∈ Finset.range (N + 1), ‖a n‖ ^ 2 ≤ ∑ _n ∈ Finset.range (N + 1), 1 / Z := by
+          refine Finset.sum_le_sum fun n _ => ?_
+          simp only [ha]
+          split_ifs with hn
+          · obtain ⟨-, h2, -⟩ := (mem_setQ hδ).1 hn
+            rw [norm_inv, Complex.norm_natCast, inv_pow, ← one_div]
+            apply one_div_le_one_div_of_le (by positivity)
+            have := mul_le_mul h2 h2 (by positivity) (by positivity)
+            rw [Real.mul_self_sqrt (by linarith)] at this; nlinarith
+          · simp; positivity
+      _ = (N + 1) / Z := by simp; ring
+  have hint := hC N U a hN1 (by linarith) hsupp
+  simp_rw [hQ]
+  refine hint.trans ?_
+  have hsum0 : 0 ≤ ∑ n ∈ Finset.range (N + 1), ‖a n‖ ^ 2 := by positivity
+  have hZpos : 0 < Z := by linarith
+  have hZ' : Z = √Z * √Z := (Real.mul_self_sqrt hZpos.le).symm
+  calc C * (U + N) * ∑ n ∈ Finset.range (N + 1), ‖a n‖ ^ 2
+      ≤ |C| * (U + N) * ((N + 1) / Z) := by
+        have h0 : 0 ≤ U + N := by positivity
+        calc C * (U + N) * _ ≤ |C| * (U + N) * _ :=
+              mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_abs_self C) h0) hsum0
+          _ ≤ _ := mul_le_mul_of_nonneg_left hsq (by positivity)
+    _ ≤ |C| * (3 * (U + √Z)) * (4 * √Z / Z) := by
+        apply mul_le_mul (mul_le_mul_of_nonneg_left (by nlinarith) (abs_nonneg _))
+          (div_le_div_of_nonneg_right (by nlinarith) hZpos.le) (by positivity) (by positivity)
+    _ = 12 * |C| * (U + √Z) / √Z := by
+        have h4 : 4 * √Z / Z = 4 / √Z := by
+          rw [div_eq_div_iff hZpos.ne' (by positivity)]; linear_combination -4 * hZ'
+        rw [h4]; field_simp; ring
 
 /-- **W3f (the far tail).**  `∫_{-T}^{T} |A(1 + it)|² dt ≪ (T + Z)/Z`, from the MVT with
 `|a_m/m| ≤ 1/X` on `[X, 2X)`. -/
