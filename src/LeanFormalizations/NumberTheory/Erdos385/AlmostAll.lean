@@ -172,7 +172,19 @@ def badWindow (δ Z : ℝ) : Set ℕ :=
 
 /-- **W0.** An admissible cutoff exists (e.g. from `ContDiffBump`). -/
 theorem exists_admissible {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) : ∃ g, Admissible δ g := by
-  sorry
+  let f : ContDiffBump (1 - 3 * δ / 8 : ℝ) :=
+    ⟨δ / 16, δ / 8, by positivity, by linarith⟩
+  refine ⟨f, fun k => f.contDiff, fun u => ⟨f.nonneg, f.le_one⟩, fun u hu => ?_, fun u h1 h2 => ?_⟩
+  · have : u ∈ Function.support f := hu
+    rw [f.support_eq, Metric.mem_ball, Real.dist_eq, abs_lt] at this
+    have hr : f.rOut = δ / 8 := rfl
+    rw [hr] at this
+    constructor <;> linarith [this.1, this.2]
+  · apply f.one_of_mem_closedBall
+    rw [Metric.mem_closedBall, Real.dist_eq, abs_le]
+    have hr : f.rIn = δ / 16 := rfl
+    rw [hr]
+    constructor <;> linarith
 
 /-- **W1 (Lemma 1).**  A balanced semiprime witness in `[n − h, n − 1]` gives
 `F(n) ≥ n + (1 − δ)√n`. -/
@@ -180,7 +192,53 @@ theorem witness_margin {δ Z : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) (hZ : 1 <
     (hg : Admissible δ g) {n m : ℕ} (hn : Z + paramH δ Z ≤ n) (hn' : (n : ℝ) ≤ (1 + δ / 2) * Z)
     (hm : (n : ℝ) - paramH δ Z ≤ m) (hmn : m < n) (ha : coeffA δ g Z m ≠ 0) :
     (n : ℝ) + (1 - δ) * √n ≤ F n := by
-  sorry
+  have hsZ : 0 < √Z := Real.sqrt_pos.2 (by linarith)
+  unfold coeffA at ha
+  obtain ⟨p, hpm, hp⟩ := Finset.exists_ne_zero_of_sum_ne_zero (div_ne_zero_iff.1 ha).1
+  split_ifs at hp with hq <;> [skip; exact absurd rfl hp]
+  obtain ⟨hqp, hq1, hq2⟩ := hq
+  have hpp : p.Prime := Nat.prime_of_mem_primeFactors hpm
+  have hpd : p ∣ m := Nat.dvd_of_mem_primeFactors hpm
+  have hgp : g (p / √Z) ≠ 0 := right_ne_zero_of_mul hp
+  obtain ⟨hp1, hp2⟩ := hg.2.2.1 _ hgp
+  rw [le_div_iff₀ hsZ] at hp1
+  rw [div_le_iff₀ hsZ] at hp2
+  set q := m / p with hqdef
+  have hmpq : m = p * q := (Nat.mul_div_cancel' hpd).symm
+  have hpq : (p : ℝ) < q := by nlinarith
+  have hpq' : p < q := by exact_mod_cast hpq
+  have hmin : m.minFac = p := by
+    have hm1 : m ≠ 1 := fun h => by
+      rw [hmpq] at h; exact hpp.ne_one (Nat.eq_one_of_mul_eq_one_right h)
+    have hmp := Nat.minFac_prime hm1
+    have hdvd : m.minFac ∣ p * q := hmpq ▸ Nat.minFac_dvd m
+    rcases (Nat.Prime.dvd_mul hmp).1 hdvd with h | h
+    · exact (Nat.prime_dvd_prime_iff_eq hmp hpp).1 h
+    · have := (Nat.prime_dvd_prime_iff_eq hmp hqp).1 h
+      have := Nat.minFac_le_of_dvd hpp.two_le hpd
+      omega
+  have hcomp : Composite m := by
+    refine ⟨by rw [hmpq]; nlinarith [hpp.two_le, hqp.two_le], fun hmP => ?_⟩
+    have := (Nat.prime_mul_iff.1 (hmpq ▸ hmP))
+    rcases this with ⟨-, h⟩ | ⟨-, h⟩
+    · exact hqp.ne_one h
+    · exact hpp.ne_one h
+  have hF := add_minFac_le_F hmn hcomp
+  rw [hmin] at hF
+  have hF' : (m : ℝ) + p ≤ F n := by exact_mod_cast hF
+  -- √n ≤ (1 + δ/4) √Z
+  have hn0 : (0 : ℝ) ≤ n := by positivity
+  have hsn : √(n : ℝ) ≤ (1 + δ / 4) * √Z := by
+    rw [show (1 + δ / 4) * √Z = √((1 + δ / 4) ^ 2 * Z) by
+      rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (by linarith)]]
+    apply Real.sqrt_le_sqrt
+    have : 0 ≤ δ ^ 2 * Z := mul_nonneg (sq_nonneg δ) (by linarith)
+    nlinarith
+  unfold paramH at hm
+  have : (1 - δ) * √(n : ℝ) ≤ (1 - δ) * ((1 + δ / 4) * √Z) :=
+    mul_le_mul_of_nonneg_left hsn (by linarith)
+  have hd2 : 0 ≤ δ ^ 2 * √Z := by positivity
+  nlinarith
 
 /-- **W2 (Lemma 2 + Chebyshev).**  If the long average is `≥ μ` on `[Z, (1 + δ/2) Z]`, the bad `n` in
 the window number at most `2 X D / μ²`. -/
