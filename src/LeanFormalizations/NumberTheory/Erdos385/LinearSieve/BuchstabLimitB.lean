@@ -329,4 +329,143 @@ theorem bUp_le_bins {s s' : ℝ} (hs : 2 ≤ s) (hss' : s < s') {k : ℕ} (hk : 
   have := sum_le_sum hterm
   linarith
 
+section RiemannLower
+open Set
+variable {f : ℝ → ℝ} (hf : MonotoneOn f (Ioi 0)) (hf0 : ∀ x, 0 < x → 0 ≤ f x)
+include hf hf0
+
+lemma integral_delay_le {a h : ℝ} (ha : 1 < a) (hh : 0 ≤ h) :
+    ∫ u in a..a + h, f (u - 1) / (u - 1) ≤ h * (f (a + h - 1) / (a - 1)) := by
+  have hc : ∫ _ in a..a + h, f (a + h - 1) / (a - 1) = h * (f (a + h - 1) / (a - 1)) := by
+    rw [intervalIntegral.integral_const, smul_eq_mul]; ring
+  rw [← hc]
+  refine intervalIntegral.integral_mono_on (by linarith)
+    (intervalIntegrable_delay hf ha (by linarith)) intervalIntegrable_const fun u hu => ?_
+  have h1 : 0 < a - 1 := by linarith
+  have hu1 : 0 < u - 1 := by linarith [hu.1]
+  have hmono : f (u - 1) ≤ f (a + h - 1) :=
+    hf hu1 (show (0:ℝ) < a + h - 1 by linarith) (by linarith [hu.2])
+  have hfu := hf0 _ hu1
+  calc f (u - 1) / (u - 1) ≤ f (a + h - 1) / (u - 1) := div_le_div_of_nonneg_right hmono hu1.le
+    _ ≤ f (a + h - 1) / (a - 1) :=
+        div_le_div_of_nonneg_left (hfu.trans hmono) h1 (by linarith [hu.1])
+
+/-- **Shifted lower Riemann sum** for `g(u) = f(u−1)/(u−1)`. -/
+theorem riemann_delay_ge {s s' : ℝ} (hs : 2 ≤ s) (hss' : s < s') {k : ℕ} (hk : 0 < k)
+    (hh4 : (s' - s) / k ≤ 1 / 4) :
+    (1 - 3 * ((s' - s) / k) / (s - 1)) *
+      ((∫ u in s..s', f (u - 1) / (u - 1)) - 4 * ((s' - s) / k) * f s') ≤
+    ∑ i ∈ Finset.range k, f (s + i * ((s' - s) / k) - 1 - (s' - s) / k) * ((s' - s) / k) /
+      (s + (i + 1) * ((s' - s) / k) - 1) := by
+  set h := (s' - s) / k with hhdef
+  have hkr : (0 : ℝ) < k := by exact_mod_cast hk
+  have hpos : 0 < h := div_pos (by linarith) hkr
+  set a : ℕ → ℝ := fun i => s + ((i : ℝ) - 2) * h with ha
+  have hak : a k = s' - 2 * h := by simp only [ha, hhdef]; field_simp; ring
+  have ha0 : a 0 = s - 2 * h := by simp [ha]; ring
+  have hage : ∀ i, s - 2 * h ≤ a i := fun i => by
+    simp only [ha]; have : (0 : ℝ) ≤ i * h := by positivity
+    nlinarith
+  set c := 1 - 3 * h / (s - 1) with hc
+  have hc0 : 0 ≤ c := by
+    rw [hc, sub_nonneg, div_le_one (by linarith)]; linarith
+  set g := fun u : ℝ => f (u - 1) / (u - 1) with hg
+  have hg0 : ∀ u, 1 < u → 0 ≤ g u := fun u hu =>
+    div_nonneg (hf0 _ (by linarith)) (by linarith)
+  have hterm : ∀ i ∈ Finset.range k, c * ∫ u in a i..a (i + 1), g u ≤
+      f (s + i * h - 1 - h) * h / (s + (i + 1) * h - 1) := by
+    intro i _
+    have hai := hage i
+    have hsucc : a (i + 1) = a i + h := by simp only [ha]; push_cast; ring
+    have hA1 : 1 < a i := by linarith
+    rw [hsucc]
+    have hint := integral_delay_le hf hf0 hA1 hpos.le
+    have hI0 : 0 ≤ ∫ u in a i..a i + h, g u :=
+      intervalIntegral.integral_nonneg (by linarith) fun u hu => hg0 u (by linarith [hu.1])
+    have e1 : s + i * h - 1 - h = a i + h - 1 := by simp only [ha]; ring
+    have e2 : s + (i + 1) * h - 1 = a i + 3 * h - 1 := by simp only [ha]; ring
+    rw [e1, e2]
+    have hd : 0 < a i - 1 := by linarith
+    have hih : (0 : ℝ) ≤ i * h := by positivity
+    have hs2 : s ≤ a i + 2 * h := by simp only [ha]; nlinarith
+    have hd3 : s - 1 ≤ a i + 3 * h - 1 := by linarith
+    have hratio : c ≤ (a i - 1) / (a i + 3 * h - 1) := by
+      have e : (a i - 1) / (a i + 3 * h - 1) = 1 - 3 * h / (a i + 3 * h - 1) := by
+        have hne : a i + 3 * h - 1 ≠ 0 := by linarith
+        rw [eq_sub_iff_add_eq, ← add_div, div_eq_one_iff_eq hne]; ring
+      rw [e, hc]
+      have : 3 * h / (a i + 3 * h - 1) ≤ 3 * h / (s - 1) :=
+        div_le_div_of_nonneg_left (by linarith) (by linarith) hd3
+      linarith
+    have hF := hf0 (a i + h - 1) (by linarith)
+    calc c * ∫ u in a i..a i + h, g u
+        ≤ (a i - 1) / (a i + 3 * h - 1) * ∫ u in a i..a i + h, g u :=
+          mul_le_mul_of_nonneg_right hratio hI0
+      _ ≤ (a i - 1) / (a i + 3 * h - 1) * (h * (f (a i + h - 1) / (a i - 1))) :=
+          mul_le_mul_of_nonneg_left hint (div_nonneg hd.le (by linarith))
+      _ = f (a i + h - 1) * h / (a i + 3 * h - 1) := by field_simp
+  have hsum : ∑ i ∈ Finset.range k, ∫ u in a i..a (i + 1), g u = ∫ u in a 0..a k, g u :=
+    intervalIntegral.sum_integral_adjacent_intervals fun i _ =>
+      intervalIntegrable_delay hf (by linarith [hage i]) (by simp only [ha]; push_cast; nlinarith)
+  -- ∫_{s−2h}^{s'−2h} ≥ ∫_s^{s'} − 4h f(s')
+  have hcmp : (∫ u in s..s', g u) - 4 * h * f s' ≤ ∫ u in a 0..a k, g u := by
+    rw [ha0, hak]
+    have hI1 : IntervalIntegrable g MeasureTheory.volume (s - 2 * h) (s' - 2 * h) :=
+      intervalIntegrable_delay hf (by linarith) (by linarith)
+    have hI2 : IntervalIntegrable g MeasureTheory.volume (s' - 2 * h) s' :=
+      intervalIntegrable_delay hf (by linarith) (by linarith)
+    have hsplit := intervalIntegral.integral_add_adjacent_intervals hI1 hI2
+    have hbig : ∫ u in s..s', g u ≤ ∫ u in s - 2 * h..s', g u := by
+      refine intervalIntegral.integral_mono_interval (by linarith) hss'.le le_rfl ?_
+        (hI1.trans hI2)
+      filter_upwards [MeasureTheory.ae_restrict_mem measurableSet_Ioc] with u hu
+      exact hg0 u (by linarith [hu.1])
+    have htail : ∫ u in s' - 2 * h..s', g u ≤ 4 * h * f s' := by
+      have : ∫ _ in s' - 2 * h..s', 2 * f s' = 4 * h * f s' := by
+        rw [intervalIntegral.integral_const, smul_eq_mul]; ring
+      rw [← this]
+      refine intervalIntegral.integral_mono_on (by linarith) hI2 intervalIntegrable_const
+        fun u hu => ?_
+      have hu1 : 1 / 2 ≤ u - 1 := by linarith [hu.1]
+      have hfu : f (u - 1) ≤ f s' :=
+        hf (show (0:ℝ) < u - 1 by linarith) (show (0:ℝ) < s' by linarith) (by linarith [hu.2])
+      have hfu0 := hf0 (u - 1) (by linarith)
+      calc g u = f (u - 1) / (u - 1) := rfl
+        _ ≤ f s' / (u - 1) := div_le_div_of_nonneg_right hfu (by linarith)
+        _ ≤ f s' / (1 / 2) := div_le_div_of_nonneg_left (hfu0.trans hfu) (by norm_num) hu1
+        _ = 2 * f s' := by ring
+    linarith
+  calc c * ((∫ u in s..s', g u) - 4 * h * f s') ≤ c * ∫ u in a 0..a k, g u :=
+        mul_le_mul_of_nonneg_left hcmp hc0
+    _ = ∑ i ∈ Finset.range k, c * ∫ u in a i..a (i + 1), g u := by rw [← mul_sum, hsum]
+    _ ≤ _ := sum_le_sum hterm
+
+end RiemannLower
+
+/-- **The upper Buchstab inequality in the limit** (step 2):
+`b(s) ≤ b(s') − ∫_s^{s'} a(t−1)/(t−1) dt` for `2 ≤ s ≤ s'`. -/
+theorem buchstab_limit_b' {s s' : ℝ} (hs : 2 ≤ s) (hss' : s ≤ s') :
+    bUp s ≤ bUp s' - ∫ t in s..s', aLow (t - 1) / (t - 1) := by
+  rcases eq_or_lt_of_le hss' with rfl | hlt
+  · simp
+  set I := ∫ t in s..s', aLow (t - 1) / (t - 1)
+  have hA0 : ∀ x : ℝ, 0 < x → 0 ≤ aLow x := fun x hx => aLow_nonneg' hx
+  have hh : Tendsto (fun k : ℕ => (s' - s) / k) atTop (𝓝 0) :=
+    tendsto_const_nhds.div_atTop tendsto_natCast_atTop_atTop
+  have hR : Tendsto (fun k : ℕ => (1 - 3 * ((s' - s) / k) / (s - 1)) *
+      (I - 4 * ((s' - s) / k) * aLow s')) atTop
+      (𝓝 ((1 - 3 * 0 / (s - 1)) * (I - 4 * 0 * aLow s'))) :=
+    ((tendsto_const_nhds.sub ((tendsto_const_nhds.mul hh).div_const _)).mul
+      (tendsto_const_nhds.sub ((tendsto_const_nhds.mul hh).mul tendsto_const_nhds)))
+  simp only [mul_zero, zero_div, sub_zero, zero_mul, one_mul] at hR
+  have hev : ∀ᶠ k : ℕ in atTop, (1 - 3 * ((s' - s) / k) / (s - 1)) *
+      (I - 4 * ((s' - s) / k) * aLow s') ≤ bUp s' - bUp s := by
+    filter_upwards [hh.eventually (ge_mem_nhds (show (0:ℝ) < 1 / 4 by norm_num)),
+      eventually_ge_atTop 1] with k hk1 hk
+    have h1 := bUp_le_bins hs hlt (k := k) hk (by linarith)
+    have h2 := riemann_delay_ge aLow_mono' hA0 hs hlt (k := k) hk hk1
+    linarith
+  have := le_of_tendsto hR hev
+  linarith
+
 end LeanFormalizations.Erdos385.LinearSieve
