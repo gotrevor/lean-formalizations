@@ -10,6 +10,7 @@ import LeanFormalizations.NumberTheory.Erdos385.BadCount
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.LongAveragePower
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Near
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Bridge
+import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.NearFar
 
 /-!
 # Erdős #385: Theorem A with a power saving (phase E9b, new mathematics)
@@ -102,12 +103,18 @@ theorem longAveragePower_of_lit (h3 : ShortIntervalPrimesLower) {δ : ℝ} (hδ 
     (hδ' : δ < 1 / 4) : LongAveragePower δ :=
   longAveragePower_of_shortIntervalPrimes h3 hδ hδ'
 
+/-- **Frequency-side input** (`NearFarInput`, see its docstring for the route): near part
+from `NearOneLargeValues` + VK, far part from the MVT for `Q` off the large values of `P`.  65%. -/
+theorem nearFarInput_of_lit (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity) {δ : ℝ}
+    (hδ : 0 < δ) (hδ' : δ < 1 / 4) : NearFarInput δ := by
+  sorry
+
 /-- **Step 2: near/far split of the difference** (header step 2): `D_far` is the inverse
 Mellin–Plancherel transform of `F(1+it)K_x(t)` over `S_far ∪ {|t| < T₀}`; far part by MVT,
 near part pointwise from `NearOneLargeValues`.  70%. -/
 theorem differenceSplit_of_lit (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity) {δ : ℝ}
-    (hδ : 0 < δ) (hδ' : δ < 1 / 4) : DifferenceSplit δ := by
-  sorry
+    (hδ : 0 < δ) (hδ' : δ < 1 / 4) : DifferenceSplit δ :=
+  differenceSplit_of_nearFar hδ hδ' (nearFarInput_of_lit h1 h2 hδ hδ')
 
 /-- **The per-window power saving** (the analytic crux: steps 1–3 of the header, the near/far
 frequency split).  Global count from it: `almost_all_of_badWindowPowerSaving`.  70%. -/
