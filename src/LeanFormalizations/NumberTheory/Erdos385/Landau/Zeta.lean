@@ -35,8 +35,8 @@ lemma zeta_analyticOnNhd {c₀ : ℂ} {δ : ℝ} (h1 : (1 : ℂ) ∉ closedBall 
 
 /-- Finitely many zeros of `ζ` in a closed disc avoiding the pole. -/
 lemma zeta_zeros_finite {c₀ : ℂ} {δ : ℝ} (h1 : (1 : ℂ) ∉ closedBall c₀ δ) :
-    {ρ | ρ ∈ closedBall c₀ δ ∧ riemannZeta ρ = 0}.Finite := by
-  sorry
+    {ρ | ρ ∈ closedBall c₀ δ ∧ riemannZeta ρ = 0}.Finite :=
+  (isCompact_closedBall c₀ δ).inter_riemannZetaZeros_finite
 
 lemma vkTheta_rpow {T : ℝ} (hT : 3 ≤ T) :
     vkTheta T ^ ((3 : ℝ) / 2) = Real.log (Real.log T) / Real.log T := by
@@ -173,7 +173,54 @@ lemma zeta_disc_growth (h : RichertZetaGrowth) : ∃ K t₁ : ℝ, 0 ≤ K ∧ �
 /-- Lower bound for `ζ` at the centre of the Landau disc. -/
 lemma zeta_center_lower : ∃ K t₁ : ℝ, 0 ≤ K ∧ ∀ t : ℝ, t₁ ≤ |t| →
     Real.log |t| ^ (-K) ≤ ‖riemannZeta (lc t)‖ := by
-  sorry
+  obtain ⟨c, hc, hLB⟩ := ZetaLowerBound3
+  obtain ⟨T₀, hT₀3, hT₀⟩ := vk_asymp 0
+  refine ⟨2, max T₀ (Real.exp (1 / c + 1)) + 4, by norm_num, ?_⟩
+  intro t ht
+  set T := |t| with hT
+  have hTT₀ : T₀ ≤ T := by have := le_max_left T₀ (Real.exp (1 / c + 1)); linarith
+  have hT3 : 3 ≤ T := hT₀3.trans hTT₀
+  obtain ⟨hφ1, -, -, -, hθ8, -⟩ := hT₀ T hTT₀
+  set L := Real.log T with hLdef
+  have hLc : 1 / c + 1 ≤ L := by
+    rw [hLdef, Real.le_log_iff_exp_le (by linarith)]
+    have := le_max_right T₀ (Real.exp (1 / c + 1)); linarith
+  have hL0 : 0 < L := by have : 0 < 1 / c := by positivity
+                         linarith
+  set θ := vkTheta T with hθdef
+  have hθ0 : 0 < θ := by
+    rw [hθdef, vkTheta]; exact mul_pos (by linarith) (vkW_pos hT3)
+  have hθL : 1 / L ≤ θ := by
+    have h1 : θ ^ ((3 : ℝ) / 2) ≤ θ ^ (1 : ℝ) :=
+      Real.rpow_le_rpow_of_exponent_ge hθ0 (by linarith) (by norm_num)
+    rw [Real.rpow_one, hθdef, vkTheta_rpow hT3, ← hLdef] at h1
+    calc 1 / L ≤ Real.log L / L := div_le_div_of_nonneg_right hφ1 hL0.le
+      _ ≤ θ := h1
+  have hb := hLB (σ := 1 + θ) ⟨by linarith, by linarith⟩ t (by
+    have := le_max_left T₀ (Real.exp (1 / c + 1)); rw [← hT]; linarith)
+  have hpt : ((1 + θ : ℝ) : ℂ) + t * I = lc t := by simp [lc, θ, hT]
+  rw [hpt, add_sub_cancel_left] at hb
+  refine le_trans ?_ hb
+  have h34 : L ^ (-(3 : ℝ) / 4) ≤ θ ^ ((3 : ℝ) / 4) := by
+    rw [show -(3 : ℝ) / 4 = -((3 : ℝ) / 4) by ring, Real.rpow_neg hL0.le, ← Real.inv_rpow hL0.le,
+      ← one_div]
+    exact Real.rpow_le_rpow (by positivity) hθL (by norm_num)
+  have hL14 : 0 < L ^ ((1 : ℝ) / 4) := Real.rpow_pos_of_pos hL0 _
+  have e : L ^ (-(3 : ℝ) / 4) / L ^ ((1 : ℝ) / 4) = L ^ (-1 : ℝ) := by
+    rw [← Real.rpow_sub hL0]; norm_num
+  have e2 : L ^ (-(2 : ℝ)) = L ^ (-1 : ℝ) * (1 / L) := by
+    rw [show -(2 : ℝ) = -1 + -1 by norm_num, Real.rpow_add hL0, Real.rpow_neg_one, one_div]
+  have hcL : 1 / L ≤ c := by
+    rw [div_le_iff₀ hL0]
+    have : 1 / c * c = 1 := by field_simp
+    nlinarith
+  have hL1 : 0 ≤ L ^ (-1 : ℝ) := Real.rpow_nonneg hL0.le _
+  calc L ^ (-(2 : ℝ)) = L ^ (-1 : ℝ) * (1 / L) := e2
+    _ ≤ L ^ (-1 : ℝ) * c := mul_le_mul_of_nonneg_left hcL hL1
+    _ = c * (L ^ (-(3 : ℝ) / 4) / L ^ ((1 : ℝ) / 4)) := by rw [e]; ring
+    _ ≤ c * (θ ^ ((3 : ℝ) / 4) / L ^ ((1 : ℝ) / 4)) := by
+        gcongr
+    _ = c * θ ^ ((3 : ℝ) / 4) / L ^ ((1 : ℝ) / 4) := by ring
 
 /-- **Landau's local formula for `ζ`.** -/
 theorem zeta_local (h : RichertZetaGrowth) : ∃ K t₁ : ℝ, 0 ≤ K ∧ ∀ t : ℝ, t₁ ≤ |t| →
