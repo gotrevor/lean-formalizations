@@ -285,4 +285,62 @@ theorem pool_weight_ge {c : ℝ} (hc : 0 < c) : ∃ Y : ℕ, ∀ y : ℕ, Y ≤ 
     _ = (((m : ℝ) - j) / j) ^ j * ((K : ℝ) / ((y ^ 2 : ℕ) : ℝ)) ^ j := mul_pow _ _ _
     _ ≤ _ := by gcongr
 
+open Filter in
+/-- The real-variable conditions on `L = log X` used in the parameter choice. -/
+theorem eventually_L_conditions {ε : ℝ} (hε : 0 < ε) (hε2 : ε < 1 / 2) :
+    ∀ᶠ L : ℝ in atTop, 2 * Real.log L + L ^ ((1 : ℝ) / 2 - ε) ≤ L ∧
+      3 ≤ L ^ (ε / 2) ∧ Real.log L ≤ L ^ ((1 : ℝ) / 2 - ε) ∧
+      L * Real.log 4 / 8 + 2 * (L ^ ((1 : ℝ) / 2 - ε) + 1) * Real.log L + 1 ≤ L / 2 ∧
+      1 ≤ L := by
+  set θ : ℝ := 1 / 2 - ε with hθ
+  have hθ0 : 0 < θ := by linarith
+  have hd := (isLittleO_log_rpow_atTop hθ0).bound (zero_lt_one)
+  have hq := (isLittleO_log_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 4)).bound (zero_lt_one)
+  have t1 := (tendsto_rpow_atTop (by linarith : (0 : ℝ) < 1 - θ)).eventually_ge_atTop 3
+  have t2 := (tendsto_rpow_atTop (by linarith : (0 : ℝ) < ε / 2)).eventually_ge_atTop 3
+  have t3 := (tendsto_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 4)).eventually_ge_atTop 25
+  filter_upwards [hd, hq, t1, t2, t3, eventually_ge_atTop (1 : ℝ)] with L hd hq t1 t2 t3 hL1
+  have hL0 : 0 ≤ L := by linarith
+  rw [Real.norm_eq_abs, Real.norm_eq_abs, one_mul,
+    abs_of_nonneg (Real.rpow_nonneg hL0 θ)] at hd
+  rw [Real.norm_eq_abs, Real.norm_eq_abs, one_mul,
+    abs_of_nonneg (Real.rpow_nonneg hL0 (1 / 4))] at hq
+  have hd' : Real.log L ≤ L ^ θ := (le_abs_self _).trans hd
+  have hq' : Real.log L ≤ L ^ ((1 : ℝ) / 4) := (le_abs_self _).trans hq
+  have hlog0 : 0 ≤ Real.log L := Real.log_nonneg hL1
+  have hsplit : L = L ^ θ * L ^ (1 - θ) := by
+    rw [← Real.rpow_add (by linarith)]; simp
+  have hθp : 0 ≤ L ^ θ := Real.rpow_nonneg hL0 _
+  have hb : 3 * L ^ θ ≤ L := by
+    have := mul_le_mul_of_nonneg_left t1 hθp
+    linarith
+  refine ⟨by linarith, t2, hd', ?_, hL1⟩
+  -- (e)
+  have hq4 : L ^ ((1 : ℝ) / 4) * L ^ ((3 : ℝ) / 4) = L := by
+    rw [← Real.rpow_add (by linarith)]; norm_num
+  have hθh : L ^ θ ≤ L ^ ((1 : ℝ) / 2) := Real.rpow_le_rpow_of_exponent_le hL1 (by linarith)
+  have h12 : 1 ≤ L ^ ((1 : ℝ) / 2) := Real.one_le_rpow hL1 (by norm_num)
+  have h34 : L ^ ((1 : ℝ) / 2) * L ^ ((1 : ℝ) / 4) = L ^ ((3 : ℝ) / 4) := by
+    rw [← Real.rpow_add (by linarith)]; norm_num
+  have hA : (L ^ θ + 1) * Real.log L ≤ 2 * L ^ ((3 : ℝ) / 4) := by
+    calc (L ^ θ + 1) * Real.log L ≤ (2 * L ^ ((1 : ℝ) / 2)) * L ^ ((1 : ℝ) / 4) :=
+          mul_le_mul (by linarith) hq' hlog0 (by positivity)
+      _ = 2 * L ^ ((3 : ℝ) / 4) := by rw [mul_assoc, h34]
+  have h34p : 0 ≤ L ^ ((3 : ℝ) / 4) := Real.rpow_nonneg hL0 _
+  have hB : 25 * L ^ ((3 : ℝ) / 4) ≤ L := by
+    calc 25 * L ^ ((3 : ℝ) / 4) ≤ L ^ ((1 : ℝ) / 4) * L ^ ((3 : ℝ) / 4) :=
+          mul_le_mul_of_nonneg_right t3 h34p
+      _ = L := hq4
+  have hl4 : Real.log 4 < 1.3863 := by
+    have : Real.log 4 = 2 * Real.log 2 := by
+      rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]; norm_num
+    rw [this]; linarith [Real.log_two_lt_d9]
+  have hL25 : 25 ≤ L := by
+    have : (25 : ℝ) ≤ L ^ ((1 : ℝ) / 4) := t3
+    have h1 : L ^ ((1 : ℝ) / 4) ≤ L := by
+      calc L ^ ((1 : ℝ) / 4) ≤ L ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hL1 (by norm_num)
+        _ = L := Real.rpow_one L
+    linarith
+  nlinarith
+
 end LeanFormalizations.Erdos385.Exceptional
