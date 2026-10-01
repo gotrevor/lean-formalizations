@@ -7,7 +7,7 @@ import Mathlib
 import LeanFormalizations.Literature.Erdos385VK
 import LeanFormalizations.NumberTheory.Erdos385.Endpoint
 import LeanFormalizations.NumberTheory.Erdos385.BadCount
-import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Split
+import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.LongAveragePower
 
 /-!
 # Erdős #385: Theorem A with a power saving (phase E9b, new mathematics)
@@ -97,8 +97,8 @@ theorem nearOneLargeValues_of_density (h1 : RichertZetaGrowth) (h2 : NearOneZero
 relative length `Z^{−3c₀}` at height `≍ √Z`; same argument as `Gen.longAverage_lower` with
 `ShortIntervalPrimesLower` in place of `ShortIntervalPNT` (needs `6c₀ ≤ 1 − e`).  85%. -/
 theorem longAveragePower_of_lit (h3 : ShortIntervalPrimesLower) {δ : ℝ} (hδ : 0 < δ)
-    (hδ' : δ < 1 / 4) : LongAveragePower δ := by
-  sorry
+    (hδ' : δ < 1 / 4) : LongAveragePower δ :=
+  longAveragePower_of_shortIntervalPrimes h3 hδ hδ'
 
 /-- **Step 2: near/far split of the difference** (header step 2): `D_far` is the inverse
 Mellin–Plancherel transform of `F(1+it)K_x(t)` over `S_far ∪ {|t| < T₀}`; far part by MVT,

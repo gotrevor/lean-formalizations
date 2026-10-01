@@ -2172,3 +2172,6 @@ reuse with T₀ = Z^{c₀}; (ii) long average via ShortIntervalPrimesLower; (iii
   `longAveragePower_of_lit` (ShortIntervalPrimesLower ⇒ long avg ≥ c₁δ/log²Z at H = X/Z^{3c₀}),
   `differenceSplit_of_lit` (D within 1/log³Z of D_far, ∫D_far² ≤ C X Z^{−c}), `nearOneLargeValues_of_density`.
   Next: longAveragePower (copy Gen.longAverage_lower/qcount_lower with power-scale H).
+- Step 1 `longAveragePower_of_lit` PROVED axiom-clean (PowerSaving/{LongAverage,Primes,LongAveragePower}.lean:
+  free-h₂ copy of the W2′ double count + greedy tiling of (y,y+H] by (t,t+t^e]). Hyperbola.lean axiom-clean.
+  Remaining: `differenceSplit_of_lit` (crux), `nearOneLargeValues_of_density`.
