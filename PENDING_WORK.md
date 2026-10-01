@@ -2175,3 +2175,11 @@ reuse with T₀ = Z^{c₀}; (ii) long average via ShortIntervalPrimesLower; (iii
 - Step 1 `longAveragePower_of_lit` PROVED axiom-clean (PowerSaving/{LongAverage,Primes,LongAveragePower}.lean:
   free-h₂ copy of the W2′ double count + greedy tiling of (y,y+H] by (t,t+t^e]). Hyperbola.lean axiom-clean.
   Remaining: `differenceSplit_of_lit` (crux), `nearOneLargeValues_of_density`.
+- Step 2 route FIXED in Lean (2026-10-01): near set = finite union of intervals Icc(s−r,s+r) around a
+  1-separated large-value set S (from NearOneLargeValues). D_far := D − Re winDif(𝓕⁻(1_E F)).
+  * `Parseval.norm_winDif_fourierInv_le` (PowerSaving/Near.lean) PROVED: |D_near(x)| ≤ 2∫_E|Â|.
+  * `Parseval.mr16_masked` (PowerSaving/Masked.lean) sorry 85%: rerun mr16_core with masked mid/tail.
+  * Still to state: coeffA-level analytic inputs — (i) ∫_E|Â| ≤ 1/(4 log³Z) [NearOneLargeValues +
+    VK η_min]; (ii) mid∖E and block integrals ≤ C Z^{−c} [|P| ≤ Z^{−η₀/2} off E + MVT for Q; T>4X
+    via coeffC_meanSquare]; then assemble DifferenceSplit. Insight: near part only needs
+    exp(−(log Z)^{1/3}) pointwise (≪ μ/2), far part gets the power saving in mean square.

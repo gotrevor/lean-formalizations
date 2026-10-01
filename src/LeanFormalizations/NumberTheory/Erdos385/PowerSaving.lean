@@ -8,6 +8,8 @@ import LeanFormalizations.Literature.Erdos385VK
 import LeanFormalizations.NumberTheory.Erdos385.Endpoint
 import LeanFormalizations.NumberTheory.Erdos385.BadCount
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.LongAveragePower
+import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Near
+import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Masked
 
 /-!
 # Erdős #385: Theorem A with a power saving (phase E9b, new mathematics)
