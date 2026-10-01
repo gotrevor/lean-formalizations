@@ -206,3 +206,124 @@ Node map:
    about one session.
 2. Write the proof properly in `PROOF-ALMOSTALL-385.md`.
 3. Only then freeze the four Props and run a treadmill on W1 → W2 → W3 → headline.
+
+## Source checks (2026-10-01)
+
+Sources opened this session: Matomäki–Radziwiłł, arXiv:1501.04585 (full text via `pdftotext`), and
+Teräväinen, arXiv:1510.06005 (full text).  Iwaniec–Kowalski, Ivić and Montgomery's *Topics* were
+**not** opened; anything resting on them is marked.
+
+### Check (2): MR Lemma 14's `(log X)^{−2/15}` is a parameter artifact, not intrinsic.  ✅ (95%)
+
+MR16 Lemma 14, verbatim: "Let `|a_m| ≤ 1`.  Assume `1 ≤ h₁ ≤ h₂ = X/(log X)^{1/5}`.  Consider, for
+`X ≤ x ≤ 2X`, `S_j(x) = Σ_{x≤m≤x+h_j} a_m` and write `A(s) := Σ_{X≤m≤4X} a_m/m^s`.  Then
+`(1/X)∫_X^{2X} |S₁(x)/h₁ − S₂(x)/h₂|² dx ≪ 1/(log X)^{2/15} + ∫_{1+i(log X)^{1/15}}^{1+iX/h₁} |A(s)|²|ds|
++ max_{T≥X/h₁} (X/h₁)(1/T)∫_{1+iT}^{1+2iT} |A(s)|²|ds|`."
+
+In the proof, `T₀ := (log X)^{1/15}` and `h₂` enter in exactly one place: the low-frequency part
+`U_j`, where `|(1/h₁)U₁ − (1/h₂)U₂| ≪ T₀² h₂/X`.  Squaring gives the additive term.  Nothing else
+uses their values.
+
+Better still, the general-parameter form is **in print**.  Teräväinen 2016, arXiv:1510.06005,
+**Lemma 1**, verbatim:
+- Let `S_h(x) = (1/h)Σ_{x≤n≤x+h} a_n`, where `a_n` are complex numbers, and let
+  `2 ≤ h₁ ≤ h₂ ≤ X/T₀³` with `T₀ ≥ 1`.  Also let `F(s) = Σ_{n∼X} a_n/n^s`.
+- Then `(1/X)∫_X^{2X}|S_{h₁}(x) − S_{h₂}(x)|² dx ≪ 1/T₀ + ∫_{T₀}^{X/h₁}|F(1+it)|² dt
+  + max_{T≥X/h₁} (X/(T h₁))∫_T^{2T}|F(1+it)|² dt`.
+- His proof line: "This is Lemma 14 in the paper [MR] (except that we do not specify the value of
+  `T₀`)."  The statement omits `|a_n| ≤ 1`, but the `1/T₀` term needs bounded coefficients; the Prop
+  below adds that hypothesis (faithful-or-weaker).
+
+So S3 holds with error `1/T₀`, as the outline needed.
+
+### Check (1): polylog-loss large values are NOT NEEDED for Theorem A.  ⚠️ The outline's S4/S6 crux is mistaken.  (85%)
+
+S4 says both factors are shorter than `T = X/h`, so "the mean value theorem on one factor loses
+`T/N`".  But at the Theorem A scale `h ≍ δ√Z` we have `T ≍ √Z/δ` and `N ≍ √Z`.  So **`T/N ≍ 1/δ`
+is a constant**, and the cheapest argument closes:
+
+`∫_{T₀}^{T}|P(1+it)Q(1+it)|² dt ≤ sup_{T₀≤|t|≤T}|P(1+it)|² · ∫_{−T}^{T}|Q(1+it)|² dt`.
+
+**Second factor (MVT).**  MR16 Lemma 6, verbatim: "Let `A(s) = Σ_{n≤N} a_n n^{−s}`.  Then
+`∫_{−T}^{T}|A(it)|² dt = (T + O(N))Σ_{n≤N}|a_n|²`.  Proof: See [IK, Theorem 9.1]."  With
+`b_q = 1/q` over `q ∈ [√Z, 1.5√Z]`, this is `≪ (√Z/δ + √Z)·1/(√Z log Z) ≪ 1/(δ log Z)`.
+
+**First factor (VK pointwise).**  Use smooth `p`-weights `w(p) = f(p/√Z)`, `0 ≤ f ≤ 1`, supported in
+`[1−δ/2, 1−δ/4]`.  This costs nothing: `S₁(x) > 0` still forces a prime `p` in the support.  The
+estimate is MR16, proof of Lemma 11, the display after (15):
+- `Σ_n Λ(n) n^{it} f(n/P) = f̃(1+it)/(1+it)·P^{1+it} + O(P exp(−log P/(log T)^{2/3+ε})(log T)²)`.
+- MR derive it by shifting to `σ = 1 − c(log T)^{−2/3+ε}` (the VK region) and using Ivić (1.52)
+  for `ζ′/ζ`.
+- `f̃(1+it) ≪_{δ,B} (1+|t|)^{−B}`.  The `1/log n` and prime-power adjustments are smooth or
+  negligible.
+- With `P = √Z` and `|t| ∈ [T₀, 2Z]` this gives
+  `|P(1+it)| ≪_δ T₀^{−B} + exp(−c(log Z)^{1/3−ε})`.
+
+**Bookkeeping.**  `a_m = Σ_{m=pq} w(p)1_{q∈[√Z,1.5√Z]}` has `|a_m| ≤ 1` (since `p < √Z ≤ q`) and
+support in `[X, 2X)` with `X = (1−δ/2)Z`.  The long-range density is `μ ≫ δ/log² Z`.  Take
+`T₀ = exp((log Z)^{1/3})` and `h₂ = X/T₀³`.  The `h₂`-averages are `≥ c₀δ/log² Z` by PNT in
+intervals of length `√Z·exp(−3(log Z)^{1/3})` at height `√Z`.  De la Vallée Poussin's error
+`exp(−c√log)` already suffices for that; VK is not needed there.
+
+The three terms of Lemma 1:
+- `1/T₀`.
+- `∫_{T₀}^{X/h₁} ≪ sup|P|²/(δ log Z)`.
+- The tail.  For `X/h₁ ≤ T ≤ Z`, the same sup × MVT gives `≪ sup|P|²/(δ log Z)`.  For `T > Z`,
+  MVT on `A` itself gives `(X/(h₁T))(T + O(X))Σ_m a_m²/m² ≪ 1/h₁`.
+
+Chebyshev then gives `meas{x : S_{h₁}(x) = 0} ≪ X·δ^{−2}log⁴Z·(1/T₀ + δ^{−1}exp(−c(log Z)^{1/3−ε}))`.
+A bad `n` forces `S_{h₁}(x) = 0` on an `x`-interval of length `≍ h₁`, and each `x` serves `≍ h₁`
+values of `n`.  So the count of exceptional `n` is `≪` this measure.
+
+So **no large-values estimate, no Halász–Montgomery, no Huxley, no Guth–Maynard** enters Theorem A.
+Those matter only for Theorem B (`h = x^θ`, `θ < 1/2`, where `T/N = x^{1/2−θ}` is a power).  For
+Theorem B, the polylog question stays open.  I did not open IK ch. 9 or Ivić; MR16 Lemma 7 (well-spaced
+MVT) does carry only `log 2N`.
+
+Novelty, revised: with the crux gone, Theorem A is a routine MR/Teräväinen-template variance
+argument (one VK-small factor, MVT on the other).  An expert would call it an exercise (85%).  That
+matches Tao's "well within reach".  It is still apparently unwritten, and the `(1+o(1))√n` form is
+sharper than his remark.
+
+### Check (3): the exceptional set is `X exp(−(log X)^{1/3−ε})`, confirming the guess.  (80%)
+
+The only saving is the VK pointwise bound for a prime sum of length `P = √X` at heights `T ≍ X^{O(1)}`.
+That bound is `exp(−log P/(log T)^{2/3+ε}) = exp(−(log X)^{1/3−ε})`, and the `1/T₀` term is matched to
+it.  So this route gives `#{n ≤ X : F(n) < n + (1−δ)√n} ≪_δ X exp(−c(log X)^{1/3−ε})`, and no better
+without new zero-density input near `σ = 1`.  For the narrower set of **bad** `n` (`F(n) ≤ n`), the
+exceptional-set door's elementary `X exp(−(log X)^{1/2−ε})` (if its outline closes) is quantitatively
+stronger.  The two doors are complementary, not redundant.
+
+### Verdict: freeze as phase E3
+
+**E3 (Theorem A).**  For every `δ ∈ (0, 1/4)`:
+`#{ n ≤ X : F(n) < n + (1 − δ)√n } = o(X)` as `X → ∞`, where
+`F(n) = max_{m<n, m composite}(m + p(m))`.
+
+Optional strengthening E3′: `≪_δ X exp(−(log X)^{1/4})`.  It is safe, because `1/4 < 1/3`.
+
+Literature Props E3 needs.  Each is faithful-or-weaker; **drop** `GuthMaynard2024LargeValues` and
+`ClassicalLargeValuesPolylog` from E3:
+
+1. `Literature.Teravainen2016ParsevalShortSums`: Teräväinen arXiv:1510.06005 **Lemma 1** verbatim
+   (quoted above), with the added hypothesis `|a_n| ≤ 1`, an absolute implied constant, and
+   `n ∼ X` read as `X ≤ n < 2X`.
+2. `Literature.MeanValueTheoremDirichlet`: `∫_{−T}^{T}|Σ_{n≤N} a_n n^{−it}|² dt ≤ C(T + N)Σ|a_n|²`.
+   This is the upper-bound half of IK Theorem 9.1 (Montgomery–Vaughan), as quoted in MR16 Lemma 6.
+3. `Literature.VKSmoothPrimeSum`: for smooth `f` supported in `[1/2, 2]`, every `ε > 0`, and all
+   `T ≥ 2`, `P ≥ 2`, `|t| ≤ T`:
+   `|Σ_n Λ(n) n^{it} f(n/P) − f̃(1+it)P^{1+it}/(1+it)| ≤ C_{f,ε} P exp(−log P/(log T)^{2/3+ε})(log T)²`.
+   Source: MR16, proof of Lemma 11 (eq. (15) and the following display), from the VK zero-free
+   region plus Ivić (1.52).  ⚠️ This is a displayed step, not a numbered lemma, so state it with the
+   `f`-dependent constant exactly as derived.  (85% the statement is right; a numbered source in IK
+   ch. 8 or Koukoulopoulos's book would be better, and I have not located one.)
+4. `Literature.PNTShortIntervals`: `π(y + H) − π(y) ≥ H/(2 log y)` for `H ≥ y·exp(−(log y)^{2/5})`,
+   `y ≥ y₀`.  This is weaker than de la Vallée Poussin's PNT error, so it is likely dischargeable from
+   PNT+ `MediumPNT`, which the repo already imports (~60%, not checked).
+
+Wiring for the treadmill:
+- W1 (balanced witness ⇒ margin) is unchanged.
+- W2 (variance ⇒ density zero) is unchanged.
+- **W3 collapses to one inequality**: `∫|PQ|² ≤ sup|P|²·∫|Q|²` plus MVT.  Drop the block/Cauchy–Schwarz
+  plan.
+- Headline: `almost_all_F385` with hypotheses `(hP1 hP2 hP3 hP4)` in place of `hLV hVK hP`.
