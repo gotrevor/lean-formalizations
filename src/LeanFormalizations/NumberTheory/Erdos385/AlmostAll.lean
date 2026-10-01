@@ -85,7 +85,29 @@ theorem shortIntervalPNT_of_mediumPNT (h : MediumPNTStatement) : ShortIntervalPN
   sorry
 
 theorem not_shortIntervalPNTUnitWindow : ¬ ShortIntervalPNTUnitWindow := by
-  sorry
+  rintro ⟨y₀, hy⟩
+  set N : ℕ := ⌈y₀⌉₊ + 1
+  have hN : y₀ ≤ (N : ℝ) := by
+    have := Nat.le_ceil y₀; simp only [N]; push_cast; linarith
+  have hN0 : (0 : ℝ) ≤ N := by positivity
+  have h := hy (2 * N + 1) 1 (by linarith) le_rfl (by linarith)
+  have e1 : ⌊(2 * N + 1 : ℝ) + 1⌋₊ = 2 * N + 2 := by
+    rw [show (2 * N + 1 : ℝ) + 1 = ((2 * N + 2 : ℕ) : ℝ) by push_cast; ring, Nat.floor_natCast]
+  have e2 : ⌊(2 * N + 1 : ℝ)⌋₊ = 2 * N + 1 := by
+    rw [show (2 * N + 1 : ℝ) = ((2 * N + 1 : ℕ) : ℝ) by push_cast; ring, Nat.floor_natCast]
+  have hnp : ¬ (2 * N + 2).Prime := by
+    intro hp
+    have := hp.eq_one_or_self_of_dvd 2 ⟨N + 1, by ring⟩
+    omega
+  have e3 : Nat.primeCounting (2 * N + 2) = Nat.primeCounting (2 * N + 1) := by
+    simp only [Nat.primeCounting, Nat.primeCounting']
+    rw [Nat.count_succ (p := Nat.Prime) (n := 2 * N + 2), if_neg hnp, add_zero]
+  rw [e1, e2, e3, sub_self] at h
+  have hpos : 0 < Real.log (2 * (2 * N + 1 : ℝ)) := Real.log_pos (by
+    have : (0 : ℝ) ≤ N := by positivity
+    linarith)
+  have : (0 : ℝ) < 1 / (2 * Real.log (2 * (2 * N + 1 : ℝ))) := by positivity
+  linarith
 
 /-- **Lemma VK (smoothed twisted prime sums).**  For smooth `f` with compact support in `(0, ∞)`
 and standard Mellin transform `mellin f s = ∫_0^∞ x^{s−1} f(x) dx`: for every `ε > 0` there is `C` with
