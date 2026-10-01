@@ -21,7 +21,7 @@ Scope: `src/LeanFormalizations/NumberTheory/Erdos385/AlmostAll.lean` sorry-free.
    `Chebyshev.psi_sub_theta_le`.  Moderate-hard.
 4. `smoothPrimeSumVK_of_VKZ`: contour shift (Mellin inversion + residue).  THE crux; consider
    porting PNT+ smoothed-Chebyshev code (`PrimeNumberTheoremAnd/MediumPNT.lean`).
-5. `not_smoothPrimeSumVKMRNorm_of_VK`: control; needs a bump with mellin f (1−i) ≠ 0 and
+5. ~~`not_smoothPrimeSumVKMRNorm_of_VK`~~ PROVED (bump at 1, Re mellin(1−i)=∫cos(log x)b>0; ε=1/6, T=P, t=1).
    P-asymptotics; moderate.
 
 ## Gotchas this lap

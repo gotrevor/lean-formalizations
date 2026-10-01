@@ -291,7 +291,142 @@ hold.  Their main terms differ by `|mellin f (1 − i)| P / √2` at `t = 1`, `T
 a bump `f` near `1`, while both error terms are `o(P)`.  (Unconditional falsity would need Lemma VK
 itself, so the test is stated relative to the node.) -/
 theorem not_smoothPrimeSumVKMRNorm_of_VK (h : SmoothPrimeSumVK) : ¬ SmoothPrimeSumVKMRNorm := by
-  sorry
+  intro hMR
+  let b : ContDiffBump (1 : ℝ) := ⟨1/4, 1/2, by norm_num, by norm_num⟩
+  set F : ℝ → ℂ := fun x => ((b x : ℝ) : ℂ) with hF
+  have hsupp : ∀ x, x ∉ Set.Ioo (1/2 : ℝ) (3/2) → F x = 0 := by
+    intro x hx
+    have hr : b.rOut = 1/2 := rfl
+    have : x ∉ Function.support b := by
+      rw [b.support_eq, Metric.mem_ball, Real.dist_eq, abs_lt, hr]; intro h; apply hx; constructor <;> linarith [h.1, h.2]
+    simp [hF, Function.notMem_support.1 this]
+  have hcos : ∀ x ∈ Set.Ioo (1/2 : ℝ) (3/2), 0 < Real.cos (Real.log x) := by
+    intro x hx
+    apply Real.cos_pos_of_mem_Ioo
+    have h1 : Real.log x < Real.log (3/2) := Real.log_lt_log (by linarith [hx.1]) hx.2
+    have h2 : Real.log (1/2) < Real.log x := Real.log_lt_log (by norm_num) hx.1
+    have h3 : Real.log (3/2) < 1 := by
+      have := Real.log_le_sub_one_of_pos (show (0:ℝ) < 3/2 by norm_num); linarith
+    have h4 : -1 < Real.log (1/2) := by
+      rw [one_div, Real.log_inv]; have := Real.log_two_lt_d9; linarith
+    constructor <;> linarith [Real.pi_gt_three]
+  have hre : ∀ x : ℝ, 0 < x → (((x : ℂ) ^ ((1 - I) - 1)) • F x).re = Real.cos (Real.log x) * b x := by
+    intro x hx
+    rw [show (1 - I) - 1 = -I by ring, smul_eq_mul, hF]
+    simp only
+    rw [Complex.re_mul_ofReal, Complex.cpow_def_of_ne_zero (by exact_mod_cast hx.ne'),
+      ← Complex.ofReal_log hx.le, Complex.exp_re]
+    simp
+  have hcont : ContinuousOn (fun x : ℝ => ((x : ℂ) ^ ((1 - I) - 1)) • F x) (Set.Icc (1/2) (3/2)) := by
+    intro x hx
+    apply ContinuousAt.continuousWithinAt
+    apply ContinuousAt.smul
+    · exact continuousAt_ofReal_cpow_const x _ (Or.inr (by linarith [hx.1]))
+    · exact (Complex.continuous_ofReal.comp b.continuous).continuousAt
+  have hint : IntegrableOn (fun x : ℝ => ((x : ℂ) ^ ((1 - I) - 1)) • F x) (Set.Ioi 0) := by
+    refine (hcont.integrableOn_Icc).of_forall_sdiff_eq_zero measurableSet_Ioi fun x hx => ?_
+    rw [hsupp x (fun h => hx.2 ⟨h.1.le, h.2.le⟩), smul_zero]
+  have key : 0 < (mellin F (1 - I)).re := by
+    rw [mellin]; show 0 < @RCLike.re ℂ _ _; rw [← integral_re hint]; show 0 < ∫ x in Set.Ioi (0:ℝ), (((x : ℂ) ^ ((1 - I) - 1)) • F x).re
+    rw [setIntegral_congr_fun measurableSet_Ioi (fun x hx => hre x hx)]
+    have hg0 : ∀ x ∉ Set.Ioo (1/2 : ℝ) (3/2), Real.cos (Real.log x) * b x = 0 := by
+      intro x hx
+      have := hsupp x hx; simp only [hF, Complex.ofReal_eq_zero] at this; simp [this]
+    rw [setIntegral_eq_of_subset_of_forall_sdiff_eq_zero (s := Set.Ioc (1/2 : ℝ) (3/2)) measurableSet_Ioi
+      (fun x hx => show (0:ℝ) < x by linarith [hx.1]) (fun x hx => hg0 x (fun h => hx.2 ⟨h.1, h.2.le⟩)),
+      ← intervalIntegral.integral_of_le (by norm_num)]
+    refine intervalIntegral.intervalIntegral_pos_of_pos_on ?_ (fun x hx => ?_) (by norm_num)
+    · apply ContinuousOn.intervalIntegrable
+      intro x hx
+      apply ContinuousAt.continuousWithinAt
+      apply ContinuousAt.mul _ b.continuous.continuousAt
+      have : 0 < x := by
+        rw [Set.uIcc_of_le (by norm_num)] at hx; linarith [hx.1]
+      exact Real.continuous_cos.continuousAt.comp (Real.continuousAt_log this.ne')
+    · apply mul_pos (hcos x hx)
+      apply b.pos_of_mem_ball
+      rw [Metric.mem_ball, Real.dist_eq, abs_lt]
+      have hr : b.rOut = 1/2 := rfl
+      rw [hr]; constructor <;> linarith [hx.1, hx.2]
+  set M := mellin F (1 - I) with hM
+  set m := M.re
+  have hFs : ∀ k : ℕ, ContDiff ℝ k F := fun k => Complex.ofRealCLM.contDiff.comp b.contDiff
+  have hFc : HasCompactSupport F := b.hasCompactSupport.comp_left Complex.ofReal_zero
+  have hFt : tsupport F ⊆ Set.Ioi 0 := by
+    intro x hx
+    by_contra hx0
+    have : x ∉ tsupport F := by
+      rw [notMem_tsupport_iff_eventuallyEq]
+      filter_upwards [Iio_mem_nhds (show x < 1/2 by simp at hx0; linarith)] with y hy
+      exact hsupp y (fun h => by simp at hy; linarith [h.1])
+    exact this hx
+  obtain ⟨C1, hC1⟩ := h F hFs hFc hFt (1/6) (by norm_num)
+  obtain ⟨C2, hC2⟩ := hMR F hFs hFc hFt (1/6) (by norm_num)
+  set C := |C1| + |C2| with hC
+  have hC0 : 0 ≤ C := by positivity
+  -- the error term, divided by `P`, tends to zero
+  have hlim : Tendsto (fun P : ℝ => Real.exp (-(Real.log P ^ ((1:ℝ)/6))) * Real.log P + 1 / P) atTop (nhds 0) := by
+    have hu : Tendsto (fun P : ℝ => Real.log P ^ ((1:ℝ)/6)) atTop atTop :=
+      (tendsto_rpow_atTop (by norm_num)).comp Real.tendsto_log_atTop
+    have h6 := (Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 6).comp hu
+    have h1 : Tendsto (fun P : ℝ => Real.exp (-(Real.log P ^ ((1:ℝ)/6))) * Real.log P) atTop (nhds 0) := by
+      refine h6.congr' ?_
+      filter_upwards [eventually_ge_atTop (1:ℝ)] with P hP
+      have hL : 0 ≤ Real.log P := Real.log_nonneg hP
+      simp only [Function.comp]
+      rw [← Real.rpow_natCast, ← Real.rpow_mul hL]; norm_num; ring
+    have h2 : Tendsto (fun P : ℝ => 1 / P) atTop (nhds 0) := by
+      simpa [one_div] using tendsto_inv_atTop_zero
+    simpa using h1.add h2
+  have hev := hlim.eventually (gt_mem_nhds (show 0 < m / (2 * (C + 1)) by positivity))
+  obtain ⟨P, hP, hP3⟩ := (hev.and (eventually_ge_atTop (3:ℝ))).exists
+  have e1 := hC1 P P 1 (by linarith) hP3 le_rfl (by norm_num; linarith)
+  have e2 := hC2 P P 1 (by linarith) hP3 le_rfl (by norm_num; linarith)
+  have hL : 1 < Real.log P := by
+    rw [Real.lt_log_iff_exp_lt (by linarith)]; linarith [Real.exp_one_lt_d9]
+  have hexp : Real.log P / Real.log P ^ ((2:ℝ)/3 + 1/6) = Real.log P ^ ((1:ℝ)/6) := by
+    rw [div_eq_iff (by positivity), ← Real.rpow_add (by linarith)]; norm_num
+  rw [hexp] at e1 e2
+  simp only [Complex.ofReal_one, one_mul] at e1 e2
+  set E := P * Real.exp (-(Real.log P ^ ((1:ℝ)/6))) * Real.log P + 1
+  have hE0 : 0 ≤ E := by positivity
+  set S := ∑' n : ℕ, (ArithmeticFunction.vonMangoldt n : ℂ) * (n : ℂ) ^ (-I) * F (n / P)
+  set W := M * (P : ℂ) ^ (1 - I)
+  have hdiff : ‖W - W / (1 - I)‖ ≤ C * E := by
+    calc ‖W - W / (1 - I)‖ = ‖(S - W / (1 - I)) - (S - W)‖ := by congr 1; ring
+      _ ≤ ‖S - W / (1 - I)‖ + ‖S - W‖ := norm_sub_le _ _
+      _ ≤ C2 * E + C1 * E := add_le_add e2 e1
+      _ ≤ |C2| * E + |C1| * E := add_le_add (mul_le_mul_of_nonneg_right (le_abs_self _) hE0)
+          (mul_le_mul_of_nonneg_right (le_abs_self _) hE0)
+      _ = C * E := by ring
+  have hW : ‖W‖ = ‖M‖ * P := by
+    rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (by linarith)]; simp
+  have h1i : (1 - I) ≠ 0 := by
+    intro h0; have := congrArg Complex.re h0; simp at this
+  have hfac : W - W / (1 - I) = W * (-I / (1 - I)) := by
+    field_simp; ring
+  have hnorm : 1 / 2 ≤ ‖-I / (1 - I)‖ := by
+    rw [norm_div, norm_neg, Complex.norm_I]
+    have : ‖(1:ℂ) - I‖ ≤ 2 := (norm_sub_le _ _).trans (by simp; norm_num)
+    have hpos : 0 < ‖(1:ℂ) - I‖ := norm_pos_iff.2 (by simpa using h1i)
+    rw [div_le_div_iff₀ (by norm_num) hpos]; linarith
+  have hMm : m ≤ ‖M‖ := Complex.re_le_norm M
+  rw [hfac, norm_mul, hW] at hdiff
+  have hP0 : 0 < P := by linarith
+  have : m * P / 2 ≤ C * E := by
+    calc m * P / 2 ≤ ‖M‖ * P * (1 / 2) := by nlinarith
+      _ ≤ ‖M‖ * P * ‖-I / (1 - I)‖ := mul_le_mul_of_nonneg_left hnorm (by positivity)
+      _ ≤ C * E := hdiff
+  have hE : E = P * (Real.exp (-(Real.log P ^ ((1:ℝ)/6))) * Real.log P + 1 / P) := by
+    field_simp; ring
+  rw [hE] at this
+  have hlt := hP
+  set g := Real.exp (-(Real.log P ^ ((1:ℝ)/6))) * Real.log P + 1 / P
+  have : m / 2 ≤ C * g := by nlinarith
+  have hg : C * g < m / 2 := by
+    rw [lt_div_iff₀ (by positivity)] at hlt
+    nlinarith [show 0 ≤ g by positivity]
+  linarith
 
 /-! ## The construction (PROOF §2) -/
 
