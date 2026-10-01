@@ -7,6 +7,7 @@ import Mathlib
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.RoughPNT
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Bounded
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.DelaySolution
+import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.RoughLimit
 
 /-!
 # `ω∞ ≤ e^{−γ}` from rough numbers (phase E5, `omega_le`)
@@ -87,8 +88,8 @@ theorem phi_mono : MonotoneOn phiLow (Ioi 0) := by
 /-- Leaf: the forward Buchstab inequality in the limit (same mechanism as `buchstab_limit_b`,
 with `Φ` in place of `S⁻`; all terms nonnegative). -/
 theorem phi_buchstab : ∀ s s' : ℝ, 2 ≤ s → s ≤ s' →
-    phiLow s + ∫ t in s..s', phiLow (t - 1) / (t - 1) ≤ phiLow s' := by
-  sorry
+    phiLow s + ∫ t in s..s', phiLow (t - 1) / (t - 1) ≤ phiLow s' :=
+  fun _ _ hs hss' => phiL_buchstab hs hss'
 
 /-- `ω∞ ≤ C` as a proposition about every delay pair. -/
 def OmegaLe : Prop := ∀ Q P : ℝ → ℝ, IsDelayPair Q P → ∀ ω M : ℝ, 0 < ω →
