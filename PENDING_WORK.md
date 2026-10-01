@@ -1,3 +1,8 @@
+## phase E5 lap 3b (2026-10-01): comparison_functions proved from two leaves (DelaySolution.lean)
+`delay_solution` (pure delay-ODE: Q=2sω, P=m; positivity via (s−1)P(s)=∫_{s−1}^s P; window-average
+contraction for ω) and `omega_le` (ω∞ ≤ e^{−γ} ⇔ λ ≥ 1; route: rough-number count Φ with forward
+Buchstab + PNT on (1,2], Φ ≤ S⁺ ≤ Cs+Me^{−s}).  λ = C/ω∞ ≥ 1 IS needed (β = 2λ ≥ b = 2 on (1,2]).
+
 ## phase E5 lap 3 (2026-10-01): crux decomposed into named leaves (`LinearSieve/Leaves.lean`)
 `lowerAt_pos` proved from `aLow_pos_of_leaves` via `lower_of_aLow_pos` (Normalized.lean; aLow/bUp =
 liminf/limsup normalisations).  `bUp_le_two` PROVED (UpperBoundary.lean).  Open leaves (sorry):
