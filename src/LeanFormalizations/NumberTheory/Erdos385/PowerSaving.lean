@@ -11,6 +11,7 @@ import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.LongAveragePower
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Near
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Bridge
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Deviation
+import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.ZeroCount
 
 /-!
 # Erdős #385: Theorem A with a power saving (phase E9b, new mathematics)
@@ -91,7 +92,14 @@ def NearOneLargeValues : Prop :=
               f (n / P)) - mellin f (1 - t * I) * (P : ℂ) ^ (1 - t * I)‖) →
         (S.card : ℝ) ≤ C * T ^ (B * η ^ ((3 : ℝ) / 2)) * Real.log T ^ C
 
-/-- Zeros to large values (local explicit formula; 80%, see the header). -/
+/-- Zeros to large values (local explicit formula).  **Revised 2026-10-01: 10%, and OFF the
+headline path.**  The local explicit formula turns a large value at `t` into a zero within `L` of
+`t`, where `L` is where `f`'s Mellin tail drops below `P^{−η}`; for a general `C^∞` weight `L` can
+be `exp(√(η log P))` (`SlowMellinWeight`), and one zero at `β = 1 − η/2` then makes more large
+values than `T^{Bη^{3/2}}` allows in the range `(log P)^{−2/3} ≪ η ≪ (log P)^{−1/2}`.  Closing this
+needs zero-free information beyond VK (or a Gevrey weight).  The headline instead goes through
+`LocalZeroDetect` (polynomial window `P^{η/3}`, enough for `LargeValueCount`); see
+`PowerSaving/ZeroDetect.lean` and the Maze row. -/
 theorem nearOneLargeValues_of_density (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity) :
     NearOneLargeValues := by
   sorry
@@ -103,11 +111,12 @@ theorem longAveragePower_of_lit (h3 : ShortIntervalPrimesLower) {δ : ℝ} (hδ 
     (hδ' : δ < 1 / 4) : LongAveragePower δ :=
   longAveragePower_of_shortIntervalPrimes h3 hδ hδ'
 
-/-- **Large-value count for `P`** (`LargeValueCount`, see its docstring): `NearOneLargeValues`
-transported to `primeP` via `primeP_decomp` and Mellin decay.  70%. -/
+/-- **Large-value count for `P`** (`LargeValueCount`, see its docstring): local zero detection
+(`localZeroDetect_of_richert`, the crux) counted by `NearOneZeroDensity`
+(`largeValueCount_of_zeroDetect`).  Not via `NearOneLargeValues` (see its docstring). -/
 theorem largeValueCount_of_lit (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity) {δ : ℝ}
-    (hδ : 0 < δ) (hδ' : δ < 1 / 4) : LargeValueCount δ := by
-  sorry
+    (hδ : 0 < δ) (hδ' : δ < 1 / 4) : LargeValueCount δ :=
+  largeValueCount_of_zeroDetect (localZeroDetect_of_richert h1) h2 hδ hδ'
 
 /-- **Large values of the short prime sum** (`LargeValueBound`, see its docstring): few, and
 little `L¹` mass of `A` near them.  From `NearOneLargeValues` + VK.  65%. -/

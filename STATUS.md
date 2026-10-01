@@ -1,5 +1,21 @@
 # STATUS — lean-formalizations 📊
 
+> 📈 **ACTIVE THREAD (2026-10-01): Erdős #385 phase E9b — Theorem A with a power saving** (branch
+> `erdos-385-c`).  `almost_all_F385_powerSaving` / `badCount_powerSaving` (`#{bad n ≤ X} ≪ X^{1−c}`,
+> from `RichertZetaGrowth`, `NearOneZeroDensity`, `ShortIntervalPrimesLower`) are wired end to end;
+> `#print axioms` shows `sorryAx` from exactly two headline-path leaves: **`localZeroDetect_of_richert`**
+> (the crux: large VK deviation ⇒ nearby zero near σ = 1; contour + Landau's local lemma, 75%) and
+> `largeValueCount_of_zeroDetect` (counting transport, 85%).  Review lap 2026-10-01 found the old
+> leaf `nearOneLargeValues_of_density` not derivable for general `C^∞` weights (Maze row,
+> anchor `SlowMellinWeight`); it is now off the headline path (disclosed, ~10%).
+> Hyperbola.lean (E9a) is sorry-free and axiom-clean.
+>
+> | headline (E9) | claim | `#print axioms` | math inputs |
+> |---|---|---|---|
+> | `almost_all_F385_powerSaving` | cond. on 3 lit Props | propext, choice, Quot.sound, **sorryAx** | 3 cited Props (🟡 Richert, 🟡 zero density, 🟡 Ingham–Huxley) + 2 open leaves |
+> | `badCount_powerSaving` | cond. on 3 lit Props | same | same |
+> | `erdos430_of_hyperbolaPrimePairs` | cond. (open conj. Prop) | propext, choice, Quot.sound | 🔴 `HyperbolaPrimePairs` (stated as hypothesis) |
+
 **Umbrella for solved-but-hard impossibility / transcendence / no-formula meta-theorems, formalized
 in Lean 4 + mathlib.** · **Build**: 🟢 green (**8789 jobs**, branch `erdos-385`, 2026-10-01, `e819725`) · `src/`: **3 disclosed crux `sorry`s**
 (all in `DubickasNoSubspace.lean`, the phase-9 probe; every *headline* is clean) ·

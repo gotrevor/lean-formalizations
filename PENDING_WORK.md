@@ -1,3 +1,17 @@
+## phase E9b (2026-10-01 review lap, branch `erdos-385-c`): crux = `localZeroDetect_of_richert`
+Headline-path open leaves (PowerSaving/): `localZeroDetect_of_richert` (ZeroDetect.lean, 75%) and
+`largeValueCount_of_zeroDetect` (ZeroCount.lean, 85%).  `nearOneLargeValues_of_density` is OFF path
+(not derivable for slow-Mellin weights; Maze row).  Decomposition of the crux (ZeroDetect header):
+ (a) `local_logDeriv_bound`: zero-free disc `‖ρ − (1+η₂+iy₀)‖ ≤ 5η₂/2` ⇒ `|ζ'/ζ(σ+iy₀)| ≤
+     K(log|y₀| + (loglog|y₀| + log(1/η₂) + 1)/η₂)` for `σ ∈ [1−η₂, 1+3η₂]` — `local_landau` with
+     δ = 4η₂; M from Richert (σ ≤ 1, exponent B⁺(3η₂)^{3/2}) and `ZetaUpperBnd` (σ ∈ [1, 2]);
+     centre `ZetaLowerBound3` at σ = 1+η₂.  Model: Landau/Zeta.lean `zeta_disc_growth`, `zeta_local`.
+ (b) rectangle shift on `[σ₁, σ₂] × [−U, U]` (generalise `rect_shift_norm`).
+ (c) assembly modelled on `vertical_integral_bound`: V4 at Re 2; tails |y| > P; shift to
+     c = 1 + 1/log P (|H| ≤ 3 log P via `logDeriv_zeta_dirichlet_bound`); split at L; shift to
+     σ₁ = 1 − η₂, η₂ = η + 3 loglog P/log P; Mellin bounds from `mellin_pointwise` (y^{−4}).
+ Then the transport (ZeroCount.lean header).
+
 ## ✅ (2026-10-01, session B): LinearSieve SCOPE COMPLETE.  `aLow_ge_fl'` (FLLowerB.lean) proved:
 Buchstab from 2 + `siftMax_le_fl` per prime + `sum_Vw_div` telescoping + `rankin_error_sum`
 (u e^{−2u} ≤ 4e^{−s}/u, Mertens first; no dyadic sum).  `linearSieveIntervalLower_holds`,

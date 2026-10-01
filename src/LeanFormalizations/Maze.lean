@@ -37,6 +37,7 @@ import LeanFormalizations.NumberTheory.Mills.Wright
 import LeanFormalizations.NumberTheory.Erdos385.FunctionField
 import LeanFormalizations.NumberTheory.Erdos385.Graph
 import LeanFormalizations.NumberTheory.Erdos385.Hyperbola
+import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.ZeroDetect
 import LeanFormalizations.NumberTheory.Mills.PairedRoot
 
 namespace LeanFormalizations.Maze
@@ -253,7 +254,19 @@ def register : List Row := [
       F_S(t) = e^γ / ∫_0^{t/2} ρ gives f₁(s) < 0 for s ≤ 2.05 (control: JR f(s) = 2e^γ log(s−1)/s \
       > 0 there).  Selberg is sharp only for t ≤ 2; the loss for t > 3 costs a constant, and the \
       margin at s = 2 + ε is O(ε).  E5 uses the full JR comparison instead (LinearSieve.lean)"
-    reopenIf := "an upper bound matching Jurkat–Richert's F(t) for all t > 1 without iteration" }
+    reopenIf := "an upper bound matching Jurkat–Richert's F(t) for all t > 1 without iteration" },
+  { route := "Erdős #385 E9b: NearOneLargeValues (large values ≪ T^{Bη^{3/2}} log^C T for EVERY \
+      C^∞ weight) from NearOneZeroDensity + Richert (nearOneLargeValues_of_density)"
+    verdict := .needsNewIdea, tier := .frozen
+    anchor := some ``LeanFormalizations.Erdos385.SlowMellinWeight
+    evidence := "PowerSaving/ZeroDetect.lean header (2026-10-01 review lap): the local explicit \
+      formula localises a large value to a zero within L of t, L = where the weight's Mellin tail \
+      drops below P^{−η}.  A weight with Mellin decay exp(−(log u)²) gives L = exp(√(η log P)), and \
+      one zero at β = 1 − η/2 (allowed by density and by VK for η ≫ (log P)^{−2/3}) yields more \
+      large values than T^{Bη^{3/2}} when η ≪ (log P)^{−1/2}.  The headline now uses \
+      LocalZeroDetect (window P^{η/3}), which LargeValueCount can afford"
+    reopenIf := "a zero-free region 1 − β ≫ (log γ)^{−1/2} or better (beyond VK), or restricting \
+      NearOneLargeValues to Gevrey weights (|mellin f(1+iu)| ≤ e^{−c|u|^α})" }
 ]
 
 end LeanFormalizations.Maze

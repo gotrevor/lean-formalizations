@@ -1,3 +1,5 @@
+> ⚡ **CURRENT DIRECTIVE (2026-10-01, E9b review lap)**: prove `localZeroDetect_of_richert` (`Erdos385/PowerSaving/ZeroDetect.lean`); do NOT work `nearOneLargeValues_of_density`.  Full text: section "⚡ CURRENT DIRECTIVE" below.
+
 > 🗺️ **Before planting a phase, grep `src/LeanFormalizations/Maze.lean`**: it records the routes already walked and closed, and each row's `reopenIf` names the new idea needed to walk it again (2026-09-29).
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
@@ -539,28 +541,29 @@ Stop condition: `NumberTheory/Transcendence/` sorry-free.
 
 ---
 
-## ⚡ CURRENT DIRECTIVE (set 2026-10-01, review lap of phase E3, branch `erdos-385`; OUTRANKS every HANDOFF)
+## ⚡ CURRENT DIRECTIVE (set 2026-10-01, review lap of phase E9b, branch `erdos-385-c`; OUTRANKS every HANDOFF)
 
-**✅ MET 2026-10-01 (`e819725`): `AlmostAll.lean` is sorry-free; `almost_all_F385` = trust base.
-Until a new phase is planted, the next altitude lap picks among: the five `Literature/Erdos385AlmostAll`
-controls (teeth tests), discharging `MediumPNTStatement` from PNT+, or E4 (paper).**
+**THE single objective:** prove `localZeroDetect_of_richert` (`Erdos385/PowerSaving/ZeroDetect.lean`):
+a large VK deviation `‖vkDev f P t‖ ≥ P^{1−η}` forces a zero with `Re ≥ 1 − 2η − A loglog P/log P`
+within `A P^{η/3} log P / 2` of `t`.  It is the one analytic crux left under
+`almost_all_F385_powerSaving`; the transport `largeValueCount_of_zeroDetect` (ZeroCount.lean, 85%)
+is the only other open leaf on the headline path.
 
-**THE single objective (was):** `NumberTheory/Erdos385/AlmostAll.lean` sorry-free.  Exactly one `sorry`
-remained: `smoothTwist_sub_main_eq` (V4, the prime-sum half of the Perron identity at `Re s = 2`).
-It is the only thing between `almost_all_F385` and `[propext, Classical.choice, Quot.sound]` +
-the four literature Props (`#print axioms` 2026-10-01: headline and `smoothPrimeSumVK_of_VKZ` show
-`sorryAx`; `vertical_integral_bound`, `variance_small` are clean).
+**Mandated next move:** decompose the crux in `PowerSaving/` exactly as ZeroDetect.lean's header:
+(a) `local_logDeriv_bound` — `local_landau` on `closedBall (1+η₂+iy₀) (4η₂)` with Richert (σ ≤ 1),
+PNT+ `ZetaUpperBnd` (σ ≥ 1), `ZetaLowerBound3` (centre): `|ζ'/ζ| ≤ K(log P)²` on the zero-free box;
+(b) a general rectangle shift `[σ₁, σ₂] × [−U, U]` (copy `rect_shift_norm`);
+(c) the contour assembly modelled line-by-line on `vertical_integral_bound` (V4 identity at Re 2 →
+shift to `c = 1 + 1/log P` on `|y| ≤ P` → split at `L` → shift to `1 − η₂` on `|y| ≤ L`).
+Then the transport.  Hardest-first: (a) and (c) before (b) polish and before the transport.
 
-**Mandated next move:** prove it as the HANDOFF plans: per-`n` Mellin inversion
-(`mellin_inversion_two` at `x = n/P`), swap `∑'`/`∫` (`integral_tsum_of_summable_integral_norm`,
-dominated by `Λ(n) n^{-2} P² K π`), identify `∑ Λ(n) n^{-w} = −ζ'/ζ(w)` on `Re w = 2`, and subtract
-`mainTerm_eq_vertical`.  Then headline `#print axioms`, STATUS ledger, `box done`.
+**Forbidden drift:** proving `nearOneLargeValues_of_density` (frozen, OFF the headline, ~10%:
+needs beyond-VK zero-free info for slow-Mellin weights — Maze row anchored at `SlowMellinWeight`);
+re-deriving `NearOneLargeValues`-based transports; editing frozen statements or `Literature/`.
 
-**Forbidden drift:** editing frozen statements or `Literature/`; Graph.lean / other-file side quests
-before AlmostAll is clean; discharging the literature Props (out of this phase's scope).
-
-**Why:** a 95%-confidence Fubini/Perron bookkeeping identity is all that stands between the phase
-and its stop condition; every analytic crux (VK contour shift V5, small-P V6, MVT leaves) is done.
+**Why:** the review lap found the planned route (`largeValueCount_of_lit` ⇐ `NearOneLargeValues`)
+rested on a statement that is not derivable for a general `C^∞` weight.  `LargeValueCount` only needs
+a `P^{η/2}` count, so a polynomial window `P^{η/3}` (any weight, Mellin decay `y^{−4}`) suffices.
 
 **Directive history**
 - 2026-09-28 (review lap): phase 8 CLOSED — Lemma 8 dropped from the Dubickas headlines; next
@@ -570,6 +573,8 @@ and its stop condition; every analytic crux (VK contour shift V5, small-P V6, MV
   `den(U_N) ∣ D^N` upper bound + the cofiniteness dichotomy.
 - 2026-10-01 (review lap, phase E3, `erdos-385`): one `sorry` left (V4 `smoothTwist_sub_main_eq`);
   objective = close it, nothing else.  Closed the same lap (`e819725`).
+- 2026-10-01 (review lap, phase E9b, `erdos-385-c`): `NearOneLargeValues` (∀ weights) judged not
+  derivable; headline re-routed through `LocalZeroDetect` (P^{η/3} window).  Objective = that crux.
 
 ---
 
