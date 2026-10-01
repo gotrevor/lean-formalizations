@@ -2,7 +2,7 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## (phase E3, PLANTED 2026-10-01, branch `erdos-385`): **Erdős #385 almost-all: `F(n) ≥ n + (1 − δ)√n` for almost all `n`** (new math; Tao's 2024 "within reach" remark, sharper) - target `src/LeanFormalizations/NumberTheory/Erdos385/AlmostAll.lean` (defs `ShortIntervalPNT`, `SmoothPrimeSumVK`, `Admissible`, `coeffA`, `shortSum`, `param*`, `variance`, `badWindow` + frozen statements: edges `shortIntervalPNT_of_mediumPNT`, `smoothPrimeSumVK_of_VKZ`; controls `not_shortIntervalPNTUnitWindow`, `not_smoothPrimeSumVKMRNorm_of_VK`; wiring W0 `exists_admissible`, W1 `witness_margin`, W2 `card_badWindow_le`, W2′ `longAverage_lower`, W3 `variance_small`; headline `almost_all_F385` (concludes the Graph node `AlmostAllF385`)); route in header, scaffolding `PROOF-ERDOS-385-ALMOST-ALL.md` on `main` (Lean parameters: `T₀ = exp(κ (log Z)^{1/10})`, the MediumPNT choice).  Literature inputs (statements only, `src/LeanFormalizations/Literature/Erdos385AlmostAll.lean`): `MR16Lemma14`, `MontgomeryVaughanMVT`, `VKZeroFreeLogDeriv`, `MediumPNTStatement` (dischargeable from PNT+ `MediumPNT`, not wired: olean unbuilt at this pin), each with a known-false control `not_…` to prove (teeth tests).  Order: W0, W1, W2 (elementary) first; then W2′ and the PNT edge; then W3 and the headline; the VK edge last (contour argument, port PNT+'s smoothed-Chebyshev code).  Frozen also: all earlier statements, Literature/; stop: AlmostAll.lean sorry-free (the Literature Props stay hypotheses).  **Decomposing into named sub-lemmas is progress**; a hard leaf may stay a NAMED `sorry` with an English paragraph and a confidence.
+## ✅ (phase E3, DONE 2026-10-01, `e819725`; `almost_all_F385` axiom-clean modulo the 4 literature Props): (planted 2026-10-01, branch `erdos-385`) **Erdős #385 almost-all: `F(n) ≥ n + (1 − δ)√n` for almost all `n`** (new math; Tao's 2024 "within reach" remark, sharper) - target `src/LeanFormalizations/NumberTheory/Erdos385/AlmostAll.lean` (defs `ShortIntervalPNT`, `SmoothPrimeSumVK`, `Admissible`, `coeffA`, `shortSum`, `param*`, `variance`, `badWindow` + frozen statements: edges `shortIntervalPNT_of_mediumPNT`, `smoothPrimeSumVK_of_VKZ`; controls `not_shortIntervalPNTUnitWindow`, `not_smoothPrimeSumVKMRNorm_of_VK`; wiring W0 `exists_admissible`, W1 `witness_margin`, W2 `card_badWindow_le`, W2′ `longAverage_lower`, W3 `variance_small`; headline `almost_all_F385` (concludes the Graph node `AlmostAllF385`)); route in header, scaffolding `PROOF-ERDOS-385-ALMOST-ALL.md` on `main` (Lean parameters: `T₀ = exp(κ (log Z)^{1/10})`, the MediumPNT choice).  Literature inputs (statements only, `src/LeanFormalizations/Literature/Erdos385AlmostAll.lean`): `MR16Lemma14`, `MontgomeryVaughanMVT`, `VKZeroFreeLogDeriv`, `MediumPNTStatement` (dischargeable from PNT+ `MediumPNT`, not wired: olean unbuilt at this pin), each with a known-false control `not_…` to prove (teeth tests).  Order: W0, W1, W2 (elementary) first; then W2′ and the PNT edge; then W3 and the headline; the VK edge last (contour argument, port PNT+'s smoothed-Chebyshev code).  Frozen also: all earlier statements, Literature/; stop: AlmostAll.lean sorry-free (the Literature Props stay hypotheses).  **Decomposing into named sub-lemmas is progress**; a hard leaf may stay a NAMED `sorry` with an English paragraph and a confidence.
 
 ## ✅ (phase E2, DONE 2026-10-01, 1 lap; `card_bad_le` axiom-clean; Graph edges still open): **Erdős #385 bad-n count** - target `src/LeanFormalizations/NumberTheory/Erdos385/Count.lean` (`card_bad_le` as planted in `1d3b2b0`: #{bad n ≤ X} ≪ X·loglog X/(log X)² from `Literature.BrunUniformGap` + `primorial_dvd_or_exists_prime_pair_of_bad`, route in header), then the 3 edges in `Graph.lean` (`noCarrier_of_bad`, `eventually_not_bad_of_crossScaleRepulsion`, `sieveOnlySibling_of_FGKMT`).  Frozen also: all earlier statements incl. Rigidity.lean + FunctionField.lean, Literature/; stop: Count.lean sorry-free.  If the Brun-to-count summation gets hard, leave it as a NAMED sub-lemma with `sorry` and an English paragraph with a confidence - acceptable finish.
 
@@ -510,8 +510,12 @@ Stop condition: `NumberTheory/Transcendence/` sorry-free.
 
 ## ⚡ CURRENT DIRECTIVE (set 2026-10-01, review lap of phase E3, branch `erdos-385`; OUTRANKS every HANDOFF)
 
-**THE single objective:** `NumberTheory/Erdos385/AlmostAll.lean` sorry-free.  Exactly one `sorry`
-remains: `smoothTwist_sub_main_eq` (V4, the prime-sum half of the Perron identity at `Re s = 2`).
+**✅ MET 2026-10-01 (`e819725`): `AlmostAll.lean` is sorry-free; `almost_all_F385` = trust base.
+Until a new phase is planted, the next altitude lap picks among: the five `Literature/Erdos385AlmostAll`
+controls (teeth tests), discharging `MediumPNTStatement` from PNT+, or E4 (paper).**
+
+**THE single objective (was):** `NumberTheory/Erdos385/AlmostAll.lean` sorry-free.  Exactly one `sorry`
+remained: `smoothTwist_sub_main_eq` (V4, the prime-sum half of the Perron identity at `Re s = 2`).
 It is the only thing between `almost_all_F385` and `[propext, Classical.choice, Quot.sound]` +
 the four literature Props (`#print axioms` 2026-10-01: headline and `smoothPrimeSumVK_of_VKZ` show
 `sorryAx`; `vertical_integral_bound`, `variance_small` are clean).
@@ -534,7 +538,7 @@ and its stop condition; every analytic crux (VK contour shift V5, small-P V6, MV
   disclosed leaf.  New objective = THREE leaves → ONE, via the general-`k` Newton collapse + the
   `den(U_N) ∣ D^N` upper bound + the cofiniteness dichotomy.
 - 2026-10-01 (review lap, phase E3, `erdos-385`): one `sorry` left (V4 `smoothTwist_sub_main_eq`);
-  objective = close it, nothing else.
+  objective = close it, nothing else.  Closed the same lap (`e819725`).
 
 ---
 

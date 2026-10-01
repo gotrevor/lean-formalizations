@@ -2018,3 +2018,13 @@ W3d/W3e/W3f + control 3d).  Proved helpers: `xDeriv`, `mellin_xDeriv` (M[xf'] = 
 - 2026-10-01 later: **V5 `vertical_integral_bound` PROVED** (contour shift via `rect_shift_norm` on
   F(s)P^s·Ĥ(s+it), Ĥ = removable-singularity update of zetaH at 1; tails via k=4 decay; left side
   P^{σ₁} ≤ P e via `vk_width_eventually`; bounded T via trivial P² bound).  Remaining: V4, V6.
+
+## Erdős #385 E3 DONE (2026-10-01, review lap, `e819725`)
+`AlmostAll.lean` sorry-free; `almost_all_F385` = trust base + 4 literature Props.  V4 closed by
+`twist_inversion` + `smoothTwist_eq_vertical` (Fubini via `integral_tsum_of_summable_integral_norm`,
+dominated by `‖term Λ 2 n‖ · P² ∫‖F(2+iy)‖`) + `LSeries_vonMangoldt_eq_deriv_riemannZeta_div`.
+Remaining Erdős-385 open items (outside E3 scope): the five Literature controls `not_…` in
+`Literature/Erdos385AlmostAll.lean` (teeth tests: each refutes a wrong transcription), and E4
+(paper only).  Discharge candidates for the 🟡 hypotheses: `MediumPNTStatement` from PNT+ `MediumPNT`
+(olean unbuilt at this pin); `MontgomeryVaughanMVT` (Hilbert inequality, elementary but long).
+
