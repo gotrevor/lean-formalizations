@@ -2166,3 +2166,9 @@ Plus `vk_small_height` (PNT+ ZetaNoZerosInBox + riemannZetaLogDerivResidue + com
 Next attack: decompose `badWindowPowerSaving_of_lit` along `Gen.badWindow_rate`: (i) `card_badWindow_le`
 reuse with T₀ = Z^{c₀}; (ii) long average via ShortIntervalPrimesLower; (iii) far mean square;
 (iv) near pointwise via NearOneLargeValues. Also `nearOneLargeValues_of_density` open.
+- (later, same day) `badWindowPowerSaving_of_lit` PROVED from two named leaves via
+  `PowerSaving/Split.lean` `badWindowPowerSaving_of_leaves` + `PowerSaving/Window.lean`
+  `card_badWindow_le_of_split` (W2 against an arbitrary majorant G). Open leaves (PowerSaving.lean):
+  `longAveragePower_of_lit` (ShortIntervalPrimesLower ⇒ long avg ≥ c₁δ/log²Z at H = X/Z^{3c₀}),
+  `differenceSplit_of_lit` (D within 1/log³Z of D_far, ∫D_far² ≤ C X Z^{−c}), `nearOneLargeValues_of_density`.
+  Next: longAveragePower (copy Gen.longAverage_lower/qcount_lower with power-scale H).

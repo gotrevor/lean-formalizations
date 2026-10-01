@@ -7,7 +7,7 @@ import Mathlib
 import LeanFormalizations.Literature.Erdos385VK
 import LeanFormalizations.NumberTheory.Erdos385.Endpoint
 import LeanFormalizations.NumberTheory.Erdos385.BadCount
-import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Assembly
+import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Split
 
 /-!
 # Erdős #385: Theorem A with a power saving (phase E9b, new mathematics)
@@ -93,12 +93,27 @@ theorem nearOneLargeValues_of_density (h1 : RichertZetaGrowth) (h2 : NearOneZero
     NearOneLargeValues := by
   sorry
 
+/-- **Step 1: the long average at power scale** (`H = X/Z^{3c₀}`), from primes in intervals of
+relative length `Z^{−3c₀}` at height `≍ √Z`; same argument as `Gen.longAverage_lower` with
+`ShortIntervalPrimesLower` in place of `ShortIntervalPNT` (needs `6c₀ ≤ 1 − e`).  85%. -/
+theorem longAveragePower_of_lit (h3 : ShortIntervalPrimesLower) {δ : ℝ} (hδ : 0 < δ)
+    (hδ' : δ < 1 / 4) : LongAveragePower δ := by
+  sorry
+
+/-- **Step 2: near/far split of the difference** (header step 2): `D_far` is the inverse
+Mellin–Plancherel transform of `F(1+it)K_x(t)` over `S_far ∪ {|t| < T₀}`; far part by MVT,
+near part pointwise from `NearOneLargeValues`.  70%. -/
+theorem differenceSplit_of_lit (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity) {δ : ℝ}
+    (hδ : 0 < δ) (hδ' : δ < 1 / 4) : DifferenceSplit δ := by
+  sorry
+
 /-- **The per-window power saving** (the analytic crux: steps 1–3 of the header, the near/far
 frequency split).  Global count from it: `almost_all_of_badWindowPowerSaving`.  70%. -/
 theorem badWindowPowerSaving_of_lit (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity)
     (h3 : ShortIntervalPrimesLower) {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) :
-    BadWindowPowerSaving δ := by
-  sorry
+    BadWindowPowerSaving δ :=
+  badWindowPowerSaving_of_leaves hδ hδ' (longAveragePower_of_lit h3 hδ hδ')
+    (differenceSplit_of_lit h1 h2 hδ hδ')
 
 /-- **Theorem A with a power saving.** -/
 theorem almost_all_F385_powerSaving (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity)
