@@ -327,3 +327,115 @@ Wiring for the treadmill:
 - **W3 collapses to one inequality**: `∫|PQ|² ≤ sup|P|²·∫|Q|²` plus MVT.  Drop the block/Cauchy–Schwarz
   plan.
 - Headline: `almost_all_F385` with hypotheses `(hP1 hP2 hP3 hP4)` in place of `hLV hVK hP`.
+
+## E3 literature Props (corrected 2026-10-01)
+
+Supersedes the four-item list under "Verdict: freeze as phase E3" above.  Two of those items were
+false as written (independent referee, `PROOF-ERDOS-385-ALMOST-ALL.md` issues 3 and 4), which would have
+made the Lean headline vacuous.  Each Prop below is stated precisely enough to transcribe verbatim.
+Each comes with a **known-false control**: an instance that refutes a wrong transcription, so a lap
+can test the Lean statement before relying on it.  Notation: $e(\cdot)$ is not used; $n^{-s} = \exp(-s\log n)$;
+$\Lambda$ is von Mangoldt; all integrals are Lebesgue on $\mathbb R$.
+
+### Prop 1. `Literature.MR16Lemma14` (Parseval bound for short sums; two-sided, complex coefficients)
+
+There is an absolute constant $C$ such that for all real $X \ge 2$, $T_0 \ge 1$, $h_1, h_2$ with
+$2 \le h_1 \le h_2 \le X/T_0^3$, and all $a : \mathbb N \to \mathbb C$ with $|a_m| \le 1$ for all $m$ and
+$a_m = 0$ unless $X \le m \le 4X$: writing $S_j(x) = \sum_{x \le m \le x + h_j} a_m$ and
+$A(s) = \sum_m a_m m^{-s}$,
+$$\frac1X\int_X^{2X}\Big|\frac{S_1(x)}{h_1} - \frac{S_2(x)}{h_2}\Big|^2dx \le C\Big(\frac1{T_0} + \int_{T_0 \le |t| \le X/h_1}|A(1+it)|^2dt + \sup_{T \ge X/(2h_1)}\frac{X}{h_1T}\int_{T \le |t| \le 2T}|A(1+it)|^2dt\Big).$$
+Source: Matomäki–Radziwiłł, Annals 2016, arXiv:1501.04585, **Lemma 14** and its proof (eq. (19));
+general $T_0$ as in Teräväinen arXiv:1510.06005 **Lemma 1**.  Faithful-or-weaker: the printed
+statements integrate over $t > 0$ only (valid only for real $a_m$, since then $|A(1-it)| = |A(1+it)|$),
+print the tail threshold $X/h_1$ where the proof gives $X/(2h_j)$, and Teräväinen omits $|a_m| \le 1$,
+which MR's proof uses.  The two-sided form is what the proof proves for complex $a_m$.  For Theorem A
+the $a_m$ are real, so this is all that is used.
+
+- **Control 1a (one-sided integrals are false for complex $a$).**  $a_m = m^{-i\tau}\,\mathbf 1_{[X,2X)}(m)$,
+  $\tau = X/(10h_1)$, $h_1 \le X/(10T_0^3)$, $h_2 = X/T_0^3$.  Then $|S_1/h_1| \ge 0.9 - o(1)$ and
+  $|S_2/h_2| \ll T_0^3/\tau \to 0$, so the left side is $\asymp 1$.  With integrals over $t > 0$ only,
+  $|A(1+it)| \ll 1/|t+\tau| + o(1)$ is small for every $t > 0$ and the right side tends to $0$:
+  **false**.  With $|t|$ the right side picks up $t \approx -\tau$, where $|A| \asymp 1$: consistent.
+- **Control 1b (the hypothesis $h_2 \le X/T_0^3$ is load-bearing).**  $a_m = m^{-iT_0/2}\mathbf 1_{[X,2X)}(m)$,
+  $T_0 \ge 24$, $h_1 = 2$, but $h_2 = X$ (violating $h_2 \le X/T_0^3$).  Then $|S_1(x)/h_1| = 1 - o(1)$,
+  $|S_2(x)/h_2| \le 12/T_0 + o(1)$, so the left side is $\ge (1 - 12/T_0)^2 - o(1)$; on the right,
+  $|A(1+it)| \ll 1/|t + T_0/2|$ is $\ll 1/T_0$ on $|t| \ge T_0$, so the right side is $\ll C/T_0$:
+  **false** for large $T_0$.  A transcription that drops the hypothesis is refutable.
+
+### Prop 2. `Literature.MontgomeryVaughanMVT` (mean value theorem, upper half)
+
+There is an absolute constant $C$ such that for all integers $N \ge 1$, reals $T > 0$, and
+$a : \mathbb N \to \mathbb C$ with $a_n = 0$ for $n = 0$ and $n > N$:
+$$\int_{-T}^{T}\Big|\sum_{n \le N} a_n n^{-it}\Big|^2dt \le C\,(T + N)\sum_{n\le N}|a_n|^2.$$
+Source: Iwaniec–Kowalski Theorem 9.1 (Montgomery–Vaughan 1974), as quoted in MR16 Lemma 6.  Weaker
+than the source (upper bound only, unspecified $C$).  Used in Lemma 5 and Proposition 6 with
+coefficients $a_n/n$ (i.e. on the line $\mathrm{Re}\,s = 1$).
+
+- **Control 2 (the $+N$ term is load-bearing).**  Drop it: $\int_{-T}^T|\sum a_nn^{-it}|^2 \le CT\sum|a_n|^2$.
+  Take $a_n = 1$ for $n \le N$, $T = 1$: the left side is $\asymp N^2$ (as $\sum_{n\le N}n^{-it} \approx N^{1-it}/(1-it)$
+  for $|t| \le 1$), the right side is $CN$: **false**.
+
+### Prop 3. `Literature.VKZeroFreeLogDeriv` (Vinogradov–Korobov region with a log-derivative bound)
+
+There are constants $c_0 > 0$ and $C_0$ such that for all real $T \ge 3$, $\sigma$, $y$ with
+$$\sigma \ge 1 - \frac{c_0}{(\log T)^{2/3}(\log\log T)^{1/3}},\qquad |y| \le T,\qquad \sigma + iy \ne 1,$$
+we have $\zeta(\sigma + iy) \ne 0$ and
+$$\Big|\frac{\zeta'}{\zeta}(\sigma+iy) + \frac1{\sigma+iy-1}\Big| \le C_0\log T.$$
+Source: Titchmarsh, *The Theory of the Riemann Zeta-Function*, 2nd ed., Theorem 6.19 (zero-free region)
+and Theorem 3.11 (log-derivative bound from a zero-free region and a growth bound), with $c_0$ taken as
+a fraction of the zero-free constant.  ⚠️ Theorem numbers from memory, not re-opened (80%); the
+statement is textbook.  Weaker than the source in the bound ($\log T$ instead of
+$(\log T)^{2/3}(\log\log T)^{1/3}$).  This **replaces** the old Prop 3 (`VKSmoothPrimeSum`), which
+lacked $P \le T$ and used MR's non-standard Mellin normalisation; the smoothed prime sum is now
+**Lemma VK** of the PROOF file, a wiring node proved from this Prop (see below), not a literature input.
+Order of quantifiers matters: $c_0, C_0$ come before $T$.
+
+- **Control 3a (quantifier order).**  The variant "$\forall c_0 > 0$" is **false**: with $c_0$ large
+  and $T = 15$ the region contains $\rho_1 = \frac12 + 14.1347\ldots i$, a zero of $\zeta$.  The variant
+  "$\forall T\,\exists c_0$" is vacuous (take $c_0$ tiny per $T$) and would make Lemma 4 unprovable.
+- **Control 3b (the pole term).**  Dropping $+\frac{1}{\sigma+iy-1}$ makes the bound false near $s = 1$
+  ($\zeta'/\zeta(s) \sim -1/(s-1)$), e.g. at $\sigma = 1 + 1/T$, $y = 0$, where $|\zeta'/\zeta| \approx T > C_0\log T$.
+
+### Prop 4. Short-interval PNT: prefer the `MediumPNT`-dischargeable form
+
+**4 (Lean form, a theorem, not a Prop).**  There are $c > 0$ and $y_0$ such that for all $y \ge y_0$ and
+$H$ with $y\exp(-c(\log y)^{1/10}) \le H \le y$:
+$$\pi(y + H) - \pi(y) \ge \frac{H}{2\log(2y)}.$$
+This follows from PNT+ `MediumPNT` ($\psi(x) - x = O(x\exp(-c'(\log x)^{1/10}))$, the version proved in
+the repo's pinned PNT+; its `StrongPNT` is commented out there) by differencing $\psi$, discarding prime
+powers ($O(\sqrt y\log y)$) and partial summation, with $c = c'/2$.  It needs the parameter change in
+`PROOF-ERDOS-385-ALMOST-ALL.md` §1 "Lean note": $T_0 = \exp(\kappa(\log Z)^{1/10})$, which weakens the
+exceptional-set rate to $\exp(-c''(\log Y)^{1/10})$ but keeps $o(Y)$.  Mertens over
+$[a\sqrt Z, b\sqrt Z]$ (Lemma 3) also follows from `MediumPNT` by partial summation.
+
+**4′ (literature Prop, only if the $1/3$-rate is wanted).**  `Literature.PNTdlVP`: $\psi(x) = x + O(x\exp(-c\sqrt{\log x}))$
+for some $c > 0$ (de la Vallée Poussin; Davenport ch. 18), from which the paper's range
+$H \ge y\exp(-4(\log y)^{1/3})$ follows.
+
+- **Control 4 (the lower limit on $H$ is load-bearing).**  With "$H \ge \log y$" in place of the stated
+  range the statement is **false**: prime gaps exceed $2\log p$ infinitely often (Westzynthius 1931,
+  indeed any multiple of $\log p$), and $y = p_n$ at such a gap has $\pi(y + \log y) - \pi(y) = 0$.
+
+### Wiring nodes and the headline (for the ROADMAP)
+
+- **Node `SmoothPrimeSumVK`** = Lemma VK (PROOF §1): hypotheses $f$ smooth with compact support in
+  $(0,\infty)$, $P \ge 2$, $T \ge 3$, **$P \le T$**, $|t| \le T/2$; standard Mellin $\tilde f(s) = \int_0^\infty f(x)x^{s-1}dx$;
+  main term $\tilde f(1-it)P^{1-it}$ (no $1/(1-it)$).  Edge `smoothPrimeSumVK_of_VKZ` from Prop 3 by Mellin
+  inversion and a rectangle contour.  PNT+ already has `MellinCalculus`, `ResidueCalcOnRectangles` and
+  the smoothed-Chebyshev contour argument behind `MediumPNT`, which is this edge with $t = 0$ and the
+  classical region; porting it with the twist $n^{-it}$ and the VK region is the realistic Lean route (~60%
+  feasible in a few laps).
+  - Control 3c (for the node): drop $P \le T$ and fix $T = 3$; then the node claims
+    $\sum\Lambda(n)f(n/P) = \tilde f(1)P + O(P^{1-\theta})$ with $\theta = 1/(\log 3)^{2/3+\varepsilon}$ close to
+    $0.94$, contradicting the $\Omega(P^{1/2})$ oscillation from the zeros on the critical line (explicit
+    formula; ~90%).  Control 3d: with MR's main term $\tilde f(1-it)P^{1-it}/(1-it)$ under the standard
+    transform, $t = 1$ and $f$ a nonnegative bump concentrated near $1$ (so $\tilde f(1-i) \approx \int f \ne 0$)
+    give a discrepancy $\asymp P$: **false**.
+- **W1** (balanced witness ⇒ margin): PROOF Lemmas 1-2.  Elementary.
+- **W2** (variance ⇒ count, Chebyshev + covering): PROOF §7.  Elementary.
+- **W3** (the variance bound): PROOF Proposition 6 from Props 1, 2, node `SmoothPrimeSumVK`, and Lemma 5.
+  One inequality, $\int|PQ|^2 \le \sup|P|^2\int|Q|^2$.
+- **Headline `almost_all_F385`**: for every $\delta \in (0, 1/4)$,
+  $\#\{n \le X : F(n) < n + (1-\delta)\sqrt n\}/X \to 0$ as $X \to \infty$, with hypotheses Props 1-3
+  (Prop 4 as a theorem from `MediumPNT`).  Freeze the $o(X)$ form; the rate is a later strengthening.
+

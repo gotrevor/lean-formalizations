@@ -181,4 +181,4 @@ These are Frobenius conditions in `K(ζ₃, β^(1/3), β′^(1/3))`, which is no
 
 **Difficulty check.**  Like Lemma K, the paired-root lemma holds for every eventually-prime trace sequence (S1), so it burns down density and does not separate Mills.  Confidence: lemma correct 97%.  Novelty: the "Frobenius pair shares a cube class" step is elementary; I know of no source applying it to Mills (60%).
 
-Lean: not planted.  It is a natural phase-60 sibling (`𝔽_(p²)` norm plus the projective identification) if wanted.
+Lean: the statements are in `NumberTheory/Mills/PairedRoot.lean`, with `sorry` and their confidences: `dvd_trace_of_pair_mod`, `isSquare_charDisc_mod_eventually_of_rate_one`, `rate_ge_two_iff_of_minus_one` (the mod-9 rule), and conjecture LC as `LocalCertificates`.  The English proofs are in the docstrings.

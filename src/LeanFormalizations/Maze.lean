@@ -36,6 +36,7 @@ import LeanFormalizations.Literature.GelfondSchneider
 import LeanFormalizations.NumberTheory.Mills.Wright
 import LeanFormalizations.NumberTheory.Erdos385.FunctionField
 import LeanFormalizations.NumberTheory.Erdos385.Graph
+import LeanFormalizations.NumberTheory.Mills.PairedRoot
 
 namespace LeanFormalizations.Maze
 
@@ -162,7 +163,8 @@ def register : List Row := [
       classes lose cyclic K outright and every tested (1.3) example; tau = +1 with S3 K has no \
       abelian filter at all ({1, transpositions} surjects onto C2).  Not Fermat-blocked: every \
       explicit residual cubic (184,513 (1.3) Pisot β, 2.4M tau = -1 cubics) dies to a certificate \
-      at q <= 47, while Fermat has none structurally; the block is uniformity (conjecture LC).  \
+      at q <= 47, while Fermat has none structurally; the block is uniformity (conjecture LC, \
+      stated as PairedRoot.LocalCertificates).  \
       Corrected 2026-10-01 (§7): for unit β with 3-adic rate c_j = 1, the paired-root lemma also \
       removes transpositions, so (D/T_j) = +1 is a Jacobi filter there"
     reopenIf := "a proof that every cubic with Tr β = 2 mod 3 has a covering prime or a Kronecker \
@@ -178,7 +180,8 @@ def register : List Row := [
       prime-gap exponent below 21/40 at cubes of Pisot traces" },
   { route := "Mills hard core (tau = +1, S3) via the cube classes of the roots at p = T_j (Kummer data)"
     verdict := .needsNewIdea, tier := .cited, anchor := none
-    evidence := "PROBE-MILLS-RESIDUAL.md §7: a Frobenius-conjugate root pair shares one cube class, \
+    evidence := "PROBE-MILLS-RESIDUAL.md §7; statements (sorry, believed 97%) in \
+      NumberTheory/Mills/PairedRoot.lean: a Frobenius-conjugate root pair shares one cube class, \
       so (1)(2) at T_j with v_3(T_j - 1) = j + 1 and N(β) a cube recurs (48/48, control 6/24); unit \
       c = 1 cubics then get a Jacobi certificate (436/442 killed alone).  Left: c >= 2 (mod-9/27 \
       condition on f) or non-cube norm, where the cube classes at T_j match random primes \
