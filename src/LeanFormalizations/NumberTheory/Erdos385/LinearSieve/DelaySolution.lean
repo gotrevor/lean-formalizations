@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Trevor Morris
 -/
 import Mathlib
-import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.DelayConstruct
+import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.DelayP
 
 /-!
 # The Jurkat–Richert comparison functions from the delay equations (phase E5, step 4)
@@ -41,12 +41,11 @@ def IsDelayPair (Q P : ℝ → ℝ) : Prop :=
     P s = P s' + ∫ t in s..s', P (t - 1) / (t - 1)
 
 /-- Leaf: positivity of `P = m` (route: `(s−1)P(s) = ∫_{s−1}^s P`, first-zero contradiction). -/
-theorem solP_pos : ∀ s, 0 < Delay.sol (-1) s := by
-  sorry
+theorem solP_pos : ∀ s, 0 < Delay.sol (-1) s := Delay.P_pos
 
 /-- Leaf: decay of `P` (route: `P(s) ≤ P(s−1)/(s−1)` from the same identity and `P` decreasing). -/
-theorem solP_decay : ∃ M : ℝ, 0 ≤ M ∧ ∀ s, 2 ≤ s → Delay.sol (-1) s ≤ M * Real.exp (-s) := by
-  sorry
+theorem solP_decay : ∃ M : ℝ, 0 ≤ M ∧ ∀ s, 2 ≤ s → Delay.sol (-1) s ≤ M * Real.exp (-s) :=
+  ⟨2 * Real.exp 5, by positivity, fun _ hs => Delay.P_decay (by linarith)⟩
 
 /-- Leaf: `Q/(2s) → ω` exponentially (route: `u = Q/s` satisfies
 `s u(s) = (s−1)u(s−1) + ∫_{s−2}^{s−1} u`; values stay in the hull of the previous two-window,
