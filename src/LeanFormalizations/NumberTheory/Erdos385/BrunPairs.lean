@@ -7,6 +7,7 @@ import Mathlib
 import LeanFormalizations.Literature.Erdos385
 import LeanFormalizations.NumberTheory.Erdos385.Brun.GLower
 import LeanFormalizations.NumberTheory.Erdos385.Brun.Density
+import LeanFormalizations.NumberTheory.Erdos385.Brun.Selberg
 
 /-!
 # Erdős #385, phase E2b: discharge `Literature.BrunUniformGap`
