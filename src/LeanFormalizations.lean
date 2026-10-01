@@ -241,6 +241,8 @@ import LeanFormalizations.NumberTheory.Erdos385.Exceptional.Main
 import LeanFormalizations.NumberTheory.Erdos385.McDiarmid
 import LeanFormalizations.Literature.Erdos385LargeSieveWeak
 import LeanFormalizations.NumberTheory.Erdos385.LargeSieve
+import LeanFormalizations.NumberTheory.Erdos385.LargeSieve.Gallagher
+import LeanFormalizations.NumberTheory.Erdos385.LargeSieve.Montgomery
 import LeanFormalizations.NumberTheory.Erdos385.RateVK
 import LeanFormalizations.NumberTheory.Erdos385.PNTFromVK
 import LeanFormalizations.NumberTheory.Erdos385.Endpoint
