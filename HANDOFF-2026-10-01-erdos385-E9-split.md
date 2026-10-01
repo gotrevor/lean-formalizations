@@ -21,3 +21,22 @@ Scope: sorry-free Hyperbola.lean, PowerSaving.lean (+ helper dirs).
    coeffC_meanSquare. Norm/support of coeffC: copy from RateVK/General.lean ~1047.
    Suggest: first state NearFarInput Prop + prove DifferenceSplit ⇐ NearFarInput (pure wiring).
 2. `nearOneLargeValues_of_density` (80%), untouched.
+
+## Lap 2 (2026-10-01, HEAD 016d607): step 2 decomposed down to one analytic leaf
+Chain (all proved, compiles): differenceSplit_of_lit ⇐ NearFarInput (NearFar.lean, far_split
+wiring; T₀ existential in [Z^c₀/2, Z^c₀]) ⇐ NearSetLeaf (NearSet.lean: masked MVT for Q, MVT for A
+for T > 3X; range |t| ≤ 7X) ⇐ LargeValueBound (LargeValues.lean: exists_separated_cover (Cover.lean)
++ empty-window pigeonhole) ⇐ LargeValueBoundP (|Q| ≤ 1) ⇐ LargeValueCount + PrimePFloor
+(LargeValueSum.lean: SupSplit interval maxima + mod-4 split, LayerCake Σv ≤ 2M√V; Floor.lean
+proves PrimePFloor from Richert via Gen.primeP_small a=1/4).  Also mellin_decay_two
+(MellinDecay.lean), dev_lower (Deviation.lean).
+Gotchas: `set` locals ⇒ linarith/isDefEq timeouts (use obtain/generalize); big theorems need
+maxHeartbeats.
+
+Open sorries (PowerSaving.lean): `largeValueCount_of_lit`, `nearOneLargeValues_of_density`.
+NEXT: largeValueCount_of_lit from NearOneLargeValues (= nearOneLargeValues_of_density h1 h2):
+ split T at R' = max 3 (2√Km u^{-1/2}); small part separated_card_le (≤ A u^{-1/2}, u ≤ 1);
+ big part: dev_lower gives ‖vkDev‖ ≥ √Z u/2 = (√Z)^{1-η}, η = 2 log(2/u)/log Z; NOLV with
+ f = cutoffDiv g, P = √Z, T = 16Z (≤ Z², Z ≥ 16); η ≤ 2η₀ + 2log2/log Z ≤ η₁;
+ (16Z)^{Bη^{3/2}} ≤ (2/u)^{4|B|η^{1/2}} ≤ √2 u^{-1/2} once η ≤ 1/(64B²+1);
+ η₀ := min(1/8, η₁/4, 1/(256(B²+1))).
