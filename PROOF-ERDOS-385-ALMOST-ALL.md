@@ -255,3 +255,70 @@ With $F(n) < n + \sqrt n$ this is $F(n) = n + (1+o(1))\sqrt n$ off $\mathcal E$.
    2207.05038 still to run before calling it new in public.
 
 **Overall: ~80% correct as written; the one substantive dependency to firm up is (VK) as a citable lemma.**
+
+## Independent referee (2026-10-01)
+
+Hostile referee pass by a separate agent.  Sources opened this pass: MR16 (arXiv:1501.04585) and
+Teräväinen (arXiv:1510.06005), full text via `pdftotext`; Tao's 2024-08-19 post with the LaTeX alt
+text of his 19 Aug 7:55 pm reply; erdosproblems.com/385 (fetched 2026-10-01).  Every step of §§2-7 was
+re-derived by hand.  IK, Ivić and Titchmarsh were not opened.
+
+**Verdict: minor gaps.**  The argument is correct; the issues below are citation hygiene, one
+convention ambiguity, and two literature Props in the DOOR file's E3 freeze list that are false as
+written (they do not affect the paper proof, which states them correctly, but they would make a Lean
+headline vacuous).
+
+### What was checked and holds
+
+- **Reduction (Lemmas 1-2).**  $a_m > 0$ forces $m = pq$ with $(1-\frac\delta2)\sqrt Z \le p \le (1-\frac\delta4)\sqrt Z < \sqrt Z \le q$, so $p < q$, $m$ composite, $p(m) = p$, and the representation is unique.  Margin $(1-\frac{3\delta}4)\sqrt Z \ge (1-\delta)(1+\frac\delta4)\sqrt Z \ge (1-\delta)\sqrt n$ on $n \le (1+\frac\delta2)Z$.  $h_1 = \lfloor h/2\rfloor - 1$ gives $[x, x+h_1] \subset [n-h, n-1]$ for $x \le n - h/2$.  The overlap count $(h/2+1)$ is right.  $\mathcal V_Z \subset [Z, (1+\frac\delta2)Z] \subset [X, 2X]$ needs $\delta \le 2/3$; fine.
+- **Support / size.**  $(1-\frac\delta4)(1+2\delta) \le 1 + \frac{7\delta}4 < 2 - \delta$ iff $\delta < 4/11$.  $a_m \le \frac12$.  Factorisation $A = PQ/\log Z$ is exact.
+- **Lemma 3.**  $(1+\frac\delta2)/(1-\frac\delta2) = 1 + \delta/(1-\frac\delta2) \le 1 + \frac{8\delta}7$ (equality at $\delta = 1/4$), so the $q$-constraint is automatic.  $H/y \ge (1-\frac\delta2)/(2T_0^3) \ge 1/(4T_0^3)$, and $4T_0^3 \le \exp(4(\log y)^{1/3})$ since $4\cdot 2^{-1/3} > 3$.  de la Vallée Poussin suffices.  Mertens with $o(1)$ error needs PNT (stated).  $\log\frac{1-5\delta/16}{1-7\delta/16} \ge \frac{\delta/8}{1-5\delta/16} \ge \frac\delta8$.  So $c_1 \approx 1/16$.
+- **(PAR′) against the sources.**  MR16 Lemma 14 and Teräväinen Lemma 1 quotes are accurate (including Teräväinen's double $1/h$ normalisation typo and the omitted $|a_n| \le 1$).  In MR's proof the parameters enter only through $\frac1{h_1}U_1 - \frac1{h_2}U_2 \ll T_0^2 x h_2/X^2$, which uses $|A(1+it)| \le \sum|a_m|/m \ll 1$; with $h_2 \le X/T_0^3$ this is $\ll 1/T_0$.  Confirmed.  Support in $[X,2X)$ means $A$ captures every $m$ that any $S_j(x)$, $x \le 2X$, can see.
+- **Lemmas 4-5, Proposition 6.**  Ranges check: $X/h_1 \le 16\sqrt Z/\delta \le 8X \le T/2$ with $T = 16Z$, so the residue at $s = 1+it$ is inside the truncated contour.  VK error at $P = \sqrt Z$, $\log T \asymp 2\log P$ is $\exp(-c(\log Z)^{1/3-\varepsilon})$ (the file's $\frac13$ in place of $\frac12$ is conservative).  Prime-power removal $\ll Z^{-1/4}\log^2 Z$.  MVT on $Q$: $(U + 2\sqrt Z)\sum q^{-2} \ll (U+\sqrt Z)/(\sqrt Z\log Z)$.  Term 2 $\ll \eta_Z^2/(\delta\log^3 Z)$; term 3 split at $4X$ correct; the $T > 4X$ tail is $\ll 1/h_1$.
+- **Chebyshev and covering.**  $\mathrm{meas}(\mathcal V_Z)\mu_Z^2 \le X\mathcal D$; $Z_{j+1} + h(Z_{j+1}) \le (1+\frac\delta2)Z_j$ for large $Z_j$; the $\sqrt Y$ split and $\varepsilon$-renaming are fine.
+- **Upper bound.**  $m + \sqrt m$ is increasing, so $F(n) \le n - 1 + \sqrt{n-1} < n + \sqrt n$.
+
+### Issues
+
+1. **(VK) display: MR's contour exponent is a typo, quoted verbatim.  Severity: minor (citation).**
+   MR16 p. 17-18 says "shift the contour to $\sigma = 1 - c(\log T)^{-2/3+\varepsilon}$".  Since $(\log T)^{-2/3+\varepsilon}$ exceeds the VK width $(\log T)^{-2/3}(\log\log T)^{-1/3}$, that line lies *outside* the zero-free region.  Their next sentence ("zeros ... are $\gg (\log T)^{-2/3+\varepsilon}$ away", the bound $\zeta'/\zeta \ll (\log T)^{1+2/3+\varepsilon}$) and the final error $P\exp(-\log P/(\log T)^{2/3+\varepsilon})$ are consistent only with $\sigma = 1 - c(\log T)^{-2/3-\varepsilon}$.  The derivation is right; the quoted line is not.
+   *Fix:* do not quote the contour line; state Lemma 4's input as a numbered lemma of your own with hypotheses ($f$ smooth, compactly supported in $(0,\infty)$; $2 \le P \le T$; $|t| \le T/2$) and give the 10-line Mellin + zero-free-region proof, citing the VK zero-free region from a textbook (theorem number to be verified, not checked here).  Teräväinen's **Lemma 8** ($k = 1$, verified this pass: $|P(1+it)| \ll \exp(-(\log N)^{1/10})$ for $\exp((\log N)^{1/3}) \le |t| \le N^{A\log\log N}$) is a numbered alternative, but it is stated for sharp dyadic $n \sim N$, and the $p$-range here is sub-dyadic, so it does not apply verbatim either.
+
+2. **Mellin convention in (VK).  Severity: minor for the paper, major for the Lean Prop.**
+   MR's (15) carries $P^s/s$, so their main term is $\tilde f(1+it)P^{1+it}/(1+it)$.  With the standard Mellin transform $\tilde f(s) = \int_0^\infty f(x)x^{s-1}dx$ the residue is $\tilde f(1+it)P^{1+it}$ with **no** $1/(1+it)$.  The paper only uses the decay of the main term in $|t|$, so either reading works.  But DOOR's E3 Prop 3 (`Literature.VKSmoothPrimeSum`) writes the $/(1+it)$ form without pinning $\tilde f$: under the standard convention it is off by $\asymp P|t|$ for $|t| \asymp 1$, hence false.
+   *Fix:* pin $\tilde f$ in the Prop, or (better) freeze Lemma 4's conclusion itself as the Prop.
+
+3. **DOOR Prop 3 has no $P \le T$ hypothesis, so it is false.  Severity: major for the Lean plan (paper unaffected).**
+   As written ("all $T \ge 2$, $P \ge 2$, $|t| \le T$"), take $T = 2$, $t = 0$: the error bound is $C P\exp(-\log P/(\log 2)^{2/3+\varepsilon}) = C P^{1-1/(\log 2)^{2/3+\varepsilon}} = o(1)$, a saving beyond $P^{-1/4}$, contradicting the $\Omega(P^{1/2})$ oscillation of the smoothed explicit formula.  In MR's derivation $T$ is the truncation height and the truncation error is $O_B(P^2 T^{-B})$, so $T \ge P^{c}$ is implicit.  Our use has $T = 16P^2$.
+   *Fix:* add $P \le T$ (or freeze Lemma 4 directly with $P = \sqrt Z$, $T_0 \le |t| \le 8X$).
+
+4. **DOOR Prop 1 (Teräväinen Lemma 1 "verbatim" + $|a_n| \le 1$) is false for complex $a_n$.  Severity: major for the Lean plan; (PAR′) in §1 is stated correctly.**
+   Teräväinen allows complex $a_n$ but integrates only $t \in [T_0, X/h_1]$.  Counterexample: $a_m = m^{-i\tau}$ on $[X, 2X)$ with $\tau = X/(10h_1)$ and $h_1 \le X/(10T_0^3)$.  Then $|S_1/h_1| \ge 0.9 - o(1)$, $|S_2/h_2| \ll T_0^3/\tau \to 0$, so LHS $\asymp 1$, while $|A(1+it)| \ll 1/|t + \tau| + o(1)$ is small for all $t > 0$, making the RHS $\to 0$.  MR's proof only covers $t > 0$ via $A(1-it) = \overline{A(1+it)}$, i.e. real coefficients.
+   *Fix:* require real $a_n$ (our case), or integrate over $T_0 \le |t| \le X/h_1$ and $T \le |t| \le 2T$.
+
+5. **§8 item 1 overstates what is needed.  Severity: trivial.**
+   The ratio $\mathrm{term\,2}/\mu_Z^2 \asymp \sup|P|^2\log Z/\delta^3$, so Corollary B (density zero) needs only $\sup_{T_0\le|t|\le X/h_1}|P(1+it)| = o((\log Z)^{-1/2})$, not a saving "beating $\log^4 Z$".  The de la Vallée Poussin parenthetical is muddled: with $\log T \asymp \log P$ the classical region gives *no* saving at all, which is the real reason VK is needed.  Conclusion unchanged.
+
+6. **MR16 Lemma 14's tail range.  Severity: trivial.**  MR's proof (eq. (19)) actually gives $\max_{T \ge X/(2h_j)}$, not $T \ge X/h_1$.  Lemma 4 covers $T \ge X/(2h_1) \ge T_0$ anyway, so add one clause.  Similarly MR's Lemma 6 is printed with $T + O(N)$ where Montgomery–Vaughan has $2T + O(N)$; harmless.
+
+7. **Corollary B's choice of $N_{k+1}$ is self-referential.  Severity: trivial.**  "$\sum_{j \le k}\#(E_j\cap[1,N_{j+1}]) \le N_{k+1}/k$" has $N_{k+1}$ on both sides.  It is satisfiable (earlier terms fixed, $\#(E_k \cap [1,N]) = o(N)$); say so, and note $E_j \subset E_{j+1}$.
+
+8. **Cosmetic.**  §8 numbering skips 6.  Lemma 1's hypothesis $n \ge Z+h$ is used only in Lemma 2.  The sharper exceptional set $Y\exp(-c(\log Y)^{1/3}(\log\log Y)^{-1/3})$ is available from the same input if wanted.
+
+### Sanity: does any step prove something open?
+
+No.  The saving comes from one VK-small factor $P$ of length $\sqrt Z$ times the MVT on a second factor $Q$ whose length $\sqrt Z$ matches $X/h_1 \asymp \sqrt Z/\delta$, so the MVT costs only $O(1/\delta)$.  That regime is classical; it collapses at $h = Z^{1/2-\kappa}$ (§7a item 2) and gives nothing for primes alone (§7a item 1).  Known neighbours do not imply Theorem A: Huxley ($\theta > 1/6$) and Guth–Maynard ($\theta > 2/15$) are about primes; Harman's $E_2$ in $[x, x+\log^{7+\varepsilon}x]$, Teräväinen's $E_2$ in $[x, x+\log^{3.51}x]$ (verified in 1510.06005 Theorem 3) and its sequel 2207.05038 all use one tiny factor ($P_1 = (\log X)^{2.51}$ in Teräväinen Theorem 5), so they say nothing about $p(m) \ge (1-\delta)\sqrt m$.  Tao's reply (verified verbatim via alt text) predicts exactly this territory: "for $\theta$ slightly below $1/2$, almost all such intervals $[n - n^\theta, n]$ should contain semiprimes whose prime factors are at least $n^\theta$ ... and in fact should give the asymptotic $f(n) = n + n^{1/2+o(1)}$ for almost all $n$".  Theorem A is the $\theta = 1/2$, constant-$\delta$ endpoint of that remark.
+
+### Novelty
+
+Not found by these instruments (a miss is not absence):
+- `papers followups 1510.06005` (18 citing), `1501.04585` (183 listed, well below MR16's true citation count, so incomplete), `2207.05038` (6 citing).  No title concerns balanced semiprimes, Erdős #385, or $F(n)$.
+- arXiv API abstract searches ("least prime factor" + "short intervals", semiprimes, rough numbers, Erdős 385).  Weak instrument: a phrase search for "almost all short intervals" returned 7 hits and missed known titles.
+- erdosproblems.com/385 (2026-10-01): OPEN, 2 comments, 0 proof claims, no almost-all result recorded.
+- **Nearest neighbour:** Xu Zhang, *On the sum of least prime factors in short intervals*, arXiv:2608.24930 (2026-08-22, single author, unrefereed): $\sum_{x\le n\le x+C\sqrt x\log^2 x,\ n\ \text{comp.}} p(n)/n = 4C + o(1)$ for almost all $x$ (Erdős–Graham question).  Windows are longer by $\log^2 x$ and $p(n)$ is not localised near $\sqrt x$, so it does not imply Theorem A; cite it as related work.
+
+Agree with §8 item 9: routine for the MR/Teräväinen school (~85%), apparently unwritten.
+
+### Overall
+
+Theorem A and Corollary B are correct as argued: **~90%** (residual risk is in un-reopened textbook inputs, not in the bookkeeping).  Before freezing E3 in Lean, fix DOOR Props 1 and 3 (issues 3-4) and pin the Mellin convention (issue 2); a false literature Prop would make the headline vacuous.
