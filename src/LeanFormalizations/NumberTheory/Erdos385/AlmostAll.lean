@@ -554,13 +554,345 @@ theorem card_badWindow_le {δ κ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) (hκ 
   rw [le_div_iff₀ (by positivity)]
   linarith
 
+/-- Counting pairs `(p, q)` from below: a double sum over `m = p q` dominates the pair count. -/
+theorem sum_pairs_le_sum_primeFactors (I P : Finset ℕ) (Q : ℕ → Finset ℕ) (T : ℕ → ℕ → ℝ)
+    (w : ℕ → ℝ) (hT : ∀ m p, 0 ≤ T m p) (hP : ∀ p ∈ P, 0 < p)
+    (hPQ : ∀ p ∈ P, ∀ q ∈ Q p, p * q ∈ I ∧ p ∈ (p * q).primeFactors ∧ w p ≤ T (p * q) p) :
+    ∑ p ∈ P, ((Q p).card : ℝ) * w p ≤ ∑ m ∈ I, ∑ p ∈ m.primeFactors, T m p := by
+  classical
+  set T' : ℕ → ℕ → ℝ := fun m p => if p ∈ m.primeFactors then T m p else 0
+  have hT' : ∀ m p, 0 ≤ T' m p := fun m p => by simp only [T']; split_ifs <;> simp [hT]
+  calc ∑ p ∈ P, ((Q p).card : ℝ) * w p ≤ ∑ p ∈ P, ∑ m ∈ I, T' m p := by
+        refine Finset.sum_le_sum fun p hp => ?_
+        have hinj : Set.InjOn (fun q => p * q) ↑(Q p) := fun a _ b _ h =>
+          Nat.eq_of_mul_eq_mul_left (hP p hp) h
+        calc ((Q p).card : ℝ) * w p = ∑ q ∈ Q p, w p := by simp
+          _ ≤ ∑ q ∈ Q p, T' (p * q) p := Finset.sum_le_sum fun q hq => by
+              simp only [T', if_pos (hPQ p hp q hq).2.1]; exact (hPQ p hp q hq).2.2
+          _ = ∑ m ∈ (Q p).image (fun q => p * q), T' m p := (Finset.sum_image (f := fun m => T' m p) hinj).symm
+          _ ≤ ∑ m ∈ I, T' m p := Finset.sum_le_sum_of_subset_of_nonneg
+              (fun m hm => by
+                obtain ⟨q, hq, rfl⟩ := Finset.mem_image.1 hm; exact (hPQ p hp q hq).1)
+              (fun m _ _ => hT' m p)
+    _ = ∑ m ∈ I, ∑ p ∈ P, T' m p := Finset.sum_comm
+    _ ≤ ∑ m ∈ I, ∑ p ∈ m.primeFactors, T m p := Finset.sum_le_sum fun m _ => by
+        simp only [T']
+        rw [← Finset.sum_filter]
+        exact Finset.sum_le_sum_of_subset_of_nonneg (fun p hp => (Finset.mem_filter.1 hp).2)
+          (fun p _ _ => hT m p)
+
+/-- The primes in `(⌊y⌋, ⌊y + H⌋]`. -/
+noncomputable def primesIn (y H : ℝ) : Finset ℕ :=
+  Nat.primesLE ⌊y + H⌋₊ \ Nat.primesLE ⌊y⌋₊
+
+theorem card_primesIn {y H : ℝ} (hH : 0 ≤ H) :
+    ((primesIn y H).card : ℝ) = (Nat.primeCounting ⌊y + H⌋₊ : ℝ) - Nat.primeCounting ⌊y⌋₊ := by
+  have hfl : ⌊y⌋₊ ≤ ⌊y + H⌋₊ := Nat.floor_le_floor (by linarith)
+  have hsub : Nat.primesLE ⌊y⌋₊ ⊆ Nat.primesLE ⌊y + H⌋₊ := fun p hp => by
+    rw [Nat.mem_primesLE] at hp ⊢; exact ⟨hp.1.trans hfl, hp.2⟩
+  rw [primesIn, Finset.card_sdiff_of_subset hsub, Nat.cast_sub (Finset.card_le_card hsub),
+    Nat.primesLE_card_eq_primeCounting, Nat.primesLE_card_eq_primeCounting]
+
+theorem mem_primesIn {y H : ℝ} {q : ℕ} (hy : 0 ≤ y) (h : q ∈ primesIn y H) :
+    q.Prime ∧ y < q ∧ (q : ℝ) ≤ y + H := by
+  rw [primesIn, Finset.mem_sdiff, Nat.mem_primesLE, Nat.mem_primesLE] at h
+  obtain ⟨⟨hq1, hq2⟩, hq3⟩ := h
+  refine ⟨hq2, ?_, ?_⟩
+  · have : ⌊y⌋₊ < q := by by_contra hh; exact hq3 ⟨by omega, hq2⟩
+    exact (Nat.floor_lt hy).1 this
+  · have hyH : 0 ≤ y + H := by
+      by_contra hh; push Not at hh
+      rw [Nat.floor_of_nonpos hh.le] at hq1; have := hq2.two_le; omega
+    exact (Nat.le_floor_iff hyH).1 hq1
+
+/-- `exp(−c (log y)^{1/10}) ≤ ε` for large `y`. -/
+theorem eventually_exp_neg_le {c ε : ℝ} (hc : 0 < c) (hε : 0 < ε) :
+    ∀ᶠ y : ℝ in atTop, Real.exp (-c * Real.log y ^ ((1 : ℝ) / 10)) ≤ ε := by
+  have hL : Tendsto (fun y : ℝ => c * Real.log y ^ ((1 : ℝ) / 10)) atTop atTop :=
+    ((tendsto_rpow_atTop (by norm_num)).comp Real.tendsto_log_atTop).const_mul_atTop hc
+  filter_upwards [hL.eventually_ge_atTop (-Real.log ε)] with y hy
+  calc Real.exp (-c * Real.log y ^ ((1 : ℝ) / 10)) ≤ Real.exp (Real.log ε) :=
+        Real.exp_le_exp.2 (by rw [neg_mul]; linarith)
+    _ = ε := Real.exp_log hε
+
+/-- The eventual size facts behind `longAverage_lower`. -/
+theorem longAverage_eventually {c δ κ y₀ : ℝ} (hc : 0 < c) (hδ : 0 < δ) (hδ' : δ < 1 / 4)
+    (hκ : 0 < κ) :
+    ∀ᶠ Z : ℝ in atTop, 16 ≤ Z ∧ y₀ ≤ (1 - 7 * δ / 16) * √Z ∧
+      Real.exp (-c * Real.log ((1 - 7 * δ / 16) * √Z) ^ ((1 : ℝ) / 10)) ≤ δ / 8 ∧
+      2 ≤ Real.exp (c / 4 * Real.log Z ^ ((1 : ℝ) / 10)) ∧ 2 / δ ≤ paramT0 κ Z := by
+  have ha : Tendsto (fun Z : ℝ => (1 - 7 * δ / 16) * √Z) atTop atTop :=
+    Real.tendsto_sqrt_atTop.const_mul_atTop (by linarith)
+  have hL : Tendsto (fun Z : ℝ => Real.log Z ^ ((1 : ℝ) / 10)) atTop atTop :=
+    (tendsto_rpow_atTop (by norm_num)).comp Real.tendsto_log_atTop
+  have hE : Tendsto (fun Z : ℝ => Real.exp (c / 4 * Real.log Z ^ ((1 : ℝ) / 10))) atTop atTop :=
+    Real.tendsto_exp_atTop.comp (hL.const_mul_atTop (by positivity))
+  have hT : Tendsto (fun Z : ℝ => paramT0 κ Z) atTop atTop :=
+    Real.tendsto_exp_atTop.comp (hL.const_mul_atTop hκ)
+  filter_upwards [eventually_ge_atTop 16, ha.eventually_ge_atTop y₀,
+    ha.eventually (eventually_exp_neg_le hc (show 0 < δ / 8 by positivity)),
+    hE.eventually_ge_atTop 2, hT.eventually_ge_atTop (2 / δ)] with Z h1 h2 h3 h4 h5
+  exact ⟨h1, h2, h3, h4, h5⟩
+
+theorem half_rpow_tenth_le {Z y : ℝ} (hlZ : 0 ≤ Real.log Z)
+    (hlogy : Real.log Z / 2 ≤ Real.log y) :
+    Real.log Z ^ ((1 : ℝ) / 10) / 2 ≤ Real.log y ^ ((1 : ℝ) / 10) := by
+  obtain ⟨r, hr⟩ : ∃ r : ℝ, r = (1 / 2 : ℝ) ^ ((1 : ℝ) / 10) := ⟨_, rfl⟩
+  have hr1 : 1 / 2 ≤ r := hr ▸ Real.self_le_rpow_of_le_one (by norm_num) (by norm_num)
+    (by norm_num)
+  have hL0 : 0 ≤ Real.log Z ^ ((1 : ℝ) / 10) := Real.rpow_nonneg hlZ _
+  calc Real.log Z ^ ((1 : ℝ) / 10) / 2 ≤ r * Real.log Z ^ ((1 : ℝ) / 10) := by
+        linarith only [mul_le_mul_of_nonneg_right hr1 hL0]
+    _ = (Real.log Z / 2) ^ ((1 : ℝ) / 10) := by
+        rw [hr, div_eq_mul_inv (Real.log Z) 2, Real.mul_rpow hlZ (by norm_num), mul_comm]
+        congr 1; norm_num
+    _ ≤ Real.log y ^ ((1 : ℝ) / 10) :=
+        Real.rpow_le_rpow (div_nonneg hlZ (by norm_num)) hlogy (by norm_num)
+
+set_option maxHeartbeats 1600000 in
+/-- **The `q`-count for one `p`** in `longAverage_lower`. -/
+theorem qcount_lower {c y₀ δ κ Z x : ℝ} {p : ℕ}
+    (hS : ∀ y H : ℝ, y₀ ≤ y → y * Real.exp (-c * Real.log y ^ ((1 : ℝ) / 10)) ≤ H → H ≤ y →
+      H / (2 * Real.log (2 * y)) ≤ (Nat.primeCounting ⌊y + H⌋₊ : ℝ) - Nat.primeCounting ⌊y⌋₊)
+    (hc : 0 < c) (hκ : 0 < κ) (hκc : κ ≤ c / 12) (hδ : 0 < δ) (hδ' : δ < 1 / 4) (hZ : 16 ≤ Z)
+    (hy₀ : y₀ ≤ (1 - 7 * δ / 16) * √Z) (hE2 : 2 ≤ Real.exp (c / 4 * Real.log Z ^ ((1 : ℝ) / 10)))
+    (hT : 2 / δ ≤ paramT0 κ Z) (hx1 : Z ≤ x) (hx2 : x ≤ (1 + δ / 2) * Z)
+    (hp1 : (1 - 7 * δ / 16) * √Z < p) (hp2 : (p : ℝ) ≤ (1 - 5 * δ / 16) * √Z) :
+    paramH2 δ κ Z / (2 * p * Real.log Z) ≤ ((primesIn (x / p) (paramH2 δ κ Z / p)).card : ℝ) ∧
+      ∀ q ∈ primesIn (x / p) (paramH2 δ κ Z / p), q.Prime ∧ √Z ≤ q ∧
+        (q : ℝ) ≤ (1 + 2 * δ) * √Z ∧ ⌈x⌉₊ ≤ p * q ∧ p * q ≤ ⌊x + paramH2 δ κ Z⌋₊ := by
+  have hZ0 : 0 < Z := by linarith
+  have hsZ : 0 < √Z := Real.sqrt_pos.2 hZ0
+  have hZsq : √Z * √Z = Z := Real.mul_self_sqrt hZ0.le
+  have hs4 : 4 ≤ √Z := by
+    rw [show (4 : ℝ) = √16 by rw [show (16 : ℝ) = 4 ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]]
+    exact Real.sqrt_le_sqrt hZ
+  have hp0 : (0 : ℝ) < p := lt_of_le_of_lt (by nlinarith) hp1
+  have hT3 : paramT0 κ Z ^ 3 = Real.exp (3 * κ * Real.log Z ^ ((1 : ℝ) / 10)) := by
+    rw [paramT0, ← Real.exp_nat_mul]; push_cast; ring_nf
+  have hT1 : 1 ≤ paramT0 κ Z := by
+    rw [paramT0]
+    exact Real.one_le_exp (mul_nonneg hκ.le (Real.rpow_nonneg (Real.log_nonneg (by linarith)) _))
+  set L := Real.log Z ^ ((1 : ℝ) / 10) with hL
+  have hL0 : 0 ≤ L := Real.rpow_nonneg (Real.log_nonneg (by linarith)) _
+  set T0 := paramT0 κ Z with hT0
+  set X := paramX δ Z with hX
+  have hX0 : 0 < X := by rw [hX, paramX]; nlinarith
+  set h2 := paramH2 δ κ Z with hh2
+  have hh2' : h2 = X / T0 ^ 3 := rfl
+  have hh20 : 0 < h2 := by rw [hh2']; positivity
+  have hh2X : h2 ≤ X := by rw [hh2']; exact div_le_self hX0.le (one_le_pow₀ hT1)
+  have hXZ : X ≤ Z := by rw [hX, paramX]; nlinarith
+  have hh2δ : h2 ≤ δ / 2 * Z := by
+    rw [hh2']
+    have : X ≤ Z := by rw [hX, paramX]; nlinarith
+    have h3 : 2 / δ ≤ T0 ^ 3 := hT.trans (le_self_pow₀ hT1 (by norm_num))
+    rw [div_le_iff₀ (by positivity)]
+    have : 2 / δ * δ = 2 := by field_simp
+    nlinarith
+  set y := x / p with hy
+  set H := h2 / p with hH
+  clear_value y H h2 X T0 L
+  have hH0 : 0 < H := by rw [hH]; exact div_pos hh20 hp0
+  have hyp : y * p = x := by rw [hy]; field_simp
+  have hHp : H * p = h2 := by rw [hH]; field_simp
+  have hlZp : 0 < Real.log Z := Real.log_pos (by linarith)
+  -- `y ∈ [√Z, 2√Z]`
+  have hy1 : √Z ≤ y := by
+    rw [hy, le_div_iff₀ hp0]
+    have : (p : ℝ) ≤ √Z := hp2.trans (by nlinarith)
+    nlinarith
+  have hy2 : y ≤ 2 * √Z := by
+    rw [hy, div_le_iff₀ hp0]
+    have : x ≤ 2 * √Z * ((1 - 7 * δ / 16) * √Z) := by
+      have : 2 * √Z * ((1 - 7 * δ / 16) * √Z) = (2 - 7 * δ / 8) * Z := by
+        linear_combination (2 - 7 * δ / 8) * hZsq
+      rw [this]; nlinarith
+    have : 2 * √Z * ((1 - 7 * δ / 16) * √Z) ≤ 2 * √Z * p :=
+      mul_le_mul_of_nonneg_left hp1.le (by positivity)
+    linarith
+  have hy0 : 0 ≤ y := by linarith
+  -- apply the short-interval PNT at `y`
+  have hHy : H ≤ y := by
+    rw [hH, hy]; exact div_le_div_of_nonneg_right (by linarith) hp0.le
+  have hlow : y * Real.exp (-c * Real.log y ^ ((1 : ℝ) / 10)) ≤ H := by
+    have hlogy : Real.log Z / 2 ≤ Real.log y := by
+      have : Real.log √Z = Real.log Z / 2 := by rw [Real.log_sqrt hZ0.le]
+      rw [← this]; exact Real.log_le_log hsZ hy1
+    have hlZ : 0 ≤ Real.log Z := Real.log_nonneg (by linarith)
+    have hLy : L / 2 ≤ Real.log y ^ ((1 : ℝ) / 10) := hL ▸ half_rpow_tenth_le hlZ hlogy
+    have hEy : Real.exp (-c * Real.log y ^ ((1 : ℝ) / 10)) ≤ Real.exp (-(c / 2) * L) :=
+      Real.exp_le_exp.2 (by linarith only [mul_le_mul_of_nonneg_left hLy hc.le])
+    have hkey : 2 * Real.exp (-(c / 2) * L) ≤ Real.exp (-(3 * κ * L)) := by
+      have : Real.exp (c / 4 * L) ≤ Real.exp ((c / 2 - 3 * κ) * L) :=
+        Real.exp_le_exp.2 (mul_le_mul_of_nonneg_right (by linarith only [hκc]) hL0)
+      have h' := hE2.trans this
+      have heq : Real.exp (-(c / 2) * L) * Real.exp ((c / 2 - 3 * κ) * L) =
+          Real.exp (-(3 * κ * L)) := by rw [← Real.exp_add]; ring_nf
+      have hm := mul_le_mul_of_nonneg_left h' (Real.exp_pos (-(c / 2) * L)).le
+      linarith only [heq, hm]
+    have hxX : x ≤ 2 * X := by
+      rw [hX, paramX]; nlinarith only [hx2, hδ, hδ', hZ0]
+    have hxE : x * Real.exp (-c * Real.log y ^ ((1 : ℝ) / 10)) ≤ h2 := by
+      rw [hh2', hT3, div_eq_mul_inv X, ← Real.exp_neg]
+      calc x * Real.exp (-c * Real.log y ^ ((1 : ℝ) / 10))
+          ≤ (2 * X) * Real.exp (-(c / 2) * L) :=
+            mul_le_mul hxX hEy (Real.exp_pos _).le (by positivity)
+        _ = X * (2 * Real.exp (-(c / 2) * L)) := by ring
+        _ ≤ X * Real.exp (-(3 * κ * L)) := mul_le_mul_of_nonneg_left hkey hX0.le
+    refine le_of_mul_le_mul_right ?_ hp0
+    rw [hHp, mul_right_comm, hyp]; exact hxE
+  have hcount := hS y H (hy₀.trans ((by nlinarith : (1 - 7 * δ / 16) * √Z ≤ √Z).trans hy1)) hlow hHy
+  rw [← card_primesIn hH0.le] at hcount
+  refine ⟨?_, fun q hq => ?_⟩
+  · refine le_trans ?_ hcount
+    have hlog2y : Real.log (2 * y) ≤ Real.log Z :=
+      Real.log_le_log (by linarith) (by nlinarith)
+    have hlog2y0 : 0 < Real.log (2 * y) := Real.log_pos (by linarith)
+    rw [hH, div_div, div_le_div_iff₀ (mul_pos (mul_pos two_pos hp0) hlZp)
+      (mul_pos hp0 (mul_pos two_pos hlog2y0))]
+    have := mul_le_mul_of_nonneg_left hlog2y (show 0 ≤ h2 * (p * 2) by positivity)
+    linarith
+  · obtain ⟨hqp, hq1, hq2⟩ := mem_primesIn hy0 hq
+    refine ⟨hqp, by linarith, ?_, ?_, ?_⟩
+    · have : y + H ≤ (1 + 2 * δ) * √Z := by
+        rw [hy, hH, ← add_div, div_le_iff₀ hp0]
+        have : x + h2 ≤ (1 + δ) * Z := by nlinarith
+        have : (1 + δ) * Z ≤ (1 + 2 * δ) * √Z * ((1 - 7 * δ / 16) * √Z) := by
+          have : (1 + 2 * δ) * √Z * ((1 - 7 * δ / 16) * √Z) =
+            (1 + 2 * δ) * (1 - 7 * δ / 16) * Z := by
+            linear_combination (1 + 2 * δ) * (1 - 7 * δ / 16) * hZsq
+          rw [this]; nlinarith
+        have : 0 ≤ (1 + 2 * δ) * √Z := by positivity
+        nlinarith
+      linarith
+    · apply Nat.ceil_le.2
+      have : x < p * q := by
+        have := mul_lt_mul_of_pos_right hq1 hp0
+        rw [hyp] at this; linarith
+      push_cast; linarith
+    · apply Nat.le_floor
+      have : (p : ℝ) * q ≤ x + h2 := by
+        have := mul_le_mul_of_nonneg_left hq2 hp0.le
+        have e : (p : ℝ) * (y + H) = x + h2 := by rw [← hyp, ← hHp]; ring
+        rw [e] at this; exact this
+      push_cast; linarith
+
+set_option maxHeartbeats 1600000 in
 /-- **W2′ (Lemma 3).**  For `κ` small against `MediumPNT`'s constant, the long average is
 `≥ c₁ δ / log² Z` on `[Z, (1 + δ/2) Z]`. -/
 theorem longAverage_lower (hPNT : MediumPNTStatement) {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) :
     ∃ κ₀ : ℝ, 0 < κ₀ ∧ ∀ κ : ℝ, 0 < κ → κ ≤ κ₀ → ∀ g : ℝ → ℝ, Admissible δ g →
       ∃ c₁ : ℝ, 0 < c₁ ∧ ∀ᶠ Z : ℝ in atTop, ∀ x, Z ≤ x → x ≤ (1 + δ / 2) * Z →
         c₁ * δ / Real.log Z ^ 2 ≤ shortSum (coeffA δ g Z) x (paramH2 δ κ Z) / paramH2 δ κ Z := by
-  sorry
+  obtain ⟨c, hc, y₀, hS⟩ := shortIntervalPNT_of_mediumPNT hPNT
+  refine ⟨c / 12, by positivity, fun κ hκ hκc g hg => ⟨1 / 128, by norm_num, ?_⟩⟩
+  filter_upwards [longAverage_eventually (y₀ := y₀) hc hδ hδ' hκ] with Z ⟨hZ, hy₀, hEa, hE2, hT⟩
+    x hx1 hx2
+  have hZ0 : 0 < Z := by linarith
+  have hsZ : 0 < √Z := Real.sqrt_pos.2 hZ0
+  have hZsq : √Z * √Z = Z := Real.mul_self_sqrt hZ0.le
+  have hs4 : 4 ≤ √Z := by
+    rw [show (4 : ℝ) = √16 by rw [show (16 : ℝ) = 4 ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]]
+    exact Real.sqrt_le_sqrt hZ
+  have hlZ : 0 < Real.log Z := Real.log_pos (by linarith)
+  have hh20 : 0 < paramH2 δ κ Z := by
+    unfold paramH2 paramX; exact div_pos (by nlinarith) (by unfold paramT0; positivity)
+  set h2 := paramH2 δ κ Z with hh2
+  set a := (1 - 7 * δ / 16) * √Z with ha
+  set Ha := δ / 8 * √Z with hHa
+  have ha0 : 0 < a := by rw [ha]; nlinarith
+  have hHa0 : 0 < Ha := by positivity
+  -- the `p`-count
+  have hPc : Ha / (2 * Real.log (2 * a)) ≤ ((primesIn a Ha).card : ℝ) := by
+    rw [card_primesIn hHa0.le]
+    refine hS a Ha hy₀ ?_ (by rw [ha, hHa]; nlinarith)
+    calc a * Real.exp (-c * Real.log a ^ ((1 : ℝ) / 10)) ≤ a * (δ / 8) :=
+          mul_le_mul_of_nonneg_left hEa ha0.le
+      _ ≤ Ha := by rw [ha, hHa]; nlinarith
+  have hl2a : Real.log (2 * a) ≤ Real.log Z :=
+    Real.log_le_log (by positivity) (by rw [ha]; nlinarith)
+  have hl2a0 : 0 < Real.log (2 * a) := Real.log_pos (by rw [ha]; nlinarith)
+  have hP' : δ * √Z / (16 * Real.log Z) ≤ ((primesIn a Ha).card : ℝ) := by
+    refine le_trans ?_ hPc
+    rw [div_le_div_iff₀ (by positivity) (by positivity), hHa]
+    have := mul_le_mul_of_nonneg_left hl2a (show 0 ≤ δ * √Z by positivity)
+    nlinarith
+  -- the `log p` lower bound
+  have hlogp : ∀ p ∈ primesIn a Ha, Real.log Z / 4 ≤ Real.log p := by
+    intro p hp
+    obtain ⟨-, hp1, -⟩ := mem_primesIn ha0.le hp
+    have : √Z / 2 ≤ a := by rw [ha]; nlinarith
+    have h1 : Real.log (√Z / 2) ≤ Real.log p := Real.log_le_log (by positivity) (by linarith)
+    rw [Real.log_div hsZ.ne' (by norm_num), Real.log_sqrt hZ0.le] at h1
+    have : 4 * Real.log 2 ≤ Real.log Z := by
+      rw [← Real.log_rpow (by norm_num)]
+      exact Real.log_le_log (by positivity) (by norm_num; linarith)
+    linarith
+  -- the double count
+  set T : ℕ → ℕ → ℝ := fun m p =>
+    if (m / p).Prime ∧ √Z ≤ ((m / p : ℕ) : ℝ) ∧ ((m / p : ℕ) : ℝ) ≤ (1 + 2 * δ) * √Z
+    then Real.log p * g (p / √Z) else 0 with hTdef
+  have hT0 : ∀ m p, 0 ≤ T m p := fun m p => by
+    simp only [hTdef]; split_ifs
+    · exact mul_nonneg (Real.log_natCast_nonneg p) (hg.2.1 _).1
+    · exact le_rfl
+  have hpair := sum_pairs_le_sum_primeFactors (Finset.Icc ⌈x⌉₊ ⌊x + h2⌋₊) (primesIn a Ha)
+    (fun p => primesIn (x / p) (h2 / p)) T (fun p => Real.log p) hT0
+    (fun p hp => by exact_mod_cast (mem_primesIn ha0.le hp).1.pos) (fun p hp q hq => by
+      obtain ⟨hpp, hp1, hp2⟩ := mem_primesIn ha0.le hp
+      have hp2' : (p : ℝ) ≤ (1 - 5 * δ / 16) * √Z := by
+        have : a + Ha = (1 - 5 * δ / 16) * √Z := by rw [ha, hHa]; ring
+        linarith
+      obtain ⟨-, hQ⟩ := qcount_lower hS hc hκ hκc hδ hδ' hZ hy₀ hE2 hT hx1 hx2 hp1 hp2'
+      obtain ⟨hqp, hq1, hq2, hq3, hq4⟩ := hQ q hq
+      refine ⟨Finset.mem_Icc.2 ⟨hq3, hq4⟩, Nat.mem_primeFactors.2 ⟨hpp, dvd_mul_right p q,
+        mul_ne_zero hpp.ne_zero hqp.ne_zero⟩, ?_⟩
+      simp only [hTdef]
+      rw [Nat.mul_div_cancel_left q hpp.pos, if_pos ⟨hqp, hq1, hq2⟩]
+      have : g (p / √Z) = 1 := hg.2.2.2 _ (by rw [le_div_iff₀ hsZ]; linarith)
+        (by rw [div_le_iff₀ hsZ]; linarith)
+      rw [this, mul_one])
+  have hsum : ∑ m ∈ Finset.Icc ⌈x⌉₊ ⌊x + h2⌋₊, ∑ p ∈ m.primeFactors, T m p =
+      shortSum (coeffA δ g Z) x h2 * Real.log Z := by
+    unfold shortSum coeffA
+    rw [← Finset.sum_div, div_mul_cancel₀ _ hlZ.ne']
+  rw [hsum] at hpair
+  -- each `p` contributes at least `h2 / (8 √Z)`
+  have hper : ∀ p ∈ primesIn a Ha, h2 / (8 * √Z) ≤
+      ((primesIn (x / p) (h2 / p)).card : ℝ) * Real.log p := by
+    intro p hp
+    obtain ⟨hpp, hp1, hp2⟩ := mem_primesIn ha0.le hp
+    have hp2' : (p : ℝ) ≤ (1 - 5 * δ / 16) * √Z := by
+      have : a + Ha = (1 - 5 * δ / 16) * √Z := by rw [ha, hHa]; ring
+      linarith
+    have hp0 : (0 : ℝ) < p := by linarith
+    have hpZ : (p : ℝ) ≤ √Z := hp2'.trans (by nlinarith)
+    have hQc := (qcount_lower hS hc hκ hκc hδ hδ' hZ hy₀ hE2 hT hx1 hx2 hp1 hp2').1
+    have hlp := hlogp p hp
+    have h1 : h2 / (2 * √Z * Real.log Z) ≤ h2 / (2 * p * Real.log Z) :=
+      div_le_div_of_nonneg_left hh20.le (by positivity)
+        (mul_le_mul_of_nonneg_right (by linarith) hlZ.le)
+    have h2' := le_trans h1 hQc
+    calc h2 / (8 * √Z) = h2 / (2 * √Z * Real.log Z) * (Real.log Z / 4) := by
+          field_simp; ring
+      _ ≤ ((primesIn (x / p) (h2 / p)).card : ℝ) * Real.log p :=
+          mul_le_mul h2' hlp (by positivity) (by positivity)
+  have hsumlow : ((primesIn a Ha).card : ℝ) * (h2 / (8 * √Z)) ≤
+      shortSum (coeffA δ g Z) x h2 * Real.log Z := by
+    refine le_trans ?_ hpair
+    rw [← nsmul_eq_mul, ← Finset.sum_const]
+    exact Finset.sum_le_sum hper
+  have hfin : δ * h2 / (128 * Real.log Z) ≤ shortSum (coeffA δ g Z) x h2 * Real.log Z := by
+    refine le_trans ?_ hsumlow
+    calc δ * h2 / (128 * Real.log Z) = δ * √Z / (16 * Real.log Z) * (h2 / (8 * √Z)) := by
+          field_simp; ring
+      _ ≤ _ := mul_le_mul_of_nonneg_right hP' (by positivity)
+  rw [le_div_iff₀ hh20]
+  have : 1 / 128 * δ / Real.log Z ^ 2 * h2 = δ * h2 / (128 * Real.log Z) / Real.log Z := by
+    field_simp
+  rw [this, div_le_iff₀ hlZ]
+  exact hfin
 
 /-- **W3 (Lemmas 4, 5, Proposition 6).**  `D ≤ C exp(−(κ/2)(log Z)^{1/10})` for large `Z`. -/
 theorem variance_small (h1 : MR16Lemma14) (h2 : MontgomeryVaughanMVT) (hVK : SmoothPrimeSumVK)
