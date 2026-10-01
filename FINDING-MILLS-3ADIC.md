@@ -64,3 +64,7 @@ Full argument and limitations: [PROBE-MILLS-PROJECTIVE.md](PROBE-MILLS-PROJECTIV
 **Numerics.**  The `projective` check (`scripts/mills-3adic-probe.py`) found 47 irreducible prime moduli q | `t_m`, and all 47 divide `t_(m+j)` for the predicted j.  In 5 of them the `GL₃` argument is silent, because the 3-part is too big.
 
 **Status.**  Correct, 95%.  It does not eliminate the six classes.  It restricts which primes can be Mills primes, and it gives a one-prime certificate for each individual β.
+
+## Follow-up (2026-09-30): the Kronecker lemma and the hard core
+
+[PROBE-MILLS-RESIDUAL.md](PROBE-MILLS-RESIDUAL.md).  A split prime `T_j ≡ 2 (mod 3)` recurs, so in the three classes with `Tr β ≡ 2 (mod 3)` every large Mills prime has type (1)(2) in K: `(D/p_k) = −1`, a finite congruence check on f, and K cannot be cyclic.  The filter is not Mills-specific, so it is a burn-down, not a mechanism.  The hard core is `τ = +1` with K an S3 field, where no abelian filter exists.  Least-ness, the only Mills-specific lever, is gap-bound limited.

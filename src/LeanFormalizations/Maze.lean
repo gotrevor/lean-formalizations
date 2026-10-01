@@ -151,7 +151,27 @@ def register : List Row := [
       composition F((2j+1)N) = Φ_j(F N) turns the congruences into an equality, avoiding \
       non-integrality altogether"
     reopenIf := "an algebraic proof that lim F(c^n) (= (ω(φ)-ω(ψ))/√5 in ℤ_c) is not ±1 - h for any \
-      integer h, e.g. via a polynomial it satisfies with no suitable integer root" }
+      integer h, e.g. via a polynomial it satisfies with no suitable integer root" },
+  { route := "Mills residual classes via local (splitting-type) filters: covering, projective, \
+      and the Kronecker lemma (a split prime T_j = 2 mod 3 recurs, so tau = -1 forces (D/p_k) = -1)"
+    verdict := .needsNewIdea, tier := .cited, anchor := none
+    evidence := "PROBE-MILLS-RESIDUAL.md §3, §5: the filters hold for EVERY eventually-prime trace \
+      sequence, so they burn down density but cannot separate Mills from its siblings; tau = -1 \
+      classes lose cyclic K outright and every tested (1.3) example; tau = +1 with S3 K has no \
+      abelian filter at all ({1, transpositions} surjects onto C2).  Not Fermat-blocked: every \
+      explicit residual cubic (184,513 (1.3) Pisot β, 2.4M tau = -1 cubics) dies to a certificate \
+      at q <= 47, while Fermat has none structurally; the block is uniformity (conjecture LC)"
+    reopenIf := "a proof that every cubic with Tr β = 2 mod 3 has a covering prime or a Kronecker \
+      hit on its eventual cycle mod |D| (Saito Problem 1.1 for those classes), or a non-abelian \
+      (Kummer) condition at the Mills primes that is forced, not merely probable" },
+  { route := "Mills residual classes via least-ness beyond ε = 0 (the prime-free gaps (T_j³, T_(j+1)))"
+    verdict := .gapBoundLimited, tier := .cited, anchor := none
+    evidence := "PROBE-MILLS-RESIDUAL.md §1, §4: least-ness is exactly the prime-free interval \
+      [(y-|s|)³, y³) of length x^θ, θ ∈ (1/2, 21/40]; it is the only lever separating Mills from \
+      S1-S3 (all 89 local survivors in the (1.3) census fail it at once), but zero-density counts \
+      cells and cannot pick out one cell per scale"
+    reopenIf := "a coupling of primality of T = Tr β^(3^j) with the interval (T³, T_(j+1)), or a \
+      prime-gap exponent below 21/40 at cubes of Pisot traces" }
 ]
 
 end LeanFormalizations.Maze

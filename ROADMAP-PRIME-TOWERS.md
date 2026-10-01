@@ -281,6 +281,7 @@ So `ξ := ξ(3^k − 2)` is transcendental or itself a cubic Pisot number with `
 - Saito's exact recurrence `(t, b) ↦ (t³ − 3bt + 3e, b³ − 3etb + 3e²)` has the integer fixed point `(x, e·x)` (`x = ±1`), i.e. `χ ≡ (X − x)(X² + ex) (mod 3)`.  That is **the same structure as Fermat**: an integer fixed point of the composition dynamics inside the `±1` window.
 - Precise sentence for the paper: *the prime-as-modulus method proves compositeness exactly when the composition dynamics has no integer orbit in the window; Fermat, `L(2^n)` and the Mills residual classes are integer orbits.*
 - The Mills question in those classes is therefore at least "Fermat-shaped".  No reduction is proved, and none is claimed.
+- 2026-09-30 lap (`PROBE-MILLS-RESIDUAL.md`): the Kronecker lemma removes cyclic K from the `τ = −1` classes and imposes `(D/p_k) = −1` there.  The hard core is `τ = +1` over S3 fields.  Least-ness is the only lever that separates Mills from its siblings, and it is gap-bound limited (θ ∈ (1/2, 21/40]).  No mechanism.
 
 ## 4. Treadmill queue (Lean only; Ren steers)
 1. Phase 38 (running): Lucas `U(P, ±1)`, odd `c ∤ D`.
