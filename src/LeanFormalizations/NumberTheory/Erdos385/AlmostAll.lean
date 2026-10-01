@@ -1522,7 +1522,69 @@ theorem primeP_small (hVK : SmoothPrimeSumVK) {δ κ : ℝ} (hδ : 0 < δ) (hδ'
     (hκ : 0 < κ) (hκ' : κ ≤ 1) {g : ℝ → ℝ} (hg : Admissible δ g) :
     ∃ K : ℝ, ∀ᶠ Z : ℝ in atTop, ∀ t : ℝ, paramT0 κ Z ≤ |t| → |t| ≤ 8 * paramX δ Z →
       ‖primeP g Z (1 + t * I)‖ ≤ K / paramT0 κ Z := by
-  sorry
+  obtain ⟨hs, hc, ht, hsupp, -⟩ := cutoffDiv_facts hδ hδ' hg
+  obtain ⟨Km, hKm⟩ := mellin_one_sub_mul_I_decay (f := cutoffDiv g) (by exact_mod_cast hs 1)
+    (by norm_num : (0:ℝ) < 1/2) (by norm_num : (1:ℝ)/2 ≤ 1) hsupp
+  obtain ⟨C, hC⟩ := hVK (cutoffDiv g) hs hc ht (1/6) (by norm_num)
+  refine ⟨Km + 2 * |C| + 1, ?_⟩
+  filter_upwards [primeP_small_params hκ hκ'] with Z ⟨h16, hA, hB, hCc⟩ t ht0 htX
+  set T0 := paramT0 κ Z with hT0
+  set P := √Z with hP
+  have hT0pos : 0 < T0 := by rw [hT0, paramT0]; positivity
+  have hP4 : 4 ≤ P := by
+    rw [hP, show (4:ℝ) = √16 by rw [show (16:ℝ) = 4 ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]]
+    exact Real.sqrt_le_sqrt h16
+  have hPZ : P ≤ 16 * Z := by
+    have : P ≤ P * P := by nlinarith
+    rw [hP, Real.mul_self_sqrt (by linarith)] at this; linarith
+  have hX : paramX δ Z ≤ Z := by rw [paramX]; nlinarith
+  have htT : |t| ≤ 16 * Z / 2 := by linarith
+  have hVKt := hC P (16 * Z) t (by linarith) (by linarith) hPZ htT
+  set e := Real.exp (-(Real.log P / Real.log (16 * Z) ^ ((2:ℝ)/3 + 1/6))) with he
+  set S := ∑' n : ℕ, (ArithmeticFunction.vonMangoldt n : ℂ) * (n : ℂ) ^ (-((t : ℂ) * I)) *
+    cutoffDiv g (n / P)
+  set M := mellin (cutoffDiv g) (1 - t * I)
+  have hdec := primeP_decomp hδ hδ' hg (by linarith : (1:ℝ) ≤ Z) t
+  have hpsi : ψ P - θ P ≤ 2 * √P * Real.log P := Chebyshev.psi_sub_theta_le (by linarith)
+  have hW : ‖M * (P : ℂ) ^ (1 - t * I)‖ = ‖M‖ * P := by
+    rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (by linarith)]; simp
+  have hMb : ‖M‖ * T0 ≤ Km := by
+    have := hKm t
+    exact (mul_le_mul_of_nonneg_left ht0 (norm_nonneg _)).trans this
+  have htot : P * ‖primeP g Z (1 + t * I)‖ ≤
+      2 * (2 * √P * Real.log P) + |C| * (P * e * Real.log (16 * Z) + 1) + ‖M‖ * P := by
+    have h1 : P * ‖primeP g Z (1 + t * I)‖ = ‖(P : ℂ) * primeP g Z (1 + t * I)‖ := by
+      rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith)]
+    rw [h1]
+    have hE0 : 0 ≤ P * e * Real.log (16 * Z) + 1 := by
+      have : 0 ≤ Real.log (16 * Z) := Real.log_nonneg (by linarith)
+      positivity
+    calc ‖(P : ℂ) * primeP g Z (1 + t * I)‖
+        ≤ ‖(P : ℂ) * primeP g Z (1 + t * I) - S‖ + ‖S - M * (P : ℂ) ^ (1 - t * I)‖ +
+            ‖M * (P : ℂ) ^ (1 - t * I)‖ := by
+          have := norm_add₃_le (a := (P : ℂ) * primeP g Z (1 + t * I) - S)
+            (b := S - M * (P : ℂ) ^ (1 - t * I)) (c := M * (P : ℂ) ^ (1 - t * I))
+          simpa using this
+      _ ≤ 2 * (2 * √P * Real.log P) + |C| * (P * e * Real.log (16 * Z) + 1) + ‖M‖ * P := by
+          rw [hW]
+          gcongr
+          · exact hdec.trans (by linarith)
+          · exact hVKt.trans (mul_le_mul_of_nonneg_right (le_abs_self C) hE0)
+  rw [le_div_iff₀ hT0pos]
+  have hP0 : 0 < P := by linarith
+  -- multiply `htot` by `T0` and compare termwise with `P * K`
+  have key : P * (‖primeP g Z (1 + t * I)‖ * T0) ≤ P * (Km + 2 * |C| + 1) := by
+    have hCabs : 0 ≤ |C| := abs_nonneg C
+    have e1 : 2 * (2 * √P * Real.log P) * T0 ≤ P := hCc
+    have e2 : |C| * (P * e * Real.log (16 * Z)) * T0 ≤ |C| * P := by
+      have : e * Real.log (16 * Z) * T0 ≤ 1 := hA
+      rw [show |C| * (P * e * Real.log (16 * Z)) * T0 = |C| * P * (e * Real.log (16 * Z) * T0) by ring]
+      exact mul_le_of_le_one_right (by positivity) this
+    have e3 : |C| * T0 ≤ |C| * P := mul_le_mul_of_nonneg_left hB hCabs
+    have e4 : ‖M‖ * P * T0 ≤ Km * P := by nlinarith
+    have := mul_le_mul_of_nonneg_right htot hT0pos.le
+    nlinarith
+  exact le_of_mul_le_mul_left key hP0
 
 /-- **W3e (Lemma 5).**  `∫_{-U}^{U} |Q(1 + it)|² dt ≪ (U + √Z)/√Z`, from the MVT with `a_q = 1/q`
 and `∑ q^{-2} ≤ 1/√Z`.  (The PROOF's extra `1/log Z` is not needed.) -/

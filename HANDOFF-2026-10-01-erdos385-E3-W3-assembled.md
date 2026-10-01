@@ -16,7 +16,7 @@ Scope: `src/LeanFormalizations/NumberTheory/Erdos385/AlmostAll.lean` sorry-free.
    Need primeQ(1+it) = ∑_{n ≤ N} a_n n^{-it} (q^{-(1+it)} = q⁻¹ q^{-it}).  Easy-moderate.
 2. ~~`coeffC_meanSquare` (W3f)~~ PROVED (K=2|C|, Z≥2).
    ∑ (a_m/m)² ≤ (2X)·(1/4)/X² .  Easy-moderate.
-3. `primeP_small` (W3d): g0(u) = g(u)/u (ContDiff via local-zero near 0); Lemma VK at P=√Z,
+3. ~~`primeP_small` (W3d)~~ PROVED: cutoffDiv_facts + primeP_decomp + mellin decay (IBP) + primeP_small_params.
    T=16Z; Mellin decay |mellin g0 (1−it)| ≪ 1/|t| (one integration by parts); prime powers via
    `Chebyshev.psi_sub_theta_le`.  Moderate-hard.
 4. `smoothPrimeSumVK_of_VKZ`: contour shift (Mellin inversion + residue).  THE crux; consider
