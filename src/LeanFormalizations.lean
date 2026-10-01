@@ -235,4 +235,5 @@ import LeanFormalizations.NumberTheory.Erdos385.Exceptional.Mertens
 import LeanFormalizations.NumberTheory.Erdos385.Exceptional.Tail
 import LeanFormalizations.NumberTheory.Erdos385.Exceptional.Sieve
 import LeanFormalizations.NumberTheory.Erdos385.Exceptional.Count
+import LeanFormalizations.NumberTheory.Erdos385.Exceptional.Analytic
 import LeanFormalizations.NumberTheory.Erdos385.RateVK
