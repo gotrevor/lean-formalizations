@@ -5,7 +5,7 @@
 (Maze row).  Route for the crux (5 steps, LinearSieve.lean header): Selberg 1-dim, limit Buchstab
 inequalities, fundamental lemma, JR comparison functions with λ = e^{-γ}/ω_∞ ≥ 1 via forward
 rough-number Buchstab + PNT, and a derivative-free comparison principle (weight u − 1, Tonelli).
-Step 5 DONE (`comparison_principle`); step 1 DONE (`LinearSieve/Selberg.lean` `siftMax_le_selberg`: S⁺ ≤ N/G + E²).  Next: G ≥ log ξ for ξ ≤ z, E ≪ ξ log ξ, then steps 2–4;
+Step 5 DONE (`comparison_principle`); step 1 DONE (`LinearSieve/Selberg.lean` `siftMax_le_selberg`: S⁺ ≤ N/G + E²).  G ≥ log ξ DONE (`LinearSieve/GLower.lean` `log_le_selG`, also `sum_inv_le_prod`).  Next: E ≪ ξ·∏(p/(p−1)) (E ≤ ξ·∏_{p<z} p/(p−1) trivially), then steps 2–4;
 most novel) and step 1 (copy of Brun/PairSieve).
 
 ## phase E4b DONE (2026-10-01): `Literature.McDiarmidFinite` discharged
