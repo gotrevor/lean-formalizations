@@ -5,6 +5,7 @@ Authors: Trevor Morris
 -/
 import Mathlib
 import LeanFormalizations.Literature.Erdos385AlmostAll
+import LeanFormalizations.NumberTheory.Erdos385.Parseval.Assembly
 
 /-!
 # Erdős #385: the short-sum Parseval bound (phase E2d)
@@ -64,7 +65,8 @@ namespace Erdos385
 open LeanFormalizations.Literature
 
 /-- Matomäki–Radziwiłł Lemma 14 (Teräväinen Lemma 1 form), proved. -/
-theorem mr16Lemma14_holds : MR16Lemma14 := by
-  sorry
+theorem mr16Lemma14_holds : MR16Lemma14 :=
+  ⟨500, fun _ _ _ _ _ hX hT₀ hh₁ h12 h2X ha1 hsupp _ hB ↦
+    Parseval.mr16_core hX hT₀ hh₁ h12 h2X ha1 hsupp hB⟩
 
 end Erdos385

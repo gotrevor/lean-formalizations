@@ -2022,3 +2022,14 @@ bounded/integrable/a.e.-continuous: Φ itself, F_lo = Φ̂·1_lo, F_mid = A·1_m
 no integrability of Φ_hi: ‖Φ−P‖² = ‖Φ‖² − 2Re⟨Φ,P⟩ + ‖P‖² with P = 𝓕⁻(Φ̂·1_{|ξ|≤T₁}) and
 ⟨Φ,P⟩ = ∫|Φ̂|²1 (multiplication formula), giving ∫|Φ̂|²1_hi.  No convolution, no kernels.
 Next: Φ and 𝓕Φ = A(1+2πiξ)/(1+2πiξ); a.e. identity for shortSumC; low/mid/high bounds.
+
+## 2026-10-01 E2d DONE — `mr16Lemma14_holds` proved, axiom-clean (C = 500)
+`Erdos385/Parseval/Assembly.lean` (`mr16_core`) assembles the bands: a.e. identity
+shortSumC = winDelta Φ off ℕ; Φ = P_lo + P_mid + Φ_hi with Φ_hi := Φ − P_lo − P_mid (so the
+split is `ring`, only P_lo+P_mid = 𝓕⁻(1_all 𝓕Φ) needs 𝓕⁻-additivity via
+`VectorFourier.fourierIntegral_add`); ‖u+v+w‖² ≤ 3Σ in ENNReal; lo ≤ 9/T₀ pointwise, mid via
+`integral_winDif_mid_le` + `t = 2πξ` change of variables, hi via `integral_norm_sub_proj` +
+`integral_tail_le` (lintegral change of variables through `Real.map_volume_mul_left`).
+Band-indicator a.e. continuity: `ae_continuousAt_indicator` (locally constant off a null set).
+Next: remaining lit inputs of `almost_all_F385`: `MontgomeryVaughanMVT`, `VKZeroFreeLogDeriv`,
+`MediumPNTStatement` (wire PNT+ `MediumPNT`).

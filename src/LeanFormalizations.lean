@@ -214,6 +214,7 @@ import LeanFormalizations.NumberTheory.Erdos385.Parseval.Mid
 import LeanFormalizations.NumberTheory.Erdos385.Parseval.High
 import LeanFormalizations.NumberTheory.Erdos385.Parseval.Freq
 import LeanFormalizations.NumberTheory.Erdos385.Parseval.Dyadic
+import LeanFormalizations.NumberTheory.Erdos385.Parseval.Assembly
 import LeanFormalizations.NumberTheory.Erdos385.ShortSumParseval
 import LeanFormalizations.Literature.Erdos385AlmostAll
 import LeanFormalizations.NumberTheory.Erdos385.AlmostAll
