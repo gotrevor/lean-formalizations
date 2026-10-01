@@ -1414,6 +1414,108 @@ theorem primeP_decomp {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) {g : ℝ →
             ArithmeticFunction.vonMangoldt_apply_prime (Finset.mem_filter.1 hp).2
         rw [this]; ring
 
+/-- W3d asymptotics in `L = log Z`. -/
+theorem primeP_small_logFacts : ∀ᶠ L : ℝ in atTop, 3 ≤ L ∧ 8 * L ^ ((1:ℝ)/10) ≤ L ^ ((1:ℝ)/6) ∧
+    2 * L * Real.exp (-(L ^ ((1:ℝ)/6) / 8)) ≤ 1 := by
+  have h1 : ∀ᶠ L : ℝ in atTop, 8 ≤ L ^ ((1:ℝ)/15) :=
+    (tendsto_rpow_atTop (by norm_num)).eventually (eventually_ge_atTop 8)
+  have h2 : Tendsto (fun L : ℝ => (L ^ ((1:ℝ)/6)) ^ (6:ℝ) * Real.exp (-(1/8) * L ^ ((1:ℝ)/6)))
+      atTop (nhds 0) :=
+    (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero 6 (1/8) (by norm_num)).comp
+      (tendsto_rpow_atTop (by norm_num))
+  have h2' := h2.eventually (ge_mem_nhds (show (0:ℝ) < 1/2 by norm_num))
+  filter_upwards [h1, h2', eventually_ge_atTop (3:ℝ)] with L hL1 hL2 hL3
+  have hL0 : 0 ≤ L := by linarith
+  refine ⟨hL3, ?_, ?_⟩
+  · have : L ^ ((1:ℝ)/6) = L ^ ((1:ℝ)/15) * L ^ ((1:ℝ)/10) := by
+      rw [← Real.rpow_add (by linarith)]; norm_num
+    rw [this]; exact mul_le_mul_of_nonneg_right hL1 (by positivity)
+  · have : (L ^ ((1:ℝ)/6)) ^ (6:ℝ) = L := by
+      rw [← Real.rpow_mul hL0]; norm_num
+    rw [this] at hL2
+    have : -(1/8) * L ^ ((1:ℝ)/6) = -(L ^ ((1:ℝ)/6) / 8) := by ring
+    rw [this] at hL2
+    linarith
+
+/-- **W3d, parameters.**  With `P = √Z`, `T = 16Z`, `ε = 1/6`: the VK error, `1/P`, and the
+prime-power error are all `≤ 1/T₀` after scaling. -/
+theorem primeP_small_params {κ : ℝ} (_hκ : 0 < κ) (hκ' : κ ≤ 1) : ∀ᶠ Z : ℝ in atTop, 16 ≤ Z ∧
+    Real.exp (-(Real.log √Z / Real.log (16 * Z) ^ ((2:ℝ)/3 + 1/6))) * Real.log (16 * Z) *
+      paramT0 κ Z ≤ 1 ∧ paramT0 κ Z ≤ √Z ∧ 2 * (2 * √(√Z) * Real.log √Z) * paramT0 κ Z ≤ √Z := by
+  filter_upwards [Real.tendsto_log_atTop.eventually primeP_small_logFacts,
+    eventually_gt_atTop (0:ℝ)] with Z ⟨hL3, h8, hexp⟩ hZ0
+  set L := Real.log Z with hL
+  have hZ : Z = Real.exp L := (Real.exp_log hZ0).symm
+  have hL0 : 0 ≤ L := by linarith
+  have hsq : √Z = Real.exp (L / 2) := by
+    rw [hZ, Real.sqrt_eq_rpow, ← Real.exp_mul]; ring_nf
+  have hsq2 : √(√Z) = Real.exp (L / 4) := by
+    rw [hsq, Real.sqrt_eq_rpow, ← Real.exp_mul]; ring_nf
+  have hlsq : Real.log √Z = L / 2 := by rw [hsq, Real.log_exp]
+  have hl16 : Real.log 16 < 3 := by
+    rw [show (16:ℝ) = 2 ^ 4 by norm_num, Real.log_pow]; have := Real.log_two_lt_d9; push_cast; linarith
+  have hl16' : 0 < Real.log 16 := Real.log_pos (by norm_num)
+  have hlog16 : Real.log (16 * Z) = Real.log 16 + L := Real.log_mul (by norm_num) hZ0.ne'
+  have h16 : 16 ≤ Z := by
+    rw [hZ]; have := Real.add_one_le_exp L
+    have h3 : Real.exp 3 ≤ Real.exp L := Real.exp_le_exp.2 hL3
+    have : (16:ℝ) ≤ Real.exp 3 := by
+      have := Real.exp_one_gt_d9
+      rw [show (3:ℝ) = 1 + 1 + 1 by norm_num, Real.exp_add, Real.exp_add]; nlinarith
+    linarith
+  have hT0 : paramT0 κ Z ≤ Real.exp (L ^ ((1:ℝ)/10)) := by
+    rw [paramT0, ← hL]; apply Real.exp_le_exp.2
+    have : 0 ≤ L ^ ((1:ℝ)/10) := by positivity
+    nlinarith
+  have h16le : L ^ ((1:ℝ)/6) ≤ L := by
+    have := Real.rpow_le_rpow_of_exponent_le (show 1 ≤ L by linarith) (show (1:ℝ)/6 ≤ 1 by norm_num)
+    simpa using this
+  have hkey : L ^ ((1:ℝ)/10) - L / 4 ≤ -(L ^ ((1:ℝ)/6) / 8) := by linarith
+  have hT0pos : 0 < paramT0 κ Z := by rw [paramT0]; positivity
+  refine ⟨h16, ?_, ?_, ?_⟩
+  · -- (A)
+    have hlo : L ≤ Real.log (16 * Z) := by rw [hlog16]; linarith
+    have hhi : Real.log (16 * Z) ≤ 2 * L := by rw [hlog16]; linarith
+    have hpow : Real.log (16 * Z) ^ ((2:ℝ)/3 + 1/6) ≤ 2 * L ^ ((5:ℝ)/6) := by
+      calc Real.log (16 * Z) ^ ((2:ℝ)/3 + 1/6) ≤ (2 * L) ^ ((5:ℝ)/6) := by
+            norm_num; exact Real.rpow_le_rpow (by linarith) hhi (by norm_num)
+        _ = 2 ^ ((5:ℝ)/6) * L ^ ((5:ℝ)/6) := Real.mul_rpow (by norm_num) hL0
+        _ ≤ 2 * L ^ ((5:ℝ)/6) := by
+            apply mul_le_mul_of_nonneg_right _ (by positivity)
+            have := Real.rpow_le_rpow_of_exponent_le (show (1:ℝ) ≤ 2 by norm_num)
+              (show (5:ℝ)/6 ≤ 1 by norm_num)
+            simpa using this
+    have hL56 : 0 < L ^ ((5:ℝ)/6) := by positivity
+    have hsplit : L = L ^ ((1:ℝ)/6) * L ^ ((5:ℝ)/6) := by
+      rw [← Real.rpow_add (by linarith)]; norm_num
+    have hratio : L ^ ((1:ℝ)/6) / 4 ≤ Real.log √Z / Real.log (16 * Z) ^ ((2:ℝ)/3 + 1/6) := by
+      rw [hlsq, le_div_iff₀ (Real.rpow_pos_of_pos (by linarith) _)]
+      calc L ^ ((1:ℝ)/6) / 4 * Real.log (16 * Z) ^ ((2:ℝ)/3 + 1/6)
+          ≤ L ^ ((1:ℝ)/6) / 4 * (2 * L ^ ((5:ℝ)/6)) :=
+            mul_le_mul_of_nonneg_left hpow (by positivity)
+        _ = L / 2 := by nth_rewrite 3 [hsplit]; ring
+    calc Real.exp (-(Real.log √Z / Real.log (16 * Z) ^ ((2:ℝ)/3 + 1/6))) * Real.log (16 * Z) *
+          paramT0 κ Z ≤ Real.exp (-(L ^ ((1:ℝ)/6) / 4)) * (2 * L) * Real.exp (L ^ ((1:ℝ)/10)) := by
+          apply mul_le_mul (mul_le_mul (Real.exp_le_exp.2 (by linarith)) hhi (by linarith)
+            (by positivity)) hT0 hT0pos.le (by positivity)
+      _ = 2 * L * Real.exp (-(L ^ ((1:ℝ)/6) / 4) + L ^ ((1:ℝ)/10)) := by
+          rw [Real.exp_add]; ring
+      _ ≤ 2 * L * Real.exp (-(L ^ ((1:ℝ)/6) / 8)) := by
+          apply mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 (by linarith)) (by positivity)
+      _ ≤ 1 := hexp
+  · rw [hsq]; exact hT0.trans (Real.exp_le_exp.2 (by linarith))
+  · rw [hsq2, hlsq, hsq]
+    calc 2 * (2 * Real.exp (L / 4) * (L / 2)) * paramT0 κ Z
+        ≤ 2 * (2 * Real.exp (L / 4) * (L / 2)) * Real.exp (L ^ ((1:ℝ)/10)) :=
+          mul_le_mul_of_nonneg_left hT0 (by positivity)
+      _ = (2 * L * Real.exp (L ^ ((1:ℝ)/10) - L / 4)) * Real.exp (L / 2) := by
+          rw [Real.exp_sub, show L / 2 = L / 4 + L / 4 by ring, Real.exp_add]; field_simp; ring
+      _ ≤ (2 * L * Real.exp (-(L ^ ((1:ℝ)/6) / 8))) * Real.exp (L / 2) := by
+          apply mul_le_mul_of_nonneg_right _ (by positivity)
+          exact mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 hkey) (by positivity)
+      _ ≤ Real.exp (L / 2) := by
+          have := Real.exp_pos (L / 2); nlinarith
+
 /-- **W3d (Lemma 4).**  `|P(1 + it)| ≪ 1/T₀` for `T₀ ≤ |t| ≤ 8X`: the Mellin main term decays like
 `1/|t|`, the VK error and the prime powers are smaller.  Confidence 90% (PROOF Lemma 4). -/
 theorem primeP_small (hVK : SmoothPrimeSumVK) {δ κ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4)
