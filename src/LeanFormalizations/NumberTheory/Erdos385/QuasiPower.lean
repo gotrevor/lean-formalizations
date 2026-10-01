@@ -9,7 +9,7 @@ import LeanFormalizations.NumberTheory.Erdos385.QuasiPower.ClassCount
 import LeanFormalizations.NumberTheory.Erdos385.QuasiPower.Esymm
 import LeanFormalizations.NumberTheory.Erdos385.QuasiPower.Window
 import LeanFormalizations.NumberTheory.Erdos385.QuasiPower.MertensSums
-import LeanFormalizations.NumberTheory.Erdos385.QuasiPower.Total
+import LeanFormalizations.NumberTheory.Erdos385.QuasiPower.Params
 
 /-!
 # Erdős #385: pushing the bad-`n` bound toward the framework ceiling (phase E8, moonshot)
