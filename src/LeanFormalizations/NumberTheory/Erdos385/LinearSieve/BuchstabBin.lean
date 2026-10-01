@@ -165,4 +165,85 @@ theorem eventually_bin_le {t t' σ δ : ℝ} (ht : 1 < t) (htt' : t ≤ t') (hσ
     _ ≤ K * (Real.log (t' / t) + δ) := mul_le_mul_of_nonneg_left h4 hK0
     _ = _ := by rw [hK]; ring
 
+lemma bUp_nonneg {σ : ℝ} (hσ : 0 < σ) : 0 ≤ bUp σ := by
+  refine le_of_forall_pos_lt_add fun δ hδ => ?_
+  obtain ⟨M, hM⟩ := (eventually_lt_of_limsup_lt (show bUp σ < bUp σ + δ by linarith)
+    (bSeq_bdd hσ)).exists
+  have := bSeq_nonneg σ M
+  exact lt_of_le_of_lt this hM
+
+/-- Telescoping a sum over `Ico (w k) (w 0)` into the bins `Ico (w (i+1)) (w i)`. -/
+lemma sum_Ico_antitone_chain (f : ℕ → ℝ) (w : ℕ → ℕ) (hw : Antitone w) (k : ℕ) :
+    ∑ p ∈ (Ico (w k) (w 0)).filter Nat.Prime, f p =
+      ∑ i ∈ range k, ∑ p ∈ (Ico (w (i + 1)) (w i)).filter Nat.Prime, f p := by
+  induction k with
+  | zero => simp
+  | succ k ih =>
+    rw [Finset.sum_range_succ, ← ih, sum_filter, sum_filter, sum_filter,
+      ← sum_Ico_consecutive _ (hw (Nat.le_succ k)) (hw (Nat.zero_le k)), add_comm]
+
+/-- Bin weights at slack `δ`. -/
+noncomputable def binC (s h δ : ℝ) (i : ℕ) : ℝ :=
+  (bUp (s + (i + 1) * h - 1 + h) + δ) * (1 + δ) * ((s + i * h) / (s + i * h - 1)) *
+    (Real.log ((s + (i + 1) * h) / (s + i * h)) + δ)
+
+/-- **Finite Buchstab, liminf form, at slack `δ`.** -/
+theorem aLow_ge_bins_delta {s s' : ℝ} (hs : 2 ≤ s) (hss' : s < s') {k : ℕ} (hk : 0 < k)
+    {δ : ℝ} (hδ : 0 < δ) :
+    aLow s' - ∑ i ∈ range k, binC s ((s' - s) / k) δ i ≤ aLow s := by
+  set h := (s' - s) / k with hh
+  have hkr : (0 : ℝ) < k := by exact_mod_cast hk
+  have hpos : 0 < h := div_pos (by linarith) hkr
+  set t : ℕ → ℝ := fun i => s + i * h with ht
+  have htk : t k = s' := by simp only [ht, hh]; field_simp; ring
+  have ht0 : t 0 = s := by simp [ht]
+  have htge : ∀ i, s ≤ t i := fun i => by
+    simp only [ht]; have : (0 : ℝ) ≤ i * h := by positivity
+    linarith
+  have htmono : ∀ i, t i ≤ t (i + 1) := fun i => by simp only [ht]; push_cast; nlinarith
+  set C := ∑ i ∈ range k, binC s h δ i with hC
+  -- all bins eventually
+  have hbins : ∀ᶠ N : ℕ in atTop, ∀ i ∈ range k,
+      (∑ p ∈ (Ico ⌊(N : ℝ) ^ (1 / t (i + 1))⌋₊ ⌊(N : ℝ) ^ (1 / t i)⌋₊).filter Nat.Prime,
+        (siftMax (N / p + 1) p : ℝ)) ≤ binC s h δ i * (N / Real.log N) := by
+    refine (eventually_all_finset _).mpr fun i _ => ?_
+    have := eventually_bin_le (t := t i) (t' := t (i + 1)) (σ := t (i + 1) - 1 + h)
+      (by linarith [htge i]) (htmono i) (by linarith) hδ
+    refine this.mono fun N hN => hN.trans (le_of_eq ?_)
+    simp only [binC, ht]; push_cast; ring
+  refine le_of_forall_pos_lt_add fun ε hε => ?_
+  have hev := eventually_lt_of_lt_liminf (show aLow s' - ε / 2 < aLow s' by linarith)
+    (isBoundedUnder_of ⟨0, aSeq_nonneg s'⟩)
+  have key : ∀ᶠ N : ℕ in atTop, aLow s' - ε / 2 - C ≤ aSeq s N := by
+    filter_upwards [hbins, hev, eventually_ge_atTop 2] with N hb ha hN2
+    have hNr : (2 : ℝ) ≤ N := by exact_mod_cast hN2
+    have hNpos : (0 : ℝ) < N := by linarith
+    have hlog : 0 < Real.log N := Real.log_pos (by linarith)
+    set w : ℕ → ℕ := fun i => ⌊(N : ℝ) ^ (1 / t i)⌋₊ with hw
+    have hwa : Antitone w := by
+      refine antitone_nat_of_succ_le fun i => Nat.floor_le_floor ?_
+      exact Real.rpow_le_rpow_of_exponent_le (by linarith)
+        (one_div_le_one_div_of_le (by linarith [htge i]) (htmono i))
+    have hbuch := siftMin_buchstab N (hwa (Nat.zero_le k))
+    have hchain := sum_Ico_antitone_chain (fun p => (siftMax (N / p + 1) p : ℝ)) w hwa k
+    have hsum : (∑ p ∈ (Ico (w k) (w 0)).filter Nat.Prime, (siftMax (N / p + 1) p : ℝ)) ≤
+        C * (N / Real.log N) := by
+      rw [hchain, hC, sum_mul]
+      exact sum_le_sum hb
+    have hbuchR : (siftMin N (w k) : ℝ) ≤ siftMin N (w 0) +
+        ∑ p ∈ (Ico (w k) (w 0)).filter Nat.Prime, (siftMax (N / p + 1) p : ℝ) := by
+      exact_mod_cast hbuch
+    have hw0 : w 0 = ⌊(N : ℝ) ^ (1 / s)⌋₊ := by simp [hw, ht0]
+    have hwk : w k = ⌊(N : ℝ) ^ (1 / s')⌋₊ := by simp only [hw]; rw [htk]
+    rw [hw0, hwk] at hbuchR hsum
+    have ha' : aLow s' - ε / 2 < aSeq s' N := ha
+    unfold aSeq at ha' ⊢
+    rw [lt_div_iff₀ hNpos] at ha'
+    rw [le_div_iff₀ hNpos]
+    have e1 : C * (N / Real.log N) * Real.log N = C * N := by field_simp
+    nlinarith [mul_le_mul_of_nonneg_right hbuchR hlog.le, mul_le_mul_of_nonneg_right hsum hlog.le]
+  have := le_liminf_of_le (aSeq_cobdd (by linarith : (0 : ℝ) < s)) key
+  change aLow s' - ε / 2 - C ≤ aLow s at this
+  linarith [hε]
+
 end LeanFormalizations.Erdos385.LinearSieve
