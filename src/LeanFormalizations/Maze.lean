@@ -34,6 +34,8 @@ breaks this file.  That is the point.
 -/
 import LeanFormalizations.Literature.GelfondSchneider
 import LeanFormalizations.NumberTheory.Mills.Wright
+import LeanFormalizations.NumberTheory.Erdos385.FunctionField
+import LeanFormalizations.NumberTheory.Erdos385.Graph
 
 namespace LeanFormalizations.Maze
 
@@ -183,7 +185,50 @@ def register : List Row := [
       (hard-core 60 1 4 2: 30/46 vs control 28/46); the symbol lives in a non-abelian Kummer \
       field and p = Tr β^(3^j) gives no generator of the prime"
     reopenIf := "a law forcing the cubic residue symbol of β at the primes dividing Tr β^(3^j), \
-      e.g. an explicit generator of such a prime; or LC" }
+      e.g. an explicit generator of such a prime; or LC" },
+  { route := "Erdős #385 over F_q[T], large q (Sawin's analogue; witness depth m for q ≥ q₀(k, m))"
+    verdict := .superseded, tier := .frozen
+    anchor := some ``LeanFormalizations.Literature.BBR2015Thm23TwoFactor
+    evidence := "DOOR-FF-ERDOS-385.md, LIT-ERDOS-385.md §1: a one-line corollary of BBR \
+      arXiv:1302.0625 Thm 2.3 (edge Erdos385.ffWitness_of_BBR).  The (i) analogue is even \
+      trivial once q > deg f (Erdos385.ffGood_of_natDegree_lt_card), since a bad f satisfies \
+      T^q - T ∣ f (Erdos385.X_pow_card_sub_X_dvd_of_not_ffGood)"
+    reopenIf := "never as new math; prove the edge only if a downstream theorem consumes it" },
+  { route := "Erdős #385 over F_q[T], fixed q, n → ∞ (testing whether Siegel zeroes are the only enemy)"
+    verdict := .gapBoundLimited, tier := .frozen
+    anchor := some ``LeanFormalizations.Literature.Gorodetsky2018Thm11
+    evidence := "DOOR-FF-ERDOS-385.md; LIT-ERDOS-385.md §1: Weil RH and Gorodetsky Thm 1.1 reach \
+      only h > n/2, #385 needs two factors of degree > h, so h < n/2; Sawin (Tao blog comments, \
+      2024-08-22) showed GRH alone falls short.  No Siegel zeroes over F_q[T], yet the square-root \
+      barrier remains.  scripts/erdos385-ff-probe.py: bad f over F_2 up to degree 16, none 17..25"
+    reopenIf := "a fixed-q short-interval estimate below the square root for prime-type \
+      factorization functions, or Sawin–Shusterman-style special-q geometric input applied to \
+      two-large-factor types in every I(f, h), h < n/2" },
+  { route := "Erdős #385 by a sieve-only argument (arbitrary interval, arbitrary classes)"
+    verdict := .needsNewIdea, tier := .frozen
+    anchor := some ``LeanFormalizations.Erdos385.SieveOnlySibling
+    evidence := "Tao 2024-08-19 post; FGKMT arXiv:1412.5029 eq. (1.2) (Literature.FGKMT2018Eq12, \
+      edge Erdos385.sieveOnlySibling_of_FGKMT): one class per prime ≤ h covers an arbitrary \
+      interval of length h, so the sibling statement a sieve-only proof would establish is false"
+    reopenIf := "an input that uses that the classes are 0 mod p at the specific location n, \
+      e.g. parity-breaking Type II information on [n - h, n]" },
+  { route := "Erdős #385 for every n via sieve or multiplicative methods (one scale at a time)"
+    verdict := .needsNewIdea, tier := .frozen
+    anchor := some ``LeanFormalizations.Literature.Granville2022Cor1
+    evidence := "Tao 2024-08-19 post; Granville arXiv:2010.01211 Cor. 1: with infinitely many \
+      Siegel zeroes the classes 0 mod p, p ≤ √y, leave o(y / log y) survivors in some intervals \
+      (Literature.OneScaleSieveEnemy).  Even RH gives semiprime gaps no better than √x log x"
+    reopenIf := "a parity breakthrough that at minimum excludes Siegel zeroes, or a cross-scale \
+      coupling that makes one n good at some scale (see the repulsion row)" },
+  { route := "Erdős #385 via repulsion between scales (Tao's loophole, door 3)"
+    verdict := .needsNewIdea, tier := .frozen
+    anchor := some ``LeanFormalizations.Erdos385.CrossScaleRepulsion
+    evidence := "DOOR-EXCEPTIONAL-ERDOS-385.md Part B, scripts/erdos385-bad-structure.py: no signal \
+      (85%).  Carriers at different scales are independent within residue classes; the joint \
+      failure 'no carrier with p ≤ 512' is 23× the product of the marginals (conspiracy, not \
+      repulsion).  Edge Erdos385.eventually_not_bad_of_crossScaleRepulsion"
+    reopenIf := "a mechanism by which an empty scale forces a carrier at another scale that \
+      survives the positive cross-scale coupling seen in the data" }
 ]
 
 end LeanFormalizations.Maze

@@ -196,3 +196,8 @@ import LeanFormalizations.NumberTheory.Mills.LucasCoveringAllPrimes
 import LeanFormalizations.NumberTheory.Transcendence.MultisetGraeffe
 import LeanFormalizations.NumberTheory.Transcendence.MultisetNewton
 import LeanFormalizations.NumberTheory.Transcendence.DubickasBRec
+import LeanFormalizations.Literature.Erdos385
+import LeanFormalizations.NumberTheory.Erdos385.Rigidity
+import LeanFormalizations.NumberTheory.Erdos385.FunctionField
+import LeanFormalizations.NumberTheory.Erdos385.Graph
+import LeanFormalizations.NumberTheory.Erdos385.Count
