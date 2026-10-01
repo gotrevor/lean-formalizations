@@ -382,6 +382,18 @@ theorem not_isSquare_charDisc_mod_eventually (C : Matrix (Fin 3) (Fin 3) ℤ) (h
   have := Int.le_of_dvd (abs_pos.2 hD) ((dvd_abs _ _).2 h0)
   omega
 
+/-- `tr C^(3^k) ≡ tr C (mod 3)`, by the Gauss congruence. -/
+theorem trace_pow_three_mod_three (C : Matrix (Fin 3) (Fin 3) ℤ) (k : ℕ) :
+    (C ^ (3 ^ k)).trace % 3 = C.trace % 3 := by
+  induction k with
+  | zero => simp
+  | succ k ih =>
+    have h := LeanFormalizations.Mills.GaussCongruenceProof.gaussCongruence_mul C 1 3 k Nat.prime_three
+    simp only [one_mul] at h
+    have h3 : (3 : ℤ) ∣ (C ^ 3 ^ (k + 1)).trace - (C ^ 3 ^ k).trace :=
+      (dvd_pow_self 3 (Nat.succ_ne_zero k)).trans (by exact_mod_cast h)
+    omega
+
 /-- **The finite Kronecker certificate.**  If `tr C ≡ 2 (mod 3)` and the trace sequence revisits,
 modulo `4 |disc|`, a positive odd value at which the Jacobi symbol `(disc / ·)` is `1`, then
 `tr C^(3^k)` is composite infinitely often. -/
@@ -393,7 +405,102 @@ theorem composite_of_jacobi_hit (C : Matrix (Fin 3) (Fin 3) ℤ) (hdet : C.det �
     (hpos : 0 < (C ^ (3 ^ k₁)).trace) (hodd : Odd (C ^ (3 ^ k₁)).trace.toNat)
     (hjac : jacobiSym (charDisc C) (C ^ (3 ^ k₁)).trace.toNat = 1) :
     ∃ᶠ k in atTop, ¬ Prime (C ^ (3 ^ k)).trace := by
-  sorry
+  by_contra hcon
+  rw [not_frequently] at hcon
+  simp only [not_not] at hcon
+  obtain ⟨K, hK⟩ := eventually_atTop.1
+    (hcon.and (hgrow.eventually_gt_atTop (|C.det| + |charDisc C| + 3)))
+  set t : ℕ → ℤ := fun k => (C ^ (3 ^ k)).trace with ht
+  -- the index
+  set k := k₁ + (K + 1) * J with hk
+  have hkK : K ≤ k := by nlinarith
+  have hk1 : 1 ≤ k := by nlinarith
+  obtain ⟨hkp, hkb⟩ := hK k hkK
+  have htpos : 0 < t k := by
+    have := abs_nonneg C.det; have := abs_nonneg (charDisc C); simp only [ht]; omega
+  obtain ⟨p, hpv⟩ : ∃ p : ℕ, (p : ℤ) = t k := ⟨_, Int.toNat_of_nonneg htpos.le⟩
+  have hpnat : p.Prime := by
+    have : Prime (t k) := hkp
+    rw [← hpv, Int.prime_iff_natAbs_prime] at this
+    simpa using this
+  haveI := Fact.mk hpnat
+  have hpbig : |C.det| + |charDisc C| + 3 < (p : ℤ) := by rw [hpv]; exact hkb
+  -- `p ≡ 2 (mod 3)`
+  have hp3 : p % 3 = 2 := by
+    have := trace_pow_three_mod_three C k
+    have h' : (p : ℤ) % 3 = 2 := by rw [hpv]; simp only [ht]; omega
+    omega
+  have hp2 : p ≠ 2 := by intro h; have := abs_nonneg C.det; have := abs_nonneg (charDisc C); omega
+  -- the Jacobi symbol transfers along the period
+  set q := (C ^ (3 ^ k₁)).trace.toNat with hq
+  have hqv : (q : ℤ) = t k₁ := Int.toNat_of_nonneg hpos.le
+  have hmodN : p ≡ q [MOD 4 * (charDisc C).natAbs] := by
+    rw [Nat.modEq_iff_dvd]
+    have h := hper (K + 1)
+    rw [Int.modEq_iff_dvd] at h
+    push_cast
+    rw [hqv, hpv]
+    have : ((4 * (charDisc C).natAbs : ℕ) : ℤ) ∣ 4 * charDisc C := by
+      push_cast
+      exact mul_dvd_mul_left 4 (abs_dvd_self _)
+    push_cast at this
+    exact this.trans h
+  have hpodd : Odd p := hpnat.odd_of_ne_two hp2
+  have hjp : jacobiSym (charDisc C) p = 1 := by
+    rw [jacobiSym.mod_right _ hpodd, hmodN, ← jacobiSym.mod_right _ hodd, hjac]
+  have hD0 : ((charDisc C : ℤ) : ZMod p) ≠ 0 := by
+    rw [ne_eq, ZMod.intCast_zmod_eq_zero_iff_dvd]
+    intro h
+    have := Int.le_of_dvd (abs_pos.2 hD) ((dvd_abs _ _).2 h)
+    have := abs_nonneg C.det
+    omega
+  have hsq : IsSquare ((charDisc C : ℤ) : ZMod p) := by
+    rw [← legendreSym.eq_one_iff p hD0, jacobiSym.legendreSym.to_jacobiSym]; exact hjp
+  have hdetp : ¬ (p : ℤ) ∣ C.det := by
+    intro h
+    have := Int.le_of_dvd (abs_pos.2 hdet) ((dvd_abs _ _).2 h)
+    have := abs_nonneg (charDisc C)
+    omega
+  have hdvd : (p : ℤ) ∣ (C ^ (3 ^ k)).trace := by rw [hpv]
+  by_cases hirr : Irreducible (C.map (Int.castRingHom (ZMod p))).charpoly
+  · have hfreq := LeanFormalizations.Mills.Projective.composite_of_irreducible_divisor C hpnat (by omega) hirr hk1 hdvd
+      hdetp hgrow
+    exact (hfreq.and_eventually hcon).exists.elim fun _ h => h.1 h.2
+  · obtain ⟨r, hr⟩ := exists_root_of_not_irreducible _ hirr
+    have hspl : (C.map (Int.castRingHom (ZMod p))).charpoly.Splits := by
+      rw [charpoly_three_eq (C.map (Int.castRingHom (ZMod p)))]
+      rw [charDisc_cast] at hsq hD0
+      exact splits_of_isSquare_disc hp2 hD0 hsq ⟨r, hr⟩
+    have hc : Nat.Coprime 3 (p * (p - 1)) := by
+      have h2 := hpnat.two_le
+      rw [Nat.Prime.coprime_iff_not_dvd Nat.prime_three]
+      intro h
+      rcases (Nat.Prime.dvd_mul Nat.prime_three).1 h with h | h <;> omega
+    obtain ⟨J', hJ', hper'⟩ := trace_pow_periodic_of_splits C hpnat hc hspl hdetp
+    have hrec : ∀ i, (p : ℤ) ∣ t (k + i * J') := by
+      intro i
+      induction i with
+      | zero => simpa [ht] using hdvd
+      | succ i ih =>
+        have := (Int.ModEq.dvd_iff (hper' (k + i * J'))).2 ih
+        simpa [ht, add_mul, add_assoc] using this
+    obtain ⟨N, hN⟩ := eventually_atTop.1 (hgrow.eventually_gt_atTop (p : ℤ))
+    set k' := k + N * J' with hk'
+    have hk'N : N ≤ k' := by nlinarith
+    have hgt : (p : ℤ) < t k' := hN k' hk'N
+    have hk'p : Prime (t k') := (hK k' (by nlinarith)).1
+    have hqpos : 0 < t k' := by omega
+    obtain ⟨q', hqv'⟩ : ∃ q' : ℕ, (q' : ℤ) = t k' := ⟨_, Int.toNat_of_nonneg hqpos.le⟩
+    have hqnat : q'.Prime := by
+      have := hk'p
+      rw [Int.prime_iff_natAbs_prime] at this
+      simpa [← hqv'] using this
+    have hdq : p ∣ q' := by
+      have : (p : ℤ) ∣ (q' : ℤ) := by rw [hqv']; exact hrec N
+      exact_mod_cast this
+    rcases (Nat.Prime.eq_one_or_self_of_dvd hqnat p hdq) with h | h
+    · exact hpnat.one_lt.ne' h
+    · omega
 
 /-- **Mills.**  If the least Mills constant is algebraic and its cubic `A^(3^m)` has trace
 `≡ 2 (mod 3)`, then the field is not cyclic (the discriminant is not a square) and every late
