@@ -6,7 +6,7 @@ Authors: Trevor Morris
 import Mathlib
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.UpperBoundary
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Assembly
-import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.UpperAt
+import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Bounded
 
 /-!
 # The named leaves of `aLow_pos` (phase E5, steps 2–5)
@@ -40,8 +40,7 @@ theorem aLow_mono : MonotoneOn aLow (Ioi 0) := by
   sorry
 
 /-- Leaf: `b` is monotone on `(0, ∞)`. -/
-theorem bUp_mono : MonotoneOn bUp (Ioi 0) := by
-  sorry
+theorem bUp_mono : MonotoneOn bUp (Ioi 0) := bUp_mono'
 
 /-- Leaf (step 2): the lower Buchstab inequality in the limit. -/
 theorem buchstab_limit_a : ∀ s s' : ℝ, 2 ≤ s → s ≤ s' →
