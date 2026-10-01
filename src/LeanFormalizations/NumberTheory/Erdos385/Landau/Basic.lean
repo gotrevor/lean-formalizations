@@ -74,11 +74,136 @@ lemma zeta_zero_re_lt_one {ρ : ℂ} (hρ : riemannZeta ρ = 0) : ρ.re < 1 := b
   by_contra h
   exact riemannZeta_ne_zero_of_one_le_re (not_lt.mp h) hρ
 
+lemma vkTheta_rpow {T : ℝ} (hT : 3 ≤ T) :
+    vkTheta T ^ ((3 : ℝ) / 2) = Real.log (Real.log T) / Real.log T := by
+  have hL : 1 < Real.log T := one_lt_log_three.trans_le (Real.log_le_log (by norm_num) hT)
+  have hφ : 0 < Real.log (Real.log T) := Real.log_pos hL
+  have hL0 : 0 < Real.log T := by linarith
+  have e : vkTheta T = (Real.log (Real.log T) / Real.log T) ^ ((2 : ℝ) / 3) := by
+    unfold vkTheta vkW
+    rw [Real.div_rpow hφ.le hL0.le]
+    have hsplit : Real.log (Real.log T) =
+        Real.log (Real.log T) ^ ((1 : ℝ) / 3) * Real.log (Real.log T) ^ ((2 : ℝ) / 3) := by
+      rw [← Real.rpow_add hφ]; norm_num
+    have h1 : 0 < Real.log (Real.log T) ^ ((1 : ℝ) / 3) := Real.rpow_pos_of_pos hφ _
+    have h2 : 0 < Real.log T ^ ((2 : ℝ) / 3) := Real.rpow_pos_of_pos hL0 _
+    nth_rewrite 1 [hsplit]
+    field_simp
+  rw [e, ← Real.rpow_mul (div_pos hφ hL0).le]; norm_num
+
 /-- **Elementary asymptotics** of `L, φ, w` (all as `T → ∞`). -/
 lemma vk_asymp (C : ℝ) : ∃ T₀ : ℝ, 3 ≤ T₀ ∧ ∀ T, T₀ ≤ T →
     1 ≤ Real.log (Real.log T) ∧ vkW T / 2 ≤ vkW (2 * T) ∧ 1 / vkW T ≤ Real.log T ∧
     Real.log (Real.log T) / vkW T ≤ Real.log T ∧ vkTheta T ≤ 1 / 8 ∧ C * vkW T ≤ 1 := by
-  sorry
+  open Filter in
+  have hb : ∀ᶠ T : ℝ in atTop, Real.log (Real.log T) ^ 4 ≤ Real.log T := by
+    have h := ((Real.tendsto_pow_log_div_mul_add_atTop 1 0 4 one_ne_zero).comp
+      Real.tendsto_log_atTop).eventually (gt_mem_nhds zero_lt_one)
+    filter_upwards [h, Real.tendsto_log_atTop.eventually_gt_atTop 0] with T hT hL
+    simp only [Function.comp_apply, one_mul, add_zero] at hT
+    rw [div_lt_one hL] at hT; exact hT.le
+  open Filter in
+  have ha : ∀ᶠ T : ℝ in atTop, 4 ≤ Real.log (Real.log T) :=
+    (Real.tendsto_log_atTop.comp Real.tendsto_log_atTop).eventually_ge_atTop 4
+  open Filter in
+  have hc : ∀ᶠ T : ℝ in atTop, max C 1 ≤ Real.log (Real.log T) :=
+    (Real.tendsto_log_atTop.comp Real.tendsto_log_atTop).eventually_ge_atTop _
+  obtain ⟨a, ha'⟩ := Filter.eventually_atTop.mp ((hb.and ha).and hc)
+  refine ⟨max a 3, le_max_right _ _, fun T hT => ?_⟩
+  obtain ⟨⟨hφ4L, hφ4⟩, hCL⟩ := ha' T (le_of_max_le_left hT)
+  have hT3 : 3 ≤ T := le_of_max_le_right hT
+  set L := Real.log T with hLdef
+  set φ := Real.log L with hφdef
+  have hL1 : 1 < L := one_lt_log_three.trans_le (Real.log_le_log (by norm_num) hT3)
+  have hL0 : 0 < L := by linarith
+  have hφ0 : 0 < φ := by linarith
+  have hw : vkW T = 1 / (L ^ ((2 : ℝ) / 3) * φ ^ ((1 : ℝ) / 3)) := rfl
+  have hL23 : 0 < L ^ ((2 : ℝ) / 3) := Real.rpow_pos_of_pos hL0 _
+  have hφ13 : 0 < φ ^ ((1 : ℝ) / 3) := Real.rpow_pos_of_pos hφ0 _
+  have hφL : φ ≤ L := by
+    have := Real.log_le_sub_one_of_pos hL0; rw [← hφdef] at this; linarith
+  have hLsplit : L = L ^ ((2 : ℝ) / 3) * L ^ ((1 : ℝ) / 3) := by
+    rw [← Real.rpow_add hL0]; norm_num
+  -- 1/w ≤ L
+  have h3 : 1 / vkW T ≤ L := by
+    rw [hw, one_div_one_div]
+    conv_rhs => rw [hLsplit]
+    exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hφ0.le hφL (by norm_num)) hL23.le
+  -- φ/w ≤ L
+  have h4 : φ / vkW T ≤ L := by
+    have hpow : φ * φ ^ ((1 : ℝ) / 3) ≤ L ^ ((1 : ℝ) / 3) := by
+      have h1 : (φ ^ 4) ^ ((1 : ℝ) / 3) ≤ L ^ ((1 : ℝ) / 3) :=
+        Real.rpow_le_rpow (by positivity) hφ4L (by norm_num)
+      have h2 : (φ ^ 4) ^ ((1 : ℝ) / 3) = φ * φ ^ ((1 : ℝ) / 3) := by
+        rw [← Real.rpow_natCast, ← Real.rpow_mul hφ0.le,
+          show ((4 : ℕ) : ℝ) * (1 / 3) = 1 + 1 / 3 by norm_num, Real.rpow_add hφ0, Real.rpow_one]
+      rw [h2] at h1; exact h1
+    rw [hw, one_div, div_inv_eq_mul]
+    conv_rhs => rw [hLsplit]
+    nlinarith
+  refine ⟨by linarith, ?_, h3, h4, ?_, ?_⟩
+  · -- vkW (2T) ≥ vkW T / 2
+    have hL2 : Real.log (2 * T) ≤ 2 * L := by
+      rw [Real.log_mul (by norm_num) (by linarith)]
+      have := Real.log_two_lt_d9; linarith
+    have hL2' : L ≤ Real.log (2 * T) := Real.log_le_log (by linarith) (by linarith)
+    have hφ2 : Real.log (Real.log (2 * T)) ≤ 2 * φ := by
+      calc Real.log (Real.log (2 * T)) ≤ Real.log (2 * L) := Real.log_le_log (by linarith) hL2
+        _ = Real.log 2 + φ := Real.log_mul (by norm_num) hL0.ne'
+        _ ≤ 2 * φ := by have := Real.log_two_lt_d9; linarith
+    have hφ2' : 0 < Real.log (Real.log (2 * T)) := Real.log_pos (by linarith)
+    have hden : Real.log (2 * T) ^ ((2 : ℝ) / 3) * Real.log (Real.log (2 * T)) ^ ((1 : ℝ) / 3)
+        ≤ 2 * (L ^ ((2 : ℝ) / 3) * φ ^ ((1 : ℝ) / 3)) := by
+      have e1 : Real.log (2 * T) ^ ((2 : ℝ) / 3) ≤ (2 : ℝ) ^ ((2 : ℝ) / 3) * L ^ ((2 : ℝ) / 3) := by
+        rw [← Real.mul_rpow (by norm_num) hL0.le]
+        exact Real.rpow_le_rpow (by linarith) hL2 (by norm_num)
+      have e2 : Real.log (Real.log (2 * T)) ^ ((1 : ℝ) / 3) ≤
+          (2 : ℝ) ^ ((1 : ℝ) / 3) * φ ^ ((1 : ℝ) / 3) := by
+        rw [← Real.mul_rpow (by norm_num) hφ0.le]
+        exact Real.rpow_le_rpow hφ2'.le hφ2 (by norm_num)
+      have e3 : (2 : ℝ) ^ ((2 : ℝ) / 3) * (2 : ℝ) ^ ((1 : ℝ) / 3) = 2 := by
+        rw [← Real.rpow_add (by norm_num)]; norm_num
+      calc _ ≤ ((2 : ℝ) ^ ((2 : ℝ) / 3) * L ^ ((2 : ℝ) / 3)) *
+            ((2 : ℝ) ^ ((1 : ℝ) / 3) * φ ^ ((1 : ℝ) / 3)) :=
+            mul_le_mul e1 e2 (Real.rpow_nonneg hφ2'.le _) (by positivity)
+        _ = ((2 : ℝ) ^ ((2 : ℝ) / 3) * (2 : ℝ) ^ ((1 : ℝ) / 3)) *
+            (L ^ ((2 : ℝ) / 3) * φ ^ ((1 : ℝ) / 3)) := by ring
+        _ = _ := by rw [e3]
+    have hpos2 : 0 < Real.log (2 * T) ^ ((2 : ℝ) / 3) *
+        Real.log (Real.log (2 * T)) ^ ((1 : ℝ) / 3) :=
+      mul_pos (Real.rpow_pos_of_pos (by linarith) _) (Real.rpow_pos_of_pos hφ2' _)
+    unfold vkW
+    rw [← hLdef, ← hφdef, div_div, one_div_le_one_div (by positivity) hpos2]
+    linarith
+  · -- θ ≤ 1/8
+    have hθ0 : 0 ≤ vkTheta T := by
+      unfold vkTheta; exact mul_nonneg hφ0.le (vkW_pos hT3).le
+    by_contra hθ
+    push Not at hθ
+    have h1 : (1 / 8 : ℝ) ^ ((3 : ℝ) / 2) < vkTheta T ^ ((3 : ℝ) / 2) :=
+      Real.rpow_lt_rpow (by norm_num) hθ (by norm_num)
+    have h2 : (1 / 8 : ℝ) ^ (2 : ℝ) ≤ (1 / 8 : ℝ) ^ ((3 : ℝ) / 2) :=
+      Real.rpow_le_rpow_of_exponent_ge (by norm_num) (by norm_num) (by norm_num)
+    rw [vkTheta_rpow hT3, ← hLdef, ← hφdef] at h1
+    have h3 : φ / L ≤ 1 / 64 := by
+      rw [div_le_iff₀ hL0]
+      have h64 : (4 : ℝ) ^ 3 ≤ φ ^ 3 := pow_le_pow_left₀ (by norm_num) hφ4 3
+      have : φ * 64 ≤ φ * φ ^ 3 := mul_le_mul_of_nonneg_left (by norm_num at h64; linarith) hφ0.le
+      nlinarith
+    have : (1 / 8 : ℝ) ^ (2 : ℝ) = 1 / 64 := by norm_num
+    linarith
+  · -- C w ≤ 1
+    have hw0 : 0 < vkW T := vkW_pos hT3
+    have hwφ : φ ≤ 1 / vkW T := by
+      rw [hw, one_div_one_div]
+      have e : φ = φ ^ ((2 : ℝ) / 3) * φ ^ ((1 : ℝ) / 3) := by
+        rw [← Real.rpow_add hφ0]; norm_num
+      conv_lhs => rw [e]
+      exact mul_le_mul_of_nonneg_right (Real.rpow_le_rpow hφ0.le hφL (by norm_num)) hφ13.le
+    have hCm : C ≤ max C 1 := le_max_left _ _
+    have : C ≤ 1 / vkW T := hCm.trans (hCL.trans hwφ)
+    rw [le_div_iff₀ hw0] at this
+    linarith
 
 /-- **(D3) Dirichlet-series bound** for `σ > 1`. -/
 lemma logDeriv_zeta_dirichlet_bound : ∃ C : ℝ, ∀ σ t : ℝ, 1 < σ →

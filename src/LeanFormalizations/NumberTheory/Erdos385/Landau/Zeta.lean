@@ -38,23 +38,6 @@ lemma zeta_zeros_finite {c₀ : ℂ} {δ : ℝ} (h1 : (1 : ℂ) ∉ closedBall c
     {ρ | ρ ∈ closedBall c₀ δ ∧ riemannZeta ρ = 0}.Finite :=
   (isCompact_closedBall c₀ δ).inter_riemannZetaZeros_finite
 
-lemma vkTheta_rpow {T : ℝ} (hT : 3 ≤ T) :
-    vkTheta T ^ ((3 : ℝ) / 2) = Real.log (Real.log T) / Real.log T := by
-  have hL : 1 < Real.log T := one_lt_log_three.trans_le (Real.log_le_log (by norm_num) hT)
-  have hφ : 0 < Real.log (Real.log T) := Real.log_pos hL
-  have hL0 : 0 < Real.log T := by linarith
-  have e : vkTheta T = (Real.log (Real.log T) / Real.log T) ^ ((2 : ℝ) / 3) := by
-    unfold vkTheta vkW
-    rw [Real.div_rpow hφ.le hL0.le]
-    have hsplit : Real.log (Real.log T) =
-        Real.log (Real.log T) ^ ((1 : ℝ) / 3) * Real.log (Real.log T) ^ ((2 : ℝ) / 3) := by
-      rw [← Real.rpow_add hφ]; norm_num
-    have h1 : 0 < Real.log (Real.log T) ^ ((1 : ℝ) / 3) := Real.rpow_pos_of_pos hφ _
-    have h2 : 0 < Real.log T ^ ((2 : ℝ) / 3) := Real.rpow_pos_of_pos hL0 _
-    nth_rewrite 1 [hsplit]
-    field_simp
-  rw [e, ← Real.rpow_mul (div_pos hφ hL0).le]; norm_num
-
 /-- Growth of `ζ` on the Landau disc. -/
 lemma zeta_disc_growth (h : RichertZetaGrowth) : ∃ K t₁ : ℝ, 0 ≤ K ∧ ∀ t : ℝ, t₁ ≤ |t| →
     ∀ s ∈ closedBall (lc t) (3 * vkTheta |t|), ‖riemannZeta s‖ ≤ Real.log |t| ^ K := by
