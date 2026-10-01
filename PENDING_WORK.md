@@ -1,3 +1,10 @@
+## phase E5 lap 2 (2026-10-01): crux normalised to `lowerAt_pos`
+`siftMin_lower` proved from `lowerAt_pos : ∀ s > 2, ∃ c > 0, LowerAt s c` (Crux.lean; `LowerAt`/`UpperAt`
+are the ε–N₀ normal forms of a(s), b(s)).  Insight: positivity of α = λ(sω − m/2) on (2,3] is
+2λ log(s−1), independent of λ — so the rough-number/PNT argument for λ ≥ 1 is NOT needed; only
+λ = e^{C₃}/ω_∞ (C₃ = mertensThirdConst, no γ needed) plus decay sω−sω_∞, m = O(1/Γ).
+Next: leaves `upperAt_two` (b ≤ 2 on [1,2] from siftMax_le_log), limit Buchstab, fundamental lemma.
+
 ## phase E5 lap 1 (2026-10-01): linear sieve reduced to one crux, route fixed
 `linearSieveIntervalLower_holds` is proved from `LinearSieve.siftMin_lower` (Crux.lean, disclosed sorry).
 `LinearSieve/Buchstab.lean` (sorry-free): self-similar problem class, exact Buchstab identity,
