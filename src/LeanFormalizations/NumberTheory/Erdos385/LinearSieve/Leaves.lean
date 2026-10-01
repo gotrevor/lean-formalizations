@@ -6,7 +6,7 @@ Authors: Trevor Morris
 import Mathlib
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.UpperBoundary
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Assembly
-import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.DelaySolution
+import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.RoughOmega
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Bounded
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.BuchstabLimitA
 
@@ -56,8 +56,9 @@ theorem fundamental_lemma : ∃ M : ℝ, 0 ≤ M ∧ ∀ s : ℝ, 2 ≤ s →
 
 /-- **Assembly**: the comparison principle turns the leaves into `a(s) ≥ α(s) > 0`. -/
 theorem aLow_pos_of_leaves : ∀ s : ℝ, 2 < s → 0 < aLow s := by
-  obtain ⟨α, β, hα, hβ, h12, hαβ, ⟨M2, hM2, hdec2⟩, hpos⟩ := comparison_functions
   obtain ⟨M1, hM1, hdec1⟩ := fundamental_lemma
+  obtain ⟨α, β, hα, hβ, h12, hαβ, ⟨M2, hM2, hdec2⟩, hpos⟩ := comparison_functions
+    (omegaLe_of_bUp ⟨M1, fun s hs => by linarith [(abs_le.mp (hdec1 s hs).2).2]⟩)
   set a' : ℝ → ℝ := fun s => aLow (max s 1)
   set b' : ℝ → ℝ := fun s => bUp (max s 1)
   have hmax : ∀ s : ℝ, 1 ≤ s → max s 1 = s := fun s hs => max_eq_left hs

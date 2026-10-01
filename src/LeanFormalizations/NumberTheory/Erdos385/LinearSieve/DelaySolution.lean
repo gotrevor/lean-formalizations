@@ -19,7 +19,7 @@ Leaves:
   (`(s−1)P(s) = ∫_{s−1}^s P`), and super-exponential convergence
   (`sω(s) = (s−1)ω(s−1) + ∫_{s−2}^{s−1} ω` makes `ω(s)` an average over the previous window;
   the oscillation contracts by `≈ 1/s` per unit step).
-* `omega_le` (`ω∞ ≤ e^{−γ}`, i.e. `λ ≥ 1`; true with equality).  Route without Laplace transforms:
+* hypothesis `omega_le` (proved as `omegaLe_of_bUp` in `RoughOmega.lean`; `ω∞ ≤ e^{−γ}`, i.e. `λ ≥ 1`; true with equality).  Route without Laplace transforms:
   the rough-number count `Φ(N, z)` (problem `r ≡ 0`, interval `[1, N]`) obeys the forward Buchstab
   identity with positive terms, `Φ ≥ π(N) − π(z) ~ N / log N` on `(1, 2]` (PNT), so its normalised
   liminf dominates `Q/2`; and `Φ ≤ S⁺`, whose normalisation is `≤ Cs + M e^{−s}`
@@ -73,13 +73,10 @@ theorem delay_solution : ∃ Q P : ℝ → ℝ, IsDelayPair Q P ∧ (∀ s, 0 < 
     rw [abs_of_pos (solP_pos s)]
     exact (hP s hs).trans (by nlinarith)
 
-/-- Leaf: `ω∞ ≤ e^{−γ}` (Buchstab's limit; equality is classical). -/
-theorem omega_le : ∀ Q P : ℝ → ℝ, IsDelayPair Q P → ∀ ω M : ℝ, 0 < ω →
-    (∀ s, 2 ≤ s → |Q s - 2 * ω * s| ≤ M * Real.exp (-s)) → ω ≤ mertC := by
-  sorry
-
 /-- **The Jurkat–Richert comparison functions** `α = Cs f(s)`, `β = Cs F(s)`. -/
-theorem comparison_functions : ∃ α β : ℝ → ℝ, Continuous α ∧ Continuous β ∧
+theorem comparison_functions
+    (omega_le : ∀ Q P : ℝ → ℝ, IsDelayPair Q P → ∀ ω M : ℝ, 0 < ω →
+      (∀ s, 2 ≤ s → |Q s - 2 * ω * s| ≤ M * Real.exp (-s)) → ω ≤ mertC) : ∃ α β : ℝ → ℝ, Continuous α ∧ Continuous β ∧
     (∀ s, 1 < s → s ≤ 2 → α s ≤ 0 ∧ 2 ≤ β s) ∧
     (∀ s s' : ℝ, 2 ≤ s → s ≤ s' →
       α s = α s' - ∫ t in s..s', β (t - 1) / (t - 1) ∧
