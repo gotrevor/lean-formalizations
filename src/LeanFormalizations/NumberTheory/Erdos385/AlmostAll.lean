@@ -279,12 +279,225 @@ def SmoothPrimeSumVKMRNorm : Prop :=
           mellin f (1 - t * I) * (P : ℂ) ^ (1 - t * I) / (1 - t * I)‖ ≤
         C * (P * Real.exp (-(Real.log P / Real.log T ^ ((2 : ℝ) / 3 + ε))) * Real.log T + 1)
 
+/-! ### The crux: decomposition of `smoothPrimeSumVK_of_VKZ` -/
+
+/-- The Euler operator `x f'(x)`; its Mellin transform is `−s · mellin f s`. -/
+noncomputable def xDeriv (f : ℝ → ℂ) : ℝ → ℂ := fun x => (x : ℂ) * deriv f x
+
+/-- A Mellin integral of a function vanishing off `[a, b] ⊂ (0, ∞)` is an interval integral. -/
+theorem mellin_eq_intervalIntegral {g : ℝ → ℂ} {a b : ℝ} (ha : 0 < a) (hab : a ≤ b)
+    (hs : ∀ x, g x ≠ 0 → a ≤ x ∧ x ≤ b) (s : ℂ) :
+    mellin g s = ∫ x in (a / 2)..(b + 1), (x : ℂ) ^ (s - 1) * g x := by
+  rw [mellin, intervalIntegral.integral_of_le (by linarith),
+    setIntegral_eq_of_subset_of_forall_sdiff_eq_zero (s := Set.Ioc (a / 2) (b + 1)) measurableSet_Ioi
+      (fun x hx => show 0 < x by linarith [hx.1])]
+  · rfl
+  · intro x hx
+    have : g x = 0 := by
+      by_contra h; exact hx.2 ⟨by linarith [(hs x h).1], by linarith [(hs x h).2]⟩
+    simp [this]
+
+theorem mellin_strip_bound {g : ℝ → ℂ} (hg : Continuous g) {a b : ℝ} (ha : 0 < a) (hab : a ≤ b)
+    (hs : ∀ x, g x ≠ 0 → a ≤ x ∧ x ≤ b) (σ₀ σ₁ : ℝ) :
+    ∃ C : ℝ, ∀ s : ℂ, σ₀ ≤ s.re → s.re ≤ σ₁ → ‖mellin g s‖ ≤ C := by
+  set A := a / 2
+  set B := b + 1
+  have hA : 0 < A := by positivity
+  have hAB : A ≤ B := by simp only [A, B]; linarith
+  obtain ⟨M, hM⟩ := (isCompact_Icc (a := A) (b := B)).exists_bound_of_continuousOn
+    (f := fun x => ‖g x‖ * (x ^ (σ₀ - 1) + x ^ (σ₁ - 1))) (by
+      apply ContinuousOn.mul hg.norm.continuousOn
+      apply ContinuousOn.add <;>
+      exact ContinuousOn.rpow_const continuousOn_id fun x hx => Or.inl (by linarith [hx.1]))
+  refine ⟨M * (B - A), fun s h0 h1 => ?_⟩
+  rw [mellin_eq_intervalIntegral ha hab hs]
+  have := intervalIntegral.norm_integral_le_of_norm_le_const (a := A) (b := B) (C := M)
+    (f := fun x => (x : ℂ) ^ (s - 1) * g x) (fun x hx => by
+      rw [Set.uIoc_of_le hAB] at hx
+      have hx0 : 0 < x := by linarith [hx.1]
+      rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx0]
+      have hre : (s - 1).re = s.re - 1 := by simp
+      rw [hre]
+      have hb := hM x ⟨hx.1.le, hx.2⟩
+      rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)] at hb
+      refine le_trans ?_ hb
+      rw [mul_comm]
+      apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
+      rcases le_total 1 x with h | h
+      · have := Real.rpow_le_rpow_of_exponent_le h (show s.re - 1 ≤ σ₁ - 1 by linarith)
+        linarith [Real.rpow_nonneg hx0.le (σ₀ - 1)]
+      · have := Real.rpow_le_rpow_of_exponent_ge hx0 h (show σ₀ - 1 ≤ s.re - 1 by linarith)
+        linarith [Real.rpow_nonneg hx0.le (σ₁ - 1)])
+  rwa [abs_of_nonneg (by linarith)] at this
+
+theorem mellin_xDeriv {f : ℝ → ℂ} (hf : ContDiff ℝ 1 f) {a b : ℝ} (ha : 0 < a) (hab : a ≤ b)
+    (hs : ∀ x, f x ≠ 0 → a ≤ x ∧ x ≤ b) {s : ℂ} (hs0 : s ≠ 0) :
+    mellin (xDeriv f) s = -(s * mellin f s) := by
+  have hsupp : Function.support f ⊆ Set.Icc a b := fun x hx => hs x hx
+  have hts : tsupport f ⊆ Set.Icc a b := closure_minimal hsupp isClosed_Icc
+  have hs' : ∀ x, xDeriv f x ≠ 0 → a ≤ x ∧ x ≤ b := by
+    intro x hx
+    have : deriv f x ≠ 0 := fun h => hx (by simp [xDeriv, h])
+    exact hts (support_deriv_subset this)
+  set A := a / 2
+  set B := b + 1
+  have hA : 0 < A := by positivity
+  have hAB : A ≤ B := by simp only [A, B]; linarith
+  have hfA : f A = 0 := by by_contra h; have := (hs A h).1; simp only [A] at this; linarith
+  have hfB : f B = 0 := by by_contra h; have := (hs B h).2; simp only [B] at this; linarith
+  have hdc : Continuous (deriv f) := hf.continuous_deriv le_rfl
+  have hab' : Set.uIcc A B = Set.Icc A B := Set.uIcc_of_le hAB
+  rw [mellin_eq_intervalIntegral ha hab hs', mellin_eq_intervalIntegral ha hab hs]
+  have hibp : ∫ x in A..B, f x * (s * (x : ℂ) ^ (s - 1)) =
+      f B * (B : ℂ) ^ s - f A * (A : ℂ) ^ s - ∫ x in A..B, deriv f x * (x : ℂ) ^ s := by
+    refine intervalIntegral.integral_mul_deriv_eq_deriv_mul (u := f) (u' := deriv f)
+      (v := fun x : ℝ => (x : ℂ) ^ s) (v' := fun x : ℝ => s * (x : ℂ) ^ (s - 1)) ?_ ?_ ?_ ?_
+    · intro x _
+      exact (hf.differentiable one_ne_zero x).hasDerivAt
+    · intro x hx
+      rw [hab'] at hx
+      exact hasDerivAt_ofReal_cpow_const (ne_of_gt (by linarith [hx.1])) hs0
+    · exact hdc.intervalIntegrable _ _
+    · apply ContinuousOn.intervalIntegrable
+      rw [hab']
+      intro x hx
+      apply ContinuousAt.continuousWithinAt
+      exact continuousAt_const.mul (continuousAt_ofReal_cpow_const x _ (Or.inr (by linarith [hx.1])))
+  rw [hfA, hfB] at hibp
+  have e1 : ∫ x in A..B, (x : ℂ) ^ (s - 1) * xDeriv f x = ∫ x in A..B, deriv f x * (x : ℂ) ^ s := by
+    refine intervalIntegral.integral_congr fun x hx => ?_
+    rw [hab'] at hx
+    have hx0 : (x : ℂ) ≠ 0 := by exact_mod_cast (show 0 < x by linarith [hx.1]).ne'
+    simp only [xDeriv]
+    rw [Complex.cpow_sub _ _ hx0, Complex.cpow_one]; field_simp
+  have e2 : s * ∫ x in A..B, (x : ℂ) ^ (s - 1) * f x = ∫ x in A..B, f x * (s * (x : ℂ) ^ (s - 1)) := by
+    rw [← intervalIntegral.integral_const_mul]
+    exact intervalIntegral.integral_congr fun x _ => by ring
+  rw [e1, e2, hibp]; ring
+
+/-- **Crux leaf V1: Mellin decay in vertical strips.**  For smooth `f` vanishing off
+`[a, b] ⊂ (0, ∞)`, `‖s‖^k ‖mellin f s‖` is bounded on every strip `σ₀ ≤ Re s ≤ σ₁`. -/
+theorem mellin_strip_decay (k : ℕ) : ∀ {f : ℝ → ℂ}, (∀ j : ℕ, ContDiff ℝ j f) → ∀ {a b : ℝ},
+    0 < a → a ≤ b → (∀ x, f x ≠ 0 → a ≤ x ∧ x ≤ b) → ∀ σ₀ σ₁ : ℝ,
+    ∃ C : ℝ, ∀ s : ℂ, σ₀ ≤ s.re → s.re ≤ σ₁ → ‖s‖ ^ k * ‖mellin f s‖ ≤ C := by
+  induction k with
+  | zero =>
+    intro f hf a b ha hab hs σ₀ σ₁
+    obtain ⟨C, hC⟩ := mellin_strip_bound (hf 0).continuous ha hab hs σ₀ σ₁
+    exact ⟨C, fun s h0 h1 => by simpa using hC s h0 h1⟩
+  | succ k ih =>
+    intro f hf a b ha hab hs σ₀ σ₁
+    have hts : tsupport f ⊆ Set.Icc a b := closure_minimal (fun x hx => hs x hx) isClosed_Icc
+    have hD : ∀ j : ℕ, ContDiff ℝ j (xDeriv f) := fun j =>
+      (Complex.ofRealCLM.contDiff.mul ((hf (j + 1)).deriv' ))
+    have hDs : ∀ x, xDeriv f x ≠ 0 → a ≤ x ∧ x ≤ b := by
+      intro x hx
+      have : deriv f x ≠ 0 := fun h => hx (by simp [xDeriv, h])
+      exact hts (support_deriv_subset this)
+    obtain ⟨C, hC⟩ := ih hD ha hab hDs σ₀ σ₁
+    refine ⟨max C 0, fun s h0 h1 => ?_⟩
+    rcases eq_or_ne s 0 with rfl | hs0
+    · simp
+    · have := hC s h0 h1
+      rw [mellin_xDeriv (by exact_mod_cast hf 1) ha hab hs hs0, norm_neg, norm_mul] at this
+      calc ‖s‖ ^ (k + 1) * ‖mellin f s‖ = ‖s‖ ^ k * (‖s‖ * ‖mellin f s‖) := by ring
+        _ ≤ C := this
+        _ ≤ max C 0 := le_max_left _ _
+
+/-- A compactly supported function with `tsupport ⊆ (0, ∞)` vanishes off some `[a, b]`, `0 < a`. -/
+theorem exists_support_Icc {f : ℝ → ℂ} (hc : HasCompactSupport f) (ht : tsupport f ⊆ Set.Ioi 0) :
+    ∃ a b : ℝ, 0 < a ∧ a ≤ b ∧ ∀ x, f x ≠ 0 → a ≤ x ∧ x ≤ b := by
+  rcases (tsupport f).eq_empty_or_nonempty with h | h
+  · refine ⟨1, 1, one_pos, le_rfl, fun x hx => ?_⟩
+    have := subset_tsupport f hx; rw [h] at this; exact absurd this (Set.notMem_empty x)
+  · obtain ⟨a, ha, hamin⟩ := hc.isCompact.exists_isLeast h
+    obtain ⟨b, hb⟩ := hc.isCompact.bddAbove
+    refine ⟨a, max a b, ht ha, le_max_left _ _, fun x hx => ?_⟩
+    have := subset_tsupport f hx
+    exact ⟨hamin this, (hb this).trans (le_max_right _ _)⟩
+/-- `H(w) = ζ'/ζ(w) + 1/(w − 1)`: the part of `ζ'/ζ` that the VK hypothesis bounds. -/
+noncomputable def zetaH (w : ℂ) : ℂ := deriv riemannZeta w / riemannZeta w + 1 / (w - 1)
+
+/-- The smoothed twisted prime sum. -/
+noncomputable def smoothTwist (f : ℝ → ℂ) (P t : ℝ) : ℂ :=
+  ∑' n : ℕ, (ArithmeticFunction.vonMangoldt n : ℂ) * (n : ℂ) ^ (-((t : ℂ) * I)) * f (n / P)
+
+/-- **Crux leaf V4 (Perron at `Re s = 2`, main term subtracted).**  Once `f(x/P)` vanishes for
+`x ≤ 1` (`a P ≥ 1`): `S − F(1 − it) P^{1−it} = −(1/2π) ∫ F(2+iy) P^{2+iy} H(2+iy+it) dy`.
+English proof: Mellin inversion `mellinInv_mellin_eq` at `x = n/P`, Fubini against
+`∑ Λ(n) n^{-2}` (absolutely convergent, `mellin_strip_decay` k = 2 for integrability),
+`LSeries_vonMangoldt_eq_deriv_riemannZeta_div`; the main term is `∫_1^∞ x^{−it} f(x/P) dx`
+(`mellin_comp_mul_left`) whose Mellin–Perron form is `∫ F(s) P^s/(s + it − 1)` since
+`∫_1^∞ x^{−s−it} dx = 1/(s+it−1)`.  Confidence 95%. -/
+theorem smoothTwist_sub_main_eq {f : ℝ → ℂ} (hf : ∀ k : ℕ, ContDiff ℝ k f) {a b : ℝ} (ha : 0 < a)
+    (hab : a ≤ b) (hs : ∀ x, f x ≠ 0 → a ≤ x ∧ x ≤ b) {P : ℝ} (hP : 1 ≤ a * P) (t : ℝ) :
+    smoothTwist f P t - mellin f (1 - t * I) * (P : ℂ) ^ (1 - t * I) =
+      -((1 / (2 * π) : ℝ) : ℂ) * ∫ y : ℝ, mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I) *
+        zetaH (2 + y * I + t * I) := by
+  sorry
+
+/-- **Crux leaf V5 (contour shift + estimates).**  Under VK, the vertical integral of V4 is
+`≪ P exp(−log P/(log T)^{2/3+ε}) log T + 1`.  English proof: `H(· + it)` is holomorphic on
+`[σ₁, 2] × [−T/2, T/2]`, `σ₁ = 1 − c₀/((log T)^{2/3}(log log T)^{1/3})` (VK: no zeros, the
+singularity at `w = 1` is removable since `H` is bounded there); shift the segment
+`|y| ≤ T/2` to `Re s = σ₁` (`Complex.integral_boundary_rect_eq_zero_of_differentiableOn`); the
+left side is `≪ P^{σ₁} log T ∫|F|`, the horizontal sides and the tails `|y| > T/2` on `Re s = 2`
+are `≪ P² T^{−2} log T ≤ log T`... using `mellin_strip_decay` with `k = 3`; finally
+`c₀/((log T)^{2/3}(log log T)^{1/3}) ≥ (log T)^{−2/3−ε}` for large `T` (bounded `T` absorbed in
+`C`).  Confidence 90%. -/
+theorem vertical_integral_bound (h : VKZeroFreeLogDeriv) {f : ℝ → ℂ}
+    (hf : ∀ k : ℕ, ContDiff ℝ k f) {a b : ℝ} (ha : 0 < a) (hab : a ≤ b)
+    (hs : ∀ x, f x ≠ 0 → a ≤ x ∧ x ≤ b) (ε : ℝ) (hε : 0 < ε) :
+    ∃ C : ℝ, ∀ P T t : ℝ, 2 ≤ P → 3 ≤ T → P ≤ T → |t| ≤ T / 2 →
+      ‖∫ y : ℝ, mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I) * zetaH (2 + y * I + t * I)‖ ≤
+        C * (P * Real.exp (-(Real.log P / Real.log T ^ ((2 : ℝ) / 3 + ε))) * Real.log T + 1) := by
+  sorry
+
+/-- **Crux leaf V6 (small `P`).**  For `a P < 1`, `P ≤ 1/a` is bounded, the sum has `n ≤ b/a`
+terms, and both sides are `O(1)` uniformly in `t` (`‖n^{−it}‖ = 1`, `‖P^{1−it}‖ = P`,
+`mellin_strip_bound`).  Confidence 98%. -/
+theorem smoothTwist_smallP {f : ℝ → ℂ} (hf : ∀ k : ℕ, ContDiff ℝ k f) {a b : ℝ} (ha : 0 < a)
+    (hab : a ≤ b) (hs : ∀ x, f x ≠ 0 → a ≤ x ∧ x ≤ b) :
+    ∃ C : ℝ, ∀ P t : ℝ, 0 < P → a * P < 1 →
+      ‖smoothTwist f P t - mellin f (1 - t * I) * (P : ℂ) ^ (1 - t * I)‖ ≤ C := by
+  sorry
+
 /-- **Edge: VK region ⇒ Lemma VK.**  Mellin inversion on `Re s = 1 + 1/log P`, shift to
 `σ₁ = 1 − (log T)^{−2/3−ε}` inside the region, residue `mellin f (1 − it) P^{1−it}` at `s = 1 − it`,
 truncate at height `T/2` using the decay of `mellin f`.  PNT+'s smoothed-Chebyshev contour code
 (`MediumPNT`) is this argument at `t = 0` with the classical region. -/
 theorem smoothPrimeSumVK_of_VKZ (h : VKZeroFreeLogDeriv) : SmoothPrimeSumVK := by
-  sorry
+  intro f hf hc ht ε hε
+  obtain ⟨a, b, ha, hab, hs⟩ := exists_support_Icc hc ht
+  obtain ⟨C5, h5⟩ := vertical_integral_bound h hf ha hab hs ε hε
+  obtain ⟨C6, h6⟩ := smoothTwist_smallP hf ha hab hs
+  refine ⟨|C5| / (2 * π) + |C6|, fun P T t hP hT hPT ht => ?_⟩
+  set E := P * Real.exp (-(Real.log P / Real.log T ^ ((2 : ℝ) / 3 + ε))) * Real.log T + 1
+  have hE : 1 ≤ E := by
+    have : 0 ≤ Real.log T := Real.log_nonneg (by linarith)
+    have : 0 ≤ P * Real.exp (-(Real.log P / Real.log T ^ ((2 : ℝ) / 3 + ε))) * Real.log T := by
+      positivity
+    linarith
+  have hπ : 0 < 2 * π := by positivity
+  change ‖smoothTwist f P t - _‖ ≤ _
+  rcases le_or_gt 1 (a * P) with haP | haP
+  · rw [smoothTwist_sub_main_eq hf ha hab hs haP t, norm_mul, norm_neg, Complex.norm_real,
+      Real.norm_eq_abs, abs_of_pos (by positivity)]
+    have := h5 P T t hP hT hPT ht
+    calc 1 / (2 * π) * ‖∫ y : ℝ, _‖ ≤ 1 / (2 * π) * (C5 * E) :=
+          mul_le_mul_of_nonneg_left this (by positivity)
+      _ ≤ 1 / (2 * π) * (|C5| * E) :=
+          mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right (le_abs_self _) (by linarith))
+            (by positivity)
+      _ = |C5| / (2 * π) * E := by ring
+      _ ≤ (|C5| / (2 * π) + |C6|) * E := by
+          apply mul_le_mul_of_nonneg_right _ (by linarith); linarith [abs_nonneg C6]
+  · have := h6 P t (by linarith) haP
+    calc _ ≤ C6 := this
+      _ ≤ |C6| * 1 := by rw [mul_one]; exact le_abs_self _
+      _ ≤ (|C5| / (2 * π) + |C6|) * E := by
+          apply mul_le_mul _ hE zero_le_one (by positivity)
+          linarith [show 0 ≤ |C5| / (2 * π) by positivity]
 
 /-- **Control 3d, as a teeth test against the node:** Lemma VK and MR16's normalisation cannot both
 hold.  Their main terms differ by `|mellin f (1 − i)| P / √2` at `t = 1`, `T = P`, which is `≍ P` for
