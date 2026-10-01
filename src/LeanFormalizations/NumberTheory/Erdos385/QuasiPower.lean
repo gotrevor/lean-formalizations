@@ -10,6 +10,10 @@ import LeanFormalizations.NumberTheory.Erdos385.QuasiPower.Esymm
 import LeanFormalizations.NumberTheory.Erdos385.QuasiPower.Window
 import LeanFormalizations.NumberTheory.Erdos385.QuasiPower.MertensSums
 import LeanFormalizations.NumberTheory.Erdos385.QuasiPower.Params
+import LeanFormalizations.NumberTheory.Erdos385.QuasiPower.Final
+import LeanFormalizations.NumberTheory.Erdos385.LinearSieve
+import LeanFormalizations.NumberTheory.Erdos385.LargeSieve
+import LeanFormalizations.NumberTheory.Erdos385.ExceptionalWeak.Sieve
 
 /-!
 # Erdős #385: pushing the bad-`n` bound toward the framework ceiling (phase E8, moonshot)
@@ -79,7 +83,125 @@ def BadCountQuasiPower : Prop :=
 theorem badCountExp_threeQuarters : BadCountExpThreeQuarters := by
   sorry
 
+set_option maxHeartbeats 1000000 in
+/-- **Moonshot proved**: `#bad ≤ C X exp(−log X/(32400 (log log X)²))`.  Route: `QuasiPower.bound_m`
+with `m = ⌊(log₂ X/8)^{1/4}⌋`, then `QuasiPower.term_pool`, `term_main`, `exp_target_ge`. -/
 theorem badCountQuasiPower_holds : BadCountQuasiPower := by
-  sorry
+  classical
+  obtain ⟨C, hC1, hCl⟩ := Exceptional.exists_lsWith arithLargeSieveWeak_holds
+  obtain ⟨m₀, hb⟩ := QuasiPower.bound_m hCl (by linarith) linearSieveIntervalLower_holds
+  obtain ⟨M, hM⟩ : ∃ M : ℕ, M = max m₀ 18000 := ⟨_, rfl⟩
+  obtain ⟨X₁, hX₁⟩ : ∃ X₁ : ℕ, X₁ = 2 ^ (8 * M ^ 4 + 9) := ⟨_, rfl⟩
+  refine ⟨1 / 32400, by norm_num, max (2 + 2 * C) X₁, fun X hX => ?_⟩
+  have hset : {n : ℕ | n ≤ X ∧ 5 ≤ n ∧ Bad n} =
+      ↑((Finset.Icc 1 X).filter fun n => 5 ≤ n ∧ Bad n) := by
+    ext n; simp only [Set.mem_setOf_eq, Finset.coe_filter, Finset.mem_Icc]
+    constructor
+    · rintro ⟨h1, h2, h3⟩; exact ⟨⟨by omega, h1⟩, h2, h3⟩
+    · rintro ⟨⟨_, h1⟩, h2, h3⟩; exact ⟨h1, h2, h3⟩
+  rw [hset, Set.ncard_coe_finset]
+  have hX0 : (0 : ℝ) < X := by exact_mod_cast (show 0 < X by omega)
+  obtain ⟨L, hL⟩ : ∃ L : ℝ, L = Real.log X := ⟨_, rfl⟩
+  rw [← hL]
+  obtain ⟨ℓ, hℓ⟩ : ∃ ℓ : ℕ, ℓ = Nat.log 2 X := ⟨_, rfl⟩
+  have hℓX : 2 ^ ℓ ≤ X := by rw [hℓ]; exact Nat.pow_log_le_self 2 (by omega)
+  have hXℓ : X < 2 ^ (ℓ + 1) := by rw [hℓ]; exact Nat.lt_pow_succ_log_self (by norm_num) X
+  have hl2 : (0.6931471803 : ℝ) < Real.log 2 := Real.log_two_gt_d9
+  have hl2' : Real.log 2 < 1 := by linarith [Real.log_two_lt_d9]
+  have hLlo : (ℓ : ℝ) * Real.log 2 ≤ L := by
+    rw [hL, ← Real.log_pow]
+    exact Real.log_le_log (by positivity) (by exact_mod_cast hℓX)
+  have hLhi : L < ((ℓ + 1 : ℕ) : ℝ) := by
+    have : L < ((ℓ + 1 : ℕ) : ℝ) * Real.log 2 := by
+      rw [hL, ← Real.log_pow]
+      exact Real.log_lt_log hX0 (by exact_mod_cast hXℓ)
+    have h0 : (0 : ℝ) ≤ ((ℓ + 1 : ℕ) : ℝ) := Nat.cast_nonneg _
+    nlinarith
+  obtain ⟨m, hm⟩ : ∃ m : ℕ, m = Nat.sqrt (Nat.sqrt (ℓ / 8)) := ⟨_, rfl⟩
+  have hm4 : 8 * m ^ 4 ≤ ℓ := by
+    have h1 : m ^ 2 ≤ Nat.sqrt (ℓ / 8) := by rw [hm]; exact Nat.sqrt_le' _
+    have h2 : Nat.sqrt (ℓ / 8) ^ 2 ≤ ℓ / 8 := Nat.sqrt_le' _
+    have h3 : (m ^ 2) ^ 2 ≤ Nat.sqrt (ℓ / 8) ^ 2 := Nat.pow_le_pow_left h1 2
+    have : m ^ 4 = (m ^ 2) ^ 2 := by ring
+    omega
+  have hm4' : ℓ + 1 ≤ 8 * (m + 1) ^ 4 + 8 := by
+    have h1 : Nat.sqrt (ℓ / 8) < (m + 1) ^ 2 := by
+      rw [hm]; exact Nat.lt_succ_sqrt' _
+    have h2 : ℓ / 8 < (Nat.sqrt (ℓ / 8) + 1) ^ 2 := Nat.lt_succ_sqrt' _
+    have h3 : (Nat.sqrt (ℓ / 8) + 1) ^ 2 ≤ ((m + 1) ^ 2) ^ 2 := Nat.pow_le_pow_left h1 2
+    have : (m + 1) ^ 4 = ((m + 1) ^ 2) ^ 2 := by ring
+    omega
+  have hcard : (((Finset.Icc 1 X).filter fun n => 5 ≤ n ∧ Bad n).card : ℝ) ≤ X := by
+    have := (Finset.card_filter_le (Finset.Icc 1 X) fun n => 5 ≤ n ∧ Bad n)
+    simp only [Nat.card_Icc, add_tsub_cancel_right] at this
+    exact_mod_cast this
+  by_cases hmM : M ≤ m
+  · have hm0 : m₀ ≤ m := le_trans (by rw [hM]; exact le_max_left _ _) hmM
+    have hm18 : 18000 ≤ m := le_trans (by rw [hM]; exact le_max_right _ _) hmM
+    have hX8 : 2 ^ (8 * m ^ 4) ≤ X := le_trans (Nat.pow_le_pow_right (by norm_num) hm4) hℓX
+    have hbd := hb X m hm0 hX8
+    have hP := QuasiPower.term_pool (by omega) hX8
+    have hT := QuasiPower.term_main hm18
+    have hmR : (18000 : ℝ) ≤ m := by exact_mod_cast hm18
+    have hLm1 : (m : ℝ) ^ 4 ≤ L := by
+      have : ((8 * m ^ 4 : ℕ) : ℝ) ≤ ℓ := by exact_mod_cast hm4
+      push_cast at this
+      have hm40 : (0 : ℝ) ≤ (m : ℝ) ^ 4 := by positivity
+      nlinarith
+    have hLm2 : L ≤ 137 * (m : ℝ) ^ 4 := by
+      have h1 : ((ℓ + 1 : ℕ) : ℝ) ≤ ((8 * (m + 1) ^ 4 + 8 : ℕ) : ℝ) := by exact_mod_cast hm4'
+      push_cast at h1
+      have h2 : ((m : ℝ) + 1) ^ 4 ≤ 16 * (m : ℝ) ^ 4 := by
+        have : (m : ℝ) + 1 ≤ 2 * m := by linarith
+        calc ((m : ℝ) + 1) ^ 4 ≤ (2 * m) ^ 4 := by gcongr
+          _ = 16 * (m : ℝ) ^ 4 := by ring
+      have h3 : (1 : ℝ) ≤ (m : ℝ) ^ 4 := one_le_pow₀ (by linarith)
+      push_cast at hLhi
+      linarith
+    have hE := QuasiPower.exp_target_ge (by linarith) hLm1 hLm2
+    obtain ⟨E, hEd⟩ : ∃ E : ℝ, E = Real.exp (-((m : ℝ) ^ 4 / Real.log m ^ 2) / 3600) := ⟨_, rfl⟩
+    rw [← hEd] at hP hT hE
+    have hE0 : 0 ≤ E := by rw [hEd]; positivity
+    have hC0 : (0 : ℝ) ≤ C := by linarith
+    have hXX : (0 : ℝ) ≤ X := hX0.le
+    have h3 : (m : ℝ) ^ 4 * (C * (X + X) * (23 / 25 : ℝ) ^ (m ^ 4 / (16 * (Nat.log 2 m + 1) ^ 2)))
+        ≤ 2 * C * X * E := by
+      have : (m : ℝ) ^ 4 * (C * (X + X) * (23 / 25 : ℝ) ^ (m ^ 4 / (16 * (Nat.log 2 m + 1) ^ 2)))
+          = 2 * C * X * ((m : ℝ) ^ 4 * (23 / 25 : ℝ) ^ (m ^ 4 / (16 * (Nat.log 2 m + 1) ^ 2))) := by
+        ring
+      rw [this]; gcongr
+    calc _ ≤ _ := hbd
+      _ ≤ 2 * X * E + 2 * C * X * E := by linarith
+      _ = (2 + 2 * C) * X * E := by ring
+      _ ≤ max (2 + 2 * C) X₁ * X * Real.exp (-(1 / 32400 * L / Real.log L ^ 2)) := by
+        gcongr; exact le_max_left _ _
+  · -- small `X`: `X < X₁`
+    have hXX₁ : X ≤ X₁ := by
+      have h1 : m + 1 ≤ M := by omega
+      have h2 : (m + 1) ^ 4 ≤ M ^ 4 := Nat.pow_le_pow_left h1 4
+      have h3 : 2 ^ (ℓ + 1) ≤ 2 ^ (8 * M ^ 4 + 9) := Nat.pow_le_pow_right (by norm_num) (by omega)
+      rw [hX₁]; omega
+    have hLe : Real.exp 1 ≤ L := by
+      have h16 : Real.log 16 ≤ L := by
+        rw [hL]; exact Real.log_le_log (by norm_num) (by exact_mod_cast hX)
+      have : Real.log 16 = 4 * Real.log 2 := by
+        rw [show (16 : ℝ) = 2 ^ 4 by norm_num, Real.log_pow]; norm_num
+      linarith [Real.exp_one_lt_d9]
+    have hL16 : 1 ≤ Real.log L := by
+      rw [Real.le_log_iff_exp_le (by linarith [Real.exp_pos 1])]; exact hLe
+    have hL0 : 0 ≤ L := by linarith [Real.exp_pos 1]
+    have hEx : Real.exp (-L) ≤ Real.exp (-(1 / 32400 * L / Real.log L ^ 2)) := by
+      apply Real.exp_le_exp.mpr
+      have hsq : 1 ≤ Real.log L ^ 2 := one_le_pow₀ hL16
+      rw [neg_le_neg_iff, div_le_iff₀ (by linarith)]
+      nlinarith
+    have hXe : (X : ℝ) * Real.exp (-L) = 1 := by
+      rw [Real.exp_neg, hL, Real.exp_log hX0]; field_simp
+    have hX₁R : (X : ℝ) ≤ X₁ := by exact_mod_cast hXX₁
+    calc _ ≤ (X : ℝ) := hcard
+      _ ≤ X₁ := hX₁R
+      _ = X₁ * (X * Real.exp (-L)) := by rw [hXe, mul_one]
+      _ ≤ max (2 + 2 * C) X₁ * X * Real.exp (-(1 / 32400 * L / Real.log L ^ 2)) := by
+        rw [← mul_assoc]; gcongr; exact le_max_right _ _
 
 end LeanFormalizations.Erdos385
