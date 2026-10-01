@@ -228,4 +228,9 @@ import LeanFormalizations.NumberTheory.Erdos385.Landau.ZeroFree
 import LeanFormalizations.NumberTheory.Erdos385.Landau
 import LeanFormalizations.Literature.Erdos385Exceptional
 import LeanFormalizations.NumberTheory.Erdos385.Exceptional
+import LeanFormalizations.NumberTheory.Erdos385.Exceptional.Basic
+import LeanFormalizations.NumberTheory.Erdos385.Exceptional.CRT
+import LeanFormalizations.NumberTheory.Erdos385.Exceptional.McD
+import LeanFormalizations.NumberTheory.Erdos385.Exceptional.Mertens
+import LeanFormalizations.NumberTheory.Erdos385.Exceptional.Tail
 import LeanFormalizations.NumberTheory.Erdos385.RateVK
