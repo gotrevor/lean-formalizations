@@ -1,3 +1,8 @@
+## ✅ (2026-10-01, session B): LinearSieve SCOPE COMPLETE.  `aLow_ge_fl'` (FLLowerB.lean) proved:
+Buchstab from 2 + `siftMax_le_fl` per prime + `sum_Vw_div` telescoping + `rankin_error_sum`
+(u e^{−2u} ≤ 4e^{−s}/u, Mertens first; no dyadic sum).  `linearSieveIntervalLower_holds`,
+`fundamental_lemma`, `lowerAt_pos`: [propext, Classical.choice, Quot.sound].  LinearSieve/ sorry-free.
+
 ## CLAIM (2026-10-01 11:52, session B): A's handoff ended its lap; B is now implementing the FL lower
 half `aLow_ge_fl` in NEW file `LinearSieve/FLLowerB.lean` (reuses A's `Vw`, `sum_Vw_div`,
 `primeProd_log_bounds`; no hypothesis — uses `siftMax_mul_le` directly; no dyadic sum).  If A resumes,

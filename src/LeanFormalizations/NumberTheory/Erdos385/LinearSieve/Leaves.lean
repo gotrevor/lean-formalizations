@@ -10,6 +10,7 @@ import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.RoughOmega
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.Bounded
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.BuchstabLimitB
 import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.FLUpper
+import LeanFormalizations.NumberTheory.Erdos385.LinearSieve.FLLowerB
 
 /-!
 # The named leaves of `aLow_pos` (phase E5, steps 2–5)
@@ -55,8 +56,8 @@ theorem buchstab_limit_b : ∀ s s' : ℝ, 2 ≤ s → s ≤ s' →
 `Σ_{p<z} V(p)/p = 1 − V(z)` (telescoping), and the Rankin error
 `Σ_{p<z} (L/(p log p)) e^{−2(L/log p − 1)} ≤ D e^{−s}(1/s + B/L)` via `u e^{−2u} ≤ D e^{−s}/u`
 (`u = L/log p ≥ s`) and Mertens' first theorem — no dyadic decomposition needed. -/
-theorem aLow_ge_fl : ∃ M : ℝ, 0 ≤ M ∧ ∀ s : ℝ, 2 ≤ s → mertC * s - M * Real.exp (-s) ≤ aLow s := by
-  sorry
+theorem aLow_ge_fl : ∃ M : ℝ, 0 ≤ M ∧ ∀ s : ℝ, 2 ≤ s → mertC * s - M * Real.exp (-s) ≤ aLow s :=
+  aLow_ge_fl'
 
 /-- Leaf (step 3): the fundamental lemma, with an exponentially small error. -/
 theorem fundamental_lemma : ∃ M : ℝ, 0 ≤ M ∧ ∀ s : ℝ, 2 ≤ s →
