@@ -79,10 +79,158 @@ def ShortIntervalPNTUnitWindow : Prop :=
     H / (2 * Real.log (2 * y)) ≤
       (Nat.primeCounting ⌊y + H⌋₊ : ℝ) - Nat.primeCounting ⌊y⌋₊
 
+theorem theta_sub_le_primeCounting_sub {a b : ℕ} (hab : a ≤ b) :
+    θ b - θ a ≤ ((Nat.primeCounting b : ℝ) - Nat.primeCounting a) * Real.log b := by
+  rw [Chebyshev.theta_eq_sum_primesLE_log, Chebyshev.theta_eq_sum_primesLE_log]
+  have hsub : Nat.primesLE a ⊆ Nat.primesLE b := fun p hp => by
+    rw [Nat.mem_primesLE] at hp ⊢; exact ⟨hp.1.trans hab, hp.2⟩
+  rw [← Finset.sum_sdiff hsub, add_sub_cancel_right, ← Nat.primesLE_card_eq_primeCounting,
+    ← Nat.primesLE_card_eq_primeCounting]
+  rw [← Nat.cast_sub (Finset.card_le_card hsub), ← Finset.card_sdiff_of_subset hsub]
+  rw [← nsmul_eq_mul, ← Finset.sum_const]
+  refine Finset.sum_le_sum fun p hp => ?_
+  have hp' := (Finset.mem_sdiff.1 hp).1
+  have := Nat.le_of_mem_primesLE hp'
+  have := (Nat.prime_of_mem_primesLE hp').pos
+  exact Real.log_le_log (by exact_mod_cast this) (by exact_mod_cast ‹p ≤ b›)
+
+
+/-- The eventual size facts behind `shortIntervalPNT_of_mediumPNT`. -/
+theorem shortIntervalPNT_eventually (c K : ℝ) (hc : 0 < c) :
+    ∀ᶠ y : ℝ in atTop, 1 ≤ y ∧ 12 * K ≤ Real.exp (c / 2 * Real.log y ^ ((1 : ℝ) / 10)) ∧
+      Real.exp (c / 2 * Real.log y ^ ((1 : ℝ) / 10)) ≤ y ^ ((1 : ℝ) / 8) ∧
+      Real.log (2 * y) ≤ 2 * y ^ ((1 : ℝ) / 8) ∧ 32 ≤ y ^ ((1 : ℝ) / 4) := by
+  have hL : Tendsto (fun y : ℝ => Real.log y ^ ((1 : ℝ) / 10)) atTop atTop :=
+    (tendsto_rpow_atTop (by norm_num)).comp Real.tendsto_log_atTop
+  have hL9 : Tendsto (fun y : ℝ => Real.log y ^ ((9 : ℝ) / 10)) atTop atTop :=
+    (tendsto_rpow_atTop (by norm_num)).comp Real.tendsto_log_atTop
+  have hE : Tendsto (fun y : ℝ => Real.exp (c / 2 * Real.log y ^ ((1 : ℝ) / 10))) atTop atTop :=
+    Real.tendsto_exp_atTop.comp (hL.const_mul_atTop (by positivity))
+  have hlog := (isLittleO_log_rpow_atTop (show (0 : ℝ) < 1 / 8 by norm_num)).bound
+    (show (0 : ℝ) < 1 by norm_num)
+  have h2y : Tendsto (fun y : ℝ => 2 * y) atTop atTop := tendsto_id.const_mul_atTop (by norm_num)
+  filter_upwards [eventually_ge_atTop 1, hE.eventually_ge_atTop (12 * K),
+    hL9.eventually_ge_atTop (4 * c), h2y.eventually hlog,
+    (tendsto_rpow_atTop (show (0 : ℝ) < 1 / 4 by norm_num)).eventually_ge_atTop 32,
+    Real.tendsto_log_atTop.eventually_gt_atTop 0] with y hy1 hK h9 hl h32 hlpos
+  refine ⟨hy1, hK, ?_, ?_, h32⟩
+  · have hy0 : 0 < y := by linarith
+    rw [Real.rpow_def_of_pos hy0]
+    apply Real.exp_le_exp.2
+    have hsplit : Real.log y ^ ((1 : ℝ) / 10) * Real.log y ^ ((9 : ℝ) / 10) = Real.log y := by
+      rw [← Real.rpow_add hlpos]; norm_num
+    have : 0 ≤ Real.log y ^ ((1 : ℝ) / 10) := by positivity
+    nlinarith
+  · have hy0 : 0 < y := by linarith
+    simp only [Real.norm_eq_abs, one_mul] at hl
+    rw [abs_of_pos (Real.log_pos (by linarith)), abs_of_pos (by positivity),
+      Real.mul_rpow (by norm_num) hy0.le] at hl
+    have : (2 : ℝ) ^ ((1 : ℝ) / 8) ≤ 2 := by
+      calc (2 : ℝ) ^ ((1 : ℝ) / 8) ≤ 2 ^ (1 : ℝ) :=
+            Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
+        _ = 2 := Real.rpow_one 2
+    have : 0 ≤ y ^ ((1 : ℝ) / 8) := by positivity
+    nlinarith
+
 /-- **Edge: `MediumPNT` ⇒ short-interval PNT.**  Difference `ψ(y + H) − ψ(y)`, discard prime powers
 (`O(√y log y)`), partial summation; `c = c'/2`. -/
 theorem shortIntervalPNT_of_mediumPNT (h : MediumPNTStatement) : ShortIntervalPNT := by
-  sorry
+  obtain ⟨c, hc, hO⟩ := h
+  obtain ⟨K, hK, hKw⟩ := hO.exists_pos
+  obtain ⟨x₁, hx₁⟩ := eventually_atTop.1 hKw.bound
+  obtain ⟨y₂, hy₂⟩ := eventually_atTop.1 (shortIntervalPNT_eventually c K hc)
+  refine ⟨c / 2, by positivity, max (max x₁ 0) y₂, fun y H hy hH hHy => ?_⟩
+  obtain ⟨hy1, hKe, he8, hlog, h32⟩ := hy₂ y (le_of_max_le_right hy)
+  have hyx : x₁ ≤ y := (le_max_left _ _).trans (le_of_max_le_left hy)
+  have hy0 : 0 < y := by linarith
+  set L := Real.log y ^ ((1 : ℝ) / 10) with hLdef
+  set e := Real.exp (c / 2 * L) with hedef
+  set f := Real.exp (-(c / 2) * L) with hfdef
+  have hfe : f * e = 1 := by rw [hfdef, hedef, ← Real.exp_add]; simp
+  have hf0 : 0 < f := Real.exp_pos _
+  have he0 : 0 < e := Real.exp_pos _
+  have hH0 : 0 ≤ H := le_trans (by positivity) hH
+  have hyH : 0 < y + H := by linarith
+  -- the MediumPNT error at y and y + H
+  have hL' : L ≤ Real.log (y + H) ^ ((1 : ℝ) / 10) :=
+    Real.rpow_le_rpow (Real.log_nonneg hy1) (Real.log_le_log hy0 (by linarith)) (by norm_num)
+  have hEE : Real.exp (-c * Real.log (y + H) ^ ((1 : ℝ) / 10)) ≤ f * f := by
+    rw [hfdef, ← Real.exp_add]; apply Real.exp_le_exp.2; nlinarith
+  have hEy : Real.exp (-c * L) = f * f := by rw [hfdef, ← Real.exp_add]; ring_nf
+  have b1 := hx₁ (y + H) (by linarith)
+  have b2 := hx₁ y hyx
+  simp only [Pi.sub_apply, id, Real.norm_eq_abs] at b1 b2
+  rw [abs_of_pos (by positivity : 0 < (y + H) * Real.exp (-c * Real.log (y + H) ^ ((1 : ℝ) / 10)))]
+    at b1
+  rw [abs_of_pos (by positivity : 0 < y * Real.exp (-c * Real.log y ^ ((1 : ℝ) / 10)))] at b2
+  rw [← hLdef, hEy] at b2
+  have hψ1 : (y + H) - K * (2 * y) * (f * f) ≤ ψ (y + H) := by
+    have := (abs_le.1 b1).1
+    have : K * ((y + H) * Real.exp (-c * Real.log (y + H) ^ ((1 : ℝ) / 10))) ≤
+        K * (2 * y) * (f * f) := by
+      rw [mul_assoc]; apply mul_le_mul_of_nonneg_left _ hK.le
+      exact mul_le_mul (by linarith) hEE (by positivity) (by positivity)
+    linarith
+  have hψ2 : ψ y ≤ y + K * y * (f * f) := by have := (abs_le.1 b2).2; linarith
+  have hθ1 : ψ (y + H) - 2 * √(y + H) * Real.log (y + H) ≤ θ (y + H) := by
+    have := Chebyshev.psi_sub_theta_le (show 1 ≤ y + H by linarith); linarith
+  have hθ2 := Chebyshev.theta_le_psi y
+  -- the prime-power and PNT errors are below H / 2
+  have hsq : 2 * √(y + H) * Real.log (y + H) ≤ 2 * (2 * √y) * (2 * y ^ ((1 : ℝ) / 8)) := by
+    have h1 : √(y + H) ≤ 2 * √y := by
+      rw [show 2 * √y = √(4 * y) by rw [Real.sqrt_mul (by norm_num)]; norm_num]
+      exact Real.sqrt_le_sqrt (by linarith)
+    have h2 : Real.log (y + H) ≤ 2 * y ^ ((1 : ℝ) / 8) :=
+      (Real.log_le_log hyH (by linarith)).trans hlog
+    have : 0 ≤ Real.log (y + H) := Real.log_nonneg (by linarith)
+    have : 0 ≤ √(y + H) := Real.sqrt_nonneg _
+    nlinarith
+  have hr4 : y ^ ((1 : ℝ) / 4) = y ^ ((1 : ℝ) / 8) * y ^ ((1 : ℝ) / 8) := by
+    rw [← Real.rpow_add hy0]; norm_num
+  have hs : √y = y ^ ((1 : ℝ) / 4) * y ^ ((1 : ℝ) / 4) := by
+    rw [Real.sqrt_eq_rpow, ← Real.rpow_add hy0]; norm_num
+  have hyy : y = √y * √y := (Real.mul_self_sqrt hy0.le).symm
+  have hA : 2 * (2 * √y) * (2 * y ^ ((1 : ℝ) / 8)) ≤ y * f / 4 := by
+    -- multiply through by `e`
+    have key : 32 * √y * y ^ ((1 : ℝ) / 8) * e ≤ y := by
+      have h8 : 0 ≤ y ^ ((1 : ℝ) / 8) := by positivity
+      have hsy : 0 ≤ √y := Real.sqrt_nonneg _
+      calc 32 * √y * y ^ ((1 : ℝ) / 8) * e ≤ 32 * √y * y ^ ((1 : ℝ) / 8) * y ^ ((1 : ℝ) / 8) := by
+            apply mul_le_mul_of_nonneg_left he8; positivity
+        _ = 32 * √y * y ^ ((1 : ℝ) / 4) := by rw [hr4]; ring
+        _ ≤ y ^ ((1 : ℝ) / 4) * √y * y ^ ((1 : ℝ) / 4) := by
+            apply mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right h32 hsy); positivity
+        _ = y := by
+          rw [show y ^ ((1 : ℝ) / 4) * √y * y ^ ((1 : ℝ) / 4) =
+            √y * (y ^ ((1 : ℝ) / 4) * y ^ ((1 : ℝ) / 4)) by ring, ← hs, ← hyy]
+    have : y * f / 4 = y * f * e / (4 * e) := by field_simp
+    rw [this, le_div_iff₀ (by positivity), mul_assoc y f e, hfe]
+    nlinarith
+  have hB : K * (2 * y) * (f * f) + K * y * (f * f) ≤ y * f / 4 := by
+    have h12 : 12 * K * f ≤ 1 := by
+      rw [← hfe]; exact (mul_le_mul_of_nonneg_right hKe hf0.le).trans_eq (mul_comm e f)
+    have h0 : 0 ≤ y * f := by positivity
+    have := mul_le_mul_of_nonneg_right h12 h0
+    have h3 : K * (2 * y) * (f * f) + K * y * (f * f) = (12 * K * f) * (y * f) / 4 := by ring
+    rw [h3]; linarith
+  have hyf : y * f ≤ H := by simpa [hfdef, neg_mul, neg_div] using hH
+  have hθd : H / 2 ≤ θ (y + H) - θ y := by linarith
+  -- convert to π
+  rw [Chebyshev.theta_eq_theta_coe_floor (y + H), Chebyshev.theta_eq_theta_coe_floor y] at hθd
+  have hfl : ⌊y⌋₊ ≤ ⌊y + H⌋₊ := Nat.floor_le_floor (by linarith)
+  have hπ := theta_sub_le_primeCounting_sub hfl
+  have hb1 : (1 : ℝ) ≤ ⌊y + H⌋₊ := by
+    have : 1 ≤ ⌊y + H⌋₊ := Nat.le_floor (by push_cast; linarith)
+    exact_mod_cast this
+  have hblog : Real.log ⌊y + H⌋₊ ≤ Real.log (2 * y) :=
+    Real.log_le_log (by linarith) ((Nat.floor_le hyH.le).trans (by linarith))
+  have hπ0 : (0 : ℝ) ≤ (Nat.primeCounting ⌊y + H⌋₊ : ℝ) - Nat.primeCounting ⌊y⌋₊ := by
+    have := Nat.monotone_primeCounting hfl
+    rw [sub_nonneg]; exact_mod_cast this
+  have hl2 : 0 < Real.log (2 * y) := Real.log_pos (by linarith)
+  rw [div_le_iff₀ (by positivity)]
+  have := mul_le_mul_of_nonneg_left hblog hπ0
+  linarith
 
 theorem not_shortIntervalPNTUnitWindow : ¬ ShortIntervalPNTUnitWindow := by
   rintro ⟨y₀, hy⟩
