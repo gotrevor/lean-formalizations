@@ -235,16 +235,192 @@ theorem hyperbolaPrimePairs_of_goldbachWindow (h : GoldbachWindow) : HyperbolaPr
     (by rw [hN]; rw [hj7] at hhi; linarith)
   exact ⟨p, p + d, hp, hq, by omega, h1, h2⟩
 
+/-- Window `i` of mesh `1/K`, in integers: `GoldbachWindow` at `a² = i/(2K)`, `b² = (i+1)/(2K)`
+gives, for each large `m`, primes `p, p + d` with `2p + d = 2m` and `im ≤ Kd² ≤ (i+1)m`. -/
+theorem goldbachWindow_mesh (h : GoldbachWindow) {K i : ℕ} (hK : 0 < K) (hi : i + 1 ≤ 18 * K) :
+    ∀ᶠ m : ℕ in atTop, ∃ p d : ℕ, p.Prime ∧ (p + d).Prime ∧ 2 * p + d = 2 * m ∧
+      i * m ≤ K * d ^ 2 ∧ K * d ^ 2 ≤ (i + 1) * m := by
+  have hKR : (0 : ℝ) < K := by exact_mod_cast hK
+  have hiR : ((i : ℝ) + 1) ≤ 18 * K := by exact_mod_cast hi
+  have hab : Real.sqrt ((i : ℝ) / (2 * K)) < Real.sqrt (((i : ℝ) + 1) / (2 * K)) :=
+    Real.sqrt_lt_sqrt (by positivity) (by gcongr; linarith)
+  have hb3 : Real.sqrt (((i : ℝ) + 1) / (2 * K)) ≤ 3 := by
+    rw [Real.sqrt_le_left (by norm_num), div_le_iff₀ (by positivity)]; linarith
+  have hW := h _ _ (Real.sqrt_nonneg _) hab hb3
+  have h2 : Tendsto (fun m : ℕ => 2 * m) atTop atTop :=
+    tendsto_id.const_mul_atTop' (by norm_num)
+  filter_upwards [h2.eventually hW] with m hm
+  obtain ⟨p, q, hp, hq, hs, hpq, hlo, hhi⟩ := hm (even_two_mul m)
+  obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le hpq
+  have hc : ((p + d : ℕ) : ℝ) - p = d := by push_cast; ring
+  refine ⟨p, d, hp, hq, by omega, ?_, ?_⟩
+  · rw [hc] at hlo
+    have := sq_le_of_sqrt_mul_le (by positivity) (by positivity) hlo
+    push_cast at this
+    rw [div_mul_eq_mul_div, div_le_iff₀ (by positivity)] at this
+    have : (((i * m : ℕ)) : ℝ) ≤ ((K * d ^ 2 : ℕ) : ℝ) := by push_cast; nlinarith
+    exact_mod_cast this
+  · rw [hc] at hhi
+    have := sq_le_of_le_sqrt_mul (by positivity) (by positivity) (by positivity) hhi
+    push_cast at this
+    rw [div_mul_eq_mul_div, le_div_iff₀ (by positivity)] at this
+    have : ((K * d ^ 2 : ℕ) : ℝ) ≤ (((i + 1) * m : ℕ) : ℝ) := by push_cast; nlinarith
+    exact_mod_cast this
+
+/-- The square parameter: every `n ≥ 1` has `m² = n + e` with `m ≤ e < 3m − 2`. -/
+theorem exists_sq_param {n : ℕ} (hn : 1 ≤ n) :
+    ∃ m e : ℕ, m ^ 2 = n + e ∧ m ≤ e ∧ e + 2 < 3 * m := by
+  have hex : ∃ m, n + m ≤ m ^ 2 := ⟨n + 1, by nlinarith⟩
+  have hm : n + Nat.find hex ≤ (Nat.find hex) ^ 2 := Nat.find_spec hex
+  have hm0 : 0 < Nat.find hex := by
+    rcases Nat.eq_zero_or_pos (Nat.find hex) with h0 | h0
+    · rw [h0] at hm; simp at hm; omega
+    · exact h0
+  have hmin : ¬ n + (Nat.find hex - 1) ≤ (Nat.find hex - 1) ^ 2 := Nat.find_min hex (by omega)
+  obtain ⟨m', hm'⟩ : ∃ m', Nat.find hex = m' + 1 := ⟨Nat.find hex - 1, by omega⟩
+  rw [hm'] at hmin hm; simp only [Nat.add_sub_cancel] at hmin
+  refine ⟨m' + 1, (m' + 1) ^ 2 - n, by omega, by omega, ?_⟩
+  have : (m' + 1) ^ 2 = m' ^ 2 + 2 * m' + 1 := by ring
+  omega
+
+/-- All mesh-`K` windows at once, for large `n`, at the square parameter of `n`. -/
+theorem eventually_mesh_windows (h : GoldbachWindow) {K : ℕ} (hK : 0 < K) (M : ℕ) :
+    ∀ᶠ n : ℕ in atTop, ∃ m e : ℕ, m ^ 2 = n + e ∧ m ≤ e ∧ e + 2 < 3 * m ∧ M ≤ m ∧
+      ∀ i, i + 1 ≤ 18 * K → ∃ p d : ℕ, p.Prime ∧ (p + d).Prime ∧ 2 * p + d = 2 * m ∧
+        i * m ≤ K * d ^ 2 ∧ K * d ^ 2 ≤ (i + 1) * m := by
+  have hall : ∀ᶠ m : ℕ in atTop, ∀ i : Fin (18 * K), ∃ p d : ℕ, p.Prime ∧ (p + d).Prime ∧
+      2 * p + d = 2 * m ∧ i * m ≤ K * d ^ 2 ∧ K * d ^ 2 ≤ (i + 1) * m :=
+    eventually_all.2 fun i => goldbachWindow_mesh h hK i.2
+  obtain ⟨M0, hM0⟩ := eventually_atTop.1 hall
+  refine eventually_atTop.2 ⟨(M0 + M + 1) ^ 2, fun n hn => ?_⟩
+  have : 0 < (M0 + M + 1) ^ 2 := by positivity
+  obtain ⟨m, e, hme, h1, h2⟩ := exists_sq_param (n := n) (by omega)
+  have hmbig : M0 + M + 1 ≤ m := by
+    by_contra hc; push Not at hc
+    have : m ^ 2 < (M0 + M + 1) ^ 2 := Nat.pow_lt_pow_left hc (by norm_num)
+    omega
+  exact ⟨m, e, hme, h1, h2, by omega, fun i hi => hM0 m (by omega) ⟨i, by omega⟩⟩
+
+set_option maxHeartbeats 800000 in
+/-- `ees_of_goldbachWindow` for `ε ≤ 1` (mesh `K ≈ 2/ε`). -/
+theorem ees_of_goldbachWindow_le_one (h : GoldbachWindow) {ε : ℝ} (he : 0 < ε) (he1 : ε ≤ 1) :
+    ∀ᶠ n : ℕ in atTop, (n : ℝ) + (1 - ε) * Real.sqrt n ≤ F n := by
+  obtain ⟨K, hK⟩ : ∃ K : ℕ, K = ⌈2 / ε⌉₊ + 1 := ⟨_, rfl⟩
+  have hK0 : 0 < K := by omega
+  have hKε : 2 ≤ (K : ℝ) * ε := by
+    have : 2 / ε ≤ (K : ℝ) := by
+      rw [hK]; push_cast; linarith [Nat.le_ceil (2 / ε)]
+    rwa [div_le_iff₀ he] at this
+  filter_upwards [eventually_mesh_windows h hK0 (⌈52 / ε ^ 2⌉₊ + 1)]
+    with n ⟨m, e, hme, h1, h2, hM, hw⟩
+  have hm0 : 0 < m := by omega
+  obtain ⟨t, ht⟩ : ∃ t, t = 4 * K * e / m := ⟨_, rfl⟩
+  have ht1 : t * m ≤ 4 * K * e := by rw [ht]; exact Nat.div_mul_le_self _ _
+  have ht2 : 4 * K * e < (t + 1) * m := by
+    have := Nat.lt_div_mul_add (a := 4 * K * e) hm0; rw [← ht] at this; linarith
+  have ht12 : t < 12 * K := ht ▸ (Nat.div_lt_iff_lt_mul hm0).2 (by nlinarith)
+  obtain ⟨p, d, hp, hq, hs, hlo, hhi⟩ := hw (t + 1) (by omega)
+  have hKd : K * (4 * e) < K * d ^ 2 := by linarith
+  have hd4 : 4 * e < d ^ 2 := Nat.lt_of_mul_lt_mul_left hKd
+  have hd13 : d ^ 2 ≤ 13 * m := by
+    have : K * d ^ 2 ≤ K * (13 * m) := by
+      have : (t + 1 + 1) * m ≤ (12 * K + 1) * m := Nat.mul_le_mul_right _ (by omega)
+      nlinarith
+    exact Nat.le_of_mul_le_mul_left this hK0
+  have hN : 4 * (p * (p + d)) + d ^ 2 = 4 * n + 4 * e := by
+    have : (2 * p + d) ^ 2 = 4 * (p * (p + d)) + d ^ 2 := by ring
+    rw [← this, hs, show (2 * m) ^ 2 = 4 * m ^ 2 by ring]; omega
+  have hlt : p * (p + d) < n := by linarith
+  have hF := add_minFac_le_F hlt (composite_mul_primes hp hq)
+  have hd0 : 0 < d := by nlinarith
+  rw [minFac_mul_primes hp hq (by omega)] at hF
+  -- real arithmetic
+  have hFR : ((p * (p + d) : ℕ) : ℝ) + p ≤ F n := by exact_mod_cast hF
+  have hNR : 4 * ((p * (p + d) : ℕ) : ℝ) + (d : ℝ) ^ 2 = 4 * n + 4 * e := by exact_mod_cast hN
+  have hsR : 2 * (p : ℝ) + d = 2 * m := by exact_mod_cast hs
+  have hhiR : (K : ℝ) * (d : ℝ) ^ 2 ≤ ((t : ℝ) + 2) * m := by
+    have : K * d ^ 2 ≤ (t + 2) * m := hhi
+    exact_mod_cast this
+  have ht1R : (t : ℝ) * m ≤ 4 * K * e := by exact_mod_cast ht1
+  have hmR : (0 : ℝ) < m := by exact_mod_cast hm0
+  have hKR : (0 : ℝ) < K := by exact_mod_cast hK0
+  -- d² − 4e ≤ ε m
+  have hgap : (d : ℝ) ^ 2 - 4 * e ≤ ε * m := by
+    have h1 : (K : ℝ) * ((d : ℝ) ^ 2 - 4 * e) ≤ 2 * m := by nlinarith
+    have h2 : (K : ℝ) * ((d : ℝ) ^ 2 - 4 * e) ≤ K * (ε * m) := by nlinarith
+    exact le_of_mul_le_mul_left h2 hKR
+  -- 2d ≤ ε m
+  have hMR : 52 / ε ^ 2 ≤ (m : ℝ) := by
+    have := Nat.le_ceil (52 / ε ^ 2)
+    have : ((⌈52 / ε ^ 2⌉₊ + 1 : ℕ) : ℝ) ≤ m := by exact_mod_cast hM
+    push_cast at this; linarith
+  have h52 : 52 ≤ ε ^ 2 * m := by
+    rw [div_le_iff₀ (by positivity)] at hMR; linarith
+  have hd13R : (d : ℝ) ^ 2 ≤ 13 * m := by exact_mod_cast hd13
+  have h2d : 2 * (d : ℝ) ≤ ε * m := by
+    have : (2 * (d : ℝ)) ^ 2 ≤ (ε * m) ^ 2 :=
+      calc (2 * (d : ℝ)) ^ 2 = 4 * (d : ℝ) ^ 2 := by ring
+        _ ≤ 52 * (m : ℝ) := by linarith
+        _ ≤ ε ^ 2 * (m : ℝ) * m := mul_le_mul_of_nonneg_right h52 hmR.le
+        _ = (ε * m) ^ 2 := by ring
+    exact (pow_le_pow_iff_left₀ (by positivity) (by positivity) two_ne_zero).1 this
+  have hsq : Real.sqrt n ≤ m := by
+    rw [Real.sqrt_le_left (by positivity)]; exact_mod_cast (by omega : n ≤ m ^ 2)
+  have hprod : (1 - ε) * Real.sqrt n ≤ (1 - ε) * m := mul_le_mul_of_nonneg_left hsq (by linarith)
+  linarith
+
 /-- Edge: `GoldbachWindow` gives the all-`n` Erdős–Eggleton–Selfridge bound for each `e > 0`
 (formal-conjectures `erdos_385.variants.lb`, eventually). -/
 theorem ees_of_goldbachWindow (h : GoldbachWindow) {e : ℝ} (he : 0 < e) :
     ∀ᶠ n : ℕ in atTop, (n : ℝ) + (1 - e) * Real.sqrt n ≤ F n := by
-  sorry
+  filter_upwards [ees_of_goldbachWindow_le_one h (lt_min he one_pos) (min_le_right e 1)] with n hn
+  have : (1 - e) * Real.sqrt n ≤ (1 - min e 1) * Real.sqrt n :=
+    mul_le_mul_of_nonneg_right (by linarith [min_le_left e 1]) (Real.sqrt_nonneg _)
+  linarith
 
 /-- Edge: `GoldbachWindow` gives #463. -/
 theorem erdos463_of_goldbachWindow (h : GoldbachWindow) :
     ∃ f : ℕ → ℝ, Tendsto f atTop atTop ∧
       ∀ᶠ n : ℕ in atTop, ∃ m : ℕ, Composite m ∧ (n : ℝ) + f n < m ∧ m < n + m.minFac := by
-  sorry
+  refine ⟨fun n => Real.sqrt n / 4, ?_, ?_⟩
+  · exact (Real.tendsto_sqrt_atTop.comp tendsto_natCast_atTop_atTop).atTop_div_const (by norm_num)
+  filter_upwards [eventually_mesh_windows h (K := 1) one_pos 45] with n ⟨m, e, hme, h1, h2, hM, hw⟩
+  obtain ⟨t, ht⟩ : ∃ t, t = 4 * e / m := ⟨_, rfl⟩
+  have hm0 : 0 < m := by omega
+  have ht1 : t * m ≤ 4 * e := by rw [ht]; exact Nat.div_mul_le_self _ _
+  have ht2 : 4 * e < (t + 1) * m := by
+    have := Nat.lt_div_mul_add (a := 4 * e) hm0; rw [← ht] at this; linarith
+  have ht4 : 4 ≤ t := ht ▸ (Nat.le_div_iff_mul_le hm0).2 (by linarith)
+  have ht11 : t < 12 := ht ▸ (Nat.div_lt_iff_lt_mul hm0).2 (by linarith)
+  obtain ⟨p, d, hp, hq, hs, hlo, hhi⟩ := hw (t - 2) (by omega)
+  rw [one_mul] at hlo hhi
+  have hj1 : (t - 2) * m + 2 * m = t * m := by
+    rw [← add_mul, show t - 2 + 2 = t by omega]
+  have hj2 : (t - 2 + 1) * m + m = t * m := by
+    rw [← add_one_mul, show t - 2 + 1 + 1 = t by omega]
+  have hd : 2 * d < m := by
+    by_contra hc; push Not at hc
+    have h1 : m * m ≤ 4 * d ^ 2 := by
+      have := Nat.mul_le_mul hc hc; rw [show 2 * d * (2 * d) = 4 * d ^ 2 by ring] at this
+      exact this
+    have h2 : t * m ≤ 11 * m := Nat.mul_le_mul_right _ (by omega)
+    have h3 : 45 * m ≤ m * m := Nat.mul_le_mul_right _ (by omega)
+    linarith
+  have hd0 : 0 < d := by
+    rcases Nat.eq_zero_or_pos d with h0 | h0
+    · rw [h0] at hlo; have : 2 * m ≤ (t - 2) * m := Nat.mul_le_mul_right _ (by omega)
+      simp at hlo; omega
+    · exact h0
+  have hN : 4 * (p * (p + d)) + d ^ 2 = 4 * n + 4 * e := by
+    have : (2 * p + d) ^ 2 = 4 * (p * (p + d)) + d ^ 2 := by ring
+    rw [← this, hs, show (2 * m) ^ 2 = 4 * m ^ 2 by ring]; omega
+  have hlow : 4 * n + m ≤ 4 * (p * (p + d)) := by linarith
+  have hup : p * (p + d) < n + p := by linarith
+  refine ⟨p * (p + d), composite_mul_primes hp hq, ?_, by
+    rw [minFac_mul_primes hp hq (by omega)]; exact hup⟩
+  have hsq : Real.sqrt n < m := by
+    rw [Real.sqrt_lt' (by exact_mod_cast hm0)]; exact_mod_cast (by nlinarith : n < m ^ 2)
+  have : (4 * n + m : ℝ) ≤ 4 * ((p * (p + d) : ℕ) : ℝ) := by exact_mod_cast hlow
+  linarith
 
 end LeanFormalizations.Erdos385
