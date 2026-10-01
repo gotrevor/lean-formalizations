@@ -401,7 +401,7 @@ private lemma exists_vieta_of_cubic_pisot' {β : ℝ} (hP : IsPisot β)
 nonsingular integer `3 x 3` matrix `C`, a shift `m` and a threshold `i₀` such that
 `tr C^(3^i) = ⌊A^(3^(m+i))⌋` for all `i ≥ i₀`; in particular that trace sequence is prime and
 strictly increasing from `i₀` on. -/
-private theorem exists_companion_root (hB : BakerHarmanPintz2001) (hM : Matomaki2007)
+theorem exists_companion_root (hB : BakerHarmanPintz2001) (hM : Matomaki2007)
     (hD : Dubickas2022) (hG : Dubickas2022PisotGap) {A : ℝ} (hA : IsMinMills A)
     (halg : IsAlgebraic ℚ A) :
     ∃ (C : Matrix (Fin 3) (Fin 3) ℤ) (m i₀ : ℕ), C.det ≠ 0 ∧
