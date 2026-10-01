@@ -2206,3 +2206,8 @@ reuse with T₀ = Z^{c₀}; (ii) long average via ShortIntervalPrimesLower; (iii
   coeffA-level inputs (near integral ∫_E|Â| small; masked mid/blocks ≤ C Z^{−c}) + DifferenceSplit
   assembly (D_far := D − Re winDif(𝓕⁻(1_E F)), real/complex bridge via coeffC, a.e. x ∉ ℕ).
 - `Parseval.far_split` (PowerSaving/Bridge.lean) PROVED axiom-clean: D = D_far + D_near for real coeffs, |D_near| ≤ ∫_{Et}|A|, ∫D_far² ≤ 500X(1/T₀+M_masked+B). Left: coeffA analytic inputs (NearFarInput) + DifferenceSplit wiring.
+- E9 HEADLINE DONE 2026-10-01: `largeValueCount_of_zeroDetect` PROVED (ZeroCount.lean: zc_count_core +
+  ev_loglog_small + nearOneZeroDensity_nonneg; η := log(2/u)/log P, η₀ = s₀²/16, s₀ = 1/(48(B+1))).
+  `almost_all_F385_powerSaving`, `badCount_powerSaving`: #print axioms = [propext, Classical.choice,
+  Quot.sound] (mod the literature Props as hypotheses). Only scoped sorry left:
+  `nearOneLargeValues_of_density` (frozen, OFF headline, DIRECTION forbids; stated acceptable finish).

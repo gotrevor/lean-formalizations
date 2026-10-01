@@ -268,9 +268,144 @@ lemma zc_count_core {f : ℝ → ℂ} {A Km B C₀ s₀ P u η : ℝ} (hA : 0 �
   rw [hcard]
   nlinarith
 
+/-- `A log log P + c ≤ ε log P` eventually. -/
+lemma ev_loglog_small {A c ε : ℝ} (hε : 0 < ε) :
+    ∀ᶠ P : ℝ in atTop, A * Real.log (Real.log P) + c ≤ ε * Real.log P := by
+  have hl := Real.tendsto_log_atTop
+  have h1 := hl.eventually (Real.isLittleO_log_id_atTop.bound
+    (show (0 : ℝ) < ε / (2 * (|A| + 1)) by positivity))
+  have h2 := hl.eventually (eventually_ge_atTop (2 * |c| / ε + 1))
+  filter_upwards [h1, h2] with P h1 h2
+  simp only [id, Real.norm_eq_abs] at h1
+  have hℓ0 : 0 < Real.log P := lt_of_lt_of_le (by positivity) h2
+  rw [abs_of_pos hℓ0] at h1
+  have hA : A * Real.log (Real.log P) ≤ (|A| + 1) * |Real.log (Real.log P)| := by
+    calc A * Real.log (Real.log P) ≤ |A * Real.log (Real.log P)| := le_abs_self _
+      _ = |A| * |Real.log (Real.log P)| := abs_mul _ _
+      _ ≤ _ := by gcongr; linarith
+  have hA2 : (|A| + 1) * |Real.log (Real.log P)| ≤ ε / 2 * Real.log P := by
+    have := mul_le_mul_of_nonneg_left h1 (by positivity : (0:ℝ) ≤ |A| + 1)
+    calc _ ≤ _ := this
+      _ = ε / 2 * Real.log P := by field_simp
+  have hc : c ≤ ε / 2 * Real.log P := by
+    have : 2 * |c| / ε ≤ Real.log P := by linarith
+    rw [div_le_iff₀ hε] at this
+    nlinarith [le_abs_self c]
+  linarith
+
+/-- The density hypothesis with nonnegative constants. -/
+lemma nearOneZeroDensity_nonneg (h2 : NearOneZeroDensity) :
+    ∃ B C : ℝ, 0 ≤ B ∧ 0 ≤ C ∧ ∀ σ T : ℝ, 1 / 2 ≤ σ → σ ≤ 1 → 3 ≤ T →
+      ({ρ : ℂ | riemannZeta ρ = 0 ∧ σ ≤ ρ.re ∧ 0 < ρ.im ∧ ρ.im ≤ T}.ncard : ℝ) ≤
+        C * T ^ (B * (1 - σ) ^ ((3 : ℝ) / 2)) * Real.log T ^ C := by
+  obtain ⟨B, C, h⟩ := h2
+  refine ⟨|B|, |C|, abs_nonneg _, abs_nonneg _, fun σ T h1 h2 h3 => (h σ T h1 h2 h3).trans ?_⟩
+  have hT1 : 1 ≤ T := by linarith
+  have hl1 : 1 ≤ Real.log T := by
+    rw [Real.le_log_iff_exp_le (by linarith)]
+    exact (Real.exp_one_lt_d9.le.trans (by norm_num)).trans h3
+  have hs : 0 ≤ (1 - σ) ^ ((3 : ℝ) / 2) := Real.rpow_nonneg (by linarith) _
+  have e1 : T ^ (B * (1 - σ) ^ ((3 : ℝ) / 2)) ≤ T ^ (|B| * (1 - σ) ^ ((3 : ℝ) / 2)) :=
+    Real.rpow_le_rpow_of_exponent_le hT1 (mul_le_mul_of_nonneg_right (le_abs_self B) hs)
+  have e2 : Real.log T ^ C ≤ Real.log T ^ |C| :=
+    Real.rpow_le_rpow_of_exponent_le hl1 (le_abs_self C)
+  have p1 : 0 ≤ T ^ (B * (1 - σ) ^ ((3 : ℝ) / 2)) := by positivity
+  have p2 : 0 ≤ Real.log T ^ C := by positivity
+  calc C * T ^ (B * (1 - σ) ^ ((3 : ℝ) / 2)) * Real.log T ^ C
+      ≤ |C| * (T ^ (B * (1 - σ) ^ ((3 : ℝ) / 2)) * Real.log T ^ C) := by
+        rw [mul_assoc]; exact mul_le_mul_of_nonneg_right (le_abs_self C) (by positivity)
+    _ ≤ |C| * (T ^ (|B| * (1 - σ) ^ ((3 : ℝ) / 2)) * Real.log T ^ |C|) := by gcongr
+    _ = _ := by ring
+
+set_option maxHeartbeats 2000000 in
 /-- **The large-value count from zeros.** -/
 theorem largeValueCount_of_zeroDetect (hZ : LocalZeroDetect) (h2 : NearOneZeroDensity) {δ : ℝ}
     (hδ : 0 < δ) (hδ' : δ < 1 / 4) : LargeValueCount δ := by
-  sorry
+  intro g hg
+  obtain ⟨hs, hcs, hsupp, -, -⟩ := cutoffDiv_facts hδ hδ' hg
+  obtain ⟨A, P₀, hA, hZd⟩ := hZ (cutoffDiv g) hs hcs hsupp
+  obtain ⟨B, C₀, hB, hC₀, hdens⟩ := nearOneZeroDensity_nonneg h2
+  obtain ⟨Km, hKm, hdev⟩ := dev_lower hδ hδ' hg
+  obtain ⟨s₀, hs₀⟩ : ∃ s₀ : ℝ, s₀ = 1 / (48 * (B + 1)) := ⟨_, rfl⟩
+  have hs₀0 : 0 < s₀ := by rw [hs₀]; positivity
+  have hs₀4 : s₀ ≤ 1 / 48 := by
+    rw [hs₀, div_le_div_iff₀ (by positivity) (by norm_num)]; nlinarith
+  have hBs : 8 * B * s₀ ≤ 1 / 6 := by
+    rw [hs₀, mul_one_div, div_le_div_iff₀ (by positivity) (by norm_num)]; nlinarith
+  obtain ⟨K, hK⟩ : ∃ K, K = 4 * √Km + 4 * A + 1 + 4 * (A + 1) * C₀ * 4 ^ C₀ := ⟨_, rfl⟩
+  obtain ⟨E, hE⟩ : ∃ E, E = 1 + 4 * A * B + C₀ := ⟨_, rfl⟩
+  have hK0 : 0 ≤ K := by rw [hK]; positivity
+  have hE0 : 0 ≤ E := by rw [hE]; positivity
+  refine ⟨s₀ ^ 2 / 16, K + E, by positivity, by positivity, ?_⟩
+  have hsq := Real.tendsto_sqrt_atTop
+  filter_upwards [hdev, hsq.eventually (eventually_ge_atTop (max P₀ 16)),
+    hsq.eventually (ev_loglog_small (A := A) (c := 2 * Real.log 2)
+      (show 0 < s₀ ^ 2 / 2 by positivity)), eventually_ge_atTop (1 : ℝ)]
+    with Z hdevZ hPZ hsmall hZ1 u hu hu1 T hT hTt
+  obtain ⟨P, hP⟩ : ∃ P, P = √Z := ⟨_, rfl⟩
+  rw [← hP] at hPZ hsmall hdevZ
+  have hP16 : 16 ≤ P := le_trans (le_max_right _ _) hPZ
+  have hPP₀ : P₀ ≤ P := le_trans (le_max_left _ _) hPZ
+  have hP0 : 0 < P := by linarith
+  have hZP : Z = P ^ 2 := by rw [hP, Real.sq_sqrt (by linarith)]
+  have hℓZ : Real.log Z = 2 * Real.log P := by rw [hZP, Real.log_pow]; push_cast; ring
+  have hℓ1 : 1 ≤ Real.log P := by
+    rw [Real.le_log_iff_exp_le hP0]
+    exact (Real.exp_one_lt_d9.le.trans (by norm_num)).trans hP16
+  have hℓ0 : 0 < Real.log P := by linarith
+  have hu0 : 0 < u := lt_of_lt_of_le (by positivity) hu
+  -- `η`
+  obtain ⟨η, hη⟩ : ∃ η, η = Real.log (2 / u) / Real.log P := ⟨_, rfl⟩
+  have hηw : P ^ η = 2 / u := by
+    rw [Real.rpow_def_of_pos hP0, hη, mul_div_cancel₀ _ hℓ0.ne', Real.exp_log (by positivity)]
+  have h2u : 1 < 2 / u := by rw [lt_div_iff₀ hu0]; linarith
+  have hη0 : 0 < η := by rw [hη]; exact div_pos (Real.log_pos h2u) hℓ0
+  have hlogu : -(s₀ ^ 2 / 16) * Real.log Z ≤ Real.log u := by
+    have := Real.log_le_log (by positivity) hu
+    rwa [Real.log_rpow (by linarith)] at this
+  have hηb : η * Real.log P ≤ s₀ ^ 2 / 8 * Real.log P + Real.log 2 := by
+    rw [hη, div_mul_cancel₀ _ hℓ0.ne', Real.log_div (by norm_num) hu0.ne']
+    rw [hℓZ] at hlogu; linarith
+  have hsm : A * Real.log (Real.log P) + 2 * Real.log 2 ≤ s₀ ^ 2 / 2 * Real.log P := hsmall
+  have hsum : 2 * η + A * Real.log (Real.log P) / Real.log P ≤ s₀ ^ 2 := by
+    rw [← mul_le_mul_iff_left₀ hℓ0, add_mul, div_mul_cancel₀ _ hℓ0.ne']
+    nlinarith
+  have hs₀sq : s₀ ^ 2 ≤ 1 / 48 ^ 2 := by
+    have := pow_le_pow_left₀ hs₀0.le hs₀4 2; linarith [this]
+  have hη16 : η ≤ 1 / 16 := by
+    have : 0 ≤ A * Real.log (Real.log P) / Real.log P := by
+      have : 0 ≤ Real.log (Real.log P) := Real.log_nonneg hℓ1
+      positivity
+    linarith
+  have hlam : 0 ≤ Real.log (Real.log P) := Real.log_nonneg hℓ1
+  have hPu : P ^ (1 - η) = P * u / 2 := by
+    rw [Real.rpow_sub hP0, Real.rpow_one, hηw]; field_simp
+  have hu8 : Z ^ (-(1 / 8 : ℝ)) ≤ u :=
+    le_trans (Real.rpow_le_rpow_of_exponent_le hZ1 (by nlinarith)) hu
+  have hcore := zc_count_core (f := cutoffDiv g) (T := T) hA hKm hB hC₀ hs₀0.le
+    (by nlinarith) hBs hP16 (by nlinarith [mul_le_mul hP16 hP16 (by norm_num) hP0.le, sq_nonneg P]) hℓ1 hlam hu0 hu1 hη0 hηw hsum hdens
+    (fun t ht4 htA hdv => hZd P η t hPP₀ hη0 hη16 ht4 htA (hPu ▸ hdv)) hT
+    (fun t ht => by
+      obtain ⟨-, ht8, hut⟩ := hTt t ht
+      refine ⟨?_, fun hk => ?_⟩
+      · have : paramX δ Z ≤ Z := by
+          unfold paramX; nlinarith
+        rw [← hZP]; linarith
+      · have := hdevZ u hu8 t hk hut
+        exact this)
+  rw [← hK, ← hE] at hcore
+  have hlZ1 : 1 ≤ Real.log Z := by rw [hℓZ]; linarith
+  have hu' : √(1 / u) = u ^ (-(1 / 2 : ℝ)) := by
+    rw [Real.sqrt_eq_rpow, Real.div_rpow zero_le_one hu0.le, Real.one_rpow,
+      Real.rpow_neg hu0.le, one_div]
+  rw [hu'] at hcore
+  have hv0 : 0 ≤ u ^ (-(1 / 2 : ℝ)) := by positivity
+  have hlog : Real.log P ^ E ≤ Real.log Z ^ (K + E) :=
+    calc Real.log P ^ E ≤ Real.log Z ^ E :=
+          Real.rpow_le_rpow hℓ0.le (by rw [hℓZ]; linarith) hE0
+      _ ≤ Real.log Z ^ (K + E) := Real.rpow_le_rpow_of_exponent_le hlZ1 (by linarith)
+  calc (T.card : ℝ) ≤ K * Real.log P ^ E * u ^ (-(1 / 2 : ℝ)) := hcore
+    _ ≤ (K + E) * Real.log Z ^ (K + E) * u ^ (-(1 / 2 : ℝ)) := by
+        gcongr; linarith
 
 end LeanFormalizations.Erdos385
