@@ -6,6 +6,7 @@ Authors: Trevor Morris
 import Mathlib
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.NearFar
 import LeanFormalizations.NumberTheory.Erdos385.MeanValue
+import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Cover
 
 /-!
 # Erdős #385 power saving: `NearFarInput` from a pointwise near-set leaf (phase E9b)
