@@ -2062,3 +2062,10 @@ Remaining Erdős-385 open items (outside E3 scope): the five Literature controls
 (paper only).  Discharge candidates for the 🟡 hypotheses: `MediumPNTStatement` from PNT+ `MediumPNT`
 (olean unbuilt at this pin); `MontgomeryVaughanMVT` (Hilbert inequality, elementary but long).
 
+
+## Erdős #385 E3c DONE (2026-10-01)
+`Erdos385/Rate.lean` sorry-free: `almost_all_F385_rate` (count ≤ C X exp(−c (log X)^{1/10})) =
+trust base + the same 4 literature Props.  Mechanism: `card_le_of_windows` (covering count with
+N₀ uniform in E and η), apply it to E ∩ [2√X, ∞) where every window Z ≥ √X has the single rate
+η = A exp(−c'(log √X)^{1/10}); head n < 2√X absorbed by `sqrt_le_rate`.  Next: exponent 1/3−ε
+needs Vinogradov–Korobov-strength long average (new phase), or the Literature `not_…` controls.

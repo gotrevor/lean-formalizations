@@ -219,3 +219,4 @@ import LeanFormalizations.NumberTheory.Erdos385.ShortSumParseval
 import LeanFormalizations.Literature.Erdos385AlmostAll
 import LeanFormalizations.NumberTheory.Erdos385.AlmostAll
 import LeanFormalizations.NumberTheory.Erdos385.Headline
+import LeanFormalizations.NumberTheory.Erdos385.Rate
