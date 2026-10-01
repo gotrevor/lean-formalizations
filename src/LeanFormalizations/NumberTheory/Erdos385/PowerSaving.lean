@@ -10,7 +10,7 @@ import LeanFormalizations.NumberTheory.Erdos385.BadCount
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.LongAveragePower
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Near
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.Bridge
-import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.LargeValues
+import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.LargeValueSum
 
 /-!
 # Erdős #385: Theorem A with a power saving (phase E9b, new mathematics)
@@ -103,11 +103,18 @@ theorem longAveragePower_of_lit (h3 : ShortIntervalPrimesLower) {δ : ℝ} (hδ 
     (hδ' : δ < 1 / 4) : LongAveragePower δ :=
   longAveragePower_of_shortIntervalPrimes h3 hδ hδ'
 
+/-- **Large-value count for `P`** (`LargeValueCount`, see its docstring): `NearOneLargeValues`
+transported to `primeP` via `primeP_decomp` and Mellin decay.  70%. -/
+theorem largeValueCount_of_lit (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity) {δ : ℝ}
+    (hδ : 0 < δ) (hδ' : δ < 1 / 4) : LargeValueCount δ := by
+  sorry
+
 /-- **Large values of the short prime sum** (`LargeValueBound`, see its docstring): few, and
 little `L¹` mass of `A` near them.  From `NearOneLargeValues` + VK.  65%. -/
 theorem largeValueBoundP_of_lit (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity) {δ : ℝ}
-    (hδ : 0 < δ) (hδ' : δ < 1 / 4) : LargeValueBoundP δ := by
-  sorry
+    (hδ : 0 < δ) (hδ' : δ < 1 / 4) : LargeValueBoundP δ :=
+  largeValueBoundP_of_count hδ hδ' (largeValueCount_of_lit h1 h2 hδ hδ')
+    (primePFloor_of_richert h1 hδ hδ')
 
 /-- `LargeValueBound` from its `P`-only form (`|A| ≤ |P|/log Z`). -/
 theorem largeValueBound_of_lit (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity) {δ : ℝ}
