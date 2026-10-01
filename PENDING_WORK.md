@@ -2087,3 +2087,7 @@ FinalBound for ζ at centre 1+θ+it, (c) 3-4-1 zero-free, (d) log-deriv bound.
 c = 3/(104(1+6K))) and `vk_large_height_of`.  Remaining crux = Z1/Z2 (FinalBound rescaled for ζ
 at centre 1+θ+it, radius 2θ; growth via Richert + PNT+ ZetaUpperBnd; lower via ZetaLowerBound3).
 Plus `vk_small_height` (PNT+ ZetaNoZerosInBox + riemannZetaLogDerivResidue + compactness).
+- lap 3: `Landau/Local.lean` `local_landau` PROVED (FinalBound+ZerosBound rescaled to any disc;
+  multiplicities ≥ 1 via finiteness).  Interfaces adjusted: zero ball 15/8·θ, Z2 needs σ ≥ 1−θ/4,
+  disc = closedBall(1+θ+it, 3θ).  Next: Zeta.lean deriving Z1/Z2 from local_landau + growth
+  (Richert + ZetaUpperBnd) + lower (ZetaLowerBound3) + finiteness of ζ-zeros in a disc.

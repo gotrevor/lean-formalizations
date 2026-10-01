@@ -69,7 +69,7 @@ lemma inVKRegion_iff (c₀ T σ : ℝ) : InVKRegion c₀ T σ ↔ 1 - c₀ * vkW
 /-- **Elementary asymptotics** of `L, φ, w` (all as `T → ∞`). -/
 lemma vk_asymp (C : ℝ) : ∃ T₀ : ℝ, 3 ≤ T₀ ∧ ∀ T, T₀ ≤ T →
     1 ≤ Real.log (Real.log T) ∧ vkW T / 2 ≤ vkW (2 * T) ∧ 1 / vkW T ≤ Real.log T ∧
-    Real.log (Real.log T) / vkW T ≤ Real.log T ∧ vkTheta T ≤ 4 / 5 ∧ C * vkW T ≤ 1 := by
+    Real.log (Real.log T) / vkW T ≤ Real.log T ∧ vkTheta T ≤ 1 / 2 ∧ C * vkW T ≤ 1 := by
   sorry
 
 /-- **(D3) Dirichlet-series bound** for `σ > 1`. -/
@@ -88,15 +88,15 @@ lemma three_four_one (σ t : ℝ) (hσ : 1 < σ) :
 so all but those in `S` may be dropped. -/
 lemma landau_neg_re_upper (h : RichertZetaGrowth) : ∃ K t₁ : ℝ, ∀ t σ : ℝ, t₁ ≤ |t| → 1 < σ →
     σ ≤ 1 + vkTheta |t| → ∀ S : Finset ℂ, (∀ ρ ∈ S, riemannZeta ρ = 0 ∧
-      ‖ρ - (1 + vkTheta |t| + t * I)‖ ≤ 5 / 4 * vkTheta |t|) →
+      ‖ρ - (1 + vkTheta |t| + t * I)‖ ≤ 15 / 8 * vkTheta |t|) →
     (-zLD (σ + t * I)).re ≤ K / vkW |t| - ∑ ρ ∈ S, (1 / ((σ : ℂ) + t * I - ρ)).re := by
   sorry
 
 /-- **(Z2) Landau's local formula, two-sided** (zeros at distance `≥ η`; `ZerosBound` counts
 `≪ φ` of them). -/
 lemma landau_logderiv_bound (h : RichertZetaGrowth) : ∃ K t₁ : ℝ, ∀ t σ η : ℝ, t₁ ≤ |t| →
-    1 - vkTheta |t| ≤ σ → σ ≤ 1 + vkTheta |t| → 0 < η →
-    (∀ ρ : ℂ, riemannZeta ρ = 0 → ‖ρ - (1 + vkTheta |t| + t * I)‖ ≤ 5 / 4 * vkTheta |t| →
+    1 - vkTheta |t| / 4 ≤ σ → σ ≤ 1 + vkTheta |t| → 0 < η →
+    (∀ ρ : ℂ, riemannZeta ρ = 0 → ‖ρ - (1 + vkTheta |t| + t * I)‖ ≤ 15 / 8 * vkTheta |t| →
       η ≤ ‖(σ : ℂ) + t * I - ρ‖) →
     riemannZeta (σ + t * I) ≠ 0 →
     ‖zLD (σ + t * I)‖ ≤ K / vkW |t| + K * Real.log (Real.log |t|) / η := by

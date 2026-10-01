@@ -72,7 +72,7 @@ theorem vk_zero_free (h : RichertZetaGrowth) : ∃ c t₀ : ℝ, 0 < c ∧ 3 ≤
   have hσθ : σ ≤ 1 + vkTheta T := by nlinarith
   have hρeq : ρ = (β : ℂ) + γ * I := (Complex.re_add_im ρ).symm
   -- Z1 at height γ with S = {ρ}
-  have hball : ‖ρ - (1 + vkTheta T + γ * I)‖ ≤ 5 / 4 * vkTheta T := by
+  have hball : ‖ρ - (1 + vkTheta T + γ * I)‖ ≤ 15 / 8 * vkTheta T := by
     have : ρ - (1 + vkTheta T + γ * I) = ((β - 1 - vkTheta T : ℝ) : ℂ) := by
       rw [hρeq]; push_cast; ring
     rw [this, Complex.norm_real, Real.norm_eq_abs, abs_of_nonpos (by nlinarith)]
@@ -146,10 +146,10 @@ theorem vk_large_height_of (h : RichertZetaGrowth) :
   set C₃p := max C₃ 0
   have hKp0 : 0 ≤ Kp := le_max_right _ _
   have hC₃p0 : 0 ≤ C₃p := le_max_right _ _
-  set c₁ := min (c / 4) 1 with hc₁
-  have hc₁0 : 0 < c₁ := lt_min (by positivity) one_pos
+  set c₁ := min (c / 4) (1 / 4) with hc₁
+  have hc₁0 : 0 < c₁ := lt_min (by positivity) (by norm_num)
   have hc₁4 : c₁ ≤ c / 4 := min_le_left _ _
-  have hc₁1 : c₁ ≤ 1 := min_le_right _ _
+  have hc₁1 : c₁ ≤ 1 / 4 := min_le_right _ _
   refine ⟨c₁, hc₁0, C₃p + 1 + Kp + 4 * Kp / c, max (max T₀ t₂) (t₃ + 1),
     le_max_of_le_left (le_max_of_le_left hT₀3), ?_⟩
   intro σ y hy hreg
@@ -177,7 +177,7 @@ theorem vk_large_height_of (h : RichertZetaGrowth) :
     have h4 : 0 ≤ 4 * Kp / c := by positivity
     nlinarith
   push Not at hσ
-  have hσlo : 1 - vkTheta T ≤ σ := by nlinarith
+  have hσlo : 1 - vkTheta T / 4 ≤ σ := by nlinarith
   refine ⟨?_, ?_⟩
   · intro hz
     have := hZF _ hz (by simp; linarith)
@@ -186,7 +186,7 @@ theorem vk_large_height_of (h : RichertZetaGrowth) :
     have : c₁ * w < c * w := by nlinarith
     linarith
   · have hη : 0 < c / 4 * w := by positivity
-    have hdist : ∀ ρ : ℂ, riemannZeta ρ = 0 → ‖ρ - (1 + vkTheta T + y * I)‖ ≤ 5 / 4 * vkTheta T →
+    have hdist : ∀ ρ : ℂ, riemannZeta ρ = 0 → ‖ρ - (1 + vkTheta T + y * I)‖ ≤ 15 / 8 * vkTheta T →
         c / 4 * w ≤ ‖(σ : ℂ) + y * I - ρ‖ := by
       intro ρ hρ hb
       have him : |ρ.im - y| ≤ 1 := by
