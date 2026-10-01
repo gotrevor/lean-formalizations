@@ -280,6 +280,7 @@ import LeanFormalizations.NumberTheory.Erdos385.RateVK
 import LeanFormalizations.NumberTheory.Erdos385.PNTFromVK
 import LeanFormalizations.NumberTheory.Erdos385.Endpoint
 import LeanFormalizations.NumberTheory.Erdos385.Erdos463
+import LeanFormalizations.NumberTheory.Erdos385.QuasiPower
 import LeanFormalizations.NumberTheory.Erdos385.DensityEES
 import LeanFormalizations.NumberTheory.Erdos385.Hyperbola
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving

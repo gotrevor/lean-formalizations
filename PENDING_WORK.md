@@ -16,6 +16,11 @@ Headline-path open leaves (PowerSaving/): `localZeroDetect_of_richert` (ZeroDete
  ✅ CRUX PROVED (2026-10-01): `localZeroDetect_of_richert` axiom-clean ([propext, choice, Quot.sound]),
  A = 8, via `zc_rect1`/`zc_split`/`zc_rect2` (ZeroContour.lean), `zc_numeric` + `vkDev_lt_of_zeroFree`
  (ZeroDetect.lean).  NEXT = transport `largeValueCount_of_zeroDetect` (ZeroCount.lean:34).
+## ✅ (2026-10-01): phase E8 COMPLETE.  `badCountQuasiPower_holds` (moonshot:
+#bad ≤ C X exp(−log X/(32400 (log log X)²))) and `badCountExp_threeQuarters` (milestone, derived via
+`rpow_le_quasi`) both proved, [propext, Classical.choice, Quot.sound] — UNCONDITIONAL (no lit Props).
+Final step in `QuasiPower/Final.lean`: m = ⌊(log₂X/8)^{1/4}⌋, `term_pool`, `term_main`, `exp_target_ge`.
+Remaining gap to the framework ceiling X^{1−o(1)}: the (log log X)² loss (window size k ≍ m⁴/log²m).
 
 ## ✅ (2026-10-01, session B): LinearSieve SCOPE COMPLETE.  `aLow_ge_fl'` (FLLowerB.lean) proved:
 Buchstab from 2 + `siftMax_le_fl` per prime + `sum_Vw_div` telescoping + `rankin_error_sum`
