@@ -1,3 +1,5 @@
+## ✅ phase E10 DONE (2026-10-01): Remainder.lean sorry-free, all axiom-clean; see HANDOFF-2026-10-01-erdos385-E10-done.md
+
 ## phase E9b (2026-10-01 review lap, branch `erdos-385-c`): crux = `localZeroDetect_of_richert`
 Headline-path open leaves (PowerSaving/): `localZeroDetect_of_richert` (ZeroDetect.lean, 75%) and
 `largeValueCount_of_zeroDetect` (ZeroCount.lean, 85%).  `nearOneLargeValues_of_density` is OFF path

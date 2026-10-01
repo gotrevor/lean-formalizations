@@ -7,6 +7,7 @@ import Mathlib
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving
 import LeanFormalizations.NumberTheory.Erdos385.Hyperbola
 import LeanFormalizations.NumberTheory.Erdos385.Erdos463
+import LeanFormalizations.NumberTheory.Erdos385.Remainder.Erdos463Power
 
 /-!
 # Erdős #385 / #463: what is left, stated (phase E10)
@@ -60,8 +61,10 @@ theorem almost_all_erdos463_powerSaving (h1 : RichertZetaGrowth) (h2 : NearOneZe
     (h3 : ShortIntervalPrimesLower) {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) :
     ∃ c C : ℝ, 0 < c ∧ ∀ X : ℕ, 2 ≤ X →
       ({n : ℕ | n ≤ X ∧ ¬ ∃ m : ℕ, Composite m ∧
-        (n : ℝ) + δ * Real.sqrt n < m ∧ m < n + m.minFac}.ncard : ℝ) ≤ C * (X : ℝ) ^ (1 - c) := by
-  sorry
+        (n : ℝ) + δ * Real.sqrt n < m ∧ m < n + m.minFac}.ncard : ℝ) ≤ C * (X : ℝ) ^ (1 - c) :=
+  almost_all_of_windowPowerSaving (δ := 1 / 16) (by norm_num) (by norm_num) (NoWitness463 δ)
+    (erdos463_windowPowerSaving (longAveragePower_of_lit h3 (by norm_num) (by norm_num))
+      (differenceSplit_of_lit h1 h2 (by norm_num) (by norm_num)) hδ hδ')
 
 /-- Prime pairs below `n` reaching past `n + f(n)`: `pq < n` and `n + f(n) < pq + p`. -/
 def PrimePairsDownMargin (f : ℕ → ℝ) : Prop :=
@@ -424,3 +427,9 @@ theorem erdos463_of_goldbachWindow (h : GoldbachWindow) :
   linarith
 
 end LeanFormalizations.Erdos385
+
+#print axioms LeanFormalizations.Erdos385.almost_all_erdos463_powerSaving
+#print axioms LeanFormalizations.Erdos385.ees_of_goldbachWindow
+#print axioms LeanFormalizations.Erdos385.erdos463_of_goldbachWindow
+#print axioms LeanFormalizations.Erdos385.hyperbolaPrimePairs_of_goldbachWindow
+#print axioms LeanFormalizations.Erdos385.erdos385_ii_of_downMargin
