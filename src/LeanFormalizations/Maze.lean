@@ -37,6 +37,7 @@ import LeanFormalizations.NumberTheory.Mills.Wright
 import LeanFormalizations.NumberTheory.Erdos385.FunctionField
 import LeanFormalizations.NumberTheory.Erdos385.Graph
 import LeanFormalizations.NumberTheory.Erdos385.Hyperbola
+import LeanFormalizations.NumberTheory.Erdos385.Remainder
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.ZeroDetect
 import LeanFormalizations.NumberTheory.Mills.PairedRoot
 
@@ -261,6 +262,17 @@ def register : List Row := [
     reopenIf := "a witness family whose window is not bounded by its least prime factor, or \
       a pointwise mechanism for two primes near a hyperbola (open even for ⌊p^c⌋, where only \
       almost-prime values are known)" },
+  { route := "Erdős #385(i), #430, #463 from binary Goldbach alone (no gap control)"
+    verdict := .needsNewIdea, tier := .cited
+    anchor := some ``LeanFormalizations.Erdos385.GoldbachWindow
+    evidence := "Goldbach supplies one representation N = p + q per N and says nothing about \
+      which; an adversarial choice (least p, gap ≈ N) puts pq = p(N − p) within p of a given n \
+      only by accident.  The proved reductions (Erdos385.hyperbolaPrimePairs_of_goldbachWindow, \
+      Erdos385.ees_of_goldbachWindow, Erdos385.erdos463_of_goldbachWindow) need the gap q − p \
+      in a prescribed window of length ≍ √N, i.e. Erdos385.GoldbachWindow, which is stronger \
+      than Goldbach.  The minimal-gap form (q − p ≪ log² N) pins the gap near 0 and does not help"
+    reopenIf := "a transfer from additive representations to the multiplicative strip that \
+      survives an adversarial choice of representation, or Goldbach with gap control" },
   { route := "Linear sieve s > 2 (phase E5) from ONE Buchstab step on Selberg's Λ² upper bound"
     verdict := .needsNewIdea, tier := .cited, anchor := none
     evidence := "scripts/linear-sieve-onestep.py: S(z) = N − Σ_{p<z} S(A_p, p) with Selberg's \
