@@ -919,14 +919,111 @@ theorem variance_eq_norm (δ κ : ℝ) (g : ℝ → ℝ) (Z : ℝ) :
     variance δ κ g Z = (1 / paramX δ Z) * ∫ x in (paramX δ Z)..(2 * paramX δ Z),
       ‖shortSumC (coeffC δ g Z) x (paramH1 δ Z) / (paramH1 δ Z : ℂ) -
         shortSumC (coeffC δ g Z) x (paramH2 δ κ Z) / (paramH2 δ κ Z : ℂ)‖ ^ 2 := by
-  sorry
+  unfold variance
+  congr 1
+  refine intervalIntegral.integral_congr fun x _ => ?_
+  have hc : ∀ h, shortSumC (coeffC δ g Z) x h = (shortSum (coeffA δ g Z) x h : ℂ) := fun h => by
+    simp [shortSumC, shortSum, coeffC]
+  simp only [hc]
+  rw [← Complex.ofReal_div, ← Complex.ofReal_div, ← Complex.ofReal_sub, Complex.norm_real,
+    Real.norm_eq_abs, sq_abs]
+
+/-- A nonzero term of `coeffA` at `p ∣ m` pins down `m = p q` with `p` the least prime factor. -/
+theorem coeffA_term_ne_zero {δ Z : ℝ} (hZ : 1 < Z) {g : ℝ → ℝ} (hg : Admissible δ g) (hδ : 0 < δ)
+    {m p : ℕ} (hpm : p ∈ m.primeFactors)
+    (h : (if (m / p).Prime ∧ √Z ≤ ((m / p : ℕ) : ℝ) ∧ ((m / p : ℕ) : ℝ) ≤ (1 + 2 * δ) * √Z
+      then Real.log p * g (p / √Z) else 0) ≠ 0) :
+    (m / p).Prime ∧ √Z ≤ ((m / p : ℕ) : ℝ) ∧ ((m / p : ℕ) : ℝ) ≤ (1 + 2 * δ) * √Z ∧
+      (1 - δ / 2) * √Z ≤ p ∧ (p : ℝ) ≤ (1 - δ / 4) * √Z ∧ m = p * (m / p) ∧ m.minFac = p := by
+  have hsZ : 0 < √Z := Real.sqrt_pos.2 (by linarith)
+  split_ifs at h with hq
+  · obtain ⟨hqp, hq1, hq2⟩ := hq
+    have hpp : p.Prime := Nat.prime_of_mem_primeFactors hpm
+    have hpd : p ∣ m := Nat.dvd_of_mem_primeFactors hpm
+    obtain ⟨hp1, hp2⟩ := hg.2.2.1 _ (right_ne_zero_of_mul h)
+    rw [le_div_iff₀ hsZ] at hp1
+    rw [div_le_iff₀ hsZ] at hp2
+    have hmpq : m = p * (m / p) := (Nat.mul_div_cancel' hpd).symm
+    have hpq : (p : ℝ) < (m / p : ℕ) := by nlinarith
+    have hpq' : p < m / p := by exact_mod_cast hpq
+    refine ⟨hqp, hq1, hq2, hp1, hp2, hmpq, ?_⟩
+    have hm1 : m ≠ 1 := fun h1 => by
+      rw [hmpq] at h1; exact hpp.ne_one (Nat.eq_one_of_mul_eq_one_right h1)
+    have hmp := Nat.minFac_prime hm1
+    have hdvd : m.minFac ∣ p * (m / p) := hmpq ▸ Nat.minFac_dvd m
+    rcases (Nat.Prime.dvd_mul hmp).1 hdvd with h' | h'
+    · exact (Nat.prime_dvd_prime_iff_eq hmp hpp).1 h'
+    · have := (Nat.prime_dvd_prime_iff_eq hmp hqp).1 h'
+      have := Nat.minFac_le_of_dvd hpp.two_le hpd
+      omega
+  · exact absurd rfl h
 
 /-- **W3b (fact 1–2).**  `0 ≤ a_m ≤ 1/2`, and `a_m ≠ 0` forces `X ≤ m < 2X`. -/
 theorem coeffA_facts {δ Z : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) (hZ : 1 < Z) {g : ℝ → ℝ}
     (hg : Admissible δ g) (m : ℕ) :
     0 ≤ coeffA δ g Z m ∧ coeffA δ g Z m ≤ 1 / 2 ∧
       (coeffA δ g Z m ≠ 0 → paramX δ Z ≤ m ∧ (m : ℝ) < 2 * paramX δ Z) := by
-  sorry
+  have hsZ : 0 < √Z := Real.sqrt_pos.2 (by linarith)
+  have hZsq : √Z * √Z = Z := Real.mul_self_sqrt (by linarith)
+  have hlZ : 0 < Real.log Z := Real.log_pos hZ
+  set T : ℕ → ℝ := fun p => if (m / p).Prime ∧ √Z ≤ ((m / p : ℕ) : ℝ) ∧
+    ((m / p : ℕ) : ℝ) ≤ (1 + 2 * δ) * √Z then Real.log p * g (p / √Z) else 0 with hT
+  have hT0 : ∀ p, 0 ≤ T p := fun p => by
+    simp only [hT]; split_ifs
+    · exact mul_nonneg (Real.log_natCast_nonneg p) (hg.2.1 _).1
+    · exact le_rfl
+  have hcA : coeffA δ g Z m = (∑ p ∈ m.primeFactors, T p) / Real.log Z := rfl
+  refine ⟨?_, ?_, ?_⟩
+  · rw [hcA]; exact div_nonneg (Finset.sum_nonneg fun p _ => hT0 p) hlZ.le
+  · rw [hcA, div_le_iff₀ hlZ]
+    by_cases hm2 : m < 2
+    · have : ∀ p, T p = 0 := fun p => by
+        simp only [hT]
+        rw [if_neg]
+        rintro ⟨hq, -⟩
+        have : m / p ≤ 1 := (Nat.div_le_self m p).trans (by omega)
+        have := hq.two_le; omega
+      rw [Finset.sum_eq_zero fun p _ => this p]; positivity
+    have hmem : m.minFac ∈ m.primeFactors :=
+      Nat.mem_primeFactors.2 ⟨Nat.minFac_prime (by omega), Nat.minFac_dvd m, by omega⟩
+    rw [Finset.sum_eq_single m.minFac]
+    · by_cases h0 : T m.minFac = 0
+      · rw [h0]; positivity
+      · obtain ⟨-, -, -, -, hp2, -, -⟩ := coeffA_term_ne_zero hZ hg hδ hmem h0
+        have hp0 : (0 : ℝ) < m.minFac := by
+          have : 0 < m.minFac := (Nat.prime_of_mem_primeFactors hmem).pos
+          exact_mod_cast this
+        have hle : Real.log m.minFac ≤ Real.log Z / 2 := by
+          rw [← Real.log_sqrt (by linarith)]
+          exact Real.log_le_log hp0 (hp2.trans (by nlinarith))
+        have : T m.minFac ≤ Real.log m.minFac := by
+          simp only [hT]; split_ifs
+          · have := (hg.2.1 (m.minFac / √Z)).2
+            have := Real.log_natCast_nonneg m.minFac
+            nlinarith
+          · exact Real.log_natCast_nonneg _
+        linarith
+    · intro p hpm hne
+      by_contra h0
+      exact hne (coeffA_term_ne_zero hZ hg hδ hpm h0).2.2.2.2.2.2.symm
+    · intro h; exact absurd hmem h
+  · intro hne
+    rw [hcA] at hne
+    obtain ⟨p, hpm, hp⟩ := Finset.exists_ne_zero_of_sum_ne_zero (div_ne_zero_iff.1 hne).1
+    obtain ⟨-, hq1, hq2, hp1, hp2, hmpq, -⟩ := coeffA_term_ne_zero hZ hg hδ hpm hp
+    have hm : (m : ℝ) = p * ((m / p : ℕ) : ℝ) := by exact_mod_cast hmpq
+    unfold paramX
+    constructor
+    · have : (1 - δ / 2) * Z = (1 - δ / 2) * √Z * √Z := by rw [mul_assoc, hZsq]
+      rw [this, hm]
+      exact mul_le_mul hp1 hq1 hsZ.le (by positivity)
+    · have h1 : (m : ℝ) ≤ (1 - δ / 4) * √Z * ((1 + 2 * δ) * √Z) := by
+        rw [hm]; exact mul_le_mul hp2 hq2 (by positivity) (by nlinarith)
+      have : (1 - δ / 4) * √Z * ((1 + 2 * δ) * √Z) = (1 - δ / 4) * (1 + 2 * δ) * Z := by
+        linear_combination (1 - δ / 4) * (1 + 2 * δ) * hZsq
+      rw [this] at h1
+      have : 0 < Z := by linarith
+      nlinarith
 
 /-- **W3c (fact 3).**  `A(s) = P(s) Q(s) / log Z`. -/
 theorem LSeries_coeffC_eq {δ Z : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 4) (hZ : 1 < Z) {g : ℝ → ℝ}
