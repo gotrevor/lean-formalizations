@@ -293,6 +293,41 @@ theorem splits_of_isSquare_disc {p : ℕ} [Fact p.Prime] (hp2 : p ≠ 2) {a b c 
 
 open Filter in
 
+/-- A `3 × 3` charpoly in coefficient form. -/
+theorem charpoly_three_eq {R : Type*} [CommRing R] [Nontrivial R] (D : Matrix (Fin 3) (Fin 3) R) :
+    D.charpoly = X ^ 3 + Polynomial.C (D.charpoly.coeff 2) * X ^ 2 +
+      Polynomial.C (D.charpoly.coeff 1) * X + Polynomial.C (D.charpoly.coeff 0) := by
+  have hd : D.charpoly.natDegree = 3 := by rw [charpoly_natDegree_eq_dim, Fintype.card_fin]
+  have h3 : D.charpoly.coeff 3 = 1 := by
+    have := D.charpoly_monic.leadingCoeff; rwa [leadingCoeff, hd] at this
+  conv_lhs => rw [as_sum_range_C_mul_X_pow D.charpoly, hd]
+  simp [Finset.sum_range_succ, h3]
+  ring
+
+/-- A reducible `3 × 3` charpoly over a field has a root. -/
+theorem exists_root_of_not_irreducible {K : Type*} [Field K] (D : Matrix (Fin 3) (Fin 3) K)
+    (h : ¬ Irreducible D.charpoly) :
+    ∃ r : K, r ^ 3 + D.charpoly.coeff 2 * r ^ 2 + D.charpoly.coeff 1 * r +
+      D.charpoly.coeff 0 = 0 := by
+  have hd : D.charpoly.natDegree = 3 := by rw [charpoly_natDegree_eq_dim, Fintype.card_fin]
+  rw [irreducible_iff_roots_eq_zero_of_degree_le_three (by omega) (by omega)] at h
+  obtain ⟨r, hr⟩ := Multiset.exists_mem_of_ne_zero h
+  rw [mem_roots D.charpoly_monic.ne_zero, IsRoot, charpoly_three_eq D] at hr
+  refine ⟨r, ?_⟩
+  simpa using hr
+
+/-- `charDisc` commutes with reduction mod `p`. -/
+theorem charDisc_cast (C : Matrix (Fin 3) (Fin 3) ℤ) (p : ℕ) :
+    ((charDisc C : ℤ) : ZMod p) =
+      let D := C.map (Int.castRingHom (ZMod p))
+      let a := D.charpoly.coeff 2
+      let b := D.charpoly.coeff 1
+      let c := D.charpoly.coeff 0
+      a ^ 2 * b ^ 2 - 4 * b ^ 3 - 4 * a ^ 3 * c - 27 * c ^ 2 + 18 * a * b * c := by
+  simp only [charDisc, charpoly_map, coeff_map, eq_intCast]
+  push_cast
+  ring
+
 /-- **The Kronecker lemma.**  If `t_k = tr C^(3^k)` is eventually prime and increasing, then
 the discriminant is a non-square mod every late `t_k ≡ 2 (mod 3)`: those primes have type
 (1)(2). -/
@@ -301,7 +336,51 @@ theorem not_isSquare_charDisc_mod_eventually (C : Matrix (Fin 3) (Fin 3) ℤ) (h
     (hmono : ∀ k ≥ k₀, (C ^ (3 ^ k)).trace < (C ^ (3 ^ (k + 1))).trace) :
     ∀ᶠ k in atTop, (C ^ (3 ^ k)).trace % 3 = 2 →
       ¬ IsSquare ((charDisc C : ZMod (C ^ (3 ^ k)).trace.toNat)) := by
-  sorry
+  have hgrow : ∀ k, k₀ ≤ k → (C ^ (3 ^ k₀)).trace + ((k : ℤ) - (k₀ : ℤ)) ≤ (C ^ (3 ^ k)).trace := by
+    intro k hk
+    induction k, hk using Nat.le_induction with
+    | base => simp
+    | succ k hk ih =>
+        have := hmono k hk
+        push_cast
+        omega
+  have hbig : ∀ᶠ k in atTop, k₀ ≤ k ∧ |charDisc C| + 3 < (C ^ (3 ^ k)).trace := by
+    rw [eventually_atTop]
+    refine ⟨k₀ + (|charDisc C| + 3 - (C ^ (3 ^ k₀)).trace + 1).toNat, fun k hk => ⟨by omega, ?_⟩⟩
+    have := hgrow k (by omega)
+    have h2 : ((k₀ + (|charDisc C| + 3 - (C ^ (3 ^ k₀)).trace + 1).toNat : ℕ) : ℤ) ≤ (k : ℤ) := by
+      exact_mod_cast hk
+    push_cast at h2
+    omega
+  filter_upwards [hbig, LeanFormalizations.Mills.Projective.not_irreducible_mod_eventually C hdet hprime hmono,
+    not_splits_mod_eventually C hdet (le_refl _ |>.trans (by norm_num : 2 ≤ 3)) hprime hmono]
+    with k ⟨hk0, hkb⟩ hirr hspl h3 hsq
+  have htpos : 0 < (C ^ (3 ^ k)).trace := by have := abs_nonneg (charDisc C); omega
+  obtain ⟨p, hpv⟩ : ∃ p : ℕ, (p : ℤ) = (C ^ (3 ^ k)).trace :=
+    ⟨_, Int.toNat_of_nonneg htpos.le⟩
+  have hptoNat : (C ^ (3 ^ k)).trace.toNat = p := by omega
+  rw [hptoNat] at hirr hspl hsq
+  have hpnat : p.Prime := by
+    have := hprime k hk0
+    rw [Int.prime_iff_natAbs_prime] at this
+    simpa [← hpv] using this
+  haveI := Fact.mk hpnat
+  have hp3 : p % 3 = 2 := by omega
+  have hp2 : p ≠ 2 := by intro h; have := abs_nonneg (charDisc C); omega
+  have hcop : Nat.Coprime 3 (p * (p - 1)) := by
+    have h2 := hpnat.two_le
+    rw [Nat.Prime.coprime_iff_not_dvd Nat.prime_three]
+    intro h
+    rcases (Nat.Prime.dvd_mul Nat.prime_three).1 h with h | h <;> omega
+  apply hspl hcop
+  obtain ⟨r, hr⟩ := exists_root_of_not_irreducible _ hirr
+  rw [charpoly_three_eq (C.map (Int.castRingHom (ZMod p)))]
+  rw [charDisc_cast] at hsq
+  refine splits_of_isSquare_disc hp2 ?_ hsq ⟨r, hr⟩
+  intro h0
+  rw [← charDisc_cast, ZMod.intCast_zmod_eq_zero_iff_dvd] at h0
+  have := Int.le_of_dvd (abs_pos.2 hD) ((dvd_abs _ _).2 h0)
+  omega
 
 /-- **The finite Kronecker certificate.**  If `tr C ≡ 2 (mod 3)` and the trace sequence revisits,
 modulo `4 |disc|`, a positive odd value at which the Jacobi symbol `(disc / ·)` is `1`, then
