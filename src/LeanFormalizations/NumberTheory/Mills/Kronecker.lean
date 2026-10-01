@@ -514,6 +514,35 @@ theorem mills_kronecker (hB : BakerHarmanPintz2001) (hM : Matomaki2007)
       (C.trace % 3 = 2 →
         ¬ IsSquare (charDisc C) ∧
         ∀ᶠ i in atTop, ¬ IsSquare ((charDisc C : ZMod ⌊A ^ ((3:ℕ) ^ (m + i))⌋₊))) := by
-  sorry
+  obtain ⟨C, m, i₀, hdet, hroot, hfloor, hprime, hmono, u, v, hbu, hbv, huv, e2, e1, e0⟩ :=
+    LeanFormalizations.Mills.Projective.exists_companion_root_vieta hB hM hD hG hA halg
+  have hfl : ∀ᶠ i in atTop, ((C ^ ((3:ℕ) ^ i)).trace) = (⌊A ^ ((3:ℕ) ^ (m + i))⌋₊ : ℤ) :=
+    eventually_atTop.2 ⟨i₀, hfloor⟩
+  refine ⟨C, m, hroot, hfl, fun htr => ?_⟩
+  set β : ℂ := ((A ^ ((3:ℕ) ^ m) : ℝ) : ℂ)
+  have hDC : ((charDisc C : ℤ) : ℂ) = ((β - u) * (β - v) * (u - v)) ^ 2 := by
+    simp only [charDisc]
+    push_cast
+    rw [e2, e1, e0]
+    ring
+  have hDne : charDisc C ≠ 0 := by
+    intro h
+    rw [h, Int.cast_zero] at hDC
+    have := pow_eq_zero_iff (n := 2) (by norm_num) |>.1 hDC.symm
+    rcases mul_eq_zero.1 this with h1 | h1
+    · rcases mul_eq_zero.1 h1 with h2 | h2
+      · exact hbu (sub_eq_zero.1 h2)
+      · exact hbv (sub_eq_zero.1 h2)
+    · exact huv (sub_eq_zero.1 h1)
+  have hev := not_isSquare_charDisc_mod_eventually C hdet hDne hprime hmono
+  have hev' : ∀ᶠ i in atTop, ¬ IsSquare ((charDisc C : ZMod ⌊A ^ ((3:ℕ) ^ (m + i))⌋₊)) := by
+    filter_upwards [hev, hfl] with i hi hfi
+    have h3 := hi (by rw [trace_pow_three_mod_three, htr])
+    rw [hfi, Int.toNat_natCast] at h3
+    exact h3
+  refine ⟨?_, hev'⟩
+  rintro ⟨s, hs⟩
+  obtain ⟨i, hi⟩ := hev'.exists
+  exact hi ⟨s, by rw [hs]; push_cast; ring⟩
 
 end LeanFormalizations.Mills.Kronecker

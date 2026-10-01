@@ -396,19 +396,21 @@ private lemma exists_vieta_of_cubic_pisot' {β : ℝ} (hP : IsPisot β)
   exact ⟨g.coeff 2, g.coeff 1, g.coeff 0, hc0, by linear_combination c2, by linear_combination -c1,
     by linear_combination c0⟩
 
-/-- **The companion-matrix glue for an algebraic Mills constant** (factored out of
-`mills_threeAdic`, phase 30).  If the least Mills constant `A` is algebraic, there are a
-nonsingular integer `3 x 3` matrix `C`, a shift `m` and a threshold `i₀` such that
-`tr C^(3^i) = ⌊A^(3^(m+i))⌋` for all `i ≥ i₀`; in particular that trace sequence is prime and
-strictly increasing from `i₀` on. -/
-theorem exists_companion_root (hB : BakerHarmanPintz2001) (hM : Matomaki2007)
+/-- `exists_companion_root` together with the Vieta data of the charpoly: its three complex
+roots `A^(3^m), u, v` are pairwise distinct (phase 60, for the discriminant). -/
+theorem exists_companion_root_vieta (hB : BakerHarmanPintz2001) (hM : Matomaki2007)
     (hD : Dubickas2022) (hG : Dubickas2022PisotGap) {A : ℝ} (hA : IsMinMills A)
     (halg : IsAlgebraic ℚ A) :
     ∃ (C : Matrix (Fin 3) (Fin 3) ℤ) (m i₀ : ℕ), C.det ≠ 0 ∧
       (C.charpoly.map (Int.castRingHom ℝ)).IsRoot (A ^ ((3:ℕ) ^ m)) ∧
       (∀ i ≥ i₀, ((C ^ ((3:ℕ) ^ i)).trace) = (⌊A ^ ((3:ℕ) ^ (m + i))⌋₊ : ℤ)) ∧
       (∀ k ≥ i₀, Prime ((C ^ ((3:ℕ) ^ k)).trace)) ∧
-      (∀ k ≥ i₀, (C ^ ((3:ℕ) ^ k)).trace < (C ^ ((3:ℕ) ^ (k + 1))).trace) := by
+      (∀ k ≥ i₀, (C ^ ((3:ℕ) ^ k)).trace < (C ^ ((3:ℕ) ^ (k + 1))).trace) ∧
+      ∃ u v : ℂ, ((A ^ ((3:ℕ) ^ m) : ℝ) : ℂ) ≠ u ∧ ((A ^ ((3:ℕ) ^ m) : ℝ) : ℂ) ≠ v ∧ u ≠ v ∧
+        ((C.charpoly.coeff 2 : ℤ) : ℂ) = -(((A ^ ((3:ℕ) ^ m) : ℝ) : ℂ) + u + v) ∧
+        ((C.charpoly.coeff 1 : ℤ) : ℂ) = ((A ^ ((3:ℕ) ^ m) : ℝ) : ℂ) * u +
+          ((A ^ ((3:ℕ) ^ m) : ℝ) : ℂ) * v + u * v ∧
+        ((C.charpoly.coeff 0 : ℤ) : ℂ) = -(((A ^ ((3:ℕ) ^ m) : ℝ) : ℂ) * u * v) := by
   obtain ⟨⟨hA1, hAm⟩, hmin⟩ := hA
   have hA : IsMinMills A := ⟨⟨hA1, hAm⟩, hmin⟩
   -- Saito's dichotomy; the transcendental branch contradicts `halg`
@@ -497,7 +499,44 @@ theorem exists_companion_root (hB : BakerHarmanPintz2001) (hM : Matomaki2007)
       Polynomial.eval₂_pow, Polynomial.eval₂_X, Polynomial.eval₂_C]
     rw [← hβdef]
     simpa using hrx
-  exact ⟨C, m, i₀, hdet, hrootC, hfloor, hprime, hmono⟩
+  have hnodup : ((β : ℂ) ::ₘ u ::ₘ {v}).Nodup := by
+    have hsep : ((minpoly ℚ β).map (algebraMap ℚ ℂ)).Separable :=
+      (Irreducible.separable (minpoly.irreducible hint)).map
+    have hcons : (minpoly ℚ β).aroots ℂ = (β : ℂ) ::ₘ otherConj β :=
+      (Multiset.cons_erase (beta_mem_aroots hint)).symm
+    have h := nodup_roots hsep
+    have : (minpoly ℚ β).aroots ℂ = ((minpoly ℚ β).map (algebraMap ℚ ℂ)).roots := rfl
+    rw [← this, hcons, huv] at h
+    exact h
+  have hd : (β : ℂ) ≠ u ∧ (β : ℂ) ≠ v ∧ u ≠ v := by
+    simp only [Multiset.nodup_cons, Multiset.mem_cons, Multiset.mem_singleton, not_or,
+      Multiset.nodup_singleton, and_true] at hnodup
+    exact ⟨hnodup.1.1, hnodup.1.2, hnodup.2⟩
+  have hcp : C.charpoly = X ^ 3 + Polynomial.C a * X ^ 2 + Polynomial.C b * X + Polynomial.C c := by
+    rw [hCdef, companion3_charpoly]
+  have hc2' : C.charpoly.coeff 2 = a := by rw [hcp]; simp only [coeff_add, coeff_X_pow, coeff_C_mul, coeff_X, coeff_C]; norm_num
+  have hc1' : C.charpoly.coeff 1 = b := by rw [hcp]; simp only [coeff_add, coeff_X_pow, coeff_C_mul, coeff_X, coeff_C]; norm_num
+  have hc0' : C.charpoly.coeff 0 = c := by rw [hcp]; simp only [coeff_add, coeff_X_pow, coeff_C_mul, coeff_X, coeff_C]; norm_num
+  refine ⟨C, m, i₀, hdet, hrootC, hfloor, hprime, hmono, u, v, hd.1, hd.2.1, hd.2.2, ?_, ?_, ?_⟩
+  · rw [hc2']; linear_combination hvi1
+  · rw [hc1']; linear_combination -hvi2
+  · rw [hc0']; linear_combination hvi3
+
+/-- **The companion-matrix glue for an algebraic Mills constant** (factored out of
+`mills_threeAdic`, phase 30).  If the least Mills constant `A` is algebraic, there are a
+nonsingular integer `3 x 3` matrix `C`, a shift `m` and a threshold `i₀` such that
+`tr C^(3^i) = ⌊A^(3^(m+i))⌋` for all `i ≥ i₀`; in particular that trace sequence is prime and
+strictly increasing from `i₀` on. -/
+theorem exists_companion_root (hB : BakerHarmanPintz2001) (hM : Matomaki2007)
+    (hD : Dubickas2022) (hG : Dubickas2022PisotGap) {A : ℝ} (hA : IsMinMills A)
+    (halg : IsAlgebraic ℚ A) :
+    ∃ (C : Matrix (Fin 3) (Fin 3) ℤ) (m i₀ : ℕ), C.det ≠ 0 ∧
+      (C.charpoly.map (Int.castRingHom ℝ)).IsRoot (A ^ ((3:ℕ) ^ m)) ∧
+      (∀ i ≥ i₀, ((C ^ ((3:ℕ) ^ i)).trace) = (⌊A ^ ((3:ℕ) ^ (m + i))⌋₊ : ℤ)) ∧
+      (∀ k ≥ i₀, Prime ((C ^ ((3:ℕ) ^ k)).trace)) ∧
+      (∀ k ≥ i₀, (C ^ ((3:ℕ) ^ k)).trace < (C ^ ((3:ℕ) ^ (k + 1))).trace) := by
+  obtain ⟨C, m, i₀, h1, h2, h3, h4, h5, -⟩ := exists_companion_root_vieta hB hM hD hG hA halg
+  exact ⟨C, m, i₀, h1, h2, h3, h4, h5⟩
 
 
 /-- **Mills.**  If the least Mills constant `A` is algebraic, then (for the integer matrix whose

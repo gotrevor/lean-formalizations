@@ -1,5 +1,11 @@
 ## phase 57 DONE (2026-09-30) — Theorem D in full: PROVED and axiom-clean
 
+## Phase 60 DONE (2026-10-01)
+`Mills/Kronecker.lean` sorry-free, `#print axioms` = {propext, Classical.choice, Quot.sound} for all 7.
+Key moves: split + det≠0 ⇒ charpoly ∣ (X^(p−1)−1)^n ∣ X^(p^n(p−1))−1 (Frobenius in the commutative
+ring `(ZMod p)[X]`, so no matrix CharP needed) ⇒ D^(p^n(p−1)) = 1 ⇒ Euler on c.  `charDisc ≠ 0`
+from new `Projective.exists_companion_root_vieta` (distinct complex roots via `Irreducible.separable`).
+
 `NumberTheory/Mills/TheoremDMixed.lean` is sorry-free; `floor_pow_prime_pow_add_not_prime_full` is
 `#print axioms`-clean.  See `HANDOFF-2026-09-30-phase57-complete.md`.  The crux
 (`exists_mixed_limit`):
