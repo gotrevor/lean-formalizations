@@ -6,6 +6,7 @@ Authors: Trevor Morris
 import Mathlib
 import LeanFormalizations.Literature.Erdos385VK
 import LeanFormalizations.NumberTheory.Erdos385.RateVK
+import LeanFormalizations.NumberTheory.Erdos385.PNTFromVK.Assembly
 
 /-!
 # Erdős #385: the de la Vallée Poussin PNT from Vinogradov–Korobov (phase E3e)
@@ -49,8 +50,8 @@ namespace LeanFormalizations.Erdos385
 open Real LeanFormalizations.Literature
 
 /-- **de la Vallée Poussin's PNT from the Vinogradov–Korobov region.** -/
-theorem dlvpStatement_of_VK (h : VKZeroFreeLogDeriv) : DLVPStatement := by
-  sorry
+theorem dlvpStatement_of_VK (h : VKZeroFreeLogDeriv) : DLVPStatement :=
+  PNTVK.dlvp_of_VK h
 
 /-- **Theorem A with the sharp rate, modulo Vinogradov–Korobov only.** -/
 theorem almost_all_F385_rate_of_VK (h3 : VKZeroFreeLogDeriv) {δ : ℝ} (hδ : 0 < δ)
@@ -58,6 +59,6 @@ theorem almost_all_F385_rate_of_VK (h3 : VKZeroFreeLogDeriv) {δ : ℝ} (hδ : 0
     ∃ C : ℝ, ∀ X : ℕ, 2 ≤ X →
       ({n : ℕ | n ≤ X ∧ (F n : ℝ) < n + (1 - δ) * Real.sqrt n}.ncard : ℝ) ≤
         C * X * Real.exp (-(Real.log X ^ ((1 : ℝ) / 3 - ε))) := by
-  sorry
+  exact almost_all_F385_rate_VK h3 (dlvpStatement_of_VK h3) hδ hδ' ε hε
 
 end LeanFormalizations.Erdos385
