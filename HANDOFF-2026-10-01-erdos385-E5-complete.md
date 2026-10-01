@@ -11,3 +11,8 @@ Final pieces this lap (session B):
 - `Leaves.fundamental_lemma` = `aLow_ge_fl'` + `bUp_le_fl`.
 
 Note for session A: `FLLower.lean`'s planned `UpperFLHyp` route is no longer needed.
+
+Branch `erdos-385`, HEAD `075feb9` (+ this note).
+Next steps (new phase, altitude lap decides): LinearSieve scope is DONE; remaining src sorries are
+outside it (designated-open). Candidates per DIRECTION.md history: Literature/Erdos385AlmostAll controls,
+discharging MediumPNTStatement, E4 paper. Optional cleanup: FLLower.lean's UpperFLHyp plan is superseded.
