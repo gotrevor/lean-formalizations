@@ -766,6 +766,99 @@ theorem mainTerm_eq_vertical {f : ℝ → ℂ} (hf : ∀ k : ℕ, ContDiff ℝ k
   congr 1
   exact integral_congr_ae (Eventually.of_forall hc2)
 
+/-- Mellin inversion at `x/P`, twisted by `x^{−it}`. -/
+theorem twist_inversion {f : ℝ → ℂ} (hf : ∀ k : ℕ, ContDiff ℝ k f) {a b : ℝ} (ha : 0 < a)
+    (hab : a ≤ b) (hs : ∀ x, f x ≠ 0 → a ≤ x ∧ x ≤ b) {P : ℝ} (hP0 : 0 < P) (t : ℝ) {x : ℝ}
+    (hx : 0 < x) :
+    (x : ℂ) ^ (-(t * I)) * f (x / P) = ((1 / (2 * π) : ℝ) : ℂ) *
+      ∫ y : ℝ, (x : ℂ) ^ (-(2 + y * I + t * I)) * (mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I)) := by
+  rw [mellin_inversion_two hf ha hab hs (div_pos hx hP0), ← mul_assoc,
+    mul_comm _ ((1 / (2 * π) : ℝ) : ℂ), mul_assoc, ← integral_const_mul]
+  congr 1
+  refine integral_congr_ae (Eventually.of_forall fun y => ?_)
+  have hx0 : (x : ℂ) ≠ 0 := by exact_mod_cast hx.ne'
+  beta_reduce
+  rw [show ((x / P : ℝ) : ℂ) = (x : ℂ) * ((P⁻¹ : ℝ) : ℂ) by push_cast; ring,
+    mul_cpow_ofReal_nonneg hx.le (inv_nonneg.2 hP0.le), Complex.ofReal_inv,
+    inv_cpow _ _ (by rw [Complex.arg_ofReal_of_nonneg hP0.le]; exact Real.pi_pos.ne),
+    Complex.cpow_neg (P : ℂ), inv_inv,
+    show -((2 : ℂ) + y * I + t * I) = -(2 + y * I) + -(t * I) by ring,
+    Complex.cpow_add _ _ hx0]
+  ring
+
+/-- **V4, prime-sum half.** `S = (1/2π) ∫ F(2+iy) P^{2+iy} L(Λ, 2+iy+it) dy`. -/
+theorem smoothTwist_eq_vertical {f : ℝ → ℂ} (hf : ∀ k : ℕ, ContDiff ℝ k f) {a b : ℝ} (ha : 0 < a)
+    (hab : a ≤ b) (hs : ∀ x, f x ≠ 0 → a ≤ x ∧ x ≤ b) {P : ℝ} (hP0 : 0 < P) (t : ℝ) :
+    smoothTwist f P t = ((1 / (2 * π) : ℝ) : ℂ) * ∫ y : ℝ, mellin f (2 + y * I) *
+      (P : ℂ) ^ (2 + y * I) * LSeries (fun n => (ArithmeticFunction.vonMangoldt n : ℂ))
+        (2 + y * I + t * I) := by
+  obtain ⟨K, hK0, hKb, hKc, hKi⟩ := mellin_vertical_facts hf ha hab hs
+  set c : ℂ := ((1 / (2 * π) : ℝ) : ℂ)
+  set Λc : ℕ → ℂ := fun n => (ArithmeticFunction.vonMangoldt n : ℂ) with hΛc
+  set h : ℝ → ℂ := fun y => mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I) with hh
+  set G : ℕ → ℝ → ℂ := fun n y => LSeries.term Λc (2 + y * I + t * I) n * h y with hG
+  set an : ℕ → ℝ := fun n => ‖LSeries.term Λc 2 n‖ with han
+  have hsum : Summable an :=
+    summable_norm_iff.mpr (ArithmeticFunction.LSeriesSummable_vonMangoldt (by norm_num))
+  have hterm : ∀ (n : ℕ) (y : ℝ), ‖LSeries.term Λc (2 + y * I + t * I) n‖ = an n := by
+    intro n y; simp only [han]; rw [LSeries.norm_term_eq, LSeries.norm_term_eq]; simp
+  have hhn : ∀ y, ‖h y‖ = ‖mellin f (2 + y * I)‖ * P ^ 2 := by
+    intro y
+    simp only [hh, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hP0]
+    simp
+  have hhc : Continuous h := by
+    refine hKc.mul (continuous_iff_continuousAt.2 fun y => ?_)
+    exact (continuous_const.add (continuous_ofReal.mul continuous_const)).continuousAt.const_cpow
+      (Or.inl (by exact_mod_cast hP0.ne'))
+  have hhi : Integrable h := by
+    refine (hKi.norm.mul_const (P ^ 2)).mono' hhc.aestronglyMeasurable
+      (Eventually.of_forall fun y => ?_)
+    rw [hhn]
+  have hGm : ∀ n, Continuous (fun y : ℝ => LSeries.term Λc (2 + y * I + t * I) n) := by
+    intro n
+    rcases eq_or_ne n 0 with rfl | hn
+    · simp only [LSeries.term_zero]; exact continuous_const
+    · simp only [LSeries.term_of_ne_zero hn]
+      refine continuous_const.div ?_ fun y => ?_
+      · exact continuous_iff_continuousAt.2 fun y =>
+          (by fun_prop : Continuous fun y : ℝ => 2 + (y : ℂ) * I + t * I).continuousAt.const_cpow
+            (Or.inl (by exact_mod_cast hn))
+      · exact Complex.cpow_ne_zero_iff_of_exponent_ne_zero (by
+          intro h0; have := congrArg Complex.re h0; simp at this) |>.2 (by exact_mod_cast hn)
+  have hGi : ∀ n, Integrable (G n) := by
+    intro n
+    refine (hhi.norm.const_mul (an n)).mono' ((hGm n).mul hhc).aestronglyMeasurable
+      (Eventually.of_forall fun y => ?_)
+    simp only [hG, norm_mul, hterm]; rfl
+  have hGn : ∀ n, ∫ y, ‖G n y‖ = an n * ∫ y, ‖h y‖ := by
+    intro n
+    rw [← integral_const_mul]
+    congr 1; ext y; simp only [hG, norm_mul, hterm]
+  have hGs : Summable fun n => ∫ y, ‖G n y‖ := by
+    simp only [hGn]; exact hsum.mul_right _
+  -- per-`n` inversion
+  have hper : ∀ n : ℕ, Λc n * (n : ℂ) ^ (-((t : ℂ) * I)) * f (n / P) = c * ∫ y, G n y := by
+    intro n
+    rcases eq_or_ne n 0 with rfl | hn
+    · simp [hΛc, hG]
+    have hn0 : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
+    have := twist_inversion hf ha hab hs hP0 t hn0
+    rw [Complex.ofReal_natCast] at this
+    rw [mul_assoc, this, mul_left_comm, ← integral_const_mul]
+    congr 1
+    refine integral_congr_ae (Eventually.of_forall fun y => ?_)
+    simp only [hG, LSeries.term_of_ne_zero hn, hh]
+    rw [Complex.cpow_neg, div_eq_mul_inv]
+    ring
+  have hL : ∀ y : ℝ, ∑' n, G n y = h y * LSeries Λc (2 + y * I + t * I) := by
+    intro y
+    simp only [hG, LSeries]
+    rw [tsum_mul_right, mul_comm]
+  unfold smoothTwist
+  rw [tsum_congr hper, tsum_mul_left, integral_tsum_of_summable_integral_norm hGi hGs]
+  congr 1
+  exact integral_congr_ae (Eventually.of_forall hL)
+
 /-- **Crux leaf V4 (Perron at `Re s = 2`, main term subtracted).**  Once `f(x/P)` vanishes for
 `x ≤ 1` (`a P ≥ 1`): `S − F(1 − it) P^{1−it} = −(1/2π) ∫ F(2+iy) P^{2+iy} H(2+iy+it) dy`.
 English proof: Mellin inversion `mellinInv_mellin_eq` at `x = n/P`, Fubini against
@@ -778,7 +871,58 @@ theorem smoothTwist_sub_main_eq {f : ℝ → ℂ} (hf : ∀ k : ℕ, ContDiff �
     smoothTwist f P t - mellin f (1 - t * I) * (P : ℂ) ^ (1 - t * I) =
       -((1 / (2 * π) : ℝ) : ℂ) * ∫ y : ℝ, mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I) *
         zetaH (2 + y * I + t * I) := by
-  sorry
+  have hP0 : 0 < P := by
+    by_contra h; push Not at h; nlinarith
+  obtain ⟨K, hK0, hKb, hKc, hKi⟩ := mellin_vertical_facts hf ha hab hs
+  obtain ⟨B, hB⟩ := zetaH_bound_two
+  have hhn : ∀ y : ℝ, ‖mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I)‖ =
+      ‖mellin f (2 + y * I)‖ * P ^ 2 := by
+    intro y
+    simp only [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hP0]
+    simp
+  have hhc : Continuous fun y : ℝ => mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I) := by
+    refine hKc.mul (continuous_iff_continuousAt.2 fun y => ?_)
+    exact (continuous_const.add (continuous_ofReal.mul continuous_const)).continuousAt.const_cpow
+      (Or.inl (by exact_mod_cast hP0.ne'))
+  have hhi : Integrable fun y : ℝ => mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I) := by
+    refine (hKi.norm.mul_const (P ^ 2)).mono' hhc.aestronglyMeasurable
+      (Eventually.of_forall fun y => ?_)
+    rw [hhn]
+  have hw1 : ∀ y : ℝ, 1 < (2 + (y : ℂ) * I + t * I).re := fun y => by simp
+  have hwne : ∀ y : ℝ, (2 + (y : ℂ) * I + t * I) - 1 ≠ 0 := fun y h0 => by
+    have := congrArg Complex.re h0; simp at this; norm_num at this
+  have hzc : Continuous fun y : ℝ => zetaH (2 + y * I + t * I) := by
+    refine continuous_iff_continuousAt.2 fun y => ?_
+    have hw : (2 + (y : ℂ) * I + t * I) ≠ 1 := fun h0 => hwne y (by rw [h0]; ring)
+    have hz : riemannZeta (2 + (y : ℂ) * I + t * I) ≠ 0 := riemannZeta_ne_zero_of_one_lt_re (hw1 y)
+    exact (zetaH_differentiableAt hw hz).continuousAt.comp
+      (f := fun y : ℝ => 2 + (y : ℂ) * I + t * I) (by fun_prop)
+  have hzi : Integrable fun y : ℝ => mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I) *
+      zetaH (2 + y * I + t * I) := by
+    refine (hhi.norm.mul_const |B|).mono' (hhc.mul hzc).aestronglyMeasurable
+      (Eventually.of_forall fun y => ?_)
+    rw [norm_mul]
+    exact mul_le_mul_of_nonneg_left ((hB _ (by simp)).trans (le_abs_self B)) (norm_nonneg _)
+  have hdi : Integrable fun y : ℝ => mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I) /
+      (2 + y * I + t * I - 1) := by
+    refine hhi.norm.mono' (hhc.div (by fun_prop) hwne).aestronglyMeasurable
+      (Eventually.of_forall fun y => ?_)
+    · rw [norm_div]
+      refine div_le_self (norm_nonneg _) ?_
+      have := Complex.abs_re_le_norm (2 + (y : ℂ) * I + t * I - 1)
+      have hre : (2 + (y : ℂ) * I + t * I - 1).re = 1 := by simp; norm_num
+      rw [hre] at this; simpa using this
+  have hpt : ∀ y : ℝ, mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I) *
+      LSeries (fun n => (ArithmeticFunction.vonMangoldt n : ℂ)) (2 + y * I + t * I) =
+      mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I) / (2 + y * I + t * I - 1) -
+        mellin f (2 + y * I) * (P : ℂ) ^ (2 + y * I) * zetaH (2 + y * I + t * I) := by
+    intro y
+    rw [ArithmeticFunction.LSeries_vonMangoldt_eq_deriv_riemannZeta_div (hw1 y), zetaH]
+    field_simp [hwne y]
+    ring
+  rw [smoothTwist_eq_vertical hf ha hab hs hP0 t, mainTerm_eq_vertical hf ha hab hs hP t,
+    integral_congr_ae (Eventually.of_forall hpt), integral_sub hdi hzi]
+  ring
 
 set_option maxHeartbeats 4000000 in
 /-- **Crux leaf V5 (contour shift + estimates).**  Under VK, the vertical integral of V4 is

@@ -508,41 +508,24 @@ Stop condition: `NumberTheory/Transcendence/` sorry-free.
 
 ---
 
-## ⚡ CURRENT DIRECTIVE (set 2026-09-28, review lap #2 of phase 9; OUTRANKS every HANDOFF)
+## ⚡ CURRENT DIRECTIVE (set 2026-10-01, review lap of phase E3, branch `erdos-385`; OUTRANKS every HANDOFF)
 
-**Phase 9's PROBE objective is MET.**  `PROBE-DUBICKAS-NOSUBSPACE.md` now carries a precise,
-multiply-confirmed obstruction: Dubickas's Lemma 6 = (his Lemma 3 = **Corvaja–Zannier 2004's main
-theorem**) ∨ (his Lemma 5, fully formalized).  Lemma 3 is the `p`-adic Subspace Theorem and **stays a
-disclosed leaf**: the reason is structural, not a gap in effort — the object to bound is
-`∏_σ(σ(α)^N − k_N)`, i.e. a *linear form in the `d` monomials* `σ(α)^N`, which is exactly what forces
-Subspace over Roth/Ridout, and the one-dimensional (archimedean-Liouville / Ridout) route provably
-only re-derives `M(α) ≥ α` (vacuous).  `hD` therefore stays on the three `Dubickas.lean` headlines.
+**THE single objective:** `NumberTheory/Erdos385/AlmostAll.lean` sorry-free.  Exactly one `sorry`
+remains: `smoothTwist_sub_main_eq` (V4, the prime-sum half of the Perron identity at `Re s = 2`).
+It is the only thing between `almost_all_F385` and `[propext, Classical.choice, Quot.sound]` +
+the four literature Props (`#print axioms` 2026-10-01: headline and `smoothPrimeSumVK_of_VKZ` show
+`sorryAx`; `vertical_integral_bound`, `variance_small` are clean).
 
-**THE SINGLE OBJECTIVE now: collapse `DubickasNoSubspace.lean` from THREE disclosed leaves to ONE**
-— `corvajaZannier_dichotomy` (a named published theorem) — by proving `corvajaZannier_lemma4` and
-its local leaf `valuation_sum_unit_pow_nondegenerate` in the forms the call site can actually supply.
+**Mandated next move:** prove it as the HANDOFF plans: per-`n` Mellin inversion
+(`mellin_inversion_two` at `x = n/P`), swap `∑'`/`∫` (`integral_tsum_of_summable_integral_norm`,
+dominated by `Λ(n) n^{-2} P² K π`), identify `∑ Λ(n) n^{-w} = −ζ'/ζ(w)` on `Re w = 2`, and subtract
+`mainTerm_eq_vertical`.  Then headline `#print axioms`, STATUS ledger, `box done`.
 
-**Mandated next moves, in order** (detail + the new handle in `PENDING_WORK.md` §PHASE 9):
-1. **General-`k` Newton collapse.**  Extend the `k = 2` Graeffe closure to any tie size via
-   `multiset_mul_esymm_eq_sum` (already in `MultisetNewton.lean`): `v(j! e_j) ≤ max_{l ≤ k} v(p_l)`
-   by induction, and `e_k = ∏ u_i` is a unit.  Closes the local leaf for every exponent set closed
-   under multiplication by `1, …, k` — **no nondegeneracy hypothesis**.
-2. **`den(U_N) ∣ D^N`** — `D α` is an algebraic integer for some `D`, so `D^N U_N = Tr((Dα)^N) ∈ ℤ`.
-   This is the *upper* bound on the denominator that the sixth lap was missing.
-3. **The cofiniteness dichotomy.**  Pair 2 with the already-proved `tracePowSum_near_int` +
-   `one_div_den_le_dist_int`: if `D · max(α⁻¹, ρ) < 1` then `2 U_(2^n) ∈ ℤ` for **all** large `n`,
-   so the exponent set is cofinite, so 1 applies *and* the degenerate descent iterates.  The
-   residual "sparsity" obstruction thereby upgrades to the single concrete inequality
-   `D ≥ min(α, ρ⁻¹)` — a statement about the Mahler measure, recordable and attackable.
+**Forbidden drift:** editing frozen statements or `Literature/`; Graph.lean / other-file side quests
+before AlmostAll is clean; discharging the literature Props (out of this phase's scope).
 
-**Forbidden drift:** do NOT attempt Lemma 3 / the Subspace Theorem itself; do NOT add any `Prop` to
-`Literature/` (frozen — propose it in the PROBE write-up instead); do NOT route a `Dubickas.lean`
-headline through a `sorry`; do NOT move the three active-crux `sorry`s to `wip/` (that games the
-gate).  `Dubickas.lean` keeps its path and every public name (⚓ OEIS-linked).
-
-**Why:** the headline crux is a confirmed literature wall, so the remaining *decidable* value is
-fidelity bookkeeping of the sharpest kind — reducing three vaguely-strong leaves to one citable
-published theorem, and turning "the index set might be sparse" into a named inequality.
+**Why:** a 95%-confidence Fubini/Perron bookkeeping identity is all that stands between the phase
+and its stop condition; every analytic crux (VK contour shift V5, small-P V6, MVT leaves) is done.
 
 **Directive history**
 - 2026-09-28 (review lap): phase 8 CLOSED — Lemma 8 dropped from the Dubickas headlines; next
@@ -550,6 +533,8 @@ published theorem, and turning "the index set might be sparse" into a named ineq
 - 2026-09-28 (review lap #2): phase 9's probe goal MET; Lemma 3 is the Subspace Theorem and stays a
   disclosed leaf.  New objective = THREE leaves → ONE, via the general-`k` Newton collapse + the
   `den(U_N) ∣ D^N` upper bound + the cofiniteness dichotomy.
+- 2026-10-01 (review lap, phase E3, `erdos-385`): one `sorry` left (V4 `smoothTwist_sub_main_eq`);
+  objective = close it, nothing else.
 
 ---
 
