@@ -23,6 +23,9 @@ unconditionally (`Exceptional.lean` route, `DOOR-EXCEPTIONAL-ERDOS-385.md` §A2)
 names two bottlenecks and a ceiling `X^{1−o(1)}` (`L ≤ X^{o(1)}`).  This phase attacks both
 bottlenecks.  Two frozen targets:
 
+**Both PROVED (2026-10-01), unconditionally** — via the window route in `QuasiPower/` (not the
+Freedman plan below, which caps at exponent 1/2).
+
 * `badCountExp_threeQuarters` (milestone, 35%): exponent `3/4 − ε`;
 * `badCountQuasiPower_holds` (moonshot, 20%): `X exp(−c log X/(log log X)²)`, i.e. a saving
   `X^{o(1)}` that is a power of `log` away from the ceiling.
@@ -79,9 +82,6 @@ def BadCountQuasiPower : Prop :=
   ∃ c : ℝ, 0 < c ∧ ∃ C : ℝ, ∀ X : ℕ, 16 ≤ X →
     ({n : ℕ | n ≤ X ∧ 5 ≤ n ∧ Bad n}.ncard : ℝ)
       ≤ C * X * Real.exp (-(c * Real.log X / Real.log (Real.log X) ^ 2))
-
-theorem badCountExp_threeQuarters : BadCountExpThreeQuarters := by
-  sorry
 
 set_option maxHeartbeats 1000000 in
 /-- **Moonshot proved**: `#bad ≤ C X exp(−log X/(32400 (log log X)²))`.  Route: `QuasiPower.bound_m`
@@ -203,5 +203,110 @@ theorem badCountQuasiPower_holds : BadCountQuasiPower := by
       _ = X₁ * (X * Real.exp (-L)) := by rw [hXe, mul_one]
       _ ≤ max (2 + 2 * C) X₁ * X * Real.exp (-(1 / 32400 * L / Real.log L ^ 2)) := by
         rw [← mul_assoc]; gcongr; exact le_max_right _ _
+
+/-- `L^α ≤ c L/(log L)² + K` for `L ≥ e`, any `0 < α < 3/4`, `c > 0`. -/
+theorem rpow_le_quasi {α c : ℝ} (hα0 : 0 < α) (hα : α < 3 / 4) (hc : 0 < c) :
+    ∃ K : ℝ, 0 ≤ K ∧ ∀ L : ℝ, Real.exp 1 ≤ L → L ^ α ≤ c * L / Real.log L ^ 2 + K := by
+  obtain ⟨ε, hε⟩ : ∃ ε : ℝ, ε = 3 / 4 - α := ⟨_, rfl⟩
+  have hε0 : 0 < ε := by linarith
+  refine ⟨(64 / c) ^ ((3 / 4) / ε), by positivity, fun L hL => ?_⟩
+  have hL0 : 0 < L := lt_of_lt_of_le (Real.exp_pos 1) hL
+  have hL1 : 1 ≤ L := le_trans (by linarith [Real.add_one_le_exp (1 : ℝ)]) hL
+  have hlog : 1 ≤ Real.log L := by rw [Real.le_log_iff_exp_le hL0]; exact hL
+  have h8 : Real.log L ≤ 8 * L ^ ((1 : ℝ) / 8) := by
+    have h := Real.log_le_sub_one_of_pos (Real.rpow_pos_of_pos hL0 ((1 : ℝ) / 8))
+    rw [Real.log_rpow hL0] at h
+    linarith
+  have hsq : Real.log L ^ 2 ≤ 64 * L ^ ((1 : ℝ) / 4) := by
+    have : (L ^ ((1 : ℝ) / 8)) ^ 2 = L ^ ((1 : ℝ) / 4) := by
+      rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le]; norm_num
+    nlinarith
+  have hsplit : L = L ^ ((1 : ℝ) / 4) * L ^ ((3 : ℝ) / 4) := by
+    rw [← Real.rpow_add hL0]; norm_num
+  have h14 : 0 < L ^ ((1 : ℝ) / 4) := Real.rpow_pos_of_pos hL0 _
+  have h34 : 0 < L ^ ((3 : ℝ) / 4) := Real.rpow_pos_of_pos hL0 _
+  have hmain : c / 64 * L ^ ((3 : ℝ) / 4) ≤ c * L / Real.log L ^ 2 := by
+    rw [le_div_iff₀ (by positivity)]
+    calc c / 64 * L ^ ((3 : ℝ) / 4) * Real.log L ^ 2
+        ≤ c / 64 * L ^ ((3 : ℝ) / 4) * (64 * L ^ ((1 : ℝ) / 4)) := by gcongr
+      _ = c * (L ^ ((1 : ℝ) / 4) * L ^ ((3 : ℝ) / 4)) := by ring
+      _ = c * L := by rw [← hsplit]
+  have hq0 : 0 ≤ c * L / Real.log L ^ 2 := by positivity
+  have hαε : L ^ α * L ^ ε = L ^ ((3 : ℝ) / 4) := by
+    rw [← Real.rpow_add hL0, hε]; ring_nf
+  have hLε : 0 < L ^ ε := Real.rpow_pos_of_pos hL0 _
+  by_cases hcase : 64 / c ≤ L ^ ε
+  · have : L ^ α ≤ c / 64 * L ^ ((3 : ℝ) / 4) := by
+      rw [← hαε]
+      have hα' : 0 < L ^ α := Real.rpow_pos_of_pos hL0 _
+      have : 64 ≤ c * L ^ ε := by rwa [div_le_iff₀ hc, mul_comm] at hcase
+      nlinarith
+    have : (0 : ℝ) ≤ (64 / c) ^ ((3 / 4) / ε) := by positivity
+    linarith
+  · push_neg at hcase
+    have h1 : L ^ α ≤ L ^ ((3 : ℝ) / 4) := Real.rpow_le_rpow_of_exponent_le hL1 (by linarith)
+    have h2 : L ^ ((3 : ℝ) / 4) = (L ^ ε) ^ ((3 / 4) / ε) := by
+      rw [← Real.rpow_mul hL0.le]; congr 1; field_simp
+    have h3 : (L ^ ε) ^ ((3 / 4) / ε) ≤ (64 / c) ^ ((3 / 4) / ε) :=
+      Real.rpow_le_rpow hLε.le hcase.le (by positivity)
+    linarith
+
+/-- **Milestone** (from the moonshot): exponent `3/4 − ε`. -/
+theorem badCountExp_threeQuarters : BadCountExpThreeQuarters := by
+  intro ε hε hε2
+  obtain ⟨c, hc, C, hC⟩ := badCountQuasiPower_holds
+  obtain ⟨K, hK0, hK⟩ := rpow_le_quasi (α := 3 / 4 - ε) (by linarith) (by linarith) hc
+  refine ⟨max (max C 0 * Real.exp K) (Real.exp 16), fun X hX => ?_⟩
+  have hX0 : (0 : ℝ) < X := by exact_mod_cast (show 0 < X by omega)
+  have hcard : ({n : ℕ | n ≤ X ∧ 5 ≤ n ∧ Bad n}.ncard : ℝ) ≤ X := by
+    have : {n : ℕ | n ≤ X ∧ 5 ≤ n ∧ Bad n} ⊆ ↑(Finset.Icc 1 X) := by
+      intro n hn; simp only [Set.mem_setOf_eq] at hn
+      simp only [Finset.coe_Icc, Set.mem_Icc]; omega
+    have h := Set.ncard_le_ncard this (Finset.finite_toSet _)
+    rw [Set.ncard_coe_finset, Nat.card_Icc, add_tsub_cancel_right] at h
+    exact_mod_cast h
+  obtain ⟨L, hL⟩ : ∃ L : ℝ, L = Real.log X := ⟨_, rfl⟩
+  rw [← hL]
+  have hL1 : 1 ≤ L := by
+    rw [hL, Real.le_log_iff_exp_le hX0]
+    have : (3 : ℝ) ≤ X := by exact_mod_cast hX
+    linarith [Real.exp_one_lt_d9]
+  have hLa : 0 ≤ L ^ ((3 : ℝ) / 4 - ε) := Real.rpow_nonneg (by linarith) _
+  by_cases h16 : 16 ≤ X
+  · have hCX := hC X h16
+    rw [← hL] at hCX
+    have hLe : Real.exp 1 ≤ L := by
+      have h16' : Real.log 16 ≤ L := by
+        rw [hL]; exact Real.log_le_log (by norm_num) (by exact_mod_cast h16)
+      have : Real.log 16 = 4 * Real.log 2 := by
+        rw [show (16 : ℝ) = 2 ^ 4 by norm_num, Real.log_pow]; norm_num
+      linarith [Real.exp_one_lt_d9, Real.log_two_gt_d9]
+    have hk := hK L hLe
+    have hE : Real.exp (-(c * L / Real.log L ^ 2)) ≤
+        Real.exp K * Real.exp (-L ^ ((3 : ℝ) / 4 - ε)) := by
+      rw [← Real.exp_add]; apply Real.exp_le_exp.mpr; linarith
+    have hE0 : 0 ≤ Real.exp (-(c * L / Real.log L ^ 2)) := (Real.exp_pos _).le
+    calc _ ≤ C * X * Real.exp (-(c * L / Real.log L ^ 2)) := hCX
+      _ ≤ max C 0 * X * Real.exp (-(c * L / Real.log L ^ 2)) := by
+        gcongr; exact le_max_left _ _
+      _ ≤ max C 0 * X * (Real.exp K * Real.exp (-L ^ ((3 : ℝ) / 4 - ε))) := by
+        gcongr
+      _ = max C 0 * Real.exp K * X * Real.exp (-L ^ ((3 : ℝ) / 4 - ε)) := by ring
+      _ ≤ _ := by gcongr; exact le_max_left _ _
+  · push_neg at h16
+    have hLX : L ≤ 16 := by
+      have := Real.log_le_sub_one_of_pos hX0
+      have : (X : ℝ) < 16 := by exact_mod_cast h16
+      linarith
+    have hpow : L ^ ((3 : ℝ) / 4 - ε) ≤ L := by
+      calc L ^ ((3 : ℝ) / 4 - ε) ≤ L ^ (1 : ℝ) :=
+            Real.rpow_le_rpow_of_exponent_le hL1 (by linarith)
+        _ = L := Real.rpow_one L
+    have h1 : 1 ≤ Real.exp 16 * Real.exp (-L ^ ((3 : ℝ) / 4 - ε)) := by
+      rw [← Real.exp_add]; exact Real.one_le_exp (by linarith)
+    calc _ ≤ (X : ℝ) := hcard
+      _ ≤ X * (Real.exp 16 * Real.exp (-L ^ ((3 : ℝ) / 4 - ε))) := le_mul_of_one_le_right hX0.le h1
+      _ = Real.exp 16 * X * Real.exp (-L ^ ((3 : ℝ) / 4 - ε)) := by ring
+      _ ≤ _ := by gcongr; exact le_max_right _ _
 
 end LeanFormalizations.Erdos385
