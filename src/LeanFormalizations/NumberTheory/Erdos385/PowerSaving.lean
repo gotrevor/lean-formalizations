@@ -105,6 +105,18 @@ theorem badCount_powerSaving (h1 : RichertZetaGrowth) (h2 : NearOneZeroDensity)
     (h3 : ShortIntervalPrimesLower) :
     ∃ c C : ℝ, 0 < c ∧ ∀ X : ℕ, 2 ≤ X →
       ({n : ℕ | n ≤ X ∧ 5 ≤ n ∧ Bad n}.ncard : ℝ) ≤ C * (X : ℝ) ^ (1 - c) := by
-  sorry
+  obtain ⟨c, C, hc, hC⟩ := almost_all_F385_powerSaving h1 h2 h3 (δ := 1 / 8) (by norm_num)
+    (by norm_num)
+  refine ⟨c, C, hc, fun X hX => le_trans ?_ (hC X hX)⟩
+  have hsub : {n : ℕ | n ≤ X ∧ 5 ≤ n ∧ Bad n} ⊆
+      {n : ℕ | n ≤ X ∧ (F n : ℝ) < n + (1 - 1 / 8) * Real.sqrt n} := by
+    rintro n ⟨hnX, hn5, hb⟩
+    refine ⟨hnX, ?_⟩
+    unfold Bad at hb
+    have : (0 : ℝ) < Real.sqrt n := Real.sqrt_pos.2 (by exact_mod_cast (by omega : 0 < n))
+    have : (F n : ℝ) ≤ n := by exact_mod_cast hb
+    nlinarith
+  exact_mod_cast Set.ncard_le_ncard hsub
+    ((Set.finite_Iic X).subset fun n hn => hn.1)
 
 end LeanFormalizations.Erdos385
