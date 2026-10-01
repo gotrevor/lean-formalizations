@@ -6,6 +6,7 @@ Authors: Trevor Morris
 import Mathlib
 import LeanFormalizations.NumberTheory.Erdos385.BadCount
 import LeanFormalizations.NumberTheory.Erdos385.QuasiPower.ClassCount
+import LeanFormalizations.NumberTheory.Erdos385.QuasiPower.Esymm
 
 /-!
 # Erdős #385: pushing the bad-`n` bound toward the framework ceiling (phase E8, moonshot)
