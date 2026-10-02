@@ -66,7 +66,7 @@ the per-window count `card_badWindow_le`, the window sum `card_le_of_windows`.  
 local explicit formula: a large value of the smooth prime sum at `t` forces a zero
 `ρ = β + iγ` with `|γ − t| ≤ (log T)²` and `β ≥ 1 − η − O(log log T/log P)` (Landau's local lemma
 `Landau.local_landau` for `ζ'/ζ` in the disc, plus a contour shift as in `PNTFromVK/`).  It is
-planted as `nearOneLargeValues_of_density` (80%).
+planted as `nearOneLargeValues_of_density`, revised to 10% and off the headline path (see its docstring).
 
 If a step stalls, state it as a NAMED sub-lemma with a disclosed hole plus an English paragraph and
 a confidence; that is an acceptable finish.
