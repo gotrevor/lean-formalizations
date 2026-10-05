@@ -402,6 +402,41 @@ theorem exists_half_solution (f : ℤ[X]) (hd : 1 ≤ f.natDegree) (i₀ : Fin f
     rw [← hP, sub_self] at this
     simp at this
 
+/-- **Read-out of the square relation.**  `P'(C)² C^(s⁻) = P(C) C^(s⁺)` gives
+`P'(e_i)² = P(e_i) e_i^s`. -/
+theorem readout_sq {K : Type*} [Field K] (f : ℤ[X]) (hmon : f.Monic)
+    (e : Fin f.natDegree → K) (he : ∀ i, (f.map (Int.castRingHom K)).eval (e i) = 0)
+    (hinj : Function.Injective e) (he0 : ∀ i, e i ≠ 0) (x x' : Fin f.natDegree → K) {s : ℤ}
+    (hrel : polyMat K f x' ^ 2 * compM K f ^ (-s).toNat = polyMat K f x * compM K f ^ s.toNat)
+    (i : Fin f.natDegree) :
+    polyVal x' (e i) ^ 2 = polyVal x (e i) * e i ^ s := by
+  classical
+  have hV := vandermonde_isUnit_det e hinj
+  have h1 := vandermonde_mul_polyMat_mul_pow f hmon e he x' (-s).toNat
+  have h0 := vandermonde_mul_polyMat f hmon e he x'
+  have h2 := vandermonde_mul_polyMat_mul_pow f hmon e he x s.toNat
+  have h3 : Matrix.vandermonde e * (polyMat K f x' ^ 2 * compM K f ^ (-s).toNat)
+      = Matrix.diagonal (fun i => polyVal x' (e i) * (polyVal x' (e i) * e i ^ (-s).toNat))
+        * Matrix.vandermonde e := by
+    rw [pow_two, Matrix.mul_assoc, ← Matrix.mul_assoc, h0, Matrix.mul_assoc, h1,
+      ← Matrix.mul_assoc, Matrix.diagonal_mul_diagonal]
+  rw [hrel, h2] at h3
+  have hdiag := right_cancel_of_isUnit_det hV h3
+  have hi := congrArg (fun M : Matrix (Fin f.natDegree) (Fin f.natDegree) K => M i i) hdiag
+  simp only [Matrix.diagonal_apply_eq] at hi
+  have hs : s = (s.toNat : ℤ) - ((-s).toNat : ℤ) := by omega
+  have hne : e i ^ (-s).toNat ≠ 0 := pow_ne_zero _ (he0 i)
+  rw [hs, zpow_sub₀ (he0 i), zpow_natCast, zpow_natCast, ← mul_div_assoc, eq_div_iff hne, hi]
+  ring
+
+/-- `tr P'(C) = Σ P'(e_i)`. -/
+theorem readout_trace_half {K : Type*} [Field K] (f : ℤ[X]) (hmon : f.Monic)
+    (e : Fin f.natDegree → K) (he : ∀ i, (f.map (Int.castRingHom K)).eval (e i) = 0)
+    (hinj : Function.Injective e) (x' : Fin f.natDegree → K) :
+    (polyMat K f x').trace = ∑ i, polyVal x' (e i) := by
+  have htr := trace_polyMat_mul_compM_pow f hmon e he hinj x' 0
+  simpa using htr
+
 /-- **Steps 3 + transfer**: the spectral solution in `AlgQ`, with square roots. -/
 theorem exists_half_spectral {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hs : Odd s)
     (hP : HalfPrimeTraces f s)
@@ -412,7 +447,75 @@ theorem exists_half_spectral {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : 
       ((e 0 : ℂ) = α) ∧ (∀ k, k ≠ 0 → ‖(e k : ℂ)‖ < 1) ∧
       (∀ k, u k ^ (Q + 1) = u k) ∧ ω ^ 2 = 1 ∧ (∀ k, v k ^ 2 = u k * e k ^ s) ∧
       (∑ k, v k = ω) ∧ ¬ (∀ k, u k = u 0) := by
-  sorry
+  classical
+  have hd1 : 1 ≤ f.natDegree := by rw [hD.deg]; norm_num
+  obtain ⟨F, hF, n₀, hlim⟩ := exists_teich_limit hD
+  obtain ⟨x, x', w, hT, hw, hrel, htr, hnsc⟩ :=
+    exists_half_solution f hd1 ⟨0, by omega⟩ hs hlim
+      (fun ν => exists_entry_nonscalar hD hnc ⟨0, by omega⟩ ν) (window_half hD hs hP)
+  obtain ⟨e, hinj, he, hsurj⟩ := exists_root_enum_field (K := AlgQ) f hD.monic hD.irr
+  set ι : AlgQ →+* ℂ := (algebraicClosure ℚ ℂ).val.toRingHom with hι
+  have hιinj : Function.Injective ι := fun a b hab => Subtype.ext hab
+  have hrootC : (f.map (Int.castRingHom ℂ)).eval (α : ℂ) = 0 := by
+    have := congrArg (algebraMap ℝ ℂ) hD.root
+    rw [Polynomial.aeval_def, Polynomial.hom_eval₂, map_zero] at this
+    rw [Polynomial.eval_map]
+    rw [RingHom.ext_int ((algebraMap ℝ ℂ).comp (algebraMap ℤ ℝ)) (Int.castRingHom ℂ)] at this
+    simpa using this
+  have halgα : IsAlgebraic ℚ (α : ℂ) := by
+    refine ⟨f.map (Int.castRingHom ℚ), (hD.monic.map _).ne_zero, ?_⟩
+    rw [Polynomial.aeval_def, Polynomial.eval₂_eq_eval_map, Polynomial.map_map,
+      show (algebraMap ℚ ℂ).comp (Int.castRingHom ℚ) = Int.castRingHom ℂ from
+        RingHom.ext fun n => by simp]
+    exact hrootC
+  set α' : AlgQ := ⟨(α : ℂ), (mem_algebraicClosure_iff).2 halgα⟩ with hα'
+  have hα'root : (f.map (Int.castRingHom AlgQ)).eval α' = 0 := by
+    refine hιinj ?_
+    rw [eval_map_int_hom ι f α', map_zero]
+    exact hrootC
+  obtain ⟨i₀, hi₀⟩ := hsurj α' hα'root
+  set σ : Fin 3 ≃ Fin f.natDegree :=
+    (finCongr hD.deg.symm).trans (Equiv.swap (finCongr hD.deg.symm 0) i₀) with hσ
+  have hσ0 : σ 0 = i₀ := by simp [hσ]
+  have he0 : ∀ i, e i ≠ 0 := by
+    intro i h0
+    have := he i
+    rw [h0, ← Polynomial.coeff_zero_eq_eval_zero, Polynomial.coeff_map] at this
+    exact coeff_zero_ne_zero hD.monic hD.irr hD.deg (by simpa using this)
+  have hQ1 : 3 ^ F - 1 + 1 = 3 ^ F := Nat.sub_add_cancel (Nat.one_le_pow _ _ (by norm_num))
+  refine ⟨3 ^ F - 1, fun k => e (σ k), fun k => polyVal x (e (σ k)),
+    fun k => polyVal x' (e (σ k)), w, ?_,
+    hinj.comp σ.injective, fun k => he _, ?_, ?_, ?_, hw, ?_, ?_, ?_⟩
+  · rcases hF with rfl | rfl | ⟨rfl, h3⟩
+    · left; norm_num
+    · right; left; norm_num
+    · right; right; exact ⟨by norm_num, h3⟩
+  · show ((e (σ 0) : AlgQ) : ℂ) = α
+    rw [hσ0, hi₀]
+  · intro k hk
+    have hne : e (σ k) ≠ α' := by
+      rw [← hi₀, ← hσ0]; exact fun h => hk (σ.injective (hinj h))
+    refine hD.small _ ((Polynomial.mem_roots (hD.monic.map _).ne_zero).2 ?_) ?_
+    · have := congrArg ι (he (σ k))
+      rw [eval_map_int_hom ι f, map_zero] at this
+      exact this
+    · intro h; apply hne; exact Subtype.ext h
+  · intro k
+    have := polyVal_pow_succ_eq f hD.monic e he hinj x (Q := 3 ^ F - 1) (by rw [hQ1]; exact hT) (σ k)
+    exact this
+  · intro k; exact readout_sq f hD.monic e he hinj he0 x x' hrel (σ k)
+  · have h := readout_trace_half f hD.monic e he hinj x'
+    rw [← htr, h]
+    exact (Equiv.sum_comp σ (fun i => polyVal x' (e i)))
+  · intro hall
+    apply hnsc
+    have hc : polyMat AlgQ f x = polyVal x (e (σ 0)) • 1 := by
+      by_contra hne
+      obtain ⟨i, hi⟩ := readout_ne f hD.monic e he hinj x _ hne
+      exact hi (by simpa using hall (σ.symm i))
+    rw [hc]
+    simp [Matrix.smul_apply, Matrix.one_apply]
+
 
 /-! ### The Kummer step and the circulant -/
 
