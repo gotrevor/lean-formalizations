@@ -110,7 +110,34 @@ prime. -/
 theorem not_intCast_pow {C : ℕ → ℕ} (h1 : 1 ≤ C 1) (h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1))
     (h5 : ∀ m ≥ 1, ∃ k > m, C m ∣ C k ∧ (29 : ℝ) / 10 * C k ≤ C (k + 1))
     {ξ : ℝ} (hξ : ξ ∈ millsSet C) : ∀ m ≥ 1, ∀ t : ℤ, ξ ^ C m ≠ (t : ℝ) := by
-  sorry
+  intro m hm t ht
+  obtain ⟨k, hkm, ⟨e, he⟩, -⟩ := h5 m hm
+  have hCm := C_ge_one h1 h2 m hm
+  have hCk : C (m + 1) ≤ C k := by
+    rcases Nat.lt_or_ge (m + 1) k with h | h
+    · exact (C_strictMonoOn h1 h2 (by omega) h).le
+    · rw [show k = m + 1 by omega]
+  have hCm1 := h2 m hm
+  have he2 : 2 ≤ e := by
+    have : C m * 2 ≤ C m * e := by rw [← he]; omega
+    exact Nat.le_of_mul_le_mul_left this (by omega)
+  have hξ1 : 1 < ξ := hξ.1
+  have ht1 : (1 : ℝ) < t := by
+    rw [← ht]; exact one_lt_pow₀ hξ1 (by omega)
+  have ht2 : 2 ≤ t := by
+    have : (1 : ℤ) < t := by exact_mod_cast ht1
+    omega
+  obtain ⟨u, rfl⟩ : ∃ u : ℕ, t = (u : ℤ) := ⟨t.toNat, by omega⟩
+  have hu2 : 2 ≤ u := by omega
+  have hpow : ξ ^ C k = ((u ^ e : ℕ) : ℝ) := by
+    rw [he, pow_mul, ht]; push_cast; ring
+  have hp := hξ.2 k (by omega)
+  rw [hpow, Nat.floor_natCast] at hp
+  rcases hp.eq_one_or_self_of_dvd u (dvd_pow_self u (by omega)) with h | h
+  · omega
+  · have : u ^ 1 < u ^ e := Nat.pow_lt_pow_right (by omega) (by omega)
+    rw [pow_one, ← h] at this
+    exact lt_irrefl _ this
 
 /-- **Nested intervals.**  If the roots `q_k^(1/C k)` increase weakly and the roots
 `(q_k + 1)^(1/C k)` decrease strictly from `k₀` on, some `ζ > 0` has `⌊ζ^(C k)⌋₊ = q k` for all
@@ -486,11 +513,38 @@ theorem window_of_least (hB : BakerHarmanPintz2001) {C : ℕ → ℕ} (h1 : 1 �
     · rw [h]; exact (hrX (k - m)).2
   exact absurd (hξ.2 hζS) (not_le.2 hζξ)
 
+/-- Bernoulli for real exponents: `y^c + c y^(c−1)(x − y) ≤ x^c` for `1 ≤ y ≤ x`, `c ≥ 1`. -/
+theorem bernoulli_rpow {x y c : ℝ} (hy : 1 ≤ y) (hyx : y ≤ x) (hc : 1 ≤ c) :
+    y ^ c + c * (x - y) * y ^ (c - 1) ≤ x ^ c := by
+  have hy0 : 0 < y := by linarith
+  have hb := one_add_mul_self_le_rpow_one_add (s := (x - y) / y) (by
+    have : 0 ≤ (x - y) / y := div_nonneg (by linarith) hy0.le
+    linarith) hc
+  have e1 : 1 + (x - y) / y = x / y := by field_simp; ring
+  rw [e1, Real.div_rpow (by linarith) hy0.le] at hb
+  have hyc : 0 < y ^ c := Real.rpow_pos_of_pos hy0 c
+  rw [le_div_iff₀ hyc] at hb
+  have hyc1 : y ^ (c - 1) = y ^ c / y := Real.rpow_sub_one hy0.ne' c
+  rw [hyc1]
+  have : (1 + c * ((x - y) / y)) * y ^ c = y ^ c + c * (x - y) * (y ^ c / y) := by
+    field_simp
+  linarith
+
 /-- **Saito (5.1)**: if `⌊x^c⌋ < ⌊x⌋^c` (`x ≥ 1`, `c ≥ 1`) then `c·{x}·⌊x⌋^(c−1) < 1`. -/
 theorem fract_lt_of_floor_lt {x c : ℝ} (hx : 1 ≤ x) (hc : 1 ≤ c)
     (h : (⌊x ^ c⌋₊ : ℝ) < (⌊x⌋₊ : ℝ) ^ c) :
     c * Int.fract x * (⌊x⌋₊ : ℝ) ^ (c - 1) < 1 := by
-  sorry
+  have hx0 : 0 ≤ x := by linarith
+  set y : ℝ := (⌊x⌋₊ : ℝ) with hy
+  have hy1 : 1 ≤ y := by
+    have := Nat.floor_pos.2 hx; rw [hy]; exact_mod_cast this
+  have hfr : Int.fract x = x - y := by
+    rw [hy, Int.fract, ← Int.natCast_floor_eq_floor hx0]; push_cast; ring
+  have hyx : y ≤ x := Nat.floor_le hx0
+  have hb := bernoulli_rpow hy1 hyx hc
+  have hlt : x ^ c < (⌊x ^ c⌋₊ : ℝ) + 1 := Nat.lt_floor_add_one _
+  rw [hfr]
+  linarith
 
 /-- **Saito (5.17)**: if `x^c < P + 1` with `P ≤ p^c + p^(θc)`, `p = ⌊x⌋ ≥ 1`, `c ≥ 1`,
 `0 ≤ θ < 1`, then `{x} ≤ 2 / (c p^((1−θ)c − 1))`. -/
@@ -498,7 +552,27 @@ theorem fract_le_of_window {x c θ : ℝ} {P : ℕ} (hx : 1 ≤ x) (hc : 1 ≤ c
     (hθ1 : θ < 1) (hxc : x ^ c < (P : ℝ) + 1)
     (hP : (P : ℝ) ≤ (⌊x⌋₊ : ℝ) ^ c + (⌊x⌋₊ : ℝ) ^ (θ * c)) :
     Int.fract x ≤ 2 / (c * (⌊x⌋₊ : ℝ) ^ ((1 - θ) * c - 1)) := by
-  sorry
+  have hx0 : 0 ≤ x := by linarith
+  set y : ℝ := (⌊x⌋₊ : ℝ) with hy
+  have hy1 : 1 ≤ y := by
+    have := Nat.floor_pos.2 hx; rw [hy]; exact_mod_cast this
+  have hy0 : 0 < y := by linarith
+  have hfr : Int.fract x = x - y := by
+    rw [hy, Int.fract, ← Int.natCast_floor_eq_floor hx0]; push_cast; ring
+  have hyx : y ≤ x := Nat.floor_le hx0
+  have hb := bernoulli_rpow hy1 hyx hc
+  have hθc : y ^ (θ * c) ≥ 1 := Real.one_le_rpow hy1 (by positivity)
+  -- `c y^(c−1) (x − y) < 2 y^(θc)`
+  have hkey : c * (x - y) * y ^ (c - 1) < 2 * y ^ (θ * c) := by linarith
+  have hsplit : y ^ (c - 1) = y ^ ((1 - θ) * c - 1) * y ^ (θ * c) := by
+    rw [← Real.rpow_add hy0]; ring_nf
+  have hpos : 0 < c * y ^ ((1 - θ) * c - 1) := by positivity
+  rw [hfr, le_div_iff₀ hpos]
+  have hθpos : 0 < y ^ (θ * c) := by positivity
+  rw [hsplit] at hkey
+  have : (x - y) * (c * y ^ ((1 - θ) * c - 1)) * y ^ (θ * c) < 2 * y ^ (θ * c) := by
+    nlinarith
+  exact (lt_of_mul_lt_mul_right this hθpos.le).le
 
 /-- A root `z` of the minimal polynomial of `γ` has `z^e` a root of the minimal polynomial of
 `γ^e`. -/
