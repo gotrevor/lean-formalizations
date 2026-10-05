@@ -955,4 +955,165 @@ theorem saitoTypeB_shift_theta {θ ρ μ : ℝ} (hP : PrimesShortInterval θ) (h
 
 
 
+/-- **Degree-free Saito Type B** (phase 65): as `saitoTypeB_shift_theta`, with no decay floor `μ > 1/3`,
+given that all large indices are records; the Pisot degree is only `≥ 3`.  Variant of the theorem
+above.
+
+-- copy of: **Saito's Type B for the E+ exponents, from BHP and Dubickas 2022 Lemma 6 only.** -/
+theorem saitoTypeB_shift_theta_gen {θ ρ μ : ℝ} (hP : PrimesShortInterval θ) (hθ0 : 0 ≤ θ) (hθ1 : θ < 1)
+    (hμ0 : 0 < μ) (hμ : μ ≤ (1 - θ) * ρ - 1) (hρ2 : 2 < ρ) (hμ1 : μ ≤ 1) (hρ3 : ρ < 3)
+    (hD : Dubickas2022)
+    {e : ℤ} {j : ℕ} (he : e ≠ 0) (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + e) (hj2 : e ≤ (3 : ℤ) ^ (j + 1))
+    {ξ : ℝ} (hξ : IsLeast {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ shiftC j e k⌋₊).Prime} ξ)
+    (hrecs : IsAlgebraic ℚ ξ → ∃ K, ∀ m ≥ K, IsRecord (shiftC j e) ξ m) :
+    Transcendental ℚ ξ ∨
+      ∃ g : ℕ, 1 ≤ g ∧ IsPisot (ξ ^ g) ∧ 3 ≤ (minpoly ℚ (ξ ^ g)).natDegree ∧
+        ∃ K : ℕ, ∀ k ≥ K, (29 : ℝ) / 10 * shiftC j e k ≤ shiftC j e (k + 1) →
+          g ∣ shiftC j e k ∧ powTrace (ξ ^ g) (shiftC j e k / g) = (⌊ξ ^ shiftC j e k⌋₊ : ℂ) := by
+  have hρ1 := theta_one_lt hθ0 hθ1 hμ0 hμ
+  by_cases htr : Transcendental ℚ ξ
+  · exact Or.inl htr
+  right
+  have halg : IsAlgebraic ℚ ξ := not_not.1 htr
+  set C := shiftC j e with hCdef
+  have h1 : 1 ≤ C 1 := shiftC_pos hj1 le_rfl
+  have h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1) := fun k hk => shiftC_two_mul_le hj1 hj2 hk
+  have h5 : ∀ m ≥ 1, ∃ k > m, C m ∣ C k ∧ (29 : ℝ) / 10 * C k ≤ C (k + 1) :=
+    fun m hm => shiftC_B5 hj1 hj2 hm
+  set K₀ := 19 * e.natAbs + 1 with hK₀def
+  have hK₀ : ∀ k ≥ K₀, (29 : ℝ) / 10 * C k ≤ C (k + 1) := fun k hk =>
+    shiftC_ratio hj1 (by omega) (by omega)
+  obtain ⟨K₀ρ, hK₀ρ⟩ := shiftC_ratio_ev (s := e) (j := j) hj1 hρ3
+  have hξS : ξ ∈ millsSet C := hξ.1
+  have hξ1 : 1 < ξ := hξ.1.1
+  have hξ0 : 0 < ξ := by linarith
+  have hnot := not_intCast_pow h1 h2 h5 hξS
+  obtain ⟨Kr, hKr⟩ := hrecs halg
+  have hlow : ∀ k ≥ Kr + 1, root ⌊ξ ^ C k⌋₊ (C k) ≤ root ⌊ξ ^ C (k + 1)⌋₊ (C (k + 1)) :=
+    fun k hk => hKr (k + 1) (by omega) k (by omega) (by omega)
+  obtain ⟨k₀, hII⟩ := window_of_least_theta hP hθ0 hθ1 hμ0 hμ hρ2 hμ1 h1 h2 hK₀ρ hξ hnot hlow
+  obtain ⟨k₂, hfr⟩ := eventually_fract_le_theta hθ0 hθ1 hμ0 hμ hρ2 hμ1 h1 h2 hK₀ρ hξS hII
+  have hCge := C_ge_one h1 h2
+  -- the decay along `s k = C (k + k₃)`
+  set k₃ := k₂ + 1 with hk₃
+  set s : ℕ → ℕ := fun k => C (k + k₃) with hs
+  have hsmono : StrictMono s := by
+    intro a b hab
+    exact C_strictMonoOn h1 h2 (by omega) (by omega)
+  have hs0 : 0 < s 0 := hCge _ (by omega)
+  have hflo := floor_tendsto h1 h2 hξ1
+  have hdecay : ∀ᶠ k in atTop, |ξ ^ s k - (round (ξ ^ s k) : ℝ)| ≤
+      4 * ξ ^ (-(μ * s k)) := by
+    filter_upwards [eventually_ge_atTop 0] with k _
+    set x := ξ ^ s k with hx
+    have hx1 : 1 ≤ x := one_le_pow₀ hξ1.le
+    have hfl1 : (1 : ℝ) ≤ (⌊x⌋₊ : ℝ) := by
+      have := Nat.floor_pos.2 hx1; exact_mod_cast this
+    have hxfl : x ≤ 2 * (⌊x⌋₊ : ℝ) := by
+      have := Nat.lt_floor_add_one x; linarith
+    have hround : |x - (round x : ℝ)| ≤ Int.fract x := by
+      have := round_le x ⌊x⌋
+      rwa [← Int.fract, abs_of_nonneg (Int.fract_nonneg x)] at this
+    have hf := hfr (k + k₃) (by omega)
+    -- `⌊x⌋^(−t) ≤ 2^t x^(−t) ≤ 2 x^(−t)`
+    have hpow : (⌊x⌋₊ : ℝ) ^ (-μ) ≤ 2 * x ^ (-μ) := by
+      have hxpos : 0 < x := by linarith
+      have h1' : (⌊x⌋₊ : ℝ) ^ (-μ) ≤ (x / 2) ^ (-μ) :=
+        Real.rpow_le_rpow_of_nonpos (by positivity) (by linarith) (by linarith)
+      have h2' : (x / 2) ^ (-μ) = 2 ^ μ * x ^ (-μ) := by
+        rw [Real.div_rpow hxpos.le (by norm_num), Real.rpow_neg (by norm_num : (0:ℝ) ≤ 2)]
+        field_simp
+      have h3' : (2 : ℝ) ^ μ ≤ 2 := by
+        calc (2 : ℝ) ^ μ ≤ 2 ^ (1 : ℝ) :=
+              Real.rpow_le_rpow_of_exponent_le (by norm_num) hμ1
+          _ = 2 := Real.rpow_one 2
+      rw [h2'] at h1'
+      have : 0 ≤ x ^ (-μ) := by positivity
+      nlinarith
+    have hxe : x ^ (-μ) = ξ ^ (-(μ * s k)) := by
+      rw [hx, ← Real.rpow_natCast, ← Real.rpow_mul hξ0.le]; ring_nf
+    calc |x - (round x : ℝ)| ≤ Int.fract x := hround
+      _ ≤ 2 * (⌊x⌋₊ : ℝ) ^ (-μ) := hf
+      _ ≤ 2 * (2 * x ^ (-μ)) := by linarith
+      _ = 4 * ξ ^ (-(μ * s k)) := by rw [hxe]; ring
+  have hnot' : ∀ k, ∀ t : ℤ, ξ ^ s k ≠ (t : ℝ) := fun k t => hnot _ (by omega) t
+  obtain ⟨g, hg1, hpis, hgdiv, hdeg2⟩ :=
+    exists_pisot_of_decay_subseq' hD halg hξ1 hsmono hs0 hμ0 (by norm_num)
+      hdecay hnot'
+  obtain ⟨k₄, hk₄⟩ := eventually_atTop.1 hgdiv
+  -- `g ∣ C k` for `k ≥ k₅`
+  set k₅ := k₄ + k₃ with hk₅
+  have hgC : ∀ k ≥ k₅, g ∣ C k := by
+    intro k hk
+    have := hk₄ (k - k₃) (by omega)
+    simpa [hs, show k - k₃ + k₃ = k by omega] using this
+  have hpowg : ∀ k ≥ k₅, (ξ ^ g) ^ (C k / g) = ξ ^ C k := by
+    intro k hk
+    rw [← pow_mul, Nat.mul_div_cancel' (hgC k hk)]
+  -- eventually the fractional part is `< 1/2`
+  obtain ⟨k₆, hk₆⟩ := eventually_atTop.1
+    (hflo.eventually_ge_atTop ((16 : ℝ) ^ μ⁻¹))
+  have hhalf : ∀ k ≥ max k₆ k₂, Int.fract (ξ ^ C k) < 1 / 2 := by
+    intro k hk
+    have hf := hfr k (le_trans (le_max_right _ _) hk)
+    have hbig := hk₆ k (le_trans (le_max_left _ _) hk)
+    have hpos : (0 : ℝ) < (16 : ℝ) ^ μ⁻¹ := by positivity
+    have : (⌊ξ ^ C k⌋₊ : ℝ) ^ (-μ) ≤ 1 / 16 := by
+      calc (⌊ξ ^ C k⌋₊ : ℝ) ^ (-μ)
+          ≤ ((16 : ℝ) ^ μ⁻¹) ^ (-μ) :=
+            Real.rpow_le_rpow_of_nonpos hpos hbig (by linarith)
+        _ = 1 / 16 := by
+            rw [← Real.rpow_mul (by norm_num), show μ⁻¹ * -μ = -1 by field_simp]
+            norm_num
+    linarith
+  -- the degree is `3`
+  have hdeg3 : 3 ≤ (minpoly ℚ (ξ ^ g)).natDegree := by
+    rcases (show (minpoly ℚ (ξ ^ g)).natDegree = 2 ∨ 3 ≤ (minpoly ℚ (ξ ^ g)).natDegree by
+      omega) with h | h
+    · exfalso
+      refine not_natDegree_two hpis h (n := fun k => C k / g) (K := max (max k₅ k₆) (k₂ + 1))
+        ?_ ?_ ?_ ?_
+      · intro k hk
+        show (⌊(ξ ^ g) ^ (C k / g)⌋₊).Prime
+        rw [hpowg k (by omega)]
+        exact hξS.2 k (by omega)
+      · intro k hk
+        show Int.fract ((ξ ^ g) ^ (C k / g)) < 1 / 2
+        rw [hpowg k (by omega)]
+        exact hhalf k (by omega)
+      · intro M
+        obtain ⟨b, hb, hdvd, -⟩ := h5 (M + k₅ + 1) (by omega)
+        refine ⟨M + k₅ + 1, by omega, b, hb, ?_, ?_⟩
+        · obtain ⟨e, he⟩ := hdvd
+          refine ⟨e, ?_⟩
+          have hg := hgC (M + k₅ + 1) (by omega)
+          obtain ⟨u, hu⟩ := hg
+          rw [he, hu, Nat.mul_div_cancel_left _ (by omega), mul_assoc,
+            Nat.mul_div_cancel_left _ (by omega)]
+        · have hlt := C_strictMonoOn h1 h2 (a := M + k₅ + 1) (b := b) (by omega) hb
+          obtain ⟨u, hu⟩ := hgC (M + k₅ + 1) (by omega)
+          obtain ⟨v, hv⟩ := hgC b (by omega)
+          rw [hu, hv] at hlt ⊢
+          rw [Nat.mul_div_cancel_left _ (by omega), Nat.mul_div_cancel_left _ (by omega)]
+          exact Nat.lt_of_mul_lt_mul_left hlt
+      · -- `C k / g → ∞`
+        rw [tendsto_atTop_atTop]
+        intro b
+        refine ⟨max k₅ (b * g + 1), fun a ha => ?_⟩
+        have hCa : a ≤ C a := le_C h1 h2 a (by omega)
+        rw [Nat.le_div_iff_mul_le (by omega)]
+        omega
+    · exact h
+  obtain ⟨N₀, hN₀⟩ := eventually_atTop.1 (powTrace_eq_floor hpis)
+  refine ⟨g, hg1, hpis, hdeg3, max (max k₅ k₆) (max k₂ (N₀ * g + 1)), fun k hk _ => ⟨hgC k
+    (by omega), ?_⟩⟩
+  have hN : N₀ ≤ C k / g := by
+    have := le_C h1 h2 k (by omega)
+    rw [Nat.le_div_iff_mul_le (by omega)]
+    omega
+  have := hN₀ (C k / g) hN (by rw [hpowg k (by omega)]; exact hhalf k (by omega))
+  rw [this, hpowg k (by omega)]
+
+
+
 end LeanFormalizations.Mills.SaitoTypeB

@@ -24,6 +24,7 @@ subconvex `c < 1/4` suffices.
 import LeanFormalizations.NumberTheory.Mills.SaitoTypeB
 import LeanFormalizations.NumberTheory.PrimeIntervals.BHPTests
 import LeanFormalizations.NumberTheory.Mills.SaitoTypeBThetaParts
+import LeanFormalizations.NumberTheory.Mills.ShiftRigidityDeg
 
 namespace LeanFormalizations.Mills.SaitoTypeBTheta
 
@@ -143,7 +144,12 @@ Expected route: state a `ξ`-free obstruction for a Pisot `β` of degree `≥ 4`
 the orbit `n ↦ 3n + d` equal `⌊β^n⌋` and are prime, prove it, and specialise. -/
 theorem shiftPisotDegreeLeThree_holds {θ : ℝ} (hθ0 : 0 < θ) (hθ : θ < 2 / 3) :
     ShiftPisotDegreeLeThree θ := by
-  sorry
+  -- vacuous: the degree-free route (`ShiftRigidityDeg`) makes an algebraic `ξ` impossible
+  intro hP hD s j hs hj1 hj2 ξ hξ halg g _ _
+  exact absurd halg (ShiftRigidityDeg.xi_shift_transcendental_of_nodes hθ0 hθ
+    (ShiftRigidityDeg.eventuallyRecordShift_holds hθ0 hθ)
+    (fun _ h => ShiftRigidityDeg.shiftTraceRigidityGe3_holds h)
+    (fun _ h => ShiftRigidityDeg.halfShiftTraceRigidityGe3_holds h) hP hD hs hj1 hj2 hξ)
 
 /-! ## Theorem E+ from `θ < 2/3` (frozen; open beyond `5/9`) -/
 

@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Trevor Morris
 -/
 import LeanFormalizations.NumberTheory.Mills.ShiftRigidity
+import LeanFormalizations.NumberTheory.Mills.SaitoTypeBThetaParts
 
 /-!
 # Phase 65: the `ξ`-free half of the `5/9` wall
@@ -16,7 +17,8 @@ for all large `n`.  This file states its degree-`ℓ` form as the open node.
 
 Difficulty check.
 * Proved: `ℓ = 3` (`shiftTraceRigidityDeg_three`, from `ShiftRigidity.not_primeTraces`).
-* Unproved: `ℓ ≥ 4`.  Of the cubic proof, the cube class (`not_primeTraces_of_cube`) and the
+* Unproved: `ℓ ≥ 4` (`shiftTraceRigidity_ge_four`, `halfShiftTraceRigidity_ge_four`), and
+  eventual records (`eventuallyRecordShift_holds`).  Of the cubic proof, the cube class (`not_primeTraces_of_cube`) and the
   spectral transfer (`exists_spectral_solution_shift`, already degree-general) should carry over;
   `rigidity_generic` (one 3-cycle in the Galois group, circulant Fourier modes) and the E1
   certificate (`f mod 3` irreducible with a root in `ℚ(μ_26)`) are cubic.  For degree `ℓ` the
@@ -33,7 +35,9 @@ Difficulty check.
 
 namespace LeanFormalizations.Mills.ShiftRigidityDeg
 
-open Filter Polynomial LeanFormalizations.Mills.ShiftRigidity
+open Filter Polynomial LeanFormalizations.Mills.ShiftRigidity LeanFormalizations.Literature
+  LeanFormalizations.Mills.ShiftedMillsAll LeanFormalizations.Mills.SaitoTypeB LeanFormalizations.Mills
+  LeanFormalizations.BHPTests
 
 /-- `PisotData` without the degree: a monic irreducible integer polynomial with a real root
 `α > 1` whose other complex roots have modulus `< 1`. -/
@@ -53,12 +57,121 @@ def ShiftTraceRigidityDeg (ℓ : ℕ) : Prop :=
 theorem shiftTraceRigidityDeg_three : ShiftTraceRigidityDeg 3 := fun f α hD hdeg _ hs =>
   not_primeTraces ⟨hD.monic, hD.irr, hdeg, hD.root, hD.gt_one, hD.small⟩ hs
 
-/-- **Believed (~75%)**: shift trace rigidity in every degree `ℓ ≥ 4`.  English route: the
-cubic proof's cube class and spectral transfer, with `rigidity_generic` replaced by a Galois
-element acting fixed-point-freely on the roots outside `ℚ(μ_Q)`; exceptional cases are the
-finitely many factorization types of `f mod 3` with a root in a cyclotomic field `ℚ(μ_(3^f−1))`.
-Evidence: the heuristic above, and `ℓ = 3`. -/
-theorem shiftTraceRigidityDeg_holds {ℓ : ℕ} (hℓ : 4 ≤ ℓ) : ShiftTraceRigidityDeg ℓ := by
+/-! ## The wiring: two nodes give E+ for every `θ < 2/3` -/
+
+/-- **Open node (shift rigidity, degree `≥ 3`)**, `powTrace` form, as consumed by the wiring.
+Degree `3` is `ShiftedMillsAll.shiftTraceRigidity_holds`. -/
+def ShiftTraceRigidityGe3 (s : ℤ) : Prop :=
+  ∀ β : ℝ, IsPisot β → 3 ≤ (minpoly ℚ β).natDegree →
+    ¬ ∀ᶠ n in atTop, ∃ p : ℕ, p.Prime ∧ powTrace β (((3 : ℤ) ^ n + s).toNat) = (p : ℂ)
+
+/-- **Open node (half-shift rigidity, degree `≥ 3`)**, the `g = 2` section.  Degree `3` is
+`ShiftedMillsAll.halfShiftTraceRigidity_holds`. -/
+def HalfShiftTraceRigidityGe3 (s : ℤ) : Prop :=
+  ∀ β : ℝ, IsPisot β → 3 ≤ (minpoly ℚ β).natDegree →
+    ¬ ∀ᶠ n in atTop, ∃ p : ℕ, p.Prime ∧ powTrace β (((3 : ℤ) ^ n + s).toNat / 2) = (p : ℂ)
+
+/-- **Open node (eventual records, degree-free).**  For an algebraic least E+ constant, every
+large index is a record.  Proved for `θ < 5/9` (`SaitoTypeB.eventually_record_shift_theta`,
+through `card otherConj ≤ 2`); in degree `≥ 4` the dominant-pair lower bound has no analogue yet. -/
+def EventuallyRecordShift (θ : ℝ) : Prop :=
+  PrimesShortInterval θ → Dubickas2022 → ∀ (s : ℤ) (j : ℕ), s ≠ 0 →
+    1 ≤ (3 : ℤ) ^ (j + 1) + s → s ≤ (3 : ℤ) ^ (j + 1) → ∀ ξ : ℝ,
+    IsLeast {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ shiftC j s k⌋₊).Prime} ξ → IsAlgebraic ℚ ξ →
+    ∃ K, ∀ m ≥ K, IsRecord (shiftC j s) ξ m
+
+/-- **Wiring (phase 65)**: eventual records and degree-`≥ 3` rigidity give E+ for every
+`θ < 2/3`, with no degree bound. -/
+theorem xi_shift_transcendental_of_nodes {θ : ℝ} (hθ0 : 0 < θ) (hθ : θ < 2 / 3)
+    (hrec : EventuallyRecordShift θ)
+    (hR : ∀ s : ℤ, s ≠ 0 → ShiftTraceRigidityGe3 s)
+    (hH : ∀ s : ℤ, Odd s → HalfShiftTraceRigidityGe3 s)
+    (hP : PrimesShortInterval θ) (hD : Dubickas2022)
+    {s : ℤ} {j : ℕ} (hs : s ≠ 0) (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) (hj2 : s ≤ (3 : ℤ) ^ (j + 1))
+    {ξ : ℝ} (hξ : IsLeast {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ shiftC j s k⌋₊).Prime} ξ) :
+    Transcendental ℚ ξ := by
+  have h1θ : 0 < 1 - θ := by linarith
+  set a : ℝ := 1 / (1 - θ) with ha
+  have ha1 : 1 < a := by rw [ha, lt_div_iff₀ h1θ]; linarith
+  have ha3 : a < 3 := by rw [ha, div_lt_iff₀ h1θ]; linarith
+  have hamul : (1 - θ) * a = 1 := by rw [ha]; field_simp
+  set ρ : ℝ := (3 + a) / 2 with hρ
+  have hρμ : 0 < (1 - θ) * ρ - 1 := by
+    have : (1 - θ) * ρ = ((1 - θ) * 3 + (1 - θ) * a) / 2 := by rw [hρ]; ring
+    rw [this, hamul]; nlinarith
+  set μ : ℝ := min 1 ((1 - θ) * ρ - 1) with hμ
+  have hμ0 : 0 < μ := lt_min (by norm_num) hρμ
+  rcases saitoTypeB_shift_theta_gen (ρ := ρ) (μ := μ) hP hθ0.le (by linarith) hμ0
+      (min_le_right _ _) (by rw [hρ]; linarith) (min_le_left _ _) (by rw [hρ]; linarith)
+      hD hs hj1 hj2 hξ (hrec hP hD s j hs hj1 hj2 ξ hξ) with htr | ⟨g, hg1, hpisot, hdeg, K, hK⟩
+  · exact htr
+  exfalso
+  have hleast := hξ
+  have hgev : ∀ᶠ k in atTop, g ∣ shiftC j s k := by
+    filter_upwards [eventually_ge_atTop (K + 19 * s.natAbs + 1)] with k hk
+    exact (hK k (by omega) (shiftC_ratio hj1 (by omega) (by omega))).1
+  obtain ⟨h3s, hcase⟩ := shiftC_gcd hj1 hg1 hgev
+  set b := g.factorization 3 with hb
+  obtain ⟨s', hs'⟩ := h3s
+  have hs'0 : s' ≠ 0 := by rintro rfl; simp at hs'; exact hs hs'
+  have hsplit : 3 ^ b * ordCompl[3] g = g := Nat.ordProj_mul_ordCompl_eq_self g 3
+  have key : ∀ n ≥ K + 19 * s.natAbs + j + b + 1, ∃ k, 1 ≤ k ∧ k + j - b = n ∧ b ≤ k + j ∧
+      powTrace (ξ ^ g) (shiftC j s k / g) = ((⌊ξ ^ shiftC j s k⌋₊ : ℕ) : ℂ) ∧
+      (⌊ξ ^ shiftC j s k⌋₊).Prime := by
+    intro n hn
+    refine ⟨n + b - j, by omega, by omega, by omega, ?_, hleast.1.2 _ (by omega)⟩
+    exact (hK _ (by omega) (shiftC_ratio hj1 (by omega) (by omega))).2
+  rcases hcase with h1 | ⟨h2, hodd⟩
+  · rw [h1, mul_one] at hsplit
+    refine hR s' hs'0 (ξ ^ g) hpisot hdeg ?_
+    filter_upwards [eventually_ge_atTop (K + 19 * s.natAbs + j + b + 1)] with n hn
+    obtain ⟨k, hk1, hkn, hkb, htr, hp⟩ := key n hn
+    refine ⟨_, hp, ?_⟩
+    rw [← htr, ← hsplit, shiftC_div_three_pow hj1 hs' hk1 hkb, hkn]
+  · rw [h2] at hsplit
+    have hodd' : Odd s' := by
+      rw [hs'] at hodd; exact (Int.odd_mul.mp hodd).2
+    refine hH s' hodd' (ξ ^ g) hpisot hdeg ?_
+    filter_upwards [eventually_ge_atTop (K + 19 * s.natAbs + j + b + 1)] with n hn
+    obtain ⟨k, hk1, hkn, hkb, htr, hp⟩ := key n hn
+    refine ⟨_, hp, ?_⟩
+    rw [← htr, ← hsplit, ← Nat.div_div_eq_div_mul, shiftC_div_three_pow hj1 hs' hk1 hkb, hkn]
+
+/-- **Believed (~75%)**: shift rigidity in degree `≥ 4`.  English route: the cubic proof's cube
+class and spectral transfer (`exists_spectral_solution_shift` is degree-general), with
+`rigidity_generic` replaced by a Galois element acting fixed-point-freely on the roots outside
+`ℚ(μ_Q)`; the exceptional cases are the factorization types of `f mod 3` with a root in a
+cyclotomic `ℚ(μ_(3^f−1))`.  Evidence: degree 3, and the convergent prime heuristic. -/
+theorem shiftTraceRigidity_ge_four {s : ℤ} (hs : s ≠ 0) {β : ℝ} (hβ : IsPisot β)
+    (hdeg : 4 ≤ (minpoly ℚ β).natDegree) :
+    ¬ ∀ᶠ n in atTop, ∃ p : ℕ, p.Prime ∧ powTrace β (((3 : ℤ) ^ n + s).toNat) = (p : ℂ) := by
+  sorry
+
+/-- **Believed (~70%)**: the half-shift section in degree `≥ 4` (cubic case:
+`HalfShiftRigidity.not_halfPrimeTraces`). -/
+theorem halfShiftTraceRigidity_ge_four {s : ℤ} (hs : Odd s) {β : ℝ} (hβ : IsPisot β)
+    (hdeg : 4 ≤ (minpoly ℚ β).natDegree) :
+    ¬ ∀ᶠ n in atTop, ∃ p : ℕ, p.Prime ∧ powTrace β (((3 : ℤ) ^ n + s).toNat / 2) = (p : ℂ) := by
+  sorry
+
+theorem shiftTraceRigidityGe3_holds {s : ℤ} (hs : s ≠ 0) : ShiftTraceRigidityGe3 s := by
+  intro β hβ hdeg
+  rcases (show (minpoly ℚ β).natDegree = 3 ∨ 4 ≤ (minpoly ℚ β).natDegree by omega) with h | h
+  · exact shiftTraceRigidity_holds hs β hβ h
+  · exact shiftTraceRigidity_ge_four hs hβ h
+
+theorem halfShiftTraceRigidityGe3_holds {s : ℤ} (hs : Odd s) : HalfShiftTraceRigidityGe3 s := by
+  intro β hβ hdeg
+  rcases (show (minpoly ℚ β).natDegree = 3 ∨ 4 ≤ (minpoly ℚ β).natDegree by omega) with h | h
+  · exact halfShiftTraceRigidity_holds hs β hβ h
+  · exact halfShiftTraceRigidity_ge_four hs hβ h
+
+/-- **Believed (~55%)**: eventual records for `θ < 2/3`.  For `θ < 5/9` this is
+`eventually_record_shift_theta`; beyond, it needs a lower bound for `|Σ γ_i^n|` along the records
+with `≥ 3` dominant conjugates (`DominantPair.lower_along_records` is for one real / one pair), or
+a record argument that avoids the degree.  The weakest open point of the route. -/
+theorem eventuallyRecordShift_holds {θ : ℝ} (hθ0 : 0 < θ) (hθ : θ < 2 / 3) :
+    EventuallyRecordShift θ := by
   sorry
 
 end LeanFormalizations.Mills.ShiftRigidityDeg
