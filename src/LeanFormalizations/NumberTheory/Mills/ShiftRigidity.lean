@@ -40,7 +40,7 @@ the algebraic numbers `AlgQ`.  The new content is what the solution is made to c
 
 namespace LeanFormalizations.Mills.ShiftRigidity
 
-open Filter Polynomial LeanFormalizations.Mills.TheoremDGeneral
+open Filter Polynomial IntermediateField LeanFormalizations.Mills.TheoremDGeneral
   LeanFormalizations.Mills.TheoremDMixed
 
 /-- A monic irreducible integer cubic with a real root `α > 1` whose other roots have modulus `< 1`. -/
@@ -540,24 +540,94 @@ theorem exists_spectral {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} 
 -- Step 4 (`rigidity_generic`) is proved above.
 
 /-- A constant spectral vector is `±1`. -/
-theorem eq_one_or_neg_one_of_const {f : ℤ[X]} (hmon : f.Monic) (hdeg : f.natDegree = 3)
+theorem eq_one_or_neg_one_of_const {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible f)
+    (hdeg : f.natDegree = 3)
     {e : Fin 3 → AlgQ} (hinj : Function.Injective e)
     (he : ∀ k, (f.map (Int.castRingHom AlgQ)).eval (e k) = 0) {s : ℤ} {Q : ℕ} (hQ : 1 ≤ Q)
     {z ω : AlgQ} (hz : z ^ (Q + 1) = z) (hω : ω ^ 2 = 1) (hsum : ∑ k, z * e k ^ s = ω) :
     z = 1 ∨ z = -1 := by
-  sorry
+  obtain ⟨q, hq⟩ := sum_zpow_rat hmon hdeg (coeff_zero_ne_zero hmon hirr hdeg) hinj he s
+  have hzq : z * (q : AlgQ) = ω := by rw [← hq, Finset.mul_sum]; exact hsum
+  have hωpm : ω = 1 ∨ ω = -1 := by
+    have : (ω - 1) * (ω + 1) = 0 := by linear_combination hω
+    rcases mul_eq_zero.1 this with h | h
+    · left; linear_combination h
+    · right; linear_combination h
+  obtain ⟨r, hr⟩ : ∃ r : ℚ, ω = r := by
+    rcases hωpm with rfl | rfl
+    · exact ⟨1, by simp⟩
+    · exact ⟨-1, by simp⟩
+  have hω0 : ω ≠ 0 := by rcases hωpm with rfl | rfl <;> norm_num
+  have hq0 : (q : AlgQ) ≠ 0 := by rintro h; rw [h, mul_zero] at hzq; exact hω0 hzq.symm
+  have hzc : z = ((r / q : ℚ) : AlgQ) := by
+    push_cast; rw [← hr, ← hzq]; field_simp
+  have hz0 : z ≠ 0 := by rintro rfl; rw [zero_mul] at hzq; exact hω0 hzq.symm
+  have hzQ : z ^ Q = 1 := by
+    have : z * (z ^ Q - 1) = 0 := by rw [mul_sub, ← pow_succ', hz]; ring
+    exact sub_eq_zero.1 ((mul_eq_zero.1 this).resolve_left hz0)
+  set c : ℚ := r / q
+  have hcQ : c ^ Q = 1 := by
+    have : ((c ^ Q : ℚ) : AlgQ) = ((1 : ℚ) : AlgQ) := by push_cast; rw [← hzc]; exact hzQ
+    exact_mod_cast this
+  have habs : |c| = 1 := by
+    have : |c| ^ Q = 1 := by rw [← abs_pow, hcQ, abs_one]
+    exact (pow_eq_one_iff_of_nonneg (abs_nonneg c) (by omega)).1 this
+  rcases abs_eq (zero_le_one) |>.1 habs with h | h
+  · left; rw [hzc, h]; simp
+  · right; rw [hzc, h]; simp
+
+
+theorem cycField_isCyclotomic (Q : ℕ) [NeZero Q] : IsCyclotomicExtension {Q} ℚ (cycField Q) := by
+  have hS : {z : AlgQ | z ^ Q = 1} = {b : AlgQ | ∃ n ∈ ({Q} : Set ℕ), n ≠ 0 ∧ b ^ n = 1} := by
+    ext z; simp [NeZero.ne Q]
+  rw [cycField, hS]
+  refine IntermediateField.isCyclotomicExtension_adjoin_of_exists_isPrimitiveRoot {Q} ℚ AlgQ ?_
+  intro n hn _
+  rw [Set.mem_singleton_iff] at hn; subst hn
+  obtain ⟨μ, hμ⟩ := IsAlgClosed.exists_root (cyclotomic n AlgQ)
+    (by rw [degree_cyclotomic]; exact_mod_cast (Nat.totient_pos.2 (NeZero.pos n)).ne')
+  exact ⟨μ, (isRoot_cyclotomic_iff).1 hμ⟩
+
+theorem three_dvd_totient {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible f)
+    (hdeg : f.natDegree = 3) {Q : ℕ} [NeZero Q] {x : AlgQ}
+    (hx : (f.map (Int.castRingHom AlgQ)).eval x = 0) (hxL : x ∈ cycField Q) : 3 ∣ Q.totient := by
+  haveI := cycField_isCyclotomic Q
+  haveI : FiniteDimensional ℚ (cycField Q) := IsCyclotomicExtension.finiteDimensional {Q} ℚ _
+  have hfin : Module.finrank ℚ (cycField Q) = Q.totient :=
+    IsCyclotomicExtension.finrank (cycField Q) (cyclotomic.irreducible_rat (NeZero.pos Q))
+  set g := f.map (Int.castRingHom ℚ) with hg
+  have hgirr : Irreducible g :=
+    (Polynomial.IsPrimitive.Int.irreducible_iff_irreducible_map_cast hmon.isPrimitive).1 hirr
+  have hgm : g.Monic := hmon.map _
+  have hbr : aeval x g = (f.map (Int.castRingHom AlgQ)).eval x := by
+    rw [hg, Polynomial.aeval_def, Polynomial.eval₂_eq_eval_map, Polynomial.map_map]; congr 2
+  have hmin : minpoly ℚ x = g :=
+    (minpoly.eq_of_irreducible_of_monic hgirr (by rw [hbr]; exact hx) hgm).symm
+  have hint : IsIntegral ℚ x := ⟨g, hgm, by rw [← Polynomial.aeval_def, hbr]; exact hx⟩
+  have h3 : Module.finrank ℚ ℚ⟮x⟯ = 3 := by
+    rw [IntermediateField.adjoin.finrank hint, hmin, hg, hmon.natDegree_map, hdeg]
+  have hle : ℚ⟮x⟯ ≤ cycField Q := by
+    rw [IntermediateField.adjoin_simple_le_iff]; exact hxL
+  have := IntermediateField.finrank_dvd_of_le_right hle
+  rwa [h3, hfin] at this
 
 /-- A root of an irreducible integer cubic is not rational. -/
 theorem not_mem_cycField_two {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible f)
     (hdeg : f.natDegree = 3) {x : AlgQ} (hx : (f.map (Int.castRingHom AlgQ)).eval x = 0) :
     x ∉ cycField 2 := by
-  sorry
+  intro hxL
+  have h := three_dvd_totient hmon hirr hdeg hx hxL
+  have ht : Nat.totient 2 = 1 := by decide
+  omega
 
 /-- A root of an irreducible integer cubic is not in `ℚ(μ_8)` (degree 4). -/
 theorem not_mem_cycField_eight {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible f)
     (hdeg : f.natDegree = 3) {x : AlgQ} (hx : (f.map (Int.castRingHom AlgQ)).eval x = 0) :
     x ∉ cycField 8 := by
-  sorry
+  intro hxL
+  have h := three_dvd_totient hmon hirr hdeg hx hxL
+  have ht : Nat.totient 8 = 4 := by decide
+  omega
 
 /-- **Step 6 (E1)**: no prime-trace cubic Pisot number with `f mod 3` irreducible has a root in
 `ℚ(μ_26)`. -/
@@ -590,7 +660,7 @@ theorem not_primeTraces {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} 
       (fun k => mem_cycField (hu k)) (fun k => unimod_of_pow_succ hQ1 (hu k)) hL hω hsum
     have hsum' : ∑ k, u 0 * e k ^ s = ω := by
       rw [← hsum]; exact Finset.sum_congr rfl fun k _ => by rw [hc k]
-    rcases eq_one_or_neg_one_of_const hD.monic hD.deg hinj he hQ1 (hu 0) hω hsum' with h | h
+    rcases eq_one_or_neg_one_of_const hD.monic hD.irr hD.deg hinj he hQ1 (hu 0) hω hsum' with h | h
     · exact hn1 fun k => (hc k).trans h
     · exact hn2 fun k => (hc k).trans h
   rcases hQ with rfl | rfl | ⟨rfl, h3⟩
