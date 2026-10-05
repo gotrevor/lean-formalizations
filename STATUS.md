@@ -1,5 +1,12 @@
 # STATUS — lean-formalizations 📊
 
+> 🧮 **ACTIVE THREAD (2026-10-05 review lap): Mills phase 61, Theorem E+** (branch `mills-eplus`):
+> `ξ(3^k + s)` transcendental for every `s ≠ 0`, conditional on `Saito2025TypeBTrace` only.
+> Edges A, B and node C (`ShiftRigidity.not_primeTraces`, all shifts `s ≠ 0`) are proved; axioms of C =
+> trust base + two `native_decide` certificates (🟢 `cm3_check`, `E1Cert.cert_all`).  One open node:
+> **D `halfShiftTraceRigidity_holds`** (odd `s`, `β = ξ²`), decomposed in `Mills/HalfShiftRigidity.lean`.
+> `xi_shifted_transcendental_saito` (Theorem E, `s = −2`) already routes through C only.
+
 > 📈 **ACTIVE THREAD (2026-10-01): Erdős #385 phase E9b — Theorem A with a power saving** (branch
 > `erdos-385-c`).  `almost_all_F385_powerSaving` / `badCount_powerSaving` (`#{bad n ≤ X} ≪ X^{1−c}`,
 > from `RichertZetaGrowth`, `NearOneZeroDensity`, `ShortIntervalPrimesLower`) are wired end to end;

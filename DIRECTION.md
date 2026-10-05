@@ -1,4 +1,4 @@
-> ⚡ **CURRENT DIRECTIVE (2026-10-04, phase 61, branch `mills-eplus`, worktree `~/src/lean-formalizations-eplus`; OUTRANKS every HANDOFF)**: prove the four `sorry`s in `src/LeanFormalizations/NumberTheory/Mills/ShiftedMillsAll.lean` (Theorem E+).  Full text: phase 61 entry below.  The E9b directive further down belongs to branch `erdos-385-c` and does not apply on this branch.
+> ⚡ **CURRENT DIRECTIVE (2026-10-05 review lap, phase 61, branch `mills-eplus`, worktree `~/src/lean-formalizations-eplus`; OUTRANKS every HANDOFF)**: the ONE objective is node D, `ShiftedMillsAll.halfShiftTraceRigidity_holds` (A, B, C are proved).  Mandated route (`Mills/HalfShiftRigidity.lean` header): Nullstellensatz transfer with `P'^2 C^a = P C^b` and the NON-SCALAR equation (spectral data `v_k^2 = u_k α_k^s`, `Σ v_k = ω`, `u` non-constant); the flip lemma (`v_k` lies in any field containing the `v_k^2`); generic case = 3-cycle + root-of-unity circulant (`3 ∤ 2Q`); E1 at g=2 = `γ ∈ ℚ(ζ₁₃)`, `γ² = ±α`, `τ³γ = ±γ`: (+) node C for `minpoly γ`, (−) 13 divides every trace (`γ ≡ 0 mod (1−ζ)`).  Forbidden drift: averaging over the full Galois group, prime-ideal valuations in `K`, a ζ₅₂ certificate; off-target files.  Why: this route uses only single automorphisms + finite checks already in the repo; it closes the scoped target.
 
 > 🗺️ **Before planting a phase, grep `src/LeanFormalizations/Maze.lean`**: it records the routes already walked and closed, and each row's `reopenIf` names the new idea needed to walk it again (2026-09-29).
 
@@ -580,6 +580,8 @@ a `P^{η/2}` count, so a polynomial window `P^{η/3}` (any weight, Mellin decay 
   objective = close it, nothing else.  Closed the same lap (`e819725`).
 - 2026-10-01 (review lap, phase E9b, `erdos-385-c`): `NearOneLargeValues` (∀ weights) judged not
   derivable; headline re-routed through `LocalZeroDetect` (P^{η/3} window).  Objective = that crux.
+- 2026-10-05 (review lap, phase 61, `mills-eplus`): A, B, C proved; objective = node D only, by the
+  flip lemma + root-of-unity circulant (generic) and γ ∈ ℚ(ζ₁₃), τ³γ = ±γ (E1 at g = 2).
 
 ---
 

@@ -1,3 +1,20 @@
+## phase 61 (2026-10-05 review lap, branch `mills-eplus`): crux = node D `halfShiftTraceRigidity_holds`
+A, B, C proved (C: `ShiftRigidity.not_primeTraces`, native_decide certs `cm3_check`, `E1Cert.cert_all`).
+Node D route (decomposition lives in `Mills/HalfShiftRigidity.lean`; paper = PROOF-THEOREM-E.md "E+ for odd s"):
+ D1 cube class for any exponent sequence → ∞ (generalise `not_primeTraces_of_cube`).
+ D2 `window_half`: exponent N_n = (3^n+s)/2; period 2j in the filter (3^n(3^{Kj}−1) ∣ 3^n(3^{2Kj}−1)/2).
+ D3 transfer: `P^(3^F) = P`, `P'^2 C^a = P C^b`, `w² = 1`, `tr P' = w`, `y·Σ r (P − P₀₀•1) = 1`
+    (T = C^(3^ν) is not scalar mod 3 outside the cube class).  Spectral data: `v_k² = u_k α_k^s`,
+    `Σ v_k = ω`, `u` non-constant.
+ D4 flip lemma: if `M ∋ v_k²` for all k then `v_k ∈ M` (an automorphism over M flipping one v_k:
+    |S|=1 ⇒ v_k = 0, |S|=2 ⇒ v_l = ω ⇒ |α_l| = 1, |S|=3 ⇒ ω = 0).
+ D5 generic (no root in ℚ(μ_{2Q})): M = ℚ(μ_{2Q}, roots); 3-cycle σ over ℚ(μ_{2Q}); δ with δ² = α from
+    some v_j (u_j ≠ 0); σ³ fixes M; a_k = v_k/δ_k^s ∈ μ_{2Q} ∪ {0} fixed by σ; circulant with roots of
+    unity (equilateral case needs a primitive 6th root, impossible as 3 ∤ 2Q) ⇒ a constant ⇒ u constant.
+ D6 E1 at g = 2 (a root in ℚ(μ_52) ⇒ one in ℚ(μ_26)): flip over ℚ(ζ₁₃) ⇒ v_k ∈ ℚ(ζ₁₃); γ = v_j/(c α_j^m),
+    γ² = ±α_j; τ: ζ ↦ ζ² 3-cycles roots, τ³γ = ±γ.  (+) g = Π(X − τ^iγ) ∈ ℤ[X] Pisot, tr g^(2N) = tr f^N ⇒
+    node C.  (−) γ = h(ζ), h ∈ ℤ[X] (integral closure), Φ₁₃ ∣ h(X⁸)+h(X) ⇒ 13 ∣ h(1) ⇒ 13 ∣ every trace.
+
 ## ✅ phase E10 DONE (2026-10-01): Remainder.lean sorry-free, all axiom-clean; see HANDOFF-2026-10-01-erdos385-E10-done.md
 
 ## phase E9b (2026-10-01 review lap, branch `erdos-385-c`): crux = `localZeroDetect_of_richert`

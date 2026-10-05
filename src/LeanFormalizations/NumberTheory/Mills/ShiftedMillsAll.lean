@@ -5,6 +5,7 @@ Authors: Trevor Morris
 -/
 import LeanFormalizations.NumberTheory.Mills.ShiftedMills
 import LeanFormalizations.NumberTheory.Mills.ShiftRigidity
+import LeanFormalizations.NumberTheory.Mills.HalfShiftRigidity
 
 /-!
 # Phase 61: Theorem E+ — `ξ(3^k + s)` is transcendental for EVERY `s ≠ 0`
@@ -359,7 +360,16 @@ theorem shiftTraceRigidity_holds {s : ℤ} (hs : s ≠ 0) : ShiftTraceRigidity s
 
 /-- **Node D (our math, ~72%)**: the `g = 2` section for every odd shift. -/
 theorem halfShiftTraceRigidity_holds {s : ℤ} (hs : Odd s) : HalfShiftTraceRigidity s := by
-  sorry
+  intro β hβ hdeg hev
+  have hint : IsIntegral ℤ β := hβ.2.1
+  refine HalfShiftRigidity.not_halfPrimeTraces (f := minpoly ℤ β) (α := β)
+    ⟨ShiftedMillsLarge.minpoly_int_monic hint, ShiftedMillsLarge.minpoly_int_irreducible hint,
+      by rw [ShiftedMillsLarge.minpoly_int_natDegree hint, hdeg], minpoly.aeval ℤ β, hβ.1,
+      ShiftedMillsLarge.minpoly_int_conj_small hβ⟩ hs ?_
+  filter_upwards [hev] with n ⟨p, hp, h⟩
+  refine ⟨p, hp, ?_⟩
+  rw [ShiftedMillsLarge.powTrace_eq_traceSeq hint] at h
+  exact_mod_cast h
 
 /-- **Theorem E+**: `ξ(3^(k+j) + s)` is transcendental for every integer `s ≠ 0`, conditional
 only on Saito 2025 (Type B + Prop 3.1(iv)). -/

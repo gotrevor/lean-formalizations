@@ -192,6 +192,7 @@ import LeanFormalizations.NumberTheory.Mills.ShiftedMillsLarge
 import LeanFormalizations.NumberTheory.Mills.ShiftedMillsThreePow
 import LeanFormalizations.NumberTheory.Mills.E1Certificate
 import LeanFormalizations.NumberTheory.Mills.ShiftRigidity
+import LeanFormalizations.NumberTheory.Mills.HalfShiftRigidity
 import LeanFormalizations.NumberTheory.Mills.ShiftedMillsAll
 import LeanFormalizations.NumberTheory.Mills.Kronecker
 import LeanFormalizations.NumberTheory.Mills.PairedRoot
