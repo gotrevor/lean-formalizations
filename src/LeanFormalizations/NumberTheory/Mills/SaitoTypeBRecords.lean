@@ -336,13 +336,60 @@ theorem exists_pisot_of_decay_subseq' (hD : Dubickas2022)
     exact hnot k₂ (t ^ (s k₂ / g)) (by rw [← h]; push_cast; ring)
   exact ⟨g, hg1, hpis, hdiv, hnd⟩
 
-/-- **All large indices are records** for the E+ exponents, if `ξ` is algebraic.  The crux of
-lap 2; sub-nodes in the module docstring. -/
+/-- **Step 1 (records give a Pisot power).**  Decay at records (`window_at_record` + Saito (5.17))
+and Dubickas 2022 Lemma 6 along the records give `ξ^g` Pisot with `g ∣ C m` at large records. -/
+theorem records_pisot (hB : BakerHarmanPintz2001) (hD : Dubickas2022)
+    {s : ℤ} {j : ℕ} (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) (hj2 : s ≤ (3 : ℤ) ^ (j + 1))
+    {ξ : ℝ} (hξ : IsLeast (millsSet (shiftC j s)) ξ) (halg : IsAlgebraic ℚ ξ) :
+    ∃ g : ℕ, 1 ≤ g ∧ IsPisot (ξ ^ g) ∧ 2 ≤ (minpoly ℚ (ξ ^ g)).natDegree ∧
+      ∃ K, ∀ m ≥ K, IsRecord (shiftC j s) ξ m → g ∣ shiftC j s m := by
+  sorry
+
+/-- **Step 2 (record gaps are bounded).**  After a record `r`, a run of non-records up to `m`
+forces `e {ξ^(C r)} p_r^(e−1) < 1`, `e = C m / C r ≥ 2^(m−r)` (Saito (5.1)), while the norm of
+`β^(C r/g) − p_r` is a nonzero integer: `{ξ^(C r)} ≥ (p_r+1)^(−(ℓ−1))`. -/
+theorem record_gap_bounded
+    {s : ℤ} {j : ℕ} (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) (hj2 : s ≤ (3 : ℤ) ^ (j + 1))
+    {ξ : ℝ} (hξ : IsLeast (millsSet (shiftC j s)) ξ) {g : ℕ} (hg1 : 1 ≤ g)
+    (hpis : IsPisot (ξ ^ g)) {K : ℕ} (hK : ∀ m ≥ K, IsRecord (shiftC j s) ξ m → g ∣ shiftC j s m) :
+    ∃ T K', ∀ m ≥ K', ∃ r, m < r ∧ r ≤ m + T ∧ IsRecord (shiftC j s) ξ r := by
+  sorry
+
+/-- **Step 3 (degree `≤ 3`, no Baker).**  Decay `151/400` at records, records with bounded gaps,
+and the orbit `n ↦ 3n − d` (Mignotte/Smyth: the dominant other conjugates are one real or one
+complex pair; `a_r² → −1` along records is incompatible with `a_(r+t)² = a_r^(2·3^t) v^(3^t−1)`,
+`v^(3^t−1) ≠ 1`). -/
+theorem card_le_two_of_records (hB : BakerHarmanPintz2001)
+    {s : ℤ} {j : ℕ} (hs : s ≠ 0) (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) (hj2 : s ≤ (3 : ℤ) ^ (j + 1))
+    {ξ : ℝ} (hξ : IsLeast (millsSet (shiftC j s)) ξ) {g : ℕ} (hg1 : 1 ≤ g)
+    (hpis : IsPisot (ξ ^ g)) (hdeg : 2 ≤ (minpoly ℚ (ξ ^ g)).natDegree)
+    {K : ℕ} (hK : ∀ m ≥ K, IsRecord (shiftC j s) ξ m → g ∣ shiftC j s m)
+    {T K' : ℕ} (hT : ∀ m ≥ K', ∃ r, m < r ∧ r ≤ m + T ∧ IsRecord (shiftC j s) ξ r) :
+    Multiset.card (otherConj (ξ ^ g)) ≤ 2 := by
+  sorry
+
+/-- **Step 4 (no non-records for degree `≤ 3`).**  Degree 2: the norm bound beats Saito (5.1)
+outright.  Degree 3: a non-record at `r + 1` forces `|N β| = 1` and
+`e₂(β^n) = β^n S(n) + (∏ other conj)^n = 0` at `n = C r / g`; such exact zeros along the
+3-adically convergent orbit are finite (Skolem's 3-adic method; no Baker). -/
+theorem eventually_record_of_card_le_two
+    {s : ℤ} {j : ℕ} (hs : s ≠ 0) (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) (hj2 : s ≤ (3 : ℤ) ^ (j + 1))
+    {ξ : ℝ} (hξ : IsLeast (millsSet (shiftC j s)) ξ) {g : ℕ} (hg1 : 1 ≤ g)
+    (hpis : IsPisot (ξ ^ g)) (hcard : Multiset.card (otherConj (ξ ^ g)) ≤ 2)
+    {K : ℕ} (hK : ∀ m ≥ K, IsRecord (shiftC j s) ξ m → g ∣ shiftC j s m)
+    {T K' : ℕ} (hT : ∀ m ≥ K', ∃ r, m < r ∧ r ≤ m + T ∧ IsRecord (shiftC j s) ξ r) :
+    ∃ K'', ∀ m ≥ K'', IsRecord (shiftC j s) ξ m := by
+  sorry
+
+/-- **All large indices are records** for the E+ exponents, if `ξ` is algebraic. -/
 theorem eventually_record_shift (hB : BakerHarmanPintz2001) (hD : Dubickas2022)
     {s : ℤ} {j : ℕ} (hs : s ≠ 0) (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) (hj2 : s ≤ (3 : ℤ) ^ (j + 1))
     {ξ : ℝ} (hξ : IsLeast (millsSet (shiftC j s)) ξ) (halg : IsAlgebraic ℚ ξ) :
     ∃ K, ∀ m ≥ K, IsRecord (shiftC j s) ξ m := by
-  sorry
+  obtain ⟨g, hg1, hpis, hdeg, K, hK⟩ := records_pisot hB hD hj1 hj2 hξ halg
+  obtain ⟨T, K', hT⟩ := record_gap_bounded hj1 hj2 hξ hg1 hpis hK
+  exact eventually_record_of_card_le_two hs hj1 hj2 hξ hg1 hpis
+    (card_le_two_of_records hB hs hj1 hj2 hξ hg1 hpis hdeg hK hT) hK hT
 
 /-- For a Pisot `β`, eventually `|S(n)| = |β^n − round(β^n)|`. -/
 theorem norm_conjPowSum_eq_round {β : ℝ} (hβ : IsPisot β) :
