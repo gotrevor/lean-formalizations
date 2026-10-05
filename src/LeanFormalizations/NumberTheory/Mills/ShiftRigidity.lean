@@ -577,6 +577,114 @@ theorem not_primeTraces_of_cube {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) (s
   push_cast at hf4
   omega
 
+/-! ### `exists_spectral`, decomposed
+
+The integer data: `C = compM ℤ f`, `T = C^(3^ν)`.
+* `window_shift` (Step 3): the traces `p_n = tr C^(3^n + s)` are `≡ ω_n ∈ {±1}` modulo `3^k`
+  for arbitrarily large `n`, at every level `k`.
+* `exists_teich_limit`: `T^(3^F) ≡ T (mod 3^(ν − n₀ + 1))` with `F = 1, 2, 3` the lcm of the degrees
+  of the factors of `f mod 3` (`F = 3` exactly when `f mod 3` is irreducible).
+* `exists_entry_ne`: outside the cube class, `T ∓ 1` has an entry prime to `3`.
+* `exists_spectral_solution_shift`: the transfer of the resulting integer system to `AlgQ`.
+* `readout_trace`, `readout_ne`: the eigenvalues of the solution, read off by Vandermonde. -/
+
+/-- Vandermonde conjugation of `P(C) · C^a`. -/
+theorem vandermonde_mul_polyMat_mul_pow {K : Type*} [Field K] (f : ℤ[X]) (hmon : f.Monic)
+    (e : Fin f.natDegree → K) (he : ∀ i, (f.map (Int.castRingHom K)).eval (e i) = 0)
+    (x : Fin f.natDegree → K) (a : ℕ) :
+    Matrix.vandermonde e * (polyMat K f x * compM K f ^ a)
+      = Matrix.diagonal (fun i => polyVal x (e i) * e i ^ a) * Matrix.vandermonde e := by
+  calc Matrix.vandermonde e * (polyMat K f x * compM K f ^ a)
+      = (Matrix.vandermonde e * polyMat K f x) * compM K f ^ a := by rw [Matrix.mul_assoc]
+    _ = Matrix.diagonal (fun i => polyVal x (e i)) * (Matrix.vandermonde e * compM K f ^ a) := by
+          rw [vandermonde_mul_polyMat f hmon e he x, Matrix.mul_assoc]
+    _ = Matrix.diagonal (fun i => polyVal x (e i))
+          * (Matrix.diagonal e ^ a * Matrix.vandermonde e) := by
+          rw [conj_pow _ _ _ (vandermonde_mul_compM f hmon e he) a]
+    _ = Matrix.diagonal (fun i => polyVal x (e i) * e i ^ a) * Matrix.vandermonde e := by
+          rw [← Matrix.mul_assoc, Matrix.diagonal_pow, Matrix.diagonal_mul_diagonal]
+          rfl
+
+/-- **Read-out of the shifted trace.**  `P'(C) C^(s⁻) = P(C) C^(s⁺)` makes `tr P'(C)` the
+spectral sum `Σ_i P(e_i) e_i^s`. -/
+theorem readout_trace {K : Type*} [Field K] (f : ℤ[X]) (hmon : f.Monic)
+    (e : Fin f.natDegree → K) (he : ∀ i, (f.map (Int.castRingHom K)).eval (e i) = 0)
+    (hinj : Function.Injective e) (he0 : ∀ i, e i ≠ 0) (x x' : Fin f.natDegree → K) {s : ℤ}
+    (hrel : polyMat K f x' * compM K f ^ (-s).toNat = polyMat K f x * compM K f ^ s.toNat) :
+    (polyMat K f x').trace = ∑ i, polyVal x (e i) * e i ^ s := by
+  classical
+  have hV := vandermonde_isUnit_det e hinj
+  have h1 := vandermonde_mul_polyMat_mul_pow f hmon e he x' (-s).toNat
+  have h2 := vandermonde_mul_polyMat_mul_pow f hmon e he x s.toNat
+  rw [hrel, h2] at h1
+  have hdiag := right_cancel_of_isUnit_det hV h1
+  have hi : ∀ i, polyVal x' (e i) * e i ^ (-s).toNat = polyVal x (e i) * e i ^ s.toNat := by
+    intro i
+    have := congrArg (fun M : Matrix (Fin f.natDegree) (Fin f.natDegree) K => M i i) hdiag
+    simpa using this.symm
+  have htr := trace_polyMat_mul_compM_pow f hmon e he hinj x' 0
+  simp only [pow_zero, Matrix.mul_one] at htr
+  rw [htr]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  have hs : s = (s.toNat : ℤ) - ((-s).toNat : ℤ) := by omega
+  have hne : e i ^ (-s).toNat ≠ 0 := pow_ne_zero _ (he0 i)
+  rw [hs, zpow_sub₀ (he0 i), zpow_natCast, zpow_natCast, mul_one, ← mul_div_assoc,
+    eq_div_iff hne]
+  exact hi i
+
+/-- **Read-out of non-scalarity.**  `P(C) ≠ c` forces some `P(e_i) ≠ c`. -/
+theorem readout_ne {K : Type*} [Field K] (f : ℤ[X]) (hmon : f.Monic)
+    (e : Fin f.natDegree → K) (he : ∀ i, (f.map (Int.castRingHom K)).eval (e i) = 0)
+    (hinj : Function.Injective e) (x : Fin f.natDegree → K) (c : K)
+    (hP : polyMat K f x ≠ c • 1) : ∃ i, polyVal x (e i) ≠ c := by
+  classical
+  by_contra hcon
+  push_neg at hcon
+  apply hP
+  have hV := (Matrix.isUnit_iff_isUnit_det _).2 (vandermonde_isUnit_det e hinj)
+  have h := vandermonde_mul_polyMat f hmon e he x
+  have hd : Matrix.diagonal (fun i => polyVal x (e i)) = c • 1 := by
+    ext i j; by_cases hij : i = j <;> simp [hij, hcon, Matrix.one_apply]
+  rw [hd, Matrix.smul_mul, Matrix.one_mul, ← Matrix.mul_one (Matrix.vandermonde e),
+    Matrix.mul_assoc, Matrix.one_mul, ← Matrix.mul_smul] at h
+  exact hV.mul_left_cancel h
+
+/-- **Step 3 (window), shifted.**  For arbitrarily large `n`, the trace `tr C^(3^n + s)` is
+`≡ ±1` modulo `3^k`. -/
+theorem window_shift {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hP : PrimeTraces f s)
+    (k : ℕ) : ∃ n, k ≤ n ∧ 0 ≤ (3 : ℤ) ^ n + s ∧ ∃ w : ℤ, (3 : ℤ) ^ k ∣ w ^ 2 - 1 ∧
+      (3 : ℤ) ^ k ∣ traceSeq f ((3 : ℤ) ^ n + s).toNat - w := by
+  sorry
+
+/-- **The Teichmüller limit.**  `T = C^(3^ν)` satisfies `T^(3^F) ≡ T` to growing precision, with
+`3^F − 1 ∈ {2, 8, 26}` and `F = 3` only when `f mod 3` is irreducible. -/
+theorem exists_teich_limit {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) :
+    ∃ F : ℕ, (F = 1 ∨ F = 2 ∨ (F = 3 ∧ Irreducible (f.map (Int.castRingHom (ZMod 3))))) ∧
+      ∃ n₀ : ℕ, ∀ ν, n₀ ≤ ν → ∀ i j, (3 : ℤ) ^ (ν - n₀ + 1) ∣
+        ((compM ℤ f ^ (3 ^ ν)) ^ (3 ^ F) - compM ℤ f ^ (3 ^ ν)) i j := by
+  sorry
+
+/-- **Non-scalarity mod 3.**  Outside the cube class, `C^(3^ν) ∓ 1` has an entry prime to `3`. -/
+theorem exists_entry_ne {f : ℤ[X]} {α : ℝ} (hD : PisotData f α)
+    (hnc : ∀ z : ZMod 3, f.map (Int.castRingHom (ZMod 3)) ≠ (X - C z) ^ 3) (ν : ℕ) (z : ℤ)
+    (hz : z = 1 ∨ z = -1) : ∃ a b, ¬ (3 : ℤ) ∣ (compM ℤ f ^ (3 ^ ν) - z • (1 : Matrix (Fin f.natDegree) (Fin f.natDegree) ℤ)) a b := by
+  sorry
+
+/-- **The transfer**, shifted: the integer system at every level has a solution in `AlgQ`. -/
+theorem exists_spectral_solution_shift (f : ℤ[X]) (hd : 1 ≤ f.natDegree) {F n₀ : ℕ} {s : ℤ}
+    (hlim : ∀ ν, n₀ ≤ ν → ∀ i j, (3 : ℤ) ^ (ν - n₀ + 1) ∣
+        ((compM ℤ f ^ (3 ^ ν)) ^ (3 ^ F) - compM ℤ f ^ (3 ^ ν)) i j)
+    (hne : ∀ (ν : ℕ) (z : ℤ), (z = 1 ∨ z = -1) →
+        ∃ a b, ¬ (3 : ℤ) ∣ (compM ℤ f ^ (3 ^ ν) - z • (1 : Matrix (Fin f.natDegree) (Fin f.natDegree) ℤ)) a b)
+    (hcong : ∀ k : ℕ, ∃ n, k ≤ n ∧ 0 ≤ (3 : ℤ) ^ n + s ∧ ∃ w : ℤ, (3 : ℤ) ^ k ∣ w ^ 2 - 1 ∧
+      (3 : ℤ) ^ k ∣ traceSeq f ((3 : ℤ) ^ n + s).toNat - w) :
+    ∃ (x x' : Fin f.natDegree → AlgQ) (w : AlgQ),
+      polyMat AlgQ f x ^ (3 ^ F) = polyMat AlgQ f x ∧ w ^ 2 = 1 ∧
+      polyMat AlgQ f x' * compM AlgQ f ^ (-s).toNat = polyMat AlgQ f x * compM AlgQ f ^ s.toNat ∧
+      (polyMat AlgQ f x').trace = w ∧
+      polyMat AlgQ f x ≠ (1 : AlgQ) • 1 ∧ polyMat AlgQ f x ≠ (-1 : AlgQ) • 1 := by
+  sorry
+
 /-- **Steps 3 + transfer**: the spectral solution in `AlgQ`. -/
 theorem exists_spectral {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hs : s ≠ 0)
     (hP : PrimeTraces f s)
@@ -587,7 +695,70 @@ theorem exists_spectral {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} 
       ((e 0 : ℂ) = α) ∧ (∀ k, k ≠ 0 → ‖(e k : ℂ)‖ < 1) ∧
       (∀ k, u k ^ (Q + 1) = u k) ∧ ω ^ 2 = 1 ∧ (∑ k, u k * e k ^ s = ω) ∧
       ¬ (∀ k, u k = 1) ∧ ¬ (∀ k, u k = -1) := by
-  sorry
+  classical
+  have hd1 : 1 ≤ f.natDegree := by rw [hD.deg]; norm_num
+  obtain ⟨F, hF, n₀, hlim⟩ := exists_teich_limit hD
+  obtain ⟨x, x', w, hT, hw, hrel, htr, hne1, hne2⟩ :=
+    exists_spectral_solution_shift f hd1 hlim (fun ν z hz => exists_entry_ne hD hnc ν z hz)
+      (window_shift hD hP)
+  obtain ⟨e, hinj, he, hsurj⟩ := exists_root_enum_field (K := AlgQ) f hD.monic hD.irr
+  set ι : AlgQ →+* ℂ := (algebraicClosure ℚ ℂ).val.toRingHom with hι
+  have hιinj : Function.Injective ι := fun a b hab => Subtype.ext hab
+  have hrootC : (f.map (Int.castRingHom ℂ)).eval (α : ℂ) = 0 := by
+    have := congrArg (algebraMap ℝ ℂ) hD.root
+    rw [Polynomial.aeval_def, Polynomial.hom_eval₂, map_zero] at this
+    rw [Polynomial.eval_map]
+    rw [RingHom.ext_int ((algebraMap ℝ ℂ).comp (algebraMap ℤ ℝ)) (Int.castRingHom ℂ)] at this
+    simpa using this
+  have halgα : IsAlgebraic ℚ (α : ℂ) := by
+    refine ⟨f.map (Int.castRingHom ℚ), (hD.monic.map _).ne_zero, ?_⟩
+    rw [Polynomial.aeval_def, Polynomial.eval₂_eq_eval_map, Polynomial.map_map,
+      show (algebraMap ℚ ℂ).comp (Int.castRingHom ℚ) = Int.castRingHom ℂ from
+        RingHom.ext fun n => by simp]
+    exact hrootC
+  set α' : AlgQ := ⟨(α : ℂ), (mem_algebraicClosure_iff).2 halgα⟩ with hα'
+  have hα'root : (f.map (Int.castRingHom AlgQ)).eval α' = 0 := by
+    refine hιinj ?_
+    rw [eval_map_int_hom ι f α', map_zero]
+    exact hrootC
+  obtain ⟨i₀, hi₀⟩ := hsurj α' hα'root
+  set σ : Fin 3 ≃ Fin f.natDegree :=
+    (finCongr hD.deg.symm).trans (Equiv.swap (finCongr hD.deg.symm 0) i₀) with hσ
+  have hσ0 : σ 0 = i₀ := by simp [hσ]
+  have he0 : ∀ i, e i ≠ 0 := by
+    intro i h0
+    have := he i
+    rw [h0, ← Polynomial.coeff_zero_eq_eval_zero, Polynomial.coeff_map] at this
+    exact coeff_zero_ne_zero hD.monic hD.irr hD.deg (by simpa using this)
+  have hQ1 : 3 ^ F - 1 + 1 = 3 ^ F := Nat.sub_add_cancel (Nat.one_le_pow _ _ (by norm_num))
+  refine ⟨3 ^ F - 1, fun k => e (σ k), fun k => polyVal x (e (σ k)), w, ?_,
+    hinj.comp σ.injective, fun k => he _, ?_, ?_, ?_, hw, ?_, ?_, ?_⟩
+  · rcases hF with rfl | rfl | ⟨rfl, h3⟩
+    · left; norm_num
+    · right; left; norm_num
+    · right; right; exact ⟨by norm_num, h3⟩
+  · show ((e (σ 0) : AlgQ) : ℂ) = α
+    rw [hσ0, hi₀]
+  · intro k hk
+    have hne : e (σ k) ≠ α' := by
+      rw [← hi₀, ← hσ0]; exact fun h => hk (σ.injective (hinj h))
+    refine hD.small _ ((Polynomial.mem_roots (hD.monic.map _).ne_zero).2 ?_) ?_
+    · have := congrArg ι (he (σ k))
+      rw [eval_map_int_hom ι f, map_zero] at this
+      exact this
+    · intro h; apply hne; exact Subtype.ext h
+  · intro k
+    have := polyVal_pow_succ_eq f hD.monic e he hinj x (Q := 3 ^ F - 1) (by rw [hQ1]; exact hT) (σ k)
+    exact this
+  · have h := readout_trace f hD.monic e he hinj he0 x x' hrel
+    rw [← htr, h]
+    exact (Equiv.sum_comp σ (fun i => polyVal x (e i) * e i ^ s))
+  · intro hall
+    obtain ⟨i, hi⟩ := readout_ne f hD.monic e he hinj x 1 hne1
+    exact hi (by simpa using hall (σ.symm i))
+  · intro hall
+    obtain ⟨i, hi⟩ := readout_ne f hD.monic e he hinj x (-1) hne2
+    exact hi (by simpa using hall (σ.symm i))
 
 -- Step 4 (`rigidity_generic`) is proved above.
 
