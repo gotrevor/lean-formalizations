@@ -161,13 +161,109 @@ theorem exists_half_spectral {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : 
 
 /-! ### The Kummer step and the circulant -/
 
+/-- A square root outside `M` of an element of `M` is flipped by some automorphism over `M`. -/
+theorem exists_flip (M : IntermediateField ℚ AlgQ) {x : AlgQ} (hx : x ∉ M) (hx2 : x ^ 2 ∈ M) :
+    ∃ σ : AlgQ ≃ₐ[M] AlgQ, σ x = -x := by
+  haveI : Normal M AlgQ := Normal.tower_top_of_normal ℚ M AlgQ
+  set c : M := ⟨x ^ 2, hx2⟩
+  set g : M[X] := X ^ 2 - Polynomial.C c with hg
+  have hgm : g.Monic := by rw [hg]; exact Polynomial.monic_X_pow_sub_C _ (by norm_num)
+  have hgd : g.natDegree = 2 := by rw [hg]; exact Polynomial.natDegree_X_pow_sub_C
+  have hbr : ∀ z : AlgQ, aeval z g = z ^ 2 - x ^ 2 := by
+    intro z; rw [hg]; simp [c]
+  have hgirr : Irreducible g := by
+    refine Polynomial.irreducible_of_degree_le_three_of_not_isRoot
+      (by rw [hgd]; decide) ?_
+    intro r hr
+    have h0 : aeval (r : AlgQ) g = 0 := by
+      have : aeval (r : AlgQ) g = algebraMap M AlgQ (g.eval r) :=
+        Polynomial.aeval_algebraMap_apply_eq_algebraMap_eval (A := AlgQ) r g
+      rw [this, hr.eq_zero, map_zero]
+    rw [hbr] at h0
+    have : ((r : AlgQ) - x) * ((r : AlgQ) + x) = 0 := by linear_combination h0
+    rcases mul_eq_zero.1 this with h | h
+    · exact hx (by rw [← sub_eq_zero.1 h]; exact r.2)
+    · have : x = -(r : AlgQ) := by linear_combination h
+      exact hx (by rw [this]; exact M.neg_mem r.2)
+  have hmin : minpoly M x = g :=
+    (minpoly.eq_of_irreducible_of_monic hgirr (by rw [hbr]; ring) hgm).symm
+  have halg : IsAlgebraic M x := ⟨g, hgm.ne_zero, by rw [hbr]; ring⟩
+  exact minpoly.exists_algEquiv_of_root' (x := -x) halg (by rw [hmin, hbr]; ring)
+
+theorem sign_rigid {F : Type*} [Field F] [CharZero F] {v0 v1 v2 w0 w1 w2 ω : F}
+    (h0 : w0 = v0 ∨ w0 = -v0) (h1 : w1 = v1 ∨ w1 = -v1) (h2 : w2 = v2 ∨ w2 = -v2)
+    (hsum : v0 + v1 + v2 = ω) (hs2 : w0 + w1 + w2 = ω) (hω0 : ω ≠ 0)
+    (b0 : v0 = ω → False) (b1 : v1 = ω → False) (b2 : v2 = ω → False) :
+    w0 = v0 ∧ w1 = v1 ∧ w2 = v2 := by
+  have two : (2 : F) ≠ 0 := two_ne_zero
+  have z : ∀ x : F, 2 * x = 0 → x = 0 := fun x h => (mul_eq_zero.1 h).resolve_left two
+  rcases h0 with h0 | h0 <;> rcases h1 with h1 | h1 <;> rcases h2 with h2 | h2 <;>
+    rw [h0, h1, h2] at hs2 ⊢
+  · exact ⟨rfl, rfl, rfl⟩
+  · have := z v2 (by linear_combination hsum - hs2); exact ⟨rfl, rfl, by rw [this]; ring⟩
+  · have := z v1 (by linear_combination hsum - hs2); exact ⟨rfl, by rw [this]; ring, rfl⟩
+  · exact (b0 (by have := z (v0 - ω) (by linear_combination hsum + hs2); linear_combination this)).elim
+  · have := z v0 (by linear_combination hsum - hs2); exact ⟨by rw [this]; ring, rfl, rfl⟩
+  · exact (b1 (by have := z (v1 - ω) (by linear_combination hsum + hs2); linear_combination this)).elim
+  · exact (b2 (by have := z (v2 - ω) (by linear_combination hsum + hs2); linear_combination this)).elim
+  · exact (hω0 (z ω (by linear_combination -(hs2 + hsum)))).elim
+
 /-- **The flip lemma.**  Every `v_k` lies in any field containing the `v_k²`. -/
 theorem flip_mem (M : IntermediateField ℚ AlgQ) {e u v : Fin 3 → AlgQ} {ω : AlgQ} {s : ℤ}
     (hs : s ≠ 0) (hnorm : ∀ k, ‖(e k : ℂ)‖ ≠ 1) (he0 : ∀ k, e k ≠ 0)
     (hu1 : ∀ k, u k = 0 ∨ ‖(u k : ℂ)‖ = 1) (hω : ω ^ 2 = 1)
     (hv : ∀ k, v k ^ 2 = u k * e k ^ s) (hsum : ∑ k, v k = ω) (hM : ∀ k, v k ^ 2 ∈ M) :
     ∀ k, v k ∈ M := by
-  sorry
+  classical
+  have hω0 : ω ≠ 0 := by rintro rfl; norm_num at hω
+  have hωpm : ω = 1 ∨ ω = -1 := by
+    have : (ω - 1) * (ω + 1) = 0 := by linear_combination hω
+    rcases mul_eq_zero.1 this with h | h
+    · left; linear_combination h
+    · right; linear_combination h
+  -- no single `v_m` equals `ω`
+  have bad : ∀ m, v m = ω → False := by
+    intro m hm
+    have h1 : u m * e m ^ s = 1 := by rw [← hv, hm, hω]
+    have c1 : ((u m : ℂ)) * ((e m : ℂ)) ^ s = 1 := by
+      have := congrArg (fun z : AlgQ => (z : ℂ)) h1; push_cast at this; exact this
+    have hn := congrArg norm c1
+    rw [norm_mul, norm_zpow, norm_one] at hn
+    have hu0 : (u m : ℂ) ≠ 0 := by intro h; rw [h, zero_mul] at c1; exact zero_ne_one c1
+    have hun : ‖(u m : ℂ)‖ = 1 := by
+      rcases hu1 m with h | h
+      · exact absurd (by rw [h]; rfl) hu0
+      · exact h
+    rw [hun, one_mul] at hn
+    have hpos : 0 < ‖(e m : ℂ)‖ := norm_pos_iff.2 (by exact_mod_cast he0 m)
+    rcases lt_or_gt_of_ne (hnorm m) with hl | hg
+    · rcases lt_or_gt_of_ne hs with hn' | hp
+      · have := one_lt_zpow_of_neg₀ hpos hl hn'; linarith
+      · have := zpow_lt_one₀ hpos hl hp; linarith
+    · rcases lt_or_gt_of_ne hs with hn' | hp
+      · have := zpow_lt_one_of_neg₀ hg hn'; linarith
+      · have := one_lt_zpow₀ hg hp; linarith
+  by_contra hcon
+  push_neg at hcon
+  obtain ⟨j, hj⟩ := hcon
+  have hvj0 : v j ≠ 0 := fun h => hj (by rw [h]; exact M.zero_mem)
+  obtain ⟨σ, hσ⟩ := exists_flip M hj (hM j)
+  have hsg : ∀ k, σ (v k) = v k ∨ σ (v k) = -v k := by
+    intro k
+    have h2 : σ (v k) ^ 2 = v k ^ 2 := by
+      rw [← map_pow]; exact σ.commutes ⟨v k ^ 2, hM k⟩
+    have : (σ (v k) - v k) * (σ (v k) + v k) = 0 := by linear_combination h2
+    rcases mul_eq_zero.1 this with h | h
+    · left; linear_combination h
+    · right; linear_combination h
+  have hσω : σ ω = ω := by rcases hωpm with rfl | rfl <;> simp
+  have hs2 : ∑ k, σ (v k) = ω := by rw [← map_sum, hsum, hσω]
+  rw [Fin.sum_univ_three] at hsum hs2
+  have b0 := bad 0; have b1 := bad 1; have b2 := bad 2
+  have key := sign_rigid (hsg 0) (hsg 1) (hsg 2) hsum hs2 hω0 b0 b1 b2
+  have hfix : σ (v j) = v j := by fin_cases j <;> simp [key]
+  have : (2 : AlgQ) * v j = 0 := by linear_combination hσ - hfix
+  exact hvj0 ((mul_eq_zero.1 this).resolve_left two_ne_zero)
 
 /-- Three unit vectors `1, a, b` summing to `0`: `a³ = 1`. -/
 theorem cube_one_of_unit_sum {a b : ℂ} (ha : ‖a‖ = 1) (hb : ‖b‖ = 1) (h : 1 + a + b = 0) :
