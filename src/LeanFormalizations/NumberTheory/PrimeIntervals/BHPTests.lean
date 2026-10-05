@@ -319,4 +319,15 @@ theorem exists_prime_of_bhp (h : BakerHarmanPintz2001) :
   have : 0 ≤ x + x ^ ((21 : ℝ) / 40) := by have := Real.rpow_nonneg (by linarith : (0:ℝ) ≤ x) ((21 : ℝ) / 40); linarith
   exact (Nat.le_floor_iff this).1 hp.1.2
 
+/-! ## Li's 0.52 implies BHP -/
+
+/-- **Li (0.52) implies BHP.**  Believed, 95%.  Apply `Li2023` with `ε = 1/400`, so
+`θ₀ = 0.5225 < 21/40`.  Tile `[x, x + x^(21/40)]` by about `x^(21/40 − θ₀)` disjoint
+left-anchored windows `[y − y^θ₀, y]` with `x ≤ y ≤ 2x`, exactly as in
+`PrimesShortInterval.mono`; each window holds `≥ d₀ y^θ₀ / log y ≫ x^θ₀ / log x` primes, so
+the whole interval holds `≫ x^(21/40) / log x`.  Evidence: the tiling argument already compiles
+for right-anchored windows (`PrimesShortInterval.mono`); only the anchoring differs. -/
+theorem bhp_of_li2023 (h : Li2023) : BakerHarmanPintz2001 := by
+  sorry
+
 end LeanFormalizations.BHPTests
