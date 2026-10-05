@@ -4,7 +4,7 @@ xi_shift_transcendental_classical now proved from saitoTypeB_shift (no hG).  Ope
     Nat.nth records; exists_pisot_of_decay_subseq').  Elementary, do first.
  2. record_gap_bounded PROVED (resultant norm one_le_norm_prod_pow_sub + Saito (5.1)).
  3. card_le_two_of_records (needs conjPowSum_lower_of_recurrence generalised to bounded gaps).
- 4. eventually_record_of_card_le_two (deg 2: norm; deg 3: unit + e₂(β^n)=0; 3-adic Skolem finiteness).
+ 4. eventually_record_of_card_le_two PROVED from 4a e2_zero_of_nonrecord (sorry, N_r = |p e2 - N^n| analysis) + 4b finite_e2_zero_orbit (sorry, 3-adic Skolem).
  + NoGap.conjPowSum_lower_of_recurrence (Smyth/Mignotte + a_k² dynamics).
 
 ## phase 62 (2026-10-05, lap 1, branch `mills-eplus`): crux = Baker-free Type B for E+

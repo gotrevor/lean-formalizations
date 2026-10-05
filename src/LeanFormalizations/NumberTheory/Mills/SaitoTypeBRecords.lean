@@ -714,6 +714,133 @@ theorem card_le_two_of_records (hB : BakerHarmanPintz2001)
     Multiset.card (otherConj (ξ ^ g)) ≤ 2 := by
   sorry
 
+/-- The last record before a non-record `M` beats it. -/
+theorem exists_last_record {C : ℕ → ℕ} {ξ : ℝ} {r0 M : ℕ} (hr0 : IsRecord C ξ r0) (h : r0 < M)
+    (hM : ¬ IsRecord C ξ M) :
+    ∃ r, r0 ≤ r ∧ r < M ∧ IsRecord C ξ r ∧
+      root ⌊ξ ^ C M⌋₊ (C M) < root ⌊ξ ^ C r⌋₊ (C r) := by
+  classical
+  set r := Nat.findGreatest (IsRecord C ξ) (M - 1) with hr
+  have hr0r : r0 ≤ r := Nat.le_findGreatest (by omega) hr0
+  have hrrec : IsRecord C ξ r := Nat.findGreatest_spec (m := r0) (by omega) hr0
+  have hrM : r ≤ M - 1 := Nat.findGreatest_le _
+  have hnr : ∀ k, r < k → k ≤ M → ¬ IsRecord C ξ k := by
+    intro k hk1 hk2
+    rcases lt_or_eq_of_le hk2 with h' | h'
+    · exact Nat.findGreatest_is_greatest hk1 (by omega)
+    · rw [h']; exact hM
+  have hmax : ∀ k, 1 ≤ k → k ≤ M →
+      root ⌊ξ ^ C k⌋₊ (C k) ≤ root ⌊ξ ^ C r⌋₊ (C r) := by
+    intro k
+    induction k using Nat.strong_induction_on with
+    | _ k ih =>
+      intro hk hkM
+      rcases le_or_gt k r with hkr | hkr
+      · exact hrrec k hk hkr
+      · have h' := hnr k hkr hkM
+        unfold IsRecord at h'
+        push_neg at h'
+        obtain ⟨k', hk'1, hk'k, hlt⟩ := h'
+        rcases Nat.lt_or_ge k' k with h | h
+        · exact le_trans hlt.le (ih k' h hk'1 (by omega))
+        · have : k' = k := by omega
+          subst this; exact absurd hlt (lt_irrefl _)
+  refine ⟨r, hr0r, by omega, hrrec, ?_⟩
+  have h' := hM
+  unfold IsRecord at h'
+  push_neg at h'
+  obtain ⟨k', hk'1, hk'M, hlt⟩ := h'
+  exact lt_of_lt_of_le hlt (hmax k' hk'1 hk'M)
+
+/-- **The non-record inequalities.**  If `r < M`, `p_M^(1/C M) < p_r^(1/C r)` and `ξ^g` is Pisot
+with `g ∣ C r`, then with `x = ξ^(C r)`, `P = ⌊x⌋`, `c = C M / C r`:
+`c {x} P^(c−1) < 1` (Saito (5.1)) and `1 ≤ {x} (P+1)^(ℓ−1)` (norm). -/
+theorem nonrecord_ineq {C : ℕ → ℕ} (h1 : 1 ≤ C 1) (h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1))
+    {ξ : ℝ} (hξ1 : 1 < ξ) (hnot : ∀ m ≥ 1, ∀ t : ℤ, ξ ^ C m ≠ (t : ℝ)) {g : ℕ}
+    (hpis : IsPisot (ξ ^ g)) {r M : ℕ} (hr1 : 1 ≤ r) (hrM : r < M) (hgr : g ∣ C r)
+    (hlt : root ⌊ξ ^ C M⌋₊ (C M) < root ⌊ξ ^ C r⌋₊ (C r)) :
+    (C M : ℝ) / C r * Int.fract (ξ ^ C r) * (⌊ξ ^ C r⌋₊ : ℝ) ^ ((C M : ℝ) / C r - 1) < 1 ∧
+      1 ≤ Int.fract (ξ ^ C r) * ((⌊ξ ^ C r⌋₊ : ℝ) + 1) ^ Multiset.card (otherConj (ξ ^ g)) ∧
+      (2 : ℝ) ^ (M - r) ≤ (C M : ℝ) / C r := by
+  have hξ0 : 0 < ξ := by linarith
+  have hCge := C_ge_one h1 h2
+  have hCpow : ∀ i, 2 ^ i * C r ≤ C (r + i) := by
+    intro i
+    induction i with
+    | zero => simp
+    | succ i ih =>
+      have := h2 (r + i) (by omega)
+      rw [pow_succ, show r + (i + 1) = r + i + 1 by ring]
+      nlinarith
+  have hCr : 0 < C r := hCge r hr1
+  have hCr' : (0 : ℝ) < C r := by exact_mod_cast hCr
+  set c : ℝ := (C M : ℝ) / C r with hc
+  have hc2 : (2 : ℝ) ^ (M - r) ≤ c := by
+    have := hCpow (M - r)
+    rw [show r + (M - r) = M by omega] at this
+    rw [hc, le_div_iff₀ hCr']; exact_mod_cast this
+  have hc1 : 1 ≤ c := le_trans (one_le_pow₀ (by norm_num)) hc2
+  set x := ξ ^ C r with hx
+  have hx1 : 1 ≤ x := one_le_pow₀ hξ1.le
+  have hxc : x ^ c = ξ ^ C M := by
+    rw [hx, ← Real.rpow_natCast ξ (C r), ← Real.rpow_mul hξ0.le, hc,
+      mul_div_cancel₀ _ hCr'.ne', Real.rpow_natCast]
+  have hfl : (⌊x ^ c⌋₊ : ℝ) < (⌊x⌋₊ : ℝ) ^ c := by
+    rw [hxc]
+    have hpM := root_pow (Nat.cast_nonneg (⌊ξ ^ C M⌋₊)) (hCge M (by omega))
+    have hpos : 0 ≤ root (⌊ξ ^ C M⌋₊ : ℝ) (C M) := by rw [root]; positivity
+    have h3 : (⌊ξ ^ C M⌋₊ : ℝ) < root (⌊ξ ^ C r⌋₊ : ℝ) (C r) ^ C M := by
+      rw [← hpM]; exact pow_lt_pow_left₀ hlt hpos (by have := hCge M (by omega); omega)
+    have h4 : root (⌊ξ ^ C r⌋₊ : ℝ) (C r) ^ C M = (⌊ξ ^ C r⌋₊ : ℝ) ^ c := by
+      rw [root, ← Real.rpow_natCast, ← Real.rpow_mul (Nat.cast_nonneg _), hc]
+      congr 1; field_simp
+    rw [h4] at h3
+    exact h3
+  refine ⟨fract_lt_of_floor_lt hx1 hc1 hfl, ?_, hc2⟩
+  have hβn : (ξ ^ g) ^ (C r / g) = x := by rw [hx, ← pow_mul, Nat.mul_div_cancel' hgr]
+  have hxne : (ξ ^ g) ^ (C r / g) ≠ ((⌊x⌋₊ : ℤ) : ℝ) := by
+    rw [hβn]; exact hnot r hr1 _
+  have hnorm := abs_pow_sub_mul_ge_one hpis (C r / g) (⌊x⌋₊ : ℤ) hxne
+  rw [hβn] at hnorm
+  have hfr : Int.fract x = x - (⌊x⌋₊ : ℝ) := by
+    rw [Int.fract, ← Int.natCast_floor_eq_floor (by linarith)]; push_cast; ring
+  have habs : |x - ((⌊x⌋₊ : ℤ) : ℝ)| = Int.fract x := by
+    rw [hfr]; push_cast
+    exact abs_of_nonneg (by linarith [Nat.floor_le (by linarith : (0:ℝ) ≤ x)])
+  have habsP : |(((⌊x⌋₊ : ℤ) : ℝ))| = (⌊x⌋₊ : ℝ) := by
+    push_cast; exact abs_of_nonneg (by positivity)
+  rw [habs, habsP] at hnorm
+  exact hnorm
+
+/-- The second elementary symmetric function of the conjugates of `β^n`, for cubic `β`:
+`e₂(β^n) = β^n S(n) + (∏ other conjugates)^n`. -/
+noncomputable def e2pow (β : ℝ) (n : ℕ) : ℂ :=
+  (β : ℂ) ^ n * conjPowSum β n + (otherConj β).prod ^ n
+
+/-- **Step 4a (degree 3, a non-record forces an exact zero).**  For cubic Pisot `β = ξ^g`, a
+record `r` followed by a non-record at `r + 1` has `N_r := |N(β^n − p_r)| < ξ^(2s)/3 + o(1)`
+(Saito (5.1) with `c − 1 = 2 − 2s/C r`); `N_r = |p_r e₂ − N(β)^n|` with `|N(β)|^n ≤ β^n R^(2n)`
+forces `e₂(β^n) = 0` (and `|N β| = 1`), `n = C r / g`.  Confidence ~85%. -/
+theorem e2_zero_of_nonrecord
+    {s : ℤ} {j : ℕ} (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) (hj2 : s ≤ (3 : ℤ) ^ (j + 1))
+    {ξ : ℝ} (hξ : IsLeast (millsSet (shiftC j s)) ξ) {g : ℕ} (hg1 : 1 ≤ g)
+    (hpis : IsPisot (ξ ^ g)) (hcard : Multiset.card (otherConj (ξ ^ g)) = 2) :
+    ∃ R, ∀ r ≥ R, g ∣ shiftC j s r →
+      root ⌊ξ ^ shiftC j s (r + 1)⌋₊ (shiftC j s (r + 1)) <
+        root ⌊ξ ^ shiftC j s r⌋₊ (shiftC j s r) →
+      e2pow (ξ ^ g) (shiftC j s r / g) = 0 := by
+  sorry
+
+/-- **Step 4b (Skolem, 3-adic; no Baker).**  For cubic Pisot `β`, `e₂(β^n) = 0` holds for only
+finitely many `n` on the orbit `n_r = (3^(r+j) + s)/g`, which converges 3-adically: on a residue
+class mod the order `P` of the companion matrix mod 3, `n ↦ e₂(β^n)` is 3-adic analytic and not
+identically zero (Vandermonde), so its zeros do not accumulate.  Confidence ~90%. -/
+theorem finite_e2_zero_orbit
+    {s : ℤ} {j : ℕ} (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) {g : ℕ} (hg1 : 1 ≤ g) {β : ℝ}
+    (hpis : IsPisot β) (hcard : Multiset.card (otherConj β) = 2) :
+    ∀ᶠ r in atTop, g ∣ shiftC j s r → e2pow β (shiftC j s r / g) ≠ 0 := by
+  sorry
+
 /-- **Step 4 (no non-records for degree `≤ 3`).**  Degree 2: the norm bound beats Saito (5.1)
 outright.  Degree 3: a non-record at `r + 1` forces `|N β| = 1` and
 `e₂(β^n) = β^n S(n) + (∏ other conj)^n = 0` at `n = C r / g`; such exact zeros along the
@@ -725,7 +852,74 @@ theorem eventually_record_of_card_le_two
     {K : ℕ} (hK : ∀ m ≥ K, IsRecord (shiftC j s) ξ m → g ∣ shiftC j s m)
     {T K' : ℕ} (hT : ∀ m ≥ K', ∃ r, m < r ∧ r ≤ m + T ∧ IsRecord (shiftC j s) ξ r) :
     ∃ K'', ∀ m ≥ K'', IsRecord (shiftC j s) ξ m := by
-  sorry
+  classical
+  set C := shiftC j s with hCdef
+  have h1 : 1 ≤ C 1 := shiftC_pos hj1 le_rfl
+  have h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1) := fun k hk => shiftC_two_mul_le hj1 hj2 hk
+  have h5 : ∀ m ≥ 1, ∃ k > m, C m ∣ C k ∧ (29 : ℝ) / 10 * C k ≤ C (k + 1) :=
+    fun m hm => shiftC_B5 hj1 hj2 hm
+  have hξS := hξ.1
+  have hξ1 : 1 < ξ := hξS.1
+  have hnot := not_intCast_pow h1 h2 h5 hξS
+  set L := Multiset.card (otherConj (ξ ^ g)) with hL
+  obtain ⟨K2, hK2⟩ := eventually_atTop.1
+    ((floor_tendsto h1 h2 hξ1).eventually_ge_atTop (2 : ℝ))
+  have hRR : ∃ R, ∀ r ≥ R, L = 2 → g ∣ C r →
+      root ⌊ξ ^ C (r + 1)⌋₊ (C (r + 1)) < root ⌊ξ ^ C r⌋₊ (C r) → False := by
+    by_cases hc2 : L = 2
+    · obtain ⟨R, hR⟩ := e2_zero_of_nonrecord hj1 hj2 hξ hg1 hpis hc2
+      obtain ⟨R2, hR2⟩ := eventually_atTop.1 (finite_e2_zero_orbit (s := s) (j := j) hj1 hg1 hpis hc2)
+      exact ⟨max R R2, fun r hr _ hgr hlt =>
+        hR2 r (le_trans (le_max_right _ _) hr) hgr (hR r (le_trans (le_max_left _ _) hr) hgr hlt)⟩
+    · exact ⟨0, fun r _ h => absurd h hc2⟩
+  obtain ⟨R, hR⟩ := hRR
+  obtain ⟨r0, ⟨hr0rec, hr0ge⟩⟩ := ((frequently_record h1 h2 hξ hnot).and_eventually
+    (eventually_ge_atTop (K + K2 + R + 1))).exists
+  refine ⟨r0 + 1, fun M hM => ?_⟩
+  by_contra hMn
+  obtain ⟨r, hr0r, hrM, hrrec, hlt⟩ := exists_last_record hr0rec (by omega) hMn
+  have hgr : g ∣ C r := hK r (by omega) hrrec
+  obtain ⟨hA, hB, hc⟩ := nonrecord_ineq h1 h2 hξ1 hnot hpis (by omega) hrM hgr hlt
+  set P : ℝ := (⌊ξ ^ C r⌋₊ : ℝ) with hP
+  set f := Int.fract (ξ ^ C r) with hf
+  set c : ℝ := (C M : ℝ) / C r with hcdef
+  have hP2 : 2 ≤ P := hK2 r (by omega)
+  have hf0 : 0 ≤ f := Int.fract_nonneg _
+  have hc2' : 2 ≤ c := by
+    have : (2 : ℝ) ^ 1 ≤ 2 ^ (M - r) := pow_le_pow_right₀ (by norm_num) (by omega)
+    linarith
+  -- the key comparison `(P+1)^L ≤ c P^(c−1)` outside the exact-zero case
+  have hcmp : ¬ (L = 2 ∧ M = r + 1) → (P + 1) ^ L ≤ c * P ^ (c - 1) := by
+    intro hcase
+    have hLle : L ≤ 2 := hcard
+    have hP1 : 1 ≤ P := by linarith
+    have hpc1 : P ^ (1 : ℝ) ≤ P ^ (c - 1) := Real.rpow_le_rpow_of_exponent_le hP1 (by linarith)
+    rw [Real.rpow_one] at hpc1
+    interval_cases L
+    · simp; nlinarith [Real.one_le_rpow hP1 (by linarith : (0:ℝ) ≤ c - 1)]
+    · simp; nlinarith
+    · have hM2 : r + 2 ≤ M := by
+        by_contra h; exact hcase ⟨rfl, by omega⟩
+      have hc4 : 4 ≤ c := by
+        have : (2 : ℝ) ^ 2 ≤ 2 ^ (M - r) := pow_le_pow_right₀ (by norm_num) (by omega)
+        linarith
+      have hpc3 : P ^ ((3 : ℕ) : ℝ) ≤ P ^ (c - 1) :=
+        Real.rpow_le_rpow_of_exponent_le hP1 (by push_cast; linarith)
+      rw [Real.rpow_natCast] at hpc3
+      have hP3 : 2 * P ^ 2 ≤ P ^ 3 := by
+        have : 0 ≤ P ^ 2 := by positivity
+        nlinarith
+      have : (P + 1) ^ 2 ≤ 4 * P ^ 3 := by nlinarith
+      nlinarith
+  by_cases hcase : L = 2 ∧ M = r + 1
+  · obtain ⟨hL2, hMr⟩ := hcase
+    subst hMr
+    exact hR r (by omega) hL2 hgr hlt
+  · have h := hcmp hcase
+    have : f * (P + 1) ^ L ≤ c * f * P ^ (c - 1) := by
+      calc f * (P + 1) ^ L ≤ f * (c * P ^ (c - 1)) := mul_le_mul_of_nonneg_left h hf0
+        _ = c * f * P ^ (c - 1) := by ring
+    linarith
 
 /-- **All large indices are records** for the E+ exponents, if `ξ` is algebraic. -/
 theorem eventually_record_shift (hB : BakerHarmanPintz2001) (hD : Dubickas2022)
