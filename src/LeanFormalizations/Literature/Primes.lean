@@ -38,6 +38,18 @@ def BakerHarmanPintz2001 : Prop :=
   ∃ d₀ > (0 : ℝ), ∃ X : ℝ, ∀ x ≥ X,
     d₀ * x ^ ((21 : ℝ) / 40) / Real.log x ≤ (primesIn x (x + x ^ ((21 : ℝ) / 40)) : ℝ)
 
+/-- **Ingham (1937)**, as a lower bound: for every `θ ∈ (5/8, 1]` the interval `[x, x + x^θ]`
+holds `≫ x^θ / log x` primes for all large `x`.  Ingham proves the asymptotic
+`π(x + x^θ) − π(x) ∼ x^θ / log x` for `θ > 5/8`, from his zero-density estimate and the
+Hardy–Littlewood bound `ζ(1/2 + it) ≪ t^(1/6 + ε)`; this is a weaker consequence (lower bound
+only, `θ ≤ 1`).  Strictly weaker than `BakerHarmanPintz2001` (see `BHPTests.ingham_of_bhp`).
+
+A. E. Ingham, *On the difference between consecutive primes*, Quart. J. Math. Oxford **8**
+(1937), 255–266.  (Theorem number not yet checked against the paper.) -/
+def Ingham1937 : Prop :=
+  ∀ θ : ℝ, 5 / 8 < θ → θ ≤ 1 → ∃ d₀ > (0 : ℝ), ∃ X : ℝ, ∀ x ≥ X,
+    d₀ * x ^ θ / Real.log x ≤ (primesIn x (x + x ^ θ) : ℝ)
+
 /-- **Matomäki (2007)**, in the form Saito (2024, Theorem 3.7) quotes from Matomäki (2010,
 Lemma 9): there are `0 < d₁ < 1` and `D > 0` such that for all large `x` and every
 `γ ∈ [1/2, 1]`, `[x, 2x]` contains at most `D x^(2/3 − γ)` pairwise disjoint intervals

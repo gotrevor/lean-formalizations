@@ -1,8 +1,30 @@
-> ✅ **Phase 63 DONE 2026-10-05**: `BHPTests.lean` sorry-free, all names free of sorryAx (no frozen statement was false). No current directive.
+> 🎯 **CURRENT DIRECTIVE (phase 64a, 2026-10-05): prove every `sorry` in `src/LeanFormalizations/NumberTheory/Mills/SaitoTypeBTheta.lean`** (Theorem E+ from any short-interval exponent `θ < 2/3`, and from Ingham 1937; entry "phase 64" below).  Statements are FROZEN: never weaken one.  If the proof genuinely needs a smaller threshold than `2/3`, prove the strongest version you can as a NEW theorem beside the frozen one (e.g. `..._of_shortInterval'` with `θ < θ*`), leave the frozen `sorry`, and explain in HANDOFF exactly which step forces it.  Do not touch `BakerHarmanPintz2001`, `BHPTests.lean`, or the existing BHP headlines.
 
 > 🗺️ **Before planting a phase, grep `src/LeanFormalizations/Maze.lean`**: it records the routes already walked and closed, and each row's `reopenIf` names the new idea needed to walk it again (2026-09-29).
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
+
+## (phase 64, PLANTED 2026-10-05, branch `mills-eplus`, worktree `~/src/lean-formalizations-eplus`): **E+ on a weaker prime input, then three-core-axiom tightening**
+
+Previous status line: ✅ **Phase 63 DONE 2026-10-05**: `BHPTests.lean` sorry-free, all names free of sorryAx (no frozen statement was false). No current directive.
+
+Trevor named Theorem E+ for external sharing.  Two parts, run sequentially (64b is planted after 64a finishes).
+
+### 64a - E+ from `θ < 2/3` (new mathematics; target `Mills/SaitoTypeBTheta.lean`)
+
+The BHP exponent `21/40` enters E+ only through Saito's Lemma 5.3 (`SaitoTypeBParts.lean`, "Saito Lemma 5.3 at θ = 21/40, ratios ≥ 29/10"), as `1/(1 − θ) + ε ≤ r` with `r` a lower bound on `C(k+1)/C k`.  For `C = 3^k + s` the ratios tend to `3`, so `θ < 2/3` should suffice with `r` chosen in `(1/(1−θ), 3)` and the record lemmas applied eventually in `k`.
+
+Frozen statements (namespace `LeanFormalizations.Mills.SaitoTypeBTheta`):
+1. `ingham_iff` (`Iff.rfl`, done) and `ingham_of_bhp` (sanity: BHP → `Ingham1937`, via `BHPTests.PrimesShortInterval.mono` since `21/40 < 5/8`).
+2. `xi_shift_transcendental_of_shortInterval` (`0 < θ < 2/3`, `PrimesShortInterval θ`, `Dubickas2022`): the main work.  Suggested route: generalize the `θ = 21/40`-specific lemmas in `SaitoTypeBParts.lean` / `SaitoTypeBRecords.lean` / `SaitoTypeBNoGap.lean` to a parameter `θ` (new `θ`-parametric copies or generalize in place; the existing BHP-named theorems must keep their statements and stay proved, e.g. by specializing the parametric version).  `PrimesShortInterval.mono` lets you raise `θ` (e.g. to `max θ (21/40)`) if a step wants `θ ≥ 1/2`.
+3. `xi_shift_transcendental_ingham`: from 2 with `θ = 13/20 ∈ (5/8, 2/3)`.
+4. `xi_shifted_transcendental_ingham` (Theorem E, `s = −2`): mirror `SaitoTypeB.xi_shifted_transcendental_classical`.
+
+Done when: `#print axioms` on all four shows no `sorryAx`.
+
+### 64b - three-core-axiom tightening (queued)
+
+Replace the two `native_decide`s on E+'s path (`E1Certificate.cert_all`, `ShiftRigidity.cm3_check`) with kernel-checked proofs (`decide +kernel`, or a structured argument that cuts the case count), so `#print axioms` on the E+ headlines shows only `propext`, `Classical.choice`, `Quot.sound`.  Statements unchanged.
 
 ## ✅ (phase 63, DONE 2026-10-05 in one lap; PLANTED 2026-10-05, branch `mills-eplus`, worktree `~/src/lean-formalizations-eplus`): **stress-test the BHP literature Prop** - target `src/LeanFormalizations/NumberTheory/PrimeIntervals/BHPTests.lean`
 
