@@ -338,7 +338,18 @@ def register : List Row := [
       (mod 3^(n+1)) (ShiftRigidityUnipotent.generic_trace_congr_le_nine), a non-constant spectral \
       solution u = (1,1,0,0) from a pair relation among reciprocal roots"
     reopenIf := "ShiftRigidityUnipotent.UnipotentCovering (a covering prime for every unipotent-class \
-      Pisot), or any non-3-adic input on tr C^(3^n + s) in the class f ≡ (X ∓ 1)^ℓ (mod 3)" }
+      Pisot), or any non-3-adic input on tr C^(3^n + s) in the class f ≡ (X ∓ 1)^ℓ (mod 3)" },
+  { route := "Degree-≥4 generic leaf by the 3-adic route plus the q-power class kill (phase 65 lap 4: \
+      f ≡ g^q (mod q) ⇒ q ∣ every trace, ShiftRigidityUnipotent.PowerClassKill; kills the lap-3 control \
+      f₁ at q = 2, ShiftRigidityUnipotent.not_primeTraces_f₁)"
+    verdict := .needsNewIdea, tier := .kernel
+    anchor := some ``LeanFormalizations.Mills.ShiftRigidityUnipotent.C₂_trace_mod
+    evidence := "In degree 4 the power class needs q ∣ 4, so only q = 2.  Scan (|cᵢ| ≤ 9, c₃ ∈ [−12, −3], \
+      irreducible Pisot, not unipotent mod 3, not a square mod 2, s ∈ [−4, 4], n ≤ 11): two survivors, \
+      both s = −1; f₂ = X⁴ − 5X³ − 8X² − 6X − 3 has tr C₂^(3^n − 1) ≡ −1 (mod 3^(n+1)) and tr C₂ = 5 \
+      odd.  It dies only by a hit prime (7 ∣ tr C₂^(3^7 − 1), C₂_hit_seven)"
+    reopenIf := "ShiftRigidityUnipotent.HitPrime (a prime dividing infinitely many orbit traces; \
+      not_primeTraces_of_hitPrime closes both leaves from it), or a third input separating f₂" }
 ]
 
 end LeanFormalizations.Maze

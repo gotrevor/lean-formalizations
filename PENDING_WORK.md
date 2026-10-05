@@ -1,3 +1,18 @@
+## phase 65 lap 4 (2026-10-05): non-3-adic input #1 = the q-power class; f₁ killed, f₂ survives; crux = `HitPrime`
+* `ShiftRigidityUnipotent.not_primeTraces_f₁` (mod `pisot_f₁`): f₁ ≡ (X²+X+1)² (mod 2), every trace
+  even (`f₁_trace_even`, kernel).  General form `PowerClassKill` (f ≡ g^q mod q ⇒ q | every trace,
+  ~99%, sorry); cube class is q = 3.  So the lap-3 control was not a real obstruction.
+* Sibling scan: in degree 4 only q = 2 is available.  Survivor `f₂ = X⁴−5X³−8X²−6X−3`, s = −1:
+  3-adically consistent (`C₂_trace_mod`, v₃ = n+1), tr C₂ = 5 odd; dies only by a hit prime
+  (`C₂_hit_seven`).  Maze row added.
+* New node `HitPrime` + proved `not_primeTraces_of_hit` / `not_primeTraces_of_hitPrime`: a prime
+  dividing infinitely many orbit traces closes both degree-≥4 leaves.  Fermat sibling: the analogue
+  fails (pairwise coprime), so a proof must use degree ≥ 2 / s ≠ 0.
+* Next: a hit-prime mechanism.  Idea to test: take q | tr C^(3^m + s) for an n-independent reason,
+  e.g. q | tr C^r for some r in the closure of {3^n + s mod ord(C mod q)}; for q with 3 ∤ ord(C mod q)
+  the orbit is periodic and covers s + ⟨3⟩ cosets — ask whether some q with ord_q prime-to-3 always
+  has tr C^(s·3^j·…) ≡ 0.  Test on f₀, f₂ first.
+
 ## phase 65 lap 3b (2026-10-05): sibling check REFUTES the 3-adic route on the generic leaf too
 * `ShiftRigidityUnipotent.generic_trace_congr_le_nine` (native, n ≤ 9): f₁ = X⁴−8X³−5X²+6X+3
   ≡ X²(X−1)² (mod 3), Pisot β≈8.5, tr C^(3^n−1) ≡ −1 (mod 3^(n+1)).  Reciprocal roots split into

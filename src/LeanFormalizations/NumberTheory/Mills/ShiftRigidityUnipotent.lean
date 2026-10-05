@@ -31,7 +31,7 @@ which is the named node `UnipotentCovering`.
 
 namespace LeanFormalizations.Mills.ShiftRigidityUnipotent
 
-open Polynomial LeanFormalizations.Mills.TheoremDGeneral LeanFormalizations.Mills.ShiftRigidity
+open Filter Polynomial LeanFormalizations.Mills.TheoremDGeneral LeanFormalizations.Mills.ShiftRigidity
   LeanFormalizations.Mills.ShiftRigidityDeg
 
 /-- `X⁴ − 4X³ − X + 1`, `≡ (X − 1)⁴ (mod 3)`. -/
@@ -220,5 +220,133 @@ theorem generic_trace_congr (n : ℕ) (hn : 2 ≤ n) :
 theorem pisot_f₁ : (∃ α : ℝ, PisotDataAny f₁ α) ∧
     ∀ z : ZMod 3, f₁.map (Int.castRingHom (ZMod 3)) ≠ (X - Polynomial.C z) ^ f₁.natDegree := by
   sorry
+
+/-! ## A non-`3`-adic input: the `q`-power class (phase 65 lap 4)
+
+`f₁ ≡ (X² + X + 1)² (mod 2)`: every root of `f₁` mod `2` is double, so every power sum is even
+(`f₁_trace_even`), and `f₁` has no prime traces along ANY exponent sequence (`not_primeTraces_f₁`).
+The cubic cube class `(X − z)³ (mod 3)` is the case `q = 3` of the same mechanism
+(`PowerClassKill`): if `f ≡ g^q (mod q)` then `q` divides every trace.  So `f₁` is not a
+counterexample to the 3-adic + power-class combination; it only refutes the 3-adic route alone. -/
+
+/-- Any degree: a prime dividing every trace kills prime traces along `3^n + s`. -/
+theorem not_primeTraces_of_dvd_any {f : ℤ[X]} {α : ℝ} (hD : PisotDataAny f α) {q : ℕ}
+    (hq : q.Prime) (hdvd : ∀ N, 1 ≤ N → (q : ℤ) ∣ traceSeq f N) (s : ℤ) : ¬ PrimeTraces f s := by
+  intro hP
+  have hE := shiftExp_tendsto s
+  have hgrow := (traceSeq_tendsto_any hD).comp hE
+  obtain ⟨n, ⟨p, hp, hpe⟩, hb, hE1⟩ := (hP.and ((hgrow.eventually_ge_atTop ((q : ℤ) + 1)).and
+    (hE.eventually (eventually_ge_atTop 1)))).exists
+  have hb' : (q : ℤ) + 1 ≤ traceSeq f ((3 : ℤ) ^ n + s).toNat := hb
+  have hpq : p = q := by
+    have : (q : ℤ) ∣ (p : ℤ) := hpe ▸ hdvd _ hE1
+    have : q ∣ p := by exact_mod_cast this
+    exact ((Nat.prime_dvd_prime_iff_eq hq hp).1 this).symm
+  rw [hpe, hpq] at hb'
+  omega
+
+/-- `f₁ ≡ (X² + X + 1)² (mod 2)`: every trace is even (recurrence mod `2`). -/
+theorem f₁_trace_even (k : ℕ) : (2 : ℤ) ∣ (C₁ ^ k).trace := by
+  have h : ∀ k, (2 : ℤ) ∣ (tq k).1 ∧ (2 : ℤ) ∣ (tq k).2.1 ∧ (2 : ℤ) ∣ (tq k).2.2.1 ∧
+      (2 : ℤ) ∣ (tq k).2.2.2 := by
+    intro k
+    induction k with
+    | zero => decide
+    | succ k ih =>
+      obtain ⟨_, h1, h2, h3⟩ := ih
+      refine ⟨h1, h2, h3, ?_⟩
+      show (2 : ℤ) ∣ 8 * (tq k).2.2.2 + 5 * (tq k).2.2.1 - 6 * (tq k).2.1 - 3 * (tq k).1
+      omega
+  have := (h k).1
+  rwa [tq_eq] at this
+
+/-- **`f₁` has no prime traces**, for every shift `s` (from `pisot_f₁`, numerics, and the
+`2`-power class).  The generic control of lap 3 is killed by the prime `2`. -/
+theorem not_primeTraces_f₁ (s : ℤ) : ¬ PrimeTraces f₁ s := by
+  obtain ⟨α, hD⟩ := pisot_f₁.1
+  exact not_primeTraces_of_dvd_any hD Nat.prime_two
+    (fun N _ => by rw [traceSeq_f₁]; exact_mod_cast f₁_trace_even N) s
+
+/-- **Believed (~99%), the `q`-power class kill, any prime `q`, any degree.**  If
+`f ≡ g^q (mod q)` then `q ∣ tr C^N` for every `N`.  English proof: over `𝔽̄_q` every root of
+`f mod q` has multiplicity divisible by `q`, so the power sum `Σ m_i r_i^N ≡ 0`; and the trace
+of `C^N` reduces to that power sum.  `q = 3`, `deg g = 1` is `HalfShiftRigidity.three_dvd_of_cube`;
+`q = 2` for `f₁` is `f₁_trace_even`. -/
+def PowerClassKill : Prop :=
+  ∀ (f : ℤ[X]) (q : ℕ), f.Monic → q.Prime → ∀ g : (ZMod q)[X],
+    f.map (Int.castRingHom (ZMod q)) = g ^ q → ∀ N : ℕ, (q : ℤ) ∣ traceSeq f N
+
+theorem powerClassKill_holds : PowerClassKill := by
+  sorry
+
+/-! ## The generic leaf survives the 3-adic route AND the power class (lap 4 sibling scan)
+
+Scan: quartic `X⁴ + c₃X³ + c₂X² + c₁X + c₀`, `c₃ ∈ [−12, −3]`, `|cᵢ| ≤ 9`, Pisot, irreducible over
+`ℤ` (no linear or quadratic factor), not `(X ∓ 1)⁴ (mod 3)`, not a square mod `2`, `s ∈ [−4, 4]`,
+with `tr C^(3^n + s) ≡ ±1 (mod 3^(n−1))` for `3 ≤ n ≤ 11`: exactly two survive,
+`X⁴ − 11X³ − 8X² + 6X + 3` and `f₂ = X⁴ − 5X³ − 8X² − 6X − 3`, both `s = −1`.
+`f₂ ≡ X²(X − 1)² (mod 3)`, `≡ X⁴ + X³ + 1` (irreducible) `mod 2`, roots `≈ 6.4064, −0.8650,
+−0.2707 ± 0.6842i`; `v₃(tr C₂^(3^n − 1) + 1) = n + 1` exactly for `2 ≤ n ≤ 11`.  In degree 4 the
+power class needs `q ∣ 4`, so `q = 2` is the only one, and `tr C₂ = 5` is odd.  What does kill it
+numerically is a hit prime: `7 ∣ tr C₂^(3^n − 1)` for `n ≡ 3 (mod 4)`, `n ≥ 7`; also
+`q = 2, 13, 17, 23, 31, …`.  So the generic leaf reduces to a covering node (`HitPrime`). -/
+
+/-- `X⁴ − 5X³ − 8X² − 6X − 3`. -/
+noncomputable def f₂ : ℤ[X] := X ^ 4 - 5 * X ^ 3 - 8 * X ^ 2 - 6 * X - 3
+
+def C₂ : Matrix (Fin 4) (Fin 4) ℤ := !![0, 0, 0, 3; 1, 0, 0, 6; 0, 1, 0, 8; 0, 0, 1, 5]
+
+/-- Traces of `C₂^k, …, C₂^(k+3)` by the recurrence. -/
+def tq₂ : ℕ → ℤ × ℤ × ℤ × ℤ
+  | 0 => (4, 5, 41, 263)
+  | k + 1 => let t := tq₂ k; (t.2.1, t.2.2.1, t.2.2.2,
+      5 * t.2.2.2 + 8 * t.2.2.1 + 6 * t.2.1 + 3 * t.1)
+
+theorem C₂_trace : C₂.trace = 5 := by decide
+
+/-- `tq₂` matches the matrix traces at the start (the full identity is as for `tq_eq`). -/
+theorem tq₂_start : tq₂ 0 = (C₂ ^ 0 |>.trace, (C₂ ^ 1).trace, (C₂ ^ 2).trace, (C₂ ^ 3).trace) := by
+  decide
+
+/-- **Native-checked**: `tr C₂^(3^n − 1) ≡ −1 (mod 3^(n+1))`, `2 ≤ n ≤ 9`, by the recurrence. -/
+theorem C₂_trace_mod : ∀ n ∈ Finset.Icc 2 9, ((tq₂ (3 ^ n - 1)).1 + 1) % 3 ^ (n + 1) = 0 := by
+  native_decide
+
+/-- **Native-checked hit prime**: `7 ∣ tr C₂^(3^7 − 1)` (numerically for every `n ≡ 3 (mod 4)`, `n ≥ 7`). -/
+theorem C₂_hit_seven : (tq₂ (3 ^ 7 - 1)).1 % 7 = 0 := by
+  native_decide
+
+/-- **Open node (hit prime), any degree `≥ 4`.**  Some prime divides `tr C^(3^n + s)` for
+infinitely many `n`.  With `traceSeq_tendsto_any` this gives `¬ PrimeTraces f s`.  Implies both
+degree-4 leaves; `UnipotentCovering` is its unipotent restriction.  Evidence: every instance met
+(`f₀`: `q = 2, 11, 13`; `f₁`: `q = 2` at every `n`; `f₂`: `q = 7`).  Mechanism: none known.  Sibling
+caution: the analogue for `2^(2^n) + 1` FAILS (Fermat numbers are pairwise coprime), so a proof
+must use that `f` has degree `≥ 2` or the shift `s ≠ 0`, not the exponent shape alone. -/
+def HitPrime : Prop :=
+  ∀ (f : ℤ[X]) (α : ℝ), PisotDataAny f α → 4 ≤ f.natDegree → ∀ s : ℤ, s ≠ 0 →
+    ∃ q : ℕ, q.Prime ∧ ∀ N : ℕ, ∃ n ≥ N, (q : ℤ) ∣ traceSeq f ((3 : ℤ) ^ n + s).toNat
+
+/-- A hit prime kills prime traces (any degree). -/
+theorem not_primeTraces_of_hit {f : ℤ[X]} {α : ℝ} (hD : PisotDataAny f α) {s : ℤ} {q : ℕ}
+    (hq : q.Prime) (hhit : ∀ N : ℕ, ∃ n ≥ N, (q : ℤ) ∣ traceSeq f ((3 : ℤ) ^ n + s).toNat) :
+    ¬ PrimeTraces f s := by
+  intro hP
+  have hgrow := (traceSeq_tendsto_any hD).comp (shiftExp_tendsto s)
+  obtain ⟨N, hN⟩ := eventually_atTop.1 (hP.and (hgrow.eventually_ge_atTop ((q : ℤ) + 1)))
+  obtain ⟨n, hn, hd⟩ := hhit N
+  obtain ⟨⟨p, hp, hpe⟩, hb⟩ := hN n hn
+  have hb' : (q : ℤ) + 1 ≤ traceSeq f ((3 : ℤ) ^ n + s).toNat := hb
+  have hpq : p = q := by
+    have : (q : ℤ) ∣ (p : ℤ) := hpe ▸ hd
+    have : q ∣ p := by exact_mod_cast this
+    exact ((Nat.prime_dvd_prime_iff_eq hq hp).1 this).symm
+  rw [hpe, hpq] at hb'
+  omega
+
+/-- `HitPrime` closes every degree-`≥ 4` instance of `PrimeTraces`. -/
+theorem not_primeTraces_of_hitPrime (h : HitPrime) {f : ℤ[X]} {α : ℝ} (hD : PisotDataAny f α)
+    (hdeg : 4 ≤ f.natDegree) {s : ℤ} (hs : s ≠ 0) : ¬ PrimeTraces f s := by
+  obtain ⟨q, hq, hhit⟩ := h f α hD hdeg s hs
+  exact not_primeTraces_of_hit hD hq hhit
 
 end LeanFormalizations.Mills.ShiftRigidityUnipotent
