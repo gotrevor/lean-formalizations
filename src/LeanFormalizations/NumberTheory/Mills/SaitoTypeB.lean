@@ -151,6 +151,20 @@ theorem xi_shifted_transcendental_classical (hB : BakerHarmanPintz2001) (hD : Du
     {ξ : ℝ}
     (hξ : IsLeast {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ ShiftedMills.shiftedC k⌋₊).Prime} ξ) :
     Transcendental ℚ ξ := by
-  sorry
+  have hC : ∀ k ≥ 1, shiftC 0 (-2) k = ShiftedMills.shiftedC k := by
+    intro k hk
+    unfold shiftC ShiftedMills.shiftedC
+    have h3 : (3 : ℕ) ≤ 3 ^ k := by
+      calc (3 : ℕ) = 3 ^ 1 := by norm_num
+        _ ≤ 3 ^ k := Nat.pow_le_pow_right (by norm_num) hk
+    rw [add_zero, show ((3 : ℤ) ^ k + -2) = ((3 ^ k - 2 : ℕ) : ℤ) by rw [Nat.cast_sub (by omega)]; push_cast; ring]
+    exact Int.toNat_natCast _
+  have hset : {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ shiftC 0 (-2) k⌋₊).Prime} =
+      {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ ShiftedMills.shiftedC k⌋₊).Prime} := by
+    ext A
+    simp only [Set.mem_setOf_eq]
+    exact and_congr_right fun _ => forall₂_congr fun k hk => by rw [hC k hk]
+  exact xi_shift_transcendental_classical hB hD (s := -2) (j := 0) (by norm_num) (by norm_num)
+    (by norm_num) (hset ▸ hξ)
 
 end LeanFormalizations.Mills.SaitoTypeB
