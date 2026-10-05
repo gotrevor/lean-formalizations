@@ -702,6 +702,35 @@ theorem record_gap_bounded
   have : P < 2 ^ L := lt_of_mul_lt_mul_right (by linarith : P * y < 2 ^ L * y) hy0.le
   linarith
 
+/-- For a Pisot `β`, eventually `|S(n)| = |β^n − round(β^n)|`. -/
+theorem norm_conjPowSum_eq_round {β : ℝ} (hβ : IsPisot β) :
+    ∀ᶠ n : ℕ in atTop, ‖conjPowSum β n‖ = |β ^ n - (round (β ^ n) : ℝ)| := by
+  have hmax := conjMax_lt_one hβ
+  have hmax0 := conjMax_nonneg β
+  have htend : Tendsto
+      (fun n : ℕ => (Multiset.card (otherConj β) : ℝ) * conjMax β ^ n) atTop (nhds 0) := by
+    have := tendsto_pow_atTop_nhds_zero_of_lt_one hmax0 hmax
+    simpa using this.const_mul (Multiset.card (otherConj β) : ℝ)
+  filter_upwards [htend.eventually (gt_mem_nhds (by norm_num : (0:ℝ) < 1/2))] with n hn
+  obtain ⟨t, ht⟩ := pisot_conjPowSum_add_mem_int hβ n
+  have hcps : conjPowSum β n = ((((t : ℝ) - β ^ n : ℝ)) : ℂ) := by
+    push_cast
+    push_cast at ht
+    linear_combination ht
+  have hnorm : ‖conjPowSum β n‖ = |β ^ n - (t : ℝ)| := by
+    rw [hcps, Complex.norm_real, Real.norm_eq_abs, abs_sub_comm]
+  have hhalf : |β ^ n - (t : ℝ)| < 1 / 2 := by
+    rw [← hnorm]
+    exact lt_of_le_of_lt (norm_conjPowSum_le β n) hn
+  have hround : round (β ^ n) = t := by
+    have hz : round (β ^ n - (t : ℝ)) = 0 := by
+      rw [round_eq_zero_iff]
+      exact ⟨(abs_lt.1 hhalf).1.le, (abs_lt.1 hhalf).2⟩
+    have := round_add_intCast (β ^ n - (t : ℝ)) t
+    rw [hz, sub_add_cancel] at this
+    simpa using this
+  rw [hnorm, hround]
+
 /-- **Step 3 (degree `≤ 3`, no Baker).**  Decay `151/400` at records, records with bounded gaps,
 and the orbit `n ↦ 3n − d` (Mignotte/Smyth: the dominant other conjugates are one real or one
 complex pair; `a_r² → −1` along records is incompatible with `a_(r+t)² = a_r^(2·3^t) v^(3^t−1)`,
@@ -713,7 +742,55 @@ theorem card_le_two_of_records (hB : BakerHarmanPintz2001)
     {K : ℕ} (hK : ∀ m ≥ K, IsRecord (shiftC j s) ξ m → g ∣ shiftC j s m)
     {T K' : ℕ} (hT : ∀ m ≥ K', ∃ r, m < r ∧ r ≤ m + T ∧ IsRecord (shiftC j s) ξ r) :
     Multiset.card (otherConj (ξ ^ g)) ≤ 2 := by
-  sorry
+  classical
+  set C := shiftC j s with hCdef
+  have h1 : 1 ≤ C 1 := shiftC_pos hj1 le_rfl
+  have h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1) := fun k hk => shiftC_two_mul_le hj1 hj2 hk
+  have hK₀ : ∀ k ≥ 19 * s.natAbs + 1, (29 : ℝ) / 10 * C k ≤ C (k + 1) := fun k hk =>
+    shiftC_ratio hj1 (by omega) (by omega)
+  have hξ1 : 1 < ξ := hξ.1.1
+  have hξ0 : 0 < ξ := by linarith
+  obtain ⟨k₀, hk₀⟩ := record_decay hB h1 h2 hK₀ hξ
+  set n : ℕ → ℕ := fun m => C m / g with hn
+  set K1 := K + K' + k₀ + 1 with hK1
+  have hgn : ∀ m ≥ K1, IsRecord C ξ m → g * n m = C m := fun m hm hr =>
+    Nat.mul_div_cancel' (hK m (by omega) hr)
+  have hrel : ∀ k r, K1 ≤ k → IsRecord C ξ k → IsRecord C ξ r → k < r →
+      (g : ℤ) * n r = 3 ^ (r - k) * (g * n k) - s * (3 ^ (r - k) - 1) := by
+    intro k r hk hkr hrr hlt
+    have a : ((g * n k : ℕ) : ℤ) = 3 ^ (k + j) + s := by
+      rw [hgn k hk hkr]; exact shiftC_cast hj1 (by omega)
+    have b : ((g * n r : ℕ) : ℤ) = 3 ^ (r + j) + s := by
+      rw [hgn r (by omega) hrr]; exact shiftC_cast hj1 (by omega)
+    push_cast at a b
+    rw [b, a, show r + j = (r - k) + (k + j) by omega, pow_add]; ring
+  have hnt : Tendsto n atTop atTop := by
+    rw [tendsto_atTop_atTop]
+    intro b
+    refine ⟨b * g + 1, fun m hm => ?_⟩
+    have := le_C h1 h2 m (by omega)
+    exact (Nat.le_div_iff_mul_le (by omega)).2 (by omega)
+  obtain ⟨c, hc, hfr⟩ := DominantPair.lower_along_records hpis hdeg hnt
+    (T := T) (K' := K1) (fun m hm => hT m (by omega)) hs hrel
+  have hround := hnt.eventually (norm_conjPowSum_eq_round hpis)
+  have hfr2 : ∃ᶠ m in atTop, c * conjMax (ξ ^ g) ^ n m ≤ ‖conjPowSum (ξ ^ g) (n m)‖ ∧
+      ‖conjPowSum (ξ ^ g) (n m)‖ ≤ 4 * ((ξ ^ g) ^ (-((151 / 400 : ℝ) * n m)) : ℝ) := by
+    refine ((hfr.and_eventually hround).and_eventually (eventually_ge_atTop K1)).mono ?_
+    rintro m ⟨⟨⟨hrec, hlo⟩, hr⟩, hm⟩
+    refine ⟨hlo, ?_⟩
+    have hgm := hgn m hm hrec
+    have hpow : (ξ ^ g) ^ n m = ξ ^ C m := by rw [← pow_mul, hgm]
+    have hrp : ((ξ ^ g) ^ (-((151 / 400 : ℝ) * n m)) : ℝ) =
+        ξ ^ (-((151 / 400 : ℝ) * C m)) := by
+      rw [← Real.rpow_natCast ξ g, ← Real.rpow_mul hξ0.le, ← hgm]
+      push_cast; ring_nf
+    rw [hr, hpow, hrp]
+    exact hk₀ m (by omega) hrec
+  have hL := card_mul_le_of_lower hpis (by norm_num) hc (hnt.frequently hfr2)
+  have : (Multiset.card (otherConj (ξ ^ g)) : ℝ) < 3 := by nlinarith
+  exact_mod_cast (show (Multiset.card (otherConj (ξ ^ g)) : ℝ) ≤ 2 by
+    have h3 : (Multiset.card (otherConj (ξ ^ g))) < 3 := by exact_mod_cast this
+    exact_mod_cast (show Multiset.card (otherConj (ξ ^ g)) ≤ 2 by omega))
 
 /-- The last record before a non-record `M` beats it. -/
 theorem exists_last_record {C : ℕ → ℕ} {ξ : ℝ} {r0 M : ℕ} (hr0 : IsRecord C ξ r0) (h : r0 < M)
@@ -1114,35 +1191,6 @@ theorem eventually_record_shift (hB : BakerHarmanPintz2001) (hD : Dubickas2022)
   obtain ⟨T, K', hT⟩ := record_gap_bounded hj1 hj2 hξ hg1 hpis hK
   exact eventually_record_of_card_le_two hs hj1 hj2 hξ hg1 hpis
     (card_le_two_of_records hB hs hj1 hj2 hξ hg1 hpis hdeg hK hT) hK hT
-
-/-- For a Pisot `β`, eventually `|S(n)| = |β^n − round(β^n)|`. -/
-theorem norm_conjPowSum_eq_round {β : ℝ} (hβ : IsPisot β) :
-    ∀ᶠ n : ℕ in atTop, ‖conjPowSum β n‖ = |β ^ n - (round (β ^ n) : ℝ)| := by
-  have hmax := conjMax_lt_one hβ
-  have hmax0 := conjMax_nonneg β
-  have htend : Tendsto
-      (fun n : ℕ => (Multiset.card (otherConj β) : ℝ) * conjMax β ^ n) atTop (nhds 0) := by
-    have := tendsto_pow_atTop_nhds_zero_of_lt_one hmax0 hmax
-    simpa using this.const_mul (Multiset.card (otherConj β) : ℝ)
-  filter_upwards [htend.eventually (gt_mem_nhds (by norm_num : (0:ℝ) < 1/2))] with n hn
-  obtain ⟨t, ht⟩ := pisot_conjPowSum_add_mem_int hβ n
-  have hcps : conjPowSum β n = ((((t : ℝ) - β ^ n : ℝ)) : ℂ) := by
-    push_cast
-    push_cast at ht
-    linear_combination ht
-  have hnorm : ‖conjPowSum β n‖ = |β ^ n - (t : ℝ)| := by
-    rw [hcps, Complex.norm_real, Real.norm_eq_abs, abs_sub_comm]
-  have hhalf : |β ^ n - (t : ℝ)| < 1 / 2 := by
-    rw [← hnorm]
-    exact lt_of_le_of_lt (norm_conjPowSum_le β n) hn
-  have hround : round (β ^ n) = t := by
-    have hz : round (β ^ n - (t : ℝ)) = 0 := by
-      rw [round_eq_zero_iff]
-      exact ⟨(abs_lt.1 hhalf).1.le, (abs_lt.1 hhalf).2⟩
-    have := round_add_intCast (β ^ n - (t : ℝ)) t
-    rw [hz, sub_add_cancel] at this
-    simpa using this
-  rw [hnorm, hround]
 
 /-- The degree bound for the E+ exponents: decay of `‖ξ^(C k)‖` at rate `151/400` along all
 large `k`, with `ξ^g` Pisot and `g ∣ C k`, gives `(ℓ − 1)·151/400 ≤ 1` (no Baker). -/

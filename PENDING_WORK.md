@@ -1,3 +1,13 @@
+## phase 62 lap 4 (2026-10-05): DONE — headline has no sorryAx
+`#print axioms SaitoTypeB.xi_shift_transcendental_classical` = [propext, Classical.choice, Quot.sound,
++ two native_decide certs].  Closed this lap via new `Mills/DominantPair.lean`:
+`lower_along_records` (Mignotte-lite dominant set {γ} or {γ,γ̄}; `zpow_eq_one_of_records`:
+u^(2n_k) → −1 along records with gaps ≤ T and g n_r = 3^(r−k) g n_k − s(3^(r−k)−1) ⇒
+u^(2s(3^t−1)) = 1 ⇒ γ^N = γ̄^N, contradicting `pow_ne_pow_of_roots`).  Gives
+`NoGap.conjPowSum_lower_of_recurrence` (Rec = univ, g = 2) and `card_le_two_of_records`
+(record_decay + card_mul_le_of_lower: L·151/400 ≤ 1).  Remaining src sorry `saitoTypeBLeast_holds`
+(general C, needs Matomäki + Baker) is OFF the done path by directive.
+
 ## phase 62 lap 3 (2026-10-05 review lap): the three open leaves, two Baker-free mechanisms
 Done-path `sorryAx` comes from exactly: `finite_e2_zero_orbit` (4b), `card_le_two_of_records` (3),
 `NoGap.conjPowSum_lower_of_recurrence`.  Decomposition (new file `Mills/Skolem.lean` + `Mills/DominantPair.lean`):

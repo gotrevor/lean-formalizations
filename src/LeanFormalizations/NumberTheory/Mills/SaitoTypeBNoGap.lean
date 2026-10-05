@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Trevor Morris
 -/
 import LeanFormalizations.NumberTheory.Mills.SaitoTypeBParts
+import LeanFormalizations.NumberTheory.Mills.DominantPair
 
 /-!
 # Phase 62: where Baker enters Saito's Type B, and how much of it E+ can drop
@@ -65,6 +66,18 @@ theorem conjPowSum_lower_of_recurrence {β : ℝ} (hβ : IsPisot β)
     (hdeg : 2 ≤ (minpoly ℚ β).natDegree) {n : ℕ → ℕ} (hn : Tendsto n atTop atTop) {d : ℤ}
     (hd : d ≠ 0) (hrec : ∀ k, (n (k + 1) : ℤ) = 3 * n k - d) :
     ∃ c > (0 : ℝ), ∃ᶠ k in atTop, c * conjMax β ^ n k ≤ ‖conjPowSum β (n k)‖ := by
-  sorry
+  have hiter : ∀ t k, (2 : ℤ) * n (k + t) = 3 ^ t * (2 * n k) - d * (3 ^ t - 1) := by
+    intro t
+    induction t with
+    | zero => intro k; simp
+    | succ t ih =>
+      intro k
+      rw [← add_assoc, hrec]; linear_combination 3 * ih k
+  obtain ⟨c, hc, hfr⟩ := DominantPair.lower_along_records hβ hdeg hn (Rec := fun _ => True)
+    (T := 1) (K' := 0) (fun m _ => ⟨m + 1, by omega, le_rfl, trivial⟩) (g := 2) hd
+    (fun k r _ _ _ hkr => by
+      have := hiter (r - k) k
+      rwa [show k + (r - k) = r by omega] at this)
+  exact ⟨c, hc, hfr.mono fun k hk => hk.2⟩
 
 end LeanFormalizations.Mills.SaitoTypeB
