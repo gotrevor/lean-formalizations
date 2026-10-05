@@ -523,7 +523,59 @@ theorem rigidity_generic {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible f) (h
 /-- **Step 5, the cube class.** -/
 theorem not_primeTraces_of_cube {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) (s : ℤ) (z : ZMod 3)
     (hz : f.map (Int.castRingHom (ZMod 3)) = (X - C z) ^ 3) : ¬ PrimeTraces f s := by
-  sorry
+  classical
+  intro hP
+  have hd1 : 1 ≤ f.natDegree := by rw [hD.deg]; norm_num
+  -- every trace is `0 mod 3`
+  have h3 : ∀ N, (3 : ℤ) ∣ traceSeq f N := by
+    intro N
+    refine (ZMod.intCast_zmod_eq_zero_iff_dvd _ 3).1 ?_
+    rw [traceSeq_cast]
+    have hnil : (compM (ZMod 3) f - z • (1 : Matrix _ _ (ZMod 3))) ^ 3 = 0 := by
+      have h := aeval_compM_self (K := ZMod 3) f hD.monic hd1
+      rw [hz] at h
+      simpa [map_pow, map_sub, Polynomial.aeval_X, Polynomial.aeval_C,
+        Algebra.algebraMap_eq_smul_one] using h
+    have key : ∀ (n : ℕ), n = 3 → ∀ M : Matrix (Fin n) (Fin n) (ZMod 3),
+        (M - z • (1 : Matrix _ _ (ZMod 3))) ^ 3 = 0 → (M ^ N).trace = 0 := by
+      intro n hn; subst hn; intro M hM
+      have := UnipotentTrace.trace_pow_eq_zero z _ hM N
+      rwa [add_sub_cancel] at this
+    exact key _ hD.deg _ hnil
+  -- the traces tend to `∞`
+  obtain ⟨e, hinj, he, hsurj⟩ := exists_root_enum f hD.monic hD.irr
+  have hαr : (f.map (Int.castRingHom ℂ)).eval (α : ℂ) = 0 := by
+    have := congrArg (algebraMap ℝ ℂ) hD.root
+    rw [Polynomial.aeval_def, Polynomial.hom_eval₂, map_zero] at this
+    rw [Polynomial.eval_map]
+    rw [RingHom.ext_int ((algebraMap ℝ ℂ).comp (algebraMap ℤ ℝ)) (Int.castRingHom ℂ)] at this
+    simpa using this
+  obtain ⟨i₀, hi₀⟩ := hsurj _ hαr
+  have hsm : ∀ i, i ≠ i₀ → ‖e i‖ < 1 := by
+    intro i hi
+    refine hD.small _ ((Polynomial.mem_roots (hD.monic.map _).ne_zero).2 (he i)) ?_
+    rw [← hi₀]; exact fun h => hi (hinj h)
+  have hfl := eventually_floor_eq_traceSeq f hD.monic e he hinj hi₀ hsm
+  have hbig : ∀ᶠ N : ℕ in atTop, (4 : ℝ) ≤ α ^ N :=
+    (tendsto_pow_atTop_atTop_of_one_lt hD.gt_one).eventually_ge_atTop 4
+  have htN : Tendsto (fun n : ℕ => ((3 : ℤ) ^ n + s).toNat) atTop atTop := by
+    refine tendsto_atTop.2 fun b => ?_
+    filter_upwards [eventually_ge_atTop (b + s.natAbs)] with n hn
+    have h1 : (n : ℤ) < 3 ^ n := by exact_mod_cast Nat.lt_pow_self (by norm_num : 1 < 3)
+    rw [Int.le_toNat]
+    · omega
+    · omega
+  obtain ⟨n, ⟨p, hp, hpe⟩, hf4, hb4⟩ :=
+    (hP.and ((htN.eventually hfl).and (htN.eventually hbig))).exists
+  have hp3 : p = 3 := by
+    have : (3 : ℤ) ∣ (p : ℤ) := hpe ▸ h3 _
+    have : 3 ∣ p := by exact_mod_cast this
+    exact ((Nat.prime_dvd_prime_iff_eq Nat.prime_three hp).1 this).symm
+  set N := ((3 : ℤ) ^ n + s).toNat
+  have hfl4 : (4 : ℤ) ≤ ⌊α ^ N⌋ := Int.le_floor.2 (by exact_mod_cast hb4)
+  rw [hpe, hp3] at hf4
+  push_cast at hf4
+  omega
 
 /-- **Steps 3 + transfer**: the spectral solution in `AlgQ`. -/
 theorem exists_spectral {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hs : s ≠ 0)
