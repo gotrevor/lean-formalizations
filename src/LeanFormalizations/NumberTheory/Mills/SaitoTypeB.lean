@@ -6,6 +6,7 @@ Authors: Trevor Morris
 import LeanFormalizations.NumberTheory.Mills.ShiftedMillsAll
 import LeanFormalizations.NumberTheory.Mills.SaitoTypeBParts
 import LeanFormalizations.NumberTheory.Mills.SaitoTypeBNoGap
+import LeanFormalizations.NumberTheory.Mills.SaitoTypeBRecords
 import LeanFormalizations.Literature.Primes
 
 /-!
@@ -68,6 +69,11 @@ the header and a `Maze.lean` row, and keep going.  A refutation of a transcripti
   route needs Dubickas 2022 Lemma 8 (Baker) in two places; see `Mills/SaitoTypeBNoGap.lean`: case
   (II) for E+ drops it (`conjPowSum_lower_of_recurrence`, stated), case (I) needs the reopen node
   `SparseNoCancel` (`Maze.lean` row).  General `C` also needs Matomäki.
+
+## Lap 2 (2026-10-05): `xi_shift_transcendental_classical` rerouted, Baker-free
+Its proof now goes through `SaitoTypeBRecords.saitoTypeB_shift` (records competitor, see
+`Mills/SaitoTypeBRecords.lean`), which uses no `Dubickas2022PisotGap`.  Open on that path:
+`eventually_record_shift` (Records) and `conjPowSum_lower_of_recurrence` (NoGap).
 
 Frozen: every statement and def below; all earlier statements; everything in `Literature/`.
 No `private`.  Decomposing into named sub-lemmas (new `Mills/` files welcome) is progress.
@@ -321,8 +327,45 @@ conditional only on Baker–Harman–Pintz 2001 and Dubickas 2022 Lemma 6 (Corva
 theorem xi_shift_transcendental_classical (hB : BakerHarmanPintz2001) (hD : Dubickas2022)
     {s : ℤ} {j : ℕ} (hs : s ≠ 0) (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) (hj2 : s ≤ (3 : ℤ) ^ (j + 1))
     {ξ : ℝ} (hξ : IsLeast {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ shiftC j s k⌋₊).Prime} ξ) :
-    Transcendental ℚ ξ :=
-  xi_shift_transcendental_of_typeB (saitoTypeBLeast_holds hB hD) hs hj1 hj2 hξ
+    Transcendental ℚ ξ := by
+  have hR : ∀ s : ℤ, s ≠ 0 → ShiftTraceRigidity s := fun _ h => shiftTraceRigidity_holds h
+  have hH : ∀ s : ℤ, Odd s → HalfShiftTraceRigidity s := fun _ h => halfShiftTraceRigidity_holds h
+  have hdisj := saitoTypeB_shift hB hD hs hj1 hj2 hξ
+  have hleast := hξ
+  rcases hdisj with htr | ⟨g, hg1, hpisot, hdeg, K, hK⟩
+  · exact htr
+  exfalso
+  have hgev : ∀ᶠ k in atTop, g ∣ shiftC j s k := by
+    filter_upwards [eventually_ge_atTop (K + 19 * s.natAbs + 1)] with k hk
+    exact (hK k (by omega) (shiftC_ratio hj1 (by omega) (by omega))).1
+  obtain ⟨h3s, hcase⟩ := shiftC_gcd hj1 hg1 hgev
+  set b := g.factorization 3 with hb
+  obtain ⟨s', hs'⟩ := h3s
+  have hs'0 : s' ≠ 0 := by rintro rfl; simp at hs'; exact hs hs'
+  have hsplit : 3 ^ b * ordCompl[3] g = g := Nat.ordProj_mul_ordCompl_eq_self g 3
+  -- for large `n`, the index `k = n + b − j` gives a prime trace
+  have key : ∀ n ≥ K + 19 * s.natAbs + j + b + 1, ∃ k, 1 ≤ k ∧ k + j - b = n ∧ b ≤ k + j ∧
+      powTrace (ξ ^ g) (shiftC j s k / g) = ((⌊ξ ^ shiftC j s k⌋₊ : ℕ) : ℂ) ∧
+      (⌊ξ ^ shiftC j s k⌋₊).Prime := by
+    intro n hn
+    refine ⟨n + b - j, by omega, by omega, by omega, ?_, hleast.1.2 _ (by omega)⟩
+    exact (hK _ (by omega) (shiftC_ratio hj1 (by omega) (by omega))).2
+  rcases hcase with h1 | ⟨h2, hodd⟩
+  · rw [h1, mul_one] at hsplit
+    refine hR s' hs'0 (ξ ^ g) hpisot hdeg ?_
+    filter_upwards [eventually_ge_atTop (K + 19 * s.natAbs + j + b + 1)] with n hn
+    obtain ⟨k, hk1, hkn, hkb, htr, hp⟩ := key n hn
+    refine ⟨_, hp, ?_⟩
+    rw [← htr, ← hsplit, shiftC_div_three_pow hj1 hs' hk1 hkb, hkn]
+  · rw [h2] at hsplit
+    have hodd' : Odd s' := by
+      rw [hs'] at hodd; exact (Int.odd_mul.mp hodd).2
+    refine hH s' hodd' (ξ ^ g) hpisot hdeg ?_
+    filter_upwards [eventually_ge_atTop (K + 19 * s.natAbs + j + b + 1)] with n hn
+    obtain ⟨k, hk1, hkn, hkb, htr, hp⟩ := key n hn
+    refine ⟨_, hp, ?_⟩
+    rw [← htr, ← hsplit, ← Nat.div_div_eq_div_mul, shiftC_div_three_pow hj1 hs' hk1 hkb, hkn]
+
 
 /-- **Theorem E on classical inputs**: `ξ(3^k − 2)` is transcendental, conditional only on
 Baker–Harman–Pintz 2001 and Dubickas 2022 Lemma 6. -/
