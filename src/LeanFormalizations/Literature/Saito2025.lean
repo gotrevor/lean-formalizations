@@ -8,7 +8,8 @@ import LeanFormalizations.Literature.Pisot
 /-!
 # Literature input: Saito 2025, Type B + Proposition 3.1(iv)
 
-K. Saito, *Transcendency of variants of Mills' constant*, arXiv:2508.16068 (2025), Theorem 2.3
+K. Saito, *Transcendency of variants of Mills' constant*, arXiv:2508.16068 (2025); Ramanujan J. **70**
+(2026), no. 4, Art. 69, doi:10.1007/s11139-026-01443-0 (accepted 2026-07-23), Theorem 2.3
 ("Type B", first conclusion) combined with Proposition 3.1(ii),(iv) (with `θ = 21/40`, Baker–Harman–Pintz).
 Local text: `papers/saito-2025-transcendency-variants-mills.txt` (Theorem 2.3 at line ~224,
 Proposition 3.1 at line ~416).  Rules as in `Literature/Primes.lean`: faithful or weaker, cited,
@@ -26,7 +27,13 @@ never an `axiom`.
   - Also `g ∣ C_k` for all large `k ∈ I`.
   - Prop 3.1(iv): `Tr(β^(C_k/g)) = ⌊ξ^(C_k)⌋` for all large `k ∈ I`.
   - We state only these, for `k` large **and** in `I₂₉/₁₀ := {k : C_(k+1) ≥ (29/10) C_k}`, which is contained in Saito's `I` for small `ε`.
-* Prop 3.1 also assumes `(3.1)`, `ξ^(C_m) ∉ ℕ`.  Saito's proof of Theorem 2.3 obtains it from `(B5)`, and for a Pisot `ξ^g` of degree `3` it is automatic.  We include no extra hypothesis.
+* Prop 3.1 also assumes `(3.1)`, `ξ^(C_m) ∉ ℕ` for every `m`.  Saito's proof of Theorem 2.3 (Section 8,
+  first paragraph) derives it from `(B5)`: an integer `ξ^(C_m)` would make `ξ^(C_k)` composite for the
+  `k > m` with `C_m ∣ C_k`, yet it equals the prime `⌊ξ^(C_k)⌋`.  Our `(B5′)` supplies that `k`, so no
+  extra hypothesis is needed.
+* The combination of Theorem 2.3 with Prop 3.1(iv) rests on the *proof* of Theorem 2.3 in Section 8
+  (which verifies Prop 3.1's hypotheses with the same `g`), not on its statement.  Audited against arXiv
+  v3 (2025-12-07); the journal text has not been compared.  Audit: `docs/notes/saito-2025-faithfulness-audit.md`.
 -/
 
 namespace LeanFormalizations.Literature

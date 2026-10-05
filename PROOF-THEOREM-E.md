@@ -2,7 +2,7 @@
 
 Ren, 2026-09-30.  **Status (2026-10-05): PROVED IN LEAN, all of E+** - `Mills/ShiftedMillsAll.lean`: `xi_shifted_transcendental_saito` (Theorem E) and `xi_shift_transcendental` (every `s ≠ 0`), conditional only on `Literature.Saito2025TypeBTrace`.  The remaining risk is the faithfulness of that Prop to Saito's paper.  (Earlier status: paper proof, not in Lean.)  Draft 2 incorporates an adversarial referee pass (a subagent, same night).  The referee found no fatal error and about 80% confidence after three patches, all applied below: Step 5 now cites Saito's Prop 3.1(iv), Step 3's `C₃` rank argument is completed, and the `b = 0` case of the E1 certificate is covered.
 
-It builds on `PROOF-THEOREM-D.md` (Lemmas 1–6) and Saito, arXiv:2508.16068 (itself unrefereed; its Theorem 2.3/2.6 and Prop 3.1 are load-bearing here).  **Version check (2026-09-30):** arXiv:2508.16068 has a v2 (2025-12-07); Theorems 1.9, 2.3, 2.6 and Proposition 3.1 read identically in v2, and v2 has nothing on shifted sequences `3^k + s`.  `papers followups 2508.16068` finds 0 citing papers.
+It builds on `PROOF-THEOREM-D.md` (Lemmas 1–6) and Saito, arXiv:2508.16068 (published in Ramanujan J. 70 (2026), Art. 69; its Theorem 2.3/2.6 and Prop 3.1 are load-bearing here).  **Version check (2026-09-30):** arXiv:2508.16068 has a v3 (2025-12-07); Theorems 1.9, 2.3, 2.6 and Proposition 3.1 read identically in v2, and v2 has nothing on shifted sequences `3^k + s`.  `papers followups 2508.16068` finds 0 citing papers.
 
 `ξ(C_k)` is the least `A > 1` with `⌊A^(C_k)⌋` prime for every `k ≥ 1` (Saito's notation; it exists by his Lemma 4.1 and Theorem 1.3).
 
@@ -142,6 +142,6 @@ Assume the greedy chain (least admissible prime at each step) never gets stuck. 
 - All 6 conductor-13 Pisot numbers in `[−15, 15]³` fail the window test.
 
 ## Remaining risks
-1. Saito 2508.16068 is unrefereed; Theorem 2.3/2.6 and Prop 3.1(iv) are load-bearing.
+1. Saito 2508.16068 is now refereed (Ramanujan J. 2026; our Prop audited faithful-or-weaker 2026-10-05, 93%, `docs/notes/saito-2025-faithfulness-audit.md`); Theorem 2.3/2.6 and Prop 3.1(iv) are load-bearing.
 2. Theorem D's Lemmas 2, 4, 5 and 6: the referee found them OK.
 3. Ordinary risk of an unrefereed argument.  Next: a second independent read, then decide on Lean (the Galois step is heavy; the rest is within reach).
