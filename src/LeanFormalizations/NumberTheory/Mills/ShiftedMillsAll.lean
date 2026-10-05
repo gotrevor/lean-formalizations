@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Trevor Morris
 -/
 import LeanFormalizations.NumberTheory.Mills.ShiftedMills
+import LeanFormalizations.NumberTheory.Mills.ShiftRigidity
 
 /-!
 # Phase 61: Theorem E+ — `ξ(3^k + s)` is transcendental for EVERY `s ≠ 0`
@@ -345,7 +346,16 @@ theorem xi_shift_transcendental_of_rigidity (hS : Saito2025TypeBTrace)
 
 /-- **Node C (our math, ~75%)**: Steps 3–6 of Theorem E for every shift `s ≠ 0`. -/
 theorem shiftTraceRigidity_holds {s : ℤ} (hs : s ≠ 0) : ShiftTraceRigidity s := by
-  sorry
+  intro β hβ hdeg hev
+  have hint : IsIntegral ℤ β := hβ.2.1
+  refine ShiftRigidity.not_primeTraces (f := minpoly ℤ β) (α := β)
+    ⟨ShiftedMillsLarge.minpoly_int_monic hint, ShiftedMillsLarge.minpoly_int_irreducible hint,
+      by rw [ShiftedMillsLarge.minpoly_int_natDegree hint, hdeg], minpoly.aeval ℤ β, hβ.1,
+      ShiftedMillsLarge.minpoly_int_conj_small hβ⟩ hs ?_
+  filter_upwards [hev] with n ⟨p, hp, h⟩
+  refine ⟨p, hp, ?_⟩
+  rw [ShiftedMillsLarge.powTrace_eq_traceSeq hint] at h
+  exact_mod_cast h
 
 /-- **Node D (our math, ~72%)**: the `g = 2` section for every odd shift. -/
 theorem halfShiftTraceRigidity_holds {s : ℤ} (hs : Odd s) : HalfShiftTraceRigidity s := by
