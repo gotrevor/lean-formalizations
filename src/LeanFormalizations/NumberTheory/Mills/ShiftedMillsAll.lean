@@ -105,7 +105,16 @@ def HalfShiftTraceRigidity (s : ℤ) : Prop :=
 /-- **Edge A**: the shift-`(-2)` node is phase 45's `ShiftedTraceRigidity`. -/
 theorem shiftedTraceRigidity_of_shift (h : ShiftTraceRigidity (-2)) :
     ShiftedMills.ShiftedTraceRigidity := by
-  sorry
+  intro β hβ hd hev
+  refine h β hβ hd ?_
+  filter_upwards [hev, eventually_ge_atTop 1] with n hn hn1
+  obtain ⟨p, hp, hpe⟩ := hn
+  refine ⟨p, hp, ?_⟩
+  have h2 : 2 ≤ 3 ^ n := ShiftedMills.two_le_three_pow hn1
+  have : ((3 : ℤ) ^ n + -2).toNat = 3 ^ n - 2 := by
+    have hc : ((3 : ℤ) ^ n) = ((3 ^ n : ℕ) : ℤ) := by push_cast; rfl
+    rw [hc]; omega
+  rw [this]; exact hpe
 
 /-- **Wiring B** (elementary): Saito + both rigidity families ⇒ `ξ(3^(k+j) + s)` transcendental,
 for every `s ≠ 0`, with the start rule `3^(j+1) + s ≥ 1` and `s ≤ 3^(j+1)` (every ratio `≥ 2`). -/
