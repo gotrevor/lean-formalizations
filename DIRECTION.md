@@ -1,8 +1,10 @@
-> ⚡ **CURRENT DIRECTIVE (2026-10-01, E9b review lap)**: prove `localZeroDetect_of_richert` (`Erdos385/PowerSaving/ZeroDetect.lean`); do NOT work `nearOneLargeValues_of_density`.  Full text: section "⚡ CURRENT DIRECTIVE" below.
+> ⚡ **CURRENT DIRECTIVE (2026-10-04, phase 61, branch `mills-eplus`, worktree `~/src/lean-formalizations-eplus`; OUTRANKS every HANDOFF)**: prove the four `sorry`s in `src/LeanFormalizations/NumberTheory/Mills/ShiftedMillsAll.lean` (Theorem E+).  Full text: phase 61 entry below.  The E9b directive further down belongs to branch `erdos-385-c` and does not apply on this branch.
 
 > 🗺️ **Before planting a phase, grep `src/LeanFormalizations/Maze.lean`**: it records the routes already walked and closed, and each row's `reopenIf` names the new idea needed to walk it again (2026-09-29).
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
+
+## (phase 61, PLANTED 2026-10-04, branch `mills-eplus`, worktree `~/src/lean-formalizations-eplus`): **NEW MATH: Theorem E+, `ξ(3^k + s)` transcendental for EVERY `s ≠ 0`** (our `PROOF-THEOREM-E.md` drafts 2–3e, four referee passes, ~70%; phases 58–59 covered only even `s` with 3-free part `≥ 8`, by size) - target `src/LeanFormalizations/NumberTheory/Mills/ShiftedMillsAll.lean`.  Frozen: defs `shiftC`, `ShiftTraceRigidity`, `HalfShiftTraceRigidity`; theorems `shiftedTraceRigidity_of_shift` (edge onto phase 45's node, trivial, do first), `xi_shift_transcendental_of_rigidity` (elementary wiring: Saito hypotheses, `(B5′)`, `g ∈ {3^b, 2·3^b}`, ~95%, do second), `shiftTraceRigidity_holds` (Steps 3–6 for every `s ≠ 0`, ~75%, the heavy node: filter, window, Galois rigidity, mod-3 congruence, E1 certificate), `halfShiftTraceRigidity_holds` (the `g = 2` section for odd `s`, ~72%); the headlines `xi_shift_transcendental` and `xi_shifted_transcendental_saito` (Theorem E, closes phase 45) are already proved from those four.  Route in the file header, step by step, with the phase 44–60 lemmas to reuse.  Only literature input: `Saito2025TypeBTrace`.  Frozen also: all earlier statements, everything in `Literature/`.  Decomposing nodes C/D into named sub-lemmas (new `Mills/` files welcome) is progress; a refutation is progress too (prove `¬`, add a `Maze.lean` row, and stop).  Stop: `ShiftedMillsAll.lean` sorry-free.
 
 ## ✅ (phase E10, DONE 2026-10-01 in one lap, all eight statements axiom-clean (463 power saving mod the E9 literature Props; the GoldbachWindow reductions unconditional); PLANTED 2026-10-01, branch `erdos-385-d`, worktree `~/src/lean-formalizations-385d`): **the remainder, stated** - target `src/LeanFormalizations/NumberTheory/Erdos385/Remainder.lean`.  Frozen: `almost_all_erdos463_powerSaving` (E6's shifted window on the E9 pipeline, 85%); the edges `erdos385_ii_of_downMargin`, `erdos463_of_upMargin`, `hyperbolaPrimePairs_of_downMargin_zero`, `goldbach_of_goldbachWindow` (elementary, do first); and `hyperbolaPrimePairs_of_goldbachWindow`, `ees_of_goldbachWindow`, `erdos463_of_goldbachWindow` (the `N = 2√n + 2t` reduction in the header, 75% each).  Frozen also: all earlier statements, everything in `Literature/`.  Stop: Remainder.lean and `Erdos385/Remainder/` sorry-free.
 
@@ -544,7 +546,7 @@ Stop condition: `NumberTheory/Transcendence/` sorry-free.
 
 ---
 
-## ⚡ CURRENT DIRECTIVE (set 2026-10-01, review lap of phase E9b, branch `erdos-385-c`; OUTRANKS every HANDOFF)
+## (previous directive, branch `erdos-385-c` only) set 2026-10-01, review lap of phase E9b
 
 **THE single objective:** prove `localZeroDetect_of_richert` (`Erdos385/PowerSaving/ZeroDetect.lean`):
 a large VK deviation `‖vkDev f P t‖ ≥ P^{1−η}` forces a zero with `Re ≥ 1 − 2η − A loglog P/log P`
