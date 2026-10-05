@@ -44,6 +44,7 @@ import LeanFormalizations.NumberTheory.Mills.SaitoTypeB
 import LeanFormalizations.NumberTheory.Mills.SaitoTypeBTheta
 import LeanFormalizations.NumberTheory.Mills.DecayDegreeFour
 import LeanFormalizations.NumberTheory.Mills.ShiftRigidityUnipotent
+import LeanFormalizations.NumberTheory.Mills.EvenRTimesThree
 
 namespace LeanFormalizations.Maze
 
@@ -349,7 +350,18 @@ def register : List Row := [
       both s = −1; f₂ = X⁴ − 5X³ − 8X² − 6X − 3 has tr C₂^(3^n − 1) ≡ −1 (mod 3^(n+1)) and tr C₂ = 5 \
       odd.  It dies only by a hit prime (7 ∣ tr C₂^(3^7 − 1), C₂_hit_seven)"
     reopenIf := "ShiftRigidityUnipotent.HitPrime (a prime dividing infinitely many orbit traces; \
-      not_primeTraces_of_hitPrime closes both leaves from it), or a third input separating f₂" }
+      not_primeTraces_of_hitPrime closes both leaves from it), or a third input separating f₂" },
+  { route := "ξ(r·3^k − 1) for even r below Saito's r ≥ 4.003·10¹⁴ by the Theorem E arithmetic route \
+      (window + Teichmüller limit + Galois rigidity + cube-class congruence)"
+    verdict := .needsNewIdea, tier := .kernel
+    anchor := some ``LeanFormalizations.Mills.EvenRTimesThree.trace_congr_le_eight
+    evidence := "For even r the limit points carry ζ_k^(r·3^m) and x ↦ x^r is not injective on the \
+      Teichmüller roots, so f ≡ (X − 1)(X + 1)² (mod 3) survives.  Probe (|coeff| ≤ 12, r ∈ {2,4,8,10}, \
+      n < 40): 164 cubic Pisot survivors of the window test.  X³ − 2X² − X − 1 has \
+      tr C^(2·3^n − 1) ≡ −1 (mod 3^(n+2)) (kernel-linked range n ≤ 8, numerics to 15).  Every \
+      survivor checked has small hit primes (here 2, 7, 13, 23)"
+    reopenIf := "the cubic case of ShiftRigidityUnipotent.HitPrime along r·3^n − 1 (a prime dividing \
+      infinitely many tr C^(r·3^n − 1)), or a non-3-adic input separating X³ − 2X² − X − 1" }
 ]
 
 end LeanFormalizations.Maze
