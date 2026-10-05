@@ -45,6 +45,7 @@ import LeanFormalizations.NumberTheory.Mills.SaitoTypeBTheta
 import LeanFormalizations.NumberTheory.Mills.DecayDegreeFour
 import LeanFormalizations.NumberTheory.Mills.ShiftRigidityUnipotent
 import LeanFormalizations.NumberTheory.Mills.EvenRTimesThree
+import LeanFormalizations.NumberTheory.ErdosDyadic
 
 namespace LeanFormalizations.Maze
 
@@ -361,7 +362,36 @@ def register : List Row := [
       tr C^(2·3^n − 1) ≡ −1 (mod 3^(n+2)) (kernel-linked range n ≤ 8, numerics to 15).  Every \
       survivor checked has small hit primes (here 2, 7, 13, 23)"
     reopenIf := "the cubic case of ShiftRigidityUnipotent.HitPrime along r·3^n − 1 (a prime dividing \
-      infinitely many tr C^(r·3^n − 1)), or a non-3-adic input separating X³ − 2X² − X − 1" }
+      infinitely many tr C^(r·3^n − 1)), or a non-3-adic input separating X³ − 2X² − X − 1" },
+  { route := "Erdős #249 (∑ φ(n)/2^n) by CRT forcing 2^i ∣ φ(N+i), i ≤ M, so 2^M divides the scaled \
+      tail V_(N+M) ≤ q(N+M+2) (Erdős's d(n) template)"
+    verdict := .needsNewIdea, tier := .frozen
+    anchor := some ``LeanFormalizations.ErdosDyadic.TotientForcingRoute
+    evidence := "Bit-count: the block costs ≈ M²/2 bits of CRT conditions but the route needs N < 2^M, \
+      only ≈ M bits (believed ErdosDyadic.not_totientForcingRoute, ~85%).  Control: passes for d(n) \
+      (polylog coefficients, Erdős 1948).  φ = μ ∗ id (ErdosDyadic.totient_dyadic_eq_moebius) puts \
+      Möbius arithmetic in any proof.  Cook (plectis-erdos 605b273) proves only φ(n) mod m"
+    reopenIf := "a mechanism using Möbius cancellation in ∑ μ(n)/(2^n − 1)², or one that controls \
+      φ(N+i) mod 2^i with fewer than log₂ N bits of conditions" },
+  { route := "Erdős #251 (∑ p_n/2^n) via Tao's gap reduction plus Maynard/Erdős–Rankin windows whose \
+      tuple elements are all ≡ 0 mod 2^R, forcing 2-adic valuations of consecutive gaps"
+    verdict := .needsNewIdea, tier := .frozen
+    anchor := some ``LeanFormalizations.ErdosDyadic.Cook2026GapPerturbation
+    evidence := "Needs ≈ log₂ log x consecutive controlled gaps, but Maynard gives ≈ (ln k)/4, and the \
+      gap after the window is uncontrolled.  Cook's perturbation (Prop 1.1) makes the gap series \
+      rational while keeping eventual congruences and m-block laws for m = o(log log X), exactly the \
+      scale where this route dies.  Reduction: ErdosDyadic.primes_dyadic_eq_two_add_gaps"
+    reopenIf := "control of ≫ log log x consecutive prime gaps (e.g. a uniform prime k-tuples \
+      hypothesis, cf. Johan Land's conditional result), or an input invisible to short-block statistics" },
+  { route := "Erdős #1049 at t = 3/2 (Chowla) by 3-adic forcing 3^i ∣ τ(N+i) against integrality of \
+      W_N = s·2^N·T_N"
+    verdict := .needsNewIdea, tier := .kernel
+    anchor := some ``LeanFormalizations.ErdosDyadic.three_halves_outside_cook_region
+    evidence := "The 2^N scale swamps every forced 3^M (the Mahler 3/2 wall, irrationality-screen \
+      column B).  The best rational-base criterion (ErdosDyadic.Cook2026RationalBase, from Zudilin \
+      2004) needs log b/log a < 0.4057; 3/2 sits at 0.631"
+    reopenIf := "a Padé/Hankel construction whose denominators do not grow like b^(n²), i.e. one \
+      beating the Mahler 3/2 denominator wall" }
 ]
 
 end LeanFormalizations.Maze

@@ -202,6 +202,7 @@ import LeanFormalizations.NumberTheory.Mills.ShiftRigidityDeg
 import LeanFormalizations.NumberTheory.Mills.ShiftRigidityUnipotent
 import LeanFormalizations.NumberTheory.Mills.ShiftHitPrime
 import LeanFormalizations.NumberTheory.Mills.EvenRTimesThree
+import LeanFormalizations.NumberTheory.ErdosDyadic
 import LeanFormalizations.NumberTheory.Mills.HalfShiftRigidity
 import LeanFormalizations.NumberTheory.Mills.ShiftedMillsAll
 import LeanFormalizations.NumberTheory.Mills.SaitoTypeB
