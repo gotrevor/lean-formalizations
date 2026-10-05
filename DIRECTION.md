@@ -4,6 +4,19 @@
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
+## (phase Pr1, PLANTED 2026-10-05 on `main`, NOT launched): **practical-number bedrock** - target `src/LeanFormalizations/NumberTheory/Practical/Basic.lean`
+
+New lane (Trevor, 2026-10-05: build practical-number machinery here).  Repo fit: Weingartner's `P(x) ~ c x/log x` runs through a Buchstab-type integral equation, and this repo already owns Buchstab's delay system and rough-number limits (`Erdos385/LinearSieve/DelaySolution.lean`, `RoughOmega.lean`, `RoughLimit.lean`) plus PNT.  formal-conjectures has `Nat.IsPractical` and the open statements (Erdős #18, OEIS A005153 Switkay, A017666); we do not depend on it, so `IsPractical` is restated (adds `0 < n`, like `OeisA5153.A`).
+
+Already green: `IsPractical` (decidable), `sigma1`, `InB θ`, `partBelow`, `PrimePlusPracticalOdd` (def, OPEN), kernel-`decide` tests (`practical_below_31`, `isPractical_78`, `not_isPractical_10`, `window_hyp_8`, `primePlusPractical_le_17`).  Literature Props in `Literature/Practical.lean`: `Weingartner2015`, `Weingartner2019`, `PomeranceWeingartner2021` (Cor. 2, ineffective `x₀`), `PomeranceWeingartner2021Computation` (to `2^71`), `Melfi1996`.
+
+Frozen statements to prove, easiest first: `IsPractical.even_of_one_lt`, `isPractical_factorial`, `isPractical_iff_inB` (Stewart–Sierpiński), `isPractical_mul_of_le_sigma`, `primePlusPractical_window` (Pomerance–Weingartner Lemma 9).  Done when `#print axioms` on all five shows no `sorryAx`.  This is bedrock, so it is not the destination; the frontier candidates below are.
+
+Frontier candidates (difficulty check, not yet chosen):
+- **Margenstern odd case `PrimePlusPracticalOdd`**.  Proved: true for `n > x₀` (ineffective) and `n < 2^71`.  Unproved premise: an explicit `x₀ ≤ 2^71`, or `M(2^a) < 2^{2a+1}` for all large `a`.  Mechanism: none known.  The window route needs a prime `≡ n (mod m)` below about `m·σ(m) ≈ m² log log m`, and GRH only gives `≈ m² log² m`, so even GRH misses by a log factor (Ren's estimate, unchecked).  P–W §1 say ERH in place of Bombieri–Vinogradov gives some `x₀`, possibly too large to close by computation.
+- **Erdős #18** (`h(n!) < (log n)^{O(1)}`, $250; formal-conjectures `Erdos18`).  Not yet assessed.
+- **Effective Weingartner**: an explicit `P(x) ≥ c₀ x/log x` for `x ≥ x₁`, the input an effective P–W `x₀` would need.  This reuses the Buchstab delay machinery directly.
+
 ## (phase 64, PLANTED 2026-10-05, branch `mills-eplus`, worktree `~/src/lean-formalizations-eplus`): **E+ on a weaker prime input, then three-core-axiom tightening**
 
 Previous status line: ✅ **Phase 63 DONE 2026-10-05**: `BHPTests.lean` sorry-free, all names free of sorryAx (no frozen statement was false). No current directive.
