@@ -1,4 +1,4 @@
-# HANDOFF → see HANDOFF-2026-10-05-phase62-lap4.md (BLOCKER section: box stuck strike 1)
+# HANDOFF → see HANDOFF-2026-10-05-phase62-lap4.md (BLOCKER section: box stuck CONFIRMED (strike 2), run halted)
 
 WHAT: the host gate `sorry-free:src/LeanFormalizations/NumberTheory/Mills/SaitoTypeB.lean` sees 1 sorry,
 `saitoTypeBLeast_holds`.  The operator's done criterion (`#print axioms
