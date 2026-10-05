@@ -20,7 +20,10 @@ Recorded here:
   (`log τ(n!) ~ C n / log n`, `C = Σ_k log(k+1)/(k(k+1)) ≈ 1.258`): `practicalH_factorial_ge`.
   So in (c) the exponent is at least 2.  Ren's derivation; not found in the sources checked
   (erdosproblems.com/18 thread, Pomerance–Weingartner 2021, Erdős–Graham 1980 p. 33, which
-  states only the upper bound `< n` and guesses "perhaps even only `(log n)^c`").
+  states only the upper bound `< n` and guesses "perhaps even only `(log n)^c`", and Vose 1985).
+  Vose's `N_k = 4^{αk²} ∏_{l ≤ k} p_l²` has `log N_k ≍ k²`, `log τ(N_k) ≍ k`, so this bound gives
+  `h(N_k) ≫ k`: his `O((log N)^{1/2})` is sharp for his family, and (a) needs `log τ(m) ≫ log m /
+  (log log m)^{O(1)}`, i.e. highly composite `m`.
 * `practicalH_le_of_dense` (greedy): if every `r ∈ (K, n]` has a divisor `d ≤ r` with
   `r − d ≤ r^{1−ε}` and `r − d < d`, and every `r ≤ K` divides `n`, then each greedy step
   multiplies `log r` by `≤ 1 − ε`.  This is the reduction posted on the erdosproblems.com/18 thread
