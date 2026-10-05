@@ -11,3 +11,9 @@ the E1 certificate, ~4 min).
 
 ## Open
 Only node D: `ShiftedMillsAll.halfShiftTraceRigidity_holds` (odd s, δ² = β). Untouched.
+
+## Checkpoint (lap end)
+Branch `mills-eplus`, HEAD ab8d1de (+ this note). No uncommitted edits.
+Next lap: node D. Read the `**D.**` route in the header of `ShiftedMillsAll.lean` and the
+"E+ for odd s" section of PROOF-THEOREM-E.md; reuse node C machinery (shiftSys transfer,
+window_shift, exists_teich_limit, e1 certificate pattern) with δ² = β.
