@@ -169,13 +169,131 @@ theorem flip_mem (M : IntermediateField ℚ AlgQ) {e u v : Fin 3 → AlgQ} {ω :
     ∀ k, v k ∈ M := by
   sorry
 
+/-- Three unit vectors `1, a, b` summing to `0`: `a³ = 1`. -/
+theorem cube_one_of_unit_sum {a b : ℂ} (ha : ‖a‖ = 1) (hb : ‖b‖ = 1) (h : 1 + a + b = 0) :
+    a ^ 3 = 1 := by
+  have hb' : b = -1 - a := by linear_combination h
+  have hna : a * (starRingEnd ℂ) a = 1 := by
+    rw [Complex.mul_conj, Complex.normSq_eq_norm_sq, ha]; simp
+  have hnb : b * (starRingEnd ℂ) b = 1 := by
+    rw [Complex.mul_conj, Complex.normSq_eq_norm_sq, hb]; simp
+  rw [hb'] at hnb
+  simp only [map_sub, map_neg, map_one] at hnb
+  have hs : a + (starRingEnd ℂ) a = -1 := by linear_combination hnb - hna
+  have h2 : a ^ 2 + a + 1 = 0 := by linear_combination a * hs - hna
+  linear_combination (a - 1) * h2
+
+theorem eq_one_of_pow {x : ℂ} {M n : ℕ} (hM : Nat.gcd n M = 1) (hx : x ^ M = 1) (hn : x ^ n = 1) :
+    x = 1 := by
+  have := pow_gcd_eq_one.2 ⟨hn, hx⟩
+  rwa [hM, pow_one] at this
+
+theorem no_sixth {x : ℂ} {M : ℕ} (hM : Nat.gcd 6 M ∣ 2) (hx : x ^ M = 1)
+    (h : x ^ 2 - x + 1 = 0) : False := by
+  have h6 : x ^ 6 = 1 := by linear_combination (x ^ 4 + x ^ 3 - x - 1) * h
+  have hg := pow_gcd_eq_one.2 ⟨h6, hx⟩
+  have h2 : x ^ 2 = 1 := by
+    obtain ⟨k, hk⟩ := hM
+    rw [← one_pow k, ← hg, ← pow_mul, ← hk]
+  have : x = 2 := by linear_combination h2 - h
+  rw [this] at h2; norm_num at h2
+
+/-- The equilateral quadratic form vanishes on roots of unity of order prime to `3` (or `0`) only
+on constant triples. -/
+theorem quad_const_core {u0 u1 u2 : ℂ} {M : ℕ} (hM : Nat.gcd 6 M ∣ 2) (h0 : u0 ^ M = 1)
+    (hu1 : u1 = 0 ∨ u1 ^ M = 1) (hu2 : u2 = 0 ∨ u2 ^ M = 1)
+    (hQ : u0 ^ 2 + u1 ^ 2 + u2 ^ 2 - u0 * u1 - u1 * u2 - u2 * u0 = 0) : u1 = u0 ∧ u2 = u0 := by
+  have hMpos : 0 < M := by
+    rcases Nat.eq_zero_or_pos M with h | h
+    · subst h; norm_num at hM
+    · exact h
+  have hu0 : u0 ≠ 0 := by
+    rintro rfl; simp [zero_pow hMpos.ne'] at h0
+  have h3 : Nat.gcd 3 M = 1 := by
+    have : Nat.gcd 3 M ∣ Nat.gcd 6 M := Nat.gcd_dvd_gcd_of_dvd_left _ (by norm_num)
+    have h := Nat.dvd_trans this hM
+    have h3 : Nat.gcd 3 M ∣ 3 := Nat.gcd_dvd_left _ _
+    have : Nat.gcd 3 M ∣ Nat.gcd 3 2 := Nat.dvd_gcd h3 h
+    simpa using this
+  set t1 := u1 / u0 with ht1
+  set t2 := u2 / u0 with ht2
+  have e1 : u1 = t1 * u0 := by rw [ht1]; field_simp
+  have e2 : u2 = t2 * u0 := by rw [ht2]; field_simp
+  have hq : u0 ^ 2 * (1 + t1 ^ 2 + t2 ^ 2 - t1 - t1 * t2 - t2) = 0 := by
+    rw [e1, e2] at hQ; linear_combination hQ
+  have hq' := (mul_eq_zero.1 hq).resolve_left (pow_ne_zero 2 hu0)
+  have hpow : ∀ t u : ℂ, u = t * u0 → (u = 0 ∨ u ^ M = 1) → t = 0 ∨ t ^ M = 1 := by
+    intro t u he hu
+    rcases hu with hu | hu
+    · left; rw [hu] at he; exact (mul_eq_zero.1 he.symm).resolve_right hu0
+    · right; rw [he, mul_pow, h0, mul_one] at hu; exact hu
+  have p1 := hpow _ _ e1 hu1
+  have p2 := hpow _ _ e2 hu2
+  suffices t1 = 1 ∧ t2 = 1 by rw [e1, e2, this.1, this.2]; simp
+  rcases p1 with z1 | m1
+  · rw [z1] at hq'
+    rcases p2 with z2 | m2
+    · rw [z2] at hq'; norm_num at hq'
+    · exact (no_sixth hM m2 (by linear_combination hq')).elim
+  rcases p2 with z2 | m2
+  · rw [z2] at hq'; exact (no_sixth hM m1 (by linear_combination hq')).elim
+  have n1 : ‖t1‖ = 1 := norm_eq_one_of_pow_eq_one hMpos m1
+  have n2 : ‖t2‖ = 1 := norm_eq_one_of_pow_eq_one hMpos m2
+  -- a primitive cube root of unity
+  obtain ⟨ρ, hρ⟩ : ∃ ρ : ℂ, ρ ^ 2 + ρ + 1 = 0 := by
+    obtain ⟨ρ, hρp⟩ : ∃ ρ : ℂ, IsPrimitiveRoot ρ 3 := ⟨_, Complex.isPrimitiveRoot_exp 3 (by norm_num)⟩
+    refine ⟨ρ, ?_⟩
+    have h1 : ρ - 1 ≠ 0 := sub_ne_zero.2 (hρp.ne_one (by norm_num))
+    have : (ρ - 1) * (ρ ^ 2 + ρ + 1) = 0 := by linear_combination hρp.pow_eq_one
+    exact (mul_eq_zero.1 this).resolve_left h1
+  have hρ3 : ρ ^ 3 = 1 := by linear_combination (ρ - 1) * hρ
+  have nρ : ‖ρ‖ = 1 := norm_eq_one_of_pow_eq_one (by norm_num) hρ3
+  have fac : (1 + ρ * t1 + ρ ^ 2 * t2) * (1 + ρ ^ 2 * t1 + ρ * t2) = 0 := by
+    linear_combination hq' + (t1 + t2 + (ρ - 1) * (t1 ^ 2 + t2 ^ 2) + (ρ ^ 2 - ρ + 1) * t1 * t2) * hρ
+  have nm : ∀ x y : ℂ, ‖x‖ = 1 → ‖y‖ = 1 → ‖x * y‖ = 1 := fun x y hx hy => by
+    rw [norm_mul, hx, hy, one_mul]
+  have nρ2 : ‖ρ ^ 2‖ = 1 := by rw [norm_pow, nρ, one_pow]
+  have key : t1 ^ 3 = 1 ∧ t2 ^ 3 = 1 := by
+    rcases mul_eq_zero.1 fac with hA | hA
+    · have c1 := cube_one_of_unit_sum (nm _ _ nρ n1) (nm _ _ nρ2 n2) hA
+      have c2 := cube_one_of_unit_sum (nm _ _ nρ2 n2) (nm _ _ nρ n1) (by linear_combination hA)
+      constructor
+      · linear_combination c1 - t1 ^ 3 * hρ3
+      · linear_combination c2 - t2 ^ 3 * (ρ ^ 3 + 1) * hρ3
+    · have c1 := cube_one_of_unit_sum (nm _ _ nρ2 n1) (nm _ _ nρ n2) hA
+      have c2 := cube_one_of_unit_sum (nm _ _ nρ n2) (nm _ _ nρ2 n1) (by linear_combination hA)
+      constructor
+      · linear_combination c1 - t1 ^ 3 * (ρ ^ 3 + 1) * hρ3
+      · linear_combination c2 - t2 ^ 3 * hρ3
+  exact ⟨eq_one_of_pow h3 m1 key.1, eq_one_of_pow h3 m2 key.2⟩
+
 /-- **The circulant with roots of unity** of order prime to `3`. -/
 theorem circulant_const_mu {u0 u1 u2 w0 w1 w2 r : ℂ} {M : ℕ} (hM : Nat.gcd 6 M ∣ 2) (hr : r ≠ 0)
     (hw : ¬ (w0 = w2 ∧ w1 = w2))
     (hu0 : u0 = 0 ∨ u0 ^ M = 1) (hu1 : u1 = 0 ∨ u1 ^ M = 1) (hu2 : u2 = 0 ∨ u2 ^ M = 1)
     (E0 : u0 * w0 + u1 * w1 + u2 * w2 = r) (E1 : u0 * w1 + u1 * w2 + u2 * w0 = r)
     (E2 : u0 * w2 + u1 * w0 + u2 * w1 = r) : u0 = u1 ∧ u1 = u2 := by
-  sorry
+  have D1 : (u0 - u2) * (w0 - w2) + (u1 - u0) * (w1 - w2) = 0 := by linear_combination E0 - E1
+  have D2 : (u2 - u1) * (w0 - w2) + (u0 - u2) * (w1 - w2) = 0 := by linear_combination E1 - E2
+  have hQ : u0 ^ 2 + u1 ^ 2 + u2 ^ 2 - u0 * u1 - u1 * u2 - u2 * u0 = 0 := by
+    by_cases hx : w0 - w2 = 0
+    · have hy : w1 - w2 ≠ 0 := fun hy => hw ⟨sub_eq_zero.1 hx, sub_eq_zero.1 hy⟩
+      have : (u0 ^ 2 + u1 ^ 2 + u2 ^ 2 - u0 * u1 - u1 * u2 - u2 * u0) * (w1 - w2) = 0 := by
+        linear_combination (u0 - u2) * D2 - (u2 - u1) * D1
+      exact (mul_eq_zero.1 this).resolve_right hy
+    · have : (u0 ^ 2 + u1 ^ 2 + u2 ^ 2 - u0 * u1 - u1 * u2 - u2 * u0) * (w0 - w2) = 0 := by
+        linear_combination (u0 - u2) * D1 - (u1 - u0) * D2
+      exact (mul_eq_zero.1 this).resolve_right hx
+  rcases hu0 with z0 | m0
+  · rcases hu1 with z1 | m1
+    · rcases hu2 with z2 | m2
+      · exact ⟨z0.trans z1.symm, z1.trans z2.symm⟩
+      · obtain ⟨a, b⟩ := quad_const_core hM m2 (Or.inl z0) (Or.inl z1) (by linear_combination hQ)
+        exact ⟨by grind, by grind⟩
+    · obtain ⟨a, b⟩ := quad_const_core hM m1 hu2 (Or.inl z0) (by linear_combination hQ)
+      exact ⟨by grind, by grind⟩
+  · obtain ⟨a, b⟩ := quad_const_core hM m0 hu1 hu2 hQ
+    exact ⟨by grind, by grind⟩
 
 /-! ### The generic case -/
 
