@@ -1197,12 +1197,119 @@ theorem not_mem_cycField_eight {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible
   have ht : Nat.totient 8 = 4 := by decide
   omega
 
-/-- **Step 6 (E1)**: no prime-trace cubic Pisot number with `f mod 3` irreducible has a root in
-`ℚ(μ_26)`. -/
-theorem e1_empty {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hs : s ≠ 0)
-    (hP : PrimeTraces f s) (h3 : Irreducible (f.map (Int.castRingHom (ZMod 3))))
-    {x : AlgQ} (hx : (f.map (Int.castRingHom AlgQ)).eval x = 0) (hxL : x ∈ cycField 26) : False := by
+/-! ### Step 6 (E1), decomposed
+
+The exceptional field: every root of `f` lies in `ℚ(μ_26) = ℚ(ζ₁₃)`.  Take `τ ∈ Aut(AlgQ/ℚ)` with
+`τ ζ = ζ²` (`2` generates `(ℤ/13)ˣ`).  It moves no root (a `τ`-fixed element of `ℚ[ζ]` is
+rational, by averaging over `τ^m`, `m < 12`), so it acts on the roots as a 3-cycle.  Applying
+`τ^m` (`m < 12`) to `Σ u_k w_k = ω` (`w_k = α_k^s`, `u_k ∈ {0} ∪ ±μ₁₃`) gives twelve linear
+equations in `w` with coefficients in `ℤ[ζ]`; a finite certificate (`e1_cert`, `native_decide`,
+exact arithmetic in `ℤ[C₁₃]`) shows that they force `u` constant or `w` constant. -/
+
+/-- A primitive 13th root of unity in the algebraic numbers. -/
+theorem exists_zeta13 : ∃ ζ : AlgQ, IsPrimitiveRoot ζ 13 := by
   sorry
+
+/-- An automorphism `ζ ↦ ζ²`. -/
+theorem exists_tau {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) :
+    ∃ τ : AlgQ ≃ₐ[ℚ] AlgQ, τ ζ = ζ ^ 2 := by
+  sorry
+
+/-- `ℚ(μ_26) ⊆ ℚ[ζ₁₃]`, with polynomial representatives. -/
+theorem exists_poly_of_mem_cycField {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) {y : AlgQ}
+    (hy : y ∈ cycField 26) : ∃ q : ℚ[X], aeval ζ q = y := by
+  sorry
+
+/-- Conjugates of an element of `ℚ[ζ]` are in `ℚ[ζ]`. -/
+theorem exists_poly_of_conj {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible f)
+    (hd : 1 ≤ f.natDegree) {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) {x y : AlgQ}
+    (hx : (f.map (Int.castRingHom AlgQ)).eval x = 0)
+    (hy : (f.map (Int.castRingHom AlgQ)).eval y = 0) {q : ℚ[X]} (hq : aeval ζ q = x) :
+    ∃ q' : ℚ[X], aeval ζ q' = y := by
+  sorry
+
+/-- **Averaging**: an element of `ℚ[ζ₁₃]` fixed by `ζ ↦ ζ²` is rational. -/
+theorem rat_of_tau_fixed {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) {τ : AlgQ ≃ₐ[ℚ] AlgQ}
+    (hτ : τ ζ = ζ ^ 2) {q : ℚ[X]} (hfix : τ (aeval ζ q) = aeval ζ q) :
+    ∃ r : ℚ, aeval ζ q = algebraMap ℚ AlgQ r := by
+  sorry
+
+/-- An injective self-map of `Fin 3` without fixed points is a 3-cycle. -/
+theorem three_cycle_of (p : Fin 3 → Fin 3) (hinj : Function.Injective p) (hfix : ∀ k, p k ≠ k) :
+    (∀ k, p k = k + 1) ∨ (∀ k, p k = k + 2) := by
+  revert p; decide
+
+/-- **The E1 core** (finite certificate): twelve conjugate equations force `u` or `w`
+constant. -/
+theorem e1_core {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) {τ : AlgQ ≃ₐ[ℚ] AlgQ}
+    (hτ : τ ζ = ζ ^ 2) {t : Fin 3} (ht : t = 1 ∨ t = 2) {w u : Fin 3 → AlgQ}
+    (hwτ : ∀ k, τ (w k) = w (k + t)) (hu : ∀ k, u k ^ 27 = u k) {c : AlgQ} (hc : c ≠ 0)
+    (hcτ : τ c = c) (hsum : ∑ k, u k * w k = c) :
+    (∀ k, u k = u 0) ∨ (∀ k, w k = w 0) := by
+  sorry
+
+/-- **Step 6 (E1)**: no spectral solution when the roots lie in `ℚ(μ_26)`. -/
+theorem e1_empty {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hs : s ≠ 0)
+    {e u : Fin 3 → AlgQ} {ω : AlgQ} (hinj : Function.Injective e)
+    (he : ∀ k, (f.map (Int.castRingHom AlgQ)).eval (e k) = 0)
+    (hbig : 1 < ‖(e 0 : ℂ)‖) (hsm : ∀ k, k ≠ 0 → ‖(e k : ℂ)‖ < 1)
+    (hu : ∀ k, u k ^ (26 + 1) = u k) (hω : ω ^ 2 = 1) (hsum : ∑ k, u k * e k ^ s = ω)
+    (hn1 : ¬ (∀ k, u k = 1)) (hn2 : ¬ (∀ k, u k = -1))
+    {x : AlgQ} (hx : (f.map (Int.castRingHom AlgQ)).eval x = 0) (hxL : x ∈ cycField 26) :
+    False := by
+  classical
+  have hd1 : 1 ≤ f.natDegree := by rw [hD.deg]; norm_num
+  obtain ⟨ζ, hζ⟩ := exists_zeta13
+  obtain ⟨τ, hτ⟩ := exists_tau hζ
+  obtain ⟨q, hq⟩ := exists_poly_of_mem_cycField hζ hxL
+  have hroots : ∀ k, ∃ q' : ℚ[X], aeval ζ q' = e k := fun k =>
+    exists_poly_of_conj hD.monic hD.irr hd1 hζ hx (he k) hq
+  have hτroot : ∀ k, (f.map (Int.castRingHom AlgQ)).eval (τ (e k)) = 0 := by
+    intro k
+    have := eval_map_int_hom (τ : AlgQ →+* AlgQ) f (e k)
+    rw [he k, map_zero] at this
+    exact this.symm
+  have himg : ∀ k, ∃ j, e j = τ (e k) := fun k =>
+    root_enum_surj hD.monic hD.deg hinj he (hτroot k)
+  choose p hp using himg
+  have hpinj : Function.Injective p := fun a b h => by
+    apply hinj; apply τ.injective; rw [← hp a, ← hp b, h]
+  have hpfix : ∀ k, p k ≠ k := by
+    intro k hk
+    obtain ⟨q', hq'⟩ := hroots k
+    have hfix : τ (aeval ζ q') = aeval ζ q' := by rw [hq', ← hp k, hk]
+    obtain ⟨r, hr⟩ := rat_of_tau_fixed hζ hτ hfix
+    refine not_mem_cycField_two hD.monic hD.irr hD.deg (he k) ?_
+    rw [← hq', hr]
+    exact (cycField 2).algebraMap_mem r
+  have hωpm : ω = 1 ∨ ω = -1 := by
+    have : (ω - 1) * (ω + 1) = 0 := by linear_combination hω
+    rcases mul_eq_zero.1 this with h | h
+    · left; linear_combination h
+    · right; linear_combination h
+  have hω0 : ω ≠ 0 := by rcases hωpm with rfl | rfl <;> norm_num
+  have hτω : τ ω = ω := by rcases hωpm with rfl | rfl <;> simp
+  obtain ⟨t, ht, hpt⟩ : ∃ t : Fin 3, (t = 1 ∨ t = 2) ∧ ∀ k, p k = k + t := by
+    rcases three_cycle_of p hpinj hpfix with h | h
+    · exact ⟨1, Or.inl rfl, h⟩
+    · exact ⟨2, Or.inr rfl, h⟩
+  have hwτ : ∀ k, τ (e k ^ s) = e (k + t) ^ s := by
+    intro k; rw [map_zpow₀, ← hp k, hpt k]
+  rcases e1_core hζ hτ ht hwτ hu hω0 hτω hsum with hc | hc
+  · have hsum' : ∑ k, u 0 * e k ^ s = ω := by
+      rw [← hsum]; exact Finset.sum_congr rfl fun k _ => by rw [hc k]
+    rcases eq_one_or_neg_one_of_const hD.monic hD.irr hD.deg hinj he (by norm_num : 1 ≤ 26)
+        (hu 0) hω hsum' with h | h
+    · exact hn1 fun k => (hc k).trans h
+    · exact hn2 fun k => (hc k).trans h
+  · have hc0 := coeff_zero_ne_zero hD.monic hD.irr hD.deg
+    have he1 : e 1 ≠ 0 := by
+      intro h0; have := he 1; rw [h0, eval_cubic hD.monic hD.deg] at this; simp at this
+      exact hc0 this
+    apply zpow_ne_of_norm hbig (by exact_mod_cast he1) (hsm 1 (by decide)) hs
+    have := congrArg (algebraicClosure ℚ ℂ).val (hc 1)
+    rw [map_zpow₀, map_zpow₀] at this
+    exact this.symm
 
 /-! ### Assembly -/
 
@@ -1236,7 +1343,7 @@ theorem not_primeTraces {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} 
   · exact hgen fun x hx => not_mem_cycField_eight hD.monic hD.irr hD.deg hx
   · by_cases hE : ∃ x : AlgQ, (f.map (Int.castRingHom AlgQ)).eval x = 0 ∧ x ∈ cycField 26
     · obtain ⟨x, hx, hxL⟩ := hE
-      exact e1_empty hD hs hP h3 hx hxL
+      exact e1_empty hD hs hinj he hbig hsm hu hω hsum hn1 hn2 hx hxL
     · exact hgen fun x hx hxL => hE ⟨x, hx, hxL⟩
 
 end LeanFormalizations.Mills.ShiftRigidity
