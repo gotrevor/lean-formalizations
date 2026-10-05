@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Trevor Morris
 -/
 import LeanFormalizations.NumberTheory.Mills.SaitoTypeBNoGap
+import LeanFormalizations.NumberTheory.Mills.E2Skolem
 
 /-!
 # Phase 62, lap 2: a record-index competitor that avoids Saito's case (I)
@@ -1001,15 +1002,28 @@ theorem e2_zero_of_nonrecord
   have hRR : R ^ n * R ^ n ≤ 1 / 64 := by nlinarith
   nlinarith
 
-/-- **Step 4b (Skolem, 3-adic; no Baker).**  For cubic Pisot `β`, `e₂(β^n) = 0` holds for only
-finitely many `n` on the orbit `n_r = (3^(r+j) + s)/g`, which converges 3-adically: on a residue
-class mod the order `P` of the companion matrix mod 3, `n ↦ e₂(β^n)` is 3-adic analytic and not
-identically zero (Vandermonde), so its zeros do not accumulate.  Confidence ~90%. -/
+/-- **Step 4b (Skolem; no Baker).**  For cubic Pisot `β`, `e₂(β^n) = 0` holds for only finitely
+many `n` at all (`E2Skolem.eventually_e2_ne_zero`: `e₂(β^n)` is a non-degenerate integer
+recurrence of order 3, and Skolem's `p`-adic method at an odd prime `p ∤ N(β)` applies), in
+particular along the orbit `n_r = (3^(r+j) + s)/g`. -/
 theorem finite_e2_zero_orbit
     {s : ℤ} {j : ℕ} (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) {g : ℕ} (hg1 : 1 ≤ g) {β : ℝ}
     (hpis : IsPisot β) (hcard : Multiset.card (otherConj β) = 2) :
     ∀ᶠ r in atTop, g ∣ shiftC j s r → e2pow β (shiftC j s r / g) ≠ 0 := by
-  sorry
+  have hnt : Tendsto (fun r => shiftC j s r / g) atTop atTop := by
+    rw [tendsto_atTop_atTop]
+    intro b
+    obtain ⟨N, hN⟩ : ∃ N, N = b * g := ⟨_, rfl⟩
+    refine ⟨N + s.natAbs + 1, fun r hr => ?_⟩
+    rw [Nat.le_div_iff_mul_le (by omega), ← hN]
+    have hc := shiftC_cast hj1 (k := r) (by omega)
+    have h3 : r + 1 ≤ 3 ^ (r + j) :=
+      le_trans (Nat.lt_pow_self (by norm_num)) (Nat.pow_le_pow_right (by norm_num) (by omega))
+    have h3' : (r : ℤ) + 1 ≤ 3 ^ (r + j) := by exact_mod_cast h3
+    have : (N : ℤ) ≤ (shiftC j s r : ℤ) := by rw [hc]; omega
+    exact_mod_cast this
+  filter_upwards [hnt.eventually (E2Skolem.eventually_e2_ne_zero hpis hcard)] with r hr _
+  exact hr
 
 /-- **Step 4 (no non-records for degree `≤ 3`).**  Degree 2: the norm bound beats Saito (5.1)
 outright.  Degree 3: a non-record at `r + 1` forces `|N β| = 1` and

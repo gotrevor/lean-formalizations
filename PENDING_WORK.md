@@ -11,6 +11,9 @@ Done-path `sorryAx` comes from exactly: `finite_e2_zero_orbit` (4b), `card_le_tw
   I4 three zeros on `n0 + P·ℕ` ⇒ `ℓ` kills `1, D, D²` ⇒ whole class zero.
   I5 bridge: `e2pow β n = w n`, `w` the integer recurrence of `X³ − e₂X² + e₁e₃X − e₃²` (Vieta on `β, γ1, γ2`).
   I6 non-degeneracy: real pair ⇒ `e2pow ≠ 0` (sizes); complex pair ⇒ `u^(2P) = 1` contradiction (II2).
+ ✅ (I) DONE (lap 3): `Skolem.eventually_ne_zero_of_recurrence`, `E2Skolem.eventually_e2_ne_zero` (every cubic
+    Pisot, all large n), `finite_e2_zero_orbit` and `eventually_record_of_card_le_two` axiom-clean.
+    `PisotGalois.pow_ne_pow_of_roots` (II2 general form) and `eq_or_eq_conj_of_norm_eq` (II1) PROVED.
  (II) DOMINANT PAIR.
   II1 Mignotte-lite: other conjugates `γ, δ` with `|γ| = |δ|` ⇒ `δ ∈ {γ, γ̄}` (all conjugates of `ρ = γγ̄`
       have modulus `< 1`; product of roots of `minpoly ℤ ρ` is a nonzero integer).
