@@ -1208,17 +1208,45 @@ exact arithmetic in `ℤ[C₁₃]`) shows that they force `u` constant or `w` co
 
 /-- A primitive 13th root of unity in the algebraic numbers. -/
 theorem exists_zeta13 : ∃ ζ : AlgQ, IsPrimitiveRoot ζ 13 := by
-  sorry
+  haveI := cycField_isCyclotomic 13
+  have h := IsCyclotomicExtension.zeta_spec 13 ℚ (cycField 13)
+  exact ⟨_, h.map_of_injective (f := (cycField 13).val) (cycField 13).val.injective⟩
 
 /-- An automorphism `ζ ↦ ζ²`. -/
 theorem exists_tau {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) :
     ∃ τ : AlgQ ≃ₐ[ℚ] AlgQ, τ ζ = ζ ^ 2 := by
-  sorry
+  have hroot : ∀ z : AlgQ, IsPrimitiveRoot z 13 →
+      ((cyclotomic 13 ℤ).map (Int.castRingHom AlgQ)).eval z = 0 := by
+    intro z hz
+    rw [map_cyclotomic]
+    exact (hz.isRoot_cyclotomic (by norm_num)).eq_zero
+  have hdeg : 1 ≤ (cyclotomic 13 ℤ).natDegree := by
+    rw [natDegree_cyclotomic, Nat.totient_prime (by norm_num)]; norm_num
+  exact exists_algEquiv_of_roots _ (cyclotomic.monic 13 ℤ) (cyclotomic.irreducible (by norm_num))
+    hdeg (hroot ζ hζ) (hroot _ (hζ.pow_of_coprime 2 (by norm_num)))
 
 /-- `ℚ(μ_26) ⊆ ℚ[ζ₁₃]`, with polynomial representatives. -/
 theorem exists_poly_of_mem_cycField {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) {y : AlgQ}
     (hy : y ∈ cycField 26) : ∃ q : ℚ[X], aeval ζ q = y := by
-  sorry
+  have hint : IsIntegral ℚ ζ := (Algebra.IsAlgebraic.isAlgebraic (R := ℚ) ζ).isIntegral
+  have hle : cycField 26 ≤ ℚ⟮ζ⟯ := by
+    rw [cycField, IntermediateField.adjoin_le_iff]
+    intro z hz
+    have hz' : z ^ 26 = 1 := hz
+    obtain ⟨b, _, hb⟩ := hζ.eq_pow_of_pow_eq_one (ξ := z ^ 2) (by rw [← pow_mul]; exact hz')
+    have h13 : ζ ^ 13 = 1 := hζ.pow_eq_one
+    have hsq : (ζ ^ (7 * b)) ^ 2 = z ^ 2 := by
+      rw [← hb, ← pow_mul, show 7 * b * 2 = 13 * b + b by ring, pow_add, pow_mul, h13, one_pow,
+        one_mul]
+    have hmem : ζ ^ (7 * b) ∈ ℚ⟮ζ⟯ := pow_mem (IntermediateField.mem_adjoin_simple_self ℚ ζ) _
+    rcases sq_eq_sq_iff_eq_or_eq_neg.1 hsq with h | h
+    · rw [← h]; exact hmem
+    · rw [← neg_neg z, ← h]; exact neg_mem hmem
+  have hy' : y ∈ ℚ⟮ζ⟯.toSubalgebra := hle hy
+  rw [IntermediateField.adjoin_simple_toSubalgebra_of_integral hint,
+    Algebra.adjoin_singleton_eq_range_aeval] at hy'
+  obtain ⟨q, hq⟩ := hy'
+  exact ⟨q, hq⟩
 
 /-- Conjugates of an element of `ℚ[ζ]` are in `ℚ[ζ]`. -/
 theorem exists_poly_of_conj {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible f)
@@ -1226,7 +1254,12 @@ theorem exists_poly_of_conj {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible f)
     (hx : (f.map (Int.castRingHom AlgQ)).eval x = 0)
     (hy : (f.map (Int.castRingHom AlgQ)).eval y = 0) {q : ℚ[X]} (hq : aeval ζ q = x) :
     ∃ q' : ℚ[X], aeval ζ q' = y := by
-  sorry
+  obtain ⟨σ, hσ⟩ := exists_algEquiv_of_roots f hmon hirr hd hx hy
+  obtain ⟨j, _, hj⟩ := hζ.eq_pow_of_pow_eq_one (ξ := σ ζ)
+    (by rw [← map_pow, hζ.pow_eq_one, map_one])
+  refine ⟨q.comp (X ^ j), ?_⟩
+  rw [Polynomial.aeval_comp, map_pow, aeval_X, hj, ← hσ, ← hq]
+  exact Polynomial.aeval_algHom_apply (σ : AlgQ →ₐ[ℚ] AlgQ) ζ q
 
 /-- **Averaging**: an element of `ℚ[ζ₁₃]` fixed by `ζ ↦ ζ²` is rational. -/
 theorem rat_of_tau_fixed {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) {τ : AlgQ ≃ₐ[ℚ] AlgQ}
