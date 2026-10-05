@@ -336,6 +336,66 @@ theorem exists_pisot_of_decay_subseq' (hD : Dubickas2022)
     exact hnot k₂ (t ^ (s k₂ / g)) (by rw [← h]; push_cast; ring)
   exact ⟨g, hg1, hpis, hdiv, hnd⟩
 
+/-- Decay at large records: `|ξ^(C m) − round| ≤ 4 ξ^(−(151/400) C m)`. -/
+theorem record_decay (hB : BakerHarmanPintz2001) {C : ℕ → ℕ} (h1 : 1 ≤ C 1)
+    (h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1)) {K₀ : ℕ}
+    (hEv : ∀ k ≥ K₀, (29 : ℝ) / 10 * C k ≤ C (k + 1))
+    {ξ : ℝ} (hξ : IsLeast (millsSet C) ξ) :
+    ∃ k₀, ∀ m ≥ k₀, IsRecord C ξ m →
+      |ξ ^ C m - (round (ξ ^ C m) : ℝ)| ≤ 4 * ξ ^ (-((151 / 400 : ℝ) * C m)) := by
+  obtain ⟨k₀, hk₀⟩ := window_at_record hB h1 h2 hEv hξ
+  have hξ1 : 1 < ξ := hξ.1.1
+  have hξ0 : 0 < ξ := by linarith
+  refine ⟨max k₀ (max K₀ 1), fun m hm hrec => ?_⟩
+  have hm1 : 1 ≤ m := by omega
+  have hCk : 0 < C m := C_ge_one h1 h2 m hm1
+  have hc : (29 : ℝ) / 10 ≤ ratio C m := by
+    have hCk' : (0 : ℝ) < C m := by exact_mod_cast hCk
+    rw [ratio, le_div_iff₀ hCk']; exact hEv m (by omega)
+  set x := ξ ^ C m with hx
+  have hx1 : 1 ≤ x := one_le_pow₀ hξ1.le
+  have hxc : x ^ ratio C m < (⌊ξ ^ C (m + 1)⌋₊ : ℝ) + 1 := by
+    rw [hx, pow_ratio hξ0 hCk]; exact Nat.lt_floor_add_one _
+  have hw := fract_le_of_window (θ := 21 / 40) hx1 (by linarith) (by norm_num) (by norm_num) hxc
+    (hk₀ m (by omega) hrec)
+  set p : ℝ := (⌊x⌋₊ : ℝ) with hp
+  have hp1 : 1 ≤ p := by have := Nat.floor_pos.2 hx1; rw [hp]; exact_mod_cast this
+  have hA : p ^ (151 / 400 : ℝ) ≤ p ^ ((1 - 21 / 40) * ratio C m - 1) :=
+    Real.rpow_le_rpow_of_exponent_le hp1 (by linarith)
+  have hA0 : 0 < p ^ (151 / 400 : ℝ) := by positivity
+  have hf : Int.fract x ≤ 2 * p ^ (-(151 / 400 : ℝ)) := by
+    calc Int.fract x ≤ 2 / (ratio C m * p ^ ((1 - 21 / 40) * ratio C m - 1)) := hw
+      _ ≤ 2 / p ^ (151 / 400 : ℝ) := by
+          apply div_le_div_of_nonneg_left (by norm_num) hA0
+          nlinarith
+      _ = 2 * p ^ (-(151 / 400 : ℝ)) := by
+          rw [Real.rpow_neg (by linarith), div_eq_mul_inv]
+  have hxfl : x ≤ 2 * p := by
+    have := Nat.lt_floor_add_one x; rw [hp]; linarith
+  have hround : |x - (round x : ℝ)| ≤ Int.fract x := by
+    have := round_le x ⌊x⌋
+    rwa [← Int.fract, abs_of_nonneg (Int.fract_nonneg x)] at this
+  have hpow : p ^ (-(151 / 400 : ℝ)) ≤ 2 * x ^ (-(151 / 400 : ℝ)) := by
+    have hxpos : 0 < x := by linarith
+    have h1' : p ^ (-(151 / 400 : ℝ)) ≤ (x / 2) ^ (-(151 / 400 : ℝ)) :=
+      Real.rpow_le_rpow_of_nonpos (by positivity) (by linarith) (by norm_num)
+    have h2' : (x / 2) ^ (-(151 / 400 : ℝ)) = 2 ^ (151 / 400 : ℝ) * x ^ (-(151 / 400 : ℝ)) := by
+      rw [Real.div_rpow hxpos.le (by norm_num), Real.rpow_neg (by norm_num : (0:ℝ) ≤ 2)]
+      field_simp
+    have h3' : (2 : ℝ) ^ (151 / 400 : ℝ) ≤ 2 := by
+      calc (2 : ℝ) ^ (151 / 400 : ℝ) ≤ 2 ^ (1 : ℝ) :=
+            Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
+        _ = 2 := Real.rpow_one 2
+    rw [h2'] at h1'
+    have : 0 ≤ x ^ (-(151 / 400 : ℝ)) := by positivity
+    nlinarith
+  have hxe : x ^ (-(151 / 400 : ℝ)) = ξ ^ (-((151 / 400 : ℝ) * C m)) := by
+    rw [hx, ← Real.rpow_natCast, ← Real.rpow_mul hξ0.le]; ring_nf
+  calc |x - (round x : ℝ)| ≤ Int.fract x := hround
+    _ ≤ 2 * p ^ (-(151 / 400 : ℝ)) := hf
+    _ ≤ 2 * (2 * x ^ (-(151 / 400 : ℝ))) := by linarith
+    _ = 4 * ξ ^ (-((151 / 400 : ℝ) * C m)) := by rw [hxe]; ring
+
 /-- **Step 1 (records give a Pisot power).**  Decay at records (`window_at_record` + Saito (5.17))
 and Dubickas 2022 Lemma 6 along the records give `ξ^g` Pisot with `g ∣ C m` at large records. -/
 theorem records_pisot (hB : BakerHarmanPintz2001) (hD : Dubickas2022)
@@ -343,7 +403,64 @@ theorem records_pisot (hB : BakerHarmanPintz2001) (hD : Dubickas2022)
     {ξ : ℝ} (hξ : IsLeast (millsSet (shiftC j s)) ξ) (halg : IsAlgebraic ℚ ξ) :
     ∃ g : ℕ, 1 ≤ g ∧ IsPisot (ξ ^ g) ∧ 2 ≤ (minpoly ℚ (ξ ^ g)).natDegree ∧
       ∃ K, ∀ m ≥ K, IsRecord (shiftC j s) ξ m → g ∣ shiftC j s m := by
-  sorry
+  classical
+  set C := shiftC j s with hCdef
+  have h1 : 1 ≤ C 1 := shiftC_pos hj1 le_rfl
+  have h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1) := fun k hk => shiftC_two_mul_le hj1 hj2 hk
+  have h5 : ∀ m ≥ 1, ∃ k > m, C m ∣ C k ∧ (29 : ℝ) / 10 * C k ≤ C (k + 1) :=
+    fun m hm => shiftC_B5 hj1 hj2 hm
+  have hK₀ : ∀ k ≥ 19 * s.natAbs + 1, (29 : ℝ) / 10 * C k ≤ C (k + 1) := fun k hk =>
+    shiftC_ratio hj1 (by omega) (by omega)
+  have hξS := hξ.1
+  have hξ1 : 1 < ξ := hξS.1
+  have hnot := not_intCast_pow h1 h2 h5 hξS
+  have hCge := C_ge_one h1 h2
+  obtain ⟨k₀, hk₀⟩ := record_decay hB h1 h2 hK₀ hξ
+  -- decay along any infinite family of large records gives a Pisot power dividing it
+  have key : ∀ P : ℕ → Prop, (∃ᶠ m in atTop, P m) → (∀ m, P m → k₀ + 1 ≤ m ∧ IsRecord C ξ m) →
+      ∃ g', 1 ≤ g' ∧ IsPisot (ξ ^ g') ∧ ∃ m, P m ∧ g' ∣ C m := by
+    intro P hP hPr
+    obtain ⟨φ, hφ, hφP⟩ := extraction_of_frequently_atTop hP
+    have hφ1 : ∀ n, 1 ≤ φ n := fun n => by have := (hPr _ (hφP n)).1; omega
+    have hsm : StrictMono (fun n => C (φ n)) := fun a b hab =>
+      C_strictMonoOn h1 h2 (hφ1 a) (hφ hab)
+    obtain ⟨g', hg', hpis', hdiv', -⟩ := exists_pisot_of_decay_subseq' hD halg hξ1 hsm
+      (hCge _ (hφ1 0)) (by norm_num) (by norm_num)
+      (Eventually.of_forall fun n => hk₀ _ (by have := (hPr _ (hφP n)).1; omega)
+        (hPr _ (hφP n)).2) (fun n t => hnot _ (hφ1 n) t)
+    obtain ⟨n, hn⟩ := hdiv'.exists
+    exact ⟨g', hg', hpis', φ n, hφP n, hn⟩
+  have hfr : ∃ᶠ m in atTop, k₀ + 1 ≤ m ∧ IsRecord C ξ m :=
+    (frequently_record h1 h2 hξ hnot).and_eventually (eventually_ge_atTop _) |>.mono
+      fun m h => ⟨h.2, h.1⟩
+  have hex : ∃ g, 1 ≤ g ∧ IsPisot (ξ ^ g) := by
+    obtain ⟨g', hg', hp', -⟩ := key _ hfr (fun m h => h)
+    exact ⟨g', hg', hp'⟩
+  set g := Nat.find hex with hg
+  obtain ⟨hg1, hpis⟩ := Nat.find_spec hex
+  have hgmin : ∀ g' < g, ¬ (1 ≤ g' ∧ IsPisot (ξ ^ g')) := fun g' h => Nat.find_min hex h
+  have hdiv : ∃ K, ∀ m ≥ K, IsRecord C ξ m → g ∣ C m := by
+    by_contra hcon
+    push_neg at hcon
+    have hP : ∃ᶠ m in atTop, (k₀ + 1 ≤ m ∧ IsRecord C ξ m) ∧ ¬ g ∣ C m := by
+      rw [frequently_atTop]
+      intro a
+      obtain ⟨m, hm, hr, hnd⟩ := hcon (max a (k₀ + 1))
+      exact ⟨m, by omega, ⟨by omega, hr⟩, hnd⟩
+    obtain ⟨g', hg', hp', m, ⟨⟨hmk, -⟩, hnd⟩, hgm⟩ := key _ hP (fun m h => h.1)
+    have hgcd := isPisot_pow_gcd hξ1 (by omega) (by omega) hpis hp'
+    have hle : Nat.gcd g g' ≤ g := Nat.gcd_le_left _ (by omega)
+    rcases lt_or_eq_of_le hle with hlt | heq
+    · exact hgmin _ hlt ⟨Nat.gcd_pos_of_pos_left _ (by omega), hgcd⟩
+    · exact hnd (dvd_trans (heq ▸ Nat.gcd_dvd_right g g') hgm)
+  obtain ⟨K, hK⟩ := hdiv
+  obtain ⟨m, hm⟩ := (hfr.and_eventually (eventually_ge_atTop K)).exists
+  have hgm := hK m hm.2 hm.1.2
+  refine ⟨g, hg1, hpis, ?_, K, hK⟩
+  refine pisot_two_le_natDegree hpis fun t ht => ?_
+  have h := (show (ξ ^ g) ^ (C m / g) = ξ ^ C m by rw [← pow_mul, Nat.mul_div_cancel' hgm])
+  rw [ht] at h
+  exact hnot m (by omega) (t ^ (C m / g)) (by rw [← h]; push_cast; ring)
 
 /-- **Step 2 (record gaps are bounded).**  After a record `r`, a run of non-records up to `m`
 forces `e {ξ^(C r)} p_r^(e−1) < 1`, `e = C m / C r ≥ 2^(m−r)` (Saito (5.1)), while the norm of

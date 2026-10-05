@@ -1,6 +1,6 @@
 ## phase 62 lap 2 (2026-10-05): Baker-free route via RECORDS (Mills/SaitoTypeBRecords.lean)
 xi_shift_transcendental_classical now proved from saitoTypeB_shift (no hG).  Open on path:
- 1. records_pisot (decay at records via window_at_record + fract_le_of_window; Dubickas L6 along
+ 1. records_pisot PROVED (record_decay + minimal-g gcd argument).
     Nat.nth records; exists_pisot_of_decay_subseq').  Elementary, do first.
  2. record_gap_bounded (fract_lt_of_floor_lt + norm of β^n − p nonzero integer).
  3. card_le_two_of_records (needs conjPowSum_lower_of_recurrence generalised to bounded gaps).
