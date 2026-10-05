@@ -656,13 +656,70 @@ theorem window_shift {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hP
       (3 : ℤ) ^ k ∣ traceSeq f ((3 : ℤ) ^ n + s).toNat - w := by
   sorry
 
+/-- The companion matrix of `X³ + a₂X² + a₁X + a₀` over `ZMod 3`. -/
+def cm3 (a : Fin 3 → ZMod 3) : Matrix (Fin 3) (Fin 3) (ZMod 3) :=
+  Matrix.of fun i j => (if (i : ℕ) = (j : ℕ) + 1 then 1 else 0) - (if (j : ℕ) + 1 = 3 then a i else 0)
+
+/-- **Finite check** over the 27 monic cubics mod 3: the Frobenius period of the companion
+matrix, with period `27` only for the cubics without a root. -/
+theorem cm3_check : ∀ a : Fin 3 → ZMod 3, cm3 a ^ 9 = cm3 a ^ 3 ∨ cm3 a ^ 27 = cm3 a ^ 3 ∨
+    (cm3 a ^ 81 = cm3 a ^ 3 ∧ ∀ r : ZMod 3, r ^ 3 + a 2 * r ^ 2 + a 1 * r + a 0 ≠ 0) := by
+  native_decide
+
 /-- **The Teichmüller limit.**  `T = C^(3^ν)` satisfies `T^(3^F) ≡ T` to growing precision, with
 `3^F − 1 ∈ {2, 8, 26}` and `F = 3` only when `f mod 3` is irreducible. -/
 theorem exists_teich_limit {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) :
     ∃ F : ℕ, (F = 1 ∨ F = 2 ∨ (F = 3 ∧ Irreducible (f.map (Int.castRingHom (ZMod 3))))) ∧
       ∃ n₀ : ℕ, ∀ ν, n₀ ≤ ν → ∀ i j, (3 : ℤ) ^ (ν - n₀ + 1) ∣
         ((compM ℤ f ^ (3 ^ ν)) ^ (3 ^ F) - compM ℤ f ^ (3 ^ ν)) i j := by
-  sorry
+  classical
+  set a : Fin 3 → ZMod 3 := fun i => ((f.coeff i : ℤ) : ZMod 3) with ha
+  set E : Fin 3 ≃ Fin f.natDegree := finCongr hD.deg.symm with hE
+  have hcm : compM (ZMod 3) f = Matrix.reindexAlgEquiv (ZMod 3) (ZMod 3) E (cm3 a) := by
+    ext i j
+    simp [compM, cm3, Matrix.reindexAlgEquiv_apply, Matrix.reindex_apply, hE, ha, hD.deg]
+  have htr : ∀ m m' : ℕ, cm3 a ^ m = cm3 a ^ m' →
+      ∀ i j, (3 : ℤ) ∣ (compM ℤ f ^ m - compM ℤ f ^ m') i j := by
+    intro m m' h i j
+    refine (ZMod.intCast_zmod_eq_zero_iff_dvd _ 3).1 ?_
+    have h2 : compM (ZMod 3) f ^ m = compM (ZMod 3) f ^ m' := by
+      rw [hcm, ← map_pow, ← map_pow, h]
+    rw [← compM_map (Int.castRingHom (ZMod 3)) f, ← map_matrix_pow, ← map_matrix_pow] at h2
+    have := congrArg (fun M => M i j) h2
+    simp only [Matrix.map_apply] at this
+    simp only [eq_intCast] at this
+    simp [Matrix.sub_apply, this]
+  have hlift : ∀ F : ℕ, cm3 a ^ (3 ^ (F + 1)) = cm3 a ^ 3 → ∀ ν, 1 ≤ ν → ∀ i j,
+      (3 : ℤ) ^ (ν - 1 + 1) ∣ ((compM ℤ f ^ (3 ^ ν)) ^ (3 ^ F) - compM ℤ f ^ (3 ^ ν)) i j := by
+    intro F hF ν hν i j
+    have h := pow_c_pow_congr (c := 3) (Commute.pow_pow_self (compM ℤ f) (3 ^ (F + 1)) 3)
+      (htr _ _ hF) (ν - 1) i j
+    push_cast at h
+    have e1 : (compM ℤ f ^ (3 ^ ν)) ^ (3 ^ F) = (compM ℤ f ^ (3 ^ (F + 1))) ^ (3 ^ (ν - 1)) := by
+      rw [← pow_mul, ← pow_mul, ← pow_add, ← pow_add]; congr 2; omega
+    have e2 : compM ℤ f ^ (3 ^ ν) = (compM ℤ f ^ 3) ^ (3 ^ (ν - 1)) := by
+      rw [← pow_mul, ← pow_succ']; congr 2; omega
+    rw [e1, e2]; exact h
+  have hroot : (∀ r : ZMod 3, r ^ 3 + a 2 * r ^ 2 + a 1 * r + a 0 ≠ 0) →
+      Irreducible (f.map (Int.castRingHom (ZMod 3))) := by
+    intro hr
+    have hmon := hD.monic.map (Int.castRingHom (ZMod 3))
+    have hdeg : (f.map (Int.castRingHom (ZMod 3))).natDegree = 3 := by
+      rw [hD.monic.natDegree_map, hD.deg]
+    refine Polynomial.irreducible_of_degree_le_three_of_not_isRoot (by rw [hdeg]; decide) ?_
+    intro r hr'
+    apply hr r
+    rw [Polynomial.IsRoot, Polynomial.eval_eq_sum_range, hdeg] at hr'
+    have h3 : (f.map (Int.castRingHom (ZMod 3))).coeff 3 = 1 := by
+      have := hmon.coeff_natDegree; rwa [hdeg] at this
+    simp only [Finset.sum_range_succ, Finset.sum_range_zero, h3] at hr'
+    simp only [Polynomial.coeff_map, eq_intCast, ha] at hr' ⊢
+    simp at hr' ⊢
+    linear_combination hr'
+  rcases cm3_check a with h | h | ⟨h, hr⟩
+  · exact ⟨1, Or.inl rfl, 1, hlift 1 h⟩
+  · exact ⟨2, Or.inr (Or.inl rfl), 1, hlift 2 h⟩
+  · exact ⟨3, Or.inr (Or.inr ⟨rfl, hroot hr⟩), 1, hlift 3 h⟩
 
 /-- **Non-scalarity mod 3.**  Outside the cube class, `C^(3^ν) ∓ 1` has an entry prime to `3`. -/
 theorem exists_entry_ne {f : ℤ[X]} {α : ℝ} (hD : PisotData f α)
