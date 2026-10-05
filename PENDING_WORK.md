@@ -2321,3 +2321,6 @@ Open in node C: `not_primeTraces_of_cube`, `exists_spectral` (the transfer: wind
 T^(Q+1)=T with type-specific Q ∈ {2,8,26}, U·C^(s⁻)=T·C^(s⁺), y·(T∓1)_ab = 1), `eq_one_or_neg_one_of_const`,
 `not_mem_cycField_{two,eight}`, `e1_empty` (Frobenius coherence P(h(C)) = P(C)^3 + rank certificate).
 Node D untouched.
+
+## 2026-10-05 phase 64b DONE
+cm3_check and cert_all kernel-checked (E1CertCore Fast form + 6 table modules); headline xi_shift_transcendental_classical axioms = propext, Classical.choice, Quot.sound.
