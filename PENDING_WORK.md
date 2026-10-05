@@ -2333,3 +2333,9 @@ cm3_check and cert_all kernel-checked (E1CertCore Fast form + 6 table modules); 
 `record_gap_bounded`) is degree-free given `card otherConj ≤ 2`.
 The whole 5/9 wall is now the single node `shiftPisotDegreeLeThree_holds`.
 Next: ξ-free obstruction; mechanism 1 (sign along `n ↦ 3n+d`) tested on the `X⁴ − aX³ − 1` control.
+Lap 1 cont.: ξ-free node stated, `Mills/ShiftRigidityDeg.lean`: `ShiftTraceRigidityDeg ℓ`
+(degree-ℓ form of `not_primeTraces`), ℓ = 3 proved (`shiftTraceRigidityDeg_three`), ℓ ≥ 4 sorry
+(`shiftTraceRigidityDeg_holds`, ~75%).  Second half of the node still unstated: trace = floor at
+ALL large k without `card otherConj ≤ 2` (eventual-records in degree ≥ 4).  Next: read
+`exists_spectral_solution_shift` / `rigidity_generic` for what generalizes; state the eventual-
+records half and wire both into `shiftPisotDegreeLeThree_holds`.
