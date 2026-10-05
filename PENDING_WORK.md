@@ -1,3 +1,10 @@
+## phase 65 lap 3 (2026-10-05): generic leaf, step 1 — window in any degree PROVED
+* `ShiftRigidityDeg.window_shift_any` (+ `dvd_sq_sub_one_of_dvd_pow_sub_one` via LTE,
+  `coeff_zero_ne_zero_any`, `traceSeq_tendsto_any`): prime shifted traces are `≡ ±1 mod 3^k` along
+  arbitrarily large n, for Pisot of any degree ≥ 2.  Next: Teichmüller limit in degree ℓ
+  (`exists_teich_limit`: replace the `cm3_check` finite table by the Frobenius period of
+  `F₃[X]/(f̄)`, F = lcm of factor degrees), then `exists_spectral` for `PisotDataAny`.
+
 ## phase 65 lap 2 (2026-10-05): records closed under Lemma 8; the 3-adic route REFUTED on the unipotent class
 * `ShiftRigidityDeg.eventuallyRecordShift_of_pisotGap` PROVED (axioms: propext, choice, Quot.sound).
   Card ≤ 2 → `eventually_record_of_card_le_two`; card ≥ 3 → `pisot_degree_bound` at μ = 1 via

@@ -37,7 +37,7 @@ namespace LeanFormalizations.Mills.ShiftRigidityDeg
 
 open Filter Polynomial LeanFormalizations.Mills.ShiftRigidity LeanFormalizations.Literature
   LeanFormalizations.Mills.ShiftedMillsAll LeanFormalizations.Mills.SaitoTypeB LeanFormalizations.Mills
-  LeanFormalizations.BHPTests
+  LeanFormalizations.BHPTests LeanFormalizations.Mills.TheoremDGeneral
 
 /-- `PisotData` without the degree: a monic irreducible integer polynomial with a real root
 `α > 1` whose other complex roots have modulus `< 1`. -/
@@ -56,6 +56,165 @@ def ShiftTraceRigidityDeg (ℓ : ℕ) : Prop :=
 /-- The cubic case is `ShiftRigidity.not_primeTraces`. -/
 theorem shiftTraceRigidityDeg_three : ShiftTraceRigidityDeg 3 := fun f α hD hdeg _ hs =>
   not_primeTraces ⟨hD.monic, hD.irr, hdeg, hD.root, hD.gt_one, hD.small⟩ hs
+
+/-! ## The window in any degree (phase 65 lap 3; first piece of the generic leaf) -/
+
+/-- **Window arithmetic, any degree.**  `3^e ∣ q^i − 1` gives `3^(e−i) ∣ q² − 1` (LTE). -/
+theorem dvd_sq_sub_one_of_dvd_pow_sub_one {q e i : ℕ} (hq : q.Prime) (hq3 : q ≠ 3) (hi : 1 ≤ i)
+    (h : 3 ^ e ∣ q ^ i - 1) : 3 ^ (e - i) ∣ q ^ 2 - 1 := by
+  haveI : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
+  have hq2 := hq.two_le
+  have h3 : ¬ 3 ∣ q := fun hd => hq3 ((Nat.prime_dvd_prime_iff_eq Nat.prime_three hq).1 hd).symm
+  have hq2' : 1 < q ^ 2 := by nlinarith
+  have hmod : q ^ 2 % 3 = 1 := by
+    have : q % 3 = 1 ∨ q % 3 = 2 := by omega
+    rcases this with h' | h' <;> simp [Nat.pow_mod, h']
+  have h3sq : 3 ∣ q ^ 2 - 1 := by omega
+  have h3x : ¬ 3 ∣ q ^ 2 := fun hd => h3 (Nat.prime_three.dvd_of_dvd_pow hd)
+  have hlte := padicValNat.pow_sub_pow (p := 3) (x := q ^ 2) (y := 1) (by norm_num) hq2'
+    (by simpa using h3sq) h3x (n := i) (by omega)
+  rw [one_pow] at hlte
+  have hvi : padicValNat 3 i < i := by
+    have hd : 3 ^ padicValNat 3 i ∣ i := pow_padicValNat_dvd
+    have := Nat.le_of_dvd (by omega) hd
+    exact lt_of_lt_of_le (Nat.lt_pow_self (by norm_num)) this
+  have hdiv : q ^ i - 1 ∣ (q ^ 2) ^ i - 1 := by
+    have := Nat.sub_dvd_pow_sub_pow (x := q ^ i) (y := 1) (n := 2)
+    rw [one_pow, ← pow_mul, mul_comm, pow_mul] at this
+    exact this
+  have hpos : (q ^ 2) ^ i - 1 ≠ 0 := by
+    have : 1 < (q ^ 2) ^ i := one_lt_pow₀ hq2' (by omega)
+    omega
+  have he : e ≤ padicValNat 3 ((q ^ 2) ^ i - 1) :=
+    (padicValNat_dvd_iff_le hpos).1 (h.trans hdiv)
+  exact (padicValNat_dvd_iff_le (by omega)).2 (by omega)
+
+theorem coeff_zero_ne_zero_any {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible f)
+    (hdeg : 2 ≤ f.natDegree) : f.coeff 0 ≠ 0 := by
+  intro h
+  obtain ⟨g, hgeq⟩ : (Polynomial.X : ℤ[X]) ∣ f := Polynomial.X_dvd_iff.2 h
+  have hg0 : g ≠ 0 := by
+    intro h0; rw [h0, mul_zero] at hgeq; exact hmon.ne_zero hgeq
+  rcases hirr.isUnit_or_isUnit hgeq with hu | hu
+  · exact Polynomial.not_isUnit_X hu
+  · have hgd : g.natDegree = 0 := Polynomial.natDegree_eq_zero_of_isUnit hu
+    have hf1 : f.natDegree = 1 := by
+      rw [hgeq, Polynomial.natDegree_mul Polynomial.X_ne_zero hg0, hgd, Polynomial.natDegree_X]
+    omega
+
+theorem traceSeq_tendsto_any {f : ℤ[X]} {α : ℝ} (hD : PisotDataAny f α) :
+    Tendsto (traceSeq f) atTop atTop := by
+  classical
+  obtain ⟨e, hinj, he, hsurj⟩ := exists_root_enum f hD.monic hD.irr
+  have hαr : (f.map (Int.castRingHom ℂ)).eval (α : ℂ) = 0 := by
+    have := congrArg (algebraMap ℝ ℂ) hD.root
+    rw [Polynomial.aeval_def, Polynomial.hom_eval₂, map_zero] at this
+    rw [Polynomial.eval_map]
+    rw [RingHom.ext_int ((algebraMap ℝ ℂ).comp (algebraMap ℤ ℝ)) (Int.castRingHom ℂ)] at this
+    simpa using this
+  obtain ⟨i₀, hi₀⟩ := hsurj _ hαr
+  have hsm : ∀ i, i ≠ i₀ → ‖e i‖ < 1 := by
+    intro i hi
+    refine hD.small _ ((Polynomial.mem_roots (hD.monic.map _).ne_zero).2 (he i)) ?_
+    rw [← hi₀]; exact fun h => hi (hinj h)
+  have hfl := eventually_floor_eq_traceSeq f hD.monic e he hinj hi₀ hsm
+  have hfloor : Tendsto (fun N : ℕ => ⌊α ^ N⌋) atTop atTop :=
+    tendsto_floor_atTop.comp (tendsto_pow_atTop_atTop_of_one_lt hD.gt_one)
+  refine tendsto_atTop_mono' atTop ?_ hfloor
+  filter_upwards [hfl] with N hN
+  rcases hN with h | h <;> omega
+
+/-- **Step 3 (window), any degree.** -/
+theorem window_shift_any {f : ℤ[X]} {α : ℝ} (hD : PisotDataAny f α) (hdeg : 2 ≤ f.natDegree) {s : ℤ} (hP : PrimeTraces f s)
+    (k : ℕ) : ∃ n, k ≤ n ∧ 0 ≤ (3 : ℤ) ^ n + s ∧ ∃ w : ℤ, (3 : ℤ) ^ k ∣ w ^ 2 - 1 ∧
+      (3 : ℤ) ^ k ∣ traceSeq f ((3 : ℤ) ^ n + s).toNat - w := by
+  classical
+  have hd1 : 1 ≤ f.natDegree := by omega
+  set C := compM ℤ f with hC
+  set E : ℕ → ℕ := fun n => ((3 : ℤ) ^ n + s).toNat with hE
+  have hdet : C.det ≠ 0 := compM_det_ne_zero_int f hd1 (coeff_zero_ne_zero_any hD.monic hD.irr hdeg)
+  have hgrow : Tendsto (fun n => traceSeq f (E n)) atTop atTop :=
+    (traceSeq_tendsto_any hD).comp (shiftExp_tendsto s)
+  obtain ⟨N0, hN0⟩ := eventually_atTop.1 hP
+  obtain ⟨N1, hN1⟩ := eventually_atTop.1 (hgrow.eventually_ge_atTop (|C.det| + 4))
+  have hEn : ∀ n, s.natAbs ≤ n → ((E n : ℕ) : ℤ) = 3 ^ n + s := by
+    intro n hn
+    have h1 : (n : ℤ) < 3 ^ n := by exact_mod_cast Nat.lt_pow_self (by norm_num : 1 < 3)
+    exact Int.toNat_of_nonneg (by omega)
+  set n := max (max N0 N1) (max s.natAbs (f.natDegree * (k + f.natDegree) + 1)) with hn
+  have hnN0 : N0 ≤ n := by omega
+  have hnN1 : N1 ≤ n := by omega
+  have hns : s.natAbs ≤ n := by omega
+  have hnk : f.natDegree * (k + f.natDegree) + 1 ≤ n := by omega
+  obtain ⟨p, hpp, hpe⟩ := hN0 n hnN0
+  have hb : |C.det| + 4 ≤ traceSeq f (E n) := hN1 n hnN1
+  have hdnn : (0:ℤ) ≤ |C.det| := abs_nonneg _
+  have hp4 : (4:ℤ) ≤ (p : ℤ) := by rw [← hpe]; linarith
+  have hp2 : 2 ≤ p := by exact_mod_cast (by linarith : (2:ℤ) ≤ (p:ℤ))
+  have hp3 : p ≠ 3 := by intro h; rw [h] at hp4; norm_num at hp4
+  have hdetp : ¬ (p : ℤ) ∣ C.det := by
+    intro hdvd
+    have h2 : (p : ℤ) ∣ |C.det| := (dvd_abs _ _).2 hdvd
+    have := Int.le_of_dvd (abs_pos.2 hdet) h2
+    linarith
+  -- Step 1: the `3`-adic valuation of `|GL₃(𝔽_p)|` exceeds `n`
+  have hval : n < padicValNat 3 (ThreeAdic.glCard f.natDegree p) := by
+    by_contra hcon
+    push Not at hcon
+    haveI : Fact p.Prime := ⟨hpp⟩
+    obtain ⟨j, hj1, hj⟩ := ShiftedWindow.exists_period_orderOf_dvd f.natDegree Nat.prime_three hcon
+    obtain ⟨N2, hN2⟩ := eventually_atTop.1 (hgrow.eventually_ge_atTop ((p : ℤ) + 1))
+    set K := max N0 N2 + 1 with hK
+    set n' := n + K * j with hn'
+    have hKj : K ≤ K * j := Nat.le_mul_of_pos_right _ hj1
+    obtain ⟨q, hqp, hqe⟩ := hN0 n' (by omega)
+    have hbig' : (p : ℤ) + 1 ≤ traceSeq f (E n') := hN2 n' (by omega)
+    have hs1 : (1 : ℕ) ≤ 3 ^ (K * j) := Nat.one_le_pow _ _ (by norm_num)
+    obtain ⟨M, hM⟩ : ∃ M, M = 3 ^ n * (3 ^ (K * j) - 1) := ⟨_, rfl⟩
+    have hMz : (M : ℤ) = 3 ^ n' - 3 ^ n := by
+      rw [hM, hn', pow_add]; push_cast [Nat.cast_sub hs1]; ring
+    have h1 := hEn n hns
+    have h2 := hEn n' (by omega)
+    have hle : E n ≤ E n' := by
+      have : (3 : ℤ) ^ n ≤ 3 ^ n' := pow_le_pow_right₀ (by norm_num) (by omega)
+      omega
+    have hdiff : E n' - E n = M := by omega
+    have hdv : (p : ℤ) ∣ (C ^ E n').trace - (C ^ E n).trace :=
+      TheoremDGround.dvd_trace_sub_of_orderOf_dvd C hpp hdetp hle
+        (fun D _ => by rw [hdiff, hM]; exact hj K D)
+    have hdvn : (p : ℤ) ∣ (C ^ E n).trace := by
+      have : (C ^ E n).trace = traceSeq f (E n) := rfl
+      rw [this, hpe]
+    have hdvn' : (p : ℤ) ∣ (q : ℤ) := by
+      have := dvd_add hdv hdvn
+      simp only [sub_add_cancel] at this
+      have h' : (C ^ E n').trace = traceSeq f (E n') := rfl
+      rwa [h', hqe] at this
+    have hpq : p = q := (Nat.prime_dvd_prime_iff_eq hpp hqp).1 (by exact_mod_cast hdvn')
+    rw [hqe, ← hpq] at hbig'
+    linarith
+  -- Step 2: the window
+  obtain ⟨i, hi1, hid, hdvdi⟩ :=
+    TheoremDGround.exists_pow_sub_one_of_lt_padicValNat_glCard Nat.prime_three hpp hp3 hd1 hval
+  have hone : 1 ≤ p ^ i := Nat.one_le_pow _ _ hpp.pos
+  have hdvdN : 3 ^ (n / f.natDegree) ∣ p ^ i - 1 := by
+    have hc : ((p ^ i - 1 : ℕ) : ℤ) = (p : ℤ) ^ i - 1 := by
+      rw [Nat.cast_sub hone]; push_cast; ring
+    have hz : ((3 ^ (n / f.natDegree) : ℕ) : ℤ) ∣ ((p ^ i - 1 : ℕ) : ℤ) := by
+      rw [hc]; push_cast; exact hdvdi
+    exact_mod_cast hz
+  have hwin := dvd_sq_sub_one_of_dvd_pow_sub_one hpp hp3 hi1 hdvdN
+  have hkle : k ≤ n / f.natDegree - i := by
+    have : k + f.natDegree ≤ n / f.natDegree :=
+      (Nat.le_div_iff_mul_le (by omega)).2 (by nlinarith)
+    omega
+  have hsq : (3 : ℕ) ^ k ∣ p ^ 2 - 1 := (pow_dvd_pow 3 hkle).trans hwin
+  refine ⟨n, by nlinarith, by have := hEn n hns; omega, p, ?_, by rw [hpe, sub_self]; exact dvd_zero _⟩
+  have hp1 : 1 ≤ p ^ 2 := Nat.one_le_pow _ _ hpp.pos
+  have hc : ((p ^ 2 - 1 : ℕ) : ℤ) = (p : ℤ) ^ 2 - 1 := by
+    rw [Nat.cast_sub hp1]; push_cast; ring
+  rw [← hc]
+  exact_mod_cast hsq
 
 /-! ## The wiring: two nodes give E+ for every `θ < 2/3` -/
 
