@@ -21,6 +21,13 @@ The Lean proof has exactly two hypotheses, both published theorems stated as nam
 
 Neither Saito's paper nor Baker's theorem on linear forms in logarithms is an input.  Saito's general Type B theorem uses Baker, through his Lemma 5.14.  For the family `3^k + s`, the proof replaces that step with the Skolem–Mahler–Lech theorem for order-3 integer recurrences, which is proved in the repository.
 
+## Weaker prime inputs
+
+The exponent `21/40` is not needed.  Write `PrimesShortInterval θ` for the statement that `[x, x + x^θ]` contains at least `d₀ x^θ / log x` primes for large `x`.
+
+* **Every `θ < 5/9` suffices.**  `PrimesShortInterval θ` and `Dubickas2022` give Theorem E+ (`SaitoTypeBTheta.xi_shift_transcendental_of_shortInterval'`).  So Heath-Brown–Iwaniec (1979, any `θ > 11/20`) is enough on its own.  Huxley's `7/12` and Ingham's `5/8` are not.  The exponent enters twice: through the record step, and through the decay `‖ξ^(C_k)‖ ≪ ξ^(−μ C_k)` for `μ < 2 − 3θ`.  The degree-3 endgame needs `μ > 1/3`.
+* **For `5/9 ≤ θ < 2/3`, two more inputs are needed** (`ShiftHitPrime.xi_shift_transcendental_of_hitPrime`).  One is Dubickas's Lemma 8, which gives eventual records in every degree.  The other is the open statement `HitPrime`, with its half-shift twin: for a Pisot polynomial of degree `≥ 4` and `s ≠ 0`, some fixed prime divides `tr β^(3^n + s)` for infinitely many `n`.  The step that fails is the 3-adic argument below.  It does not extend to degree 4: `ShiftRigidityUnipotent.lean` gives explicit quartics (`f₀`, `f₂`) that satisfy every 3-adic constraint.  Their traces fail to be prime only because a small prime happens to divide them.
+
 ## Where it is in Lean
 
 Repository: <https://github.com/gotrevor/lean-formalizations>, directory `src/LeanFormalizations/NumberTheory/Mills/`.
@@ -44,6 +51,6 @@ Saito's own theorems for related shifted families (for example `ξ(r·3^k − 1)
 
 * The two literature `Prop`s.  Corvaja–Zannier has been formalized independently by R. Stephan (`rwst/Subspace-Theorems`), so it can be discharged once the toolchains match.  Baker–Harman–Pintz is not formalized.
 * The faithfulness of `Saito2025TypeBTrace` matters only for the second, alternative headline.  Its audit is `saito-2025-faithfulness-audit.md` in this directory.
-* The Lean kernel, and two `native_decide` computations: the conductor-13 certificate, and a check of the Frobenius periods of the 27 monic cubics mod 3.
+* The Lean kernel.  The conductor-13 certificate and the Frobenius-period check of the 27 monic cubics mod 3 are kernel-checked computations.
 
 Proof write-up with referee notes: `PROOF-THEOREM-E.md`.  Paper draft: `paper/prime-towers.tex`.
