@@ -14,7 +14,8 @@ Frozen statements to prove, easiest first: `IsPractical.even_of_one_lt`, `isPrac
 
 Frontier candidates (difficulty check, not yet chosen):
 - **Margenstern odd case `PrimePlusPracticalOdd`**.  Proved: true for `n > x₀` (ineffective) and `n < 2^71`.  Unproved premise: an explicit `x₀ ≤ 2^71`, or `M(2^a) < 2^{2a+1}` for all large `a`.  Mechanism: none known.  The window route needs a prime `≡ n (mod m)` below about `m·σ(m) ≈ m² log log m`, and GRH only gives `≈ m² log² m`, so even GRH misses by a log factor (Ren's estimate, unchecked).  P–W §1 say ERH in place of Bombieri–Vinogradov gives some `x₀`, possibly too large to close by computation.
-- **Erdős #18** (`h(n!) < (log n)^{O(1)}`, $250; formal-conjectures `Erdos18`).  Not yet assessed.
+- **Erdős #18** (`h(n!) < (log n)^{O(1)}`, $250).  Explored 2026-10-05 in `Practical/Erdos18.lean`.  Counting gives `h(n) ≥ log n / log τ(n)`, hence `h(n!) ≳ (log n)²` (`practicalH_factorial_ge`).  The forum's greedy reduction (`practicalH_le_of_dense`) wires the open premise `LcmDivisorsDense` to (a) (`erdos18a_of_lcmDivisorsDense`).  Mechanism for the premise: none known.
+- **Where `c` sits** (Trevor's question): `Practical/Constant.lean`.  Irrationality of `c` is open with no mechanism (`PracticalConstantIrrational`; Mertens/Artin/Brun tier).  The binary constant `Σ 2^{−n}` over practical `n` is irrational (`practicalBinary_irrational`, elementary, sorry) and its transcendence is open, like the prime constant.
 - **Effective Weingartner**: an explicit `P(x) ≥ c₀ x/log x` for `x ≥ x₁`, the input an effective P–W `x₀` would need.  This reuses the Buchstab delay machinery directly.
 
 ## (phase 64, PLANTED 2026-10-05, branch `mills-eplus`, worktree `~/src/lean-formalizations-eplus`): **E+ on a weaker prime input, then three-core-axiom tightening**
