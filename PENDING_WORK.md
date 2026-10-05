@@ -1,3 +1,13 @@
+## phase 65 lap 5 (2026-10-05): two non-3-adic inputs checked, neither new; blocker stands
+* Self-hit (take q = p_n itself): already Step 1 of `ShiftRigidityDeg.window_shift_any`
+  (p_n must have v_3(ord(C mod p_n)) > n, else p_n | p_m for some m > n).  On f_0 this forces a cubic
+  factor of f mod p_n whose roots generate the 3-Sylow of F_(p^3)^*.  That is a constraint each n, not a contradiction.
+* Newton at the previous prime: mod p_(n-1) = e_1(x), x_i = beta_i^(N'), we have p_3(x) = 3 e_3(x) =
+  3 Nm(beta)^(N') tr beta^(-N').  But p_n = tr beta^(3N' - 2s), and the shift -2s takes it out
+  of the symmetric functions of x.  So this input only works at s = 0, which is excluded; in degree 3 it is the cube class.
+* No new Lean declaration (both are existing or degenerate); the crux is still `HitPrime` (Maze row on file).
+  Operator re-scope still needed (see HANDOFF blocker).
+
 ## phase 65 lap 4 (2026-10-05): non-3-adic input #1 = the q-power class; f₁ killed, f₂ survives; crux = `HitPrime`
 * `ShiftRigidityUnipotent.not_primeTraces_f₁` (mod `pisot_f₁`): f₁ ≡ (X²+X+1)² (mod 2), every trace
   even (`f₁_trace_even`, kernel).  General form `PowerClassKill` (f ≡ g^q mod q ⇒ q | every trace,
