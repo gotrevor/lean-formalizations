@@ -1261,11 +1261,67 @@ theorem exists_poly_of_conj {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible f)
   rw [Polynomial.aeval_comp, map_pow, aeval_X, hj, ← hσ, ← hq]
   exact Polynomial.aeval_algHom_apply (σ : AlgQ →ₐ[ℚ] AlgQ) ζ q
 
+/-- The orbit sums `Σ_(m<12) ζ^(i·2^m)` are rational: `12` or `−1`. -/
+theorem orbit_sum_zeta13 {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) (i : ℕ) :
+    ∑ m ∈ Finset.range 12, ζ ^ (i * 2 ^ m) = if i % 13 = 0 then 12 else -1 := by
+  have h13 : ζ ^ 13 = 1 := hζ.pow_eq_one
+  have hmod : ∀ n, ζ ^ n = ζ ^ (n % 13) := by
+    intro n
+    conv_lhs => rw [← Nat.div_add_mod n 13, pow_add, pow_mul, h13, one_pow, one_mul]
+  have hgeom : ∑ j ∈ Finset.range 13, ζ ^ j = 0 := hζ.geom_sum_eq_zero (by norm_num)
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero, zero_add] at hgeom
+  have hterm : ∀ m, ζ ^ (i * 2 ^ m) = ζ ^ ((i % 13) * (2 ^ m % 13) % 13) := by
+    intro m; rw [hmod, Nat.mul_mod]
+  simp_rw [hterm]
+  have hr : i % 13 < 13 := Nat.mod_lt _ (by norm_num)
+  generalize i % 13 = r at hr ⊢
+  interval_cases r <;> simp [Finset.sum_range_succ] <;> norm_num <;>
+    linear_combination hgeom
+
 /-- **Averaging**: an element of `ℚ[ζ₁₃]` fixed by `ζ ↦ ζ²` is rational. -/
 theorem rat_of_tau_fixed {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) {τ : AlgQ ≃ₐ[ℚ] AlgQ}
     (hτ : τ ζ = ζ ^ 2) {q : ℚ[X]} (hfix : τ (aeval ζ q) = aeval ζ q) :
     ∃ r : ℚ, aeval ζ q = algebraMap ℚ AlgQ r := by
-  sorry
+  classical
+  have hτm : ∀ m : ℕ, (τ ^ m) ζ = ζ ^ (2 ^ m) := by
+    intro m
+    induction m with
+    | zero => simp
+    | succ m ih => rw [pow_succ', AlgEquiv.mul_apply, ih, map_pow, hτ, ← pow_mul, pow_succ, mul_comm]
+  have hfixm : ∀ m : ℕ, (τ ^ m) (aeval ζ q) = aeval ζ q := by
+    intro m
+    induction m with
+    | zero => simp
+    | succ m ih => rw [pow_succ', AlgEquiv.mul_apply, ih, hfix]
+  have hconj : ∀ m : ℕ, aeval ζ q = aeval (ζ ^ (2 ^ m)) q := by
+    intro m
+    rw [← hτm m]
+    have h := Polynomial.aeval_algHom_apply (τ ^ m).toAlgHom ζ q
+    exact (h.trans (hfixm m)).symm
+  set n := q.natDegree + 1
+  have h12 : (12 : AlgQ) * aeval ζ q
+      = ∑ j ∈ Finset.range n, algebraMap ℚ AlgQ (q.coeff j)
+          * ∑ m ∈ Finset.range 12, ζ ^ (j * 2 ^ m) := by
+    calc (12 : AlgQ) * aeval ζ q = ∑ m ∈ Finset.range 12, aeval (ζ ^ (2 ^ m)) q := by
+          rw [← Finset.sum_congr rfl fun m _ => hconj m]; simp
+      _ = ∑ m ∈ Finset.range 12, ∑ j ∈ Finset.range n,
+            algebraMap ℚ AlgQ (q.coeff j) * ζ ^ (j * 2 ^ m) := by
+          refine Finset.sum_congr rfl fun m _ => ?_
+          rw [Polynomial.aeval_eq_sum_range]
+          refine Finset.sum_congr rfl fun j _ => ?_
+          rw [Algebra.smul_def, ← pow_mul, mul_comm (2 ^ m) j]
+      _ = _ := by
+          rw [Finset.sum_comm]
+          refine Finset.sum_congr rfl fun j _ => ?_
+          rw [Finset.mul_sum]
+  refine ⟨(∑ j ∈ Finset.range n, q.coeff j * (if j % 13 = 0 then 12 else -1)) / 12, ?_⟩
+  have h12' : (12 : AlgQ) ≠ 0 := by norm_num
+  apply mul_left_cancel₀ h12'
+  rw [h12]
+  simp_rw [orbit_sum_zeta13 hζ]
+  rw [map_div₀, map_ofNat, mul_div_cancel₀ _ h12', map_sum]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  split_ifs <;> simp
 
 /-- An injective self-map of `Fin 3` without fixed points is a 3-cycle. -/
 theorem three_cycle_of (p : Fin 3 → Fin 3) (hinj : Function.Injective p) (hfix : ∀ k, p k ≠ k) :
