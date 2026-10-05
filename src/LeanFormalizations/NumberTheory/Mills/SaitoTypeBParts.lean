@@ -50,6 +50,60 @@ def millsSet (C : ℕ → ℕ) : Set ℝ := {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (�
 /-- The `C k`-th root, `x ^ (1 / C k)`. -/
 noncomputable def root (x : ℝ) (n : ℕ) : ℝ := x ^ ((n : ℝ)⁻¹)
 
+/-- The ratio `c_k = C(k+1)/C k`. -/
+noncomputable def ratio (C : ℕ → ℕ) (k : ℕ) : ℝ := (C (k + 1) : ℝ) / C k
+
+theorem C_ge_one {C : ℕ → ℕ} (h1 : 1 ≤ C 1) (h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1)) :
+    ∀ k ≥ 1, 1 ≤ C k := by
+  intro k hk
+  induction k with
+  | zero => omega
+  | succ n ih =>
+    rcases Nat.eq_zero_or_pos n with rfl | hn
+    · simpa using h1
+    · have := h2 n hn; have := ih hn; omega
+
+theorem C_lt_succ {C : ℕ → ℕ} (h1 : 1 ≤ C 1) (h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1)) :
+    ∀ k ≥ 1, C k < C (k + 1) := by
+  intro k hk
+  have := h2 k hk; have := C_ge_one h1 h2 k hk; omega
+
+theorem C_strictMonoOn {C : ℕ → ℕ} (h1 : 1 ≤ C 1) (h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1))
+    {a b : ℕ} (ha : 1 ≤ a) (hab : a < b) : C a < C b := by
+  induction b with
+  | zero => omega
+  | succ n ih =>
+    rcases Nat.lt_succ_iff_lt_or_eq.1 hab with h | h
+    · exact lt_trans (ih h) (C_lt_succ h1 h2 n (by omega))
+    · subst h; exact C_lt_succ h1 h2 a ha
+
+theorem le_C {C : ℕ → ℕ} (h1 : 1 ≤ C 1) (h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1)) :
+    ∀ k ≥ 1, k ≤ C k := by
+  intro k hk
+  induction k with
+  | zero => omega
+  | succ n ih =>
+    rcases Nat.eq_zero_or_pos n with rfl | hn
+    · simpa using h1
+    · have := C_lt_succ h1 h2 n hn; have := ih hn; omega
+
+/-- `(ξ^(C k))^(c_k) = ξ^(C(k+1))`. -/
+theorem pow_ratio {C : ℕ → ℕ} {ξ : ℝ} (hξ : 0 < ξ) {k : ℕ} (hk : 0 < C k) :
+    (ξ ^ C k) ^ ratio C k = ξ ^ C (k + 1) := by
+  rw [← Real.rpow_natCast ξ (C k), ← Real.rpow_mul hξ.le, ratio,
+    mul_div_cancel₀ _ (by exact_mod_cast hk.ne'), Real.rpow_natCast]
+
+/-- The floors of a Mills number tend to infinity. -/
+theorem floor_tendsto {C : ℕ → ℕ} (h1 : 1 ≤ C 1) (h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1))
+    {ξ : ℝ} (hξ : 1 < ξ) : Tendsto (fun k => (⌊ξ ^ C k⌋₊ : ℝ)) atTop atTop := by
+  have h0 : Tendsto (fun k : ℕ => ξ ^ k - 1) atTop atTop :=
+    tendsto_atTop_add_const_right _ _ (tendsto_pow_atTop_atTop_of_one_lt hξ)
+  refine tendsto_atTop_mono' _ ?_ h0
+  filter_upwards [eventually_ge_atTop 1] with k hk
+  have h1' : ξ ^ k ≤ ξ ^ C k := pow_le_pow_right₀ hξ.le (le_C h1 h2 k hk)
+  have h2' := Nat.lt_floor_add_one (ξ ^ C k)
+  linarith
+
 /-- **Saito (3.1)**: under `(B5′)`, no power `ξ^(C m)`, `m ≥ 1`, of a Mills number is an
 integer: `ξ^(C k) = (ξ^(C m))^(C k / C m)` with `C k / C m ≥ 2` would be a perfect power, not a
 prime. -/
@@ -67,7 +121,121 @@ theorem exists_of_nested {C : ℕ → ℕ} {q : ℕ → ℕ} {k₀ : ℕ} (hC : 
     (hhi : ∀ k ≥ k₀, root (q (k + 1) + 1) (C (k + 1)) < root (q k + 1) (C k)) :
     ∃ ζ : ℝ, 0 < ζ ∧ (∀ k ≥ k₀, ⌊ζ ^ C k⌋₊ = q k) ∧
       ∀ k ≥ k₀, ζ < root (q k + 1) (C k) := by
-  sorry
+  set L : ℕ → ℝ := fun k => root (q k) (C k) with hL
+  set U : ℕ → ℝ := fun k => root (q k + 1) (C k) with hU
+  have hLU : ∀ k ≥ k₀, L k < U k := by
+    intro k hk
+    exact Real.rpow_lt_rpow (by positivity) (by push_cast; linarith)
+      (inv_pos.2 (by exact_mod_cast hC k hk))
+  have hLmono : ∀ k ≥ k₀, ∀ d, L k ≤ L (k + d) := by
+    intro k hk d
+    induction d with
+    | zero => simp
+    | succ d ih => exact le_trans ih (hlo (k + d) (by omega))
+  have hUanti : ∀ k ≥ k₀, ∀ d, U (k + d) ≤ U k := by
+    intro k hk d
+    induction d with
+    | zero => simp
+    | succ d ih => exact le_trans (hhi (k + d) (by omega)).le ih
+  have hLU' : ∀ a ≥ k₀, ∀ b ≥ k₀, L a ≤ U b := by
+    intro a ha b hb
+    have h1 := hLmono a ha (max a b - a)
+    have h2 := hUanti b hb (max a b - b)
+    rw [show a + (max a b - a) = max a b by omega] at h1
+    rw [show b + (max a b - b) = max a b by omega] at h2
+    exact le_trans h1 (le_trans (hLU _ (le_trans ha (le_max_left _ _))).le h2)
+  have hbdd : BddAbove (Set.range fun n => L (n + k₀)) :=
+    ⟨U k₀, by rintro _ ⟨n, rfl⟩; exact hLU' _ (by omega) _ le_rfl⟩
+  set ζ := ⨆ n, L (n + k₀) with hζ
+  have hLζ : ∀ k ≥ k₀, L k ≤ ζ := by
+    intro k hk
+    have := le_ciSup hbdd (k - k₀)
+    simpa [show k - k₀ + k₀ = k by omega] using this
+  have hζU : ∀ k ≥ k₀, ζ < U k := by
+    intro k hk
+    have : ζ ≤ U (k + 1) := ciSup_le fun n => hLU' _ (by omega) _ (by omega)
+    exact lt_of_le_of_lt this (hhi k hk)
+  have hL1 : 1 ≤ L k₀ := Real.one_le_rpow (by exact_mod_cast hq) (by positivity)
+  have hζ0 : 0 < ζ := by linarith [hLζ k₀ le_rfl]
+  refine ⟨ζ, hζ0, fun k hk => ?_, hζU⟩
+  have hCk : C k ≠ 0 := (hC k hk).ne'
+  have hlo' : (q k : ℝ) ≤ ζ ^ C k := by
+    have h := pow_le_pow_left₀ (Real.rpow_nonneg (Nat.cast_nonneg _) _) (hLζ k hk) (C k)
+    change ((q k : ℝ) ^ ((C k : ℝ)⁻¹)) ^ C k ≤ _ at h
+    rwa [Real.rpow_inv_natCast_pow (by positivity) hCk] at h
+  have hhi' : ζ ^ C k < (q k : ℝ) + 1 := by
+    have h := pow_lt_pow_left₀ (hζU k hk) hζ0.le hCk
+    change _ < (((q k : ℝ) + 1) ^ ((C k : ℝ)⁻¹)) ^ C k at h
+    rwa [Real.rpow_inv_natCast_pow (by positivity) hCk] at h
+  rw [Nat.floor_eq_iff (by positivity)]
+  exact ⟨hlo', hhi'⟩
+
+theorem root_le_root {x y : ℝ} (hx : 0 ≤ x) {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (h : x ^ ((n : ℝ) / m) ≤ y) : root x m ≤ root y n := by
+  have e : root x m = (x ^ ((n : ℝ) / m)) ^ ((n : ℝ)⁻¹) := by
+    rw [root, ← Real.rpow_mul hx]; congr 1; field_simp
+  rw [e, root]
+  exact Real.rpow_le_rpow (by positivity) h (by positivity)
+
+theorem root_lt_root {x y : ℝ} (hx : 0 ≤ x) {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (h : x ^ ((n : ℝ) / m) < y) : root x m < root y n := by
+  have e : root x m = (x ^ ((n : ℝ) / m)) ^ ((n : ℝ)⁻¹) := by
+    rw [root, ← Real.rpow_mul hx]; congr 1; field_simp
+  rw [e, root]
+  exact Real.rpow_lt_rpow (by positivity) h (inv_pos.2 (by exact_mod_cast hn))
+
+theorem root_lt_root' {x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) {m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    (h : x < y ^ ((m : ℝ) / n)) : root x m < root y n := by
+  have e : root y n = (y ^ ((m : ℝ) / n)) ^ ((m : ℝ)⁻¹) := by
+    rw [root, ← Real.rpow_mul hy]; congr 1; field_simp
+  rw [e, root]
+  exact Real.rpow_lt_rpow hx h (inv_pos.2 (by exact_mod_cast hm))
+
+theorem root_pow {x : ℝ} (hx : 0 ≤ x) {n : ℕ} (hn : 0 < n) : root x n ^ n = x :=
+  Real.rpow_inv_natCast_pow hx hn.ne'
+
+theorem pow_sub_pow_ge {x y : ℝ} (hy : 0 < y) (hyx : y ≤ x) (n : ℕ) :
+    n * y ^ (n - 1) * (x - y) ≤ x ^ n - y ^ n := by
+  rcases Nat.eq_zero_or_pos n with rfl | hn
+  · simp
+  have hb := one_add_mul_le_pow (a := (x - y) / y) (by
+    have : 0 ≤ (x - y) / y := div_nonneg (by linarith) hy.le
+    linarith) n
+  have e1 : 1 + (x - y) / y = x / y := by field_simp; ring
+  rw [e1, div_pow] at hb
+  have hyn : 0 < y ^ n := pow_pos hy n
+  have hyn' : y ^ n = y ^ (n - 1) * y := by
+    rw [← pow_succ, Nat.sub_add_cancel hn]
+  rw [le_div_iff₀ hyn] at hb
+  have : (1 + n * ((x - y) / y)) * y ^ n = y ^ n + n * y ^ (n - 1) * (x - y) := by
+    rw [hyn']; field_simp
+  linarith
+
+theorem pow_sub_pow_le {x y : ℝ} (hy : 0 ≤ y) (hyx : y ≤ x) (n : ℕ) :
+    x ^ n - y ^ n ≤ n * x ^ (n - 1) * (x - y) := by
+  have h := abs_pow_sub_pow_le (a := x) (b := y) (n := n)
+  rw [abs_of_nonneg (sub_nonneg.2 (pow_le_pow_left₀ hy hyx n)), abs_of_nonneg (sub_nonneg.2 hyx),
+    abs_of_nonneg (le_trans hy hyx), abs_of_nonneg hy, max_eq_left hyx] at h
+  linarith
+
+theorem exists_delta {C : ℕ → ℕ} {ξ : ℝ} (hnot : ∀ m ≥ 1, ∀ t : ℤ, ξ ^ C m ≠ (t : ℝ))
+    (hξ0 : 0 < ξ) :
+    ∀ N, ∃ δ > (0 : ℝ), ∀ k, 1 ≤ k → k ≤ N → (⌊ξ ^ C k⌋₊ : ℝ) + δ ≤ ξ ^ C k := by
+  intro N
+  induction N with
+  | zero => exact ⟨1, one_pos, fun k hk hk' => by omega⟩
+  | succ N ih =>
+    obtain ⟨δ, hδ, hδk⟩ := ih
+    have hlt : (⌊ξ ^ C (N + 1)⌋₊ : ℝ) < ξ ^ C (N + 1) := by
+      refine lt_of_le_of_ne (Nat.floor_le (by positivity)) ?_
+      intro h
+      exact hnot (N + 1) (by omega) (⌊ξ ^ C (N + 1)⌋₊ : ℤ) (by rw [Int.cast_natCast]; exact h.symm)
+    refine ⟨min δ (ξ ^ C (N + 1) - ⌊ξ ^ C (N + 1)⌋₊), lt_min hδ (by linarith), fun k hk hk' => ?_⟩
+    rcases Nat.lt_or_ge k (N + 1) with h | h
+    · have := hδk k hk (by omega); linarith [min_le_left δ (ξ ^ C (N + 1) - ⌊ξ ^ C (N + 1)⌋₊)]
+    · have : k = N + 1 := by omega
+      subst this
+      linarith [min_le_right δ (ξ ^ C (N + 1) - ⌊ξ ^ C (N + 1)⌋₊)]
 
 /-- **One BHP step.**  For all large `q` and every real `c ≥ 29/10` there is a prime `q'` with
 `q^c ≤ q' ≤ q^c + q^(21c/40)` and `q' + 1 < (q + 1)^c`. -/
@@ -75,10 +243,58 @@ theorem bhp_step (hB : BakerHarmanPintz2001) :
     ∃ X : ℕ, ∀ q ≥ X, ∀ c : ℝ, 29 / 10 ≤ c → ∃ q' : ℕ, q'.Prime ∧
       (q : ℝ) ^ c ≤ q' ∧ (q' : ℝ) ≤ (q : ℝ) ^ c + (q : ℝ) ^ (21 / 40 * c) ∧
       (q' : ℝ) + 1 < ((q : ℝ) + 1) ^ c := by
-  sorry
-
-/-- The ratio `c_k = C(k+1)/C k`. -/
-noncomputable def ratio (C : ℕ → ℕ) (k : ℕ) : ℝ := (C (k + 1) : ℝ) / C k
+  obtain ⟨d₀, hd₀, X, hX⟩ := hB
+  refine ⟨max 2 ⌈X⌉₊, fun q hq c hc => ?_⟩
+  have hq2 : (2 : ℝ) ≤ q := by exact_mod_cast le_trans (le_max_left _ _) hq
+  have hqX : X ≤ q := le_trans (Nat.le_ceil X) (by exact_mod_cast le_trans (le_max_right _ _) hq)
+  have hq0 : (0 : ℝ) < q := by linarith
+  have hc1 : (1 : ℝ) ≤ c := by linarith
+  set x : ℝ := (q : ℝ) ^ c with hx
+  have hxq : (q : ℝ) ≤ x := by
+    calc (q : ℝ) = (q : ℝ) ^ (1 : ℝ) := (Real.rpow_one _).symm
+      _ ≤ x := Real.rpow_le_rpow_of_exponent_le (by linarith) hc1
+  have hx1 : 1 < x := by linarith
+  have hxpos : 0 < x := by linarith
+  have hcount := hX x (le_trans hqX hxq)
+  have hlogx : 0 < Real.log x := Real.log_pos hx1
+  have hcpos : 0 < primesIn x (x + x ^ ((21:ℝ) / 40)) := by
+    rcases Nat.eq_zero_or_pos (primesIn x (x + x ^ ((21:ℝ) / 40))) with h0 | h0
+    · rw [h0] at hcount
+      have : (0:ℝ) < d₀ * x ^ ((21:ℝ) / 40) / Real.log x :=
+        div_pos (mul_pos hd₀ (Real.rpow_pos_of_pos hxpos _)) hlogx
+      norm_num at hcount
+      linarith
+    · exact h0
+  unfold primesIn at hcpos
+  obtain ⟨p, hpmem⟩ := Finset.card_pos.1 hcpos
+  simp only [Finset.mem_filter, Finset.mem_Icc] at hpmem
+  obtain ⟨⟨hplo, hphi⟩, hp⟩ := hpmem
+  have hxθ : x ^ ((21:ℝ) / 40) = (q : ℝ) ^ (21 / 40 * c) := by
+    rw [hx, ← Real.rpow_mul hq0.le]; ring_nf
+  have hplo' : x ≤ p := le_trans (Nat.le_ceil x) (by exact_mod_cast hplo)
+  have hphi' : (p : ℝ) ≤ x + (q : ℝ) ^ (21 / 40 * c) := by
+    rw [← hxθ]
+    exact le_trans (by exact_mod_cast hphi) (Nat.floor_le (by positivity))
+  refine ⟨p, hp, hplo', hphi', ?_⟩
+  -- `(q+1)^c ≥ q^c + c q^(c−1)` (Bernoulli) and `q^(21c/40) + 1 ≤ 2 q^(c−1)`
+  have hbern : x + c * (q : ℝ) ^ (c - 1) ≤ ((q : ℝ) + 1) ^ c := by
+    have hb := one_add_mul_self_le_rpow_one_add (s := 1 / (q : ℝ)) (by
+      have : 0 ≤ 1 / (q : ℝ) := by positivity
+      linarith) hc1
+    have hsplit : ((q : ℝ) + 1) ^ c = (q : ℝ) ^ c * (1 + 1 / (q : ℝ)) ^ c := by
+      rw [← Real.mul_rpow hq0.le (by positivity)]
+      congr 1; field_simp
+    have hqc1 : (q : ℝ) ^ (c - 1) = (q : ℝ) ^ c / q := Real.rpow_sub_one hq0.ne' c
+    rw [hsplit, hqc1, hx]
+    have hxp : 0 < (q : ℝ) ^ c := Real.rpow_pos_of_pos hq0 c
+    calc (q : ℝ) ^ c + c * ((q : ℝ) ^ c / q) = (q : ℝ) ^ c * (1 + c * (1 / q)) := by
+          field_simp
+      _ ≤ (q : ℝ) ^ c * (1 + 1 / (q : ℝ)) ^ c := mul_le_mul_of_nonneg_left hb hxp.le
+  have hθle : (q : ℝ) ^ (21 / 40 * c) ≤ (q : ℝ) ^ (c - 1) :=
+    Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith)
+  have h1le : (1 : ℝ) ≤ (q : ℝ) ^ (c - 1) := Real.one_le_rpow (by linarith) (by linarith)
+  have hpos : 0 < (q : ℝ) ^ (c - 1) := by linarith
+  nlinarith
 
 /-- **Saito Lemma 5.2** (ratios eventually `≥ 29/10`, so BHP alone continues the chain).  If the
 floors `p_k = ⌊ξ^(C k)⌋₊` of the least Mills number satisfy the lower chain condition
@@ -91,7 +307,184 @@ theorem window_of_least (hB : BakerHarmanPintz2001) {C : ℕ → ℕ} (h1 : 1 �
     {k₁ : ℕ} (hlow : ∀ k ≥ k₁, root ⌊ξ ^ C k⌋₊ (C k) ≤ root ⌊ξ ^ C (k + 1)⌋₊ (C (k + 1))) :
     ∃ k₀, ∀ k ≥ k₀, (⌊ξ ^ C (k + 1)⌋₊ : ℝ) ≤
       (⌊ξ ^ C k⌋₊ : ℝ) ^ ratio C k + (⌊ξ ^ C k⌋₊ : ℝ) ^ (21 / 40 * ratio C k) := by
-  sorry
+  by_contra hcon
+  push_neg at hcon
+  obtain ⟨X, hX⟩ := bhp_step hB
+  have hξS := hξ.1
+  have hξ1 : 1 < ξ := hξS.1
+  have hξ0 : 0 < ξ := by linarith
+  have hCge := C_ge_one h1 h2
+  set p : ℕ → ℕ := fun k => ⌊ξ ^ C k⌋₊ with hp
+  set k₁' := max (max k₁ K₀) 1 with hk₁'
+  obtain ⟨δ, hδ, hδk⟩ := exists_delta hnot hξ0 k₁'
+  set B : ℝ := (C k₁' : ℝ) * ξ ^ C k₁' with hB
+  have hB0 : 0 ≤ B := by positivity
+  obtain ⟨M1, hM1⟩ := eventually_atTop.1
+    ((floor_tendsto h1 h2 hξ1).eventually_ge_atTop (X : ℝ))
+  set M2 := ⌈B / δ⌉₊ + 1 with hM2
+  obtain ⟨m, hm, hviol⟩ := hcon (max (max M1 M2) (k₁' + 1))
+  have hmM1 : M1 ≤ m := by omega
+  have hmM2 : M2 ≤ m := by omega
+  have hmk : k₁' + 1 ≤ m := by omega
+  have hm1 : 1 ≤ m := by omega
+  have hmK : K₀ ≤ m := by omega
+  -- the chain
+  have hratio : ∀ k ≥ K₀, 1 ≤ k → (29 : ℝ) / 10 ≤ ratio C k := by
+    intro k hk hk1
+    have hCk : (0 : ℝ) < C k := by exact_mod_cast hCge k hk1
+    rw [ratio, le_div_iff₀ hCk]; exact hEv k hk
+  have hX' : ∀ q k : ℕ, ∃ q' : ℕ, X ≤ q → K₀ ≤ k → 1 ≤ k → (q'.Prime ∧
+      (q : ℝ) ^ ratio C k ≤ q' ∧ (q' : ℝ) ≤ (q : ℝ) ^ ratio C k + (q : ℝ) ^ (21 / 40 * ratio C k) ∧
+      (q' : ℝ) + 1 < ((q : ℝ) + 1) ^ ratio C k) := by
+    intro q k
+    by_cases h : X ≤ q ∧ K₀ ≤ k ∧ 1 ≤ k
+    · obtain ⟨q', hq'⟩ := hX q h.1 (ratio C k) (hratio k h.2.1 h.2.2)
+      exact ⟨q', fun _ _ _ => hq'⟩
+    · exact ⟨0, fun a b c => absurd ⟨a, b, c⟩ h⟩
+  choose nxt hnxt using hX'
+  let r : ℕ → ℕ := fun n => Nat.rec (motive := fun _ => ℕ) (p m) (fun n r => nxt r (m + n)) n
+  have hr0 : r 0 = p m := rfl
+  have hrs : ∀ n, r (n + 1) = nxt (r n) (m + n) := fun n => rfl
+  have hpmX : X ≤ p m := by exact_mod_cast hM1 m hmM1
+  have hrX : ∀ n, X ≤ r n ∧ (r n).Prime := by
+    intro n
+    induction n with
+    | zero => exact ⟨hpmX, hξS.2 m hm1⟩
+    | succ n ih =>
+      obtain ⟨hpr, hlo, -, -⟩ := hnxt (r n) (m + n) ih.1 (by omega) (by omega)
+      refine ⟨?_, by rw [hrs]; exact hpr⟩
+      rw [hrs]
+      have hq1 : (1 : ℝ) ≤ (Nat.cast (r n) : ℝ) := by exact_mod_cast ih.2.one_lt.le
+      have : ((r n : ℕ) : ℝ) ≤ ((r n : ℕ) : ℝ) ^ ratio C (m + n) := by
+        calc ((r n : ℕ) : ℝ) = ((r n : ℕ) : ℝ) ^ (1 : ℝ) := (Real.rpow_one _).symm
+          _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hq1
+              (by linarith [hratio (m + n) (by omega) (by omega)])
+      have : ((r n : ℕ) : ℝ) ≤ nxt (r n) (m + n) := le_trans this hlo
+      exact le_trans ih.1 (by exact_mod_cast this)
+  set q : ℕ → ℕ := fun j => r (j - m) with hq
+  have hqs : ∀ j ≥ m, q (j + 1) = nxt (q j) j := by
+    intro j hj
+    simp only [hq, show j + 1 - m = (j - m) + 1 by omega, hrs, show m + (j - m) = j by omega]
+  have hstep : ∀ j ≥ m, ((q j : ℕ) : ℝ) ^ ratio C j ≤ ((q (j + 1) : ℕ) : ℝ) ∧
+      ((q (j + 1) : ℕ) : ℝ) ≤ ((q j : ℕ) : ℝ) ^ ratio C j + ((q j : ℕ) : ℝ) ^ (21 / 40 * ratio C j) ∧
+      ((q (j + 1) : ℕ) : ℝ) + 1 < (((q j : ℕ) : ℝ) + 1) ^ ratio C j := by
+    intro j hj
+    rw [hqs j hj]
+    obtain ⟨-, a, b, c⟩ := hnxt (q j) j (hrX (j - m)).1 (by omega) (by omega)
+    exact ⟨a, b, c⟩
+  have hCpos : ∀ k ≥ m, 0 < C k := fun k hk => hCge k (by omega)
+  have hrat_eq : ∀ k ≥ m, ratio C k = ((C (k + 1) : ℕ) : ℝ) / (C k : ℕ) := fun k _ => rfl
+  obtain ⟨ζ, hζ0, hζfl, hζU⟩ := exists_of_nested (q := q) (k₀ := m) hCpos
+    (by simp only [hq, Nat.sub_self, hr0]; exact (hξS.2 m hm1).one_lt.le)
+    (fun j hj => root_le_root (Nat.cast_nonneg _) (hCpos j hj) (hCpos (j + 1) (by omega))
+      (hstep j hj).1)
+    (fun j hj => root_lt_root' (by positivity) (by positivity) (hCpos (j + 1) (by omega))
+      (hCpos j hj) (hstep j hj).2.2)
+  have hqm : q m = p m := by simp [hq, hr0]
+  -- `ζ < ξ`
+  have hq1lt : q (m + 1) + 1 ≤ p (m + 1) := by
+    have h := (hstep m le_rfl).2.1
+    rw [hqm] at h
+    have : ((q (m + 1) : ℕ) : ℝ) < p (m + 1) := lt_of_le_of_lt h (hviol)
+    exact_mod_cast this
+  have hζξ : ζ < ξ := by
+    have hU := hζU (m + 1) (by omega)
+    have h2' : root (((q (m + 1) : ℕ) : ℝ) + 1) (C (m + 1)) ≤ root (ξ ^ C (m + 1)) (C (m + 1)) := by
+      refine Real.rpow_le_rpow (by positivity) ?_ (by positivity)
+      have : ((q (m + 1) + 1 : ℕ) : ℝ) ≤ p (m + 1) := by exact_mod_cast hq1lt
+      push_cast at this
+      exact le_trans this (Nat.floor_le (by positivity))
+    have h3' : root (ξ ^ C (m + 1)) (C (m + 1)) = ξ :=
+      Real.pow_rpow_inv_natCast hξ0.le (hCpos (m + 1) (by omega)).ne'
+    linarith
+  -- `ζ^(C m) ≥ p m`
+  have hζm : (p m : ℝ) ≤ ζ ^ C m := by
+    have := hζfl m le_rfl
+    rw [hqm] at this
+    rw [← this]; exact Nat.floor_le (by positivity)
+  have hpm2 : (2 : ℝ) ≤ p m := by exact_mod_cast (hξS.2 m hm1).two_le
+  have hζ1 : 1 < ζ := by
+    by_contra h
+    push_neg at h
+    have : ζ ^ C m ≤ 1 := pow_le_one₀ hζ0.le h
+    linarith
+  -- closeness: `C m (ξ − ζ) < 1`
+  have hclose : (C m : ℝ) * (ξ - ζ) < 1 := by
+    have hge := pow_sub_pow_ge hζ0 hζξ.le (C m)
+    have hlt : ξ ^ C m < (p m : ℝ) + 1 := Nat.lt_floor_add_one _
+    have hpow1 : (1 : ℝ) ≤ ζ ^ (C m - 1) := one_le_pow₀ hζ1.le
+    have hd : 0 ≤ ξ - ζ := by linarith
+    have hCm0 : (0 : ℝ) ≤ C m := by positivity
+    nlinarith [mul_le_mul_of_nonneg_left hpow1 (mul_nonneg hCm0 hd)]
+  -- the floors of `ζ`
+  have hfloor : ∀ k ≥ 1, ⌊ζ ^ C k⌋₊ = p k ∨ ⌊ζ ^ C k⌋₊ = q k ∧ m ≤ k := by
+    intro k hk
+    rcases Nat.lt_or_ge k m with hkm | hkm
+    · left
+      rw [Nat.floor_eq_iff (by positivity)]
+      refine ⟨?_, lt_of_lt_of_le (pow_lt_pow_left₀ hζξ hζ0.le (by have := hCge k hk; omega))
+        (Nat.lt_floor_add_one _).le⟩
+      rcases Nat.lt_or_ge k k₁' with hk1 | hk1
+      · -- the `δ` trick
+        have hδ' := hδk k hk hk1.le
+        have hle := pow_sub_pow_le hζ0.le hζξ.le (C k)
+        have hCk : (C k : ℝ) ≤ C k₁' := by
+          rcases Nat.lt_or_ge k k₁' with h | h
+          · exact_mod_cast (C_strictMonoOn h1 h2 hk h).le
+          · omega
+        have hξk : ξ ^ (C k - 1) ≤ ξ ^ C k₁' :=
+          pow_le_pow_right₀ hξ1.le (le_trans (Nat.sub_le _ _) (by exact_mod_cast hCk))
+        have hBδ : B < (C m : ℝ) * δ := by
+          have h1' : B / δ < M2 := by
+            have := Nat.le_ceil (B / δ); rw [hM2]; push_cast; linarith
+          have h2' : (M2 : ℝ) ≤ C m := by exact_mod_cast le_trans hmM2 (le_C h1 h2 m hm1)
+          rw [div_lt_iff₀ hδ] at h1'
+          nlinarith
+        have hd : 0 ≤ ξ - ζ := by linarith
+        have hkey : ξ ^ C k - ζ ^ C k < δ := by
+          have e1 : (C k : ℝ) * ξ ^ (C k - 1) * (ξ - ζ) ≤ B * (ξ - ζ) := by
+            apply mul_le_mul_of_nonneg_right _ hd
+            exact mul_le_mul hCk hξk (by positivity) (by positivity)
+          have hCm : (0 : ℝ) < C m := by exact_mod_cast hCge m hm1
+          have e2 : B * (ξ - ζ) < δ := by
+            by_cases hB0' : B = 0
+            · rw [hB0']; simpa using hδ
+            have hBpos : 0 < B := lt_of_le_of_ne hB0 (Ne.symm hB0')
+            have : B * (ξ - ζ) * C m < δ * C m := by
+              calc B * (ξ - ζ) * C m = B * ((C m : ℝ) * (ξ - ζ)) := by ring
+                _ < B * 1 := mul_lt_mul_of_pos_left hclose hBpos
+                _ = B := by ring
+                _ < (C m : ℝ) * δ := hBδ
+                _ = δ * C m := by ring
+            exact lt_of_mul_lt_mul_right this hCm.le
+          linarith
+        linarith
+      · -- the lower chain from `k` to `m`
+        have hchain : ∀ d, k + d ≤ m → root (p k) (C k) ≤ root (p (k + d)) (C (k + d)) := by
+          intro d
+          induction d with
+          | zero => intro _; simp
+          | succ d ih =>
+            intro hd
+            exact le_trans (ih (by omega)) (hlow (k + d) (by omega))
+        have h1' := hchain (m - k) (by omega)
+        rw [show k + (m - k) = m by omega] at h1'
+        have h2' : root (p m) (C m) ≤ ζ := by
+          have := Real.rpow_le_rpow (by positivity) hζm
+            (inv_nonneg.2 (Nat.cast_nonneg (C m)))
+          rwa [Real.pow_rpow_inv_natCast hζ0.le (hCpos m le_rfl).ne'] at this
+        have h3' := pow_le_pow_left₀ (Real.rpow_nonneg (Nat.cast_nonneg _) _) (le_trans h1' h2')
+          (C k)
+        rwa [Real.rpow_inv_natCast_pow (Nat.cast_nonneg _) (by have := hCge k hk; omega)]
+          at h3'
+    · right
+      exact ⟨hζfl k hkm, hkm⟩
+  have hζS : ζ ∈ millsSet C := by
+    refine ⟨hζ1, fun k hk => ?_⟩
+    rcases hfloor k hk with h | ⟨h, hkm⟩
+    · rw [h]; exact hξS.2 k hk
+    · rw [h]; exact (hrX (k - m)).2
+  exact absurd (hξ.2 hζS) (not_le.2 hζξ)
 
 /-- **Saito (5.1)**: if `⌊x^c⌋ < ⌊x⌋^c` (`x ≥ 1`, `c ≥ 1`) then `c·{x}·⌊x⌋^(c−1) < 1`. -/
 theorem fract_lt_of_floor_lt {x c : ℝ} (hx : 1 ≤ x) (hc : 1 ≤ c)
@@ -147,46 +540,6 @@ theorem not_natDegree_two {β : ℝ} (hβ : IsPisot β) (hdeg : (minpoly ℚ β)
 
 /-! ### Assembly lemmas -/
 
-theorem C_ge_one {C : ℕ → ℕ} (h1 : 1 ≤ C 1) (h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1)) :
-    ∀ k ≥ 1, 1 ≤ C k := by
-  intro k hk
-  induction k with
-  | zero => omega
-  | succ n ih =>
-    rcases Nat.eq_zero_or_pos n with rfl | hn
-    · simpa using h1
-    · have := h2 n hn; have := ih hn; omega
-
-theorem C_lt_succ {C : ℕ → ℕ} (h1 : 1 ≤ C 1) (h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1)) :
-    ∀ k ≥ 1, C k < C (k + 1) := by
-  intro k hk
-  have := h2 k hk; have := C_ge_one h1 h2 k hk; omega
-
-theorem C_strictMonoOn {C : ℕ → ℕ} (h1 : 1 ≤ C 1) (h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1))
-    {a b : ℕ} (ha : 1 ≤ a) (hab : a < b) : C a < C b := by
-  induction b with
-  | zero => omega
-  | succ n ih =>
-    rcases Nat.lt_succ_iff_lt_or_eq.1 hab with h | h
-    · exact lt_trans (ih h) (C_lt_succ h1 h2 n (by omega))
-    · subst h; exact C_lt_succ h1 h2 a ha
-
-theorem le_C {C : ℕ → ℕ} (h1 : 1 ≤ C 1) (h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1)) :
-    ∀ k ≥ 1, k ≤ C k := by
-  intro k hk
-  induction k with
-  | zero => omega
-  | succ n ih =>
-    rcases Nat.eq_zero_or_pos n with rfl | hn
-    · simpa using h1
-    · have := C_lt_succ h1 h2 n hn; have := ih hn; omega
-
-/-- `(ξ^(C k))^(c_k) = ξ^(C(k+1))`. -/
-theorem pow_ratio {C : ℕ → ℕ} {ξ : ℝ} (hξ : 0 < ξ) {k : ℕ} (hk : 0 < C k) :
-    (ξ ^ C k) ^ ratio C k = ξ ^ C (k + 1) := by
-  rw [← Real.rpow_natCast ξ (C k), ← Real.rpow_mul hξ.le, ratio,
-    mul_div_cancel₀ _ (by exact_mod_cast hk.ne'), Real.rpow_natCast]
-
 /-- **Case (I) of Saito Lemma 5.2 is impossible for algebraic `ξ`** (Saito Lemma 6.2, ratios
 `≥ 29/10`): the lower chain condition holds eventually. -/
 theorem eventually_low (hD : Dubickas2022) (hG : Dubickas2022PisotGap) {C : ℕ → ℕ}
@@ -207,9 +560,5 @@ theorem eventually_fract_le {C : ℕ → ℕ} (h1 : 1 ≤ C 1) (h2 : ∀ k ≥ 1
     ∃ k₂, ∀ k ≥ k₂, Int.fract (ξ ^ C k) ≤ 2 * (⌊ξ ^ C k⌋₊ : ℝ) ^ (-(151 / 400 : ℝ)) := by
   sorry
 
-/-- The floors of a Mills number tend to infinity. -/
-theorem floor_tendsto {C : ℕ → ℕ} (h1 : 1 ≤ C 1) (h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1))
-    {ξ : ℝ} (hξ : 1 < ξ) : Tendsto (fun k => (⌊ξ ^ C k⌋₊ : ℝ)) atTop atTop := by
-  sorry
 
 end LeanFormalizations.Mills.SaitoTypeB
