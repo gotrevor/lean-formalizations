@@ -19,7 +19,8 @@ Recorded here:
   which is `≫ log log n` for every `n` (exponent ≥ 1 in (a)), and for `n!` it is `≍ (log n)²`
   (`log τ(n!) ~ C n / log n`, `C = Σ_k log(k+1)/(k(k+1)) ≈ 1.28`): `practicalH_factorial_ge`.
   So in (c) the exponent is at least 2.  Ren's derivation; not found in the sources checked
-  (erdosproblems.com/18 thread, Pomerance–Weingartner 2021).
+  (erdosproblems.com/18 thread, Pomerance–Weingartner 2021, Erdős–Graham 1980 p. 33, which
+  states only the upper bound `< n` and guesses "perhaps even only `(log n)^c`").
 * `practicalH_le_of_dense` (greedy): if every `r ∈ (K, n]` has a divisor `d ≤ r` with
   `r − d ≤ r^{1−ε}` and `r − d < d`, and every `r ≤ K` divides `n`, then each greedy step
   multiplies `log r` by `≤ 1 − ε`.  This is the reduction posted on the erdosproblems.com/18 thread
