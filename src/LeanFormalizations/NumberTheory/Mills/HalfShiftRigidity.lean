@@ -258,6 +258,57 @@ theorem exists_entry_nonscalar {f : ℤ[X]} {α : ℝ} (hD : PisotData f α)
     exact this.symm
   exact hnc zb (by rw [heq, hdeg])
 
+/-- Variables of the half system: `x`, `x'`, `(w, y)`, `r`. -/
+abbrev HalfVar (d : ℕ) := (Fin d ⊕ Fin d) ⊕ (Fin 2 ⊕ (Fin d × Fin d))
+
+/-- Equations of the half system. -/
+abbrev HalfEq (d : ℕ) := (Fin d × Fin d) ⊕ ((Fin d × Fin d) ⊕ Fin 3)
+
+/-- The half system: `P^(3^F) = P`, `P'² C^a = P C^b`, `w² = 1`, `tr P' = w`,
+`y Σ r (P − P₀₀ • 1) = 1`. -/
+def halfSys (R : Type*) [CommRing R] (f : ℤ[X]) (i₀ : Fin f.natDegree) (F a b : ℕ)
+    (p : HalfVar f.natDegree → R) : HalfEq f.natDegree → R :=
+  let P := polyMat R f (fun j => p (Sum.inl (Sum.inl j)))
+  let P' := polyMat R f (fun j => p (Sum.inl (Sum.inr j)))
+  let w := p (Sum.inr (Sum.inl 0))
+  let y := p (Sum.inr (Sum.inl 1))
+  Sum.elim (fun ij => (P ^ (3 ^ F) - P) ij.1 ij.2)
+    (Sum.elim (fun ij => (P' ^ 2 * compM R f ^ a - P * compM R f ^ b) ij.1 ij.2)
+      (fun t => match t with
+        | 0 => w ^ 2 - 1
+        | 1 => P'.trace - w
+        | 2 => y * (∑ ij : Fin f.natDegree × Fin f.natDegree,
+            p (Sum.inr (Sum.inr ij)) * (P - P i₀ i₀ • 1) ij.1 ij.2) - 1))
+
+theorem halfSys_map {R S : Type*} [CommRing R] [CommRing S] (φ : R →+* S) (f : ℤ[X])
+    (i₀ : Fin f.natDegree) (F a b : ℕ) (p : HalfVar f.natDegree → R) (i : HalfEq f.natDegree) :
+    φ (halfSys R f i₀ F a b p i) = halfSys S f i₀ F a b (fun v => φ (p v)) i := by
+  classical
+  have hP : ∀ (g : Fin f.natDegree → R),
+      (polyMat R f g).map φ = polyMat S f (fun j => φ (g j)) := fun g => polyMat_map φ f g
+  have hent : ∀ (M : Matrix (Fin f.natDegree) (Fin f.natDegree) R) i j, φ (M i j) = M.map φ i j :=
+    fun M i j => rfl
+  rcases i with ⟨i, j⟩ | ⟨i, j⟩ | t
+  · simp only [halfSys, Sum.elim_inl]
+    rw [hent, map_matrix_sub, map_matrix_pow, hP]
+  · simp only [halfSys, Sum.elim_inr, Sum.elim_inl]
+    rw [hent, map_matrix_sub, map_matrix_mul, map_matrix_mul, map_matrix_pow, map_matrix_pow,
+      map_matrix_pow, hP, hP, compM_map]
+  · fin_cases t
+    · simp [halfSys]
+    · simp only [halfSys, Sum.elim_inr]
+      simp only [Fin.isValue, map_sub]
+      rw [← trace_map_eq, hP]
+    · simp only [halfSys, Sum.elim_inr]
+      simp only [map_sub, map_mul, map_sum, map_one]
+      congr 2
+      refine Finset.sum_congr rfl fun ij _ => ?_
+      congr 1
+      rw [hent (polyMat R f _ - _), map_matrix_sub, hP]
+      simp [Matrix.map_apply, Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply]
+      rw [← hP]; simp [Matrix.map_apply]
+      split_ifs <;> simp
+
 /-- **The transfer** for the half exponent. -/
 theorem exists_half_solution (f : ℤ[X]) (hd : 1 ≤ f.natDegree) (i₀ : Fin f.natDegree)
     {F n₀ : ℕ} {s : ℤ} (hs : Odd s)
@@ -273,7 +324,83 @@ theorem exists_half_solution (f : ℤ[X]) (hd : 1 ≤ f.natDegree) (i₀ : Fin f
         polyMat AlgQ f x * compM AlgQ f ^ s.toNat ∧
       (polyMat AlgQ f x').trace = w ∧
       polyMat AlgQ f x ≠ (polyMat AlgQ f x) i₀ i₀ • 1 := by
-  sorry
+  classical
+  set a := (-s).toNat with ha
+  set b := s.toNat with hb
+  set Fsys : HalfEq f.natDegree → MvPolynomial (HalfVar f.natDegree) ℤ := halfSys _ f i₀ F a b MvPolynomial.X
+    with hFsys
+  have hevZ : ∀ (p : HalfVar f.natDegree → ℤ) i, MvPolynomial.eval p (Fsys i) = halfSys ℤ f i₀ F a b p i := by
+    intro p i
+    rw [hFsys, halfSys_map (MvPolynomial.eval p)]
+    simp
+  have hevA : ∀ (q : HalfVar f.natDegree → AlgQ) i,
+      MvPolynomial.eval₂ (Int.castRingHom AlgQ) q (Fsys i) = halfSys AlgQ f i₀ F a b q i := by
+    intro q i
+    rw [← MvPolynomial.coe_eval₂Hom, hFsys, halfSys_map]
+    simp
+  have hlev : ∀ k : ℕ, ∃ p : HalfVar f.natDegree → ℤ, ∀ i,
+      ((3 : ℕ) : ℤ) ^ k ∣ MvPolynomial.eval p (Fsys i) := by
+    intro k
+    obtain ⟨n, hn, hn0, w, hw, hV⟩ := hcong (k + n₀)
+    obtain ⟨x, hx⟩ := exists_coords f hd (3 ^ n)
+    obtain ⟨x', hx'⟩ := exists_coords f hd (halfExp s n)
+    obtain ⟨a1, b1, h1⟩ := hne n
+    obtain ⟨y1, hy1⟩ := exists_inv_mod h1 k
+    refine ⟨Sum.elim (Sum.elim x x') (Sum.elim ![w, y1]
+      (fun ij => if ij = (a1, b1) then 1 else 0)), fun i => ?_⟩
+    rw [hevZ]
+    push_cast
+    have hxe : polyMat ℤ f x = compM ℤ f ^ (3 ^ n) := hx.symm
+    have hxe' : polyMat ℤ f x' = compM ℤ f ^ halfExp s n := hx'.symm
+    rcases i with ⟨i, j⟩ | ⟨i, j⟩ | t
+    · simp only [halfSys, Sum.elim_inl]
+      rw [hxe]
+      exact dvd_trans (pow_dvd_pow 3 (by omega)) (hlim n (by omega) i j)
+    · simp only [halfSys, Sum.elim_inl, Sum.elim_inr]
+      rw [hxe, hxe', ← pow_mul, ← pow_add, ← pow_add]
+      have hev : Even ((3 : ℤ) ^ n + s) := Odd.add_odd (Odd.pow (by decide)) hs
+      have h2 : 2 ∣ ((3 : ℤ) ^ n + s).toNat := by
+        obtain ⟨r, hr⟩ := hev
+        have : (((3 : ℤ) ^ n + s).toNat : ℤ) = 2 * r := by
+          rw [Int.toNat_of_nonneg hn0, hr]; ring
+        exact Int.natCast_dvd_natCast.1 ⟨r, this⟩
+      have hexp : halfExp s n * 2 + a = 3 ^ n + b := by
+        have := Nat.div_mul_cancel h2
+        have h3 : ((3 ^ n : ℕ) : ℤ) = (3 : ℤ) ^ n := by push_cast; rfl
+        unfold halfExp
+        omega
+      rw [hexp, sub_self]
+      simp
+    · fin_cases t
+      · simpa [halfSys] using dvd_trans (pow_dvd_pow 3 (by omega)) hw
+      · simpa [halfSys, hxe', traceSeq] using dvd_trans (pow_dvd_pow 3 (by omega)) hV
+      · simp only [halfSys, Sum.elim_inr, Sum.elim_inl]
+        simp [Finset.sum_ite_eq', hxe]
+        simpa using hy1
+  obtain ⟨q, hq⟩ := exists_zero_of_family (K := AlgQ) (σ := HalfVar f.natDegree) (c := 3) (by norm_num)
+    Fsys hlev
+  have hq' : ∀ i, halfSys AlgQ f i₀ F a b q i = 0 := fun i => by rw [← hevA]; exact hq i
+  refine ⟨fun j => q (Sum.inl (Sum.inl j)), fun j => q (Sum.inl (Sum.inr j)),
+    q (Sum.inr (Sum.inl 0)), ?_, ?_, ?_, ?_, ?_⟩
+  · refine Matrix.ext fun i j => ?_
+    have := hq' (Sum.inl (i, j))
+    simp only [halfSys, Sum.elim_inl] at this
+    exact sub_eq_zero.1 (by simpa [Matrix.sub_apply] using this)
+  · have := hq' (Sum.inr (Sum.inr 0))
+    simp only [halfSys, Sum.elim_inr] at this
+    exact sub_eq_zero.1 this
+  · refine Matrix.ext fun i j => ?_
+    have := hq' (Sum.inr (Sum.inl (i, j)))
+    simp only [halfSys, Sum.elim_inl, Sum.elim_inr] at this
+    exact sub_eq_zero.1 (by simpa [Matrix.sub_apply] using this)
+  · have := hq' (Sum.inr (Sum.inr 1))
+    simp only [halfSys, Sum.elim_inr] at this
+    exact sub_eq_zero.1 this
+  · intro hP
+    have := hq' (Sum.inr (Sum.inr 2))
+    simp only [halfSys, Sum.elim_inr] at this
+    rw [← hP, sub_self] at this
+    simp at this
 
 /-- **Steps 3 + transfer**: the spectral solution in `AlgQ`, with square roots. -/
 theorem exists_half_spectral {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hs : Odd s)
