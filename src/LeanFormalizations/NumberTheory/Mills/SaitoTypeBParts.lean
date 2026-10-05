@@ -793,7 +793,50 @@ theorem exists_pisot_of_decay_subseq (hD : Dubickas2022) (hG : Dubickas2022Pisot
 `Tr(β^N) = ⌊β^N⌋`. -/
 theorem powTrace_eq_floor {β : ℝ} (hβ : IsPisot β) :
     ∀ᶠ N in atTop, Int.fract (β ^ N) < 1 / 2 → powTrace β N = ((⌊β ^ N⌋₊ : ℕ) : ℂ) := by
-  sorry
+  have halg : IsIntegral ℚ β := hβ.2.1.tower_top
+  have hβ0 : 0 ≤ β := by linarith [hβ.1]
+  have hsplit : ∀ N, powTrace β N = (β : ℂ) ^ N + conjPowSum β N := by
+    intro N
+    rw [powTrace, conjPowSum, otherConj, ← Multiset.cons_erase (beta_mem_aroots halg)]
+    rw [Multiset.map_cons, Multiset.sum_cons, Multiset.cons_erase (beta_mem_aroots halg)]
+  have hmax := conjMax_lt_one hβ
+  have hmax0 := conjMax_nonneg β
+  have htend : Tendsto
+      (fun n : ℕ => (Multiset.card (otherConj β) : ℝ) * conjMax β ^ n) atTop (nhds 0) := by
+    have := tendsto_pow_atTop_nhds_zero_of_lt_one hmax0 hmax
+    simpa using this.const_mul (Multiset.card (otherConj β) : ℝ)
+  filter_upwards [htend.eventually (gt_mem_nhds (by norm_num : (0:ℝ) < 1/4))] with N hN hfr
+  obtain ⟨t, ht⟩ := pisot_conjPowSum_add_mem_int hβ N
+  rw [hsplit, ht]
+  have hcps : conjPowSum β N = ((((t : ℝ) - β ^ N : ℝ)) : ℂ) := by
+    push_cast
+    push_cast at ht
+    linear_combination ht
+  have hnorm : ‖conjPowSum β N‖ = |β ^ N - (t : ℝ)| := by
+    rw [hcps, Complex.norm_real, Real.norm_eq_abs, abs_sub_comm]
+  have h1 : |β ^ N - (t : ℝ)| < 1 / 4 := by
+    rw [← hnorm]; exact lt_of_le_of_lt (norm_conjPowSum_le β N) hN
+  have hF : (⌊β ^ N⌋₊ : ℤ) = ⌊β ^ N⌋ := Int.natCast_floor_eq_floor (pow_nonneg hβ0 N)
+  have hfr' : β ^ N - (⌊β ^ N⌋ : ℝ) < 1 / 2 := by
+    have := hfr; rw [Int.fract] at this; exact this
+  have hfr0 : 0 ≤ β ^ N - (⌊β ^ N⌋ : ℝ) := by
+    have := Int.fract_nonneg (β ^ N); rwa [Int.fract] at this
+  have heq : t = ⌊β ^ N⌋ := by
+    have h2 := abs_lt.1 h1
+    have hlt : ((t - ⌊β ^ N⌋ : ℤ) : ℝ) < 1 := by push_cast; linarith
+    have hgt : (-1 : ℝ) < ((t - ⌊β ^ N⌋ : ℤ) : ℝ) := by push_cast; linarith
+    have hlt' : t - ⌊β ^ N⌋ < 1 := by exact_mod_cast hlt
+    have hgt' : -1 < t - ⌊β ^ N⌋ := by exact_mod_cast hgt
+    omega
+  rw [heq, ← hF]
+  push_cast
+  rfl
+
+/-- The Lucas-type integer sequence `V 0 = 2`, `V 1 = a`, `V (j+2) = a V (j+1) − b V j`. -/
+def lucasV (a b : ℤ) : ℕ → ℤ
+  | 0 => 2
+  | 1 => a
+  | (j + 2) => a * lucasV a b (j + 1) - b * lucasV a b j
 
 /-- **No degree 2** (Saito Prop 3.1(iii) + §8, by divisibility).  A degree-2 Pisot `β` cannot have
 `⌊β^(n k)⌋₊` prime with `Int.fract (β^(n k)) < 1/2` for all large `k`, along exponents `n` with
@@ -805,7 +848,122 @@ theorem not_natDegree_two {β : ℝ} (hβ : IsPisot β) (hdeg : (minpoly ℚ β)
     (hfrac : ∀ k ≥ K, Int.fract (β ^ n k) < 1 / 2)
     (hdiv : ∀ M, ∃ a ≥ M, ∃ b > a, n a ∣ n b ∧ n a < n b)
     (hlarge : Tendsto n atTop atTop) : False := by
-  sorry
+  obtain ⟨w, hw, hwlt, t₁, ht₁⟩ := exists_real_conj_of_natDegree_two hβ hdeg
+  obtain ⟨P, hP⟩ := pisot_two_prod_mem_int hβ hw
+  have hβ1 : 1 < β := hβ.1
+  have hβ0 : 0 ≤ β := by linarith
+  set V := lucasV t₁ P with hVdef
+  have hV : ∀ j, (V j : ℝ) = β ^ j + w ^ j := by
+    intro j
+    induction j using Nat.strong_induction_on with
+    | _ j ih =>
+      match j, ih with
+      | 0, _ => simp [hVdef, lucasV]; norm_num
+      | 1, _ => simp [hVdef, lucasV, ht₁]
+      | j + 2, ih =>
+        rw [hVdef, lucasV]
+        push_cast
+        rw [← hVdef, ih (j + 1) (by omega), ih j (by omega), ← ht₁, ← hP]
+        ring
+  -- `w ≠ 0`
+  have hw0 : w ≠ 0 := by
+    intro h
+    rw [h, add_zero] at ht₁
+    have : minpoly ℚ β = Polynomial.X - Polynomial.C (t₁ : ℚ) := by
+      rw [ht₁, show ((t₁ : ℝ)) = algebraMap ℚ ℝ (t₁ : ℚ) by simp]
+      exact minpoly.eq_X_sub_C ℝ (t₁ : ℚ)
+    rw [this, Polynomial.natDegree_X_sub_C] at hdeg
+    omega
+  -- eventually `|w^j| < 1/4`
+  have hwt : Tendsto (fun j : ℕ => |w| ^ j) atTop (nhds 0) :=
+    tendsto_pow_atTop_nhds_zero_of_lt_one (abs_nonneg w) hwlt
+  obtain ⟨N₀, hN₀⟩ := eventually_atTop.1 (hwt.eventually (gt_mem_nhds (by norm_num : (0:ℝ) < 1/4)))
+  -- eventually `β^j ≥ 2`
+  obtain ⟨N₁, hN₁⟩ := eventually_atTop.1
+    ((tendsto_pow_atTop_atTop_of_one_lt hβ1).eventually_ge_atTop (2 : ℝ))
+  -- the floor is `V` and `w^j < 0` at good indices
+  have hgood : ∀ j, N₀ ≤ j → Int.fract (β ^ j) < 1 / 2 →
+      (⌊β ^ j⌋₊ : ℤ) = V j ∧ w ^ j < 0 := by
+    intro j hj hfr
+    have h1 : |w ^ j| < 1 / 4 := by rw [abs_pow]; exact hN₀ j hj
+    have hF : (⌊β ^ j⌋₊ : ℤ) = ⌊β ^ j⌋ := Int.natCast_floor_eq_floor (pow_nonneg hβ0 j)
+    have hfr' : β ^ j - (⌊β ^ j⌋ : ℝ) < 1 / 2 := by
+      have := hfr; rw [Int.fract] at this; exact this
+    have hfr0 : 0 ≤ β ^ j - (⌊β ^ j⌋ : ℝ) := by
+      have := Int.fract_nonneg (β ^ j); rwa [Int.fract] at this
+    have hVj := hV j
+    have heq : V j = ⌊β ^ j⌋ := by
+      have h2 := abs_lt.1 h1
+      have hlt : ((V j - ⌊β ^ j⌋ : ℤ) : ℝ) < 1 := by push_cast; linarith
+      have hgt : (-1 : ℝ) < ((V j - ⌊β ^ j⌋ : ℤ) : ℝ) := by push_cast; linarith
+      have hlt' : V j - ⌊β ^ j⌋ < 1 := by exact_mod_cast hlt
+      have hgt' : -1 < V j - ⌊β ^ j⌋ := by exact_mod_cast hgt
+      omega
+    refine ⟨by rw [hF, heq], ?_⟩
+    have hwj : w ^ j = -(β ^ j - (⌊β ^ j⌋ : ℝ)) := by
+      rw [← heq]; linarith
+    have hne : w ^ j ≠ 0 := pow_ne_zero _ hw0
+    rw [hwj] at hne ⊢
+    have : 0 < β ^ j - (⌊β ^ j⌋ : ℝ) := lt_of_le_of_ne hfr0 (fun h => hne (by rw [← h]; ring))
+    linarith
+  -- pick `a < b` far out
+  obtain ⟨M, hM⟩ := eventually_atTop.1 (hlarge.eventually_ge_atTop (N₀ + N₁ + 1))
+  obtain ⟨a, ha, b, hb, hdvd, hlt⟩ := hdiv (M + K)
+  have hga := hgood (n a) (by have := hM a (by omega); omega) (hfrac a (by omega))
+  have hgb := hgood (n b) (by have := hM b (by omega); omega) (hfrac b (by omega))
+  -- oddness: `w < 0` and `n b` odd
+  have hodd : ∀ j, w ^ j < 0 → Odd j := by
+    intro j hj
+    by_contra h
+    rw [Nat.not_odd_iff_even] at h
+    exact absurd (h.pow_nonneg w) (not_le.2 hj)
+  obtain ⟨e, he⟩ := hdvd
+  set m := n a with hm
+  have hm0 : 0 < m := by have := hM a (by omega); omega
+  have he2 : 2 ≤ e := by
+    rcases Nat.lt_or_ge e 2 with h | h
+    · interval_cases e
+      · rw [mul_zero] at he; omega
+      · rw [mul_one] at he; omega
+    · exact h
+  have heodd : Odd e := by
+    have := hodd (n b) hgb.2
+    rw [he] at this
+    exact (Nat.odd_mul.1 this).2
+  -- the recurrence along multiples of `m`
+  have hrec : ∀ j, V (m * (j + 2)) = V m * V (m * (j + 1)) - P ^ m * V (m * j) := by
+    intro j
+    have : ((V (m * (j + 2)) : ℤ) : ℝ) =
+        ((V m * V (m * (j + 1)) - P ^ m * V (m * j) : ℤ) : ℝ) := by
+      push_cast
+      rw [hV, hV, hV, hV, ← hP]
+      ring
+    exact_mod_cast this
+  have hdivodd : ∀ i, V m ∣ V (m * (2 * i + 1)) := by
+    intro i
+    induction i with
+    | zero => simp
+    | succ i ih =>
+      rw [show 2 * (i + 1) + 1 = (2 * i + 1) + 2 by ring, hrec]
+      exact dvd_sub (dvd_mul_right _ _) (dvd_mul_of_dvd_right ih _)
+  obtain ⟨i, hi⟩ := heodd
+  have hVd : V m ∣ V (n b) := by rw [he, hi]; exact hdivodd i
+  rw [← hga.1, ← hgb.1] at hVd
+  have hpa := hprime a (by omega)
+  have hpb := hprime b (by omega)
+  have heqp : ⌊β ^ m⌋₊ = ⌊β ^ n b⌋₊ :=
+    (Nat.prime_dvd_prime_iff_eq hpa hpb).1 (Int.natCast_dvd_natCast.1 hVd)
+  -- but `β^(n b) ≥ (β^m)^2 ≥ β^m + 1`
+  have hx2 : (2 : ℝ) ≤ β ^ m := hN₁ m (by have := hM a (by omega); omega)
+  have hbig : β ^ m + 1 ≤ β ^ n b := by
+    rw [he, pow_mul]
+    have : (β ^ m) ^ 2 ≤ (β ^ m) ^ e :=
+      pow_le_pow_right₀ (by linarith) he2
+    nlinarith
+  have hfl : ⌊β ^ m⌋₊ + 1 ≤ ⌊β ^ n b⌋₊ := by
+    have := Nat.floor_le_floor hbig
+    rwa [Nat.floor_add_one (by positivity)] at this
+  omega
 
 /-! ### Assembly lemmas -/
 
