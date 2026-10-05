@@ -462,6 +462,96 @@ theorem records_pisot (hB : BakerHarmanPintz2001) (hD : Dubickas2022)
   rw [ht] at h
   exact hnot m (by omega) (t ^ (C m / g)) (by rw [← h]; push_cast; ring)
 
+open Polynomial in
+/-- The norm of `β^n − t` as a resultant: a nonzero integer. -/
+theorem one_le_norm_prod_pow_sub {β : ℝ} (hint : IsIntegral ℤ β) (n : ℕ) (t : ℤ)
+    (hne : β ^ n ≠ (t : ℝ)) :
+    1 ≤ ‖(((minpoly ℚ β).aroots ℂ).map (fun w => w ^ n - (t : ℂ))).prod‖ := by
+  classical
+  have hQ : IsIntegral ℚ β := hint.tower_top
+  set f := minpoly ℤ β with hf
+  have hfm : f.Monic := minpoly.monic hint
+  set G : ℤ[X] := X ^ n - C t with hG
+  have hGdeg : G.natDegree ≤ n := by
+    rw [hG]
+    refine (natDegree_sub_le _ _).trans ?_
+    simp
+  set φ := Int.castRingHom ℂ
+  have hmapQ : (minpoly ℚ β).map (algebraMap ℚ ℂ) = f.map φ := by
+    rw [hf, minpoly.isIntegrallyClosed_eq_field_fractions' ℚ hint, Polynomial.map_map]
+    congr 1
+  have hdeg : (f.map φ).natDegree = f.natDegree := hfm.natDegree_map φ
+  have hres : resultant (f.map φ) (G.map φ) (f.map φ).natDegree n =
+      φ (resultant f G f.natDegree n) := by
+    rw [hdeg]; exact resultant_map_map f G f.natDegree n φ
+  rw [resultant_eq_prod_eval (f.map φ) (G.map φ) n (natDegree_map_le.trans hGdeg)
+    (IsAlgClosed.splits _), (hfm.map φ).leadingCoeff, one_pow, one_mul] at hres
+  have hprod : (((minpoly ℚ β).aroots ℂ).map (fun w => w ^ n - (t : ℂ))).prod =
+      ((resultant f G f.natDegree n : ℤ) : ℂ) := by
+    rw [← eq_intCast φ (resultant f G f.natDegree n), ← hres, aroots_def, hmapQ]
+    congr 1
+    refine Multiset.map_congr rfl fun w _ => ?_
+    simp [hG, φ]
+  rw [hprod, Complex.norm_intCast]
+  have hR : resultant f G f.natDegree n ≠ 0 := by
+    intro h0
+    have h0' : (((minpoly ℚ β).aroots ℂ).map (fun w => w ^ n - (t : ℂ))).prod = 0 := by
+      rw [hprod, h0]; simp
+    obtain ⟨z, hz, hz0⟩ := Multiset.mem_map.1 (Multiset.prod_eq_zero_iff.1 h0')
+    rw [mem_aroots] at hz
+    have hmin : minpoly ℚ z = minpoly ℚ β :=
+      (minpoly.eq_of_irreducible_of_monic (minpoly.irreducible hQ) hz.2 (minpoly.monic hQ)).symm
+    have hzr : aeval z (X ^ n - C (t : ℚ)) = 0 := by
+      simp; linear_combination hz0
+    have hdvd := minpoly.dvd ℚ z hzr
+    rw [hmin] at hdvd
+    obtain ⟨q, hq⟩ := hdvd
+    have := congrArg (aeval β) hq
+    rw [map_mul, minpoly.aeval, zero_mul] at this
+    simp at this
+    exact hne (by linarith)
+  exact_mod_cast Int.one_le_abs hR
+
+/-- **Norm lower bound**: for Pisot `β` and integer `t ≠ β^n`,
+`|β^n − t| · (|t| + 1)^(ℓ−1) ≥ 1`. -/
+theorem abs_pow_sub_mul_ge_one {β : ℝ} (hβ : IsPisot β) (n : ℕ) (t : ℤ)
+    (hne : β ^ n ≠ (t : ℝ)) :
+    1 ≤ |β ^ n - t| * (|(t : ℝ)| + 1) ^ Multiset.card (otherConj β) := by
+  have hint := hβ.2.1
+  have h := one_le_norm_prod_pow_sub hint n t hne
+  have hsplit : (minpoly ℚ β).aroots ℂ = (β : ℂ) ::ₘ otherConj β :=
+    (Multiset.cons_erase (beta_mem_aroots hint.tower_top)).symm
+  rw [hsplit, Multiset.map_cons, Multiset.prod_cons, norm_mul] at h
+  have h1 : ‖(β : ℂ) ^ n - (t : ℂ)‖ = |β ^ n - t| := by
+    have e : (((β ^ n - t : ℝ)) : ℂ) = (β : ℂ) ^ n - (t : ℂ) := by push_cast; ring
+    rw [← e, Complex.norm_real, Real.norm_eq_abs]
+  have h2 : ‖((otherConj β).map (fun w => w ^ n - (t : ℂ))).prod‖ ≤
+      (|(t : ℝ)| + 1) ^ Multiset.card (otherConj β) := by
+    have hn : ∀ u : Multiset ℂ, ‖(u.map (fun w => w ^ n - (t : ℂ))).prod‖ =
+        (u.map (fun w => ‖w ^ n - (t : ℂ)‖)).prod := by
+      intro u
+      induction u using Multiset.induction with
+      | empty => simp
+      | cons a u ih => rw [Multiset.map_cons, Multiset.prod_cons, norm_mul, ih]; simp
+    rw [hn]
+    have := Multiset.prod_le_pow_card_of_le (s := (otherConj β).map (fun w => ‖w ^ n - (t : ℂ)‖))
+      (M := |(t : ℝ)| + 1) (by positivity) ?_
+    · simpa using this
+    · intro x hx
+      obtain ⟨z, hz, rfl⟩ := Multiset.mem_map.1 hx
+      refine ⟨norm_nonneg _, ?_⟩
+      have hz1 : ‖z‖ < 1 := hβ.2.2 z hz
+      calc ‖z ^ n - (t : ℂ)‖ ≤ ‖z ^ n‖ + ‖(t : ℂ)‖ := norm_sub_le _ _
+        _ ≤ 1 + |(t : ℝ)| := by
+            rw [norm_pow, Complex.norm_intCast]
+            have : ‖z‖ ^ n ≤ 1 := pow_le_one₀ (norm_nonneg _) hz1.le
+            push_cast; linarith
+        _ = |(t : ℝ)| + 1 := by ring
+  rw [h1] at h
+  calc (1 : ℝ) ≤ |β ^ n - t| * ‖((otherConj β).map (fun w => w ^ n - (t : ℂ))).prod‖ := h
+    _ ≤ |β ^ n - t| * (|(t : ℝ)| + 1) ^ Multiset.card (otherConj β) :=
+        mul_le_mul_of_nonneg_left h2 (abs_nonneg _)
+
 /-- **Step 2 (record gaps are bounded).**  After a record `r`, a run of non-records up to `m`
 forces `e {ξ^(C r)} p_r^(e−1) < 1`, `e = C m / C r ≥ 2^(m−r)` (Saito (5.1)), while the norm of
 `β^(C r/g) − p_r` is a nonzero integer: `{ξ^(C r)} ≥ (p_r+1)^(−(ℓ−1))`. -/
@@ -470,7 +560,146 @@ theorem record_gap_bounded
     {ξ : ℝ} (hξ : IsLeast (millsSet (shiftC j s)) ξ) {g : ℕ} (hg1 : 1 ≤ g)
     (hpis : IsPisot (ξ ^ g)) {K : ℕ} (hK : ∀ m ≥ K, IsRecord (shiftC j s) ξ m → g ∣ shiftC j s m) :
     ∃ T K', ∀ m ≥ K', ∃ r, m < r ∧ r ≤ m + T ∧ IsRecord (shiftC j s) ξ r := by
-  sorry
+  classical
+  set C := shiftC j s with hCdef
+  have h1 : 1 ≤ C 1 := shiftC_pos hj1 le_rfl
+  have h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1) := fun k hk => shiftC_two_mul_le hj1 hj2 hk
+  have h5 : ∀ m ≥ 1, ∃ k > m, C m ∣ C k ∧ (29 : ℝ) / 10 * C k ≤ C (k + 1) :=
+    fun m hm => shiftC_B5 hj1 hj2 hm
+  have hξS := hξ.1
+  have hξ1 : 1 < ξ := hξS.1
+  have hξ0 : 0 < ξ := by linarith
+  have hnot := not_intCast_pow h1 h2 h5 hξS
+  have hCge := C_ge_one h1 h2
+  set L := Multiset.card (otherConj (ξ ^ g)) with hL
+  set p : ℕ → ℕ := fun k => ⌊ξ ^ C k⌋₊ with hp
+  obtain ⟨K2, hK2⟩ := eventually_atTop.1
+    ((floor_tendsto h1 h2 hξ1).eventually_ge_atTop ((2 : ℝ) ^ L + 1))
+  obtain ⟨r0, ⟨hr0rec, hr0ge⟩⟩ := ((frequently_record h1 h2 hξ hnot).and_eventually
+    (eventually_ge_atTop (K + K2 + 1))).exists
+  refine ⟨L + 2, r0, fun m hm => ?_⟩
+  by_contra hcon
+  push_neg at hcon
+  set r := Nat.findGreatest (IsRecord C ξ) m with hr
+  have hr0r : r0 ≤ r := Nat.le_findGreatest hm hr0rec
+  have hrrec : IsRecord C ξ r := Nat.findGreatest_spec hm hr0rec
+  have hrm : r ≤ m := Nat.findGreatest_le m
+  set M := m + (L + 2) with hM
+  have hnr : ∀ k, r < k → k ≤ M → ¬ IsRecord C ξ k := by
+    intro k hk1 hk2
+    rcases le_or_gt k m with h | h
+    · exact Nat.findGreatest_is_greatest hk1 h
+    · exact hcon k h hk2
+  have hmax : ∀ k, 1 ≤ k → k ≤ M → root (p k) (C k) ≤ root (p r) (C r) := by
+    intro k
+    induction k using Nat.strong_induction_on with
+    | _ k ih =>
+      intro hk hkM
+      rcases le_or_gt k r with hkr | hkr
+      · exact hrrec k hk hkr
+      · have h' := hnr k hkr hkM
+        unfold IsRecord at h'
+        push_neg at h'
+        obtain ⟨k', hk'1, hk'k, hlt⟩ := h'
+        rcases Nat.lt_or_ge k' k with h | h
+        · exact le_trans hlt.le (ih k' h hk'1 (by omega))
+        · have : k' = k := by omega
+          subst this; exact absurd hlt (lt_irrefl _)
+  have hr1 : 1 ≤ r := by omega
+  have hlt : root (p M) (C M) < root (p r) (C r) := by
+    have h' := hnr M (by omega) le_rfl
+    unfold IsRecord at h'
+    push_neg at h'
+    obtain ⟨k', hk'1, hk'M, hlt⟩ := h'
+    exact lt_of_lt_of_le hlt (hmax k' hk'1 hk'M)
+  -- `C M ≥ 2^(L+2) C r`
+  have hCpow : ∀ i, 2 ^ i * C r ≤ C (r + i) := by
+    intro i
+    induction i with
+    | zero => simp
+    | succ i ih =>
+      have := h2 (r + i) (by omega)
+      rw [pow_succ, show r + (i + 1) = r + i + 1 by ring]
+      nlinarith
+  have hCr : 0 < C r := hCge r hr1
+  have hCM : 2 ^ (L + 2) * C r ≤ C M := by
+    have := hCpow (M - r)
+    rw [show r + (M - r) = M by omega] at this
+    exact le_trans (Nat.mul_le_mul_right _ (Nat.pow_le_pow_right (by norm_num) (by omega))) this
+  set c : ℝ := (C M : ℝ) / C r with hc
+  have hCr' : (0 : ℝ) < C r := by exact_mod_cast hCr
+  have hc2 : ((2 : ℝ) ^ (L + 2)) ≤ c := by
+    rw [hc, le_div_iff₀ hCr']; exact_mod_cast hCM
+  have hLc : (L : ℝ) + 2 ≤ c := by
+    have : ((L + 2 : ℕ) : ℝ) ≤ (2 : ℝ) ^ (L + 2) := by
+      exact_mod_cast (Nat.lt_pow_self (by norm_num : 1 < 2)).le
+    push_cast at this; linarith
+  set x := ξ ^ C r with hx
+  have hx1 : 1 ≤ x := one_le_pow₀ hξ1.le
+  have hxc : x ^ c = ξ ^ C M := by
+    rw [hx, ← Real.rpow_natCast ξ (C r), ← Real.rpow_mul hξ0.le, hc,
+      mul_div_cancel₀ _ hCr'.ne', Real.rpow_natCast]
+  have hfl : (⌊x ^ c⌋₊ : ℝ) < (⌊x⌋₊ : ℝ) ^ c := by
+    rw [hxc]
+    have hpM := root_pow (Nat.cast_nonneg (p M)) (hCge M (by omega))
+    have hpos : 0 ≤ root (p M) (C M) := by rw [root]; positivity
+    have h3 : (p M : ℝ) < root (p r) (C r) ^ C M := by
+      rw [← hpM]; exact pow_lt_pow_left₀ hlt hpos (by have := hCge M (by omega); omega)
+    have h4 : root (p r) (C r) ^ C M = (p r : ℝ) ^ c := by
+      rw [root, ← Real.rpow_natCast, ← Real.rpow_mul (Nat.cast_nonneg _), hc]
+      congr 1; field_simp
+    rw [h4] at h3
+    exact h3
+  have hkey := fract_lt_of_floor_lt hx1 (by linarith) hfl
+  -- the norm bound
+  have hgr : g ∣ C r := hK r (by omega) hrrec
+  have hβn : (ξ ^ g) ^ (C r / g) = x := by rw [hx, ← pow_mul, Nat.mul_div_cancel' hgr]
+  set P : ℝ := (⌊x⌋₊ : ℝ) with hP
+  have hfr : Int.fract x = x - P := by
+    rw [hP, Int.fract, ← Int.natCast_floor_eq_floor (by linarith)]; push_cast; ring
+  have hxne : (ξ ^ g) ^ (C r / g) ≠ ((⌊x⌋₊ : ℤ) : ℝ) := by
+    rw [hβn]; exact hnot r hr1 _
+  have hnorm := abs_pow_sub_mul_ge_one hpis (C r / g) (⌊x⌋₊ : ℤ) hxne
+  rw [hβn] at hnorm
+  have habs : |x - ((⌊x⌋₊ : ℤ) : ℝ)| = Int.fract x := by
+    rw [hfr, hP]; push_cast
+    exact abs_of_nonneg (by linarith [Nat.floor_le (by linarith : (0:ℝ) ≤ x)])
+  have habsP : |(((⌊x⌋₊ : ℤ) : ℝ))| = P := by rw [hP]; push_cast; exact abs_of_nonneg (by positivity)
+  rw [habs, habsP] at hnorm
+  -- `P ≥ 2^L + 1`
+  have hPbig : (2 : ℝ) ^ L + 1 ≤ P := hK2 r (by omega)
+  have hP1 : 1 ≤ P := by have : (1 : ℝ) ≤ 2 ^ L := one_le_pow₀ (by norm_num); linarith
+  have hP0 : 0 < P := by linarith
+  have hfr0 : 0 ≤ Int.fract x := Int.fract_nonneg x
+  -- `P^(c−1) ≥ P^(L+1)`
+  have hpw : P ^ (L + 1) ≤ P ^ (c - 1) := by
+    rw [← Real.rpow_natCast]
+    exact Real.rpow_le_rpow_of_exponent_le hP1 (by push_cast; linarith)
+  have hA : Int.fract x * P ^ (L + 1) < 1 := by
+    have e1 : Int.fract x * P ^ (L + 1) ≤ Int.fract x * P ^ (c - 1) :=
+      mul_le_mul_of_nonneg_left hpw hfr0
+    have e0 : 0 ≤ Int.fract x * P ^ (c - 1) := mul_nonneg hfr0 (by positivity)
+    have e2 : Int.fract x * P ^ (c - 1) ≤ c * Int.fract x * P ^ (c - 1) := by
+      rw [mul_assoc]; nlinarith
+    linarith
+  have hB : (P + 1) ^ L ≤ 2 ^ L * P ^ L := by
+    rw [← mul_pow]; exact pow_le_pow_left₀ (by linarith) (by linarith) L
+  -- `1 ≤ fract (P+1)^L ≤ fract 2^L P^L` and `fract P^(L+1) < 1` give `P < 2^L`
+  have hC1 : 1 ≤ Int.fract x * (2 ^ L * P ^ L) :=
+    le_trans hnorm (mul_le_mul_of_nonneg_left hB hfr0)
+  set y := Int.fract x * P ^ L with hy
+  have hA' : P * y < 1 := by
+    have e : Int.fract x * P ^ (L + 1) = P * y := by rw [hy]; ring
+    linarith
+  have hC1' : 1 ≤ 2 ^ L * y := by
+    have e : Int.fract x * (2 ^ L * P ^ L) = 2 ^ L * y := by rw [hy]; ring
+    linarith
+  have hy0 : 0 < y := by
+    by_contra h; push_neg at h
+    have : (2 : ℝ) ^ L * y ≤ 0 := mul_nonpos_of_nonneg_of_nonpos (by positivity) h
+    linarith
+  have : P < 2 ^ L := lt_of_mul_lt_mul_right (by linarith : P * y < 2 ^ L * y) hy0.le
+  linarith
 
 /-- **Step 3 (degree `≤ 3`, no Baker).**  Decay `151/400` at records, records with bounded gaps,
 and the orbit `n ↦ 3n − d` (Mignotte/Smyth: the dominant other conjugates are one real or one

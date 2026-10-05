@@ -2,7 +2,7 @@
 xi_shift_transcendental_classical now proved from saitoTypeB_shift (no hG).  Open on path:
  1. records_pisot PROVED (record_decay + minimal-g gcd argument).
     Nat.nth records; exists_pisot_of_decay_subseq').  Elementary, do first.
- 2. record_gap_bounded (fract_lt_of_floor_lt + norm of β^n − p nonzero integer).
+ 2. record_gap_bounded PROVED (resultant norm one_le_norm_prod_pow_sub + Saito (5.1)).
  3. card_le_two_of_records (needs conjPowSum_lower_of_recurrence generalised to bounded gaps).
  4. eventually_record_of_card_le_two (deg 2: norm; deg 3: unit + e₂(β^n)=0; 3-adic Skolem finiteness).
  + NoGap.conjPowSum_lower_of_recurrence (Smyth/Mignotte + a_k² dynamics).
