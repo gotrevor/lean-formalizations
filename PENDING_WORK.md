@@ -2218,3 +2218,12 @@ reuse with T₀ = Z^{c₀}; (ii) long average via ShortIntervalPrimesLower; (iii
   `almost_all_F385_powerSaving`, `badCount_powerSaving`: #print axioms = [propext, Classical.choice,
   Quot.sound] (mod the literature Props as hypotheses). Only scoped sorry left:
   `nearOneLargeValues_of_density` (frozen, OFF headline, DIRECTION forbids; stated acceptable finish).
+
+## phase 61 (2026-10-05, branch `mills-eplus`): Theorem E+
+A (edge) and B (Saito wiring) PROVED axiom-clean.  Node C decomposed in `Mills/ShiftRigidity.lean`;
+`rigidity_generic` (Step 4) PROVED: 3-cycle automorphism over L + circulant Fourier argument + the
+equilateral exclusion (centroid c = ω/tr(β^s) ∈ ℚ; one-zero vertex ⇒ 3c² = 1).  No √−3 needed.
+Open in node C: `not_primeTraces_of_cube`, `exists_spectral` (the transfer: window for 3^n+s,
+T^(Q+1)=T with type-specific Q ∈ {2,8,26}, U·C^(s⁻)=T·C^(s⁺), y·(T∓1)_ab = 1), `eq_one_or_neg_one_of_const`,
+`not_mem_cycField_{two,eight}`, `e1_empty` (Frobenius coherence P(h(C)) = P(C)^3 + rank certificate).
+Node D untouched.

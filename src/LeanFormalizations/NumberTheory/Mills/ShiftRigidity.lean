@@ -60,6 +60,17 @@ def PrimeTraces (f : ℤ[X]) (s : ℤ) : Prop :=
 noncomputable def cycField (Q : ℕ) : IntermediateField ℚ AlgQ :=
   IntermediateField.adjoin ℚ {z : AlgQ | z ^ Q = 1}
 
+theorem unimod_of_pow_succ {Q : ℕ} (hQ : 1 ≤ Q) {u : AlgQ} (hu : u ^ (Q + 1) = u) :
+    u = 0 ∨ ‖(u : ℂ)‖ = 1 := by
+  by_cases h0 : u = 0
+  · exact Or.inl h0
+  · right
+    have : u * (u ^ Q - 1) = 0 := by rw [mul_sub, ← pow_succ', hu]; ring
+    have hQ1 : u ^ Q = 1 := sub_eq_zero.1 ((mul_eq_zero.1 this).resolve_left h0)
+    have hc : ((u : ℂ)) ^ Q = 1 := by
+      have := congrArg (fun z : AlgQ => (z : ℂ)) hQ1; simpa using this
+    exact norm_eq_one_of_pow_eq_one hQ hc
+
 theorem mem_cycField {Q : ℕ} {u : AlgQ} (hu : u ^ (Q + 1) = u) : u ∈ cycField Q := by
   by_cases h0 : u = 0
   · rw [h0]; exact (cycField Q).zero_mem
@@ -69,6 +80,443 @@ theorem mem_cycField {Q : ℕ} {u : AlgQ} (hu : u ^ (Q + 1) = u) : u ∈ cycFiel
     rcases mul_eq_zero.1 this with h | h
     · exact absurd h h0
     · exact sub_eq_zero.1 h
+
+/-! ### Step 4: the circulant and the 3-cycle -/
+
+/-- Three points `c + a_k` (`c` rational, `Σ a = 0`, `e₂(a) = 0`), each `0` or unimodular,
+force `a = 0`. -/
+theorem norm_eq_of_e2 {a0 a1 a2 : ℂ} (h1 : a0 + a1 + a2 = 0)
+    (h2 : a0 * a1 + a1 * a2 + a2 * a0 = 0) : ‖a0‖ = ‖a1‖ ∧ ‖a1‖ = ‖a2‖ := by
+  have s0 : a0 ^ 2 = a1 * a2 := by
+    have : a0 = -a1 - a2 := by linear_combination h1
+    subst this; linear_combination -h2
+  have s1 : a1 ^ 2 = a0 * a2 := by
+    have : a1 = -a0 - a2 := by linear_combination h1
+    subst this; linear_combination -h2
+  have s2 : a2 ^ 2 = a0 * a1 := by
+    have : a2 = -a0 - a1 := by linear_combination h1
+    subst this; linear_combination -h2
+  have n0 : ‖a0‖ ^ 2 = ‖a1‖ * ‖a2‖ := by rw [← norm_pow, s0, norm_mul]
+  have n1 : ‖a1‖ ^ 2 = ‖a0‖ * ‖a2‖ := by rw [← norm_pow, s1, norm_mul]
+  have n2 : ‖a2‖ ^ 2 = ‖a0‖ * ‖a1‖ := by rw [← norm_pow, s2, norm_mul]
+  have p0 := norm_nonneg a0; have p1 := norm_nonneg a1; have p2 := norm_nonneg a2
+  have c01 : ‖a0‖ ^ 3 = ‖a1‖ ^ 3 := by nlinarith
+  have c12 : ‖a1‖ ^ 3 = ‖a2‖ ^ 3 := by nlinarith
+  exact ⟨(pow_left_inj₀ p0 p1 (by norm_num)).1 c01, (pow_left_inj₀ p1 p2 (by norm_num)).1 c12⟩
+
+theorem normSq_add_real (c : ℝ) (a : ℂ) : ‖(c : ℂ) + a‖ ^ 2 = c ^ 2 + 2 * c * a.re + ‖a‖ ^ 2 := by
+  rw [← Complex.normSq_eq_norm_sq, ← Complex.normSq_eq_norm_sq, Complex.normSq_apply,
+    Complex.normSq_apply]
+  simp; ring
+
+theorem not_three_sq_eq_one (c : ℚ) : (3 : ℝ) * (c : ℝ) ^ 2 ≠ 1 := by
+  intro h
+  have hq : (3 : ℚ) * c ^ 2 = 1 := by exact_mod_cast h
+  have hirr : Irrational (Real.sqrt 3) := by
+    simpa using (Nat.Prime.irrational_sqrt (p := 3) Nat.prime_three)
+  apply hirr
+  refine ⟨|3 * c|, ?_⟩
+  have h9 : ((|3 * c| : ℚ) : ℝ) ^ 2 = 3 := by
+    push_cast; rw [sq_abs]; nlinarith
+  rw [← Real.sqrt_sq (show (0:ℝ) ≤ ((|3 * c| : ℚ) : ℝ) by positivity), h9]
+
+/-- one-zero case: `a0 = -c` -/
+theorem equilateral_one_zero {a0 a1 a2 : ℂ} {c : ℚ} (hc : c ≠ 0) (h1 : a0 + a1 + a2 = 0)
+    (h2 : a0 * a1 + a1 * a2 + a2 * a0 = 0) (h0 : (c : ℂ) + a0 = 0)
+    (hu1 : (c : ℂ) + a1 = 0 ∨ ‖(c : ℂ) + a1‖ = 1) (hu2 : (c : ℂ) + a2 = 0 ∨ ‖(c : ℂ) + a2‖ = 1) :
+    False := by
+  obtain ⟨e01, e12⟩ := norm_eq_of_e2 h1 h2
+  have ha0 : a0 = -(c : ℂ) := by linear_combination h0
+  have hn0 : ‖a0‖ = |(c : ℝ)| := by rw [ha0, norm_neg]; simp
+  have hcR : (c : ℝ) ≠ 0 := by exact_mod_cast hc
+  have hre : a1.re + a2.re = c := by
+    have := congrArg Complex.re h1; rw [ha0] at this; simp at this; linarith
+  have key : ∀ a : ℂ, ‖a‖ = |(c : ℝ)| → (c : ℂ) + a = 0 → a = -(c : ℂ) := by
+    intro a _ h; linear_combination h
+  rcases hu1 with z1 | n1
+  · -- a1 = -c, then a2 = 2c, wrong modulus
+    have ha1 : a1 = -(c : ℂ) := by linear_combination z1
+    have ha2 : a2 = 2 * (c : ℂ) := by linear_combination h1 - ha0 - ha1
+    have : ‖a2‖ = 2 * |(c : ℝ)| := by rw [ha2, norm_mul]; simp
+    have hpos : 0 < |(c : ℝ)| := abs_pos.2 hcR
+    rw [← e12, ← e01, hn0] at this; linarith
+  rcases hu2 with z2 | n2
+  · have ha2 : a2 = -(c : ℂ) := by linear_combination z2
+    have ha1 : a1 = 2 * (c : ℂ) := by linear_combination h1 - ha0 - ha2
+    have : ‖a1‖ = 2 * |(c : ℝ)| := by rw [ha1, norm_mul]; simp
+    have hpos : 0 < |(c : ℝ)| := abs_pos.2 hcR
+    rw [← e01, hn0] at this; linarith
+  have q1 := normSq_add_real c a1
+  have q2 := normSq_add_real c a2
+  push_cast at q1 q2
+  rw [n1, ← e01, hn0, sq_abs] at q1
+  rw [n2, ← e12, ← e01, hn0, sq_abs] at q2
+  have : (3 : ℝ) * (c : ℝ) ^ 2 = 1 := by
+    have : (2 : ℝ) = 4 * c ^ 2 + 2 * c * (a1.re + a2.re) := by linarith
+    rw [hre] at this; linarith
+  exact not_three_sq_eq_one c this
+
+theorem equilateral_zero {a0 a1 a2 : ℂ} {c : ℚ} (hc : c ≠ 0) (h1 : a0 + a1 + a2 = 0)
+    (h2 : a0 * a1 + a1 * a2 + a2 * a0 = 0)
+    (hu0 : (c : ℂ) + a0 = 0 ∨ ‖(c : ℂ) + a0‖ = 1)
+    (hu1 : (c : ℂ) + a1 = 0 ∨ ‖(c : ℂ) + a1‖ = 1) (hu2 : (c : ℂ) + a2 = 0 ∨ ‖(c : ℂ) + a2‖ = 1) :
+    a0 = 0 ∧ a1 = 0 ∧ a2 = 0 := by
+  rcases hu0 with z0 | n0
+  · exact (equilateral_one_zero hc h1 h2 z0 hu1 hu2).elim
+  rcases hu1 with z1 | n1
+  · exact (equilateral_one_zero (a0 := a1) (a1 := a2) (a2 := a0) hc (by linear_combination h1)
+      (by linear_combination h2) z1 hu2 (Or.inr n0)).elim
+  rcases hu2 with z2 | n2
+  · exact (equilateral_one_zero (a0 := a2) (a1 := a0) (a2 := a1) hc (by linear_combination h1)
+      (by linear_combination h2) z2 (Or.inr n0) (Or.inr n1)).elim
+  obtain ⟨e01, e12⟩ := norm_eq_of_e2 h1 h2
+  have hcR : (c : ℝ) ≠ 0 := by exact_mod_cast hc
+  have q0 := normSq_add_real c a0
+  have q1 := normSq_add_real c a1
+  have q2 := normSq_add_real c a2
+  push_cast at q0 q1 q2
+  rw [n0] at q0; rw [n1, ← e01] at q1; rw [n2, ← e12, ← e01] at q2
+  have hre : a0.re + a1.re + a2.re = 0 := by
+    have := congrArg Complex.re h1; simpa using this
+  have r01 : a0.re = a1.re := mul_left_cancel₀ (mul_ne_zero two_ne_zero hcR) (by linarith)
+  have r12 : a1.re = a2.re := mul_left_cancel₀ (mul_ne_zero two_ne_zero hcR) (by linarith)
+  have r0 : a0.re = 0 := by linarith
+  have r1 : a1.re = 0 := by linarith
+  have r2 : a2.re = 0 := by linarith
+  -- `Σ a_k² = 0` with purely imaginary `a_k`
+  have hsq : a0 ^ 2 + a1 ^ 2 + a2 ^ 2 = 0 := by linear_combination (a0 + a1 + a2) * h1 - 2 * h2
+  have hre2 := congrArg Complex.re hsq
+  simp [pow_two, r0, r1, r2] at hre2
+  have i0 : a0.im = 0 := by nlinarith [sq_nonneg a0.im, sq_nonneg a1.im, sq_nonneg a2.im]
+  have i1 : a1.im = 0 := by nlinarith [sq_nonneg a0.im, sq_nonneg a1.im, sq_nonneg a2.im]
+  have i2 : a2.im = 0 := by nlinarith [sq_nonneg a0.im, sq_nonneg a1.im, sq_nonneg a2.im]
+  exact ⟨Complex.ext r0 i0, Complex.ext r1 i1, Complex.ext r2 i2⟩
+
+theorem circulant_const {u0 u1 u2 w0 w1 w2 : ℂ} {r q : ℚ} (hr : r ≠ 0)
+    (hT : w0 + w1 + w2 = q) (hw : ¬ (w0 = w2 ∧ w1 = w2))
+    (hu0 : u0 = 0 ∨ ‖u0‖ = 1) (hu1 : u1 = 0 ∨ ‖u1‖ = 1) (hu2 : u2 = 0 ∨ ‖u2‖ = 1)
+    (E0 : u0 * w0 + u1 * w1 + u2 * w2 = r) (E1 : u0 * w1 + u1 * w2 + u2 * w0 = r)
+    (E2 : u0 * w2 + u1 * w0 + u2 * w1 = r) : u0 = u1 ∧ u1 = u2 := by
+  have hS : (u0 + u1 + u2) * (q : ℂ) = 3 * r := by
+    rw [← hT]; linear_combination E0 + E1 + E2
+  have hq : q ≠ 0 := by
+    rintro rfl; simp at hS; exact hr (by exact_mod_cast hS)
+  have hqC : (q : ℂ) ≠ 0 := by exact_mod_cast hq
+  obtain ⟨c, hc⟩ : ∃ c : ℚ, c = r / q := ⟨_, rfl⟩
+  have hc0 : c ≠ 0 := by rw [hc]; exact div_ne_zero hr hq
+  have hcq : (c : ℂ) * q = r := by rw [hc]; push_cast; field_simp
+  have h3 : u0 + u1 + u2 = 3 * c := by
+    apply mul_right_cancel₀ hqC; rw [hS, mul_assoc, hcq]
+  have h1 : (u0 - c) + (u1 - c) + (u2 - c) = 0 := by linear_combination h3
+  have F0 : (u0 - c) * (w0 - w2) + (u1 - c) * (w1 - w2) = 0 := by
+    linear_combination E0 - (c : ℂ) * hT - hcq - w2 * h1
+  have F1 : (u0 - c) * ((w1 - w2) - (w0 - w2)) - (u1 - c) * (w0 - w2) = 0 := by
+    linear_combination E1 - (c : ℂ) * hT - hcq - w0 * h1
+  have hall : u0 - c = 0 ∧ u1 - c = 0 ∧ u2 - c = 0 := by
+    set a0 := u0 - (c : ℂ) with ha0
+    set a1 := u1 - (c : ℂ) with ha1
+    set a2 := u2 - (c : ℂ) with ha2
+    set x := w0 - w2 with hx
+    set y := w1 - w2 with hy
+    by_cases hD : x ^ 2 - x * y + y ^ 2 = 0
+    · have hx0 : x ≠ 0 := by
+        intro h0
+        rw [h0] at hD
+        have : y = 0 := by simpa using hD
+        exact hw ⟨by rw [← sub_eq_zero, ← hx, h0], by rw [← sub_eq_zero, ← hy, this]⟩
+      have he : x ^ 2 * (a0 ^ 2 + a0 * a1 + a1 ^ 2) = 0 := by
+        linear_combination (a0 * x + a1 * x - a1 * y) * F0 + a1 ^ 2 * hD
+      have he' : a0 ^ 2 + a0 * a1 + a1 ^ 2 = 0 :=
+        (mul_eq_zero.1 he).resolve_left (pow_ne_zero 2 hx0)
+      have h2 : a0 * a1 + a1 * a2 + a2 * a0 = 0 := by
+        have : a2 = -a0 - a1 := by linear_combination h1
+        rw [this]; linear_combination -he'
+      have e := equilateral_zero hc0 h1 h2
+        (by rcases hu0 with h | h
+            · left; rw [ha0, h]; ring
+            · right; rw [ha0]; simpa using h)
+        (by rcases hu1 with h | h
+            · left; rw [ha1, h]; ring
+            · right; rw [ha1]; simpa using h)
+        (by rcases hu2 with h | h
+            · left; rw [ha2, h]; ring
+            · right; rw [ha2]; simpa using h)
+      exact e
+    · have z0 : a0 * (x ^ 2 - x * y + y ^ 2) = 0 := by linear_combination x * F0 + y * F1
+      have z1 : a1 * (x ^ 2 - x * y + y ^ 2) = 0 := by linear_combination (y - x) * F0 - x * F1
+      have a00 := (mul_eq_zero.1 z0).resolve_right hD
+      have a10 := (mul_eq_zero.1 z1).resolve_right hD
+      exact ⟨a00, a10, by linear_combination h1 - a00 - a10⟩
+  obtain ⟨k0, k1, k2⟩ := hall
+  exact ⟨by linear_combination k0 - k1, by linear_combination k1 - k2⟩
+
+
+/-- An injective enumeration of three roots of a cubic hits every root. -/
+theorem root_enum_surj {K : Type*} [Field K] {f : ℤ[X]} (hmon : f.Monic) (hdeg : f.natDegree = 3)
+    {e : Fin 3 → K} (hinj : Function.Injective e)
+    (he : ∀ k, (f.map (Int.castRingHom K)).eval (e k) = 0) {z : K}
+    (hz : (f.map (Int.castRingHom K)).eval z = 0) : ∃ k, e k = z := by
+  classical
+  by_contra hcon
+  push_neg at hcon
+  set g := f.map (Int.castRingHom K) with hg
+  have hg0 : g ≠ 0 := (hmon.map _).ne_zero
+  have hgd : g.natDegree = 3 := by rw [hg, hmon.natDegree_map, hdeg]
+  have hsub : insert z (Finset.univ.image e) ⊆ g.roots.toFinset := by
+    intro x hx
+    rw [Multiset.mem_toFinset, Polynomial.mem_roots hg0]
+    rcases Finset.mem_insert.1 hx with rfl | hx
+    · exact hz
+    · obtain ⟨k, _, rfl⟩ := Finset.mem_image.1 hx; exact he k
+  have hcard : (insert z (Finset.univ.image e)).card = 4 := by
+    rw [Finset.card_insert_of_notMem, Finset.card_image_of_injective _ hinj]
+    · simp
+    · intro hm; obtain ⟨k, _, hk⟩ := Finset.mem_image.1 hm; exact hcon k hk
+  have h1 := Finset.card_le_card hsub
+  have h2 := Multiset.toFinset_card_le g.roots
+  have h3 := Polynomial.card_roots' g
+  omega
+
+/-- `Σ_k P(e_k)` is rational for `P ∈ ℚ[X]`. -/
+theorem sum_aeval_rat {K : Type*} [Field K] [CharZero K] {f : ℤ[X]} (hmon : f.Monic)
+    (hdeg : f.natDegree = 3) {e : Fin 3 → K} (hinj : Function.Injective e)
+    (he : ∀ k, (f.map (Int.castRingHom K)).eval (e k) = 0) (P : ℚ[X]) :
+    ∃ q : ℚ, ∑ k, aeval (e k) P = (q : K) := by
+  classical
+  refine ⟨∑ j ∈ Finset.range (P.natDegree + 1), P.coeff j * traceSeq f j, ?_⟩
+  have hd : f.natDegree = 3 := hdeg
+  have hroot : ∀ N, ((traceSeq f N : ℤ) : K) = ∑ k, e k ^ N := by
+    intro N
+    have := traceSeq_eq_root_sum (K := K) f hmon (fun i => e (Fin.cast hd i))
+      (fun i => he _) (fun i j h => Fin.cast_injective hd (hinj h)) N
+    rw [this]
+    exact Fintype.sum_equiv (finCongr hd) _ _ (fun i => rfl)
+  simp_rw [Polynomial.aeval_eq_sum_range]
+  rw [Finset.sum_comm]
+  push_cast
+  refine Finset.sum_congr rfl fun j _ => ?_
+  rw [hroot j, Finset.mul_sum]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  rw [Algebra.smul_def]; rfl
+
+theorem eval_cubic {K : Type*} [CommRing K] [Nontrivial K] {f : ℤ[X]} (hmon : f.Monic) (hdeg : f.natDegree = 3)
+    (z : K) : (f.map (Int.castRingHom K)).eval z
+      = z ^ 3 + (f.coeff 2 : K) * z ^ 2 + (f.coeff 1 : K) * z + (f.coeff 0 : K) := by
+  rw [Polynomial.eval_eq_sum_range, hmon.natDegree_map, hdeg]
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero, Polynomial.coeff_map, eq_intCast]
+  have h3 : f.coeff 3 = 1 := by rw [← hdeg]; exact hmon.coeff_natDegree
+  rw [h3]; push_cast; ring
+
+/-- `Σ_k e_k^s` is rational for every integer `s`. -/
+theorem sum_zpow_rat {K : Type*} [Field K] [CharZero K] {f : ℤ[X]} (hmon : f.Monic)
+    (hdeg : f.natDegree = 3) (hc0 : f.coeff 0 ≠ 0) {e : Fin 3 → K} (hinj : Function.Injective e)
+    (he : ∀ k, (f.map (Int.castRingHom K)).eval (e k) = 0) (s : ℤ) :
+    ∃ q : ℚ, ∑ k, e k ^ s = (q : K) := by
+  set hinv : ℚ[X] := -C ((f.coeff 0 : ℚ)⁻¹) * (X ^ 2 + C (f.coeff 2 : ℚ) * X + C (f.coeff 1 : ℚ))
+  have hc0K : (f.coeff 0 : K) ≠ 0 := by exact_mod_cast hc0
+  have hinvK : ∀ k, (e k)⁻¹ = aeval (e k) hinv := by
+    intro k
+    have h := he k
+    rw [eval_cubic hmon hdeg] at h
+    have hek : e k ≠ 0 := by
+      intro h0; rw [h0] at h; simp at h; exact hc0 h
+    simp only [hinv, map_mul, map_neg, map_add, map_pow, aeval_C, aeval_X,
+      eq_ratCast, map_inv₀, Rat.cast_intCast]
+    field_simp
+    linear_combination h
+  rcases s.eq_nat_or_neg with ⟨n, rfl | rfl⟩
+  · obtain ⟨q, hq⟩ := sum_aeval_rat hmon hdeg hinj he (X ^ n)
+    exact ⟨q, by simpa using hq⟩
+  · obtain ⟨q, hq⟩ := sum_aeval_rat hmon hdeg hinj he (hinv ^ n)
+    refine ⟨q, ?_⟩
+    rw [← hq]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [zpow_neg, zpow_natCast, ← inv_pow, hinvK k, map_pow]
+
+/-- Roots of `f` with no root in `L` are conjugate over `L`. -/
+theorem exists_auto_over {f : ℤ[X]} (hmon : f.Monic) (hdeg : f.natDegree = 3)
+    (L : IntermediateField ℚ AlgQ)
+    (hL : ∀ x : AlgQ, (f.map (Int.castRingHom AlgQ)).eval x = 0 → x ∉ L) {x y : AlgQ}
+    (hx : (f.map (Int.castRingHom AlgQ)).eval x = 0)
+    (hy : (f.map (Int.castRingHom AlgQ)).eval y = 0) :
+    ∃ σ : AlgQ ≃ₐ[L] AlgQ, σ x = y := by
+  haveI : Normal L AlgQ := Normal.tower_top_of_normal ℚ L AlgQ
+  set g : L[X] := f.map (Int.castRingHom L) with hg
+  have hgm : g.Monic := hmon.map _
+  have hgd : g.natDegree = 3 := by rw [hg, hmon.natDegree_map, hdeg]
+  have hbr : ∀ z : AlgQ, aeval z g = (f.map (Int.castRingHom AlgQ)).eval z := by
+    intro z
+    rw [hg, Polynomial.aeval_def, Polynomial.eval₂_eq_eval_map, Polynomial.map_map]
+    congr 2
+  have hgirr : Irreducible g := by
+    refine Polynomial.irreducible_of_degree_le_three_of_not_isRoot (by rw [hgd]; decide) ?_
+    intro r hr
+    apply hL (r : AlgQ) _ r.2
+    rw [← hbr]
+    have : aeval (r : AlgQ) g = algebraMap L AlgQ (g.eval r) := by
+      exact Polynomial.aeval_algebraMap_apply_eq_algebraMap_eval (A := AlgQ) r g
+    rw [this, hr.eq_zero, map_zero]
+  have hmin : minpoly L y = g :=
+    (minpoly.eq_of_irreducible_of_monic hgirr (by rw [hbr]; exact hy) hgm).symm
+  have halg : IsAlgebraic L y := ⟨g, hgm.ne_zero, by rw [hbr]; exact hy⟩
+  exact minpoly.exists_algEquiv_of_root halg (by rw [hmin, hbr]; exact hx)
+
+theorem root_map_alg {f : ℤ[X]} {L : IntermediateField ℚ AlgQ} (σ : AlgQ ≃ₐ[L] AlgQ) {z : AlgQ}
+    (hz : (f.map (Int.castRingHom AlgQ)).eval z = 0) :
+    (f.map (Int.castRingHom AlgQ)).eval (σ z) = 0 := by
+  have h := Polynomial.hom_eval₂ f (Int.castRingHom AlgQ) (σ : AlgQ →+* AlgQ) z
+  rw [Polynomial.eval_map] at hz ⊢
+  rw [hz, map_zero] at h
+  rw [show (σ : AlgQ →+* AlgQ).comp (Int.castRingHom AlgQ) = Int.castRingHom AlgQ from
+    RingHom.ext_int _ _] at h
+  exact h.symm
+
+/-- **The 3-cycle**: some automorphism over `L` cycles the three roots. -/
+theorem exists_three_cycle {f : ℤ[X]} (hmon : f.Monic) (hdeg : f.natDegree = 3)
+    (L : IntermediateField ℚ AlgQ)
+    (hL : ∀ x : AlgQ, (f.map (Int.castRingHom AlgQ)).eval x = 0 → x ∉ L)
+    {e : Fin 3 → AlgQ} (hinj : Function.Injective e)
+    (he : ∀ k, (f.map (Int.castRingHom AlgQ)).eval (e k) = 0) :
+    ∃ σ : AlgQ ≃ₐ[L] AlgQ, ∃ a b : Fin 3, a ≠ 0 ∧ b ≠ 0 ∧ a ≠ b ∧
+      σ (e 0) = e a ∧ σ (e a) = e b ∧ σ (e b) = e 0 := by
+  have img : ∀ (σ : AlgQ ≃ₐ[L] AlgQ) k, ∃ j, σ (e k) = e j := fun σ k =>
+    let ⟨j, hj⟩ := root_enum_surj hmon hdeg hinj he (root_map_alg σ (he k)); ⟨j, hj.symm⟩
+  have inj : ∀ (σ : AlgQ ≃ₐ[L] AlgQ) k k', σ (e k) = σ (e k') → k = k' := fun σ k k' h =>
+    hinj (σ.injective h)
+  obtain ⟨σ1, h1⟩ := exists_auto_over hmon hdeg L hL (he 0) (he 1)
+  obtain ⟨σ2, h2⟩ := exists_auto_over hmon hdeg L hL (he 0) (he 2)
+  obtain ⟨j, hj⟩ := img σ1 1
+  obtain ⟨k, hk⟩ := img σ1 2
+  fin_cases j
+  · -- σ1 swaps e0, e1 and fixes e2
+    have hk2 : k = 2 := by
+      fin_cases k
+      · exact absurd (inj σ1 2 1 (hk.trans hj.symm)) (by decide)
+      · exact absurd (inj σ1 2 0 (hk.trans h1.symm)) (by decide)
+      · rfl
+    subst hk2
+    obtain ⟨j', hj'⟩ := img σ2 2
+    obtain ⟨k', hk'⟩ := img σ2 1
+    fin_cases j'
+    · have hk1 : k' = 1 := by
+        fin_cases k'
+        · exact absurd (inj σ2 1 2 (hk'.trans hj'.symm)) (by decide)
+        · rfl
+        · exact absurd (inj σ2 1 0 (hk'.trans h2.symm)) (by decide)
+      subst hk1
+      refine ⟨σ1 * σ2, 2, 1, by decide, by decide, by decide, ?_, ?_, ?_⟩
+      · simp only [AlgEquiv.mul_apply, h2]; exact hk
+      · simp only [AlgEquiv.mul_apply]; rw [hj']; exact h1
+      · simp only [AlgEquiv.mul_apply]; rw [hk']; exact hj
+    · have hk0 : k' = 0 := by
+        fin_cases k'
+        · rfl
+        · exact absurd (inj σ2 1 2 (hk'.trans hj'.symm)) (by decide)
+        · exact absurd (inj σ2 1 0 (hk'.trans h2.symm)) (by decide)
+      subst hk0
+      exact ⟨σ2, 2, 1, by decide, by decide, by decide, h2, hj', hk'⟩
+    · exact absurd (inj σ2 2 0 (hj'.trans h2.symm)) (by decide)
+  · exact absurd (inj σ1 1 0 (hj.trans h1.symm)) (by decide)
+  · have hk0 : k = 0 := by
+      fin_cases k
+      · rfl
+      · exact absurd (inj σ1 2 0 (hk.trans h1.symm)) (by decide)
+      · exact absurd (inj σ1 2 1 (hk.trans hj.symm)) (by decide)
+    subst hk0
+    exact ⟨σ1, 1, 2, by decide, by decide, by decide, h1, hj, hk⟩
+
+theorem coeff_zero_ne_zero {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible f)
+    (hdeg : f.natDegree = 3) : f.coeff 0 ≠ 0 := by
+  intro h
+  obtain ⟨g, hgeq⟩ : (Polynomial.X : ℤ[X]) ∣ f := Polynomial.X_dvd_iff.2 h
+  have hg0 : g ≠ 0 := by
+    intro h0; rw [h0, mul_zero] at hgeq; exact hmon.ne_zero hgeq
+  rcases hirr.isUnit_or_isUnit hgeq with hu | hu
+  · exact Polynomial.not_isUnit_X hu
+  · have hgd : g.natDegree = 0 := Polynomial.natDegree_eq_zero_of_isUnit hu
+    have hf1 : f.natDegree = 1 := by
+      rw [hgeq, Polynomial.natDegree_mul Polynomial.X_ne_zero hg0, hgd, Polynomial.natDegree_X]
+    omega
+
+theorem zpow_ne_of_norm {x y : ℂ} (hx : 1 < ‖x‖) (hy0 : y ≠ 0) (hy : ‖y‖ < 1) {s : ℤ}
+    (hs : s ≠ 0) : x ^ s ≠ y ^ s := by
+  intro h
+  have h' : ‖x‖ ^ s = ‖y‖ ^ s := by rw [← norm_zpow, ← norm_zpow, h]
+  have hyp : 0 < ‖y‖ := norm_pos_iff.2 hy0
+  rcases lt_or_gt_of_ne hs with hn | hp
+  · have h1 : ‖x‖ ^ s < 1 := zpow_lt_one_of_neg₀ hx hn
+    have h2 : 1 < ‖y‖ ^ s := one_lt_zpow_of_neg₀ hyp hy hn
+    linarith
+  · have h1 : 1 < ‖x‖ ^ s := one_lt_zpow₀ hx hp
+    have h2 : ‖y‖ ^ s < 1 := zpow_lt_one₀ hyp hy hp
+    linarith
+
+theorem rigidity_generic {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible f) (hdeg : f.natDegree = 3)
+    {e : Fin 3 → AlgQ} (hinj : Function.Injective e)
+    (he : ∀ k, (f.map (Int.castRingHom AlgQ)).eval (e k) = 0)
+    (hbig : 1 < ‖(e 0 : ℂ)‖) (hsmall : ∀ k, k ≠ 0 → ‖(e k : ℂ)‖ < 1)
+    {s : ℤ} (hs : s ≠ 0) (L : IntermediateField ℚ AlgQ) {u : Fin 3 → AlgQ} (hu : ∀ k, u k ∈ L)
+    (hu1 : ∀ k, u k = 0 ∨ ‖(u k : ℂ)‖ = 1)
+    (hL : ∀ x : AlgQ, (f.map (Int.castRingHom AlgQ)).eval x = 0 → x ∉ L)
+    {ω : AlgQ} (hω : ω ^ 2 = 1) (hsum : ∑ k, u k * e k ^ s = ω) :
+    ∀ k, u k = u 0 := by
+  have hc0 := coeff_zero_ne_zero hmon hirr hdeg
+  obtain ⟨σ, a, b, ha, hb, hab, h0a, hab', hb0⟩ := exists_three_cycle hmon hdeg L hL hinj he
+  have hωpm : ω = 1 ∨ ω = -1 := by
+    have : (ω - 1) * (ω + 1) = 0 := by linear_combination hω
+    rcases mul_eq_zero.1 this with h | h
+    · left; linear_combination h
+    · right; linear_combination h
+  have hσω : σ ω = ω := by rcases hωpm with rfl | rfl <;> simp
+  have hσu : ∀ k, σ (u k) = u k := fun k => σ.commutes ⟨u k, hu k⟩
+  have happ : ∀ (τ : AlgQ ≃ₐ[L] AlgQ), τ ω = ω → ∑ k, u k * (τ (e k)) ^ s = ω := by
+    intro τ hτ
+    have := congrArg τ hsum
+    rw [map_sum, hτ] at this
+    rw [← this]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    have hc := τ.commutes ⟨u k, hu k⟩
+    simp only [IntermediateField.algebraMap_apply] at hc
+    rw [map_mul, map_zpow₀, hc]
+  have E1 := happ σ hσω
+  have E2 := happ (σ * σ) (by simp [hσω])
+  obtain ⟨q, hq⟩ := sum_zpow_rat hmon hdeg hc0 hinj he s
+  have he0 : ∀ k, e k ≠ 0 := by
+    intro k h0; have := he k; rw [h0, eval_cubic hmon hdeg] at this; simp at this
+    exact hc0 this
+  -- cast everything to `ℂ`
+  have cast : ∀ x y : AlgQ, x = y → (x : ℂ) = (y : ℂ) := fun x y h => by rw [h]
+  obtain ⟨r, hr0, hr⟩ : ∃ r : ℚ, r ≠ 0 ∧ (ω : ℂ) = r := by
+    rcases hωpm with rfl | rfl
+    · exact ⟨1, one_ne_zero, by simp⟩
+    · exact ⟨-1, by norm_num, by simp⟩
+  have hw : ∀ k, k ≠ 0 → ((e 0 : ℂ)) ^ s ≠ ((e k : ℂ)) ^ s := fun k hk =>
+    zpow_ne_of_norm hbig (by exact_mod_cast he0 k) (hsmall k hk) hs
+  have hcase : (a = 1 ∧ b = 2) ∨ (a = 2 ∧ b = 1) := by
+    revert ha hb hab; fin_cases a <;> fin_cases b <;> decide
+  have hsum3 : ∀ (F : Fin 3 → AlgQ), ∑ k, F k = F 0 + F a + F b := by
+    intro F
+    rw [Fin.sum_univ_three]
+    rcases hcase with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+    · rfl
+    · simp only [add_assoc, add_comm (F 1)]
+  rw [hsum3] at hsum E1 E2 hq
+  simp only [AlgEquiv.mul_apply, h0a, hab', hb0] at E1 E2
+  have c0 := cast _ _ hsum; have c1 := cast _ _ E1; have c2 := cast _ _ E2
+  have cq := cast _ _ hq
+  push_cast at c0 c1 c2 cq
+  rw [hr] at c0 c1 c2
+  have hun : ∀ k, (u k : ℂ) = 0 ∨ ‖(u k : ℂ)‖ = 1 := by
+    intro k; rcases hu1 k with h | h
+    · left; rw [h]; rfl
+    · right; exact h
+  obtain ⟨k0a, kab⟩ := circulant_const hr0 cq (fun h => hw b hb h.1) (hun 0) (hun a) (hun b)
+    c0 (by linear_combination c1) (by linear_combination c2)
+  have hu0a : u 0 = u a := Subtype.ext k0a
+  have huab : u a = u b := Subtype.ext kab
+  intro k
+  rcases hcase with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> fin_cases k
+  all_goals first | rfl | exact hu0a.symm | exact (hu0a.trans huab).symm
 
 /-! ### The pieces (statements; see the module docstring) -/
 
@@ -89,16 +537,7 @@ theorem exists_spectral {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} 
       ¬ (∀ k, u k = 1) ∧ ¬ (∀ k, u k = -1) := by
   sorry
 
-/-- **Step 4, Galois rigidity**: with no root of `f` in a field containing the `u_k`, `u` is
-constant. -/
-theorem rigidity_generic {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible f) (hdeg : f.natDegree = 3)
-    {e : Fin 3 → AlgQ} (hinj : Function.Injective e)
-    (he : ∀ k, (f.map (Int.castRingHom AlgQ)).eval (e k) = 0)
-    (hbig : 1 < ‖(e 0 : ℂ)‖) (hsmall : ∀ k, k ≠ 0 → ‖(e k : ℂ)‖ < 1)
-    {s : ℤ} (hs : s ≠ 0) (L : IntermediateField ℚ AlgQ) {u : Fin 3 → AlgQ} (hu : ∀ k, u k ∈ L)
-    (hL : ∀ k, e k ∉ L) {ω : AlgQ} (hω : ω ^ 2 = 1) (hsum : ∑ k, u k * e k ^ s = ω) :
-    ∀ k, u k = u 0 := by
-  sorry
+-- Step 4 (`rigidity_generic`) is proved above.
 
 /-- A constant spectral vector is `±1`. -/
 theorem eq_one_or_neg_one_of_const {f : ℤ[X]} (hmon : f.Monic) (hdeg : f.natDegree = 3)
@@ -144,22 +583,22 @@ theorem not_primeTraces {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} 
     exact hD.gt_one
   have hQ1 : 1 ≤ Q := by rcases hQ with h | h | ⟨h, _⟩ <;> omega
   -- the generic case: `u` constant, hence `±1`
-  have hgen : (∀ k, e k ∉ cycField Q) → False := by
+  have hgen : (∀ x : AlgQ, (f.map (Int.castRingHom AlgQ)).eval x = 0 → x ∉ cycField Q) →
+      False := by
     intro hL
     have hc := rigidity_generic hD.monic hD.irr hD.deg hinj he hbig hsm hs (cycField Q)
-      (fun k => mem_cycField (hu k)) hL hω hsum
+      (fun k => mem_cycField (hu k)) (fun k => unimod_of_pow_succ hQ1 (hu k)) hL hω hsum
     have hsum' : ∑ k, u 0 * e k ^ s = ω := by
       rw [← hsum]; exact Finset.sum_congr rfl fun k _ => by rw [hc k]
     rcases eq_one_or_neg_one_of_const hD.monic hD.deg hinj he hQ1 (hu 0) hω hsum' with h | h
     · exact hn1 fun k => (hc k).trans h
     · exact hn2 fun k => (hc k).trans h
   rcases hQ with rfl | rfl | ⟨rfl, h3⟩
-  · exact hgen fun k => not_mem_cycField_two hD.monic hD.irr hD.deg (he k)
-  · exact hgen fun k => not_mem_cycField_eight hD.monic hD.irr hD.deg (he k)
-  · by_cases hE : ∃ k, e k ∈ cycField 26
-    · obtain ⟨k, hk⟩ := hE
-      exact e1_empty hD hs hP h3 (he k) hk
-    · push_neg at hE
-      exact hgen hE
+  · exact hgen fun x hx => not_mem_cycField_two hD.monic hD.irr hD.deg hx
+  · exact hgen fun x hx => not_mem_cycField_eight hD.monic hD.irr hD.deg hx
+  · by_cases hE : ∃ x : AlgQ, (f.map (Int.castRingHom AlgQ)).eval x = 0 ∧ x ∈ cycField 26
+    · obtain ⟨x, hx, hxL⟩ := hE
+      exact e1_empty hD hs hP h3 hx hxL
+    · exact hgen fun x hx hxL => hE ⟨x, hx, hxL⟩
 
 end LeanFormalizations.Mills.ShiftRigidity
