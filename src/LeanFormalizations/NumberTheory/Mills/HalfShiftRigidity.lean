@@ -536,12 +536,67 @@ theorem half_generic {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hs
 
 /-! ### E1 at `g = 2` -/
 
+set_option synthInstance.maxHeartbeats 200000 in
 /-- A cubic irrationality in `ℚ(μ_52)` has a conjugate in `ℚ(μ_26)`. -/
 theorem exists_root_cycField_26 {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible f)
     (hdeg : f.natDegree = 3) {x : AlgQ} (hx : (f.map (Int.castRingHom AlgQ)).eval x = 0)
     (hxL : x ∈ cycField 52) :
     ∃ y : AlgQ, (f.map (Int.castRingHom AlgQ)).eval y = 0 ∧ y ∈ cycField 26 := by
-  sorry
+  classical
+  set K := cycField 26 with hK
+  obtain ⟨i, hi⟩ := IsAlgClosed.exists_pow_nat_eq (-1 : AlgQ) two_pos
+  have hiint : IsIntegral K i := ⟨X ^ 2 + 1, by monicity!, by simp [hi]⟩
+  haveI : FiniteDimensional K K⟮i⟯ := IntermediateField.adjoin.finiteDimensional hiint
+  have hiK : i ∈ K⟮i⟯ := IntermediateField.mem_adjoin_simple_self K i
+  have hKK : ∀ z ∈ K, z ∈ K⟮i⟯ := fun z hz =>
+    IntermediateField.algebraMap_mem K⟮i⟯ (⟨z, hz⟩ : K)
+  have hle : cycField 52 ≤ (K⟮i⟯).restrictScalars ℚ := by
+    refine IntermediateField.adjoin_le_iff.2 fun z hz => ?_
+    have hz52 : z ^ 52 = 1 := hz
+    have : (z ^ 26 - 1) * (z ^ 26 + 1) = 0 := by linear_combination hz52
+    show z ∈ K⟮i⟯
+    rcases mul_eq_zero.1 this with h | h
+    · exact hKK z (IntermediateField.subset_adjoin ℚ _ (show z ^ 26 = 1 by linear_combination h))
+    · have hzi : (z * i) ^ 26 = 1 := by
+        have i26 : i ^ 26 = -1 := by rw [show i ^ 26 = (i ^ 2) ^ 13 by ring, hi]; norm_num
+        rw [mul_pow, i26]
+        linear_combination (-1 : AlgQ) * h
+      have hm : z * i ∈ K⟮i⟯ := hKK _ (IntermediateField.subset_adjoin ℚ _ hzi)
+      have : z = -(z * i) * i := by linear_combination z * hi
+      rw [this]; exact mul_mem (neg_mem hm) hiK
+  have hxKi : x ∈ K⟮i⟯ := hle hxL
+  set g : K[X] := f.map (Int.castRingHom K) with hg
+  have hgm : g.Monic := hmon.map _
+  have hgd : g.natDegree = 3 := by rw [hg, hmon.natDegree_map, hdeg]
+  have hbr : ∀ z : AlgQ, aeval z g = (f.map (Int.castRingHom AlgQ)).eval z := by
+    intro z
+    rw [hg, Polynomial.aeval_def, Polynomial.eval₂_eq_eval_map, Polynomial.map_map]
+    congr 2
+  have hxint : IsIntegral K x := ⟨g, hgm, by rw [← Polynomial.aeval_def, hbr]; exact hx⟩
+  have hdx : (minpoly K x).natDegree ≤ 2 := by
+    rw [← IntermediateField.adjoin.finrank hxint]
+    have h1 : K⟮x⟯ ≤ K⟮i⟯ := IntermediateField.adjoin_simple_le_iff.2 hxKi
+    refine (IntermediateField.finrank_le_of_le_right h1).trans ?_
+    rw [IntermediateField.adjoin.finrank hiint]
+    have hd : minpoly K i ∣ X ^ 2 + 1 := minpoly.dvd K i (by rw [map_add, map_pow, Polynomial.aeval_X, map_one, hi]; ring)
+    have := Polynomial.natDegree_le_of_dvd hd (by
+      intro h0; have := congrArg (Polynomial.eval 0) h0; simp at this)
+    refine this.trans ?_
+    rw [show (X ^ 2 + 1 : K[X]) = X ^ 2 + C 1 by simp, Polynomial.natDegree_X_pow_add_C]
+  by_contra hno
+  push_neg at hno
+  have hgirr : Irreducible g := by
+    refine Polynomial.irreducible_of_degree_le_three_of_not_isRoot (by rw [hgd]; decide) ?_
+    intro r hr
+    apply hno (r : AlgQ) _ r.2
+    rw [← hbr]
+    have : aeval (r : AlgQ) g = algebraMap K AlgQ (g.eval r) :=
+      Polynomial.aeval_algebraMap_apply_eq_algebraMap_eval (A := AlgQ) r g
+    rw [this, hr.eq_zero, map_zero]
+  have hmin : minpoly K x = g :=
+    (minpoly.eq_of_irreducible_of_monic hgirr (by rw [hbr]; exact hx) hgm).symm
+  rw [hmin, hgd] at hdx
+  omega
 
 /-- An algebraic integer in `ℚ[ζ₁₃]` is an integer polynomial in `ζ` (`ℤ[ζ]` is integrally closed). -/
 theorem exists_int_poly {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) {q : ℚ[X]}
