@@ -1,3 +1,15 @@
+## phase 62 (2026-10-05, lap 1, branch `mills-eplus`): crux = Baker-free Type B for E+
+DONE: `SaitoTypeBParts.lean` sorry-free; `saitoTypeBLeastEv_holds (hB hD hG)` and
+`xi_shift_transcendental_classical' (hB hD hG)` free of sorryAx; `xi_shifted_transcendental_classical`
+reduced to `xi_shift_transcendental_classical`.
+OPEN (the frozen done-criterion): drop `hG`.  `SaitoTypeBNoGap.lean`:
+ (b) `conjPowSum_lower_of_recurrence` (sorry, ~90%): Smyth via Galois (AlgQ, `exists_algEquiv_of_roots`
+     in TheoremDMixed) + the `a_k² → −1`, `a_(k+1)² → −v²` argument.  Removes hG from case (II) for E+.
+ (a) `SparseNoCancel` (reopen node, Maze row): Saito case (I), sparse decay β^(−19n/10), degree ≥ 3.
+     Norm bound gives only β^(−(ℓ−1)n).  Borderline at ℓ = 3 (rate 2 vs 1.9; for s < 0 the constant
+     ξ^(−2|s|)/3 wins).  Needs a new idea for ℓ ≥ 4.
+NEXT: prove (b); restate Type B for exact-recurrence C with hS : SparseNoCancel in place of hG.
+
 ## phase 61 (2026-10-05 review lap, branch `mills-eplus`): crux = node D `halfShiftTraceRigidity_holds`
 A, B, C proved (C: `ShiftRigidity.not_primeTraces`, native_decide certs `cm3_check`, `E1Cert.cert_all`).
 Node D route (decomposition lives in `Mills/HalfShiftRigidity.lean`; paper = PROOF-THEOREM-E.md "E+ for odd s"):

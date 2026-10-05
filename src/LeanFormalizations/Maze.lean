@@ -40,6 +40,7 @@ import LeanFormalizations.NumberTheory.Erdos385.Hyperbola
 import LeanFormalizations.NumberTheory.Erdos385.Remainder
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.ZeroDetect
 import LeanFormalizations.NumberTheory.Mills.PairedRoot
+import LeanFormalizations.NumberTheory.Mills.SaitoTypeB
 
 namespace LeanFormalizations.Maze
 
@@ -291,7 +292,20 @@ def register : List Row := [
       large values than T^{Bη^{3/2}} when η ≪ (log P)^{−1/2}.  The headline now uses \
       LocalZeroDetect (window P^{η/3}), which LargeValueCount can afford"
     reopenIf := "a zero-free region 1 − β ≫ (log γ)^{−1/2} or better (beyond VK), or restricting \
-      NearOneLargeValues to Gevrey weights (|mellin f(1+iu)| ≤ e^{−c|u|^α})" }
+      NearOneLargeValues to Gevrey weights (|mellin f(1+iu)| ≤ e^{−c|u|^α})" },
+  { route := "Saito Type B (E+) from BHP + Dubickas 2022 Lemma 6 alone (phase 62: the frozen \
+      SaitoTypeB.saitoTypeBLeast_holds / xi_shift_transcendental_classical)"
+    verdict := .needsNewIdea, tier := .frozen
+    anchor := some ``LeanFormalizations.Mills.SaitoTypeB.SparseNoCancel
+    evidence := "Proved with Dubickas 2022 Lemma 8 added and ratios eventually ≥ 29/10 \
+      (SaitoTypeB.saitoTypeBLeastEv_holds, SaitoTypeB.xi_shift_transcendental_classical'). \
+      Lemma 8 (Baker) enters twice.  Case (II) (decay at every large k) can drop it for E+ by \
+      the exact orbit n ↦ 3n − d (SaitoTypeB.conjPowSum_lower_of_recurrence).  Case (I) of \
+      Saito Lemma 5.2 gives decay β^(−19n/10) only on an arbitrary sparse set; the norm of \
+      β^n − Tr(β^n) bounds |S(n)| below only by β^(−(ℓ−1)n), useless for ℓ ≥ 3.  Matomäki is \
+      needed for general C (chain steps with ratio < 40/19) but not for E+"
+    reopenIf := "an elementary proof of SaitoTypeB.SparseNoCancel (or of the case-(I) degree \
+      bound for the E+ orbit), or a competitor construction that avoids Saito's case (I)" }
 ]
 
 end LeanFormalizations.Maze

@@ -5,6 +5,7 @@ Authors: Trevor Morris
 -/
 import LeanFormalizations.NumberTheory.Mills.ShiftedMillsAll
 import LeanFormalizations.NumberTheory.Mills.SaitoTypeBParts
+import LeanFormalizations.NumberTheory.Mills.SaitoTypeBNoGap
 import LeanFormalizations.Literature.Primes
 
 /-!
@@ -56,6 +57,17 @@ Specialise everything to `θ = 21/40`, `ε` with `40/19 + ε ≤ 29/10`, `I ⊇ 
 If the proof genuinely needs a further cited input (e.g. `Dubickas2022PisotGap`), do NOT edit the
 frozen statement: add a parallel `saitoTypeBLeast_holds'` with the extra hypothesis, record why in
 the header and a `Maze.lean` row, and keep going.  A refutation of a transcription is progress too.
+
+## Status (2026-10-05, end of lap 1)
+* PROVED: `xi_shifted_transcendental_classical` from `xi_shift_transcendental_classical` (edge).
+* PROVED, sorry-free: the parallel `saitoTypeBLeastEv_holds (hB hD hG)` and the E+ headline
+  `xi_shift_transcendental_classical' (hB hD hG)`, all of Saito §5–§6, §8 in
+  `Mills/SaitoTypeBParts.lean` (competitor chain from BHP alone, Lemma 5.9, Lemma 6.1, a
+  divisibility proof of Prop 3.1(iii)).
+* OPEN: the frozen `saitoTypeBLeast_holds` (hence `xi_shift_transcendental_classical`).  Saito's
+  route needs Dubickas 2022 Lemma 8 (Baker) in two places; see `Mills/SaitoTypeBNoGap.lean`: case
+  (II) for E+ drops it (`conjPowSum_lower_of_recurrence`, stated), case (I) needs the reopen node
+  `SparseNoCancel` (`Maze.lean` row).  General `C` also needs Matomäki.
 
 Frozen: every statement and def below; all earlier statements; everything in `Literature/`.
 No `private`.  Decomposing into named sub-lemmas (new `Mills/` files welcome) is progress.
