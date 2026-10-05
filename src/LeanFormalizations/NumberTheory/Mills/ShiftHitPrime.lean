@@ -13,8 +13,8 @@ given `Dubickas2022PisotGap` (`ShiftRigidityDeg.eventuallyRecordShift_of_pisotGa
 `3` rigidity is proved (`ShiftedMillsAll`).  In degree `≥ 4` the cubic `3`-adic route and the
 `q`-power class are both refuted on controls (`ShiftRigidityUnipotent.f₀`, `f₂`); what closes
 the degree-`≥ 4` leaves is a **hit prime**: a fixed prime dividing infinitely many orbit traces
-(`ShiftRigidityUnipotent.HitPrime`, open, no mechanism known; the Fermat analogue in degree `1`
-fails).
+(`ShiftRigidityUnipotent.HitPrime`, open, no mechanism known; no fixed prime divides infinitely
+many Fermat numbers, so a proof must use more than the exponent shape).
 
 This file records the result as Lean data: the half-shift twin `HalfHitPrime`, the two
 degree-`≥ 4` rigidity statements from the hit-prime nodes, and the conditional headline
