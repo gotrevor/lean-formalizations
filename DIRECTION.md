@@ -1,4 +1,4 @@
-> 🎯 **CURRENT DIRECTIVE (phase 64b, 2026-10-05): replace the two `sorry`s that stand where `native_decide` was - `ShiftRigidity.cm3_check` FIRST (27 cubics mod 3, small), then `E1Cert.cert_all` (`E1Certificate.lean`, 2·27³ cases) - with kernel-checked proofs.**  `native_decide`, `Lean.ofReduceBool` and new `axiom`s are forbidden; `decide +kernel`, `decide` with a smarter decidable encoding, splitting into lemmas, or a mathematical argument that cuts the case count are all fine.  Statements are FROZEN.  Done when `#print axioms SaitoTypeB.xi_shift_transcendental_classical` shows only `propext`, `Classical.choice`, `Quot.sound`.  If `cert_all` cannot be kernel-checked in reasonable time, say exactly why in HANDOFF (case count, per-case cost) and stop.
+> ✅ **Phase 64 DONE 2026-10-05**: 64a proved E+/Theorem E for every short-interval exponent `θ < 5/9` (frozen `θ < 2/3` keeps one `sorry` on `[5/9, 2/3)`, open node `ShiftPisotDegreeLeThree`); 64b kernel-checked `cm3_check` (`decide +kernel`) and `cert_all` (`E1CertCore` + table modules), so the E+ headlines (BHP and `θ < 5/9`) use only `propext`, `Classical.choice`, `Quot.sound`.  No current directive.
 
 > 🗺️ **Before planting a phase, grep `src/LeanFormalizations/Maze.lean`**: it records the routes already walked and closed, and each row's `reopenIf` names the new idea needed to walk it again (2026-09-29).
 
@@ -24,7 +24,7 @@ Done when: `#print axioms` on all four shows no `sorryAx`.
 
 **64a outcome (2 laps, merged to main `96697d3`):** E+ and Theorem E proved for every `θ < 5/9` (`xi_shift_transcendental_of_shortInterval'`, `xi_shifted_transcendental_of_shortInterval'`; covers BHP).  The frozen `θ < 2/3` statement keeps one `sorry` on `[5/9, 2/3)`: the decay exponent `μ < 2 − 3θ` reaches the degree-3 endgame only when `μ > 1/3`.  Open node `ShiftPisotDegreeLeThree`; control `DecayDegreeFour.decay_admits_degree_four` (believed) says decay alone admits Pisot degree 4.  So the Ingham headlines still sit on that `sorry` (`5/8 > 5/9`).
 
-### 64b - three-core-axiom tightening (ACTIVE)
+### 64b - three-core-axiom tightening (DONE 2026-10-05, one lap)
 
 Replace the two `native_decide`s on E+'s path (`E1Certificate.cert_all`, `ShiftRigidity.cm3_check`) with kernel-checked proofs (`decide +kernel`, or a structured argument that cuts the case count), so `#print axioms` on the E+ headlines shows only `propext`, `Classical.choice`, `Quot.sound`.  Statements unchanged.
 
