@@ -1,10 +1,10 @@
-> 🎯 **CURRENT DIRECTIVE (phase 63, 2026-10-05): prove every `sorry` in `src/LeanFormalizations/NumberTheory/PrimeIntervals/BHPTests.lean`** (stress tests for `Literature.BakerHarmanPintz2001`; entry "phase 63" below).  Statements are FROZEN: never weaken one.  If one is false as written, prove its negation as a new theorem beside it, leave the original `sorry`, and say so in HANDOFF.  Work only in that file (new helper files under `NumberTheory/PrimeIntervals/` are fine).
+> ✅ **Phase 63 DONE 2026-10-05**: `BHPTests.lean` sorry-free, all names free of sorryAx (no frozen statement was false). No current directive.
 
 > 🗺️ **Before planting a phase, grep `src/LeanFormalizations/Maze.lean`**: it records the routes already walked and closed, and each row's `reopenIf` names the new idea needed to walk it again (2026-09-29).
 
 # DIRECTION — read FIRST (operator directive, 2026-09-27, Trevor via Ren)
 
-## (phase 63, PLANTED 2026-10-05, branch `mills-eplus`, worktree `~/src/lean-formalizations-eplus`): **stress-test the BHP literature Prop** - target `src/LeanFormalizations/NumberTheory/PrimeIntervals/BHPTests.lean`
+## ✅ (phase 63, DONE 2026-10-05 in one lap; PLANTED 2026-10-05, branch `mills-eplus`, worktree `~/src/lean-formalizations-eplus`): **stress-test the BHP literature Prop** - target `src/LeanFormalizations/NumberTheory/PrimeIntervals/BHPTests.lean`
 
 Theorem E+ rests on `BakerHarmanPintz2001` (`Literature/Primes.lean`).  A literature Prop stated too strongly is false and makes E+ vacuous, so this phase checks the definition against known answers.  Previous status line: ✅ **Phase 62 DONE 2026-10-05**: Theorem E+ now rests only on `BakerHarmanPintz2001` + `Dubickas2022` (`SaitoTypeB.xi_shift_transcendental_classical`, no sorryAx; Baker eliminated for the `3^k + s` family via Skolem-Mahler-Lech for order-3 recurrences).  `saitoTypeBLeast_holds` (Saito's general-`C` statement) stays a frozen OFF-path hole: it needs Baker (`Dubickas2022PisotGap`) and nothing consumes it.  No current directive.
 
