@@ -817,7 +817,93 @@ theorem eventually_low (hD : Dubickas2022) (hG : Dubickas2022PisotGap) {C : ℕ 
     {ξ : ℝ} (hξ : ξ ∈ millsSet C) (hnot : ∀ m ≥ 1, ∀ t : ℤ, ξ ^ C m ≠ (t : ℝ))
     (halg : IsAlgebraic ℚ ξ) :
     ∃ k₁, ∀ k ≥ k₁, root ⌊ξ ^ C k⌋₊ (C k) ≤ root ⌊ξ ^ C (k + 1)⌋₊ (C (k + 1)) := by
-  sorry
+  by_contra hcon
+  push_neg at hcon
+  have hξ1 : 1 < ξ := hξ.1
+  have hξ0 : 0 < ξ := by linarith
+  have hCge := C_ge_one h1 h2
+  have hfreq : ∃ᶠ k in atTop, max K₀ 1 ≤ k ∧
+      root ⌊ξ ^ C (k + 1)⌋₊ (C (k + 1)) < root ⌊ξ ^ C k⌋₊ (C k) := by
+    rw [frequently_atTop]
+    intro a
+    obtain ⟨k, hk, hlt⟩ := hcon (max a (max K₀ 1))
+    exact ⟨k, by omega, by omega, hlt⟩
+  obtain ⟨φ, hφ, hφP⟩ := extraction_of_frequently_atTop hfreq
+  have hφ1 : ∀ n, 1 ≤ φ n := fun n => by have := (hφP n).1; omega
+  set s : ℕ → ℕ := fun n => C (φ n) with hs
+  have hsmono : StrictMono s := fun a b hab =>
+    C_strictMonoOn h1 h2 (hφ1 a) (hφ hab)
+  have hdecay : ∀ᶠ n in atTop, |ξ ^ s n - (round (ξ ^ s n) : ℝ)| ≤
+      4 * ξ ^ (-((19 / 10 : ℝ) * s n)) := by
+    refine Eventually.of_forall fun n => ?_
+    obtain ⟨hkK, hlt⟩ := hφP n
+    set k := φ n with hk
+    have hk1 : 1 ≤ k := by omega
+    have hCk : 0 < C k := hCge k hk1
+    have hc : (29 : ℝ) / 10 ≤ ratio C k := by
+      have hCk' : (0 : ℝ) < C k := by exact_mod_cast hCk
+      rw [ratio, le_div_iff₀ hCk']; exact hEv k (by omega)
+    set x := ξ ^ C k with hx
+    have hx1 : 1 ≤ x := one_le_pow₀ hξ1.le
+    have hx0 : 0 < x := by linarith
+    -- the failed lower condition: `⌊x^c⌋ < ⌊x⌋^c`
+    have hfl : (⌊x ^ ratio C k⌋₊ : ℝ) < (⌊x⌋₊ : ℝ) ^ ratio C k := by
+      rw [hx, pow_ratio hξ0 hCk]
+      by_contra h
+      push_neg at h
+      exact absurd (root_le_root (Nat.cast_nonneg _) hCk (hCge _ (by omega)) h) (not_le.2 hlt)
+    have hf := fract_lt_of_floor_lt hx1 (by linarith) hfl
+    set p : ℝ := (⌊x⌋₊ : ℝ) with hp
+    have hp1 : 1 ≤ p := by have := Nat.floor_pos.2 hx1; rw [hp]; exact_mod_cast this
+    have hpx : x ≤ 2 * p := by have := Nat.lt_floor_add_one x; rw [hp]; linarith
+    have hround : |x - (round x : ℝ)| ≤ Int.fract x := by
+      have := round_le x ⌊x⌋
+      rwa [← Int.fract, abs_of_nonneg (Int.fract_nonneg x)] at this
+    have hpow : p ^ (19 / 10 : ℝ) ≤ p ^ (ratio C k - 1) :=
+      Real.rpow_le_rpow_of_exponent_le hp1 (by linarith)
+    have hp0 : 0 < p ^ (19 / 10 : ℝ) := by positivity
+    have hfr0 := Int.fract_nonneg x
+    -- `fract x · p^(19/10) < 1`
+    have h1' : Int.fract x * p ^ (19 / 10 : ℝ) < 1 := by
+      have e1 : Int.fract x * p ^ (19 / 10 : ℝ) ≤ Int.fract x * p ^ (ratio C k - 1) :=
+        mul_le_mul_of_nonneg_left hpow hfr0
+      have e0 : 0 ≤ Int.fract x * p ^ (ratio C k - 1) := mul_nonneg hfr0 (by positivity)
+      have e2 : Int.fract x * p ^ (ratio C k - 1) ≤ ratio C k * Int.fract x * p ^ (ratio C k - 1) := by
+        rw [mul_assoc]; nlinarith
+      linarith
+    -- `p^(−19/10) ≤ 4 x^(−19/10)`
+    have h2' : (p ^ (19 / 10 : ℝ))⁻¹ ≤ 4 * x ^ (-(19 / 10 : ℝ)) := by
+      have hxp : x ^ (19 / 10 : ℝ) ≤ (2 * p) ^ (19 / 10 : ℝ) :=
+        Real.rpow_le_rpow hx0.le hpx (by norm_num)
+      have h2p : (2 * p) ^ (19 / 10 : ℝ) = 2 ^ (19 / 10 : ℝ) * p ^ (19 / 10 : ℝ) :=
+        Real.mul_rpow (by norm_num) (by linarith)
+      have h24 : (2 : ℝ) ^ (19 / 10 : ℝ) ≤ 4 := by
+        calc (2 : ℝ) ^ (19 / 10 : ℝ) ≤ 2 ^ (2 : ℝ) :=
+              Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
+          _ = 4 := by norm_num
+      have hx19 : 0 < x ^ (19 / 10 : ℝ) := by positivity
+      rw [Real.rpow_neg hx0.le, inv_le_iff_one_le_mul₀ hp0]
+      have : x ^ (19 / 10 : ℝ) ≤ 4 * p ^ (19 / 10 : ℝ) := by nlinarith
+      calc (1 : ℝ) = (x ^ (19 / 10 : ℝ))⁻¹ * x ^ (19 / 10 : ℝ) := (inv_mul_cancel₀ hx19.ne').symm
+        _ ≤ (x ^ (19 / 10 : ℝ))⁻¹ * (4 * p ^ (19 / 10 : ℝ)) :=
+            mul_le_mul_of_nonneg_left this (by positivity)
+        _ = 4 * (x ^ (19 / 10 : ℝ))⁻¹ * p ^ (19 / 10 : ℝ) := by ring
+    have hxe : x ^ (-(19 / 10 : ℝ)) = ξ ^ (-((19 / 10 : ℝ) * s n)) := by
+      rw [show s n = C k from rfl, hx, ← Real.rpow_natCast, ← Real.rpow_mul hξ0.le]; ring_nf
+    have hfrac_le : Int.fract x ≤ (p ^ (19 / 10 : ℝ))⁻¹ := by
+      rw [← one_div, le_div_iff₀ hp0]; exact h1'.le
+    calc |ξ ^ s n - (round (ξ ^ s n) : ℝ)| = |x - (round x : ℝ)| := rfl
+      _ ≤ Int.fract x := hround
+      _ ≤ (p ^ (19 / 10 : ℝ))⁻¹ := hfrac_le
+      _ ≤ 4 * x ^ (-(19 / 10 : ℝ)) := h2'
+      _ = 4 * ξ ^ (-((19 / 10 : ℝ) * s n)) := by rw [hxe]
+  have hnot' : ∀ n, ∀ t : ℤ, ξ ^ s n ≠ (t : ℝ) := fun n t => hnot _ (hφ1 n) t
+  obtain ⟨g, -, hpis, -, hdeg, hcard⟩ := exists_pisot_of_decay_subseq hD hG halg hξ1 hsmono
+    (hCge _ (hφ1 0)) (by norm_num) (by norm_num) hdecay hnot'
+  have h' := card_otherConj_add_one hpis.2.1.tower_top
+  have : (1 : ℝ) ≤ Multiset.card (otherConj (ξ ^ g)) := by exact_mod_cast (by omega :
+    1 ≤ Multiset.card (otherConj (ξ ^ g)))
+  linarith
 
 /-- **Saito Lemma 5.3 at `θ = 21/40`, ratios `≥ 29/10`**: in case (II),
 `{ξ^(C k)} ≤ 2 ⌊ξ^(C k)⌋^(−151/400)` eventually. -/
@@ -827,7 +913,32 @@ theorem eventually_fract_le {C : ℕ → ℕ} (h1 : 1 ≤ C 1) (h2 : ∀ k ≥ 1
     (hII : ∀ k ≥ k₀, (⌊ξ ^ C (k + 1)⌋₊ : ℝ) ≤
       (⌊ξ ^ C k⌋₊ : ℝ) ^ ratio C k + (⌊ξ ^ C k⌋₊ : ℝ) ^ (21 / 40 * ratio C k)) :
     ∃ k₂, ∀ k ≥ k₂, Int.fract (ξ ^ C k) ≤ 2 * (⌊ξ ^ C k⌋₊ : ℝ) ^ (-(151 / 400 : ℝ)) := by
-  sorry
+  refine ⟨max k₀ (max K₀ 1), fun k hk => ?_⟩
+  have hk1 : 1 ≤ k := by omega
+  have hξ1 : 1 < ξ := hξ.1
+  have hξ0 : 0 < ξ := by linarith
+  have hCk : 0 < C k := C_ge_one h1 h2 k hk1
+  have hc : (29 : ℝ) / 10 ≤ ratio C k := by
+    have hCk' : (0 : ℝ) < C k := by exact_mod_cast hCk
+    rw [ratio, le_div_iff₀ hCk']; exact hEv k (by omega)
+  set x := ξ ^ C k with hx
+  have hx1 : 1 ≤ x := one_le_pow₀ hξ1.le
+  have hxc : x ^ ratio C k < (⌊ξ ^ C (k + 1)⌋₊ : ℝ) + 1 := by
+    rw [hx, pow_ratio hξ0 hCk]; exact Nat.lt_floor_add_one _
+  have hw := fract_le_of_window (θ := 21 / 40) hx1 (by linarith) (by norm_num) (by norm_num) hxc
+    (hII k (by omega))
+  set p : ℝ := (⌊x⌋₊ : ℝ) with hp
+  have hp1 : 1 ≤ p := by have := Nat.floor_pos.2 hx1; rw [hp]; exact_mod_cast this
+  have hA : p ^ (151 / 400 : ℝ) ≤ p ^ ((1 - 21 / 40) * ratio C k - 1) :=
+    Real.rpow_le_rpow_of_exponent_le hp1 (by linarith)
+  have hA0 : 0 < p ^ (151 / 400 : ℝ) := by positivity
+  have hc1 : (1 : ℝ) ≤ ratio C k := by linarith
+  calc Int.fract x ≤ 2 / (ratio C k * p ^ ((1 - 21 / 40) * ratio C k - 1)) := hw
+    _ ≤ 2 / p ^ (151 / 400 : ℝ) := by
+        apply div_le_div_of_nonneg_left (by norm_num) hA0
+        nlinarith
+    _ = 2 * p ^ (-(151 / 400 : ℝ)) := by
+        rw [Real.rpow_neg (by linarith), div_eq_mul_inv]
 
 
 end LeanFormalizations.Mills.SaitoTypeB
