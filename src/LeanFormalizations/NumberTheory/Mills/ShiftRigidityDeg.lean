@@ -137,6 +137,32 @@ theorem xi_shift_transcendental_of_nodes {θ : ℝ} (hθ0 : 0 < θ) (hθ : θ < 
     refine ⟨_, hp, ?_⟩
     rw [← htr, ← hsplit, ← Nat.div_div_eq_div_mul, shiftC_div_three_pow hj1 hs' hk1 hkb, hkn]
 
+/-- The minimal polynomial of `β` is `≡ (X − ε)^ℓ (mod 3)` for a unit `ε = ±1` (the class on
+which every `3`-adic constraint of the cubic route can hold; `ShiftRigidityUnipotent`). -/
+def UnipotentMod3 (β : ℝ) : Prop :=
+  ∃ f : ℤ[X], f.Monic ∧ f.map (Int.castRingHom ℚ) = minpoly ℚ β ∧ ∃ ε : ZMod 3, ε ≠ 0 ∧
+    f.map (Int.castRingHom (ZMod 3)) = (X - Polynomial.C ε) ^ f.natDegree
+
+/-- **Believed (~75%), leaf (generic class)**: shift rigidity in degree `≥ 4` outside the unipotent
+class.  Route: the cubic window + Teichmüller + spectral transfer (degree-general), with the
+constant `±1` spectral vector excluded because `C ∓ 1` is not nilpotent mod 3, the `z = 0` cube
+class excluded since then traces are `≡ 0 (mod 3)`, and the non-constant case by a Galois element
+acting without fixed points on the roots outside `ℚ(μ_Q)`. -/
+theorem shiftTraceRigidity_ge_four_generic {s : ℤ} (hs : s ≠ 0) {β : ℝ} (hβ : IsPisot β)
+    (hdeg : 4 ≤ (minpoly ℚ β).natDegree) (hU : ¬ UnipotentMod3 β) :
+    ¬ ∀ᶠ n in atTop, ∃ p : ℕ, p.Prime ∧ powTrace β (((3 : ℤ) ^ n + s).toNat) = (p : ℂ) := by
+  sorry
+
+/-- **Believed true (~90%) but no mechanism known, leaf (unipotent class)**.  The `3`-adic route
+sees nothing here (`ShiftRigidityUnipotent.unipotent_trace_congr`).  A sharper window shows a prime
+`p_n = tr C^(3^n+s)` with `v₃(p_n − 1) = n` exactly forces `3^(n+1) ∣ ord(C mod p_n)`, hence (degree
+4) a cubic factor of `f mod p_n` whose roots generate the `3`-Sylow of `𝔽_(p³)^*`: a constraint of
+positive density each `n`, not a contradiction.  Reopen via `UnipotentCovering`. -/
+theorem shiftTraceRigidity_ge_four_unipotent {s : ℤ} (hs : s ≠ 0) {β : ℝ} (hβ : IsPisot β)
+    (hdeg : 4 ≤ (minpoly ℚ β).natDegree) (hU : UnipotentMod3 β) :
+    ¬ ∀ᶠ n in atTop, ∃ p : ℕ, p.Prime ∧ powTrace β (((3 : ℤ) ^ n + s).toNat) = (p : ℂ) := by
+  sorry
+
 /-- **Believed (~75%)**: shift rigidity in degree `≥ 4`.  English route: the cubic proof's cube
 class and spectral transfer (`exists_spectral_solution_shift` is degree-general), with
 `rigidity_generic` replaced by a Galois element acting fixed-point-freely on the roots outside
@@ -152,7 +178,9 @@ the truth confidence. -/
 theorem shiftTraceRigidity_ge_four {s : ℤ} (hs : s ≠ 0) {β : ℝ} (hβ : IsPisot β)
     (hdeg : 4 ≤ (minpoly ℚ β).natDegree) :
     ¬ ∀ᶠ n in atTop, ∃ p : ℕ, p.Prime ∧ powTrace β (((3 : ℤ) ^ n + s).toNat) = (p : ℂ) := by
-  sorry
+  by_cases hU : UnipotentMod3 β
+  · exact shiftTraceRigidity_ge_four_unipotent hs hβ hdeg hU
+  · exact shiftTraceRigidity_ge_four_generic hs hβ hdeg hU
 
 /-- **Believed (~70%)**: the half-shift section in degree `≥ 4` (cubic case:
 `HalfShiftRigidity.not_halfPrimeTraces`). -/

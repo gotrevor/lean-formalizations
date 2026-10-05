@@ -8,7 +8,7 @@
   The cubic cube-class kill (tr ≡ 3z^m ≡ 0) is a degree-3 accident; in degree 4 window + Teichmüller +
   spectral data are all consistent.  Maze row added (anchor `unipotent_trace_congr`).
   `pisot_f₀` is a sorry (~99%, numerics).  New open node `UnipotentCovering`.
-* Next attack on the crux: (a) split `shiftTraceRigidity_ge_four` into unipotent class vs rest as two
+* DONE (lap 2b): split as `shiftTraceRigidity_ge_four_{generic,unipotent}` via `UnipotentMod3`. Was: (a) split `shiftTraceRigidity_ge_four` into unipotent class vs rest as two
   named leaves (rest = generalised spectral route: Galois element acting fixed-point-freely, ±1
   constant excluded since C ∓ 1 not nilpotent mod 3); (b) on the unipotent class, use the window's
   Step 1 more sharply: 3^(n+1) | ord(C mod p_n) with v₃(p_n − 1) = n − O(1) forces an eigenvalue of
