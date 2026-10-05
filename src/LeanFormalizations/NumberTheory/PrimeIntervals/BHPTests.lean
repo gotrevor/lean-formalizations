@@ -18,11 +18,15 @@ counting function shows up as a failed proof:
   `θ = 21/40` *definitionally* (`bhp_iff`).
 * **A false sibling**: `θ = 0` fails, since `[n! + 2, n! + 3]` holds no prime.
 * **A true sibling**: `θ = 1` holds, from the Prime Number Theorem (Chebyshev bounds suffice).
+* **A trusted upper witness**: RH (mathlib's `RiemannHypothesis`) with Schoenfeld's explicit
+  error term implies BHP (`bhp_of_rh`).  A BHP stated too strongly (say an exponent below `1/2`)
+  would not follow from RH, so this pins the statement from above.
 * **Monotonicity in `θ`** on `(0, 1]`, so `θ = 21/40` sits inside the family between the false
   and true endpoints, and BHP implies the `θ = 1` statement through the family.
 -/
 import LeanFormalizations.Literature.Primes
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.PNT
+import LeanFormalizations.NumberTheory.Mills.Schoenfeld
 
 namespace LeanFormalizations.BHPTests
 
@@ -318,5 +322,29 @@ theorem exists_prime_of_bhp (h : BakerHarmanPintz2001) :
   refine ⟨p, hp.2, Nat.ceil_le.1 hp.1.1, ?_⟩
   have : 0 ≤ x + x ^ ((21 : ℝ) / 40) := by have := Real.rpow_nonneg (by linarith : (0:ℝ) ≤ x) ((21 : ℝ) / 40); linarith
   exact (Nat.le_floor_iff this).1 hp.1.2
+
+/-! ## RH implies BHP -/
+
+/-- **RH implies BHP.**  Believed, 97%.  Set `h = x^(21/40)`.  Schoenfeld bounds
+`|π(t) − (C + ∫₂ᵗ 1/log)|` by `√t log t / (8π)` at `t = x` and `t = x + h`, so
+`π(x + h) − π(x) ≥ ∫ₓ^(x+h) 1/log − √(x+h) log(x+h) / (4π) ≥ h / log(x + h) − √(x+h) log(x+h) / (4π)`
+(`Mills.le_log_integral`).  Since `h / log x` beats `√x log x` by the factor
+`x^(1/40) / log² x → ∞`, the right side is `≥ h / (4 log x)` for large `x`.  Finally
+`primesIn x (x + h)` counts every prime in `(⌊x⌋, ⌊x + h⌋]`, so it is `≥ π(x + h) − π(x)`.
+Reusable pieces: `Mills.le_log_integral`, `Mills.exists_prime_short_interval` (same estimate,
+existence form). -/
+theorem bhp_of_rh (hS : Schoenfeld1976) (hRH : RiemannHypothesis) : BakerHarmanPintz2001 := by
+  sorry
+
+/-! ## Li's 0.52 implies BHP -/
+
+/-- **Li (0.52) implies BHP.**  Believed, 95%.  Apply `Li2023` with `ε = 1/400`, so
+`θ₀ = 0.5225 < 21/40`.  Tile `[x, x + x^(21/40)]` by about `x^(21/40 − θ₀)` disjoint
+left-anchored windows `[y − y^θ₀, y]` with `x ≤ y ≤ 2x`, exactly as in
+`PrimesShortInterval.mono`; each window holds `≥ d₀ y^θ₀ / log y ≫ x^θ₀ / log x` primes, so
+the whole interval holds `≫ x^(21/40) / log x`.  Evidence: the tiling argument already compiles
+for right-anchored windows (`PrimesShortInterval.mono`); only the anchoring differs. -/
+theorem bhp_of_li2023 (h : Li2023) : BakerHarmanPintz2001 := by
+  sorry
 
 end LeanFormalizations.BHPTests

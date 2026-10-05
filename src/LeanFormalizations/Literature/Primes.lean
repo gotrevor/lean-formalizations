@@ -38,6 +38,21 @@ def BakerHarmanPintz2001 : Prop :=
   ∃ d₀ > (0 : ℝ), ∃ X : ℝ, ∀ x ≥ X,
     d₀ * x ^ ((21 : ℝ) / 40) / Real.log x ≤ (primesIn x (x + x ^ ((21 : ℝ) / 40)) : ℝ)
 
+/-- **Li (2023, preprint)**: for every `ε > 0` the interval `[x − x^(0.52 + ε), x]` holds
+`≫ x^(0.52 + ε) / log x` primes for all large `x`.  Weaker than the source: Li, Theorem 2, gives
+`LB(θ) x^(θ+ε) / log x ≤ π(x) − π(x − x^(θ+ε))` for `0.52 ≤ θ ≤ 0.525` with the explicit
+constant `LB(0.520) > 0.004`; here the constant is existential, and the closed interval counts at
+least the primes in `(x − x^(θ+ε), x]`.  Strictly stronger than `BakerHarmanPintz2001` up to the
+window's anchoring (`BHPTests.bhp_of_li2023`).
+
+R. Li, *The number of primes in short intervals and numerical calculations for Harman's sieve*,
+arXiv:2308.04458v8 (2025-10-16), Theorems 1 and 2.  ⚠️ Unrefereed: no journal reference as of
+2026-10-05. -/
+def Li2023 : Prop :=
+  ∀ ε > (0 : ℝ), ∃ d₀ > (0 : ℝ), ∃ X : ℝ, ∀ x ≥ X,
+    d₀ * x ^ ((13 : ℝ) / 25 + ε) / Real.log x ≤
+      (primesIn (x - x ^ ((13 : ℝ) / 25 + ε)) x : ℝ)
+
 /-- **Ingham (1937)**, as a lower bound: for every `θ ∈ (5/8, 1]` the interval `[x, x + x^θ]`
 holds `≫ x^θ / log x` primes for all large `x`.  Ingham proves the asymptotic
 `π(x + x^θ) − π(x) ∼ x^θ / log x` for `θ > 5/8`, from his zero-density estimate and the
