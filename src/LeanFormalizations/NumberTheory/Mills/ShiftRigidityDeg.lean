@@ -174,4 +174,36 @@ theorem eventuallyRecordShift_holds {θ : ℝ} (hθ0 : 0 < θ) (hθ : θ < 2 / 3
     EventuallyRecordShift θ := by
   sorry
 
+/-- **Believed (~85%)**: eventual records in every degree, from Dubickas's Lemma 8 (Saito
+Lemma 2.7).  This is a separate theorem next to `eventuallyRecordShift_holds`; it is not a proof
+of it, because the frozen `θ < 2/3` route has avoided `Dubickas2022PisotGap` since 2026-09-28.
+
+English proof.  The proof follows `SaitoTypeBRecords.eventually_record_of_card_le_two`, except
+for the last step.
+1. `records_pisot_theta` gives `g` and `β = ξ^g` Pisot of degree `L + 1`.  On records,
+   `⌊ξ^(C r)⌋ = Tr(β^n)` with `n = C r / g`, so the fractional part is `f = |x_n|`, where
+   `x_n = Σ_(i ≥ 2) γ_iⁿ`.  `record_gap_bounded` gives records with bounded gaps.
+2. A non-record `M` after a record `r` gives `c f P^(c−1) < 1` with `c ≥ 2` and `P = ⌊β^n⌋`
+   (`nonrecord_ineq`), so `f < 1/(2P)` and `f < β^(−n)` for large `n`.
+3. `Dubickas2022PisotGap` gives `f ≥ Rⁿ n^(−λ)`.  The product of the other conjugates has
+   modulus `|N β| / β ≥ 1/β`, so `R ≥ β^(−1/L)`.  Then `β^(n(1 − 1/L)) < n^λ`, which is false
+   for large `n` when `L ≥ 2`.  `L ≤ 1` is already handled by `eventually_record_of_card_le_two`.
+4. So past some record `r0`, every index is a record (the `exists_last_record` argument).
+Consequence: with this input, the `5/9` wall is only `shiftTraceRigidity_ge_four` and
+`halfShiftTraceRigidity_ge_four`.  The decay rate `μ` enters only through `L ≤ 1/μ`. -/
+theorem eventuallyRecordShift_of_pisotGap {θ : ℝ} (hθ0 : 0 < θ) (hθ : θ < 2 / 3)
+    (hG : Dubickas2022PisotGap) : EventuallyRecordShift θ := by
+  sorry
+
+/-- E+ for every `θ < 2/3`, using `Dubickas2022PisotGap` in place of the open record node.  It
+is wiring only: what remains open is the degree-`≥ 4` rigidity. -/
+theorem xi_shift_transcendental_of_pisotGap {θ : ℝ} (hθ0 : 0 < θ) (hθ : θ < 2 / 3)
+    (hG : Dubickas2022PisotGap) (hP : PrimesShortInterval θ) (hD : Dubickas2022)
+    {s : ℤ} {j : ℕ} (hs : s ≠ 0) (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) (hj2 : s ≤ (3 : ℤ) ^ (j + 1))
+    {ξ : ℝ} (hξ : IsLeast {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ shiftC j s k⌋₊).Prime} ξ) :
+    Transcendental ℚ ξ :=
+  xi_shift_transcendental_of_nodes hθ0 hθ (eventuallyRecordShift_of_pisotGap hθ0 hθ hG)
+    (fun _ h => shiftTraceRigidityGe3_holds h) (fun _ h => halfShiftTraceRigidityGe3_holds h)
+    hP hD hs hj1 hj2 hξ
+
 end LeanFormalizations.Mills.ShiftRigidityDeg
