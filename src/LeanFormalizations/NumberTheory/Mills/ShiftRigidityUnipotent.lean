@@ -132,4 +132,93 @@ def UnipotentCovering : Prop :=
     f.map (Int.castRingHom (ZMod 3)) = (X - Polynomial.C ε) ^ f.natDegree → ∀ s : ℤ, s ≠ 0 →
     ∃ q : ℕ, q.Prime ∧ ∀ N : ℕ, ∃ n ≥ N, (q : ℤ) ∣ traceSeq f ((3 : ℤ) ^ n + s).toNat
 
+/-! ## A non-unipotent class the `3`-adic route cannot see either (phase 65 lap 3)
+
+`f₁ = X⁴ − 8X³ − 5X² + 6X + 3 ≡ X²(X − 1)² (mod 3)` is a totally real quartic Pisot polynomial
+(`β ≈ 8.50029`, other roots `≈ 0.8555, −0.8947, −0.4611`) whose reciprocal roots split into two pairs
+with sum `−1` each (the reversed polynomial is `(Y² + Y + c)(Y² + Y + c')`, `c, c' = −4 ± √15`).  The
+Teichmüller vector is `u = (1, 1, 0, 0)` (roots `≡ 1` and `≡ 0` above `3`), and `Σ u_k α_k^(−1) = −1`:
+so `tr C^(3^n − 1) → −1` `3`-adically (`v₃(tr + 1) = n + 1` for `2 ≤ n ≤ 9`).  It is outside the classes
+`(X − z)^ℓ`, so `exists_spectral_any` applies and its conclusion is satisfied: the generic leaf
+`ShiftRigidityDeg.shiftTraceRigidity_ge_four_generic` also needs a non-`3`-adic input. -/
+
+/-- `X⁴ − 8X³ − 5X² + 6X + 3`. -/
+noncomputable def f₁ : ℤ[X] := X ^ 4 - 8 * X ^ 3 - 5 * X ^ 2 + 6 * X + 3
+
+def C₁ : Matrix (Fin 4) (Fin 4) ℤ := !![0, 0, 0, -3; 1, 0, 0, -6; 0, 1, 0, 5; 0, 0, 1, 8]
+
+/-- The trace sequence of `C₁` by its recurrence (Cayley–Hamilton), as a computable window. -/
+def tq : ℕ → ℤ × ℤ × ℤ × ℤ
+  | 0 => (4, 8, 74, 614)
+  | k + 1 => let t := tq k; (t.2.1, t.2.2.1, t.2.2.2,
+      8 * t.2.2.2 + 5 * t.2.2.1 - 6 * t.2.1 - 3 * t.1)
+
+theorem C₁_four : C₁ ^ 4 = (8 : ℤ) • C₁ ^ 3 + (5 : ℤ) • C₁ ^ 2 - (6 : ℤ) • C₁ - (3 : ℤ) • (1 : Matrix (Fin 4) (Fin 4) ℤ) := by
+  decide
+
+theorem tq_eq (k : ℕ) : tq k = ((C₁ ^ k).trace, (C₁ ^ (k + 1)).trace, (C₁ ^ (k + 2)).trace,
+    (C₁ ^ (k + 3)).trace) := by
+  induction k with
+  | zero => decide
+  | succ k ih =>
+    have h4 : C₁ ^ (k + 4) = (8 : ℤ) • C₁ ^ (k + 3) + (5 : ℤ) • C₁ ^ (k + 2) - (6 : ℤ) • C₁ ^ (k + 1) -
+        (3 : ℤ) • C₁ ^ k := by
+      rw [pow_add, C₁_four]
+      simp only [mul_add, mul_sub, mul_smul_comm, ← pow_add, mul_one, ← pow_succ]
+    rw [tq, ih]
+    refine Prod.ext rfl (Prod.ext rfl (Prod.ext rfl ?_))
+    show _ = (C₁ ^ (k + 4)).trace
+    rw [h4]
+    simp only [Matrix.trace_add, Matrix.trace_sub, Matrix.trace_smul, smul_eq_mul]
+
+/-- **Native-checked range.**  `tr C₁^(3^n − 1) ≡ −1 (mod 3^(n+1))` for `2 ≤ n ≤ 9`. -/
+theorem C₁_trace_mod : ∀ n ∈ Finset.Icc 2 9, ((tq (3 ^ n - 1)).1 + 1) % 3 ^ (n + 1) = 0 := by
+  native_decide
+
+theorem f₁_natDegree : f₁.natDegree = 4 := by
+  unfold f₁; compute_degree!
+
+theorem compM_f₁ : Matrix.reindex (finCongr f₁_natDegree) (finCongr f₁_natDegree)
+    (compM ℤ f₁) = C₁ := by
+  ext i j
+  have hc : ∀ n : ℕ, f₁.coeff n = if n = 0 then 3 else if n = 1 then 6 else if n = 2 then -5
+      else if n = 3 then -8 else if n = 4 then 1 else 0 := by
+    intro n; unfold f₁
+    simp only [coeff_add, coeff_sub, coeff_X_pow, coeff_C_mul_X_pow,
+      show (8 : ℤ[X]) * X ^ 3 = C 8 * X ^ 3 by simp, show (5 : ℤ[X]) * X ^ 2 = C 5 * X ^ 2 by simp,
+      show (6 : ℤ[X]) * X = C 6 * X ^ 1 by simp, show (3 : ℤ[X]) = C 3 by simp, coeff_C]
+    rcases n with _ | _ | _ | _ | _ | n <;> simp
+  fin_cases i <;> fin_cases j <;> simp [compM, hc, f₁_natDegree, C₁]
+
+theorem traceSeq_f₁ (N : ℕ) : traceSeq f₁ N = (C₁ ^ N).trace := by
+  have htr : ∀ M : Matrix (Fin f₁.natDegree) (Fin f₁.natDegree) ℤ,
+      (Matrix.reindex (finCongr f₁_natDegree) (finCongr f₁_natDegree) M).trace = M.trace := by
+    intro M
+    simp only [Matrix.trace, Matrix.diag, Matrix.reindex_apply, Matrix.submatrix_apply]
+    exact Equiv.sum_comp (finCongr f₁_natDegree).symm (fun i => M i i)
+  rw [traceSeq, ← compM_f₁, ← Matrix.coe_reindexAlgEquiv ℤ ℤ, ← map_pow,
+    Matrix.coe_reindexAlgEquiv, htr]
+
+theorem generic_trace_congr_le_nine {n : ℕ} (hn1 : 2 ≤ n) (hn9 : n ≤ 9) :
+    (3 : ℤ) ^ (n + 1) ∣ traceSeq f₁ (((3 : ℤ) ^ n + (-1)).toNat) + 1 := by
+  have hpos : 1 ≤ 3 ^ n := Nat.one_le_pow _ _ (by norm_num)
+  have hE : (((3 : ℤ) ^ n + (-1)).toNat) = 3 ^ n - 1 := by
+    have : ((3 : ℤ) ^ n + (-1)) = ((3 ^ n - 1 : ℕ) : ℤ) := by push_cast [Nat.cast_sub hpos]; ring
+    rw [this, Int.toNat_natCast]
+  rw [hE, traceSeq_f₁]
+  have h := C₁_trace_mod n (Finset.mem_Icc.2 ⟨hn1, hn9⟩)
+  rw [tq_eq] at h
+  exact Int.dvd_of_emod_eq_zero h
+
+/-- **Believed (~95%)**: the congruence for every `n` (Hensel's idempotent for `X²(X − 1)²` and the
+pair relation; numerically `v₃ = n + 1` exactly for `n ≤ 9`). -/
+theorem generic_trace_congr (n : ℕ) (hn : 2 ≤ n) :
+    (3 : ℤ) ^ (n + 1) ∣ traceSeq f₁ (((3 : ℤ) ^ n + (-1)).toNat) + 1 := by
+  sorry
+
+/-- **Believed (~99%, numerics)**: `f₁` is Pisot, and outside every class `(X − z)⁴ (mod 3)`. -/
+theorem pisot_f₁ : (∃ α : ℝ, PisotDataAny f₁ α) ∧
+    ∀ z : ZMod 3, f₁.map (Int.castRingHom (ZMod 3)) ≠ (X - Polynomial.C z) ^ f₁.natDegree := by
+  sorry
+
 end LeanFormalizations.Mills.ShiftRigidityUnipotent

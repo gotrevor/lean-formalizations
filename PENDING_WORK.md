@@ -1,3 +1,16 @@
+## phase 65 lap 3b (2026-10-05): sibling check REFUTES the 3-adic route on the generic leaf too
+* `ShiftRigidityUnipotent.generic_trace_congr_le_nine` (native, n ≤ 9): f₁ = X⁴−8X³−5X²+6X+3
+  ≡ X²(X−1)² (mod 3), Pisot β≈8.5, tr C^(3^n−1) ≡ −1 (mod 3^(n+1)).  Reciprocal roots split into
+  two pairs of sum −1; Teichmüller u = (1,1,0,0), ω = −1 satisfies `exists_spectral_any`.
+  `generic_trace_congr` (all n, ~95%) and `pisot_f₁` (~99%) are sorries.
+* Consequence: BOTH degree-≥4 leaves are beyond the window+Teichmüller+spectral machinery.  Any
+  proof of `shiftTraceRigidity_ge_four` needs a non-3-adic input (covering primes / a second
+  prime's structure); the analogous problem for Fermat numbers is open.  Scan |coeff| ≤ 6, s∈[−4,4]:
+  13 3-adically-consistent (f,s), all unipotent; f₁ (c₃ = −8) is the first generic one found.
+* Next: characterise the 3-adically consistent generic instances (pair relations ⇒ f factors over a
+  quadratic field after reversal?) and test whether the window's sharper form (3^(n+1) | ord(C mod p))
+  gives a contradiction there; otherwise the crux reduces to `UnipotentCovering`-type nodes.
+
 ## phase 65 lap 3 (2026-10-05): generic leaf — window, Teichmüller limit (`exists_teich_limit_any`, pigeonhole on the Frobenius orbit), non-scalarity (`exists_entry_ne_any`) PROVED in any degree; `exists_spectral_any` PROVED (Σ u_k e_k^s = ω, u nonconstant, any degree). Next: rigidity (replace `rigidity_generic`)
 * `ShiftRigidityDeg.window_shift_any` (+ `dvd_sq_sub_one_of_dvd_pow_sub_one` via LTE,
   `coeff_zero_ne_zero_any`, `traceSeq_tendsto_any`): prime shifted traces are `≡ ±1 mod 3^k` along

@@ -439,7 +439,14 @@ def UnipotentMod3 (β : ℝ) : Prop :=
 class.  Route: the cubic window + Teichmüller + spectral transfer (degree-general), with the
 constant `±1` spectral vector excluded because `C ∓ 1` is not nilpotent mod 3, the `z = 0` cube
 class excluded since then traces are `≡ 0 (mod 3)`, and the non-constant case by a Galois element
-acting without fixed points on the roots outside `ℚ(μ_Q)`. -/
+acting without fixed points on the roots outside `ℚ(μ_Q)`.
+
+Phase 65 lap 3 (sibling check): the `3`-adic route alone does **not** suffice here either.
+`ShiftRigidityUnipotent.f₁ = X⁴ − 8X³ − 5X² + 6X + 3 ≡ X²(X − 1)² (mod 3)` (Pisot, β ≈ 8.5) has
+`tr C^(3^n − 1) ≡ −1 (mod 3^(n+1))` (`generic_trace_congr_le_nine`, `generic_trace_congr`):
+the window and the spectral identity (`exists_spectral_any`, `u = (1, 1, 0, 0)`, `ω = −1`) are
+satisfied, because the reciprocal roots split into two pairs with sum `−1`.  So confidence that
+this leaf is provable by the present machinery is low; it needs an input beyond `3`-adics. -/
 theorem shiftTraceRigidity_ge_four_generic {s : ℤ} (hs : s ≠ 0) {β : ℝ} (hβ : IsPisot β)
     (hdeg : 4 ≤ (minpoly ℚ β).natDegree) (hU : ¬ UnipotentMod3 β) :
     ¬ ∀ᶠ n in atTop, ∃ p : ℕ, p.Prime ∧ powTrace β (((3 : ℤ) ^ n + s).toNat) = (p : ℂ) := by

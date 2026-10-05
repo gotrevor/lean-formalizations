@@ -333,7 +333,10 @@ def register : List Row := [
       degree 4, f₀ = X⁴ − 4X³ − X + 1 ≡ (X − 1)⁴ is Pisot (β ≈ 4.046) with tr β^(−1) = 1, and \
       tr C^(3^n − 1) ≡ 1 (mod 3^(n−1)) for all n ≥ 2 (kernel-checked), so the window p² ≡ 1 and the \
       constant spectral vector u ≡ 1, ω = 1 are consistent: every 3-adic constraint holds.  47 such \
-      (f, s) with |coeff| ≤ 9; each has a covering prime q ≤ 60, but no uniform reason"
+      (f, s) with |coeff| ≤ 9; each has a covering prime q ≤ 60, but no uniform reason.  Not only the \
+      unipotent class: f₁ = X⁴ − 8X³ − 5X² + 6X + 3 ≡ X²(X − 1)² has tr C^(3^n − 1) ≡ −1 \
+      (mod 3^(n+1)) (ShiftRigidityUnipotent.generic_trace_congr_le_nine), a non-constant spectral \
+      solution u = (1,1,0,0) from a pair relation among reciprocal roots"
     reopenIf := "ShiftRigidityUnipotent.UnipotentCovering (a covering prime for every unipotent-class \
       Pisot), or any non-3-adic input on tr C^(3^n + s) in the class f ≡ (X ∓ 1)^ℓ (mod 3)" }
 ]
