@@ -41,6 +41,7 @@ import LeanFormalizations.NumberTheory.Erdos385.Remainder
 import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.ZeroDetect
 import LeanFormalizations.NumberTheory.Mills.PairedRoot
 import LeanFormalizations.NumberTheory.Mills.SaitoTypeB
+import LeanFormalizations.NumberTheory.Mills.SaitoTypeBTheta
 
 namespace LeanFormalizations.Maze
 
@@ -305,7 +306,19 @@ def register : List Row := [
       β^n − Tr(β^n) bounds |S(n)| below only by β^(−(ℓ−1)n), useless for ℓ ≥ 3.  Matomäki is \
       needed for general C (chain steps with ratio < 40/19) but not for E+"
     reopenIf := "an elementary proof of SaitoTypeB.SparseNoCancel (or of the case-(I) degree \
-      bound for the E+ orbit), or a competitor construction that avoids Saito's case (I)" }
+      bound for the E+ orbit), or a competitor construction that avoids Saito's case (I)" },
+  { route := "E+ from a short-interval exponent θ ∈ [5/9, 2/3) (phase 64a: the frozen \
+      SaitoTypeBTheta.xi_shift_transcendental_of_shortInterval, hence the Ingham 5/8 corollaries)"
+    verdict := .needsNewIdea, tier := .frozen
+    anchor := some ``LeanFormalizations.Mills.SaitoTypeBTheta.ShiftPisotDegreeLeThree
+    evidence := "SaitoTypeBTheta.xi_shift_transcendental_of_shortInterval' proves E+ for θ < 5/9 \
+      by the θ-parametric route (SaitoTypeBThetaParts.lean).  The prime input enters twice: the \
+      chain step needs ratio c with θc ≤ c − 1 (fine up to θ < 2/3), and Saito (5.17) gives decay \
+      μ < (1 − θ)·3 − 1 = 2 − 3θ.  The Baker-free degree bound is (ℓ − 1)μ ≤ 1, and the endgame \
+      (e2_zero_of_nonrecord, not_natDegree_two, trace rigidity) is degree-3 only, so it needs \
+      μ > 1/3, i.e. θ < 5/9.  Ingham's 5/8 lies above"
+    reopenIf := "a proof of ShiftPisotDegreeLeThree for θ < 2/3 (exclude Pisot degree ≥ 4 for the \
+      E+ orbit n ↦ 3n − d without Baker), or a degree-ℓ version of the non-record e₂ argument" }
 ]
 
 end LeanFormalizations.Maze

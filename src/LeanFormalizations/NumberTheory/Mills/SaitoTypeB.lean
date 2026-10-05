@@ -322,15 +322,17 @@ theorem xi_shift_transcendental_of_typeB (hT : SaitoTypeBLeast)
     refine ⟨_, hp, ?_⟩
     rw [← htr, ← hsplit, ← Nat.div_div_eq_div_mul, shiftC_div_three_pow hj1 hs' hk1 hkb, hkn]
 
-/-- **Theorem E+ on classical inputs**: `ξ(3^(k+j) + s)` is transcendental for every `s ≠ 0`,
-conditional only on Baker–Harman–Pintz 2001 and Dubickas 2022 Lemma 6 (Corvaja–Zannier 2004). -/
-theorem xi_shift_transcendental_classical (hB : BakerHarmanPintz2001) (hD : Dubickas2022)
-    {s : ℤ} {j : ℕ} (hs : s ≠ 0) (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) (hj2 : s ≤ (3 : ℤ) ^ (j + 1))
-    {ξ : ℝ} (hξ : IsLeast {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ shiftC j s k⌋₊).Prime} ξ) :
+/-- The E+ endgame from Saito's Type B dichotomy for `shiftC` (trace rigidity, no prime input). -/
+theorem xi_shift_transcendental_of_shift_disj
+    {s : ℤ} {j : ℕ} (hs : s ≠ 0) (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s)
+    {ξ : ℝ} (hξ : IsLeast {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ shiftC j s k⌋₊).Prime} ξ)
+    (hdisj : Transcendental ℚ ξ ∨
+      ∃ g : ℕ, 1 ≤ g ∧ IsPisot (ξ ^ g) ∧ (minpoly ℚ (ξ ^ g)).natDegree = 3 ∧
+        ∃ K : ℕ, ∀ k ≥ K, (29 : ℝ) / 10 * shiftC j s k ≤ shiftC j s (k + 1) →
+          g ∣ shiftC j s k ∧ powTrace (ξ ^ g) (shiftC j s k / g) = (⌊ξ ^ shiftC j s k⌋₊ : ℂ)) :
     Transcendental ℚ ξ := by
   have hR : ∀ s : ℤ, s ≠ 0 → ShiftTraceRigidity s := fun _ h => shiftTraceRigidity_holds h
   have hH : ∀ s : ℤ, Odd s → HalfShiftTraceRigidity s := fun _ h => halfShiftTraceRigidity_holds h
-  have hdisj := saitoTypeB_shift hB hD hs hj1 hj2 hξ
   have hleast := hξ
   rcases hdisj with htr | ⟨g, hg1, hpisot, hdeg, K, hK⟩
   · exact htr
@@ -365,6 +367,15 @@ theorem xi_shift_transcendental_classical (hB : BakerHarmanPintz2001) (hD : Dubi
     obtain ⟨k, hk1, hkn, hkb, htr, hp⟩ := key n hn
     refine ⟨_, hp, ?_⟩
     rw [← htr, ← hsplit, ← Nat.div_div_eq_div_mul, shiftC_div_three_pow hj1 hs' hk1 hkb, hkn]
+
+
+/-- **Theorem E+ on classical inputs**: `ξ(3^(k+j) + s)` is transcendental for every `s ≠ 0`,
+conditional only on Baker–Harman–Pintz 2001 and Dubickas 2022 Lemma 6 (Corvaja–Zannier 2004). -/
+theorem xi_shift_transcendental_classical (hB : BakerHarmanPintz2001) (hD : Dubickas2022)
+    {s : ℤ} {j : ℕ} (hs : s ≠ 0) (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) (hj2 : s ≤ (3 : ℤ) ^ (j + 1))
+    {ξ : ℝ} (hξ : IsLeast {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ shiftC j s k⌋₊).Prime} ξ) :
+    Transcendental ℚ ξ :=
+  xi_shift_transcendental_of_shift_disj hs hj1 hξ (saitoTypeB_shift hB hD hs hj1 hj2 hξ)
 
 
 /-- **Theorem E on classical inputs**: `ξ(3^k − 2)` is transcendental, conditional only on

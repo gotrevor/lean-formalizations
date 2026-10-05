@@ -1,3 +1,20 @@
+## phase 64a lap 1 (2026-10-05): E+ for θ < 5/9 PROVED; the 5/9 wall named
+* `SaitoTypeBTheta.xi_shift_transcendental_of_shortInterval'` (θ < 5/9) and
+  `xi_shifted_transcendental_of_shortInterval'` (Theorem E): no sorryAx.  `ingham_of_bhp` proved.
+  `xi_shift_transcendental_ingham` and `xi_shifted_transcendental_ingham` are wired from the frozen
+  `xi_shift_transcendental_of_shortInterval`, whose only `sorry` is the branch θ ∈ [5/9, 2/3).
+* New `Mills/SaitoTypeBThetaParts.lean`: θ-parametric copies of bhp_step … saitoTypeB_shift
+  (parameters θ, ratio floor ρ ∈ (2,3), decay μ ∈ (1/3, 1], μ ≤ (1−θ)ρ − 1), `shiftC_ratio_ev`.
+  `SaitoTypeB.xi_shift_transcendental_of_shift_disj` factors the classical endgame (statement of
+  `xi_shift_transcendental_classical` unchanged).
+* **Why not 2/3**: the decay exponent is μ < 2 − 3θ and the Baker-free degree bound is
+  (ℓ−1)μ ≤ 1; the endgame is degree-3 only, so μ > 1/3 ⇔ θ < 5/9.  Ingham's 5/8 is above.
+  Open node `SaitoTypeBTheta.ShiftPisotDegreeLeThree θ`; Maze row added.
+* Next attack: exclude Pisot degree ℓ ≥ 4 for the E+ orbit n ↦ 3n − d (all large k records ⇒
+  decay at every k).  Candidate: a degree-ℓ version of `e2_zero_of_nonrecord` — but for ℓ ≥ 4
+  non-records only force f < p^(−2), compatible with norm ≥ 1 (f ≳ p^(−(ℓ−1))); so the record
+  step itself (`eventually_record_of_card_le_two`) also needs a new idea beyond degree 3.
+
 ## phase 62 lap 4 (2026-10-05): DONE — headline has no sorryAx
 `#print axioms SaitoTypeB.xi_shift_transcendental_classical` = [propext, Classical.choice, Quot.sound,
 + two native_decide certs].  Closed this lap via new `Mills/DominantPair.lean`:
