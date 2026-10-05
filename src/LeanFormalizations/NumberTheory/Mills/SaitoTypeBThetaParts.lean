@@ -556,7 +556,7 @@ theorem record_decay_theta {θ ρ μ : ℝ} (hP : PrimesShortInterval θ) (hθ0 
 and Dubickas 2022 Lemma 6 along the records give `ξ^g` Pisot with `g ∣ C m` at large records. -/
 theorem records_pisot_theta {θ ρ μ : ℝ} (hP : PrimesShortInterval θ) (hθ0 : 0 ≤ θ) (hθ1 : θ < 1)
     (hμ0 : 0 < μ) (hμ : μ ≤ (1 - θ) * ρ - 1) (hρ2 : 2 < ρ) (hμ1 : μ ≤ 1) (hρ3 : ρ < 3)
-    (hμ3 : 1 / 3 < μ) (hD : Dubickas2022)
+    (hD : Dubickas2022)
     {s : ℤ} {j : ℕ} (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) (hj2 : s ≤ (3 : ℤ) ^ (j + 1))
     {ξ : ℝ} (hξ : IsLeast (millsSet (shiftC j s)) ξ) (halg : IsAlgebraic ℚ ξ) :
     ∃ g : ℕ, 1 ≤ g ∧ IsPisot (ξ ^ g) ∧ 2 ≤ (minpoly ℚ (ξ ^ g)).natDegree ∧
@@ -689,15 +689,22 @@ theorem card_le_two_of_records_theta {θ ρ μ : ℝ} (hP : PrimesShortInterval 
 /-- **All large indices are records** for the E+ exponents, if `ξ` is algebraic. -/
 theorem eventually_record_shift_theta {θ ρ μ : ℝ} (hP : PrimesShortInterval θ) (hθ0 : 0 ≤ θ) (hθ1 : θ < 1)
     (hμ0 : 0 < μ) (hμ : μ ≤ (1 - θ) * ρ - 1) (hρ2 : 2 < ρ) (hμ1 : μ ≤ 1) (hρ3 : ρ < 3)
-    (hμ3 : 1 / 3 < μ) (hD : Dubickas2022)
+    (hD : Dubickas2022)
     {s : ℤ} {j : ℕ} (hs : s ≠ 0) (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) (hj2 : s ≤ (3 : ℤ) ^ (j + 1))
-    {ξ : ℝ} (hξ : IsLeast (millsSet (shiftC j s)) ξ) (halg : IsAlgebraic ℚ ξ) :
+    {ξ : ℝ} (hξ : IsLeast (millsSet (shiftC j s)) ξ) (halg : IsAlgebraic ℚ ξ)
+    (hμ3 : 1 / 3 < μ ∨ ∀ g : ℕ, 1 ≤ g → IsPisot (ξ ^ g) → (minpoly ℚ (ξ ^ g)).natDegree ≤ 3) :
     ∃ K, ∀ m ≥ K, IsRecord (shiftC j s) ξ m := by
   have hρ1 := theta_one_lt hθ0 hθ1 hμ0 hμ
-  obtain ⟨g, hg1, hpis, hdeg, K, hK⟩ := records_pisot_theta hP hθ0 hθ1 hμ0 hμ hρ2 hμ1 hρ3 hμ3 hD hj1 hj2 hξ halg
+  obtain ⟨g, hg1, hpis, hdeg, K, hK⟩ := records_pisot_theta hP hθ0 hθ1 hμ0 hμ hρ2 hμ1 hρ3 hD hj1 hj2 hξ halg
   obtain ⟨T, K', hT⟩ := record_gap_bounded hj1 hj2 hξ hg1 hpis hK
-  exact eventually_record_of_card_le_two hs hj1 hj2 hξ hg1 hpis
-    (card_le_two_of_records_theta hP hθ0 hθ1 hμ0 hμ hρ2 hμ1 hρ3 hμ3 hs hj1 hj2 hξ hg1 hpis hdeg hK hT) hK hT
+  have hc2 : Multiset.card (otherConj (ξ ^ g)) ≤ 2 := by
+    rcases hμ3 with hμ3 | hd3
+    · exact card_le_two_of_records_theta hP hθ0 hθ1 hμ0 hμ hρ2 hμ1 hρ3 hμ3 hs hj1 hj2 hξ hg1 hpis
+        hdeg hK hT
+    · have := card_otherConj_add_one hpis.2.1.tower_top
+      have := hd3 g hg1 hpis
+      omega
+  exact eventually_record_of_card_le_two hs hj1 hj2 hξ hg1 hpis hc2 hK hT
 
 /-- The degree bound for the E+ exponents: decay of `‖ξ^(C k)‖` at rate `151/400` along all
 large `k`, with `ξ^g` Pisot and `g ∣ C k`, gives `(ℓ − 1)·151/400 ≤ 1` (no Baker). -/
@@ -779,9 +786,11 @@ theorem card_mul_le_shift_theta {μ : ℝ} {e : ℤ} {j : ℕ} (hj1 : 1 ≤ (3 :
 /-- **Saito's Type B for the E+ exponents, from BHP and Dubickas 2022 Lemma 6 only.** -/
 theorem saitoTypeB_shift_theta {θ ρ μ : ℝ} (hP : PrimesShortInterval θ) (hθ0 : 0 ≤ θ) (hθ1 : θ < 1)
     (hμ0 : 0 < μ) (hμ : μ ≤ (1 - θ) * ρ - 1) (hρ2 : 2 < ρ) (hμ1 : μ ≤ 1) (hρ3 : ρ < 3)
-    (hμ3 : 1 / 3 < μ) (hD : Dubickas2022)
+    (hD : Dubickas2022)
     {e : ℤ} {j : ℕ} (he : e ≠ 0) (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + e) (hj2 : e ≤ (3 : ℤ) ^ (j + 1))
-    {ξ : ℝ} (hξ : IsLeast {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ shiftC j e k⌋₊).Prime} ξ) :
+    {ξ : ℝ} (hξ : IsLeast {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ shiftC j e k⌋₊).Prime} ξ)
+    (hμ3 : 1 / 3 < μ ∨ (IsAlgebraic ℚ ξ →
+      ∀ g : ℕ, 1 ≤ g → IsPisot (ξ ^ g) → (minpoly ℚ (ξ ^ g)).natDegree ≤ 3)) :
     Transcendental ℚ ξ ∨
       ∃ g : ℕ, 1 ≤ g ∧ IsPisot (ξ ^ g) ∧ (minpoly ℚ (ξ ^ g)).natDegree = 3 ∧
         ∃ K : ℕ, ∀ k ≥ K, (29 : ℝ) / 10 * shiftC j e k ≤ shiftC j e (k + 1) →
@@ -804,7 +813,7 @@ theorem saitoTypeB_shift_theta {θ ρ μ : ℝ} (hP : PrimesShortInterval θ) (h
   have hξ1 : 1 < ξ := hξ.1.1
   have hξ0 : 0 < ξ := by linarith
   have hnot := not_intCast_pow h1 h2 h5 hξS
-  obtain ⟨Kr, hKr⟩ := eventually_record_shift_theta hP hθ0 hθ1 hμ0 hμ hρ2 hμ1 hρ3 hμ3 hD he hj1 hj2 hξ halg
+  obtain ⟨Kr, hKr⟩ := eventually_record_shift_theta hP hθ0 hθ1 hμ0 hμ hρ2 hμ1 hρ3 hD he hj1 hj2 hξ halg (hμ3.imp_right (· halg))
   have hlow : ∀ k ≥ Kr + 1, root ⌊ξ ^ C k⌋₊ (C k) ≤ root ⌊ξ ^ C (k + 1)⌋₊ (C (k + 1)) :=
     fun k hk => hKr (k + 1) (by omega) k (by omega) (by omega)
   obtain ⟨k₀, hII⟩ := window_of_least_theta hP hθ0 hθ1 hμ0 hμ hρ2 hμ1 h1 h2 hK₀ρ hξ hnot hlow
@@ -887,6 +896,11 @@ theorem saitoTypeB_shift_theta {θ ρ μ : ℝ} (hP : PrimesShortInterval θ) (h
   -- the degree is `3`
   have hβ := hpis
   have hcardle : Multiset.card (otherConj (ξ ^ g)) ≤ 2 := by
+    rcases hμ3 with hμ3 | hd3
+    swap
+    · have := card_otherConj_add_one hpis.2.1.tower_top
+      have := hd3 halg g hg1 hpis
+      omega
     by_contra hc
     push_neg at hc
     have : (3 : ℝ) ≤ (Multiset.card (otherConj (ξ ^ g)) : ℝ) := by exact_mod_cast hc

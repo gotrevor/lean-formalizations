@@ -2324,3 +2324,12 @@ Node D untouched.
 
 ## 2026-10-05 phase 64b DONE
 cm3_check and cert_all kernel-checked (E1CertCore Fast form + 6 table modules); headline xi_shift_transcendental_classical axioms = propext, Classical.choice, Quot.sound.
+
+## Phase 65 lap 1 (2026-10-05): EDGE PROVED
+`SaitoTypeBTheta.xi_shift_transcendental_of_degree` is axiom-clean (propext/choice/Quot.sound).
+`μ > 1/3` was used only for the degree bound: `records_pisot_theta` never used it (dropped);
+`eventually_record_shift_theta` and `saitoTypeB_shift_theta` now take
+`1/3 < μ ∨ (degree ≤ 3)`.  No second node: the record step (`DominantPair.lower_along_records`,
+`record_gap_bounded`) is degree-free given `card otherConj ≤ 2`.
+The whole 5/9 wall is now the single node `shiftPisotDegreeLeThree_holds`.
+Next: ξ-free obstruction; mechanism 1 (sign along `n ↦ 3n+d`) tested on the `X⁴ − aX³ − 1` control.

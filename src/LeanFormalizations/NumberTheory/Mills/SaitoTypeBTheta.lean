@@ -86,8 +86,8 @@ theorem xi_shift_transcendental_of_shortInterval' {θ : ℝ} (hθ0 : 0 < θ) (h�
   have hμ3 : 1 / 3 < μ := lt_min (by norm_num) hρμ
   exact SaitoTypeB.xi_shift_transcendental_of_shift_disj hs hj1 hξ
     (SaitoTypeB.saitoTypeB_shift_theta (ρ := ρ) (μ := μ) hP hθ0.le (by linarith) (by linarith)
-      (min_le_right _ _) (by rw [hρ]; linarith) (min_le_left _ _) (by rw [hρ]; linarith) hμ3 hD
-      hs hj1 hj2 hξ)
+      (min_le_right _ _) (by rw [hρ]; linarith) (min_le_left _ _) (by rw [hρ]; linarith) hD
+      hs hj1 hj2 hξ (Or.inl hμ3))
 
 /-- **Theorem E from `θ < 5/9`**: `ξ(3^k − 2)` is transcendental. -/
 theorem xi_shifted_transcendental_of_shortInterval' {θ : ℝ} (hθ0 : 0 < θ) (hθ : θ < 5 / 9)
@@ -120,7 +120,22 @@ theorem xi_shift_transcendental_of_degree {θ : ℝ} (hθ0 : 0 < θ) (hθ : θ <
     {s : ℤ} {j : ℕ} (hs : s ≠ 0) (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) (hj2 : s ≤ (3 : ℤ) ^ (j + 1))
     {ξ : ℝ} (hξ : IsLeast {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ shiftC j s k⌋₊).Prime} ξ) :
     Transcendental ℚ ξ := by
-  sorry
+  have h1θ : 0 < 1 - θ := by linarith
+  -- `ρ = (3 + ρ₀)/2` with `(1 − θ) ρ₀ = 1`, so `2 < ρ < 3` and `μ := (1 − θ) ρ − 1 > 0`
+  set a : ℝ := 1 / (1 - θ) with ha
+  have ha1 : 1 < a := by rw [ha, lt_div_iff₀ h1θ]; linarith
+  have ha3 : a < 3 := by rw [ha, div_lt_iff₀ h1θ]; linarith
+  have hamul : (1 - θ) * a = 1 := by rw [ha]; field_simp
+  set ρ : ℝ := (3 + a) / 2 with hρ
+  have hρμ : 0 < (1 - θ) * ρ - 1 := by
+    have : (1 - θ) * ρ = ((1 - θ) * 3 + (1 - θ) * a) / 2 := by rw [hρ]; ring
+    rw [this, hamul]; nlinarith
+  set μ : ℝ := min 1 ((1 - θ) * ρ - 1) with hμ
+  have hμ0 : 0 < μ := lt_min (by norm_num) hρμ
+  exact SaitoTypeB.xi_shift_transcendental_of_shift_disj hs hj1 hξ
+    (SaitoTypeB.saitoTypeB_shift_theta (ρ := ρ) (μ := μ) hP hθ0.le (by linarith) hμ0
+      (min_le_right _ _) (by rw [hρ]; linarith) (min_le_left _ _) (by rw [hρ]; linarith)
+      hD hs hj1 hj2 hξ (Or.inr fun halg => hdeg hP hD s j hs hj1 hj2 ξ hξ halg))
 
 /-- **Node (phase 65)**: the degree bound on `[5/9, 2/3)`.  Needs an input beyond decay
 (`DecayDegreeFour.decay_admits_degree_four`); see DIRECTION.md phase 65 for the difficulty check.
