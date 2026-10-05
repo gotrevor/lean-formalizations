@@ -668,7 +668,32 @@ theorem exists_teich_limit {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) :
 theorem exists_entry_ne {f : ℤ[X]} {α : ℝ} (hD : PisotData f α)
     (hnc : ∀ z : ZMod 3, f.map (Int.castRingHom (ZMod 3)) ≠ (X - C z) ^ 3) (ν : ℕ) (z : ℤ)
     (hz : z = 1 ∨ z = -1) : ∃ a b, ¬ (3 : ℤ) ∣ (compM ℤ f ^ (3 ^ ν) - z • (1 : Matrix (Fin f.natDegree) (Fin f.natDegree) ℤ)) a b := by
-  sorry
+  classical
+  by_contra hcon
+  push_neg at hcon
+  have hd1 : 1 ≤ f.natDegree := by rw [hD.deg]; norm_num
+  set zb : ZMod 3 := (z : ZMod 3) with hzb
+  -- `D^(3^ν) = z` in `ZMod 3`
+  have hDz : compM (ZMod 3) f ^ (3 ^ ν) - zb • (1 : Matrix _ _ (ZMod 3)) = 0 := by
+    ext a b
+    have h := (ZMod.intCast_zmod_eq_zero_iff_dvd _ 3).2 (hcon a b)
+    rw [← compM_map (Int.castRingHom (ZMod 3)) f]
+    simp only [Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply, Matrix.zero_apply] at h ⊢
+    rw [← map_matrix_pow] at *
+    push_cast at h
+    simpa [Matrix.map_apply] using h
+  have haev : Polynomial.aeval (compM (ZMod 3) f) ((X - C zb) ^ (3 ^ ν)) = 0 := by
+    rw [sub_pow_char_pow, ← map_pow, ZMod.pow_card_pow, map_sub, map_pow, aeval_X, aeval_C,
+      Algebra.algebraMap_eq_smul_one]
+    exact hDz
+  have hdvd := dvd_of_aeval_compM_eq_zero f hD.monic hd1 _ haev
+  obtain ⟨i, _, hi⟩ := (dvd_prime_pow (Polynomial.prime_X_sub_C zb) _).1 hdvd
+  have heq := eq_of_monic_of_associated (hD.monic.map _) ((monic_X_sub_C zb).pow i) hi
+  have hdeg : i = 3 := by
+    have := congrArg natDegree heq
+    rw [hD.monic.natDegree_map, hD.deg, natDegree_pow, natDegree_X_sub_C, mul_one] at this
+    exact this.symm
+  exact hnc zb (by rw [heq, hdeg])
 
 /-- **The transfer**, shifted: the integer system at every level has a solution in `AlgQ`. -/
 theorem exists_spectral_solution_shift (f : ℤ[X]) (hd : 1 ≤ f.natDegree) {F n₀ : ℕ} {s : ℤ}
