@@ -17,7 +17,7 @@ infinitely often (Vose 1985).
 Recorded here:
 * `card_le_pow_practicalH` (counting): `n + 1 ≤ (τ(n) + 1)^{h(n)}`.  So `h(n) ≥ log n / log τ(n)`,
   which is `≫ log log n` for every `n` (exponent ≥ 1 in (a)), and for `n!` it is `≍ (log n)²`
-  (`log τ(n!) ~ C n / log n`, `C = Σ_k log(k+1)/(k(k+1)) ≈ 1.28`): `practicalH_factorial_ge`.
+  (`log τ(n!) ~ C n / log n`, `C = Σ_k log(k+1)/(k(k+1)) ≈ 1.258`): `practicalH_factorial_ge`.
   So in (c) the exponent is at least 2.  Ren's derivation; not found in the sources checked
   (erdosproblems.com/18 thread, Pomerance–Weingartner 2021, Erdős–Graham 1980 p. 33, which
   states only the upper bound `< n` and guesses "perhaps even only `(log n)^c`").
@@ -53,9 +53,10 @@ theorem card_le_pow_practicalH {n : ℕ} (hn : IsPractical n) :
   sorry
 
 /-- **`h(n!) ≥ (log n)² / 2` eventually** (Erdős (c) needs exponent `≥ 2`).  From
-`card_le_pow_practicalH` and `log τ(n!) ≤ (C + o(1)) n / log n` with `C ≈ 1.28 < 2` (`v_p(n!) ≈
-⌊n/p⌋`, PNT; the constant is `Σ_k log(k+1)/(k(k+1))`).  Believed 92% (the `τ(n!)` asymptotic is
-Ren's computation, not checked against a source). -/
+`card_le_pow_practicalH` and `log τ(n!) ≤ (C + o(1)) n / log n` with `C ≈ 1.258 < 2` (`v_p(n!) ≈
+⌊n/p⌋`, PNT; the constant is `Σ_k log(k+1)/(k(k+1))`).  Believed 95% (the `τ(n!)` asymptotic is
+Ren's computation; numerically `log τ(n!) · log n / n` = 1.69, 1.58, 1.51, 1.45 at `n = 10³…10⁶`,
+decreasing toward `C`: `scripts/practical-factorial-divisors.py`). -/
 theorem practicalH_factorial_ge :
     ∀ᶠ n : ℕ in atTop, (log n) ^ 2 / 2 ≤ (practicalH n.factorial : ℝ) := by
   sorry
