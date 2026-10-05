@@ -500,11 +500,126 @@ theorem fract_le_of_window {x c θ : ℝ} {P : ℕ} (hx : 1 ≤ x) (hc : 1 ≤ c
     Int.fract x ≤ 2 / (c * (⌊x⌋₊ : ℝ) ^ ((1 - θ) * c - 1)) := by
   sorry
 
+/-- A root `z` of the minimal polynomial of `γ` has `z^e` a root of the minimal polynomial of
+`γ^e`. -/
+theorem pow_mem_aroots {γ : ℝ} (hγ : IsIntegral ℚ γ) {z : ℂ} (hz : z ∈ (minpoly ℚ γ).aroots ℂ)
+    (e : ℕ) : z ^ e ∈ (minpoly ℚ (γ ^ e)).aroots ℂ := by
+  open Polynomial in
+  have hγe : IsIntegral ℚ (γ ^ e) := hγ.pow e
+  set P := minpoly ℚ (γ ^ e) with hP
+  have hP0 : P ≠ 0 := minpoly.ne_zero hγe
+  have hdvd : minpoly ℚ γ ∣ P.comp (X ^ e) := by
+    apply minpoly.dvd
+    rw [aeval_comp, aeval_X_pow, hP, minpoly.aeval]
+  rw [mem_aroots] at hz ⊢
+  refine ⟨hP0, ?_⟩
+  obtain ⟨R, hR⟩ := hdvd
+  have := congrArg (aeval z) hR
+  rw [map_mul, hz.2, zero_mul, aeval_comp, aeval_X_pow] at this
+  exact this
+
 /-- **Saito Lemma 5.9** (Bugeaud–Dubickas 2008, Lemma 8): if `α^a` and `α^b` are Pisot then so is
 `α^(gcd a b)`. -/
 theorem isPisot_pow_gcd {α : ℝ} (hα : 1 < α) {a b : ℕ} (ha : 0 < a) (hb : 0 < b)
     (hpa : IsPisot (α ^ a)) (hpb : IsPisot (α ^ b)) : IsPisot (α ^ Nat.gcd a b) := by
-  sorry
+  classical
+  set d := Nat.gcd a b with hd
+  have hd0 : 0 < d := Nat.gcd_pos_of_pos_left _ ha
+  obtain ⟨a', ha'⟩ := Nat.gcd_dvd_left a b
+  obtain ⟨b', hb'⟩ := Nat.gcd_dvd_right a b
+  rw [← hd] at ha' hb'
+  have hcop : Nat.gcd a' b' = 1 := by
+    have := Nat.gcd_mul_left d a' b'
+    rw [← ha', ← hb', ← hd] at this
+    have h' : d * 1 = d * Nat.gcd a' b' := by rw [mul_one]; exact this
+    exact (Nat.eq_of_mul_eq_mul_left hd0 h').symm
+  have hαint : IsIntegral ℤ α := IsIntegral.of_pow ha hpa.2.1
+  set γ := α ^ d with hγ
+  have hγ1 : 1 < γ := one_lt_pow₀ hα hd0.ne'
+  have hγint : IsIntegral ℤ γ := hαint.pow d
+  refine ⟨hγ1, hγint, fun z hz => ?_⟩
+  have hγQ : IsIntegral ℚ γ := hγint.tower_top
+  have hsep : (minpoly ℚ γ).Separable := (minpoly.irreducible hγQ).separable
+  have hnodup : ((minpoly ℚ γ).aroots ℂ).Nodup :=
+    Polynomial.nodup_roots ((Polynomial.separable_map _).mpr hsep)
+  have hzne : z ≠ (γ : ℂ) := (hnodup.mem_erase_iff.1 hz).1
+  have hzr : z ∈ (minpoly ℚ γ).aroots ℂ := Multiset.mem_of_mem_erase hz
+  by_contra hbig
+  push_neg at hbig
+  -- `z^e` is the dominant root of `α^(d e)` for `e = a', b'`
+  have key : ∀ e : ℕ, 0 < e → IsPisot (α ^ (d * e)) → z ^ e = (γ : ℂ) ^ e := by
+    intro e he hp
+    have hmem := pow_mem_aroots hγQ hzr e
+    have hγe : γ ^ e = α ^ (d * e) := by rw [hγ, pow_mul]
+    rw [hγe] at hmem
+    by_contra hne
+    have hne' : z ^ e ≠ ((α ^ (d * e) : ℝ) : ℂ) := by
+      rw [← hγe]; push_cast; exact hne
+    have := hp.2.2 _ (Multiset.mem_erase_of_ne hne' |>.2 hmem)
+    rw [norm_pow] at this
+    have : (1 : ℝ) ≤ ‖z‖ ^ e := one_le_pow₀ hbig
+    linarith
+  have hza := key a' (by
+    rcases Nat.eq_zero_or_pos a' with h | h
+    · rw [h, mul_zero] at ha'; omega
+    · exact h) (by rw [← ha']; exact hpa)
+  have hzb := key b' (by
+    rcases Nat.eq_zero_or_pos b' with h | h
+    · rw [h, mul_zero] at hb'; omega
+    · exact h) (by rw [← hb']; exact hpb)
+  have hγ0 : (γ : ℂ) ≠ 0 := by exact_mod_cast (by linarith : γ ≠ 0)
+  set u := z / (γ : ℂ) with hu
+  have hua : u ^ a' = 1 := by rw [hu, div_pow, hza, div_self (pow_ne_zero _ hγ0)]
+  have hub : u ^ b' = 1 := by rw [hu, div_pow, hzb, div_self (pow_ne_zero _ hγ0)]
+  have hu1 : u ^ Nat.gcd a' b' = 1 := pow_gcd_eq_one.2 ⟨hua, hub⟩
+  rw [hcop, pow_one, hu, div_eq_one_iff_eq hγ0] at hu1
+  exact hzne hu1
+
+/-- **Dubickas's dichotomy under decay**: exponential decay of `‖α^(s k)‖` along `s` forces some
+`α^(s m)` to be Pisot. -/
+theorem exists_pisot_of_decay_dub (hD : Dubickas2022)
+    {α : ℝ} (halg : IsAlgebraic ℚ α) (hα : 1 < α) {s : ℕ → ℕ} (hs : StrictMono s)
+    (hs0 : 0 < s 0) {μ K : ℝ} (hμ : 0 < μ) (hK : 0 < K)
+    (hdecay : ∀ᶠ k in atTop, |α ^ s k - (round (α ^ s k) : ℝ)| ≤ K * α ^ (-(μ * s k))) :
+    ∃ m, IsPisot (α ^ s m) := by
+  have hα0 : (0 : ℝ) < α := by linarith
+  have hlogα : 0 < Real.log α := Real.log_pos hα
+  rcases hD α halg hα 1 one_pos s hs hs0 with hpisot | hsep
+  · exact hpisot
+  exfalso
+  set ε : ℝ := μ * Real.log α / 2 with hε
+  have hε0 : 0 < ε := by positivity
+  obtain ⟨k₀, hk₀⟩ := hsep ε hε0
+  obtain ⟨k₁, hk₁⟩ := eventually_atTop.1 hdecay
+  set k : ℕ := max k₀ (max k₁ (⌈K / ε⌉₊ + 1)) with hk
+  have h1 := hk₀ k (le_max_left _ _)
+  have h2 := hk₁ k (le_trans (le_max_left _ _) (le_max_right _ _))
+  have hkK : ⌈K / ε⌉₊ + 1 ≤ k := le_trans (le_max_right _ _) (le_max_right _ _)
+  set N : ℕ := s k with hN
+  have hNk : k ≤ N := hs.id_le k
+  simp only [Nat.cast_one, one_mul] at h1
+  have hrw : (α ^ (-(μ * (N : ℝ))) : ℝ) = Real.exp (-(2 * ε * N)) := by
+    rw [Real.rpow_def_of_pos hα0, hε]; ring_nf
+  rw [hrw] at h2
+  have hchain : Real.exp (-(ε * N)) < K * Real.exp (-(2 * ε * N)) := lt_of_lt_of_le h1 h2
+  have hexp : Real.exp (ε * N) < K := by
+    have h := mul_lt_mul_of_pos_right hchain (Real.exp_pos (2 * ε * (N:ℝ)))
+    have e1 : Real.exp (-(ε * (N:ℝ))) * Real.exp (2 * ε * (N:ℝ)) = Real.exp (ε * (N:ℝ)) := by
+      rw [← Real.exp_add]; congr 1; ring
+    have e2 : K * Real.exp (-(2 * ε * (N:ℝ))) * Real.exp (2 * ε * (N:ℝ)) = K := by
+      rw [mul_assoc, ← Real.exp_add, show -(2 * ε * (N:ℝ)) + 2 * ε * (N:ℝ) = 0 by ring,
+        Real.exp_zero, mul_one]
+    rwa [e1, e2] at h
+  have hKlt : K < ε * N := by
+    have h3 : (K / ε : ℝ) ≤ (⌈K / ε⌉₊ : ℝ) := Nat.le_ceil _
+    have h4 : ((⌈K / ε⌉₊ : ℕ) : ℝ) + 1 ≤ (N : ℝ) := by
+      have : (⌈K / ε⌉₊ : ℕ) + 1 ≤ N := le_trans hkK hNk
+      exact_mod_cast this
+    have h5 : (K / ε : ℝ) < (N : ℝ) := by linarith
+    calc K = ε * (K / ε) := by field_simp
+      _ < ε * N := by exact mul_lt_mul_of_pos_left h5 hε0
+  have := Real.add_one_le_exp (ε * (N : ℝ))
+  linarith
 
 /-- **Saito Lemma 6.1** (with `Dubickas2022PisotGap` for the degree bound).  If an algebraic
 `α > 1` satisfies `|α^(s k) − round| ≤ K α^(−μ s k)` for all large `k`, along a strictly
@@ -518,7 +633,87 @@ theorem exists_pisot_of_decay_subseq (hD : Dubickas2022) (hG : Dubickas2022Pisot
     ∃ g : ℕ, 1 ≤ g ∧ IsPisot (α ^ g) ∧ (∀ᶠ k in atTop, g ∣ s k) ∧
       2 ≤ (minpoly ℚ (α ^ g)).natDegree ∧
       ((Multiset.card (otherConj (α ^ g)) : ℝ)) * μ ≤ 1 := by
-  sorry
+  classical
+  have hα0 : (0 : ℝ) < α := by linarith
+  have hspos : ∀ k, 0 < s k := fun k => lt_of_lt_of_le hs0 (hs.monotone (Nat.zero_le k))
+  have hex : ∃ g, 1 ≤ g ∧ IsPisot (α ^ g) := by
+    obtain ⟨m, hm⟩ := exists_pisot_of_decay_dub hD halg hα hs hs0 hμ hK hdecay
+    exact ⟨s m, hspos m, hm⟩
+  set g := Nat.find hex with hg
+  obtain ⟨hg1, hpis⟩ := Nat.find_spec hex
+  have hgmin : ∀ g' < g, ¬ (1 ≤ g' ∧ IsPisot (α ^ g')) := fun g' h => Nat.find_min hex h
+  -- `g ∣ s k` eventually
+  have hdiv : ∀ᶠ k in atTop, g ∣ s k := by
+    by_contra hcon
+    rw [not_eventually] at hcon
+    obtain ⟨φ, hφ, hφP⟩ := extraction_of_frequently_atTop (hcon.and_eventually hdecay)
+    have hs' : StrictMono (s ∘ φ) := hs.comp hφ
+    obtain ⟨r, hr⟩ := exists_pisot_of_decay_dub hD halg hα hs' (hspos _) hμ hK
+      (Eventually.of_forall fun n => (hφP n).2)
+    have hgcd := isPisot_pow_gcd hα (by omega) (hspos _) hpis hr
+    have hle : Nat.gcd g (s (φ r)) ≤ g := Nat.gcd_le_left _ (by omega)
+    have hne : Nat.gcd g (s (φ r)) ≠ g := by
+      intro h
+      exact (hφP r).1 (h ▸ Nat.gcd_dvd_right g (s (φ r)))
+    exact hgmin _ (lt_of_le_of_ne hle hne) ⟨Nat.gcd_pos_of_pos_left _ (by omega), hgcd⟩
+  set β := α ^ g with hβ
+  have hpow : ∀ k, g ∣ s k → β ^ (s k / g) = α ^ s k := by
+    intro k hk; rw [hβ, ← pow_mul, Nat.mul_div_cancel' hk]
+  obtain ⟨k₂, hk₂⟩ := eventually_atTop.1 hdiv
+  have hnd : 2 ≤ (minpoly ℚ β).natDegree := by
+    refine pisot_two_le_natDegree hpis fun t ht => ?_
+    have h := hpow k₂ (hk₂ k₂ le_rfl)
+    rw [ht] at h
+    exact hnot k₂ (t ^ (s k₂ / g)) (by rw [← h]; push_cast; ring)
+  -- the conjugate power sum is eventually `< 1/2`
+  have hmax := conjMax_lt_one hpis
+  have hmax0 := conjMax_nonneg β
+  have htend : Tendsto
+      (fun n : ℕ => (Multiset.card (otherConj β) : ℝ) * conjMax β ^ n) atTop (nhds 0) := by
+    have := tendsto_pow_atTop_nhds_zero_of_lt_one hmax0 hmax
+    simpa using this.const_mul (Multiset.card (otherConj β) : ℝ)
+  obtain ⟨N₁, hN₁⟩ := eventually_atTop.1 (htend.eventually (gt_mem_nhds (by norm_num : (0:ℝ) < 1/2)))
+  obtain ⟨k₀, hk₀⟩ := eventually_atTop.1 hdecay
+  have hfreq : ∃ᶠ n : ℕ in atTop, ‖conjPowSum β n‖ ≤ K * (β ^ (-(μ * n)) : ℝ) := by
+    rw [frequently_atTop]
+    intro a
+    set k := max (max k₀ k₂) ((a + N₁) * g + 1) with hk
+    have hkd : g ∣ s k := hk₂ k (by omega)
+    set n := s k / g with hn
+    have hng : (a + N₁) ≤ n := by
+      rw [hn, Nat.le_div_iff_mul_le (by omega)]
+      have h1 : (a + N₁) * g + 1 ≤ k := le_max_right _ _
+      have h2 : k ≤ s k := hs.id_le k
+      omega
+    refine ⟨n, by omega, ?_⟩
+    obtain ⟨t, ht⟩ := pisot_conjPowSum_add_mem_int hpis n
+    have hcps : conjPowSum β n = ((((t : ℝ) - β ^ n : ℝ)) : ℂ) := by
+      push_cast
+      push_cast at ht
+      linear_combination ht
+    have hnorm : ‖conjPowSum β n‖ = |β ^ n - (t : ℝ)| := by
+      rw [hcps, Complex.norm_real, Real.norm_eq_abs, abs_sub_comm]
+    have hhalf : |β ^ n - (t : ℝ)| < 1 / 2 := by
+      rw [← hnorm]
+      exact lt_of_le_of_lt (norm_conjPowSum_le β n) (hN₁ n (by omega))
+    have hround : round (β ^ n) = t := by
+      have hz : round (β ^ n - (t : ℝ)) = 0 := by
+        rw [round_eq_zero_iff]
+        exact ⟨(abs_lt.1 hhalf).1.le, (abs_lt.1 hhalf).2⟩
+      have := round_add_intCast (β ^ n - (t : ℝ)) t
+      rw [hz, sub_add_cancel] at this
+      simpa using this
+    have hA := hk₀ k (by omega)
+    rw [← hpow k hkd, ← hn, hround] at hA
+    have hbeta : (β ^ (-(μ * (n : ℝ))) : ℝ) = α ^ (-(μ * (s k : ℝ))) := by
+      rw [hβ, ← Real.rpow_natCast α g, ← Real.rpow_mul hα0.le]
+      congr 1
+      have : ((s k : ℕ) : ℝ) = (g : ℝ) * (n : ℝ) := by
+        rw [hn]; exact_mod_cast (Nat.mul_div_cancel' hkd).symm
+      rw [this]; ring
+    rw [hnorm, hbeta]
+    exact hA
+  exact ⟨g, hg1, hpis, hdiv, hnd, pisot_degree_bound hG hpis hnd hμ hK hfreq⟩
 
 /-- **Saito Lemma 5.8**: for a Pisot `β` and all large `N`, `Int.fract (β^N) < 1/2` forces
 `Tr(β^N) = ⌊β^N⌋`. -/
