@@ -5,6 +5,7 @@ Authors: Trevor Morris
 -/
 import LeanFormalizations.NumberTheory.Mills.ShiftedMillsLarge
 import LeanFormalizations.NumberTheory.Mills.UnipotentTrace
+import LeanFormalizations.NumberTheory.Mills.ShiftedWindow
 
 /-!
 # Phase 61, node C: no cubic Pisot number has `Tr(β^(3^n + s))` prime for all large `n` (`s ≠ 0`)
@@ -649,12 +650,129 @@ theorem readout_ne {K : Type*} [Field K] (f : ℤ[X]) (hmon : f.Monic)
     Matrix.mul_assoc, Matrix.one_mul, ← Matrix.mul_smul] at h
   exact hV.mul_left_cancel h
 
+/-- The traces of a Pisot companion matrix tend to `∞`. -/
+theorem traceSeq_tendsto {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) :
+    Tendsto (traceSeq f) atTop atTop := by
+  classical
+  obtain ⟨e, hinj, he, hsurj⟩ := exists_root_enum f hD.monic hD.irr
+  have hαr : (f.map (Int.castRingHom ℂ)).eval (α : ℂ) = 0 := by
+    have := congrArg (algebraMap ℝ ℂ) hD.root
+    rw [Polynomial.aeval_def, Polynomial.hom_eval₂, map_zero] at this
+    rw [Polynomial.eval_map]
+    rw [RingHom.ext_int ((algebraMap ℝ ℂ).comp (algebraMap ℤ ℝ)) (Int.castRingHom ℂ)] at this
+    simpa using this
+  obtain ⟨i₀, hi₀⟩ := hsurj _ hαr
+  have hsm : ∀ i, i ≠ i₀ → ‖e i‖ < 1 := by
+    intro i hi
+    refine hD.small _ ((Polynomial.mem_roots (hD.monic.map _).ne_zero).2 (he i)) ?_
+    rw [← hi₀]; exact fun h => hi (hinj h)
+  have hfl := eventually_floor_eq_traceSeq f hD.monic e he hinj hi₀ hsm
+  have hfloor : Tendsto (fun N : ℕ => ⌊α ^ N⌋) atTop atTop :=
+    tendsto_floor_atTop.comp (tendsto_pow_atTop_atTop_of_one_lt hD.gt_one)
+  refine tendsto_atTop_mono' atTop ?_ hfloor
+  filter_upwards [hfl] with N hN
+  rcases hN with h | h <;> omega
+
+theorem shiftExp_tendsto (s : ℤ) : Tendsto (fun n : ℕ => ((3 : ℤ) ^ n + s).toNat) atTop atTop := by
+  refine tendsto_atTop.2 fun b => ?_
+  filter_upwards [eventually_ge_atTop (b + s.natAbs)] with n hn
+  have h1 : (n : ℤ) < 3 ^ n := by exact_mod_cast Nat.lt_pow_self (by norm_num : 1 < 3)
+  rw [Int.le_toNat]
+  · omega
+  · omega
+
 /-- **Step 3 (window), shifted.**  For arbitrarily large `n`, the trace `tr C^(3^n + s)` is
 `≡ ±1` modulo `3^k`. -/
 theorem window_shift {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hP : PrimeTraces f s)
     (k : ℕ) : ∃ n, k ≤ n ∧ 0 ≤ (3 : ℤ) ^ n + s ∧ ∃ w : ℤ, (3 : ℤ) ^ k ∣ w ^ 2 - 1 ∧
       (3 : ℤ) ^ k ∣ traceSeq f ((3 : ℤ) ^ n + s).toNat - w := by
-  sorry
+  classical
+  have hd1 : 1 ≤ f.natDegree := by rw [hD.deg]; norm_num
+  set C := compM ℤ f with hC
+  set E : ℕ → ℕ := fun n => ((3 : ℤ) ^ n + s).toNat with hE
+  have hdet : C.det ≠ 0 := compM_det_ne_zero_int f hd1 (coeff_zero_ne_zero hD.monic hD.irr hD.deg)
+  have hgrow : Tendsto (fun n => traceSeq f (E n)) atTop atTop :=
+    (traceSeq_tendsto hD).comp (shiftExp_tendsto s)
+  obtain ⟨N0, hN0⟩ := eventually_atTop.1 hP
+  obtain ⟨N1, hN1⟩ := eventually_atTop.1 (hgrow.eventually_ge_atTop (|C.det| + 4))
+  have hEn : ∀ n, s.natAbs ≤ n → ((E n : ℕ) : ℤ) = 3 ^ n + s := by
+    intro n hn
+    have h1 : (n : ℤ) < 3 ^ n := by exact_mod_cast Nat.lt_pow_self (by norm_num : 1 < 3)
+    exact Int.toNat_of_nonneg (by omega)
+  set n := max (max N0 N1) (max s.natAbs (3 * k + 6)) with hn
+  have hnN0 : N0 ≤ n := by omega
+  have hnN1 : N1 ≤ n := by omega
+  have hns : s.natAbs ≤ n := by omega
+  have hnk : 3 * k + 6 ≤ n := by omega
+  obtain ⟨p, hpp, hpe⟩ := hN0 n hnN0
+  have hb : |C.det| + 4 ≤ traceSeq f (E n) := hN1 n hnN1
+  have hdnn : (0:ℤ) ≤ |C.det| := abs_nonneg _
+  have hp4 : (4:ℤ) ≤ (p : ℤ) := by rw [← hpe]; linarith
+  have hp2 : 2 ≤ p := by exact_mod_cast (by linarith : (2:ℤ) ≤ (p:ℤ))
+  have hp3 : p ≠ 3 := by intro h; rw [h] at hp4; norm_num at hp4
+  have hdetp : ¬ (p : ℤ) ∣ C.det := by
+    intro hdvd
+    have h2 : (p : ℤ) ∣ |C.det| := (dvd_abs _ _).2 hdvd
+    have := Int.le_of_dvd (abs_pos.2 hdet) h2
+    linarith
+  -- Step 1: the `3`-adic valuation of `|GL₃(𝔽_p)|` exceeds `n`
+  have hval : n < padicValNat 3 (ThreeAdic.glCard f.natDegree p) := by
+    by_contra hcon
+    push_neg at hcon
+    haveI : Fact p.Prime := ⟨hpp⟩
+    obtain ⟨j, hj1, hj⟩ := ShiftedWindow.exists_period_orderOf_dvd f.natDegree Nat.prime_three hcon
+    obtain ⟨N2, hN2⟩ := eventually_atTop.1 (hgrow.eventually_ge_atTop ((p : ℤ) + 1))
+    set K := max N0 N2 + 1 with hK
+    set n' := n + K * j with hn'
+    have hKj : K ≤ K * j := Nat.le_mul_of_pos_right _ hj1
+    obtain ⟨q, hqp, hqe⟩ := hN0 n' (by omega)
+    have hbig' : (p : ℤ) + 1 ≤ traceSeq f (E n') := hN2 n' (by omega)
+    have hs1 : (1 : ℕ) ≤ 3 ^ (K * j) := Nat.one_le_pow _ _ (by norm_num)
+    obtain ⟨M, hM⟩ : ∃ M, M = 3 ^ n * (3 ^ (K * j) - 1) := ⟨_, rfl⟩
+    have hMz : (M : ℤ) = 3 ^ n' - 3 ^ n := by
+      rw [hM, hn', pow_add]; push_cast [Nat.cast_sub hs1]; ring
+    have h1 := hEn n hns
+    have h2 := hEn n' (by omega)
+    have hle : E n ≤ E n' := by
+      have : (3 : ℤ) ^ n ≤ 3 ^ n' := pow_le_pow_right₀ (by norm_num) (by omega)
+      omega
+    have hdiff : E n' - E n = M := by omega
+    have hdv : (p : ℤ) ∣ (C ^ E n').trace - (C ^ E n).trace :=
+      TheoremDGround.dvd_trace_sub_of_orderOf_dvd C hpp hdetp hle
+        (fun D _ => by rw [hdiff, hM]; exact hj K D)
+    have hdvn : (p : ℤ) ∣ (C ^ E n).trace := by
+      have : (C ^ E n).trace = traceSeq f (E n) := rfl
+      rw [this, hpe]
+    have hdvn' : (p : ℤ) ∣ (q : ℤ) := by
+      have := dvd_add hdv hdvn
+      simp only [sub_add_cancel] at this
+      have h' : (C ^ E n').trace = traceSeq f (E n') := rfl
+      rwa [h', hqe] at this
+    have hpq : p = q := (Nat.prime_dvd_prime_iff_eq hpp hqp).1 (by exact_mod_cast hdvn')
+    rw [hqe, ← hpq] at hbig'
+    linarith
+  -- Step 2: the window
+  obtain ⟨i, hi1, hi3, hdvdi⟩ :=
+    TheoremDGround.exists_pow_sub_one_of_lt_padicValNat_glCard Nat.prime_three hpp hp3 hd1 hval
+  rw [hD.deg] at hi3 hdvdi
+  have hone : 1 ≤ p ^ i := Nat.one_le_pow _ _ hpp.pos
+  have hdvdN : 3 ^ (n / 3) ∣ p ^ i - 1 := by
+    have hc : ((p ^ i - 1 : ℕ) : ℤ) = (p : ℤ) ^ i - 1 := by
+      rw [Nat.cast_sub hone]; push_cast; ring
+    have hz : ((3 ^ (n / 3) : ℕ) : ℤ) ∣ ((p ^ i - 1 : ℕ) : ℤ) := by
+      rw [hc]; push_cast; exact hdvdi
+    exact_mod_cast hz
+  have hwin := ShiftedWindow.dvd_sub_or_add_of_dvd_pow_sub_one hp2 hi1 hi3 hdvdN
+  have hkle : k ≤ n / 3 - 1 := by omega
+  have hsq : (3 : ℕ) ^ k ∣ (p - 1) * (p + 1) := by
+    rcases hwin with hw | hw
+    · exact dvd_mul_of_dvd_left ((pow_dvd_pow 3 hkle).trans hw) _
+    · exact dvd_mul_of_dvd_right ((pow_dvd_pow 3 hkle).trans hw) _
+  refine ⟨n, by omega, by have := hEn n hns; omega, p, ?_, by rw [hpe, sub_self]; exact dvd_zero _⟩
+  have hc : (((p - 1) * (p + 1) : ℕ) : ℤ) = (p : ℤ) ^ 2 - 1 := by
+    rw [Nat.cast_mul, Nat.cast_sub (by omega)]; push_cast; ring
+  rw [← hc]
+  exact_mod_cast hsq
 
 /-- The companion matrix of `X³ + a₂X² + a₁X + a₀` over `ZMod 3`. -/
 def cm3 (a : Fin 3 → ZMod 3) : Matrix (Fin 3) (Fin 3) (ZMod 3) :=
