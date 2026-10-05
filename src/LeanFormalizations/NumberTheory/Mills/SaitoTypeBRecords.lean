@@ -817,6 +817,7 @@ theorem nonrecord_ineq {C : ℕ → ℕ} (h1 : 1 ≤ C 1) (h2 : ∀ k ≥ 1, 2 *
 noncomputable def e2pow (β : ℝ) (n : ℕ) : ℂ :=
   (β : ℂ) ^ n * conjPowSum β n + (otherConj β).prod ^ n
 
+set_option maxHeartbeats 1600000 in
 /-- **Step 4a (degree 3, a non-record forces an exact zero).**  For cubic Pisot `β = ξ^g`, a
 record `r` followed by a non-record at `r + 1` has `N_r := |N(β^n − p_r)| < ξ^(2s)/3 + o(1)`
 (Saito (5.1) with `c − 1 = 2 − 2s/C r`); `N_r = |p_r e₂ − N(β)^n|` with `|N(β)|^n ≤ β^n R^(2n)`
@@ -829,7 +830,176 @@ theorem e2_zero_of_nonrecord
       root ⌊ξ ^ shiftC j s (r + 1)⌋₊ (shiftC j s (r + 1)) <
         root ⌊ξ ^ shiftC j s r⌋₊ (shiftC j s r) →
       e2pow (ξ ^ g) (shiftC j s r / g) = 0 := by
-  sorry
+  classical
+  set C := shiftC j s with hCdef
+  have h1 : 1 ≤ C 1 := shiftC_pos hj1 le_rfl
+  have h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1) := fun k hk => shiftC_two_mul_le hj1 hj2 hk
+  have h5 : ∀ m ≥ 1, ∃ k > m, C m ∣ C k ∧ (29 : ℝ) / 10 * C k ≤ C (k + 1) :=
+    fun m hm => shiftC_B5 hj1 hj2 hm
+  have hξS := hξ.1
+  have hξ1 : 1 < ξ := hξS.1
+  have hnot := not_intCast_pow h1 h2 h5 hξS
+  have hCge := C_ge_one h1 h2
+  set β := ξ ^ g with hβ
+  set R := conjMax β with hRdef
+  have hR1 : R < 1 := conjMax_lt_one hpis
+  have hR0 : 0 ≤ R := conjMax_nonneg β
+  obtain ⟨γ1, γ2, hoc⟩ := Multiset.card_eq_two.1 hcard
+  have hγ1 : ‖γ1‖ ≤ R := norm_le_conjMax (by rw [hoc]; simp)
+  have hγ2 : ‖γ2‖ ≤ R := norm_le_conjMax (by rw [hoc]; simp)
+  -- eventual constraints
+  have hRn : ∀ᶠ n : ℕ in atTop, R ^ n < 1 / 8 :=
+    (tendsto_pow_atTop_nhds_zero_of_lt_one hR0 hR1).eventually (gt_mem_nhds (by norm_num))
+  have hnt : Tendsto (fun r => C r / g) atTop atTop := by
+    rw [tendsto_atTop_atTop]
+    intro b
+    refine ⟨b * g + 1, fun a ha => ?_⟩
+    have := le_C h1 h2 a (by omega)
+    rw [Nat.le_div_iff_mul_le (by omega)]; omega
+  have hP9 : Tendsto (fun r => (⌊ξ ^ C r⌋₊ : ℝ) ^ (9 / 10 : ℝ)) atTop atTop :=
+    (tendsto_rpow_atTop (by norm_num)).comp (floor_tendsto h1 h2 hξ1)
+  obtain ⟨R0, hR0'⟩ := eventually_atTop.1 ((hnt.eventually hRn).and
+    ((hP9.eventually_ge_atTop 16).and ((floor_tendsto h1 h2 hξ1).eventually_ge_atTop 2)))
+  refine ⟨R0 + 19 * s.natAbs + 1, fun r hr hgr hlt => ?_⟩
+  obtain ⟨hRr, hP16, hP2⟩ := hR0' r (by omega)
+  have hr1 : 1 ≤ r := by omega
+  obtain ⟨hA, -, hc⟩ := nonrecord_ineq h1 h2 hξ1 hnot hpis hr1 (Nat.lt_succ_self r) hgr hlt
+  set n := C r / g with hn
+  set x := ξ ^ C r with hx
+  set P : ℝ := (⌊x⌋₊ : ℝ) with hP
+  set f := Int.fract x with hf
+  set c : ℝ := (C (r + 1) : ℝ) / C r with hcdef
+  have hβn : β ^ n = x := by rw [hβ, hx, ← pow_mul, Nat.mul_div_cancel' hgr]
+  have hx1 : 1 ≤ x := one_le_pow₀ hξ1.le
+  have hfx : x = P + f := by
+    rw [hf, hP, Int.fract, ← Int.natCast_floor_eq_floor (by linarith)]; push_cast; ring
+  have hf0 : 0 ≤ f := Int.fract_nonneg x
+  have hP1 : 1 ≤ P := by linarith
+  -- ratio `≥ 29/10`
+  have hCr : (0 : ℝ) < C r := by exact_mod_cast hCge r hr1
+  have hc29 : (29 : ℝ) / 10 ≤ c := by
+    rw [hcdef, le_div_iff₀ hCr]; exact shiftC_ratio hj1 hr1 (by omega)
+  -- `f P^(19/10) < 1/2`
+  have hpw : P ^ (19 / 10 : ℝ) ≤ P ^ (c - 1) := Real.rpow_le_rpow_of_exponent_le hP1 (by linarith)
+  have hfP : f * P ^ (19 / 10 : ℝ) < 1 / 2 := by
+    have e1 : f * P ^ (19 / 10 : ℝ) ≤ f * P ^ (c - 1) := mul_le_mul_of_nonneg_left hpw hf0
+    have e0 : 0 ≤ f * P ^ (c - 1) := mul_nonneg hf0 (by positivity)
+    have e2 : 2 * (f * P ^ (c - 1)) ≤ c * f * P ^ (c - 1) := by
+      have : c * f * P ^ (c - 1) = c * (f * P ^ (c - 1)) := by ring
+      rw [this]; nlinarith
+    linarith
+  have hsplitP : P ^ (2 : ℝ) = P ^ (1 / 10 : ℝ) * P ^ (19 / 10 : ℝ) := by
+    rw [← Real.rpow_add (by linarith)]; norm_num
+  have hsplitP' : P = P ^ (1 / 10 : ℝ) * P ^ (9 / 10 : ℝ) := by
+    rw [← Real.rpow_add (by linarith)]; norm_num
+  have hP110 : 0 < P ^ (1 / 10 : ℝ) := by positivity
+  -- `f (P+1)² ≤ P/8`
+  have hfsq : f * (P + 1) ^ 2 ≤ P / 8 := by
+    have hsq : (P + 1) ^ 2 ≤ 4 * P ^ (2 : ℝ) := by
+      rw [show (2 : ℝ) = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]; nlinarith
+    have : f * (4 * P ^ (2 : ℝ)) = 4 * P ^ (1 / 10 : ℝ) * (f * P ^ (19 / 10 : ℝ)) := by
+      rw [hsplitP]; ring
+    have h16 : 16 * P ^ (1 / 10 : ℝ) ≤ P := by
+      conv_rhs => rw [hsplitP']
+      nlinarith
+    calc f * (P + 1) ^ 2 ≤ f * (4 * P ^ (2 : ℝ)) := mul_le_mul_of_nonneg_left hsq hf0
+      _ = 4 * P ^ (1 / 10 : ℝ) * (f * P ^ (19 / 10 : ℝ)) := this
+      _ ≤ 4 * P ^ (1 / 10 : ℝ) * (1 / 2) := by
+          apply mul_le_mul_of_nonneg_left hfP.le; positivity
+      _ ≤ P / 8 := by linarith
+  have hf14 : f < 1 / 4 := by
+    have h19 : P ^ (1 : ℝ) ≤ P ^ (19 / 10 : ℝ) := Real.rpow_le_rpow_of_exponent_le hP1 (by norm_num)
+    rw [Real.rpow_one] at h19
+    have : f * P ≤ f * P ^ (19 / 10 : ℝ) := mul_le_mul_of_nonneg_left h19 hf0
+    nlinarith
+  -- the conjugate powers
+  set A := γ1 ^ n with hA'
+  set B := γ2 ^ n with hB'
+  have hS : conjPowSum β n = A + B := by
+    rw [conjPowSum, hoc]; simp [hA', hB']
+  have hS2 : conjPowSum β (2 * n) = A ^ 2 + B ^ 2 := by
+    rw [conjPowSum, hoc]; simp [hA', hB', ← pow_mul, mul_comm]
+  have hAn : ‖A‖ ≤ R ^ n := by rw [hA', norm_pow]; exact pow_le_pow_left₀ (norm_nonneg _) hγ1 n
+  have hBn : ‖B‖ ≤ R ^ n := by rw [hB', norm_pow]; exact pow_le_pow_left₀ (norm_nonneg _) hγ2 n
+  have hRn0 : 0 ≤ R ^ n := pow_nonneg hR0 n
+  obtain ⟨t1, ht1⟩ := pisot_conjPowSum_add_mem_int hpis n
+  obtain ⟨t2, ht2⟩ := pisot_conjPowSum_add_mem_int hpis (2 * n)
+  have hX : ((β : ℂ)) ^ n = (x : ℂ) := by rw [← hβn]; push_cast; ring
+  -- `t1 = P`
+  have ht1P : (t1 : ℝ) = P := by
+    have hcl : ‖((t1 : ℂ)) - (P : ℂ)‖ < 1 / 2 := by
+      have e : (t1 : ℂ) - (P : ℂ) = (A + B) + ((f : ℝ) : ℂ) := by
+        rw [← ht1, hS, hX, hfx]; push_cast; ring
+      rw [e]
+      calc ‖(A + B) + ((f : ℝ) : ℂ)‖ ≤ ‖A‖ + ‖B‖ + ‖((f : ℝ) : ℂ)‖ := by
+            exact le_trans (norm_add_le _ _) (by linarith [norm_add_le A B])
+        _ < 1 / 2 := by
+            rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hf0]; linarith
+    have hP' : P = ((⌊x⌋₊ : ℤ) : ℝ) := by rw [hP]; push_cast; rfl
+    rw [hP'] at hcl ⊢
+    have : ((t1 - (⌊x⌋₊ : ℤ) : ℤ) : ℂ) = (t1 : ℂ) - (((⌊x⌋₊ : ℤ) : ℝ) : ℂ) := by push_cast; rfl
+    rw [← this, Complex.norm_intCast] at hcl
+    have hz : t1 - (⌊x⌋₊ : ℤ) = 0 := by
+      by_contra h
+      have := Int.one_le_abs h
+      have : (1 : ℝ) ≤ |((t1 - (⌊x⌋₊ : ℤ) : ℤ) : ℝ)| := by exact_mod_cast this
+      linarith
+    have : t1 = (⌊x⌋₊ : ℤ) := by omega
+    rw [this]
+  clear_value A B c x P f n R
+  -- `2 e₂ = t1² − t2`
+  set E := e2pow β n with hE
+  have hE' : E = (x : ℂ) * (A + B) + A * B := by
+    rw [hE, e2pow, hS, hX, hoc]; simp [hA', hB', mul_pow]
+  have h2E : 2 * E = ((t1 ^ 2 - t2 : ℤ) : ℂ) := by
+    push_cast
+    rw [← ht1, ← ht2, hS, hS2, hE', pow_mul', hX]; ring
+  by_contra hE0
+  have hm : t1 ^ 2 - t2 ≠ 0 := by
+    intro h
+    rw [h, Int.cast_zero] at h2E
+    exact hE0 ((mul_eq_zero.1 h2E).resolve_left two_ne_zero)
+  have hEhalf : 1 / 2 ≤ ‖E‖ := by
+    have := congrArg norm h2E
+    rw [norm_mul, Complex.norm_intCast] at this
+    have h1' : (1 : ℝ) ≤ |((t1 ^ 2 - t2 : ℤ) : ℝ)| := by exact_mod_cast Int.one_le_abs hm
+    rw [show ‖(2 : ℂ)‖ = 2 by norm_num] at this
+    linarith
+  -- `P E = x A B − (x − P)(A − P)(B − P)`
+  have hsum : (x : ℂ) + A + B = (P : ℂ) := by
+    have e : ((P : ℝ) : ℂ) = ((t1 : ℝ) : ℂ) := by rw [ht1P]
+    rw [e]; push_cast; rw [← ht1, hS, hX]; ring
+  have hid : (P : ℂ) * E = (x : ℂ) * A * B - ((x : ℂ) - P) * (A - P) * (B - P) := by
+    have hx' : (x : ℂ) = P - A - B := by rw [← hsum]; ring
+    rw [hE', hx']; ring
+  have hnorm1 : ‖(x : ℂ) * A * B‖ ≤ (P + 1) * (R ^ n * R ^ n) := by
+    rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by linarith)]
+    have : x ≤ P + 1 := by linarith
+    have hAB : ‖A‖ * ‖B‖ ≤ R ^ n * R ^ n := mul_le_mul hAn hBn (norm_nonneg _) hRn0
+    calc x * ‖A‖ * ‖B‖ = x * (‖A‖ * ‖B‖) := by ring
+      _ ≤ (P + 1) * (R ^ n * R ^ n) := mul_le_mul this hAB (mul_nonneg (norm_nonneg _) (norm_nonneg _)) (by linarith)
+  have hnorm2 : ‖((x : ℂ) - P) * (A - P) * (B - P)‖ ≤ f * (P + 1) ^ 2 := by
+    have e : (x : ℂ) - P = ((f : ℝ) : ℂ) := by rw [hfx]; push_cast; ring
+    rw [e, norm_mul, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hf0]
+    have hA1 : ‖A - P‖ ≤ P + 1 := by
+      calc ‖A - P‖ ≤ ‖A‖ + ‖(P : ℂ)‖ := norm_sub_le _ _
+        _ ≤ P + 1 := by
+            rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by linarith)]; linarith
+    have hB1 : ‖B - P‖ ≤ P + 1 := by
+      calc ‖B - P‖ ≤ ‖B‖ + ‖(P : ℂ)‖ := norm_sub_le _ _
+        _ ≤ P + 1 := by
+            rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by linarith)]; linarith
+    calc f * ‖A - P‖ * ‖B - P‖ = f * (‖A - P‖ * ‖B - P‖) := by ring
+      _ ≤ f * ((P + 1) * (P + 1)) :=
+          mul_le_mul_of_nonneg_left (mul_le_mul hA1 hB1 (norm_nonneg _) (by linarith)) hf0
+      _ = f * (P + 1) ^ 2 := by ring
+  have hPE : P / 2 ≤ ‖(P : ℂ) * E‖ := by
+    rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by linarith)]
+    nlinarith
+  rw [hid] at hPE
+  have := le_trans hPE (norm_sub_le _ _)
+  have hRR : R ^ n * R ^ n ≤ 1 / 64 := by nlinarith
+  nlinarith
 
 /-- **Step 4b (Skolem, 3-adic; no Baker).**  For cubic Pisot `β`, `e₂(β^n) = 0` holds for only
 finitely many `n` on the orbit `n_r = (3^(r+j) + s)/g`, which converges 3-adically: on a residue
