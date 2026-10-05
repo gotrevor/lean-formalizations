@@ -14,3 +14,6 @@ What the stress tests say about `Literature.BakerHarmanPintz2001`:
 - `exists_prime_of_bhp`: the consumption form Theorem E+ uses.
 
 Next: no current directive.
+
+Branch `mills-eplus`, HEAD dc4a1ca (pre-handoff). Run stopped by host after `box done --green`.
+Next steps: none scoped; await a new DIRECTION.md directive. Off-path frozen hole `saitoTypeBLeast_holds` remains designated-open.
