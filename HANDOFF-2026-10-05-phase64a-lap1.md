@@ -23,3 +23,12 @@ Open node: `SaitoTypeBTheta.ShiftPisotDegreeLeThree`, plus a Maze row.
 ## Next
 Exclude Pisot degree ℓ ≥ 4 for the E+ orbit without Baker.  `PENDING_WORK.md` (top entry) has the details.
 Then phase 64b, which is queued in DIRECTION.md.
+
+## BLOCKER (box stuck, 2026-10-05)
+- **Blocked:** the last `sorry` in `SaitoTypeBTheta.lean`, the branch θ ∈ [5/9, 2/3) of `xi_shift_transcendental_of_shortInterval`.
+- **Why this needs the operator:**
+  - The directive expected this case: when 2/3 is out of reach, prove the strongest threshold beside the frozen theorem and leave the frozen `sorry`.
+  - That is done: the θ < 5/9 theorem is `..._of_shortInterval'`.
+  - Closing the branch means excluding Pisot degree 4 or more for the E+ orbit without Baker.
+  - That is new research, and the current endgame has no route to it: the record step also breaks for degree 4 and up.
+- **The ask:** either (a) direct a multi-lap attack on the open node `ShiftPisotDegreeLeThree`, or (b) accept θ < 5/9 and plant phase 64b.
