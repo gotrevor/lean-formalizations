@@ -35,7 +35,7 @@ Difficulty check.
 
 namespace LeanFormalizations.Mills.ShiftRigidityDeg
 
-open Filter Polynomial LeanFormalizations.Mills.ShiftRigidity LeanFormalizations.Literature
+open Filter Polynomial IntermediateField LeanFormalizations.Mills.ShiftRigidity LeanFormalizations.Literature
   LeanFormalizations.Mills.ShiftedMillsAll LeanFormalizations.Mills.SaitoTypeB LeanFormalizations.Mills
   LeanFormalizations.BHPTests LeanFormalizations.Mills.TheoremDGeneral
   LeanFormalizations.Mills.TheoremDMixed
@@ -279,6 +279,75 @@ theorem exists_entry_ne_any {f : ℤ[X]} (hmon : f.Monic) (hd1 : 1 ≤ f.natDegr
     exact this.symm
   exact hnc zb (by rw [heq, hdeg])
 
+
+/-- **Steps 3 + transfer, any degree**: the spectral solution in `AlgQ`, with the roots indexed
+by `Fin f.natDegree` and `i₀` the index of `α`. -/
+theorem exists_spectral_any {f : ℤ[X]} {α : ℝ} (hD : PisotDataAny f α) (hdeg : 2 ≤ f.natDegree)
+    {s : ℤ} (hP : PrimeTraces f s)
+    (hnc : ∀ z : ZMod 3, f.map (Int.castRingHom (ZMod 3)) ≠ (X - C z) ^ f.natDegree) :
+    ∃ (Q : ℕ) (e u : Fin f.natDegree → AlgQ) (ω : AlgQ) (i₀ : Fin f.natDegree), 1 ≤ Q ∧
+      Function.Injective e ∧ (∀ k, (f.map (Int.castRingHom AlgQ)).eval (e k) = 0) ∧
+      ((e i₀ : ℂ) = α) ∧ (∀ k, k ≠ i₀ → ‖(e k : ℂ)‖ < 1) ∧
+      (∀ k, u k ^ (Q + 1) = u k) ∧ ω ^ 2 = 1 ∧ (∑ k, u k * e k ^ s = ω) ∧
+      ¬ (∀ k, u k = 1) ∧ ¬ (∀ k, u k = -1) := by
+  classical
+  have hd1 : 1 ≤ f.natDegree := by omega
+  obtain ⟨F, hF, n₀, hlim⟩ := exists_teich_limit_any f
+  obtain ⟨x, x', w, hT, hw, hrel, htr, hne1, hne2⟩ :=
+    exists_spectral_solution_shift f hd1 hlim (fun ν z hz => exists_entry_ne_any hD.monic hd1 hnc ν z hz)
+      (window_shift_any hD hdeg hP)
+  obtain ⟨e, hinj, he, hsurj⟩ := exists_root_enum_field (K := AlgQ) f hD.monic hD.irr
+  set ι : AlgQ →+* ℂ := (algebraicClosure ℚ ℂ).val.toRingHom with hι
+  have hιinj : Function.Injective ι := fun a b hab => Subtype.ext hab
+  have hrootC : (f.map (Int.castRingHom ℂ)).eval (α : ℂ) = 0 := by
+    have := congrArg (algebraMap ℝ ℂ) hD.root
+    rw [Polynomial.aeval_def, Polynomial.hom_eval₂, map_zero] at this
+    rw [Polynomial.eval_map]
+    rw [RingHom.ext_int ((algebraMap ℝ ℂ).comp (algebraMap ℤ ℝ)) (Int.castRingHom ℂ)] at this
+    simpa using this
+  have halgα : IsAlgebraic ℚ (α : ℂ) := by
+    refine ⟨f.map (Int.castRingHom ℚ), (hD.monic.map _).ne_zero, ?_⟩
+    rw [Polynomial.aeval_def, Polynomial.eval₂_eq_eval_map, Polynomial.map_map,
+      show (algebraMap ℚ ℂ).comp (Int.castRingHom ℚ) = Int.castRingHom ℂ from
+        RingHom.ext fun n => by simp]
+    exact hrootC
+  set α' : AlgQ := ⟨(α : ℂ), (mem_algebraicClosure_iff).2 halgα⟩ with hα'
+  have hα'root : (f.map (Int.castRingHom AlgQ)).eval α' = 0 := by
+    refine hιinj ?_
+    rw [eval_map_int_hom ι f α', map_zero]
+    exact hrootC
+  obtain ⟨i₀, hi₀⟩ := hsurj α' hα'root
+  have he0 : ∀ i, e i ≠ 0 := by
+    intro i h0
+    have := he i
+    rw [h0, ← Polynomial.coeff_zero_eq_eval_zero, Polynomial.coeff_map] at this
+    exact coeff_zero_ne_zero_any hD.monic hD.irr hdeg (by simpa using this)
+  have hQ1 : 3 ^ F - 1 + 1 = 3 ^ F := Nat.sub_add_cancel (Nat.one_le_pow _ _ (by norm_num))
+  refine ⟨3 ^ F - 1, e, fun k => polyVal x (e k), w, i₀, ?_,
+    hinj, he, ?_, ?_, ?_, hw, ?_, ?_, ?_⟩
+  · have : 3 ≤ 3 ^ F := by
+      calc 3 = 3 ^ 1 := by norm_num
+        _ ≤ 3 ^ F := Nat.pow_le_pow_right (by norm_num) hF
+    omega
+  · rw [hi₀]
+  · intro k hk
+    have hne : e k ≠ α' := by
+      rw [← hi₀]; exact fun h => hk (hinj h)
+    refine hD.small _ ((Polynomial.mem_roots (hD.monic.map _).ne_zero).2 ?_) ?_
+    · have := congrArg ι (he k)
+      rw [eval_map_int_hom ι f, map_zero] at this
+      exact this
+    · intro h; apply hne; exact Subtype.ext h
+  · intro k
+    exact polyVal_pow_succ_eq f hD.monic e he hinj x (Q := 3 ^ F - 1) (by rw [hQ1]; exact hT) k
+  · have h := readout_trace f hD.monic e he hinj he0 x x' hrel
+    rw [← htr, h]
+  · intro hall
+    obtain ⟨i, hi⟩ := readout_ne f hD.monic e he hinj x 1 hne1
+    exact hi (by simpa using hall i)
+  · intro hall
+    obtain ⟨i, hi⟩ := readout_ne f hD.monic e he hinj x (-1) hne2
+    exact hi (by simpa using hall i)
 
 /-! ## The wiring: two nodes give E+ for every `θ < 2/3` -/
 
