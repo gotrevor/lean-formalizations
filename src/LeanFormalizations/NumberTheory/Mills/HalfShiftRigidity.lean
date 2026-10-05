@@ -55,15 +55,62 @@ def HalfPrimeTraces (f : ℤ[X]) (s : ℤ) : Prop :=
 theorem not_prime_of_dvd {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {q : ℕ} (hq : q.Prime)
     (hdvd : ∀ N, 1 ≤ N → (q : ℤ) ∣ traceSeq f N) {E : ℕ → ℕ} (hE : Tendsto E atTop atTop) :
     ¬ ∀ᶠ n in atTop, ∃ p : ℕ, p.Prime ∧ traceSeq f (E n) = p := by
-  sorry
+  classical
+  intro hP
+  obtain ⟨e, hinj, he, hsurj⟩ := exists_root_enum f hD.monic hD.irr
+  have hαr : (f.map (Int.castRingHom ℂ)).eval (α : ℂ) = 0 := by
+    have := congrArg (algebraMap ℝ ℂ) hD.root
+    rw [Polynomial.aeval_def, Polynomial.hom_eval₂, map_zero] at this
+    rw [Polynomial.eval_map]
+    rw [RingHom.ext_int ((algebraMap ℝ ℂ).comp (algebraMap ℤ ℝ)) (Int.castRingHom ℂ)] at this
+    simpa using this
+  obtain ⟨i₀, hi₀⟩ := hsurj _ hαr
+  have hsm : ∀ i, i ≠ i₀ → ‖e i‖ < 1 := by
+    intro i hi
+    refine hD.small _ ((Polynomial.mem_roots (hD.monic.map _).ne_zero).2 (he i)) ?_
+    rw [← hi₀]; exact fun h => hi (hinj h)
+  have hfl := eventually_floor_eq_traceSeq f hD.monic e he hinj hi₀ hsm
+  have hbig : ∀ᶠ N : ℕ in atTop, ((q : ℝ) + 1) ≤ α ^ N :=
+    (tendsto_pow_atTop_atTop_of_one_lt hD.gt_one).eventually_ge_atTop _
+  obtain ⟨n, ⟨p, hp, hpe⟩, hf4, hb4, hE1⟩ :=
+    (hP.and ((hE.eventually hfl).and ((hE.eventually hbig).and
+      (hE.eventually (eventually_ge_atTop 1))))).exists
+  have hpq : p = q := by
+    have : (q : ℤ) ∣ (p : ℤ) := hpe ▸ hdvd _ hE1
+    have : q ∣ p := by exact_mod_cast this
+    exact ((Nat.prime_dvd_prime_iff_eq hq hp).1 this).symm
+  have hfl4 : (q : ℤ) + 1 ≤ ⌊α ^ E n⌋ := Int.le_floor.2 (by exact_mod_cast hb4)
+  rw [hpe, hpq] at hf4
+  push_cast at hf4
+  omega
 
 /-- The cube class: every trace is divisible by `3`. -/
 theorem three_dvd_of_cube {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) (z : ZMod 3)
     (hz : f.map (Int.castRingHom (ZMod 3)) = (X - C z) ^ 3) (N : ℕ) : (3 : ℤ) ∣ traceSeq f N := by
-  sorry
+  classical
+  have hd1 : 1 ≤ f.natDegree := by rw [hD.deg]; norm_num
+  refine (ZMod.intCast_zmod_eq_zero_iff_dvd _ 3).1 ?_
+  rw [traceSeq_cast]
+  have hnil : (compM (ZMod 3) f - z • (1 : Matrix _ _ (ZMod 3))) ^ 3 = 0 := by
+    have h := aeval_compM_self (K := ZMod 3) f hD.monic hd1
+    rw [hz] at h
+    simpa [map_pow, map_sub, Polynomial.aeval_X, Polynomial.aeval_C,
+      Algebra.algebraMap_eq_smul_one] using h
+  have key : ∀ (n : ℕ), n = 3 → ∀ M : Matrix (Fin n) (Fin n) (ZMod 3),
+      (M - z • (1 : Matrix _ _ (ZMod 3))) ^ 3 = 0 → (M ^ N).trace = 0 := by
+    intro n hn; subst hn; intro M hM
+    have := UnipotentTrace.trace_pow_eq_zero z _ hM N
+    rwa [add_sub_cancel] at this
+  exact key _ hD.deg _ hnil
 
 theorem halfExp_tendsto (s : ℤ) : Tendsto (halfExp s) atTop atTop := by
-  sorry
+  refine tendsto_atTop.2 fun b => ?_
+  filter_upwards [eventually_ge_atTop (2 * b + s.natAbs + 2)] with n hn
+  have h1 : (n : ℤ) < 3 ^ n := by exact_mod_cast Nat.lt_pow_self (by norm_num : 1 < 3)
+  unfold halfExp
+  have : 2 * b ≤ ((3 : ℤ) ^ n + s).toNat := by
+    rw [Int.le_toNat] <;> omega
+  omega
 
 /-! ### Step 3 and the transfer -/
 
