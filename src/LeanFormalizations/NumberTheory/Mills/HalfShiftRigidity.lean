@@ -536,6 +536,41 @@ theorem half_generic {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hs
 
 /-! ### E1 at `g = 2` -/
 
+/-- `i ∉ ℚ(μ_26)`: a `52`nd root of unity in `ℚ(μ_26)` is a `26`th root of unity. -/
+theorem pow26_of_pow52 {a : AlgQ} (ha : a ∈ cycField 26) (h : a ^ 52 = 1) : a ^ 26 = 1 := by
+  have hpm : (a ^ 26 - 1) * (a ^ 26 + 1) = 0 := by linear_combination h
+  rcases mul_eq_zero.1 hpm with h1 | h1
+  · linear_combination h1
+  exfalso
+  set b := a ^ 13 with hb
+  have hbK : b ∈ cycField 26 := pow_mem ha 13
+  have hb2 : b ^ 2 = -1 := by rw [hb, ← pow_mul]; linear_combination h1
+  have hle : cycField 52 ≤ cycField 26 := by
+    refine IntermediateField.adjoin_le_iff.2 fun z hz => ?_
+    have hz52 : z ^ 52 = 1 := hz
+    have : (z ^ 26 - 1) * (z ^ 26 + 1) = 0 := by linear_combination hz52
+    rcases mul_eq_zero.1 this with h | h
+    · exact IntermediateField.subset_adjoin ℚ _ (show z ^ 26 = 1 by linear_combination h)
+    · have b26 : b ^ 26 = -1 := by rw [show b ^ 26 = (b ^ 2) ^ 13 by ring, hb2]; norm_num
+      have hzb : (z * b) ^ 26 = 1 := by rw [mul_pow, b26]; linear_combination (-1 : AlgQ) * h
+      have hm : z * b ∈ cycField 26 := IntermediateField.subset_adjoin ℚ _ hzb
+      have : z = -(z * b) * b := by linear_combination z * hb2
+      show z ∈ cycField 26
+      rw [this]; exact mul_mem (neg_mem hm) hbK
+  haveI := cycField_isCyclotomic 26
+  haveI := cycField_isCyclotomic 52
+  haveI : FiniteDimensional ℚ (cycField 26) := IsCyclotomicExtension.finiteDimensional {26} ℚ _
+  have h26 : Module.finrank ℚ (cycField 26) = Nat.totient 26 :=
+    IsCyclotomicExtension.finrank (cycField 26) (cyclotomic.irreducible_rat (by norm_num))
+  have h52 : Module.finrank ℚ (cycField 52) = Nat.totient 52 :=
+    IsCyclotomicExtension.finrank (cycField 52) (cyclotomic.irreducible_rat (by norm_num))
+  have := IntermediateField.finrank_dvd_of_le_right hle
+  rw [h26, h52] at this
+  have t1 : Nat.totient 26 = 12 := by decide
+  have t2 : Nat.totient 52 = 24 := by decide
+  rw [t1, t2] at this
+  omega
+
 set_option synthInstance.maxHeartbeats 200000 in
 /-- A cubic irrationality in `ℚ(μ_52)` has a conjugate in `ℚ(μ_26)`. -/
 theorem exists_root_cycField_26 {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducible f)
