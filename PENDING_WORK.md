@@ -8,6 +8,7 @@
 * New node `HitPrime` + proved `not_primeTraces_of_hit` / `not_primeTraces_of_hitPrime`: a prime
   dividing infinitely many orbit traces closes both degree-≥4 leaves.  Fermat sibling: the analogue
   fails (pairwise coprime), so a proof must use degree ≥ 2 / s ≠ 0.
+* Lap 4b: `dvd_traceSeq_of_pow_eq_one` PROVED (q | deg, C^P ≡ 1 mod q, P | N ⇒ q | tr): identity-return gives HitPrime when −s ∈ ⟨3⟩ mod P; fails on f₀ (P₂ = 15, −s = 1), so not uniform.
 * Next: a hit-prime mechanism.  Idea to test: take q | tr C^(3^m + s) for an n-independent reason,
   e.g. q | tr C^r for some r in the closure of {3^n + s mod ord(C mod q)}; for q with 3 ∤ ord(C mod q)
   the orbit is periodic and covers s + ⟨3⟩ cosets — ask whether some q with ord_q prime-to-3 always

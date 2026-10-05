@@ -349,4 +349,20 @@ theorem not_primeTraces_of_hitPrime (h : HitPrime) {f : ℤ[X]} {α : ℝ} (hD :
   obtain ⟨q, hq, hhit⟩ := h f α hD hdeg s hs
   exact not_primeTraces_of_hit hD hq hhit
 
+/-- **Identity return at a prime dividing the degree** (a partial hit-prime mechanism).  If
+`q ∣ deg f`, `C^P ≡ 1 (mod q)` and `P ∣ N`, then `q ∣ tr C^N` (the trace of the identity is
+`deg f ≡ 0`).  So `HitPrime` holds whenever `3^n ≡ −s (mod P)` for infinitely many `n`; on `f₀`
+(`q = 2`, `P = 15`, `−s = 1 ∉ ⟨3⟩ mod 15`) it does not apply, so it is not the uniform mechanism. -/
+theorem dvd_traceSeq_of_pow_eq_one {f : ℤ[X]} {q P N : ℕ} (hqd : q ∣ f.natDegree)
+    (hP : ((compM ℤ f).map (Int.castRingHom (ZMod q))) ^ P = 1) (hPN : P ∣ N) :
+    (q : ℤ) ∣ traceSeq f N := by
+  obtain ⟨k, rfl⟩ := hPN
+  refine (ZMod.intCast_zmod_eq_zero_iff_dvd _ q).1 ?_
+  have h1 : ((traceSeq f (P * k) : ℤ) : ZMod q) =
+      (((compM ℤ f).map (Int.castRingHom (ZMod q))) ^ (P * k)).trace := by
+    rw [traceSeq, ← Matrix.map_pow]
+    simp [Matrix.trace, Matrix.diag]
+  rw [h1, pow_mul, hP, one_pow, Matrix.trace_one, Fintype.card_fin]
+  exact (ZMod.natCast_eq_zero_iff _ _).2 hqd
+
 end LeanFormalizations.Mills.ShiftRigidityUnipotent
