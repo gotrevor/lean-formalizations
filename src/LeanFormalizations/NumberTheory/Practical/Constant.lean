@@ -19,8 +19,9 @@ irrationality.  `PracticalConstantIrrational` records the open node.  Related: `
 the leading constant in Hughes (arXiv:2609.25446)'s lower bound for Erdős #859's densities `d_t`.
 
 **The binary practical constant** `β = Σ_{n practical} 2^{−n}` sits where the prime constant
-`Σ_p 2^{−p}` does: irrational (`practicalBinary_irrational`, elementary), not normal in base 2
-(its binary digits have density 0), transcendence open (`PracticalBinaryTranscendental`, as for
+`Σ_p 2^{−p}` does: irrational (`practicalBinary_irrational`, elementary), not normal and not even disjunctive in
+base 2 or any base `2^k` (no `111`: `practicalBinary_not_disjunctive_two_pow`), disjunctivity in
+base 3 open (`PracticalBinaryDisjunctiveThree`), transcendence open (`PracticalBinaryTranscendental`, as for
 the prime constant).
 -/
 
@@ -74,6 +75,32 @@ practical; with `g = gcd(r, T)`, Dirichlet gives `n = g p` in that class with `p
 `p > σ(g) + 1`, and `isPractical_iff_inB` says `g p` is not practical.  Believed 99%. -/
 theorem practicalBinary_irrational : Irrational practicalBinary := by
   sorry
+
+/-- **Disjunctive in base `b`** (also *rich* in base `b`; disjunctive in every base = a
+*lexicon*): every finite base-`b` word (length `L`, value `v < b^L`) occurs in the expansion of
+`x` at arbitrarily late positions.  Same shape as `ErdosBorwein.BinaryDisjunctive`
+(`~/src/erdos-borwein-disjunctivity`), generalized to base `b`. -/
+def Disjunctive (b : ℕ) (x : ℝ) : Prop :=
+  ∀ L v N : ℕ, 0 < L → v < b ^ L → ∃ s : ℕ, N ≤ s ∧
+    (v : ℝ) / (b : ℝ) ^ L < Int.fract ((b : ℝ) ^ s * x) ∧
+    Int.fract ((b : ℝ) ^ s * x) < (v + 1 : ℝ) / (b : ℝ) ^ L
+
+/-- **`β` is not disjunctive in base 2.**  Its `n`-th binary digit is `1` iff `n` is practical, and
+practical numbers `> 1` are even (`IsPractical.even_of_one_lt`), so the word `111` (`L = 3`,
+`v = 7`) never occurs past position 1.  Same reason the prime constant is not base-2 disjunctive.
+Believed 99%. -/
+theorem practicalBinary_not_disjunctive_two : ¬ Disjunctive 2 practicalBinary := by
+  sorry
+
+/-- **`β` is not disjunctive in any base `2^k`**, `k ≥ 1`: the all-`(2^k − 1)` word of length 2 is
+`1^{2k}` in binary, again three consecutive practical numbers.  Believed 98%. -/
+theorem practicalBinary_not_disjunctive_two_pow (k : ℕ) (hk : 1 ≤ k) :
+    ¬ Disjunctive (2 ^ k) practicalBinary := by
+  sorry
+
+/-- **Open:** `β` is disjunctive in base 3 (expected; as for the prime constant in bases not a
+power of 2, no mechanism is known). -/
+def PracticalBinaryDisjunctiveThree : Prop := Disjunctive 3 practicalBinary
 
 /-- **Open:** `β` is transcendental (as for the prime constant `Σ_p 2^{−p}`). -/
 def PracticalBinaryTranscendental : Prop := Transcendental ℚ practicalBinary
