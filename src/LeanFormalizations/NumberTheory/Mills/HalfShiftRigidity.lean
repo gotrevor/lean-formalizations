@@ -704,6 +704,8 @@ theorem sum_orbit {β : Type*} [AddCommMonoid β] (F : Fin 3 → β) (j t : Fin 
     revert j t; decide
   exact (Fintype.sum_bijective _ hb _ _ (fun _ => rfl)).symm
 
+theorem orbit_surj : ∀ j t : Fin 3, (t = 1 ∨ t = 2) → ∀ k, ∃ i, k = j + i * t := by decide
+
 /-- **E1 at `g = 2`, the `(−)` case**: `τ³γ = −γ` makes `13` divide every trace. -/
 theorem half_e1_minus {f : ℤ[X]} (hmon : f.Monic) (hdeg : f.natDegree = 3) {ζ : AlgQ}
     (hζ : IsPrimitiveRoot ζ 13) {τ : AlgQ ≃ₐ[ℚ] AlgQ} (hτ : τ ζ = ζ ^ 2) {e : Fin 3 → AlgQ}
@@ -899,7 +901,92 @@ theorem half_e1 {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hs : Od
     have hdvd := half_e1_minus hD.monic hD.deg hζ hτ hinj he ht hτe hεZ
       (by rw [hqγ, hεc]; exact hγ2) (by rw [hqγ]; exact hm3)
     exact not_prime_of_dvd hD (by norm_num : Nat.Prime 13) hdvd (halfExp_tendsto s) hP
-  · sorry
+  · -- `(+)`: the `τ`-orbit of `γ` is a consistent family of square roots
+    have hε0 : ε ≠ 0 := by rcases hε with h | h <;> rw [h] <;> norm_num
+    set δ : Fin 3 → AlgQ := fun i => (τ ^ (i : ℕ)) γ with hδ
+    have hstep : ∀ (n : ℕ) (y : AlgQ), τ ((τ ^ n) y) = (τ ^ (n + 1)) y := fun n y => by
+      rw [pow_succ', AlgEquiv.mul_apply]
+    have hτδ : ∀ i, τ (δ i) = δ (i + 1) := by
+      intro i; fin_cases i
+      · show τ ((τ ^ 0) γ) = (τ ^ 1) γ; rw [hstep]
+      · show τ ((τ ^ 1) γ) = (τ ^ 2) γ; rw [hstep]
+      · show τ ((τ ^ 2) γ) = (τ ^ 0) γ; rw [hstep, hp3, pow_zero]; rfl
+    have hofn : ∀ i : Fin 3, Fin.ofNat 3 (i : ℕ) = i := by decide
+    have hδ2 : ∀ i, δ i ^ 2 = ε * e (j + i * t) := by
+      intro i
+      show ((τ ^ (i : ℕ)) γ) ^ 2 = _
+      rw [← map_pow, hγ2, map_mul, hτε, tau_pow_root hτe j, hofn]
+    have hδ0 : ∀ i, δ i ≠ 0 := by
+      intro i h0; have := hδ2 i; rw [h0] at this
+      exact mul_ne_zero hε0 (he0 _) (by rw [← this]; ring)
+    have hδK : ∀ i, δ i ∈ K := by
+      intro i
+      show (τ ^ (i : ℕ)) γ ∈ K
+      rw [← hqγ, tau_pow_aeval hτ]
+      exact aevK qγ _ (pow_mem hζK _)
+    set W : Fin 3 → AlgQ := fun i => δ i ^ s with hW
+    have hW0 : ∀ i, W i ≠ 0 := fun i => zpow_ne_zero _ (hδ0 i)
+    have hτW : ∀ i, τ (W i) = W (i + 1) := fun i => by
+      show τ (δ i ^ s) = δ (i + 1) ^ s; rw [map_zpow₀, hτδ]
+    have hW2 : ∀ i, W i ^ 2 = ε * e (j + i * t) ^ s := by
+      intro i
+      show (δ i ^ s) ^ 2 = _
+      rw [show (δ i ^ s) ^ 2 = (δ i ^ 2) ^ s by
+        rw [← zpow_natCast, ← zpow_natCast, ← zpow_mul, ← zpow_mul, mul_comm], hδ2, mul_zpow, hεs]
+    set A : Fin 3 → AlgQ := fun i => v (j + i * t) / W i with hA
+    have hAW : ∀ i, A i * W i = v (j + i * t) := fun i => div_mul_cancel₀ _ (hW0 i)
+    have hA2 : ∀ i, A i ^ 2 = ε * u (j + i * t) := by
+      intro i
+      have h1 := congrArg (· ^ 2) (hAW i)
+      rw [mul_pow, hW2, hv] at h1
+      have hes : e (j + i * t) ^ s ≠ 0 := zpow_ne_zero _ (he0 _)
+      have h3 : e (j + i * t) ^ s * (A i ^ 2 * ε - u (j + i * t)) = 0 := by
+        linear_combination h1
+      have h4 := (mul_eq_zero.1 h3).resolve_left hes
+      linear_combination ε * h4 - A i ^ 2 * hε2
+    have hAK : ∀ i, A i ∈ K := fun i =>
+      div_mem (hvK _) (zpow_mem (hδK i) s)
+    have hA27 : ∀ i, A i ^ 27 = A i := by
+      intro i
+      by_cases h0 : A i = 0
+      · rw [h0]; ring
+      have hu0 : u (j + i * t) ≠ 0 := by
+        intro h; apply h0; have := hA2 i; rw [h, mul_zero] at this
+        exact pow_eq_zero_iff (by norm_num) |>.1 this
+      have h52 : A i ^ 52 = 1 := by
+        rw [show A i ^ 52 = (A i ^ 2) ^ 26 by ring, hA2, mul_pow, hu26 _ hu0,
+          show ε ^ 26 = (ε ^ 2) ^ 13 by ring, hε2]; ring
+      rw [pow_succ, pow26_of_pow52 (hAK i) h52, one_mul]
+    have hsumA : ∑ i, A i * W i = ω := by
+      simp_rw [hAW]; rw [← sum_orbit v j t ht]; exact hsum
+    have hsurj : ∀ k : Fin 3, ∃ i : Fin 3, k = j + i * t := orbit_surj j t ht
+    rcases e1_core hζ hτ (t := 1) (Or.inl rfl) hτW hA27 hω0 hτω hsumA with hc | hc
+    · apply hnc
+      have hu' : ∀ i, u (j + i * t) = u j := by
+        intro i
+        have e1 : u (j + i * t) = ε * A i ^ 2 := by
+          rw [hA2]; linear_combination (-(u (j + i * t))) * hε2
+        have e2 : u j = ε * A 0 ^ 2 := by
+          have := hA2 0; simp only [zero_mul, add_zero] at this
+          rw [this]; linear_combination (-(u j)) * hε2
+        rw [e1, e2, hc i]
+      have hall : ∀ k, u k = u j := fun k => by
+        obtain ⟨i, rfl⟩ := hsurj k; exact hu' i
+      intro k; rw [hall k, hall 0]
+    · have hes : ∀ k, e k ^ s = e j ^ s := by
+        intro k
+        obtain ⟨i, rfl⟩ := hsurj k
+        have h1 := hW2 i
+        have h2 := hW2 0
+        rw [hc i] at h1
+        simp only [zero_mul, add_zero] at h2
+        have : ε * (e (j + i * t) ^ s - e j ^ s) = 0 := by linear_combination h2 - h1
+        linear_combination (mul_eq_zero.1 this).resolve_left hε0
+      have he1 : e 1 ≠ 0 := he0 1
+      apply zpow_ne_of_norm hbig (by exact_mod_cast he1) (hsm 1 (by decide)) hs0
+      have := congrArg (algebraicClosure ℚ ℂ).val ((hes 0).trans (hes 1).symm)
+      rw [map_zpow₀, map_zpow₀] at this
+      exact this
 
 /-! ### Assembly -/
 
