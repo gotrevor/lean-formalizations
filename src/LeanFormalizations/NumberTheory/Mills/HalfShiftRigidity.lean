@@ -403,7 +403,136 @@ theorem half_generic {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hs
     (hsum : ∑ k, v k = ω) (hnc : ¬ ∀ k, u k = u 0)
     (hL : ∀ x : AlgQ, (f.map (Int.castRingHom AlgQ)).eval x = 0 → x ∉ cycField (2 * Q)) :
     False := by
-  sorry
+  classical
+  have hs0 : s ≠ 0 := by rintro rfl; simp at hs
+  have hc0 := coeff_zero_ne_zero hD.monic hD.irr hD.deg
+  have he0 : ∀ k, e k ≠ 0 := by
+    intro k h0; have := he k; rw [h0, eval_cubic hD.monic hD.deg] at this; simp at this
+    exact hc0 this
+  set L := cycField (2 * Q) with hLdef
+  obtain ⟨σ, a, b, ha, hb, hab, h0a, hab', hb0⟩ := exists_three_cycle hD.monic hD.deg L hL hinj he
+  have hfix : ∀ x ∈ L, ∀ τ : AlgQ ≃ₐ[L] AlgQ, τ x = x := fun x hx τ => τ.commutes ⟨x, hx⟩
+  set τ : AlgQ ≃ₐ[L] AlgQ := σ * σ * σ * σ with hτdef
+  have hτ : ∀ x, τ x = σ (σ (σ (σ x))) := fun x => rfl
+  have t0 : τ (e 0) = e a := by rw [hτ, h0a, hab', hb0, h0a]
+  have ta : τ (e a) = e b := by rw [hτ, hab', hb0, h0a, hab']
+  have tb : τ (e b) = e 0 := by rw [hτ, hb0, h0a, hab', hb0]
+  obtain ⟨d0, hd0⟩ := IsAlgClosed.exists_pow_nat_eq (e 0) two_pos
+  set da := τ d0 with hda
+  set db := τ da with hdb
+  have hda2 : da ^ 2 = e a := by rw [hda, ← map_pow, hd0, t0]
+  have hdb2 : db ^ 2 = e b := by rw [hdb, ← map_pow, hda2, ta]
+  have hcyc : τ db = d0 := by
+    have g3 : ∀ x, τ (τ (τ x)) = (σ * σ * σ) ((σ * σ * σ) ((σ * σ * σ) ((σ * σ * σ) x))) :=
+      fun x => rfl
+    set t := (σ * σ * σ) d0 with ht
+    have hσ3 : (σ * σ * σ) (e 0) = e 0 := by
+      show σ (σ (σ (e 0))) = e 0; rw [h0a, hab', hb0]
+    have ht2 : t ^ 2 = d0 ^ 2 := by rw [ht, ← map_pow, hd0, hσ3]
+    have : (t - d0) * (t + d0) = 0 := by linear_combination ht2
+    rw [hdb, hda, g3, ← ht]
+    rcases mul_eq_zero.1 this with h | h
+    · have h' : t = d0 := by linear_combination h
+      rw [h', ← ht, h', ← ht, h']
+      exact h'
+    · have h' : t = -d0 := by linear_combination h
+      rw [h', map_neg, ← ht, h', neg_neg, ← ht, h', map_neg, ← ht, h', neg_neg]
+  have hd0ne : ∀ x : AlgQ, x ^ 2 = e 0 ∨ x ^ 2 = e a ∨ x ^ 2 = e b → x ≠ 0 := by
+    rintro x (h | h | h) rfl <;> simp at h <;> exact he0 _ h.symm
+  have nd0 := hd0ne d0 (Or.inl hd0)
+  have nda := hd0ne da (Or.inr (Or.inl hda2))
+  have ndb := hd0ne db (Or.inr (Or.inr hdb2))
+  -- the coefficients `a_k = v_k / d_k^s` are in `μ_(2Q) ∪ {0}`
+  have coef : ∀ (k : Fin 3) (d : AlgQ), d ≠ 0 → d ^ 2 = e k →
+      (v k / d ^ s) ^ 2 = u k := by
+    intro k d hd hd2
+    rw [div_pow, hv k, ← hd2]
+    rw [show (d ^ 2) ^ s = (d ^ s) ^ 2 by
+      rw [← zpow_natCast, ← zpow_natCast, ← zpow_mul, ← zpow_mul, mul_comm]]
+    field_simp
+  have mu : ∀ (k : Fin 3) (d : AlgQ), d ≠ 0 → d ^ 2 = e k →
+      (v k / d ^ s) = 0 ∨ (v k / d ^ s) ^ (2 * Q) = 1 := by
+    intro k d hd hd2
+    by_cases h0 : v k / d ^ s = 0
+    · exact Or.inl h0
+    · right
+      have hu0 : u k ≠ 0 := by rw [← coef k d hd hd2]; exact pow_ne_zero 2 h0
+      have : u k * (u k ^ Q - 1) = 0 := by rw [mul_sub, ← pow_succ', hu k]; ring
+      have hQ1 : u k ^ Q = 1 := sub_eq_zero.1 ((mul_eq_zero.1 this).resolve_left hu0)
+      rw [pow_mul, coef k d hd hd2, hQ1]
+  have memL : ∀ (k : Fin 3) (d : AlgQ), d ≠ 0 → d ^ 2 = e k → v k / d ^ s ∈ L := by
+    intro k d hd hd2
+    apply mem_cycField
+    rcases mu k d hd hd2 with h | h
+    · rw [h]; simp
+    · rw [pow_succ, h, one_mul]
+  set A0 := v 0 / d0 ^ s
+  set Aa := v a / da ^ s
+  set Ab := v b / db ^ s
+  have hcase : (a = 1 ∧ b = 2) ∨ (a = 2 ∧ b = 1) := by
+    revert ha hb hab; fin_cases a <;> fin_cases b <;> decide
+  have hsum3 : ∀ (F : Fin 3 → AlgQ), ∑ k, F k = F 0 + F a + F b := by
+    intro F
+    rw [Fin.sum_univ_three]
+    rcases hcase with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+    · rfl
+    · simp only [add_assoc, add_comm (F 1)]
+  rw [hsum3] at hsum
+  have E0 : A0 * d0 ^ s + Aa * da ^ s + Ab * db ^ s = ω := by
+    rw [← hsum]; simp only [A0, Aa, Ab]; field_simp
+  have hωpm : ω = 1 ∨ ω = -1 := by
+    have : (ω - 1) * (ω + 1) = 0 := by linear_combination hω
+    rcases mul_eq_zero.1 this with h | h
+    · left; linear_combination h
+    · right; linear_combination h
+  have hτω : τ ω = ω := by rcases hωpm with rfl | rfl <;> simp
+  have fA0 := hfix _ (memL 0 d0 nd0 hd0) τ
+  have fAa := hfix _ (memL a da nda hda2) τ
+  have fAb := hfix _ (memL b db ndb hdb2) τ
+  have E1 : A0 * da ^ s + Aa * db ^ s + Ab * d0 ^ s = ω := by
+    have := congrArg τ E0
+    simp only [map_add, map_mul, map_zpow₀, hτω] at this
+    rw [fA0, fAa, fAb, ← hda, ← hdb, hcyc] at this; exact this
+  have E2 : A0 * db ^ s + Aa * d0 ^ s + Ab * da ^ s = ω := by
+    have := congrArg τ E1
+    simp only [map_add, map_mul, map_zpow₀, hτω] at this
+    rw [fA0, fAa, fAb, ← hdb, hcyc, ← hda] at this; exact this
+  have cast : ∀ x y : AlgQ, x = y → (x : ℂ) = (y : ℂ) := fun x y h => by rw [h]
+  have c0 := cast _ _ E0; have c1 := cast _ _ E1; have c2 := cast _ _ E2
+  push_cast at c0 c1 c2
+  have hωC : (ω : ℂ) ≠ 0 := by
+    rcases hωpm with rfl | rfl <;> simp
+  have hM : Nat.gcd 6 (2 * Q) ∣ 2 := by rcases hQ with rfl | rfl | rfl <;> decide
+  have muC : ∀ (k : Fin 3) (d : AlgQ), d ≠ 0 → d ^ 2 = e k →
+      ((v k / d ^ s : AlgQ) : ℂ) = 0 ∨ ((v k / d ^ s : AlgQ) : ℂ) ^ (2 * Q) = 1 := by
+    intro k d hd hd2
+    rcases mu k d hd hd2 with h | h
+    · left; rw [h]; rfl
+    · right; have := cast _ _ h; push_cast at this ⊢; exact this
+  -- `|d0^s| ≠ |db^s|`
+  have hw : ¬ (((d0 : ℂ)) ^ s = ((db : ℂ)) ^ s ∧ ((da : ℂ)) ^ s = ((db : ℂ)) ^ s) := by
+    rintro ⟨h, -⟩
+    have h2 : ((d0 : ℂ) ^ s) ^ 2 = ((db : ℂ) ^ s) ^ 2 := by rw [h]
+    rw [← zpow_natCast, ← zpow_natCast, ← zpow_mul, ← zpow_mul, mul_comm, zpow_mul, zpow_mul,
+      zpow_natCast, zpow_natCast] at h2
+    have q0 : ((d0 : ℂ)) ^ 2 = (e 0 : ℂ) := by rw [← hd0]; push_cast; rfl
+    have qb : ((db : ℂ)) ^ 2 = (e b : ℂ) := by rw [← hdb2]; push_cast; rfl
+    rw [q0, qb] at h2
+    have hb0' : (e b : ℂ) ≠ 0 := by exact_mod_cast he0 b
+    exact zpow_ne_of_norm hbig hb0' (hsm b hb) hs0 h2
+  obtain ⟨k01, k12⟩ := circulant_const_mu (r := (ω : ℂ)) hM hωC hw
+    (muC 0 d0 nd0 hd0) (muC a da nda hda2) (muC b db ndb hdb2) c0 c1 c2
+  have k01' : A0 = Aa := Subtype.ext k01
+  have k12' : Aa = Ab := Subtype.ext k12
+  apply hnc
+  have u0 := coef 0 d0 nd0 hd0
+  have ua := coef a da nda hda2
+  have ub := coef b db ndb hdb2
+  have hua : u a = u 0 := by rw [← ua, ← u0]; show Aa ^ 2 = A0 ^ 2; rw [k01']
+  have hub : u b = u 0 := by rw [← ub, ← u0]; show Ab ^ 2 = A0 ^ 2; rw [k01', k12']
+  intro k
+  rcases hcase with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> fin_cases k
+  all_goals first | rfl | exact hua | exact hub
 
 /-! ### E1 at `g = 2` -/
 
