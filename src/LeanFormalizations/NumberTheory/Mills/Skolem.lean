@@ -233,4 +233,237 @@ theorem skolem_det_ne_zero {p : ℕ} [hp : Fact p.Prime] (hp2 : p ≠ 2) (α β 
   rw [hnorm_main] at this
   linarith
 
+/-! ### Matrices: Cayley–Hamilton and the binomial expansion -/
+
+/-- Cayley–Hamilton for `3 × 3` integer matrices. -/
+theorem cayley_hamilton_three (D : Matrix (Fin 3) (Fin 3) ℤ) :
+    ∃ c0 c1 c2 : ℤ, D ^ 3 = c2 • D ^ 2 + c1 • D + c0 • (1 : Matrix (Fin 3) (Fin 3) ℤ) := by
+  have hm := D.charpoly_monic
+  have hdeg : D.charpoly.natDegree = 3 := by simp [Matrix.charpoly_natDegree_eq_dim]
+  have h := Matrix.aeval_self_charpoly D
+  rw [hm.as_sum, hdeg] at h
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero, zero_add, map_add, map_mul,
+    aeval_X_pow, aeval_X, aeval_C, pow_zero, pow_one, mul_one, Algebra.algebraMap_eq_smul_one,
+    smul_mul_assoc, one_mul] at h
+  refine ⟨-D.charpoly.coeff 0, -D.charpoly.coeff 1, -D.charpoly.coeff 2, ?_⟩
+  rw [← sub_eq_zero, ← h]
+  simp only [neg_smul]
+  abel
+
+/-- The coefficients of `D^k` in the basis `D², D, 1` (`D³ = c₂D² + c₁D + c₀`). -/
+def chSeq (c0 c1 c2 : ℤ) : ℕ → ℤ × ℤ × ℤ
+  | 0 => (0, 0, 1)
+  | k + 1 => (c2 * (chSeq c0 c1 c2 k).1 + (chSeq c0 c1 c2 k).2.1,
+      c1 * (chSeq c0 c1 c2 k).1 + (chSeq c0 c1 c2 k).2.2, c0 * (chSeq c0 c1 c2 k).1)
+
+theorem pow_eq_chSeq {D : Matrix (Fin 3) (Fin 3) ℤ} {c0 c1 c2 : ℤ}
+    (hD : D ^ 3 = c2 • D ^ 2 + c1 • D + c0 • (1 : Matrix (Fin 3) (Fin 3) ℤ)) (k : ℕ) :
+    D ^ k = (chSeq c0 c1 c2 k).1 • D ^ 2 + (chSeq c0 c1 c2 k).2.1 • D +
+      (chSeq c0 c1 c2 k).2.2 • (1 : Matrix (Fin 3) (Fin 3) ℤ) := by
+  induction k with
+  | zero => simp [chSeq]
+  | succ k ih =>
+    have h3 : D * D ^ 2 = D ^ 3 := by rw [← pow_succ']
+    have h2 : D * D = D ^ 2 := by rw [sq]
+    have e : D ^ (k + 1) = (chSeq c0 c1 c2 k).1 • D ^ 3 + (chSeq c0 c1 c2 k).2.1 • D ^ 2 +
+        (chSeq c0 c1 c2 k).2.2 • D := by
+      rw [pow_succ', ih, mul_add, mul_add, mul_smul_comm, mul_smul_comm, mul_smul_comm, mul_one,
+        h3, h2]
+    rw [e, hD]
+    simp only [chSeq]
+    module
+
+theorem chSeq_zero (c0 c1 c2 : ℤ) : chSeq c0 c1 c2 0 = (0, 0, 1) := rfl
+theorem chSeq_one (c0 c1 c2 : ℤ) : chSeq c0 c1 c2 1 = (0, 1, 0) := by simp [chSeq]
+theorem chSeq_two (c0 c1 c2 : ℤ) : chSeq c0 c1 c2 2 = (1, 0, 0) := by simp [chSeq]
+
+/-- The binomial expansion of `ℓ((c D + 1)^z)`. -/
+theorem linear_one_add_pow (L : Matrix (Fin 3) (Fin 3) ℤ →ₗ[ℤ] ℤ)
+    (D : Matrix (Fin 3) (Fin 3) ℤ) (c : ℤ) (z : ℕ) :
+    L ((c • D + 1) ^ z) = ∑ k ∈ range (z + 1), (z.choose k : ℤ) * c ^ k * L (D ^ k) := by
+  rw [(Commute.one_right (c • D)).add_pow',
+    Nat.sum_antidiagonal_eq_sum_range_succ (fun m q => z.choose m • ((c • D) ^ m * 1 ^ q)),
+    map_sum]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  rw [one_pow, mul_one, map_nsmul, _root_.smul_pow, map_smul, nsmul_eq_mul, smul_eq_mul]
+  ring
+
+/-- **Skolem, matrix form.**  If `ℓ` vanishes on `(p² D + 1)^z` at `z = 0, a, b` (`0 < a < b`),
+it vanishes at every `z`. -/
+theorem linear_pow_eq_zero_of_three {p : ℕ} [Fact p.Prime] (hp2 : p ≠ 2)
+    (D : Matrix (Fin 3) (Fin 3) ℤ) (L : Matrix (Fin 3) (Fin 3) ℤ →ₗ[ℤ] ℤ) {a b : ℕ}
+    (ha : 0 < a) (hab : a < b) (h0 : L 1 = 0)
+    (hza : L (((p : ℤ) ^ 2 • D + 1) ^ a) = 0) (hzb : L (((p : ℤ) ^ 2 • D + 1) ^ b) = 0) (z : ℕ) :
+    L (((p : ℤ) ^ 2 • D + 1) ^ z) = 0 := by
+  obtain ⟨c0, c1, c2, hD⟩ := cayley_hamilton_three D
+  set α : ℕ → ℤ := fun k => (chSeq c0 c1 c2 k).1 with hα
+  set β : ℕ → ℤ := fun k => (chSeq c0 c1 c2 k).2.1 with hβ
+  set s1 := L D with hs1
+  set s2 := L (D ^ 2) with hs2
+  have hLk : ∀ k, L (D ^ k) = α k * s2 + β k * s1 := by
+    intro k
+    rw [pow_eq_chSeq hD k, map_add, map_add, map_smul, map_smul, map_smul, h0]
+    simp [hα, hβ, hs1, hs2]
+  have hF : ∀ y, L (((p : ℤ) ^ 2 • D + 1) ^ y) = s1 * U p β y + s2 * U p α y := by
+    intro y
+    rw [linear_one_add_pow, U, U, Finset.mul_sum, Finset.mul_sum, ← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [hLk, ← pow_mul]
+    ring
+  have hdet := skolem_det_ne_zero hp2 α β (by simp [hβ, chSeq_zero]) (by simp [hβ, chSeq_one])
+    (by simp [hβ, chSeq_two]) (by simp [hα, chSeq_zero]) (by simp [hα, chSeq_one])
+    (by simp [hα, chSeq_two]) ha hab
+  rw [hF] at hza hzb
+  have e1 : s1 * (U p β a * U p α b - U p β b * U p α a) = 0 := by
+    linear_combination (U p α b) * hza - (U p α a) * hzb
+  have e2 : s2 * (U p β a * U p α b - U p β b * U p α a) = 0 := by
+    linear_combination (-(U p β b)) * hza + (U p β a) * hzb
+  have hs1' : s1 = 0 := (mul_eq_zero.1 e1).resolve_right hdet
+  have hs2' : s2 = 0 := (mul_eq_zero.1 e2).resolve_right hdet
+  rw [hF, hs1', hs2']
+  ring
+
+/-! ### Recurrences of order 3 -/
+
+open scoped Matrix
+
+/-- The companion matrix of `X³ − a₂X² − a₁X − a₀`. -/
+def comp3 (a0 a1 a2 : ℤ) : Matrix (Fin 3) (Fin 3) ℤ := !![0, 1, 0; 0, 0, 1; a0, a1, a2]
+
+theorem det_comp3 (a0 a1 a2 : ℤ) : (comp3 a0 a1 a2).det = a0 := by
+  simp [comp3, Matrix.det_fin_three]
+
+/-- The state vector `(w n, w (n+1), w (n+2))`. -/
+def state3 (w : ℕ → ℤ) (n : ℕ) : Fin 3 → ℤ := ![w n, w (n + 1), w (n + 2)]
+
+theorem comp3_pow_mulVec {w : ℕ → ℤ} {a0 a1 a2 : ℤ}
+    (hrec : ∀ n, w (n + 3) = a2 * w (n + 2) + a1 * w (n + 1) + a0 * w n) (n : ℕ) :
+    (comp3 a0 a1 a2 ^ n) *ᵥ state3 w 0 = state3 w n := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    rw [pow_succ', ← Matrix.mulVec_mulVec, ih]
+    ext i
+    fin_cases i <;> simp [comp3, state3, Matrix.mulVec, dotProduct, Fin.sum_univ_three, hrec]
+    ring
+
+/-- `M ↦ ((B M) v)₀` as a linear functional. -/
+def evalL (B : Matrix (Fin 3) (Fin 3) ℤ) (v : Fin 3 → ℤ) : Matrix (Fin 3) (Fin 3) ℤ →ₗ[ℤ] ℤ where
+  toFun M := ((B * M) *ᵥ v) 0
+  map_add' M N := by rw [Matrix.mul_add, Matrix.add_mulVec]; rfl
+  map_smul' c M := by
+    rw [Matrix.mul_smul, Matrix.smul_mulVec]; rfl
+
+/-- A power of an integer matrix whose determinant is prime to `q` is `≡ 1 (mod q)`. -/
+theorem exists_pow_eq_smul_add_one (A : Matrix (Fin 3) (Fin 3) ℤ) {q : ℕ} (hq : 0 < q)
+    (hdet : IsCoprime A.det (q : ℤ)) :
+    ∃ P ≥ 1, ∃ D : Matrix (Fin 3) (Fin 3) ℤ, A ^ P = (q : ℤ) • D + 1 := by
+  haveI : NeZero q := ⟨hq.ne'⟩
+  set f := Int.castRingHom (ZMod q) with hf
+  have hunit_det : IsUnit (f.mapMatrix A).det := by
+    rw [← RingHom.map_det]
+    obtain ⟨u, v, huv⟩ := hdet
+    refine IsUnit.of_mul_eq_one (f u) ?_
+    have := congrArg f huv
+    rw [map_add, map_mul, map_mul, map_one, map_natCast, ZMod.natCast_self, mul_zero,
+      add_zero] at this
+    rw [mul_comm]; exact this
+  have hunit : IsUnit (f.mapMatrix A) := (Matrix.isUnit_iff_isUnit_det _).2 hunit_det
+  obtain ⟨u, hu⟩ := hunit
+  have hfin : IsOfFinOrder u := isOfFinOrder_of_finite u
+  refine ⟨orderOf u, hfin.orderOf_pos, fun i j => (A ^ orderOf u - 1) i j / q, ?_⟩
+  have hone : f.mapMatrix (A ^ orderOf u) = 1 := by
+    rw [map_pow, ← hu, ← Units.val_pow_eq_pow_val, pow_orderOf_eq_one, Units.val_one]
+  ext i j
+  have hij := congrFun (congrFun hone i) j
+  have hdvd : (q : ℤ) ∣ (A ^ orderOf u - 1) i j := by
+    rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
+    simp only [RingHom.mapMatrix_apply, Matrix.map_apply, hf, eq_intCast] at hij
+    rw [Matrix.sub_apply, Int.cast_sub, hij]
+    by_cases h : i = j
+    · subst h; simp
+    · simp [h]
+  simp only [Matrix.add_apply, Matrix.smul_apply, smul_eq_mul]
+  rw [Int.mul_ediv_cancel' hdvd, Matrix.sub_apply]
+  ring
+
+/-- **Skolem's lemma for order-3 recurrences**: for an odd prime `p ∤ a₀` there is a period `P`
+such that three zeros in a class `n₀ + Pℕ` force all later terms of the class to vanish. -/
+theorem skolem_three_zeros {w : ℕ → ℤ} {a0 a1 a2 : ℤ}
+    (hrec : ∀ n, w (n + 3) = a2 * w (n + 2) + a1 * w (n + 1) + a0 * w n)
+    {p : ℕ} [hp : Fact p.Prime] (hp2 : p ≠ 2) (hpa : ¬ (p : ℤ) ∣ a0) :
+    ∃ P ≥ 1, ∀ n0 y1 y2 y3 : ℕ, y1 < y2 → y2 < y3 → w (n0 + P * y1) = 0 →
+      w (n0 + P * y2) = 0 → w (n0 + P * y3) = 0 → ∀ z, w (n0 + P * (y1 + z)) = 0 := by
+  set A := comp3 a0 a1 a2 with hA
+  have hcop : IsCoprime A.det ((p ^ 2 : ℕ) : ℤ) := by
+    rw [hA, det_comp3]
+    push_cast
+    apply IsCoprime.pow_right
+    have hpz : Prime (p : ℤ) := Nat.prime_iff_prime_int.1 hp.out
+    exact ((Prime.coprime_iff_not_dvd hpz).2 hpa).symm
+  obtain ⟨P, hP, D, hAD⟩ := exists_pow_eq_smul_add_one A (pow_pos hp.out.pos 2) hcop
+  refine ⟨P, hP, fun n0 y1 y2 y3 h12 h23 hz1 hz2 hz3 z => ?_⟩
+  have hw : ∀ m, w (n0 + P * m) = evalL (A ^ n0) (state3 w 0) (((p : ℤ) ^ 2 • D + 1) ^ m) := by
+    intro m
+    have : ((p ^ 2 : ℕ) : ℤ) = (p : ℤ) ^ 2 := by push_cast; ring
+    rw [this] at hAD
+    show _ = ((A ^ n0 * ((p : ℤ) ^ 2 • D + 1) ^ m) *ᵥ state3 w 0) 0
+    rw [← hAD, ← pow_mul, ← pow_add, comp3_pow_mulVec hrec]
+    rfl
+  set L := (evalL (A ^ n0) (state3 w 0)).comp
+    (LinearMap.mulLeft ℤ (((p : ℤ) ^ 2 • D + 1) ^ y1)) with hL
+  have hshift : ∀ m, L (((p : ℤ) ^ 2 • D + 1) ^ m) = w (n0 + P * (y1 + m)) := by
+    intro m
+    rw [hw, hL, LinearMap.comp_apply, LinearMap.mulLeft_apply, ← pow_add]
+  have h0 : L 1 = 0 := by
+    have := hshift 0
+    rw [pow_zero, add_zero] at this
+    rw [this, hz1]
+  have ha : L (((p : ℤ) ^ 2 • D + 1) ^ (y2 - y1)) = 0 := by
+    rw [hshift, show y1 + (y2 - y1) = y2 by omega, hz2]
+  have hb : L (((p : ℤ) ^ 2 • D + 1) ^ (y3 - y1)) = 0 := by
+    rw [hshift, show y1 + (y3 - y1) = y3 by omega, hz3]
+  rw [← hshift]
+  exact linear_pow_eq_zero_of_three hp2 D L (by omega) (by omega) h0 ha hb z
+
+/-- **Skolem–Mahler–Lech for order 3 (non-degenerate case).**  If no arithmetic progression is
+eventually a zero set of `w`, the zeros of `w` are finite. -/
+theorem eventually_ne_zero_of_recurrence {w : ℕ → ℤ} {a0 a1 a2 : ℤ}
+    (hrec : ∀ n, w (n + 3) = a2 * w (n + 2) + a1 * w (n + 1) + a0 * w n) (ha0 : a0 ≠ 0)
+    (hnd : ∀ P ≥ 1, ∀ m, ∃ z, w (m + P * z) ≠ 0) :
+    ∀ᶠ n in Filter.atTop, w n ≠ 0 := by
+  obtain ⟨p, hpge, hpp⟩ := Nat.exists_infinite_primes (a0.natAbs + 3)
+  haveI : Fact p.Prime := ⟨hpp⟩
+  have hp2 : p ≠ 2 := by omega
+  have hpa : ¬ (p : ℤ) ∣ a0 := by
+    intro h
+    have := Int.natAbs_dvd_natAbs.2 h
+    simp only [Int.natAbs_natCast] at this
+    have := Nat.le_of_dvd (Int.natAbs_pos.2 ha0) this
+    omega
+  obtain ⟨P, hP, hsk⟩ := skolem_three_zeros hrec hp2 hpa
+  -- each class `r + Pℕ` has a last zero
+  have hclass : ∀ r, ∃ B, ∀ y ≥ B, w (r + P * y) ≠ 0 := by
+    intro r
+    by_contra hcon
+    push Not at hcon
+    obtain ⟨y1, -, hz1⟩ := hcon 0
+    obtain ⟨y2, hy2, hz2⟩ := hcon (y1 + 1)
+    obtain ⟨y3, hy3, hz3⟩ := hcon (y2 + 1)
+    obtain ⟨z, hz⟩ := hnd P hP (r + P * y1)
+    apply hz
+    rw [show r + P * y1 + P * z = r + P * (y1 + z) by ring]
+    exact hsk r y1 y2 y3 (by omega) (by omega) hz1 hz2 hz3 z
+  choose B hB using hclass
+  set M := (Finset.range P).sup B with hM
+  rw [Filter.eventually_atTop]
+  refine ⟨P * (M + 1), fun n hn => ?_⟩
+  have hr : n % P < P := Nat.mod_lt _ (by omega)
+  have hBr : B (n % P) ≤ M := Finset.le_sup (f := B) (Finset.mem_range.2 hr)
+  have hy : M ≤ n / P := by
+    rw [Nat.le_div_iff_mul_le (by omega)]
+    nlinarith
+  have := hB (n % P) (n / P) (le_trans hBr hy)
+  rwa [Nat.mod_add_div] at this
+
 end LeanFormalizations.Mills.Skolem
