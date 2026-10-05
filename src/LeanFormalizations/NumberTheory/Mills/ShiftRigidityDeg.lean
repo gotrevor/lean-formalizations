@@ -174,7 +174,7 @@ theorem eventuallyRecordShift_holds {θ : ℝ} (hθ0 : 0 < θ) (hθ : θ < 2 / 3
     EventuallyRecordShift θ := by
   sorry
 
-/-- **Believed (~85%)**: eventual records in every degree, from Dubickas's Lemma 8 (Saito
+/-- **Proved (phase 65 lap 2)**: eventual records in every degree, from Dubickas's Lemma 8 (Saito
 Lemma 2.7).  This is a separate theorem next to `eventuallyRecordShift_holds`; it is not a proof
 of it, because the frozen `θ < 2/3` route has avoided `Dubickas2022PisotGap` since 2026-09-28.
 
@@ -187,13 +187,100 @@ for the last step.
    (`nonrecord_ineq`), so `f < 1/(2P)` and `f < β^(−n)` for large `n`.
 3. `Dubickas2022PisotGap` gives `f ≥ Rⁿ n^(−λ)`.  The product of the other conjugates has
    modulus `|N β| / β ≥ 1/β`, so `R ≥ β^(−1/L)`.  Then `β^(n(1 − 1/L)) < n^λ`, which is false
-   for large `n` when `L ≥ 2`.  `L ≤ 1` is already handled by `eventually_record_of_card_le_two`.
+   for large `n` when `L ≥ 2`; in Lean this is `pisot_degree_bound` at rate `μ = 1`, using
+   `‖S(n)‖ ≤ fract(β^n) < 1/P ≤ 2 β^(−n)`.  `L ≤ 2` is already handled by `eventually_record_of_card_le_two`.
 4. So past some record `r0`, every index is a record (the `exists_last_record` argument).
 Consequence: with this input, the `5/9` wall is only `shiftTraceRigidity_ge_four` and
 `halfShiftTraceRigidity_ge_four`.  The decay rate `μ` enters only through `L ≤ 1/μ`. -/
 theorem eventuallyRecordShift_of_pisotGap {θ : ℝ} (hθ0 : 0 < θ) (hθ : θ < 2 / 3)
     (hG : Dubickas2022PisotGap) : EventuallyRecordShift θ := by
-  sorry
+  intro hP hD s j hs hj1 hj2 ξ hξ halg
+  have h1θ : 0 < 1 - θ := by linarith
+  set a : ℝ := 1 / (1 - θ) with ha
+  have ha1 : 1 < a := by rw [ha, lt_div_iff₀ h1θ]; linarith
+  have ha3 : a < 3 := by rw [ha, div_lt_iff₀ h1θ]; linarith
+  have hamul : (1 - θ) * a = 1 := by rw [ha]; field_simp
+  set ρ : ℝ := (3 + a) / 2 with hρ
+  have hρμ : 0 < (1 - θ) * ρ - 1 := by
+    have : (1 - θ) * ρ = ((1 - θ) * 3 + (1 - θ) * a) / 2 := by rw [hρ]; ring
+    rw [this, hamul]; nlinarith
+  set μ : ℝ := min 1 ((1 - θ) * ρ - 1) with hμ
+  have hμ0 : 0 < μ := lt_min (by norm_num) hρμ
+  obtain ⟨g, hg1, hpis, hdeg, K, hK⟩ := records_pisot_theta (ρ := ρ) (μ := μ) hP hθ0.le
+    (by linarith) hμ0 (min_le_right _ _) (by rw [hρ]; linarith) (min_le_left _ _)
+    (by rw [hρ]; linarith) hD hj1 hj2 hξ halg
+  obtain ⟨T, K', hT⟩ := record_gap_bounded hj1 hj2 hξ hg1 hpis hK
+  by_cases hc2 : Multiset.card (otherConj (ξ ^ g)) ≤ 2
+  · exact eventually_record_of_card_le_two hs hj1 hj2 hξ hg1 hpis hc2 hK hT
+  classical
+  set C := shiftC j s with hCdef
+  have h1 : 1 ≤ C 1 := shiftC_pos hj1 le_rfl
+  have h2 : ∀ k ≥ 1, 2 * C k ≤ C (k + 1) := fun k hk => shiftC_two_mul_le hj1 hj2 hk
+  have h5 : ∀ m ≥ 1, ∃ k > m, C m ∣ C k ∧ (29 : ℝ) / 10 * C k ≤ C (k + 1) :=
+    fun m hm => shiftC_B5 hj1 hj2 hm
+  have hξS := hξ.1
+  have hξ1 : 1 < ξ := hξS.1
+  have hnot := not_intCast_pow h1 h2 h5 hξS
+  set β := ξ ^ g with hβ
+  have hβ1 : 1 < β := hpis.1
+  have hβ0 : 0 < β := by linarith
+  -- not eventually records ⇒ frequently `‖S(n)‖ ≤ 2 β^(−n)`
+  by_contra hno
+  have hno' : ∀ N, ∃ M ≥ N, ¬ IsRecord C ξ M := by
+    intro N; by_contra h; push Not at h; exact hno ⟨N, h⟩
+  obtain ⟨N0, hN0⟩ := eventually_atTop.1 (norm_conjPowSum_eq_round hpis)
+  have hfreq : ∃ᶠ n : ℕ in atTop, ‖conjPowSum β n‖ ≤ 2 * (β ^ (-((1 : ℝ) * n)) : ℝ) := by
+    rw [frequently_atTop]
+    intro A
+    obtain ⟨r0, hr0rec, hr0ge⟩ := ((frequently_record h1 h2 hξ hnot).and_eventually
+      (eventually_ge_atTop ((A + N0) * g + K + 1))).exists
+    obtain ⟨M, hM, hMn⟩ := hno' (r0 + 1)
+    obtain ⟨r, hr0r, hrM, hrrec, hlt⟩ := exists_last_record hr0rec (by omega) hMn
+    have hr1 : 1 ≤ r := by omega
+    have hgr : g ∣ C r := hK r (by omega) hrrec
+    obtain ⟨hA, -, hc⟩ := nonrecord_ineq h1 h2 hξ1 hnot hpis hr1 hrM hgr hlt
+    set n := C r / g with hn
+    have hrC : r ≤ C r := le_C h1 h2 r hr1
+    have hnA : A + N0 ≤ n := by
+      rw [hn, Nat.le_div_iff_mul_le (by omega)]; nlinarith
+    refine ⟨n, by omega, ?_⟩
+    set x := ξ ^ C r with hx
+    set P : ℝ := (⌊x⌋₊ : ℝ) with hP
+    set f := Int.fract x with hf
+    set c : ℝ := (C M : ℝ) / C r with hcdef
+    have hβn : β ^ n = x := by rw [hβ, hx, ← pow_mul, Nat.mul_div_cancel' hgr]
+    have hx1 : 1 ≤ x := one_le_pow₀ hξ1.le
+    have hfx : x = P + f := by
+      rw [hf, hP, Int.fract, ← Int.natCast_floor_eq_floor (by linarith)]; push_cast; ring
+    have hf0 : 0 ≤ f := Int.fract_nonneg x
+    have hf1 : f < 1 := Int.fract_lt_one x
+    have hP1 : 1 ≤ P := by
+      have := Nat.floor_pos.2 hx1; rw [hP]; exact_mod_cast this
+    have hc2' : 2 ≤ c := by
+      have : (2 : ℝ) ^ 1 ≤ 2 ^ (M - r) := pow_le_pow_right₀ (by norm_num) (by omega)
+      linarith
+    have hpc : P ^ (1 : ℝ) ≤ P ^ (c - 1) := Real.rpow_le_rpow_of_exponent_le hP1 (by linarith)
+    rw [Real.rpow_one] at hpc
+    have hfP : f * P < 1 := by
+      have e0 : 0 ≤ f * P ^ (c - 1) := mul_nonneg hf0 (by positivity)
+      have : c * f * P ^ (c - 1) = c * (f * P ^ (c - 1)) := by ring
+      have : f * P ≤ f * P ^ (c - 1) := mul_le_mul_of_nonneg_left hpc hf0
+      nlinarith
+    have hround : ‖conjPowSum β n‖ ≤ f := by
+      rw [hN0 n (by omega), hβn]
+      have := round_le x ⌊x⌋
+      rwa [← Int.fract, abs_of_nonneg (Int.fract_nonneg x)] at this
+    have hxe : (β ^ (-((1 : ℝ) * n)) : ℝ) = x⁻¹ := by
+      rw [one_mul, Real.rpow_neg hβ0.le, Real.rpow_natCast, hβn]
+    rw [hxe]
+    have hx0 : 0 < x := by linarith
+    have hx2 : x ≤ 2 * P := by linarith
+    rw [show (2 : ℝ) * x⁻¹ = 2 / x by ring, le_div_iff₀ hx0]
+    nlinarith
+  have hb := pisot_degree_bound hG hpis hdeg one_pos two_pos hfreq
+  have : (3 : ℝ) ≤ Multiset.card (otherConj β) := by exact_mod_cast (by omega :
+    3 ≤ Multiset.card (otherConj β))
+  linarith
 
 /-- E+ for every `θ < 2/3`, using `Dubickas2022PisotGap` in place of the open record node.  It
 is wiring only: what remains open is the degree-`≥ 4` rigidity. -/
