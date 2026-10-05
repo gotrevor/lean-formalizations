@@ -1,4 +1,4 @@
-## phase 65 lap 3 (2026-10-05): generic leaf, step 1 — window in any degree PROVED
+## phase 65 lap 3 (2026-10-05): generic leaf — window, Teichmüller limit (`exists_teich_limit_any`, pigeonhole on the Frobenius orbit), non-scalarity (`exists_entry_ne_any`) PROVED in any degree; next `exists_spectral` for PisotDataAny
 * `ShiftRigidityDeg.window_shift_any` (+ `dvd_sq_sub_one_of_dvd_pow_sub_one` via LTE,
   `coeff_zero_ne_zero_any`, `traceSeq_tendsto_any`): prime shifted traces are `≡ ±1 mod 3^k` along
   arbitrarily large n, for Pisot of any degree ≥ 2.  Next: Teichmüller limit in degree ℓ

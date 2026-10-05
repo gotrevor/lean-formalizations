@@ -38,6 +38,7 @@ namespace LeanFormalizations.Mills.ShiftRigidityDeg
 open Filter Polynomial LeanFormalizations.Mills.ShiftRigidity LeanFormalizations.Literature
   LeanFormalizations.Mills.ShiftedMillsAll LeanFormalizations.Mills.SaitoTypeB LeanFormalizations.Mills
   LeanFormalizations.BHPTests LeanFormalizations.Mills.TheoremDGeneral
+  LeanFormalizations.Mills.TheoremDMixed
 
 /-- `PisotData` without the degree: a monic irreducible integer polynomial with a real root
 `α > 1` whose other complex roots have modulus `< 1`. -/
@@ -215,6 +216,69 @@ theorem window_shift_any {f : ℤ[X]} {α : ℝ} (hD : PisotDataAny f α) (hdeg 
     rw [Nat.cast_sub hp1]; push_cast; ring
   rw [← hc]
   exact_mod_cast hsq
+
+/-- **The Teichmüller limit, any degree.**  The Frobenius orbit `k ↦ C̄^(3^k)` in the finite ring
+`M_d(𝔽₃)` is eventually periodic, with period `F ≥ 1`; lifting gives `T^(3^F) ≡ T` to growing
+precision for `T = C^(3^ν)`.  (Degree 3 pins `F ∈ {1,2,3}` by `cm3_check`; not needed here.) -/
+theorem exists_teich_limit_any (f : ℤ[X]) :
+    ∃ F : ℕ, 1 ≤ F ∧ ∃ n₀ : ℕ, ∀ ν, n₀ ≤ ν → ∀ i j, (3 : ℤ) ^ (ν - n₀ + 1) ∣
+        ((compM ℤ f ^ (3 ^ ν)) ^ (3 ^ F) - compM ℤ f ^ (3 ^ ν)) i j := by
+  classical
+  set g : ℕ → Matrix (Fin f.natDegree) (Fin f.natDegree) (ZMod 3) :=
+    fun k => compM (ZMod 3) f ^ (3 ^ k) with hg
+  obtain ⟨a, b, hab, hgab⟩ := Finite.exists_ne_map_eq_of_infinite g
+  wlog hlt : a < b generalizing a b
+  · exact this b a (Ne.symm hab) hgab.symm (by omega)
+  have htr : ∀ m m' : ℕ, compM (ZMod 3) f ^ m = compM (ZMod 3) f ^ m' →
+      ∀ i j, (3 : ℤ) ∣ (compM ℤ f ^ m - compM ℤ f ^ m') i j := by
+    intro m m' h2 i j
+    refine (ZMod.intCast_zmod_eq_zero_iff_dvd _ 3).1 ?_
+    rw [← compM_map (Int.castRingHom (ZMod 3)) f, ← map_matrix_pow, ← map_matrix_pow] at h2
+    have := congrArg (fun M => M i j) h2
+    simp only [Matrix.map_apply] at this
+    simp only [eq_intCast] at this
+    simp [Matrix.sub_apply, this]
+  refine ⟨b - a, by omega, a, fun ν hν i j => ?_⟩
+  have hcomm : Commute (compM ℤ f ^ (3 ^ b)) (compM ℤ f ^ (3 ^ a)) := Commute.pow_pow_self _ _ _
+  have h := pow_c_pow_congr (c := 3) hcomm (htr _ _ hgab.symm) (ν - a) i j
+  push_cast at h
+  have e1 : (compM ℤ f ^ (3 ^ ν)) ^ (3 ^ (b - a)) = (compM ℤ f ^ (3 ^ b)) ^ (3 ^ (ν - a)) := by
+    rw [← pow_mul, ← pow_mul, ← pow_add, ← pow_add]; congr 2; omega
+  have e2 : compM ℤ f ^ (3 ^ ν) = (compM ℤ f ^ (3 ^ a)) ^ (3 ^ (ν - a)) := by
+    rw [← pow_mul, ← pow_add]; congr 2; omega
+  rw [e1, e2]; exact h
+
+/-- **Non-scalarity mod 3, any degree.**  Outside the classes `f ≡ (X − z)^ℓ`, `C^(3^ν) ∓ 1` has
+an entry prime to `3`. -/
+theorem exists_entry_ne_any {f : ℤ[X]} (hmon : f.Monic) (hd1 : 1 ≤ f.natDegree)
+    (hnc : ∀ z : ZMod 3, f.map (Int.castRingHom (ZMod 3)) ≠ (X - C z) ^ f.natDegree) (ν : ℕ) (z : ℤ)
+    (hz : z = 1 ∨ z = -1) : ∃ a b, ¬ (3 : ℤ) ∣ (compM ℤ f ^ (3 ^ ν) - z • (1 : Matrix (Fin f.natDegree) (Fin f.natDegree) ℤ)) a b := by
+  classical
+  by_contra hcon
+  push Not at hcon
+  set zb : ZMod 3 := (z : ZMod 3) with hzb
+  -- `D^(3^ν) = z` in `ZMod 3`
+  have hDz : compM (ZMod 3) f ^ (3 ^ ν) - zb • (1 : Matrix _ _ (ZMod 3)) = 0 := by
+    ext a b
+    have h := (ZMod.intCast_zmod_eq_zero_iff_dvd _ 3).2 (hcon a b)
+    rw [← compM_map (Int.castRingHom (ZMod 3)) f]
+    simp only [Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply, Matrix.zero_apply] at h ⊢
+    rw [← map_matrix_pow] at *
+    push_cast at h
+    simpa [Matrix.map_apply] using h
+  have haev : Polynomial.aeval (compM (ZMod 3) f) ((X - C zb) ^ (3 ^ ν)) = 0 := by
+    rw [sub_pow_char_pow, ← map_pow, ZMod.pow_card_pow, map_sub, map_pow, aeval_X, aeval_C,
+      Algebra.algebraMap_eq_smul_one]
+    exact hDz
+  have hdvd := dvd_of_aeval_compM_eq_zero f hmon hd1 _ haev
+  obtain ⟨i, _, hi⟩ := (dvd_prime_pow (Polynomial.prime_X_sub_C zb) _).1 hdvd
+  have heq := eq_of_monic_of_associated (hmon.map _) ((monic_X_sub_C zb).pow i) hi
+  have hdeg : i = f.natDegree := by
+    have := congrArg natDegree heq
+    rw [hmon.natDegree_map, natDegree_pow, natDegree_X_sub_C, mul_one] at this
+    exact this.symm
+  exact hnc zb (by rw [heq, hdeg])
+
 
 /-! ## The wiring: two nodes give E+ for every `θ < 2/3` -/
 
