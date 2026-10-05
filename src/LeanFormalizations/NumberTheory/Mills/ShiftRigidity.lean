@@ -6,6 +6,7 @@ Authors: Trevor Morris
 import LeanFormalizations.NumberTheory.Mills.ShiftedMillsLarge
 import LeanFormalizations.NumberTheory.Mills.UnipotentTrace
 import LeanFormalizations.NumberTheory.Mills.ShiftedWindow
+import LeanFormalizations.NumberTheory.Mills.E1Certificate
 
 /-!
 # Phase 61, node C: no cubic Pisot number has `Tr(β^(3^n + s))` prime for all large `n` (`s ≠ 0`)
@@ -1328,6 +1329,95 @@ theorem three_cycle_of (p : Fin 3 → Fin 3) (hinj : Function.Injective p) (hfix
     (∀ k, p k = k + 1) ∨ (∀ k, p k = k + 2) := by
   revert p; decide
 
+/-- `τ^m ζ = ζ^(2^m)`. -/
+theorem tau_pow_zeta {ζ : AlgQ} {τ : AlgQ ≃ₐ[ℚ] AlgQ} (hτ : τ ζ = ζ ^ 2) (m : ℕ) :
+    (τ ^ m) ζ = ζ ^ (2 ^ m) := by
+  induction m with
+  | zero => simp
+  | succ m ih => rw [pow_succ', AlgEquiv.mul_apply, ih, map_pow, hτ, ← pow_mul, pow_succ, mul_comm]
+
+/-- In `ℤ[ζ₁₃]`, `a(ζ) = 0` only when all coefficients agree. -/
+theorem isZ_of_ev {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) (a : E1Cert.Cyc)
+    (h : E1Cert.ev ζ a = 0) : E1Cert.IsZ a := by
+  classical
+  have hsum : ∑ i : Fin 13, ζ ^ (i : ℕ) = 0 := by
+    have := hζ.geom_sum_eq_zero (by norm_num)
+    rwa [Finset.sum_range] at this
+  set g : Fin 12 → ℚ := fun i => (E1Cert.cget a i : ℚ) - E1Cert.cget a 12 with hg
+  set P : ℚ[X] := ∑ i : Fin 12, C (g i) * X ^ (i : ℕ) with hP
+  have hev : aeval ζ P = E1Cert.ev ζ a := by
+    have h12 : ζ ^ 12 = -∑ i : Fin 12, ζ ^ (i : ℕ) := by
+      rw [Fin.sum_univ_castSucc] at hsum
+      simp only [Fin.coe_castSucc, Fin.val_last] at hsum
+      linear_combination hsum
+    rw [E1Cert.ev, Fin.sum_univ_castSucc]
+    simp only [Fin.coe_castSucc, Fin.val_last, hP, map_sum, map_mul, aeval_C, map_pow, aeval_X]
+    rw [h12, mul_neg, Finset.mul_sum, ← sub_eq_add_neg, ← Finset.sum_sub_distrib]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    simp only [hg, eq_ratCast, Rat.cast_sub, Rat.cast_intCast]
+    ring
+  have hP0 : P = 0 := by
+    by_contra hne
+    have hle := minpoly.degree_le_of_ne_zero ℚ ζ hne (by rw [hev, h])
+    have hlt := Polynomial.degree_sum_fin_lt g
+    rw [← cyclotomic_eq_minpoly_rat hζ (by norm_num), degree_cyclotomic,
+      Nat.totient_prime (by norm_num)] at hle
+    have := lt_of_le_of_lt hle hlt
+    norm_num at this
+  have hcoef : ∀ i : Fin 12, g i = 0 := by
+    intro i
+    have := congrArg (fun p : ℚ[X] => p.coeff i) hP0
+    simp only [hP, finset_sum_coeff, coeff_C_mul, coeff_X_pow, coeff_zero] at this
+    rw [Finset.sum_eq_single i] at this
+    · simpa using this
+    · intro j _ hj
+      have : (i : ℕ) ≠ j := fun h => hj (Fin.ext h).symm
+      simp [this]
+    · simp
+  have hall : ∀ i : Fin 13, E1Cert.cget a i = E1Cert.cget a 12 := by
+    intro i
+    by_cases hi : (i : ℕ) < 12
+    · have := hcoef ⟨i, hi⟩
+      simp only [hg, sub_eq_zero] at this
+      exact_mod_cast this
+    · have : (i : ℕ) = 12 := by omega
+      rw [this]
+  intro i
+  exact (hall i).trans (hall 0).symm
+
+/-- The eigenvalue codes: `u^27 = u` makes `τ^m u` a coded element of `ℤ[ζ]`. -/
+theorem exists_code {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) {τ : AlgQ ≃ₐ[ℚ] AlgQ}
+    (hτ : τ ζ = ζ ^ 2) {u : AlgQ} (hu : u ^ 27 = u) :
+    ∃ c : Fin 27, ∀ m : ℕ, (τ ^ m) u = E1Cert.ev ζ (E1Cert.code c m) := by
+  have h13 : ζ ^ 13 = 1 := hζ.pow_eq_one
+  have hmod : ∀ n, ζ ^ n = ζ ^ (n % 13) := by
+    intro n
+    conv_lhs => rw [← Nat.div_add_mod n 13, pow_add, pow_mul, h13, one_pow, one_mul]
+  by_cases h0 : u = 0
+  · refine ⟨0, fun m => ?_⟩
+    rw [h0, map_zero]; simp [E1Cert.code, E1Cert.ev_czero]
+  have h26 : u ^ 26 = 1 := by
+    have : u * (u ^ 26 - 1) = 0 := by rw [mul_sub, ← pow_succ']; rw [hu]; ring
+    exact sub_eq_zero.1 ((mul_eq_zero.1 this).resolve_left h0)
+  obtain ⟨b, _, hb⟩ := hζ.eq_pow_of_pow_eq_one (ξ := u ^ 2) (by rw [← pow_mul]; exact h26)
+  set a := 7 * b % 13 with ha
+  have ha13 : a < 13 := Nat.mod_lt _ (by norm_num)
+  have hsq : (ζ ^ a) ^ 2 = u ^ 2 := by
+    rw [← hb, ← pow_mul, hmod (a * 2), hmod b, ha]
+    congr 1; omega
+  have hτa : ∀ m, (τ ^ m) (ζ ^ a) = ζ ^ (a * 2 ^ m) := by
+    intro m; rw [map_pow, tau_pow_zeta hτ, ← pow_mul, mul_comm]
+  rcases sq_eq_sq_iff_eq_or_eq_neg.1 hsq with h | h
+  · refine ⟨⟨1 + a, by omega⟩, fun m => ?_⟩
+    rw [← h, hτa, E1Cert.code, if_neg (by simp), if_pos (by simp; omega),
+      E1Cert.ev_cunit h13]
+    simp
+  · refine ⟨⟨14 + a, by omega⟩, fun m => ?_⟩
+    rw [show u = -(ζ ^ a) by rw [h, neg_neg], map_neg, hτa, E1Cert.code,
+      if_neg (by simp only [Fin.val_mk]; omega), if_neg (by simp only [Fin.val_mk]; omega),
+      E1Cert.ev_cunit h13]
+    simp
+
 /-- **The E1 core** (finite certificate): twelve conjugate equations force `u` or `w`
 constant. -/
 theorem e1_core {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) {τ : AlgQ ≃ₐ[ℚ] AlgQ}
@@ -1335,7 +1425,53 @@ theorem e1_core {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) {τ : AlgQ ≃ₐ[ℚ]
     (hwτ : ∀ k, τ (w k) = w (k + t)) (hu : ∀ k, u k ^ 27 = u k) {c : AlgQ} (hc : c ≠ 0)
     (hcτ : τ c = c) (hsum : ∑ k, u k * w k = c) :
     (∀ k, u k = u 0) ∨ (∀ k, w k = w 0) := by
-  sorry
+  classical
+  have h13 : ζ ^ 13 = 1 := hζ.pow_eq_one
+  have hgeom : ∑ i : Fin 13, ζ ^ (i : ℕ) = 0 := by
+    have := hζ.geom_sum_eq_zero (by norm_num)
+    rwa [Finset.sum_range] at this
+  choose cd hcd using fun k => exists_code hζ hτ (hu k)
+  set u' : Fin 3 → Fin 27 := ![cd 0, cd 1, cd 2] with hu'
+  have hu'k : ∀ k, u' k = cd k := fun k => by fin_cases k <;> rfl
+  have hwm : ∀ (m : ℕ) k, (τ ^ m) (w k) = w (k + Fin.ofNat 3 m * t) := by
+    intro m
+    induction m with
+    | zero => intro k; simp
+    | succ m ih =>
+        intro k
+        rw [pow_succ', AlgEquiv.mul_apply, ih, hwτ]
+        congr 1
+        rw [show Fin.ofNat 3 (m + 1) = Fin.ofNat 3 m + 1 from by
+          ext; simp [Fin.val_add]]
+        rw [add_mul, one_mul, add_assoc]
+  have hcm : ∀ m : ℕ, (τ ^ m) c = c := by
+    intro m
+    induction m with
+    | zero => simp
+    | succ m ih => rw [pow_succ', AlgEquiv.mul_apply, ih, hcτ]
+  have heq : ∀ m : Fin 12, ∑ col, E1Cert.ev ζ (E1Cert.row u' t m col) * w col = c := by
+    intro m
+    have h := congrArg (τ ^ (m : ℕ)) hsum
+    rw [map_sum, hcm] at h
+    simp only [map_mul, hcd, hwm] at h
+    rw [← h]
+    rw [← Equiv.sum_comp (Equiv.addRight (Fin.ofNat 3 (m : ℕ) * t))]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    simp only [Equiv.coe_addRight, E1Cert.row, add_sub_cancel_right, hu'k]
+  rcases E1Cert.cert_sound h13 hgeom (isZ_of_ev hζ) hc heq
+      (by rw [hu']; exact E1Cert.cert_all t ht _ _ _) with h | h
+  · left
+    intro k
+    have h0 := hcd 0 0
+    have hk := hcd k 0
+    simp only [pow_zero, AlgEquiv.one_apply] at h0 hk
+    rw [hk, h0]
+    simp only [hu'k] at h
+    fin_cases k
+    · rfl
+    · simp only [Fin.mk_one]; rw [h.1]
+    · simp only [Fin.reduceFinMk]; rw [h.2]
+  · exact Or.inr h
 
 /-- **Step 6 (E1)**: no spectral solution when the roots lie in `ℚ(μ_26)`. -/
 theorem e1_empty {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hs : s ≠ 0)
