@@ -15,3 +15,9 @@
   if a fresh tree hits it.  A single 39366-lemma file was killed by a signal (likely memory).
 - Downstream oleans must be rebuilt for `#print axioms` to reflect it (stale ShiftRigidity olean
   showed sorryAx until `lake build ...SaitoTypeB`).
+
+## Checkpoint
+Branch `mills-eplus`, HEAD `d0f507a` (+ this doc).  Phase 64b done; run stopped green.
+Next (operator's choice, not started): remaining designated-open sorries are outside 64b —
+`SaitoTypeBTheta` θ∈[5/9,2/3) branch (`ShiftPisotDegreeLeThree`), `saitoTypeBLeast_holds`,
+`DecayDegreeFour`, `PairedRoot`, CZ in `DubickasNoSubspace`.
