@@ -772,10 +772,134 @@ theorem half_e1 {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hs : Od
     (he : ∀ k, (f.map (Int.castRingHom AlgQ)).eval (e k) = 0)
     (hbig : 1 < ‖(e 0 : ℂ)‖) (hsm : ∀ k, k ≠ 0 → ‖(e k : ℂ)‖ < 1)
     (hu : ∀ k, u k ^ (26 + 1) = u k) (hω : ω ^ 2 = 1) (hv : ∀ k, v k ^ 2 = u k * e k ^ s)
-    (hsum : ∑ k, v k = ω)
+    (hsum : ∑ k, v k = ω) (hnc : ¬ ∀ k, u k = u 0)
     {x : AlgQ} (hx : (f.map (Int.castRingHom AlgQ)).eval x = 0) (hxL : x ∈ cycField 26) :
     False := by
-  sorry
+  classical
+  have hs0 : s ≠ 0 := by rintro rfl; simp at hs
+  have hd1 : 1 ≤ f.natDegree := by rw [hD.deg]; norm_num
+  have hc0 := coeff_zero_ne_zero hD.monic hD.irr hD.deg
+  have he0 : ∀ k, e k ≠ 0 := by
+    intro k h0; have := he k; rw [h0, eval_cubic hD.monic hD.deg] at this; simp at this
+    exact hc0 this
+  obtain ⟨ζ, hζ⟩ := exists_zeta13
+  obtain ⟨τ, hτ⟩ := exists_tau hζ
+  obtain ⟨q, hq⟩ := exists_poly_of_mem_cycField hζ hxL
+  have hroots : ∀ k, ∃ q' : ℚ[X], aeval ζ q' = e k := fun k =>
+    exists_poly_of_conj hD.monic hD.irr hd1 hζ hx (he k) hq
+  have hτroot : ∀ k, (f.map (Int.castRingHom AlgQ)).eval (τ (e k)) = 0 := by
+    intro k
+    have := eval_map_int_hom (τ : AlgQ →+* AlgQ) f (e k)
+    rw [he k, map_zero] at this
+    exact this.symm
+  have himg : ∀ k, ∃ j, e j = τ (e k) := fun k =>
+    root_enum_surj hD.monic hD.deg hinj he (hτroot k)
+  choose p hp using himg
+  have hpinj : Function.Injective p := fun a b h => by
+    apply hinj; apply τ.injective; rw [← hp a, ← hp b, h]
+  have hpfix : ∀ k, p k ≠ k := by
+    intro k hk
+    obtain ⟨q', hq'⟩ := hroots k
+    have hfix : τ (aeval ζ q') = aeval ζ q' := by rw [hq', ← hp k, hk]
+    obtain ⟨r, hr⟩ := rat_of_tau_fixed hζ hτ hfix
+    refine not_mem_cycField_two hD.monic hD.irr hD.deg (he k) ?_
+    rw [← hq', hr]
+    exact (cycField 2).algebraMap_mem r
+  have hωpm : ω = 1 ∨ ω = -1 := by
+    have : (ω - 1) * (ω + 1) = 0 := by linear_combination hω
+    rcases mul_eq_zero.1 this with h | h
+    · left; linear_combination h
+    · right; linear_combination h
+  have hω0 : ω ≠ 0 := by rcases hωpm with rfl | rfl <;> norm_num
+  have hτω : τ ω = ω := by rcases hωpm with rfl | rfl <;> simp
+  obtain ⟨t, ht, hpt⟩ : ∃ t : Fin 3, (t = 1 ∨ t = 2) ∧ ∀ k, p k = k + t := by
+    rcases three_cycle_of p hpinj hpfix with h | h
+    · exact ⟨1, Or.inl rfl, h⟩
+    · exact ⟨2, Or.inr rfl, h⟩
+  have hτe : ∀ k, τ (e k) = e (k + t) := fun k => by rw [← hp k, hpt k]
+  -- everything lives in `K = ℚ(μ_26)`
+  set K := cycField 26 with hK
+  have hζK : ζ ∈ K := IntermediateField.subset_adjoin ℚ _
+    (show ζ ^ 26 = 1 by rw [show 26 = 13 * 2 by rfl, pow_mul, hζ.pow_eq_one, one_pow])
+  have aevK : ∀ (r : ℚ[X]) (y : AlgQ), y ∈ K → aeval y r ∈ K := by
+    intro r y hy
+    have : aeval y r = algebraMap K AlgQ (aeval (⟨y, hy⟩ : K) r) :=
+      (Polynomial.aeval_algebraMap_apply AlgQ (⟨y, hy⟩ : K) r)
+    rw [this]; exact (aeval (⟨y, hy⟩ : K) r).2
+  have heK : ∀ k, e k ∈ K := fun k => by
+    obtain ⟨q', hq'⟩ := hroots k; rw [← hq']; exact aevK q' ζ hζK
+  have huK : ∀ k, u k ∈ K := fun k => mem_cycField (hu k)
+  have hnorm : ∀ k, ‖(e k : ℂ)‖ ≠ 1 := by
+    intro k
+    by_cases hk : k = 0
+    · subst hk; exact hbig.ne'
+    · exact (hsm k hk).ne
+  have hu1 : ∀ k, u k = 0 ∨ ‖(u k : ℂ)‖ = 1 := fun k => unimod_of_pow_succ (by norm_num) (hu k)
+  have hvK : ∀ k, v k ∈ K := flip_mem K hs0 hnorm he0 hu1 hω hv hsum
+    (fun k => by rw [hv k]; exact mul_mem (huK k) (zpow_mem (heK k) s))
+  -- a nonzero coefficient
+  obtain ⟨j, hj⟩ : ∃ j, u j ≠ 0 := by
+    by_contra h
+    push_neg at h
+    apply hω0
+    rw [← hsum]
+    refine Finset.sum_eq_zero fun k _ => ?_
+    have := hv k; rw [h k, zero_mul] at this; exact pow_eq_zero_iff (by norm_num) |>.1 this
+  have hu26 : ∀ k, u k ≠ 0 → u k ^ 26 = 1 := by
+    intro k hk
+    have : u k * (u k ^ 26 - 1) = 0 := by rw [mul_sub, ← pow_succ']; rw [hu k]; ring
+    exact sub_eq_zero.1 ((mul_eq_zero.1 this).resolve_left hk)
+  obtain ⟨m, hm⟩ := hs
+  set ε := u j ^ 13 with hεdef
+  have hε2 : ε ^ 2 = 1 := by rw [hεdef, ← pow_mul]; exact hu26 j hj
+  have hε : ε = 1 ∨ ε = -1 := by
+    have : (ε - 1) * (ε + 1) = 0 := by linear_combination hε2
+    rcases mul_eq_zero.1 this with h | h
+    · left; linear_combination h
+    · right; linear_combination h
+  have hεs : ε ^ s = ε := by
+    rcases hε with h | h <;> rw [h]
+    · simp
+    · exact Odd.neg_one_zpow ⟨m, hm⟩
+  set c := u j ^ 7 with hcdef
+  have hc2 : c ^ 2 = ε * u j := by rw [hcdef, hεdef, ← pow_mul, ← pow_succ]
+  have hc0' : c ≠ 0 := pow_ne_zero _ hj
+  set γ := v j / (c * e j ^ m) with hγdef
+  have hγ2 : γ ^ 2 = ε * e j := by
+    have hX : e j ^ s = (e j ^ m) ^ 2 * e j := by
+      rw [hm, zpow_add₀ (he0 j), zpow_one, show (2 : ℤ) * m = m * 2 by ring, zpow_mul]; norm_cast
+    have hne : c * e j ^ m ≠ 0 := mul_ne_zero hc0' (zpow_ne_zero _ (he0 j))
+    have h1 : γ * (c * e j ^ m) = v j := div_mul_cancel₀ _ hne
+    have h2 := congrArg (· ^ 2) h1
+    rw [hv j, hX] at h2
+    have h3 : (u j * (e j ^ m) ^ 2) * (γ ^ 2 * ε - e j) = 0 := by
+      linear_combination h2 - γ ^ 2 * (e j ^ m) ^ 2 * hc2
+    have h4 := (mul_eq_zero.1 h3).resolve_left (mul_ne_zero hj (pow_ne_zero _ (zpow_ne_zero _ (he0 j))))
+    linear_combination ε * h4 + γ ^ 2 * hε2 - 2 * v j ^ 2 * (u j)⁻¹ ^ 14 * (e j ^ m)⁻¹ ^ 2 * hε2
+  have hγK : γ ∈ K := div_mem (hvK j) (mul_mem (pow_mem (huK j) 7) (zpow_mem (heK j) m))
+  obtain ⟨qγ, hqγ⟩ := exists_poly_of_mem_cycField hζ hγK
+  have hτ3e : (τ ^ 3) (e j) = e j := by
+    rw [tau_pow_root hτe j 3]; congr 1
+    rw [show Fin.ofNat 3 3 = 0 from rfl, zero_mul, add_zero]
+  have hτε : ∀ n : ℕ, (τ ^ n) ε = ε := by
+    intro n; rcases hε with h | h <;> rw [h] <;> simp
+  have hτ3 : (τ ^ 3) γ = γ ∨ (τ ^ 3) γ = -γ := by
+    have h2 : ((τ ^ 3) γ) ^ 2 = γ ^ 2 := by rw [← map_pow, hγ2, map_mul, hτε, hτ3e]
+    have : ((τ ^ 3) γ - γ) * ((τ ^ 3) γ + γ) = 0 := by linear_combination h2
+    rcases mul_eq_zero.1 this with h | h
+    · left; linear_combination h
+    · right; linear_combination h
+  rcases hτ3 with hp3 | hm3
+  swap
+  · -- `(−)`: `13` divides every trace
+    obtain ⟨εZ, hεZ, hεc⟩ : ∃ εZ : ℤ, (εZ = 1 ∨ εZ = -1) ∧ (εZ : AlgQ) = ε := by
+      rcases hε with h | h
+      · exact ⟨1, Or.inl rfl, by rw [h]; simp⟩
+      · exact ⟨-1, Or.inr rfl, by rw [h]; simp⟩
+    have hdvd := half_e1_minus hD.monic hD.deg hζ hτ hinj he ht hτe hεZ
+      (by rw [hqγ, hεc]; exact hγ2) (by rw [hqγ]; exact hm3)
+    exact not_prime_of_dvd hD (by norm_num : Nat.Prime 13) hdvd (halfExp_tendsto s) hP
+  · sorry
 
 /-! ### Assembly -/
 
@@ -809,7 +933,7 @@ theorem not_halfPrimeTraces {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : �
   · by_cases hE : ∃ x : AlgQ, (f.map (Int.castRingHom AlgQ)).eval x = 0 ∧ x ∈ cycField 52
     · obtain ⟨x, hx, hxL⟩ := hE
       obtain ⟨y, hy, hyL⟩ := exists_root_cycField_26 hD.monic hD.irr hD.deg hx hxL
-      exact half_e1 hD hs hP hinj he hbig hsm hu hω hv hsum hy hyL
+      exact half_e1 hD hs hP hinj he hbig hsm hu hω hv hsum hnc hy hyL
     · exact hgen fun x hx hxL => hE ⟨x, hx, hxL⟩
 
 end LeanFormalizations.Mills.HalfShiftRigidity
