@@ -2402,3 +2402,6 @@ Lap 1 cont.: ξ-free node stated, `Mills/ShiftRigidityDeg.lean`: `ShiftTraceRigi
 ALL large k without `card otherConj ≤ 2` (eventual-records in degree ≥ 4).  Next: read
 `exists_spectral_solution_shift` / `rigidity_generic` for what generalizes; state the eventual-
 records half and wire both into `shiftPisotDegreeLeThree_holds`.
+
+## Phase 65w DONE (2026-10-05)
+`ShiftHitPrime.lean` sorry-free; `xi_shift_transcendental_of_hitPrime` (E+ for θ<2/3 from Dubickas2022PisotGap + HitPrime + HalfHitPrime) has axioms [propext, Classical.choice, Quot.sound]. HitPrime/HalfHitPrime remain frozen open nodes.
