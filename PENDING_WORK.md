@@ -1,3 +1,8 @@
+## phase 64a lap 2 (2026-10-05): control: decay alone admits degree 4
+* `DecayDegreeFour.decay_admits_degree_four` (sorry ~90%): X⁴ − aX³ − 1 is a quartic Pisot with decay μ < 1/3 at every n.
+  So the 5/9 wall cannot be closed by any decay-only degree bound.  Next: a dominant-triple analogue of
+  `lower_along_records` that uses the orbit n ↦ 3n − d.
+
 ## phase 64a lap 1 (2026-10-05): E+ for θ < 5/9 PROVED; the 5/9 wall named
 * `SaitoTypeBTheta.xi_shift_transcendental_of_shortInterval'` (θ < 5/9) and
   `xi_shifted_transcendental_of_shortInterval'` (Theorem E): no sorryAx.  `ingham_of_bhp` proved.

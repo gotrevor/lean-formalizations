@@ -197,6 +197,7 @@ import LeanFormalizations.NumberTheory.Mills.HalfShiftRigidity
 import LeanFormalizations.NumberTheory.Mills.ShiftedMillsAll
 import LeanFormalizations.NumberTheory.Mills.SaitoTypeB
 import LeanFormalizations.NumberTheory.Mills.SaitoTypeBTheta
+import LeanFormalizations.NumberTheory.Mills.DecayDegreeFour
 import LeanFormalizations.NumberTheory.Mills.SaitoTypeBRecords
 import LeanFormalizations.NumberTheory.Mills.Kronecker
 import LeanFormalizations.NumberTheory.Mills.PairedRoot

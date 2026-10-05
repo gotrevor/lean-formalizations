@@ -42,6 +42,7 @@ import LeanFormalizations.NumberTheory.Erdos385.PowerSaving.ZeroDetect
 import LeanFormalizations.NumberTheory.Mills.PairedRoot
 import LeanFormalizations.NumberTheory.Mills.SaitoTypeB
 import LeanFormalizations.NumberTheory.Mills.SaitoTypeBTheta
+import LeanFormalizations.NumberTheory.Mills.DecayDegreeFour
 
 namespace LeanFormalizations.Maze
 
@@ -316,9 +317,12 @@ def register : List Row := [
       chain step needs ratio c with θc ≤ c − 1 (fine up to θ < 2/3), and Saito (5.17) gives decay \
       μ < (1 − θ)·3 − 1 = 2 − 3θ.  The Baker-free degree bound is (ℓ − 1)μ ≤ 1, and the endgame \
       (e2_zero_of_nonrecord, not_natDegree_two, trace rigidity) is degree-3 only, so it needs \
-      μ > 1/3, i.e. θ < 5/9.  Ingham's 5/8 lies above"
+      μ > 1/3, i.e. θ < 5/9.  Ingham's 5/8 lies above.  Control: decay alone cannot close it, \
+      since quartic Pisot numbers have decay μ < 1/3 at every n \
+      (DecayDegreeFour.decay_admits_degree_four, X⁴ − aX³ − 1)"
     reopenIf := "a proof of ShiftPisotDegreeLeThree for θ < 2/3 (exclude Pisot degree ≥ 4 for the \
-      E+ orbit n ↦ 3n − d without Baker), or a degree-ℓ version of the non-record e₂ argument" }
+      E+ orbit n ↦ 3n − d without Baker), or a degree-ℓ version of the non-record e₂ argument; it must use more than decay \
+      (DecayDegreeFour.decay_admits_degree_four)" }
 ]
 
 end LeanFormalizations.Maze
