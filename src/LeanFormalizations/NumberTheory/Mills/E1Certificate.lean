@@ -237,6 +237,7 @@ theorem cert_sound (h13 : ζ ^ 13 = 1) (hsum : ∑ i : Fin 13, ζ ^ (i : ℕ) = 
 end Sound
 
 theorem cert_all : ∀ t : Fin 3, t = 1 ∨ t = 2 → ∀ a b c : Fin 27, Cert ![a, b, c] t := by
-  native_decide
+  -- phase 64b: was `native_decide`; kernel-checked proof wanted (DIRECTION.md)
+  sorry
 
 end E1Cert

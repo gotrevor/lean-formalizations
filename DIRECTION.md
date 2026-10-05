@@ -1,4 +1,4 @@
-> 🎯 **CURRENT DIRECTIVE (phase 64a, 2026-10-05): prove every `sorry` in `src/LeanFormalizations/NumberTheory/Mills/SaitoTypeBTheta.lean`** (Theorem E+ from any short-interval exponent `θ < 2/3`, and from Ingham 1937; entry "phase 64" below).  Statements are FROZEN: never weaken one.  If the proof genuinely needs a smaller threshold than `2/3`, prove the strongest version you can as a NEW theorem beside the frozen one (e.g. `..._of_shortInterval'` with `θ < θ*`), leave the frozen `sorry`, and explain in HANDOFF exactly which step forces it.  Do not touch `BakerHarmanPintz2001`, `BHPTests.lean`, or the existing BHP headlines.
+> 🎯 **CURRENT DIRECTIVE (phase 64b, 2026-10-05): replace the two `sorry`s that stand where `native_decide` was - `ShiftRigidity.cm3_check` FIRST (27 cubics mod 3, small), then `E1Cert.cert_all` (`E1Certificate.lean`, 2·27³ cases) - with kernel-checked proofs.**  `native_decide`, `Lean.ofReduceBool` and new `axiom`s are forbidden; `decide +kernel`, `decide` with a smarter decidable encoding, splitting into lemmas, or a mathematical argument that cuts the case count are all fine.  Statements are FROZEN.  Done when `#print axioms SaitoTypeB.xi_shift_transcendental_classical` shows only `propext`, `Classical.choice`, `Quot.sound`.  If `cert_all` cannot be kernel-checked in reasonable time, say exactly why in HANDOFF (case count, per-case cost) and stop.
 
 > 🗺️ **Before planting a phase, grep `src/LeanFormalizations/Maze.lean`**: it records the routes already walked and closed, and each row's `reopenIf` names the new idea needed to walk it again (2026-09-29).
 
@@ -22,7 +22,9 @@ Frozen statements (namespace `LeanFormalizations.Mills.SaitoTypeBTheta`):
 
 Done when: `#print axioms` on all four shows no `sorryAx`.
 
-### 64b - three-core-axiom tightening (queued)
+**64a outcome (2 laps, merged to main `96697d3`):** E+ and Theorem E proved for every `θ < 5/9` (`xi_shift_transcendental_of_shortInterval'`, `xi_shifted_transcendental_of_shortInterval'`; covers BHP).  The frozen `θ < 2/3` statement keeps one `sorry` on `[5/9, 2/3)`: the decay exponent `μ < 2 − 3θ` reaches the degree-3 endgame only when `μ > 1/3`.  Open node `ShiftPisotDegreeLeThree`; control `DecayDegreeFour.decay_admits_degree_four` (believed) says decay alone admits Pisot degree 4.  So the Ingham headlines still sit on that `sorry` (`5/8 > 5/9`).
+
+### 64b - three-core-axiom tightening (ACTIVE)
 
 Replace the two `native_decide`s on E+'s path (`E1Certificate.cert_all`, `ShiftRigidity.cm3_check`) with kernel-checked proofs (`decide +kernel`, or a structured argument that cuts the case count), so `#print axioms` on the E+ headlines shows only `propext`, `Classical.choice`, `Quot.sound`.  Statements unchanged.
 

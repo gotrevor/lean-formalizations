@@ -783,7 +783,8 @@ def cm3 (a : Fin 3 → ZMod 3) : Matrix (Fin 3) (Fin 3) (ZMod 3) :=
 matrix, with period `27` only for the cubics without a root. -/
 theorem cm3_check : ∀ a : Fin 3 → ZMod 3, cm3 a ^ 9 = cm3 a ^ 3 ∨ cm3 a ^ 27 = cm3 a ^ 3 ∨
     (cm3 a ^ 81 = cm3 a ^ 3 ∧ ∀ r : ZMod 3, r ^ 3 + a 2 * r ^ 2 + a 1 * r + a 0 ≠ 0) := by
-  native_decide
+  -- phase 64b: was `native_decide`; kernel-checked proof wanted (DIRECTION.md)
+  sorry
 
 /-- **The Teichmüller limit.**  `T = C^(3^ν)` satisfies `T^(3^F) ≡ T` to growing precision, with
 `3^F − 1 ∈ {2, 8, 26}` and `F = 3` only when `f mod 3` is irreducible. -/
