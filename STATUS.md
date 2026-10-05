@@ -1,5 +1,13 @@
 # STATUS — lean-formalizations 📊
 
+> 🧮 **ACTIVE THREAD (2026-10-05 review lap 3): Mills phase 62** (branch `mills-eplus`): Theorem E+ on
+> classical inputs (`BakerHarmanPintz2001` + `Dubickas2022`), Baker-free via the records competitor
+> (`Mills/SaitoTypeBRecords.lean`).  `#print axioms SaitoTypeB.xi_shift_transcendental_classical` =
+> trust base + 🟢 `cm3_check`, `E1Cert.cert_all` + **sorryAx** from three leaves: `finite_e2_zero_orbit`
+> (Skolem at an odd prime `p ∤ N(β)`), `card_le_two_of_records` and `conjPowSum_lower_of_recurrence`
+> (Mignotte-lite + dominant-pair dynamics).  Plan: `PENDING_WORK.md` top; directive: `DIRECTION.md`.
+> Phase 61 (E+ from `Saito2025TypeBTrace`) is DONE.
+
 > 🧮 **ACTIVE THREAD (2026-10-05 review lap): Mills phase 61, Theorem E+** (branch `mills-eplus`):
 > `ξ(3^k + s)` transcendental for every `s ≠ 0`, conditional on `Saito2025TypeBTrace` only.
 > Edges A, B and node C (`ShiftRigidity.not_primeTraces`, all shifts `s ≠ 0`) are proved; axioms of C =

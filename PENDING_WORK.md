@@ -1,3 +1,24 @@
+## phase 62 lap 3 (2026-10-05 review lap): the three open leaves, two Baker-free mechanisms
+Done-path `sorryAx` comes from exactly: `finite_e2_zero_orbit` (4b), `card_le_two_of_records` (3),
+`NoGap.conjPowSum_lower_of_recurrence`.  Decomposition (new file `Mills/Skolem.lean` + `Mills/DominantPair.lean`):
+ (I) SKOLEM, prove the stronger `∀ᶠ n, e2pow β n ≠ 0` for every cubic Pisot `β` (4b follows).
+  I1 `skolem_det_ne_zero` (DECISIVE, pure): `U c z = Σ_{k≤z} C(z,k) p^(2k) c_k`, `β_k, α_k ∈ ℤ` with
+     `β_{0,1,2} = 0,1,0`, `α_{0,1,2} = 0,0,1`; for `0 < a < b`, `U β a U α b − U β b U α a ≠ 0`.  In `ℚ_[p]`:
+     term `(k,k')` is `p^(2(k+k')) β_k α_k' G`, `k!k'! G = ab(b−a) H` (falling factorials, `sub_dvd_eval_sub`);
+     main `(1,2)` = `p^6 ab(b−a)/2`; others `≤ p^(−7)‖ab(b−a)‖` since `2 v_p(k!) ≤ k − 1`.
+  I2 explicit Cayley–Hamilton on `Fin 3`; `ℓ(D^k) = α_k ℓ(D²) + β_k ℓ(D) + γ_k ℓ(1)`.
+  I3 `A^P ≡ 1 mod p²` (unit of finite ring `Matrix (Fin 3) (Fin 3) (ZMod (p²))`, `p ∤ det A`).
+  I4 three zeros on `n0 + P·ℕ` ⇒ `ℓ` kills `1, D, D²` ⇒ whole class zero.
+  I5 bridge: `e2pow β n = w n`, `w` the integer recurrence of `X³ − e₂X² + e₁e₃X − e₃²` (Vieta on `β, γ1, γ2`).
+  I6 non-degeneracy: real pair ⇒ `e2pow ≠ 0` (sizes); complex pair ⇒ `u^(2P) = 1` contradiction (II2).
+ (II) DOMINANT PAIR.
+  II1 Mignotte-lite: other conjugates `γ, δ` with `|γ| = |δ|` ⇒ `δ ∈ {γ, γ̄}` (all conjugates of `ρ = γγ̄`
+      have modulus `< 1`; product of roots of `minpoly ℤ ρ` is a nonzero integer).
+  II2 non-real other conjugate `γ` ⇒ `γ/|γ|` not a root of unity (`σ γ = β` ⇒ `|σ γ̄| = β`).
+  II3 `S(n) = R^n (2 Re u^n or ±1) + O(R'^n)`, `R' < R`.
+  II4 records with gaps `≤ T` + `n_(k+1) = 3n_k − d`: `Re u^(n_r) → 0` ⇒ `u^(2n_r) → −1` ⇒ for a gap `t`
+      occurring infinitely often `u^(d(3^t−1)) = 1`.  Gives `lower_along_records` ⇒ both (3) and NoGap.
+
 ## phase 62 lap 2 (2026-10-05): Baker-free route via RECORDS (Mills/SaitoTypeBRecords.lean)
 xi_shift_transcendental_classical now proved from saitoTypeB_shift (no hG).  Open on path:
  1. records_pisot PROVED (record_decay + minimal-g gcd argument).

@@ -1,4 +1,4 @@
-> ⚡ **CURRENT DIRECTIVE (2026-10-05, phase 62, branch `mills-eplus`, worktree `~/src/lean-formalizations-eplus`; OUTRANKS every HANDOFF)**: prove `SaitoTypeB.saitoTypeBLeast_holds` (Saito's Type B from `BakerHarmanPintz2001` + `Dubickas2022`) and `xi_shifted_transcendental_classical`.  Done = `#print axioms SaitoTypeB.xi_shift_transcendental_classical` shows no `sorryAx`.  Full text: phase 62 entry below.  (Phase 61 is DONE.)
+> ⚡ **CURRENT DIRECTIVE (2026-10-05 review lap 3, phase 62, branch `mills-eplus`, worktree `~/src/lean-formalizations-eplus`; OUTRANKS every HANDOFF)**: Done = `#print axioms SaitoTypeB.xi_shift_transcendental_classical` shows no `sorryAx`.  The path has exactly three open leaves, all Baker-free, closed by TWO mechanisms (detail: `PENDING_WORK.md` top): **(I) Skolem** (`finite_e2_zero_orbit`): `e₂(β^n)` is an order-3 integer recurrence with constant term `N(β)²`; for an odd prime `p ∤ N(β)`, `A^P = 1 + p²D`, and three zeros on a class force `ℓ(D) = ℓ(D²) = 0` by a `p`-adic 2×2 determinant (`skolem_det_ne_zero`, decisive probe, do FIRST), then Vandermonde/root-of-unity kills the class.  **(II) dominant pair** (`card_le_two_of_records`, `NoGap.conjPowSum_lower_of_recurrence`): Mignotte-lite (equal-modulus other conjugates ⇒ `δ ∈ {γ, γ̄}`: every conjugate of `ρ = γγ̄ = δδ̄` has modulus `< 1`) + `γ/|γ|` not a root of unity (Galois) + `a_r² → −1` along records with gaps `≤ T` ⇒ `u^(d(3^t−1)) = 1`.  Forbidden: grinding Saito case (I)/`SparseNoCancel` or the frozen general-`C` `saitoTypeBLeast_holds` (needs Matomäki + Baker; not on the done path).  Full text: phase 62 entry below.
 
 > 🗺️ **Before planting a phase, grep `src/LeanFormalizations/Maze.lean`**: it records the routes already walked and closed, and each row's `reopenIf` names the new idea needed to walk it again (2026-09-29).
 
@@ -584,6 +584,8 @@ a `P^{η/2}` count, so a polynomial window `P^{η/3}` (any weight, Mellin decay 
   derivable; headline re-routed through `LocalZeroDetect` (P^{η/3} window).  Objective = that crux.
 - 2026-10-05 (review lap, phase 61, `mills-eplus`): A, B, C proved; objective = node D only, by the
   flip lemma + root-of-unity circulant (generic) and γ ∈ ℚ(ζ₁₃), τ³γ = ±γ (E1 at g = 2).
+- 2026-10-05 (review lap 3, phase 62, `mills-eplus`): records route kept; the three open leaves reduce to
+  Skolem at an odd prime `p ∤ N(β)` (three-zero `p`-adic determinant first) + Mignotte-lite/dominant-pair dynamics.
 
 ---
 
