@@ -110,6 +110,26 @@ def ShiftPisotDegreeLeThree (θ : ℝ) : Prop :=
     IsLeast {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ shiftC j s k⌋₊).Prime} ξ → IsAlgebraic ℚ ξ →
     ∀ g : ℕ, 1 ≤ g → IsPisot (ξ ^ g) → (minpoly ℚ (ξ ^ g)).natDegree ≤ 3
 
+/-! ## Phase 65: the `5/9` wall, split into a node and an edge -/
+
+/-- **Edge (phase 65)**: the degree bound is the only missing input.  Given
+`ShiftPisotDegreeLeThree θ`, the endgame of `xi_shift_transcendental_of_shortInterval'` runs for
+every `θ < 2/3` (the record step must not use `μ > 1/3` except through the degree bound). -/
+theorem xi_shift_transcendental_of_degree {θ : ℝ} (hθ0 : 0 < θ) (hθ : θ < 2 / 3)
+    (hdeg : ShiftPisotDegreeLeThree θ) (hP : PrimesShortInterval θ) (hD : Dubickas2022)
+    {s : ℤ} {j : ℕ} (hs : s ≠ 0) (hj1 : 1 ≤ (3 : ℤ) ^ (j + 1) + s) (hj2 : s ≤ (3 : ℤ) ^ (j + 1))
+    {ξ : ℝ} (hξ : IsLeast {A : ℝ | 1 < A ∧ ∀ k ≥ 1, (⌊A ^ shiftC j s k⌋₊).Prime} ξ) :
+    Transcendental ℚ ξ := by
+  sorry
+
+/-- **Node (phase 65)**: the degree bound on `[5/9, 2/3)`.  Needs an input beyond decay
+(`DecayDegreeFour.decay_admits_degree_four`); see DIRECTION.md phase 65 for the difficulty check.
+Expected route: state a `ξ`-free obstruction for a Pisot `β` of degree `≥ 4` whose traces along
+the orbit `n ↦ 3n + d` equal `⌊β^n⌋` and are prime, prove it, and specialise. -/
+theorem shiftPisotDegreeLeThree_holds {θ : ℝ} (hθ0 : 0 < θ) (hθ : θ < 2 / 3) :
+    ShiftPisotDegreeLeThree θ := by
+  sorry
+
 /-! ## Theorem E+ from `θ < 2/3` (frozen; open beyond `5/9`) -/
 
 /-- **Theorem E+ from a short-interval exponent `θ < 2/3`**: `ξ(3^(k+j) + s)` is transcendental
@@ -124,7 +144,8 @@ theorem xi_shift_transcendental_of_shortInterval {θ : ℝ} (hθ0 : 0 < θ) (hθ
   -- `θ ∈ [5/9, 2/3)`: the decay exponent `μ < 2 − 3θ ≤ 1/3` leaves the Pisot degree bound
   -- `ℓ ≤ 1 + 1/μ ≥ 4`, and the degree-3 endgame (`e2_zero_of_nonrecord`, `not_natDegree_two`) has
   -- no degree-`ℓ` analogue yet.  Needs a Baker-free exclusion of Pisot degree `≥ 4`.
-  sorry
+  exact xi_shift_transcendental_of_degree hθ0 hθ (shiftPisotDegreeLeThree_holds hθ0 hθ) hP hD hs hj1
+    hj2 hξ
 
 /-- **Theorem E+ on Ingham 1937**: no sieve input, conditional on Ingham and Dubickas 2022. -/
 theorem xi_shift_transcendental_ingham (hI : Ingham1937) (hD : Dubickas2022)

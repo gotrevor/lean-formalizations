@@ -1,4 +1,4 @@
-> ✅ **Phase 64 DONE 2026-10-05**: 64a proved E+/Theorem E for every short-interval exponent `θ < 5/9` (frozen `θ < 2/3` keeps one `sorry` on `[5/9, 2/3)`, open node `ShiftPisotDegreeLeThree`); 64b kernel-checked `cm3_check` (`decide +kernel`) and `cert_all` (`E1CertCore` + table modules), so the E+ headlines (BHP and `θ < 5/9`) use only `propext`, `Classical.choice`, `Quot.sound`.  No current directive.
+> 🎯 **CURRENT DIRECTIVE (phase 65, 2026-10-05, MOONSHOT): attack the `5/9` wall - the two `sorry`s in `src/LeanFormalizations/NumberTheory/Mills/SaitoTypeBTheta.lean`: node `shiftPisotDegreeLeThree_holds` and edge `xi_shift_transcendental_of_degree`** (entry "phase 65" below, read its difficulty check first).  A lap succeeds by advancing the crux: a proved edge, a ξ-free node stated and probed, a mechanism refuted on a control, or a Maze row.  Decomposing into named sorry leaves is progress.  Statements FROZEN; never weaken.  Do not touch BHP, `BHPTests.lean`, or the proved `θ < 5/9` headlines.
 
 > 🗺️ **Before planting a phase, grep `src/LeanFormalizations/Maze.lean`**: it records the routes already walked and closed, and each row's `reopenIf` names the new idea needed to walk it again (2026-09-29).
 
@@ -18,6 +18,26 @@ Frontier candidates (difficulty check, not yet chosen):
 - **Where `c` sits** (Trevor's question): `Practical/Constant.lean`.  Irrationality of `c` is open with no mechanism (`PracticalConstantIrrational`; Mertens/Artin/Brun tier).  The binary constant `Σ 2^{−n}` over practical `n` is irrational (`practicalBinary_irrational`, elementary, sorry) and its transcendence is open, like the prime constant.
 - **Practical numbers in short intervals** (2026-10-05, `Practical/ShortIntervals.lean`).  Plugging Tao–Trudgian–Yang 2025's exponent pair into Weingartner 2021 Thm 2 gives `β > 0.486987…` (was `0.48711…`): `practicalShortInterval_tty`, proved from the two cited Props; optimizer `scripts/practical-exponent-opt.py`.  The gain is in the fourth decimal.  A real step needs a new architecture (Weingartner's split `n ~ x^{1/3}`, `m` `(x/n)^{3/4}`-smooth is forced optimal for this argument: `β = α + (1−α)b`, increasing in `α`, with `α ≥ 1/3`).  Elementary `θ = 1/2`: `practical_near_sqrt` (sorry).
 - **Effective Weingartner**: an explicit `P(x) ≥ c₀ x/log x` for `x ≥ x₁`, the input an effective P–W `x₀` would need.  This reuses the Buchstab delay machinery directly.
+
+## (phase 65, PLANTED 2026-10-05, MOONSHOT, branch `mills-eplus`, worktree `~/src/lean-formalizations-eplus`): **the 5/9 wall** - target `Mills/SaitoTypeBTheta.lean`
+
+Previous status line: ✅ **Phase 64 DONE 2026-10-05**: 64a proved E+/Theorem E for every short-interval exponent `θ < 5/9` (frozen `θ < 2/3` keeps one `sorry` on `[5/9, 2/3)`, open node `ShiftPisotDegreeLeThree`); 64b kernel-checked `cm3_check` (`decide +kernel`) and `cert_all` (`E1CertCore` + table modules), so the E+ headlines (BHP and `θ < 5/9`) use only `propext`, `Classical.choice`, `Quot.sound`.  No current directive.
+
+Goal: E+ for every short-interval exponent `θ < 2/3` (the frozen `xi_shift_transcendental_of_shortInterval`, now wired through the node and the edge below).  Trevor 2026-10-05: "attack".
+
+### Difficulty check (soul rule: proved implications, unproved premise, mechanism, controls)
+
+- **Proved**: `θ < 5/9` ⇒ E+ (`xi_shift_transcendental_of_shortInterval'`).  Decay along records: `‖ξ^(C k)‖ ≪ ξ^(−μ C k)` for every `μ < 2 − 3θ` (`saitoTypeB_shift_theta`, `card_mul_le_shift_theta`: `(#other conjugates)·μ ≤ 1`).  For `θ < 5/9`, `μ > 1/3` gives degree ≤ 3 and the cubic rigidity (`ShiftRigidity`, `HalfShiftRigidity`, `E1Certificate`) finishes.
+- **Edge** `xi_shift_transcendental_of_degree`: the endgame given the degree bound.  Probably mostly bookkeeping: find every use of `hμ3 : 1/3 < μ` in `SaitoTypeBThetaParts.lean` and check it is used ONLY to get degree ≤ 3 (`card_le_two_of_records_theta`).  If the record step (`hT`, records every `T` steps) or `lower_along_records` also uses `μ > 1/3`, name that as a second node.  **Do the edge first.**
+- **Node** `shiftPisotDegreeLeThree_holds` (the unproved premise): for `θ ∈ [5/9, 2/3)`, `μ` can be `≤ 1/3`, so `ℓ = deg β ≤ 1 + 1/μ` allows `ℓ ≥ 4`.  Note the node as stated is implied by E+ itself (algebraic least `ξ` is the hypothesis), so the real work is a **ξ-free obstruction**: state, as a new sorry theorem, "a Pisot `β` of degree `≥ 4` cannot have `Tr(β^(n_k)) = ⌊β^(n_k)⌋` prime for all large `k` along `n_(k+1) = 3 n_k + d` (with the decay)", or the strongest version you believe, then wire it into the node.
+- **Control already on file**: `DecayDegreeFour.decay_admits_degree_four` (believed): decay alone admits quartic Pisot numbers (`X⁴ − aX³ − 1`).  **Any mechanism must use more than decay**; test each candidate against that family before building on it.
+- **Candidate mechanisms** (none known to work; test, don't trust):
+  1. *Sign/phase*: `⌊β^n⌋ = Tr(β^n)` forces `Σ_i γ_i^n ∈ (−1, 0]` on the orbit.  For the quartic control, the small conjugates are about `a^(−1/3)·(−1, e^(±iπ/3))`, so the sum's sign is a function of `n mod 6` and the orbit `n ↦ 3n + d`.  Compute (Python is fine, record the result as a Lean `decide`/statement) whether some `d` keeps the sign `≤ 0` forever; if yes, sign alone is insufficient (record as a control).
+  2. *Dominant triple*: the HANDOFF's lead - with three conjugates near modulus `β^(−1/3)`, a lower bound on `|Σ γ_i^(n_k)|` along the orbit (analogue of `DominantPair.lower_along_records`) would contradict decay `μ` close to `1/3`.  Check what exponent it needs versus `2 − 3θ`.
+  3. *Arithmetic*: prime traces mod small primes along `n ↦ 3n + d` (the `ShiftRigidity` 3-adic argument used `ℓ = 3` to get `3 | tr`; find what replaces it for `ℓ = 4, 5, …`), or a p-adic Skolem step as in `E2Skolem`.
+- **Sibling sanity**: whatever closes the node must not also prove something believed false (e.g. it must not show that NO Pisot number of degree ≥ 4 has prime traces along some geometric-like orbit without using the decay).
+
+Done when: `#print axioms SaitoTypeBTheta.xi_shift_transcendental_of_shortInterval` shows no `sorryAx`.  A stuck-bail with a recorded refutation or a sharper named node is an acceptable outcome; record closed routes as `Maze.lean` rows citing declarations.
 
 ## (phase 64, PLANTED 2026-10-05, branch `mills-eplus`, worktree `~/src/lean-formalizations-eplus`): **E+ on a weaker prime input, then three-core-axiom tightening**
 
