@@ -153,6 +153,138 @@ theorem exists_root_cycField_26 {f : ℤ[X]} (hmon : f.Monic) (hirr : Irreducibl
     ∃ y : AlgQ, (f.map (Int.castRingHom AlgQ)).eval y = 0 ∧ y ∈ cycField 26 := by
   sorry
 
+/-- An algebraic integer in `ℚ[ζ₁₃]` is an integer polynomial in `ζ` (`ℤ[ζ]` is integrally closed). -/
+theorem exists_int_poly {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) {q : ℚ[X]}
+    (hint : IsIntegral ℤ (aeval ζ q)) : ∃ h : ℤ[X], aeval ζ h = aeval ζ q := by
+  haveI : Fact (Nat.Prime 13) := ⟨by norm_num⟩
+  haveI := cycField_isCyclotomic 13
+  have hζmem : ζ ∈ cycField 13 :=
+    IntermediateField.subset_adjoin ℚ _ (show ζ ^ 13 = 1 from hζ.pow_eq_one)
+  set ζ' : cycField 13 := ⟨ζ, hζmem⟩ with hζ'def
+  have hζ' : IsPrimitiveRoot ζ' 13 :=
+    IsPrimitiveRoot.of_map_of_injective (f := (cycField 13).val) hζ (cycField 13).val.injective
+  set γ' : cycField 13 := aeval ζ' q with hγ'
+  have hval : ((cycField 13).val γ') = aeval ζ q :=
+    (Polynomial.aeval_algHom_apply (cycField 13).val ζ' q).symm
+  have hint' : IsIntegral ℤ γ' := by
+    rw [← isIntegral_algHom_iff ((cycField 13).val.restrictScalars ℤ)
+      (cycField 13).val.injective]
+    simpa [hval] using hint
+  have hcl := IsCyclotomicExtension.Rat.isIntegralClosure_adjoin_singleton_of_prime hζ'
+  obtain ⟨y, hy⟩ := hcl.isIntegral_iff.1 hint'
+  have hy2 : (y : cycField 13) ∈ Algebra.adjoin ℤ ({ζ'} : Set (cycField 13)) := y.2
+  rw [Algebra.adjoin_singleton_eq_range_aeval] at hy2
+  obtain ⟨h, hh⟩ := hy2
+  refine ⟨h, ?_⟩
+  rw [← hval, ← hy]
+  have : ((cycField 13).val (aeval ζ' h)) = aeval ζ h :=
+    (Polynomial.aeval_algHom_apply ((cycField 13).val.restrictScalars ℤ) ζ' h).symm
+  rw [← this]
+  simp only [AlgHom.toRingHom_eq_coe] at hh
+  rw [show (aeval ζ' h) = (y : cycField 13) from hh]
+  rfl
+
+/-- Reading an integer polynomial identity at `ζ₁₃` modulo `1 − ζ`. -/
+theorem thirteen_dvd_of_aeval {ζ : AlgQ} (hζ : IsPrimitiveRoot ζ 13) {P : ℤ[X]} {n : ℤ}
+    (h : aeval ζ P = (n : AlgQ)) : (13 : ℤ) ∣ P.eval 1 - n := by
+  haveI : Fact (Nat.Prime 13) := ⟨by norm_num⟩
+  have h0 : aeval ζ (P - Polynomial.C n) = 0 := by simp [h]
+  have hint : IsIntegral ℤ ζ := hζ.isIntegral (by norm_num)
+  have hdvd : cyclotomic 13 ℤ ∣ P - Polynomial.C n := by
+    rw [cyclotomic_eq_minpoly hζ (by norm_num)]
+    exact minpoly.isIntegrallyClosed_dvd hint h0
+  obtain ⟨Q, hQ⟩ := hdvd
+  have := congrArg (Polynomial.eval 1) hQ
+  rw [eval_mul, eval_one_cyclotomic_prime] at this
+  simp only [eval_sub, eval_C] at this
+  exact ⟨Q.eval 1, by rw [this]; push_cast; ring⟩
+
+/-- `τ^m` on a polynomial in `ζ`. -/
+theorem tau_pow_aeval {ζ : AlgQ} {τ : AlgQ ≃ₐ[ℚ] AlgQ} (hτ : τ ζ = ζ ^ 2) {R : Type*} [CommRing R]
+    [Algebra R ℚ] [Algebra R AlgQ] [IsScalarTower R ℚ AlgQ] (h : R[X]) (m : ℕ) :
+    (τ ^ m) (aeval ζ h) = aeval (ζ ^ (2 ^ m)) h := by
+  rw [← tau_pow_zeta hτ m]
+  exact (Polynomial.aeval_algHom_apply (((τ ^ m : AlgQ ≃ₐ[ℚ] AlgQ) : AlgQ →ₐ[ℚ] AlgQ).restrictScalars R) ζ h).symm
+
+/-- The three roots are the `τ`-orbit of any one of them. -/
+theorem tau_pow_root {τ : AlgQ ≃ₐ[ℚ] AlgQ} {e : Fin 3 → AlgQ} {t : Fin 3}
+    (hτe : ∀ k, τ (e k) = e (k + t)) (j : Fin 3) (m : ℕ) :
+    (τ ^ m) (e j) = e (j + Fin.ofNat 3 m * t) := by
+  induction m with
+  | zero => simp
+  | succ m ih =>
+      rw [pow_succ', AlgEquiv.mul_apply, ih, hτe]
+      congr 1
+      rw [show Fin.ofNat 3 (m + 1) = Fin.ofNat 3 m + 1 from by ext; simp [Fin.val_add]]
+      rw [add_mul, one_mul, add_assoc]
+
+theorem sum_orbit {β : Type*} [AddCommMonoid β] (F : Fin 3 → β) (j t : Fin 3) (ht : t = 1 ∨ t = 2) :
+    ∑ k, F k = ∑ m : Fin 3, F (j + m * t) := by
+  have hb : Function.Bijective (fun m : Fin 3 => j + m * t) := by
+    revert j t; decide
+  exact (Fintype.sum_bijective _ hb _ _ (fun _ => rfl)).symm
+
+/-- **E1 at `g = 2`, the `(−)` case**: `τ³γ = −γ` makes `13` divide every trace. -/
+theorem half_e1_minus {f : ℤ[X]} (hmon : f.Monic) (hdeg : f.natDegree = 3) {ζ : AlgQ}
+    (hζ : IsPrimitiveRoot ζ 13) {τ : AlgQ ≃ₐ[ℚ] AlgQ} (hτ : τ ζ = ζ ^ 2) {e : Fin 3 → AlgQ}
+    (hinj : Function.Injective e) (he : ∀ k, (f.map (Int.castRingHom AlgQ)).eval (e k) = 0)
+    {t : Fin 3} (ht : t = 1 ∨ t = 2) (hτe : ∀ k, τ (e k) = e (k + t)) {j : Fin 3} {q : ℚ[X]}
+    {ε : ℤ} (hε : ε = 1 ∨ ε = -1) (hγ : (aeval ζ q) ^ 2 = (ε : AlgQ) * e j)
+    (hτγ : (τ ^ 3) (aeval ζ q) = - aeval ζ q) (N : ℕ) (hN : 1 ≤ N) :
+    (13 : ℤ) ∣ traceSeq f N := by
+  classical
+  -- `γ` is an algebraic integer, so an integer polynomial in `ζ`
+  have hej : IsIntegral ℤ (e j) := by
+    refine ⟨f, hmon, ?_⟩
+    have := he j
+    rwa [Polynomial.eval_map, RingHom.ext_int (Int.castRingHom AlgQ) (algebraMap ℤ AlgQ)] at this
+  have hγint : IsIntegral ℤ (aeval ζ q) := by
+    refine IsIntegral.of_pow (n := 2) (by norm_num) ?_
+    have hεi : IsIntegral ℤ ((ε : AlgQ)) := by
+      simpa using (isIntegral_algebraMap (R := ℤ) (A := AlgQ) (x := ε))
+    rw [hγ]
+    exact hεi.mul hej
+  obtain ⟨h, hh⟩ := exists_int_poly hζ hγint
+  -- `13 ∣ h(1)`
+  have h13 : (13 : ℤ) ∣ h.eval 1 := by
+    have hz : aeval ζ (h.comp (X ^ 8) + h) = ((0 : ℤ) : AlgQ) := by
+      have h3 := tau_pow_aeval hτ h 3
+      rw [hh, hτγ] at h3
+      rw [map_add, Polynomial.aeval_comp, map_pow, aeval_X, hh]
+      rw [show (2 : ℕ) ^ 3 = 8 by norm_num] at h3
+      rw [← h3, ← hh]; simp
+    have := thirteen_dvd_of_aeval hζ hz
+    simp only [eval_add, eval_comp, eval_pow, eval_X, one_pow, sub_zero] at this
+    have h2 : (13 : ℤ) ∣ 2 * h.eval 1 := by rw [two_mul]; exact this
+    exact (Int.Prime.dvd_mul' (by norm_num) h2).resolve_left (by norm_num)
+  -- the trace as an integer polynomial at `ζ`
+  set P : ℤ[X] := ∑ m : Fin 3, Polynomial.C (ε ^ N) * (h.comp (X ^ (2 ^ (m : ℕ)))) ^ (2 * N) with hP
+  have hroot : ∀ m : Fin 3, e (j + m * t) = (ε : AlgQ) * (aeval ζ (h.comp (X ^ (2 ^ (m : ℕ))))) ^ 2 := by
+    intro m
+    have h1 := tau_pow_root hτe j m
+    rw [show Fin.ofNat 3 (m : ℕ) = m by fin_cases m <;> rfl] at h1
+    have hc : aeval ζ (h.comp (X ^ (2 ^ (m : ℕ)))) = (τ ^ (m : ℕ)) (aeval ζ q) := by
+      rw [Polynomial.aeval_comp, map_pow, aeval_X, ← tau_pow_aeval hτ h, hh]
+    have hε2 : (ε : AlgQ) * ε = 1 := by rcases hε with rfl | rfl <;> norm_num
+    rw [← h1, hc, ← map_pow, hγ, map_mul, map_intCast, ← mul_assoc, hε2, one_mul]
+  have htr : ((traceSeq f N : ℤ) : AlgQ) = aeval ζ P := by
+    have hs := traceSeq_eq_root_sum (K := AlgQ) f hmon (fun i => e (Fin.cast hdeg i))
+      (fun i => he _) (fun a b hab => Fin.cast_injective hdeg (hinj hab)) N
+    rw [hs, show (∑ i : Fin f.natDegree, e (Fin.cast hdeg i) ^ N) = ∑ k : Fin 3, e k ^ N from
+      Fintype.sum_equiv (finCongr hdeg) _ _ (fun i => rfl), sum_orbit _ j t ht, hP, map_sum]
+    refine Finset.sum_congr rfl fun m _ => ?_
+    rw [hroot m]
+    simp only [map_mul, map_pow, aeval_C, eq_intCast, map_intCast]
+    ring
+  have hd := thirteen_dvd_of_aeval hζ htr.symm
+  have hP1 : P.eval 1 = 3 * (ε ^ N * h.eval 1 ^ (2 * N)) := by
+    simp [hP, Fin.sum_univ_three, eval_comp]; ring
+  have h13P : (13 : ℤ) ∣ P.eval 1 := by
+    rw [hP1]
+    exact dvd_mul_of_dvd_right (dvd_mul_of_dvd_right (dvd_pow h13 (by omega)) _) _
+  have := dvd_sub h13P hd
+  simpa using this
+
 /-- **E1 at `g = 2`**: no half spectral solution when the roots lie in `ℚ(μ_26)`. -/
 theorem half_e1 {f : ℤ[X]} {α : ℝ} (hD : PisotData f α) {s : ℤ} (hs : Odd s)
     (hP : HalfPrimeTraces f s)
