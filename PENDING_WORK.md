@@ -1,3 +1,20 @@
+## phase 65 lap 2 (2026-10-05): records closed under Lemma 8; the 3-adic route REFUTED on the unipotent class
+* `ShiftRigidityDeg.eventuallyRecordShift_of_pisotGap` PROVED (axioms: propext, choice, Quot.sound).
+  Card ≤ 2 → `eventually_record_of_card_le_two`; card ≥ 3 → `pisot_degree_bound` at μ = 1 via
+  `‖S(n)‖ ≤ fract < 1/P ≤ 2β^(−n)` at the last record before each non-record.
+  So `xi_shift_transcendental_of_pisotGap` rests only on the two degree-≥4 rigidity leaves.
+* Crux finding (`Mills/ShiftRigidityUnipotent.lean`, kernel): `unipotent_trace_congr`.  For the quartic
+  Pisot f₀ = X⁴ − 4X³ − X + 1 ≡ (X−1)⁴ (mod 3), s = −1, tr C^(3^n−1) ≡ tr β^(−1) = 1 (mod 3^(n−1)).
+  The cubic cube-class kill (tr ≡ 3z^m ≡ 0) is a degree-3 accident; in degree 4 window + Teichmüller +
+  spectral data are all consistent.  Maze row added (anchor `unipotent_trace_congr`).
+  `pisot_f₀` is a sorry (~99%, numerics).  New open node `UnipotentCovering`.
+* Next attack on the crux: (a) split `shiftTraceRigidity_ge_four` into unipotent class vs rest as two
+  named leaves (rest = generalised spectral route: Galois element acting fixed-point-freely, ±1
+  constant excluded since C ∓ 1 not nilpotent mod 3); (b) on the unipotent class, use the window's
+  Step 1 more sharply: 3^(n+1) | ord(C mod p_n) with v₃(p_n − 1) = n − O(1) forces an eigenvalue of
+  C mod p_n generating the 3-Sylow of F_{p^i}^*, i ∈ {3} for ℓ = 4 (f mod p_n has a cubic factor).
+  Test whether that compounding constraint contradicts anything (sibling: run it on X⁴−aX³−1 too).
+
 ## phase 64a lap 2 (2026-10-05): control: decay alone admits degree 4
 * `DecayDegreeFour.decay_admits_degree_four` (sorry ~90%): X⁴ − aX³ − 1 is a quartic Pisot with decay μ < 1/3 at every n.
   So the 5/9 wall cannot be closed by any decay-only degree bound.  Next: a dominant-triple analogue of

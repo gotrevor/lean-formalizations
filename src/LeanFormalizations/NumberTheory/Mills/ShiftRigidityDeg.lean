@@ -141,7 +141,14 @@ theorem xi_shift_transcendental_of_nodes {θ : ℝ} (hθ0 : 0 < θ) (hθ : θ < 
 class and spectral transfer (`exists_spectral_solution_shift` is degree-general), with
 `rigidity_generic` replaced by a Galois element acting fixed-point-freely on the roots outside
 `ℚ(μ_Q)`; the exceptional cases are the factorization types of `f mod 3` with a root in a
-cyclotomic `ℚ(μ_(3^f−1))`.  Evidence: degree 3, and the convergent prime heuristic. -/
+cyclotomic `ℚ(μ_(3^f−1))`.  Evidence: degree 3, and the convergent prime heuristic.
+
+Phase 65 lap 2: that route is **insufficient** on the unipotent class `f ≡ (X ∓ 1)^ℓ (mod 3)`
+with `tr β^s = ±1`, which is nonempty in degree 4
+(`ShiftRigidityUnipotent.unipotent_trace_congr`, `f₀ = X⁴ − 4X³ − X + 1`, `s = −1`): every
+`3`-adic constraint is satisfied there.  That class needs a non-`3`-adic input
+(`ShiftRigidityUnipotent.UnipotentCovering`); confidence that a proof is reachable is lower than
+the truth confidence. -/
 theorem shiftTraceRigidity_ge_four {s : ℤ} (hs : s ≠ 0) {β : ℝ} (hβ : IsPisot β)
     (hdeg : 4 ≤ (minpoly ℚ β).natDegree) :
     ¬ ∀ᶠ n in atTop, ∃ p : ℕ, p.Prime ∧ powTrace β (((3 : ℤ) ^ n + s).toNat) = (p : ℂ) := by
