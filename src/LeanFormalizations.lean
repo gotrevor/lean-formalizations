@@ -68,6 +68,7 @@ import LeanFormalizations.NumberTheory.PrimeIntervals.BHPTests
 import LeanFormalizations.NumberTheory.Practical.Basic
 import LeanFormalizations.NumberTheory.Practical.Constant
 import LeanFormalizations.NumberTheory.Practical.Erdos18
+import LeanFormalizations.NumberTheory.Practical.ShortIntervals
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.Mertens
 import LeanFormalizations.NumberTheory.PrimeNumberTheorem.MertensConstant
 import LeanFormalizations.NumberTheory.DivisorProblem
