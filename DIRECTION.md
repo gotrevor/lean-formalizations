@@ -1,4 +1,4 @@
-> 🎯 **CURRENT DIRECTIVE (2026-10-05): phase LF1, lacunary-Fibonacci bedrock.**  Branch `lacfib`, worktree `~/src/lean-formalizations-eplus`.  See the LF1 entry below.
+> ✅ **Phase LF1 DONE 2026-10-06 in three laps (`502f5a3`, `eda3d75`, `98933b3`)**: `LacunaryFib/Basic.lean`, `Boundary.lean` and `DivChain.lean` are sorry-free.  Proved: the tiling identity, Millin, the v₂-periodicity classification, Nguyen wiring, and **divisibility-chain rigidity from Roth** (`divChain_rigidity`, `restrictedRigidity_holds`).  Open crux: `RatioTwoRigidity` for non-divisible sequences (`n_(k+1) = 2 n_k + r_k`), no mechanism yet.  No current directive.
 
 ## (phase LF1, PLANTED 2026-10-05, BEDROCK): **lacunary Fibonacci sums at the ratio-two boundary** - targets `NumberTheory/LacunaryFib/Basic.lean`, then `Boundary.lean`
 
