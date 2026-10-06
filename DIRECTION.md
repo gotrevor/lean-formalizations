@@ -1,3 +1,16 @@
+> 🎯 **CURRENT DIRECTIVE (2026-10-05): phase LF1, lacunary-Fibonacci bedrock.**  Branch `lacfib`, worktree `~/src/lean-formalizations-eplus`.  See the LF1 entry below.
+
+## (phase LF1, PLANTED 2026-10-05, BEDROCK): **lacunary Fibonacci sums at the ratio-two boundary** - targets `NumberTheory/LacunaryFib/Basic.lean`, then `Boundary.lean`
+
+Trevor 2026-10-05: "build some bedrock".  Context: Erdős #267 (irrationality for every `c > 1`) is Snyder 2026, kernel-checked here (`ErdosDyadic.Snyder2026Erdos267`).  Transcendence is Nguyen 2022 for `c > 2`, sharp at `c = 2` because `∑ 1/F_(2^k) = (7 − √5)/2`.  The new question is ours: **algebraic only by tiling** (`Boundary.RatioTwoRigidity`, `LacunaryFibAlgebraicIffDoubling`).
+
+**Lap objective: make `Basic.lean` sorry-free, then the four wiring theorems in `Boundary.lean`.**  Each docstring carries its route.
+- `Basic.lean`: `fib_inv_eq_tsum_of_even` (Binet), `fib_two_mul_inv` (Millin step, d'Ocagne), `millin` (telescoping, the control), `doubling_tail_algebraic`, `vTwo_eventuallyPeriodic_iff` (pure combinatorics), `restricted_sum_eq_tiling` (regroup by `m = 2^(v₂ m)·odd`).
+- `Boundary.lean` wiring: `algebraic_of_eventually_doubling`, `transcendental_of_eventually_ratio`, `restricted_transcendental_of_sparse`, `restrictedRigidity_of_ratioTwoRigidity`.
+- **Do not attack** `RatioTwoRigidity`, `RestrictedRigidity`, `MahlerPeriodicRestricted` or `LacunaryFibAlgebraicIffDoubling`.  They are frozen open nodes.  Statements frozen.  Mathlib has Binet (`Real.coe_fib_eq`), `Nat.fib_add_two_sub_fib_add_one`, `Nat.fib_dvd`, `goldenRatio`/`goldenConj` lemmas.
+
+Difficulty check (crux, for later): proved, Nguyen `c > 2` (cited) plus the doubling direction (this phase).  Unproved, ratio-two rigidity.  Mechanism, none yet: the block-collapse idea in `RatioTwoRigidity`'s docstring reduces to block starts with ratio `> 2` but not bounded away from 2, the exact gap Nguyen leaves.  Control: `n_k = 2^k` is inside the hypothesis and algebraic.  ⚠️ Numerics are blind (`Basic.lean` header): lacunary sums are numerically finite sums.
+
 > ✅ **Phase 65w DONE 2026-10-05 in one lap (`b1a140e`, main `94e1d8e`)**: `ShiftHitPrime.xi_shift_transcendental_of_hitPrime` proved (Lemma 8 + `HitPrime` + `HalfHitPrime` ⇒ E+ for θ < 2/3).  Phase 65 stopped at the hit-prime wall; reopen only with a hit-prime mechanism separating `f₀` and `f₂`.  No current directive.
 
 > 🗺️ **Before planting a phase, grep `src/LeanFormalizations/Maze.lean`**: it records the routes already walked and closed, and each row's `reopenIf` names the new idea needed to walk it again (2026-09-29).
