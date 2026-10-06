@@ -6,6 +6,9 @@ if at least a 1/poly(m) fraction of 2m-cell fixed polyominoes are halvable, then
 A(2m) ≤ poly(m)·A(m)², which is equivalent to the polynomial correction A(n) ≥ cλⁿ/n^K.
 
   polyomino-halving run NMAX [--jobs J] [--split D]   table: n, A(n), H(n), H/A, H/(4m²A(m)²)
+  polyomino-halving profile NMAX [--jobs J] [--split D]
+        n k B(n,k) G(n,k) kappa: bridges whose smaller side has k cells, polyominoes with one,
+        and kappa = B(n,k) / (A(k) A(n-k)), single-contact gluings per pair of pieces
   polyomino-halving test                              pytest suite (test_polyomino_halving.py)
 
 The enumerator is halving.c (Redelmeier), compiled on first use into ~/.cache/polyomino-halving.
@@ -27,12 +30,13 @@ def binary():
     return exe
 
 
-def enumerate_counts(nmax, jobs=1, split=8):
+def enumerate_counts(nmax, jobs=1, split=8, prof=None):
     exe = binary()
+    flag = ["-p"] if prof is not None else []
     if jobs == 1:
-        cmds = [[str(exe), str(nmax)]]
+        cmds = [[str(exe), *flag, str(nmax)]]
     else:
-        cmds = [[str(exe), str(nmax), str(j), str(jobs), str(split)] for j in range(jobs)]
+        cmds = [[str(exe), *flag, str(nmax), str(j), str(jobs), str(split)] for j in range(jobs)]
     procs = [subprocess.Popen(c, stdout=subprocess.PIPE, text=True) for c in cmds]
     tot = {}
     for p in procs:
@@ -40,7 +44,11 @@ def enumerate_counts(nmax, jobs=1, split=8):
         if p.returncode:
             sys.exit(f"halving exited {p.returncode}")
         for line in out.split("\n"):
-            if line.strip():
+            if line.startswith("B "):
+                _, n, k, b, g = line.split()
+                t = prof.setdefault((int(n), int(k)), [0, 0])
+                t[0] += int(b); t[1] += int(g)
+            elif line.strip():
                 n, a, h, e = map(int, line.split())
                 t = tot.setdefault(n, [0, 0, 0])
                 t[0] += a; t[1] += h; t[2] += e
@@ -53,11 +61,19 @@ def main(argv):
     if argv[0] == "test":
         return subprocess.call(["uv", "run", "--quiet", "--with", "pytest", "pytest", "-q",
                                 str(HERE / "test_polyomino_halving.py"), *argv[1:]])
-    if argv[0] != "run" or len(argv) < 2:
+    if argv[0] not in ("run", "profile") or len(argv) < 2:
         print(__doc__); return 2
     nmax = int(argv[1])
     jobs = int(argv[argv.index("--jobs") + 1]) if "--jobs" in argv else 1
     split = int(argv[argv.index("--split") + 1]) if "--split" in argv else min(8, nmax - 1)
+    if argv[0] == "profile":
+        prof = {}
+        tot = enumerate_counts(nmax, jobs, split, prof)
+        print("n k B(n,k) G(n,k) kappa")
+        for (n, k) in sorted(prof):
+            b, g = prof[(n, k)]
+            print(n, k, b, g, f"{b / (tot[k][0] * tot[n - k][0]):.6f}")
+        return 0
     tot = enumerate_counts(nmax, jobs, split)
     print("n A(n) H(n) E(n) H/A H/(4m^2 A(m)^2)")
     for n in sorted(tot):

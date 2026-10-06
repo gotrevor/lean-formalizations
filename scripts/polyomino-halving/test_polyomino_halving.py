@@ -58,3 +58,36 @@ def test_injection_bound():
 
 def test_parallel_split_matches_serial():
     assert table("12") == table("12", "--jobs", "3", "--split", "5")
+
+
+def profile(*args):
+    out = subprocess.run([str(TOOL), "profile", *args], capture_output=True, text=True,
+                         check=True).stdout.split("\n")[1:]
+    rows = {}
+    for line in out:
+        if line.strip():
+            n, k, b, g, *_ = line.split()
+            rows[(int(n), int(k))] = (int(b), int(g))
+    return rows
+
+
+def test_profile_hand_counts():
+    # B(n,k): bridges whose smaller side has k cells; G(n,k): polyominoes with at least one.
+    # Trominoes: all 6 are paths of 3, two 1+2 bridges each -> B = 12, G = 6.
+    # Tetrominoes, smaller side 1: I 2x2, L 8x2, S/Z 4x2, T 4x3 (centre has 3 leaves), O 0
+    #   -> B = 4 + 16 + 8 + 12 = 40, G = 18.  Smaller side 2: the 14 halvable ones, one each.
+    rows = profile("4")
+    assert rows[(3, 1)] == (12, 6)
+    assert rows[(4, 1)] == (40, 18)
+    assert rows[(4, 2)] == (14, 14)
+
+
+def test_profile_half_column_matches_halving():
+    rows = profile("12")
+    halving = table("12")
+    for n in range(2, 13, 2):
+        assert rows[(n, n // 2)][1] == halving[n][1]
+
+
+def test_profile_parallel_matches_serial():
+    assert profile("11") == profile("11", "--jobs", "3", "--split", "6")

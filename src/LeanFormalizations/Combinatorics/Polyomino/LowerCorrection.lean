@@ -183,9 +183,11 @@ theorem halvableCount_ten : halvableCount 10 = 10429014774 := by sorry
 /-- Open, new: **a constant fraction of polyominoes halve along one edge**,
 `H(2m) ≥ c A(2m)`.  Stronger than `HalvingFractionPoly`.  Evidence: the table above (fraction
 0.52 → 0.454 over `2m = 12..20`, slope magnitude falling 0.288 → 0.259), and the heuristic that
-`A ~ Cλⁿ/n` plus a linear `H(2m)/A(m)²` forces a constant limit.  Confidence 55%: the data
+`A ~ Cλⁿ/n` plus a linear `H(2m)/A(m)²` forces a constant limit.  Confidence first 55%: the data
 cannot yet distinguish a constant limit from a slow power such as `m^{-0.2}`, which would still
-satisfy `HalvingFractionPoly` (confidence 85%). -/
+satisfy `HalvingFractionPoly` (confidence 85%).  Lowered to 40% on 2026-10-06: for uniform
+random trees the halving fraction decays like `N^{-1/2}`, so a constant limit is
+model-dependent (`BridgeProfile.lean`). -/
 def HalvingFractionConst : Prop :=
   ∃ c : ℝ, 0 < c ∧ ∀ m : ℕ, 1 ≤ m → c * count (2 * m) ≤ halvableCount m
 

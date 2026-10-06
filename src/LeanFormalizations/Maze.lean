@@ -46,7 +46,7 @@ import LeanFormalizations.NumberTheory.Mills.DecayDegreeFour
 import LeanFormalizations.NumberTheory.Mills.ShiftRigidityUnipotent
 import LeanFormalizations.NumberTheory.Mills.EvenRTimesThree
 import LeanFormalizations.NumberTheory.ErdosDyadic
-import LeanFormalizations.Combinatorics.Polyomino.LowerCorrection
+import LeanFormalizations.Combinatorics.Polyomino.BridgeProfile
 
 namespace LeanFormalizations.Maze
 
@@ -426,7 +426,17 @@ def register : List Row := [
       non-integrable lattice growth constant"
     reopenIf := "an arithmetic handle on λ that the honeycomb walk lacks: a functional \
       equation or integrable structure for the polyomino generating function, or a \
-      Liouville-fast algebraic approximation scheme" }
+      Liouville-fast algebraic approximation scheme" },
+  { route := "Gluing-side lower bounds on the polyomino halving count: H(2m) = 4m²·V·A(m)², \
+      with V the success rate of single-contact root-to-root gluings (2026-10-06)"
+    verdict := .needsNewIdea, tier := .frozen
+    anchor := some ``LeanFormalizations.Polyomino.polyLower_iff_doublingReverse
+    evidence := "Any lower bound on H built from pieces bounds H against A(m)², but the halving \
+      fraction needs H against A(2m); the gap A(2m)/A(m)² is DoublingReverse, i.e. the \
+      conclusion.  Data are still informative: κ = 4m²V is nearly flat in the split size and \
+      linear in N (BridgeProfile.lean module docstring)"
+    reopenIf := "never as a lower-bound route; the cutting side (ProfileStep) is where a \
+      mechanism must act" }
 ]
 
 end LeanFormalizations.Maze

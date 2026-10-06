@@ -2,8 +2,12 @@
  *
  * For every even size N = 2m it counts H(N): polyominoes with a bridge (an edge of the induced
  * grid graph whose removal disconnects it) splitting the cells m + m, and E(N): the total
- * number of such bridges.  Usage: halving NMAX [JOB NJOBS SPLITDEPTH].  Output lines:
+ * number of such bridges.  Usage: halving [-p] NMAX [JOB NJOBS SPLITDEPTH].  Output lines:
  *   n A(n) H(n) E(n)          (H, E are 0 for odd n)
+ * With -p (profile) it also prints, for every n and 1 <= k <= n/2,
+ *   B n k B(n,k) G(n,k)
+ * where B(n,k) counts bridges whose smaller side has k cells and G(n,k) counts polyominoes
+ * having at least one such bridge.
  * With NJOBS > 1, subtrees rooted at size SPLITDEPTH are dealt round-robin; job 0 alone
  * counts sizes < SPLITDEPTH (each job counts the subtrees it owns from SPLITDEPTH on), so summing the jobs' outputs gives the totals.
  */
@@ -18,6 +22,9 @@
 static int N, job = 0, njobs = 1, split = 0;
 static long long dealt = 0;
 static unsigned long long A[NMAX + 1], Hc[NMAX + 1], Ec[NMAX + 1];
+static unsigned long long Bp[NMAX + 1][NMAX + 1], Gp[NMAX + 1][NMAX + 1];
+static int profile = 0;
+static unsigned int mask;
 static unsigned char seen[HGT * W];
 static int idx[HGT * W];          /* cell -> position in P, or -1 */
 static int P[NMAX];
@@ -36,7 +43,14 @@ static void dfs(int u, int parent) {
             dfs(v, u);
             sub[u] += sub[v];
             if (low[v] < low[u]) low[u] = low[v];
-            if (low[v] > tin[u] && sub[v] == half) nbr++;
+            if (low[v] > tin[u]) {
+                if (sub[v] == half) nbr++;
+                if (profile) {
+                    int k = sub[v] < nP - sub[v] ? sub[v] : nP - sub[v];
+                    Bp[nP][k]++;
+                    mask |= 1u << k;
+                }
+            }
         }
     }
 }
@@ -44,11 +58,13 @@ static void dfs(int u, int parent) {
 static void record(int n) {
     if (njobs > 1 && n < split && job != 0) return;   /* size == split is counted by its owner */
     A[n]++;
-    if (n % 2) return;
-    nP = n; half = n / 2; nbr = 0; timer_ = 0;
+    if (n % 2 && !profile) return;
+    nP = n; half = n % 2 ? -1 : n / 2; nbr = 0; timer_ = 0; mask = 0;
     for (int i = 0; i < n; i++) tin[i] = -1;
     dfs(0, -1);
     if (nbr) { Hc[n]++; Ec[n] += nbr; }
+    for (int k = 1; mask >> k; k++)
+        if (mask >> k & 1u) Gp[n][k]++;
 }
 
 static void rec(int *untried, int nu, int size) {
@@ -76,7 +92,8 @@ static void rec(int *untried, int nu, int size) {
 }
 
 int main(int argc, char **argv) {
-    if (argc < 2) { fprintf(stderr, "usage: halving NMAX [JOB NJOBS SPLITDEPTH]\n"); return 2; }
+    if (argc >= 2 && strcmp(argv[1], "-p") == 0) { profile = 1; argv++; argc--; }
+    if (argc < 2) { fprintf(stderr, "usage: halving [-p] NMAX [JOB NJOBS SPLITDEPTH]\n"); return 2; }
     N = atoi(argv[1]);
     if (N < 1 || N > NMAX) { fprintf(stderr, "NMAX must be in 1..%d\n", NMAX); return 2; }
     if (argc >= 5) { job = atoi(argv[2]); njobs = atoi(argv[3]); split = atoi(argv[4]); }
@@ -95,5 +112,9 @@ int main(int argc, char **argv) {
     int u[1] = {origin};
     rec(u, 1, 0);
     for (int n = 1; n <= N; n++) printf("%d %llu %llu %llu\n", n, A[n], Hc[n], Ec[n]);
+    if (profile)
+        for (int n = 1; n <= N; n++)
+            for (int k = 1; 2 * k <= n; k++)
+                printf("B %d %d %llu %llu\n", n, k, Bp[n][k], Gp[n][k]);
     return 0;
 }

@@ -49,6 +49,7 @@ import LeanFormalizations.Combinatorics.NoThreeInLine.Shear.Statement
 import LeanFormalizations.Combinatorics.NoThreeInLine.Shear.PrimeGap
 import LeanFormalizations.Combinatorics.Polyomino.Klarner
 import LeanFormalizations.Combinatorics.Polyomino.LowerCorrection
+import LeanFormalizations.Combinatorics.Polyomino.BridgeProfile
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Statement
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.FaithfulnessCheck
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.SmallCases
