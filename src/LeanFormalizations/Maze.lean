@@ -46,7 +46,7 @@ import LeanFormalizations.NumberTheory.Mills.DecayDegreeFour
 import LeanFormalizations.NumberTheory.Mills.ShiftRigidityUnipotent
 import LeanFormalizations.NumberTheory.Mills.EvenRTimesThree
 import LeanFormalizations.NumberTheory.ErdosDyadic
-import LeanFormalizations.Combinatorics.Polyomino.Rooted
+import LeanFormalizations.Combinatorics.Polyomino.RootedSiblings
 
 namespace LeanFormalizations.Maze
 
@@ -453,9 +453,11 @@ def register : List Row := [
       (rootedLogConcave_upTo_seventy).  The switching identity and the cell-transfer move hold \
       verbatim in 3D, so any argument that never uses planarity proves a false polycube \
       statement.  Detail: Combinatorics/Polyomino/Rooted.lean"
-    reopenIf := "a mechanism that uses the plane: a 2D-specific injection, or a lattice \
-      analogue of Brydges–Imbrie dimensional reduction (which gives θ = 1 for continuum \
-      branched polymers in d = 2)" }
+    reopenIf := "a mechanism that uses TWO-DIMENSIONALITY, not just planar adjacency: \
+      non-planar 2D models (polyplets, polyglasses) are rooted log-concave too, while every \
+      3D/4D model fails at every step (RootedSiblings.lean, a006770_rooted, \
+      a151830_rooted).  Candidate: a lattice analogue of Brydges–Imbrie dimensional \
+      reduction (θ = 1 for continuum branched polymers in d = 2)" }
 ]
 
 end LeanFormalizations.Maze

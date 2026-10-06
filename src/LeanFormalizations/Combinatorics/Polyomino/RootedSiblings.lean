@@ -1,0 +1,210 @@
+/-
+Copyright (c) 2026 Trevor Morris. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Trevor Morris
+-/
+import LeanFormalizations.Combinatorics.Polyomino.Rooted
+
+/-!
+# Rooted log-concavity across lattice-animal models: dimension, not planarity
+
+Does `RootedLogConcave` follow from planarity of the adjacency graph, or from two-dimensionality?
+The models below separate the two.  Every 2D model (planar or not, animals or trees) is
+rooted log-concave after a few small exceptions; every 3D and 4D model fails at every step.
+This matches the Parisi–Sourlas exponents (`θ = 1` in `d = 2`, larger in `d ≥ 3`), and it
+matches no planar-graph criterion: polyplets and polyglasses have non-planar adjacency graphs
+and behave like polyominoes.
+
+Each theorem is checked by `decide` on the **OEIS terms themselves**, so the compiler verifies
+the arithmetic.  What links a list to its model is the OEIS b-file, a cited input; for
+`A001168` our own enumerator agrees for `n ≤ 20`.
+
+| model | planar adjacency | dim | rooted log-concave |
+|---|---|---|---|
+| polyominoes A001168 | yes | 2 | from 3, to 69 |
+| polyiamonds A001420 | yes | 2 | from 5, to 74 |
+| polyhexes A001207 | yes | 2 | from 2, to 45 |
+| polyplets A006770 | **no** | 2 | from 2, to 17 |
+| polyglasses A319324 | **no** | 2 | from 2, to 11 |
+| 2D lattice trees A066158, A066331 | yes | 2 | from 8 / 7 |
+| polycubes A001931, A151830 | – | 3, 4 | **fails at every step** |
+| tree-like 4D polycubes A191094 | – | 4 | **fails at every step** |
+
+Consequence for mechanisms (Maze row "Dimension-free mechanisms for θ ≤ 1"): a proof must use
+two-dimensionality.  A proof keyed to the planar structure of the square grid (a boundary
+contour, a cyclic order of perimeter cells) could still be valid for polyominoes, but it would
+not explain polyplets.  The natural target is a mechanism that works for every finite-range
+2D model at once.
+-/
+
+namespace LeanFormalizations.Polyomino.Siblings
+
+/-- `a(k) = k · t[k−1]`: the rooted count, for a sequence listed from index 1. -/
+def rooted (t : List ℕ) (k : ℕ) : ℕ := k * t.getD (k - 1) 0
+
+/-- The rooted count is log-concave at every `n` with `lo ≤ n` and `n + 1` within the list. -/
+def rootedLCFrom (t : List ℕ) (lo : ℕ) : Bool :=
+  (List.range t.length).all fun n =>
+    !(decide (lo ≤ n) && decide (n + 1 ≤ t.length)) ||
+      decide (rooted t (n - 1) * rooted t (n + 1) ≤ rooted t n ^ 2)
+
+/-- The rooted count is strictly log-convex (log-concavity fails) at every such `n`. -/
+def rootedLXFrom (t : List ℕ) (lo : ℕ) : Bool :=
+  (List.range t.length).all fun n =>
+    !(decide (lo ≤ n) && decide (n + 1 ≤ t.length)) ||
+      decide (rooted t n ^ 2 < rooted t (n - 1) * rooted t (n + 1))
+
+/-- OEIS A001168: fixed polyominoes (square lattice; planar adjacency), terms `a(1), …, a(70)` from its b-file. -/
+def a001168 : List ℕ :=
+  [1, 2, 6, 19,
+    63, 216, 760, 2725,
+    9910, 36446, 135268, 505861,
+    1903890, 7204874, 27394666, 104592937,
+    400795844, 1540820542, 5940738676, 22964779660,
+    88983512783, 345532572678, 1344372335524, 5239988770268,
+    20457802016011, 79992676367108, 313224032098244, 1228088671826973,
+    4820975409710116, 18946775782611174, 74541651404935148, 293560133910477776,
+    1157186142148293638, 4565553929115769162, 18027932215016128134, 71242712815411950635,
+    281746550485032531911, 1115021869572604692100, 4415695134978868448596, 17498111172838312982542,
+    69381900728932743048483, 275265412856343074274146, 1092687308874612006972082, 4339784013643393384603906,
+    17244800728846724289191074, 68557762666345165410168738, 272680844424943840614538634, 1085035285182087705685323738,
+    4319331509344565487555270660, 17201460881287871798942420736, 68530413174845561618160604928, 273126660016519143293320026256,
+    1088933685559350300820095990030, 4342997469623933155942753899000, 17326987021737904384935434351490, 69150714562532896936574425480218,
+    276061302869769053815091348274853, 1102414654388614817828362087885194, 4403627610727810528935609181494038, 17595360125786076902429902468975094,
+    70324022977839757717649768794923974, 281140509936541236506957176030736610, 1124226206002101486403009097923067462, 4496670726609716846990603851802851046,
+    17990046482672581050565325516788100067, 71990329116147598315672557624308271186, 288146737936083547752609866746184117546, 1153580914959613979832549218358894513290,
+    4619282047583828929546825973053580643926, 18500792645885711270652890811942343400814]
+
+/-- `n·a(n)` is log-concave for `3 ≤ n < 70`. -/
+theorem a001168_rooted : rootedLCFrom a001168 3 = true := by decide
+
+/-- OEIS A001420: fixed polyiamonds (honeycomb-lattice site animals; planar), terms `a(1), …, a(75)` from its b-file. -/
+def a001420 : List ℕ :=
+  [2, 3, 6, 14,
+    36, 94, 250, 675,
+    1838, 5053, 14016, 39169,
+    110194, 311751, 886160, 2529260,
+    7244862, 20818498, 59994514, 173338962,
+    501994070, 1456891547, 4236446214, 12341035217,
+    36009329450, 105229462401, 307942754342, 902338712971,
+    2647263986022, 7775314024683, 22861250676074, 67284446545605,
+    198214729430994, 584439943107748, 1724665203979836, 5093434042872294,
+    15053558945238166, 44521869233046747, 131764274746623618, 390209282091660817,
+    1156271319511222890, 3428243851059071792, 10170021606617062092, 30185576357912854854,
+    89638467588131276054, 266316031025897652002, 791588201780520478260, 2353922513181100648048,
+    7002741498223502133792, 20841060277596144244446, 62049806988299870226456, 184809160446574540356778,
+    550633812416956110450696, 1641167126237394780804458, 4893142168882883602047972, 14593611643638701475828219,
+    43538430128312213641221102, 129931105423136465757345880, 387864007832776437943416162, 1158157489920023082651029625,
+    3459183249840776065090197424, 10334596819468361754858559890, 30883315424482772009364074195, 92312659826727115613777214819,
+    275995688697147821120388899585, 825360885842983560010493834969, 2468783621745427137367974848117, 7386128647683127584488035530328,
+    22102564476279407636273464326490, 66154257908909010874896059091279, 198043122493458453529791815751245, 592988333797578245954808147666097,
+    1775884216384559876692792048399568, 5319404853729116558903334777867316, 15936363137225733301433441827683823]
+
+/-- `n·a(n)` is log-concave for `5 ≤ n < 75`. -/
+theorem a001420_rooted : rootedLCFrom a001420 5 = true := by decide
+
+/-- OEIS A001207: fixed polyhexes (triangular-lattice site animals; planar), terms `a(1), …, a(46)` from its b-file. -/
+def a001207 : List ℕ :=
+  [1, 3, 11, 44,
+    186, 814, 3652, 16689,
+    77359, 362671, 1716033, 8182213,
+    39267086, 189492795, 918837374, 4474080844,
+    21866153748, 107217298977, 527266673134, 2599804551168,
+    12849503756579, 63646233127758, 315876691291677, 1570540515980274,
+    7821755377244303, 39014584984477092, 194880246951838595, 974725768600891269,
+    4881251640514912341, 24472502362094874818, 122826412768568196148, 617080993446201431307,
+    3103152024451536273288, 15618892303340118758816, 78679501136505611375745, 396658618080234793950206,
+    2001232317628022658203349, 10103836183314489605735070, 51046672861235124190631667, 258063337786459258279344114,
+    1305417245856690662912152269, 6607298985024639624903163419, 33460963467529713458350419245, 169543788582768431534598929547,
+    859496482176765849253640160036, 4359288232974777294574313228655]
+
+/-- `n·a(n)` is log-concave for `2 ≤ n < 46`. -/
+theorem a001207_rooted : rootedLCFrom a001207 2 = true := by decide
+
+/-- OEIS A006770: fixed polyplets (square cells joined at edges or corners; non-planar), terms `a(1), …, a(18)` from its b-file. -/
+def a006770 : List ℕ :=
+  [1, 4, 20, 110,
+    638, 3832, 23592, 147941,
+    940982, 6053180, 39299408, 257105146,
+    1692931066, 11208974860, 74570549714, 498174818986,
+    3340366308393, 22471158811164]
+
+/-- `n·a(n)` is log-concave for `2 ≤ n < 18`. -/
+theorem a006770_rooted : rootedLCFrom a006770 2 = true := by decide
+
+/-- OEIS A319324: fixed polyglasses (triangles joined at edges or corners; non-planar), terms `a(1), …, a(12)` from its b-file. -/
+def a319324 : List ℕ :=
+  [2, 12, 88, 710,
+    6054, 53500, 484784, 4475010,
+    41902626, 396838992, 3793117200, 36534684066]
+
+/-- `n·a(n)` is log-concave for `2 ≤ n < 12`. -/
+theorem a319324_rooted : rootedLCFrom a319324 2 = true := by decide
+
+/-- OEIS A066158: fixed tree-like polyominoes (2D lattice trees), terms `a(1), …, a(44)` from its b-file. -/
+def a066158 : List ℕ :=
+  [1, 2, 6, 18,
+    55, 174, 570, 1908,
+    6473, 22202, 76886, 268352,
+    942651, 3329608, 11817582, 42120340,
+    150682450, 540832274, 1946892842, 7027047848,
+    25424079339, 92185846608, 334925007128, 1219054432490,
+    4444545298879, 16229462702152, 59347661054364, 217310732774774,
+    796703824808133, 2924252282840112, 10744903452821876, 39521236485358584,
+    145503056229823138, 536170499427125956, 1977427804277385532, 7298688919041663694,
+    26959808299736689704, 99655022360008737496, 368617606804069356072, 1364371688078200595674,
+    5053070869464350119408, 18725415026570087447460, 69430306096976372288324, 257571182441471056810356]
+
+/-- `n·a(n)` is log-concave for `8 ≤ n < 44`. -/
+theorem a066158_rooted : rootedLCFrom a066158 8 = true := by decide
+
+/-- OEIS A066331: fixed tree-like polyhexes, terms `a(1), …, a(25)` from its b-file. -/
+def a066331 : List ℕ :=
+  [1, 3, 9, 29,
+    99, 348, 1260, 4644,
+    17382, 65822, 251655, 969819,
+    3762517, 14680890, 57567228, 226712655,
+    896252850, 3555116583, 14144563158, 56429348553,
+    225676776318, 904559526029, 3633045705543, 14618866104849,
+    58925096656511]
+
+/-- `n·a(n)` is log-concave for `7 ≤ n < 25`. -/
+theorem a066331_rooted : rootedLCFrom a066331 7 = true := by decide
+
+/-- OEIS A001931: fixed polycubes (3D), terms `a(1), …, a(22)` from its b-file. -/
+def a001931 : List ℕ :=
+  [1, 3, 15, 86,
+    534, 3481, 23502, 162913,
+    1152870, 8294738, 60494549, 446205905,
+    3322769321, 24946773111, 188625900446, 1435074454755,
+    10977812452428, 84384157287999, 651459315795897, 5049008190434659,
+    39269513463794006, 306405169166373418]
+
+/-- `n·a(n)` is strictly log-convex for `2 ≤ n < 22`: it fails log-concavity at every step. -/
+theorem a001931_rooted : rootedLXFrom a001931 2 = true := by decide
+
+/-- OEIS A151830: fixed 4D polycubes, terms `a(1), …, a(16)` from its b-file. -/
+def a151830 : List ℕ :=
+  [1, 4, 28, 234,
+    2162, 21272, 218740, 2323730,
+    25314097, 281345096, 3178474308, 36400646766,
+    421693622520, 4933625049464, 58216226287844, 692095652493483]
+
+/-- `n·a(n)` is strictly log-convex for `2 ≤ n < 16`: it fails log-concavity at every step. -/
+theorem a151830_rooted : rootedLXFrom a151830 2 = true := by decide
+
+/-- OEIS A191094: fixed tree-like 4D polycubes, terms `a(1), …, a(13)` from its b-file. -/
+def a191094 : List ℕ :=
+  [1, 4, 28, 228,
+    2018, 18892, 184400, 1857856,
+    19189675, 202214452, 2166161808, 23524929636,
+    258472939904]
+
+/-- `n·a(n)` is strictly log-convex for `2 ≤ n < 13`: it fails log-concavity at every step. -/
+theorem a191094_rooted : rootedLXFrom a191094 2 = true := by decide
+
+/-- Teeth: the log-concavity checker returns `false` on the 3D data, so the 2D `true`s are
+not vacuous. -/
+theorem a001931_not_rootedLC : rootedLCFrom a001931 2 = false := by decide
+
+end LeanFormalizations.Polyomino.Siblings

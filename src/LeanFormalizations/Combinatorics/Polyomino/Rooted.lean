@@ -38,7 +38,8 @@ Any **dimension-free** mechanism for `RootedLogConcave`, `BridgeMonotone` or
 `MoveDensityDominance` proves a false statement about polycubes.  That covers a
 cell-transfer injection `(k−1, k+1) → (k, k)` that does not use planarity, and local
 leaf/spot density estimates fed into the switching identity, which holds verbatim in 3D.
-A proof must use the plane (Maze row "Dimension-free mechanisms for θ ≤ 1").  The only known
+A proof must use two-dimensionality; planar adjacency is not the dividing line, since the
+non-planar 2D models pass too (`RootedSiblings.lean`; Maze row "Dimension-free mechanisms for θ ≤ 1").  The only known
 planar handle on `θ = 1` is Brydges–Imbrie's dimensional reduction (Ann. Math. 2003), for
 continuum branched polymers, not lattice animals.
 -/

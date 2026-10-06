@@ -51,6 +51,7 @@ import LeanFormalizations.Combinatorics.Polyomino.Klarner
 import LeanFormalizations.Combinatorics.Polyomino.LowerCorrection
 import LeanFormalizations.Combinatorics.Polyomino.BridgeProfile
 import LeanFormalizations.Combinatorics.Polyomino.Rooted
+import LeanFormalizations.Combinatorics.Polyomino.RootedSiblings
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Statement
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.FaithfulnessCheck
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.SmallCases
