@@ -46,7 +46,7 @@ import LeanFormalizations.NumberTheory.Mills.DecayDegreeFour
 import LeanFormalizations.NumberTheory.Mills.ShiftRigidityUnipotent
 import LeanFormalizations.NumberTheory.Mills.EvenRTimesThree
 import LeanFormalizations.NumberTheory.ErdosDyadic
-import LeanFormalizations.Combinatorics.Polyomino.BridgeProfile
+import LeanFormalizations.Combinatorics.Polyomino.Rooted
 
 namespace LeanFormalizations.Maze
 
@@ -442,7 +442,20 @@ def register : List Row := [
       conclusion.  Data are still informative: κ = 4m²V is nearly flat in the split size and \
       linear in N (BridgeProfile.lean module docstring)"
     reopenIf := "never as a lower-bound route; the cutting side (ProfileStep, now \
-      BridgeMonotone) is where a mechanism must act" }
+      BridgeMonotone) is where a mechanism must act" },
+  { route := "Dimension-free mechanisms for the polyomino exponent θ ≤ 1: cell-transfer \
+      injections for rooted log-concavity, or local leaf/spot density estimates fed into the \
+      switching identity (2026-10-06)"
+    verdict := .needsNewIdea, tier := .frozen
+    anchor := some ``LeanFormalizations.Polyomino.not_polycubeRootedLogConcave
+    evidence := "Fixed polycubes violate rooted log-concavity at n = 3 (6·344 > 45²) and at \
+      every n ≤ 22, as θ₃ = 3/2 predicts, while 2D polyominoes satisfy it for every n ≤ 69 \
+      (rootedLogConcave_upTo_seventy).  The switching identity and the cell-transfer move hold \
+      verbatim in 3D, so any argument that never uses planarity proves a false polycube \
+      statement.  Detail: Combinatorics/Polyomino/Rooted.lean"
+    reopenIf := "a mechanism that uses the plane: a 2D-specific injection, or a lattice \
+      analogue of Brydges–Imbrie dimensional reduction (which gives θ = 1 for continuum \
+      branched polymers in d = 2)" }
 ]
 
 end LeanFormalizations.Maze
