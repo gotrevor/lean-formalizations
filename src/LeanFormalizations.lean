@@ -47,6 +47,7 @@ import LeanFormalizations.Combinatorics.NoThreeInLine.Shear.Hyperbola
 import LeanFormalizations.Combinatorics.NoThreeInLine.Shear.Anchors
 import LeanFormalizations.Combinatorics.NoThreeInLine.Shear.Statement
 import LeanFormalizations.Combinatorics.NoThreeInLine.Shear.PrimeGap
+import LeanFormalizations.Combinatorics.Polyomino.Klarner
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.Statement
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.FaithfulnessCheck
 import LeanFormalizations.GeometricMeasureTheory.Kakeya2D.SmallCases
