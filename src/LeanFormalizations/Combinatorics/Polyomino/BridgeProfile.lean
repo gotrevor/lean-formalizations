@@ -133,4 +133,52 @@ theorem polyLower_of_profileStep (hp : PendantFraction) (hs : ProfileStep) :
     PolyLowerCorrection :=
   polyLower_of_halvingFractionPoly (halvingFractionPoly_of_profileStep hp hs)
 
+/-! ## Single-contact gluing pins `H(2m)` to `A(m)²` (2026-10-06)
+
+`A(m)² ≤ H(2m) ≤ 4m² A(m)²`.  Consequence: `HalvingFractionPoly ↔ PolyLowerCorrection`, so the
+halving fraction is no weaker a premise than exact halving.  Of the polyomino nodes, only
+`ProfileStep` is not known to be equivalent to the conclusion. -/
+
+/-- **Single-contact gluing**: `A(m)² ≤ H(2m)`.  English proof: for polyominoes `P`, `Q` with
+`m` cells, let `p` be the top cell of `P`'s rightmost column (column `c`) and `q` the bottom
+cell of `Q`'s leftmost column; translate `Q` so `q = p + (1, 0)`.  `P` lies in columns `≤ c`,
+`Q` in columns `≥ c + 1`, and a contact needs a `P`-cell in column `c` and a `Q`-cell in column
+`c + 1` in the same row; `P`'s are at rows `≤ row p` and `Q`'s at rows `≥ row p`, so `p–q` is
+the only contact.  The union halves along that edge, its halving split is unique
+(`isHalvable_unique`), and the left half is `P`, so `(P, Q) ↦ P ∪ Q` is injective.  This is
+the video's gluing argument made single-contact.  Confidence 95%. -/
+theorem sq_count_le_halvableCount (m : ℕ) : count m ^ 2 ≤ halvableCount m := by sorry
+
+/-- English proof: `A(2m) ≤ C m^K A(m)² ≤ C m^K H(2m)` by `sq_count_le_halvableCount`.
+Confidence 98%. -/
+theorem halvingFractionPoly_of_doublingReverse (h : DoublingReverse) : HalvingFractionPoly := by
+  sorry
+
+/-- **The halving fraction is equivalent to the polynomial correction.** -/
+theorem halvingFractionPoly_iff_polyLower : HalvingFractionPoly ↔ PolyLowerCorrection :=
+  ⟨polyLower_of_halvingFractionPoly,
+    fun h => halvingFractionPoly_of_doublingReverse (doublingReverse_of_polyLower h)⟩
+
+/-! ## The flat gluing count: a generalised Kramers relation -/
+
+/-- `B(N, k)`: pairs (anchored `N`-cell polyomino `s`, side `t`) where `t` is one side of a
+bridge of `s` and has `k` cells.  For `2k < N` this counts bridges whose smaller side has `k`
+cells; at `2k = N` each halving bridge is counted twice, once per side. -/
+noncomputable def bridgeCount (N k : ℕ) : ℕ :=
+  {p : Finset (ℤ × ℤ) × Finset (ℤ × ℤ) | IsAnchored p.1 ∧ p.1.card = N ∧ p.2 ⊆ p.1 ∧
+    p.2.card = k ∧ IsPolyomino p.2 ∧ IsPolyomino (p.1 \ p.2) ∧
+    ∃! e : (ℤ × ℤ) × (ℤ × ℤ), e.1 ∈ p.2 ∧ e.2 ∈ p.1 \ p.2 ∧ gridGraph.Adj e.1 e.2}.ncard
+
+/-- Open: **the single-contact gluing count `κ(N, k) = B(N,k)/(A(k)A(N−k))` is flat in `k`**
+(up to a constant, for `3 ≤ k < N/2`).  Evidence: at `N = 20`, `κ` = 15.74, 15.56, 15.56,
+15.60, 15.64, 15.67, 15.70 for `k = 3..9`; at `N = 18`, 14.53–14.68 for `k = 3..8`.  This is
+the polyomino form of the **generalised Kramers relation** that Rosa–Everaers (arXiv:1610.05230)
+observe numerically for interacting lattice trees; for ideal trees the Kramers theorem makes
+the branch-weight law exactly `Z_n Z_{N−1−n}`-proportional.  So this observation is prior art
+in genre; it is recorded because it is the polyomino instance.  Confidence 75%. -/
+def KramersFlat : Prop :=
+  ∃ c : ℝ, 0 < c ∧ ∀ N k k' : ℕ, 3 ≤ k → 3 ≤ k' → 2 * k < N → 2 * k' < N →
+    c * ((bridgeCount N k : ℝ) / (count k * count (N - k))) ≤
+      (bridgeCount N k' : ℝ) / (count k' * count (N - k'))
+
 end LeanFormalizations.Polyomino

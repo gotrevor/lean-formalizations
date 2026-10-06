@@ -410,6 +410,9 @@ def register : List Row := [
       loses λʲ, exactly the ratio it must control.  Mirror of the SAW Hammersley–Welsh gap.  \
       The structural premise looks TRUE numerically: 45% of 20-cell polyominoes halve along \
       one edge (halvableCount_ten), so the route is open on evidence and closed on mechanism.  \
+      2026-10-06: single-contact gluing gives A(m)² ≤ H(2m), so the halving fraction is itself \
+      equivalent to the conclusion (halvingFractionPoly_iff_polyLower); only ProfileStep is a \
+      possibly stronger premise.  \
       Detail: Combinatorics/Polyomino/LowerCorrection.lean"
     reopenIf := "a structural (non-counting) proof that a 1/poly(n) fraction of 2n-cell \
       polyominoes have a cut edge splitting them into two n-cell polyominoes" },
