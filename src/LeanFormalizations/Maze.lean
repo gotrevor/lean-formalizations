@@ -46,6 +46,7 @@ import LeanFormalizations.NumberTheory.Mills.DecayDegreeFour
 import LeanFormalizations.NumberTheory.Mills.ShiftRigidityUnipotent
 import LeanFormalizations.NumberTheory.Mills.EvenRTimesThree
 import LeanFormalizations.NumberTheory.ErdosDyadic
+import LeanFormalizations.Combinatorics.Polyomino.LowerCorrection
 
 namespace LeanFormalizations.Maze
 
@@ -399,7 +400,31 @@ def register : List Row := [
       here 2026-10-05: Mathlib fabf563, standard axioms, statement faithful to FC erdos_267.  \
       Transcendence is Nguyen 2022 for c > 2, sharp at c = 2"
     reopenIf := "never for irrationality; the open neighbour is which lacunary sums with \
-      1 < c ≤ 2 are algebraic (∑ 1/F_(2^k) is)" }
+      1 < c ≤ 2 are algebraic (∑ 1/F_(2^k) is)" },
+  { route := "Polynomial correction A(n) ≥ cλⁿ/n^K for polyominoes by forcing Bui's unbalanced \
+      spanning-tree split to be an exact halving (2026-10-05)"
+    verdict := .needsNewIdea, tier := .frozen
+    anchor := some ``LeanFormalizations.Polyomino.polyLower_iff_doublingReverse
+    evidence := "Exact halving A(2n) ≤ C n^K A(n)² is equivalent to the conclusion, and so is \
+      every counting premise that feeds it (they follow from A(m) ≤ λᵐ).  Cell-moving surgery \
+      loses λʲ, exactly the ratio it must control.  Mirror of the SAW Hammersley–Welsh gap.  \
+      Detail: Combinatorics/Polyomino/LowerCorrection.lean"
+    reopenIf := "a structural (non-counting) proof that a 1/poly(n) fraction of 2n-cell \
+      polyominoes have a cut edge splitting them into two n-cell polyominoes" },
+  { route := "Irrationality or transcendence of Klarner's constant λ (2026-10-05)"
+    verdict := .needsNewIdea, tier := .frozen
+    anchor := some ``LeanFormalizations.Polyomino.KlarnerTranscendental
+    evidence := "Two mechanisms killed before building.  (1) Liouville from strip constants: \
+      the width-W strip growth constants are algebraic and increase to λ, but their degrees grow \
+      exponentially in W while λ − μ_W is expected to shrink only polynomially, far too slowly.  \
+      (2) 'non-D-finite generating function ⇒ transcendental radius': false in general \
+      (1/(1−2x) + ∑ x^(n!) has radius 1/2), and the honeycomb self-avoiding-walk constant \
+      √(2+√2) (Duminil-Copin–Smirnov 2012) is algebraic although that model is not believed \
+      to have a D-finite generating function.  No transcendence result is known for any \
+      non-integrable lattice growth constant"
+    reopenIf := "an arithmetic handle on λ that the honeycomb walk lacks: a functional \
+      equation or integrable structure for the polyomino generating function, or a \
+      Liouville-fast algebraic approximation scheme" }
 ]
 
 end LeanFormalizations.Maze
