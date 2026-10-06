@@ -100,4 +100,54 @@ theorem doublingReverse_of_polyLower (h : PolyLowerCorrection) : DoublingReverse
 theorem polyLower_iff_doublingReverse : PolyLowerCorrection ↔ DoublingReverse :=
   ⟨doublingReverse_of_polyLower, polyLower_of_doublingReverse⟩
 
+/-! ## The structural premise: how many polyominoes halve along one edge? -/
+
+/-- `s` **halves along one edge**: it is the disjoint union of two `m`-cell polyominoes joined
+by exactly one grid adjacency (a bridge of `s` splitting it `m + m`). -/
+def IsHalvable (m : ℕ) (s : Finset (ℤ × ℤ)) : Prop :=
+  ∃ t u : Finset (ℤ × ℤ), Disjoint t u ∧ t ∪ u = s ∧ t.card = m ∧ u.card = m ∧
+    IsPolyomino t ∧ IsPolyomino u ∧
+    ∃! e : (ℤ × ℤ) × (ℤ × ℤ), e.1 ∈ t ∧ e.2 ∈ u ∧ gridGraph.Adj e.1 e.2
+
+/-- `H(2m)`: fixed `2m`-cell polyominoes that halve along one edge. -/
+noncomputable def halvableCount (m : ℕ) : ℕ :=
+  {s : Finset (ℤ × ℤ) | IsHalvable m s ∧ IsAnchored s}.ncard
+
+/-- The halving edge is unique.  English proof: removing one halving bridge leaves sides `X`,
+`Y` of `m` cells; a second bridge lies inside one side, say `X`, and cuts off a piece of `X`
+not containing the first bridge's endpoint, so fewer than `m` cells.  Confidence 95%.  The
+probe confirms it: the number of halving bridges equals `H(2m)` for every `2m ≤ 20`. -/
+theorem isHalvable_unique {m : ℕ} {s t u t' u' : Finset (ℤ × ℤ)}
+    (h : Disjoint t u ∧ t ∪ u = s ∧ t.card = m ∧ u.card = m ∧ IsPolyomino t ∧ IsPolyomino u ∧
+      ∃! e : (ℤ × ℤ) × (ℤ × ℤ), e.1 ∈ t ∧ e.2 ∈ u ∧ gridGraph.Adj e.1 e.2)
+    (h' : Disjoint t' u' ∧ t' ∪ u' = s ∧ t'.card = m ∧ u'.card = m ∧ IsPolyomino t' ∧
+      IsPolyomino u' ∧ ∃! e : (ℤ × ℤ) × (ℤ × ℤ), e.1 ∈ t' ∧ e.2 ∈ u' ∧ gridGraph.Adj e.1 e.2) :
+    (t' = t ∧ u' = u) ∨ (t' = u ∧ u' = t) := by sorry
+
+/-- The injection: a halvable polyomino is fixed by its two halves (as translation classes), a
+cell of each, and a direction, so `H(2m) ≤ 4m² A(m)²`.  Confidence 97%; the probe's ratio
+`H/(4m²A(m)²)` is far below `1`. -/
+theorem halvableCount_le (m : ℕ) : halvableCount m ≤ 4 * m ^ 2 * count m ^ 2 := by sorry
+
+/-- Hand count: both dominoes halve. -/
+theorem halvableCount_one : halvableCount 1 = 2 := by sorry
+
+/-- Hand count: of the 19 fixed tetrominoes, I (2), L (8) and S/Z (4) halve at their middle
+edge; O (1, no bridge) and T (4, splits only `1 + 3`) do not. -/
+theorem halvableCount_two : halvableCount 2 = 14 := by sorry
+
+/-- Open: **a `1/poly(m)` fraction of `2m`-cell polyominoes halve along one edge.**  This is
+the structural premise of the exact-halving route (Maze row "exact-halving route to θ < ∞").
+It gives `DoublingReverse` through `halvableCount_le`, hence `PolyLowerCorrection`. -/
+def HalvingFractionPoly : Prop :=
+  ∃ c K : ℝ, 0 < c ∧ ∀ m : ℕ, 1 ≤ m → c * count (2 * m) ≤ (m : ℝ) ^ K * halvableCount m
+
+/-- English proof: `A(2m) ≤ (m^K / c) H(2m) ≤ (4/c) m^{K+2} A(m)²` by `halvableCount_le`.
+Confidence 99%. -/
+theorem doublingReverse_of_halvingFractionPoly (h : HalvingFractionPoly) : DoublingReverse := by
+  sorry
+
+theorem polyLower_of_halvingFractionPoly (h : HalvingFractionPoly) : PolyLowerCorrection :=
+  polyLower_of_doublingReverse (doublingReverse_of_halvingFractionPoly h)
+
 end LeanFormalizations.Polyomino
