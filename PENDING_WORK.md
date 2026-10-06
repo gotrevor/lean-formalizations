@@ -1,3 +1,6 @@
+## LF1 lap (2026-10-06): `LacunaryFib/Basic.lean` sorry-free
+All six nodes proved (`fib_inv_eq_tsum_of_even`, `fib_two_mul_inv`, `millin`, `doubling_tail_algebraic`, `vTwo_eventuallyPeriodic_iff`, `restricted_sum_eq_tiling`); axioms = standard three.  Reusable: `hasSum_doubling` (telescoping from any even start `b`, value `F_(b-1)/F_b − φ⁻¹`), `isAlgebraic_goldenRatio_inv`, `v2_eq_iff`.  Note: `doubling_tail_algebraic` needs the `k = 0` term split off (step index `a` may be odd).  Next: the four wiring theorems in `Boundary.lean`.
+
 ## phase 65 lap 5 (2026-10-05): two non-3-adic inputs checked, neither new; blocker stands
 * Self-hit (take q = p_n itself): already Step 1 of `ShiftRigidityDeg.window_shift_any`
   (p_n must have v_3(ord(C mod p_n)) > n, else p_n | p_m for some m > n).  On f_0 this forces a cubic

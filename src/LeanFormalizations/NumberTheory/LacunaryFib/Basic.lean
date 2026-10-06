@@ -155,6 +155,28 @@ theorem doubling_tail_algebraic (a : ℕ) (ha : 0 < a) :
     isAlgebraic_goldenRatio_inv).add (isAlgebraic_natCast _).inv
 
 
+theorem v2_eq_iff {x a : ℕ} (hx : x ≠ 0) :
+    padicValNat 2 x = a ↔ 2 ^ a ∣ x ∧ ¬ 2 ^ (a + 1) ∣ x := by
+  rw [padicValNat_dvd_iff_le hx, padicValNat_dvd_iff_le hx]; omega
+
+/-- For `K ⊆ [0, N)`, the period `2^N` preserves membership of `v₂`. -/
+theorem v2_add_pow_mem_iff {K : Set ℕ} {N : ℕ} (hK : ∀ k ∈ K, k < N) {m : ℕ} (hm : 0 < m) :
+    padicValNat 2 (m + 2 ^ N) ∈ K ↔ padicValNat 2 m ∈ K := by
+  have hm' : m ≠ 0 := hm.ne'
+  have hmN : m + 2 ^ N ≠ 0 := by positivity
+  by_cases hv : padicValNat 2 m < N
+  · obtain ⟨h1, h2⟩ := (v2_eq_iff hm').1 rfl
+    have hd : 2 ^ (padicValNat 2 m + 1) ∣ 2 ^ N := pow_dvd_pow 2 hv
+    have : padicValNat 2 (m + 2 ^ N) = padicValNat 2 m :=
+      (v2_eq_iff hmN).2 ⟨dvd_add h1 ((pow_dvd_pow 2 hv.le).trans dvd_rfl |>.trans
+        (dvd_refl _)), fun h => h2 ((Nat.dvd_add_left hd).1 h)⟩
+    rw [this]
+  · push Not at hv
+    have h1 : 2 ^ N ∣ m := (padicValNat_dvd_iff_le hm').2 hv
+    have h2 : N ≤ padicValNat 2 (m + 2 ^ N) :=
+      (padicValNat_dvd_iff_le hmN).1 (dvd_add h1 dvd_rfl)
+    exact ⟨fun h => absurd (hK _ h) (by omega), fun h => absurd (hK _ h) (by omega)⟩
+
 /-- **Node D (believed ~99%): which `2`-adic supports are periodic.**  If `K` is finite with
 maximum `k₀`, the period `2^(k₀+1)` works (and the complement for cofinite `K`).  Conversely, if
 `p = 2^a·b` with `b` odd is a period and `m` has `v₂ m > a`, then `v₂ (m + p) = a`, so every `k > a`
@@ -162,7 +184,54 @@ has the membership of `a`. -/
 theorem vTwo_eventuallyPeriodic_iff (K : Set ℕ) :
     (∃ p > 0, ∀ᶠ m in atTop, (padicValNat 2 (m + p) ∈ K ↔ padicValNat 2 m ∈ K)) ↔
       K.Finite ∨ Kᶜ.Finite := by
-  sorry
+  constructor
+  · rintro ⟨p, hp, hev⟩
+    obtain ⟨M, hM⟩ := eventually_atTop.1 hev
+    set a := padicValNat 2 p
+    obtain ⟨hpa, hpa1⟩ := (v2_eq_iff (x := p) (a := a) hp.ne').1 rfl
+    have key : ∀ k, a < k → (k ∈ K ↔ a ∈ K) := by
+      intro k hk
+      set m := 2 ^ k * (2 * M + 1)
+      have hm0 : m ≠ 0 := by positivity
+      have hMm : M ≤ m := by
+        have : 1 ≤ 2 ^ k := Nat.one_le_two_pow
+        calc M ≤ 1 * (2 * M + 1) := by omega
+          _ ≤ m := Nat.mul_le_mul_right _ this
+      have hvm : padicValNat 2 m = k := by
+        refine (v2_eq_iff hm0).2 ⟨dvd_mul_right _ _, fun h => ?_⟩
+        rw [pow_succ, Nat.mul_dvd_mul_iff_left (by positivity)] at h
+        omega
+      have hda : 2 ^ (a + 1) ∣ m := (pow_dvd_pow 2 hk).trans (dvd_mul_right _ _)
+      have hvmp : padicValNat 2 (m + p) = a :=
+        (v2_eq_iff (by positivity)).2 ⟨dvd_add ((pow_dvd_pow 2 (Nat.le_succ a)).trans hda) hpa,
+          fun h => hpa1 ((Nat.dvd_add_right hda).1 h)⟩
+      have := hM m hMm
+      rw [hvm, hvmp] at this
+      exact this.symm
+    by_cases ha : a ∈ K
+    · right
+      refine (Set.finite_Iic a).subset fun k hk => ?_
+      by_contra h
+      exact hk ((key k (by simpa using h)).2 ha)
+    · left
+      refine (Set.finite_Iic a).subset fun k hk => ?_
+      by_contra h
+      exact ha ((key k (by simpa using h)).1 hk)
+  · have gen : ∀ L : Set ℕ, L.Finite →
+        ∃ p > 0, ∀ᶠ m in atTop, (padicValNat 2 (m + p) ∈ L ↔ padicValNat 2 m ∈ L) := by
+      intro L hL
+      obtain ⟨N, hN⟩ := hL.bddAbove
+      refine ⟨2 ^ (N + 1), by positivity, eventually_atTop.2 ⟨1, fun m hm => ?_⟩⟩
+      exact v2_add_pow_mem_iff (fun k hk => Nat.lt_succ_of_le (hN hk)) hm
+    rintro (h | h)
+    · exact gen K h
+    · obtain ⟨p, hp, hev⟩ := gen _ h
+      exact ⟨p, hp, hev.mono fun m hm => by simpa using not_congr hm⟩
+
+theorem v2_two_pow_mul_odd (k j : ℕ) : padicValNat 2 ((2 * j + 1) * 2 ^ k) = k := by
+  refine (v2_eq_iff (by positivity)).2 ⟨dvd_mul_left _ _, fun h => ?_⟩
+  rw [pow_succ, mul_comm (2 * j + 1), Nat.mul_dvd_mul_iff_left (by positivity)] at h
+  omega
 
 open scoped Classical in
 /-- **Node E (believed ~97%): the tiling identity.**  For `K ⊆ {k ≥ 1}`, node A for each
@@ -170,6 +239,50 @@ open scoped Classical in
 theorem restricted_sum_eq_tiling (K : Set ℕ) (hK : ∀ k ∈ K, 1 ≤ k) :
     ∑' k : K, ((Nat.fib (2 ^ (k : ℕ)) : ℝ))⁻¹ =
       √5 * ∑' m : ℕ, if 0 < m ∧ padicValNat 2 m ∈ K then (goldenRatio⁻¹) ^ m else 0 := by
-  sorry
+  set x : ℝ := goldenRatio⁻¹
+  have hx0 : 0 ≤ x := by positivity
+  have hx1 : x < 1 := inv_lt_one_of_one_lt₀ one_lt_goldenRatio
+  set g : ℕ → ℝ := fun m => if 0 < m ∧ padicValNat 2 m ∈ K then x ^ m else 0 with hg
+  have hgs : Summable g := by
+    refine Summable.of_nonneg_of_le (fun m => ?_) (fun m => ?_) (summable_geometric_of_lt_one hx0 hx1)
+    · simp only [hg]; split_ifs <;> positivity
+    · simp only [hg]; split_ifs <;> first | exact le_rfl | positivity
+  set e : K × ℕ → ℕ := fun p => (2 * p.2 + 1) * 2 ^ (p.1 : ℕ) with he
+  have he_inj : Function.Injective e := by
+    rintro ⟨⟨k, hk⟩, j⟩ ⟨⟨k', hk'⟩, j'⟩ h
+    simp only [he] at h
+    have hkk : k = k' := by rw [← v2_two_pow_mul_odd k j, h, v2_two_pow_mul_odd]
+    subst hkk
+    have : 2 * j + 1 = 2 * j' + 1 := Nat.eq_of_mul_eq_mul_right (by positivity) h
+    simp only [Prod.mk.injEq, true_and]; omega
+  have hrange : ∀ m, m ∉ Set.range e → g m = 0 := by
+    intro m hm
+    simp only [hg]
+    split_ifs with h
+    · exfalso; apply hm
+      obtain ⟨k, o, ho, rfl⟩ := Nat.exists_eq_two_pow_mul_odd h.1.ne'
+      obtain ⟨j, rfl⟩ := ho
+      have hv : padicValNat 2 (2 ^ k * (2 * j + 1)) = k := by
+        rw [mul_comm]; exact v2_two_pow_mul_odd k j
+      refine ⟨(⟨k, hv ▸ h.2⟩, j), ?_⟩
+      simp [he, mul_comm]
+    · rfl
+  have hcomp : g ∘ e = fun p => x ^ ((2 * p.2 + 1) * 2 ^ (p.1 : ℕ)) := by
+    ext ⟨⟨k, hk⟩, j⟩
+    simp only [Function.comp, hg, he]
+    rw [if_pos ⟨by positivity, by rw [v2_two_pow_mul_odd]; exact hk⟩]
+  have hsum : HasSum (fun p : K × ℕ => √5 * x ^ ((2 * p.2 + 1) * 2 ^ (p.1 : ℕ))) (√5 * ∑' m, g m) := by
+    refine HasSum.mul_left _ ?_
+    rw [← hcomp, he_inj.hasSum_iff hrange]; exact hgs.hasSum
+  refine (hsum.prod_fiberwise fun k => ?_).tsum_eq
+  have hk1 := hK k k.2
+  have hev : Even (2 ^ (k : ℕ)) := (Nat.even_pow' (by omega)).2 even_two
+  rw [fib_inv_eq_tsum_of_even (by positivity) hev]
+  refine HasSum.mul_left _ (Summable.hasSum ?_)
+  refine (summable_geometric_of_lt_one hx0 hx1).comp_injective fun j j' h => ?_
+  simp only at h
+  have := Nat.eq_of_mul_eq_mul_right (by positivity) h
+  omega
+
 
 end LeanFormalizations.LacunaryFib
