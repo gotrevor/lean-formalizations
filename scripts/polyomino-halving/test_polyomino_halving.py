@@ -19,13 +19,20 @@ def table(*args):
     for line in out:
         if line.strip():
             n, a, h, e, _, _ = line.split()
-            rows[int(n)] = (int(a), int(h), int(e))
+            rows[int(n)] = (int(a), None if h == "-" else int(h), None if e == "-" else int(e))
     return rows
 
 
-def test_counts_match_oeis_even_sizes():
+def test_counts_match_oeis():
     rows = table("12")
-    for n in range(2, 13, 2):
+    for n in range(1, 13):
+        assert rows[n][0] == OEIS_A001168[n - 1]
+
+
+def test_parallel_counts_match_oeis_at_split_depth():
+    # 2026-10-05: jobs other than 0 dropped size == SPLITDEPTH, so A(9) summed to 620.
+    rows = table("12", "--jobs", "3", "--split", "5")
+    for n in range(1, 13):
         assert rows[n][0] == OEIS_A001168[n - 1]
 
 
@@ -38,7 +45,7 @@ def test_hand_counted_halvings():
 def test_halving_edge_is_unique():
     # A second m+m bridge would sit inside one side and cut off fewer than m cells.
     rows = table("12")
-    assert all(h == e for _, h, e in rows.values())
+    assert all(h == e for _, h, e in rows.values() if h is not None)
 
 
 def test_injection_bound():

@@ -63,6 +63,7 @@ def main(argv):
     for n in sorted(tot):
         a, h, e = tot[n]
         if n % 2:
+            print(n, a, "-", "-", "-", "-")
             continue
         m = n // 2
         inj = 4 * m * m * tot[m][0] ** 2

@@ -28,9 +28,11 @@ follows from the conclusion by `A(m) ≤ λᵐ`.
 The only non-circular way in is **structural**: show that at least a `1/poly(n)` fraction of
 `2n`-cell polyominoes have a cut edge splitting them into two `n`-cell polyominoes.  Such a
 polyomino is determined by its two halves, one cell in each and a direction, so there are at
-most `4n²A(n)²` of them, and the fraction bound gives `DoublingReverse`.  The heuristic warning
-is that this fraction is about `n^{-θ}` under the conjecture, so the premise is true but no
-easier to *see* than `θ < ∞`.  Surgery that moves `j` cells from the larger piece to the smaller
+most `4n²A(n)²` of them, and the fraction bound gives `DoublingReverse`.  I first guessed the
+fraction decays like `n^{-θ}`; that guess ignored the number of ways to glue two halves (it
+grows with their perimeters), and the enumeration refutes it: the fraction is still `0.454` at
+`2n = 20` and its log-log slope is flattening (`halvableCount_ten`, `HalvingFractionConst`).
+Surgery that moves `j` cells from the larger piece to the smaller
 loses about `λʲ` of information, which is exactly the ratio it is trying to control.  The
 mirror problem for self-avoiding walks, where cutting is free and gluing is hard, is the
 Hammersley–Welsh `e^{O(√n)}` gap, open since 1962.  Maze row: "exact-halving route to θ < ∞".
@@ -149,5 +151,46 @@ theorem doublingReverse_of_halvingFractionPoly (h : HalvingFractionPoly) : Doubl
 
 theorem polyLower_of_halvingFractionPoly (h : HalvingFractionPoly) : PolyLowerCorrection :=
   polyLower_of_doublingReverse (doublingReverse_of_halvingFractionPoly h)
+
+/-! ## Enumeration data (`scripts/polyomino-halving`, 2026-10-05)
+
+Redelmeier enumeration with a bridge check; its counts of `A(n)` match OEIS A001168 for every
+`n ≤ 20`, and its test suite checks `H(2) = 2` and `H(4) = 14` against the hand counts above.
+Each value is believed on that evidence (confidence 97%: one program, validated on `A(n)` and
+the hand anchors).
+
+| `2m` | `A(2m)` | `H(2m)` | `H/A` | log-log slope | `H(2m)/A(m)²` |
+|---|---|---|---|---|---|
+| 12 | 505861 | 263212 | 0.5203 | −0.288 | 5.64 |
+| 14 | 7204874 | 3593346 | 0.4987 | −0.275 | 6.22 |
+| 16 | 104592937 | 50342748 | 0.4813 | −0.266 | 6.78 |
+| 18 | 1540820542 | 719106076 | 0.4667 | −0.262 | 7.32 |
+| 20 | 22964779660 | 10429014774 | 0.4541 | −0.259 | 7.85 |
+
+`H(2m)/A(m)²` grows about linearly in `m` (steps ≈ 0.55), and if `A(n) ~ Cλⁿ/n` then
+`A(m)²/A(2m) ≈ 2C/m`, so a linear `H(2m)/A(m)²` means a **constant** halvable fraction.
+-/
+
+theorem halvableCount_three : halvableCount 3 = 138 := by sorry
+theorem halvableCount_four : halvableCount 4 = 1592 := by sorry
+theorem halvableCount_five : halvableCount 5 = 19986 := by sorry
+theorem halvableCount_six : halvableCount 6 = 263212 := by sorry
+theorem halvableCount_seven : halvableCount 7 = 3593346 := by sorry
+theorem halvableCount_eight : halvableCount 8 = 50342748 := by sorry
+theorem halvableCount_nine : halvableCount 9 = 719106076 := by sorry
+theorem halvableCount_ten : halvableCount 10 = 10429014774 := by sorry
+
+/-- Open, new: **a constant fraction of polyominoes halve along one edge**,
+`H(2m) ≥ c A(2m)`.  Stronger than `HalvingFractionPoly`.  Evidence: the table above (fraction
+0.52 → 0.454 over `2m = 12..20`, slope magnitude falling 0.288 → 0.259), and the heuristic that
+`A ~ Cλⁿ/n` plus a linear `H(2m)/A(m)²` forces a constant limit.  Confidence 55%: the data
+cannot yet distinguish a constant limit from a slow power such as `m^{-0.2}`, which would still
+satisfy `HalvingFractionPoly` (confidence 85%). -/
+def HalvingFractionConst : Prop :=
+  ∃ c : ℝ, 0 < c ∧ ∀ m : ℕ, 1 ≤ m → c * count (2 * m) ≤ halvableCount m
+
+theorem HalvingFractionConst.poly (h : HalvingFractionConst) : HalvingFractionPoly := by
+  obtain ⟨c, hc, h⟩ := h
+  exact ⟨c, 0, hc, fun m hm => by simpa using h m hm⟩
 
 end LeanFormalizations.Polyomino

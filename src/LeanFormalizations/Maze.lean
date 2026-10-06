@@ -408,6 +408,8 @@ def register : List Row := [
     evidence := "Exact halving A(2n) ≤ C n^K A(n)² is equivalent to the conclusion, and so is \
       every counting premise that feeds it (they follow from A(m) ≤ λᵐ).  Cell-moving surgery \
       loses λʲ, exactly the ratio it must control.  Mirror of the SAW Hammersley–Welsh gap.  \
+      The structural premise looks TRUE numerically: 45% of 20-cell polyominoes halve along \
+      one edge (halvableCount_ten), so the route is open on evidence and closed on mechanism.  \
       Detail: Combinatorics/Polyomino/LowerCorrection.lean"
     reopenIf := "a structural (non-counting) proof that a 1/poly(n) fraction of 2n-cell \
       polyominoes have a cut edge splitting them into two n-cell polyominoes" },

@@ -5,7 +5,7 @@
  * number of such bridges.  Usage: halving NMAX [JOB NJOBS SPLITDEPTH].  Output lines:
  *   n A(n) H(n) E(n)          (H, E are 0 for odd n)
  * With NJOBS > 1, subtrees rooted at size SPLITDEPTH are dealt round-robin; job 0 alone
- * counts sizes <= SPLITDEPTH, so summing the jobs' outputs gives the totals.
+ * counts sizes < SPLITDEPTH (each job counts the subtrees it owns from SPLITDEPTH on), so summing the jobs' outputs gives the totals.
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,7 +42,7 @@ static void dfs(int u, int parent) {
 }
 
 static void record(int n) {
-    if (njobs > 1 && n <= split && job != 0) return;
+    if (njobs > 1 && n < split && job != 0) return;   /* size == split is counted by its owner */
     A[n]++;
     if (n % 2) return;
     nP = n; half = n / 2; nbr = 0; timer_ = 0;
