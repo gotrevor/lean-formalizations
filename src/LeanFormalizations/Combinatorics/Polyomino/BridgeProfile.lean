@@ -12,20 +12,20 @@ import LeanFormalizations.Combinatorics.Polyomino.LowerCorrection
 adjacency whose removal disconnects them) with exactly `k` cells on one side.  The halving
 count is the middle column, `H(2m) = G(2m, m)` (`halvableCount_eq_bridgeSplitCount`).
 
-## What the enumeration shows (`scripts/polyomino-halving profile`, N ≤ 18, 2026-10-06)
+## What the enumeration shows (`scripts/polyomino-halving profile`, N ≤ 20, 2026-10-06)
 
 * `G(N, k)/A(N)` falls smoothly from `≈ 1` at `k = 1` to `≈ 0.47` at `k = N/2` (N = 18:
   1.000, 0.957, 0.898, 0.842, 0.798, 0.761, 0.739, 0.696, 0.467).  For fixed `k` it rises with
   `N`, as the pattern theorem predicts (a pendant `k`-cell piece is a local pattern).
 * Each step `k → k+1` loses little, and the loss concentrates at **both ends**: the fit
-  `G(N,k+1) ≥ ((k/(k+1)) · ((N−2k)/(N−2k+2)))^K · G(N,k)` holds with `K ≤ 0.493` on every
-  step for even `N ≤ 18`.  Away from the last step `K ≤ 0.15`; the last step into the exact
-  half (a symmetry crowding) has `K` = 0.357, 0.406, 0.441, 0.464, 0.480, 0.493 for
-  N = 8..18, increments shrinking.
+  `G(N,k+1) ≥ ((k/(k+1)) · ((N−2k)/(N−2k+2)))^K · G(N,k)` holds with `K ≤ 0.504` on every
+  step for even `N ≤ 20`.  Away from the last step `K ≤ 0.152`; the last step into the exact
+  half (a symmetry crowding) has `K` = 0.357, 0.406, 0.441, 0.464, 0.480, 0.493, 0.504 for
+  N = 8..20, increments shrinking (0.049 → 0.011).
 * `κ(k, N−k) = B(N,k) / (A(k) A(N−k))`, the number of single-contact gluings per pair of
   pieces (`B` counts bridges), is nearly **independent of `k`** for `k ≥ 3` and grows linearly
   in `N` (≈ 14.6 for every `3 ≤ k ≤ 8` at N = 18; half that at `k = N/2`, the ordered-pair
-  factor).  Bridges have linear density, ≈ 0.79 per cell.
+  factor; ≈ 15.6 for `4 ≤ k ≤ 9` at N = 20).  Bridges have linear density, ≈ 0.79 per cell.
 
 ## The chain
 
@@ -98,6 +98,13 @@ theorem bridgeSplitCount_eighteen :
       [1540509728, 1475090026, 1383554696, 1296993764, 1228902084, 1172734362, 1139117794,
         1072893252, 719106076] := by sorry
 
+/-- The `N = 20` column `G(20, 1), …, G(20, 10)`; its last entry is `halvableCount_ten`.
+Confidence 97%. -/
+theorem bridgeSplitCount_twenty :
+    (List.range 10).map (fun k => bridgeSplitCount 20 (k + 1)) =
+      [22962163113, 22141723665, 20848582643, 19558090380, 18501518736, 17664467900,
+        17038985604, 16567649714, 15592154426, 10429014774] := by sorry
+
 /-! ## The nodes -/
 
 /-- **A constant fraction of polyominoes have a leaf cell** (a bridge cutting off one cell).
@@ -108,7 +115,7 @@ def PendantFraction : Prop :=
   ∃ c : ℝ, 0 < c ∧ ∀ N : ℕ, 2 ≤ N → c * count N ≤ bridgeSplitCount N 1
 
 /-- Open, new: **the bridge profile decays at most polynomially from both ends.**
-Data: holds with `K = 0.493` for every step at even `N ≤ 18`; mechanism proposed
+Data: holds with `K = 0.504` for every step at even `N ≤ 20`; mechanism proposed
 (switching, see the module docstring), missing input a rate in the pattern theorem.
 Confidence 65%. -/
 def ProfileStep : Prop :=
