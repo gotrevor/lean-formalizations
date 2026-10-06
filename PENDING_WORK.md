@@ -1,3 +1,13 @@
+## LF1 lap 3 (2026-10-06): `LacunaryFib/DivChain.lean` sorry-free
+
+`divChain_rigidity` (Roth ⇒ divisibility chains are algebraic iff eventually doubling) and
+`restrictedRigidity_holds` (`Roth1955 → RestrictedRigidity`, Sturmian `K` included) proved; axioms
+propext/choice/Quot.sound.  Exponent used: δ = 1/2, needs `n_J ≥ 4` (ratio ≥ 3 gives
+`T² F⁵ ≤ φ³/φ^(n_J)`).  Irrationality is proved directly (ratio ≥ 2 already beats any fixed
+denominator).  Reusable: `gold_pow_le_fib`, `fib_le_gold_pow`, `tail_bound`.
+No counterexample from `F_1 = F_2 = 1`: those only affect finitely many terms.
+Remaining crux: `RatioTwoRigidity` off divisibility chains (e.g. `n_(k+1) = 2 n_k + 1`).
+
 ## LF1 lap (2026-10-06): `LacunaryFib/Basic.lean` sorry-free
 All six nodes proved (`fib_inv_eq_tsum_of_even`, `fib_two_mul_inv`, `millin`, `doubling_tail_algebraic`, `vTwo_eventuallyPeriodic_iff`, `restricted_sum_eq_tiling`); axioms = standard three.  Reusable: `hasSum_doubling` (telescoping from any even start `b`, value `F_(b-1)/F_b − φ⁻¹`), `isAlgebraic_goldenRatio_inv`, `v2_eq_iff`.  Note: `doubling_tail_algebraic` needs the `k = 0` term split off (step index `a` may be odd).  Next: the four wiring theorems in `Boundary.lean`.
 
