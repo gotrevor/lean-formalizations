@@ -412,7 +412,10 @@ def register : List Row := [
       one edge (halvableCount_ten), so the route is open on evidence and closed on mechanism.  \
       2026-10-06: single-contact gluing gives A(m)² ≤ H(2m), so the halving fraction is itself \
       equivalent to the conclusion (halvingFractionPoly_iff_polyLower); only ProfileStep is a \
-      possibly stronger premise.  \
+      possibly stronger premise.  Later 2026-10-06: the switching involution (switchMoves_symm) \
+      makes the profile step a ratio of mean move degrees; the live node is now BridgeMonotone \
+      (k(N−k)B(N,k) nondecreasing on [2, N/2], true for N ≤ 18, implies the conclusion with no \
+      pendant premise), equivalently MoveDensityDominance.  \
       Detail: Combinatorics/Polyomino/LowerCorrection.lean"
     reopenIf := "a structural (non-counting) proof that a 1/poly(n) fraction of 2n-cell \
       polyominoes have a cut edge splitting them into two n-cell polyominoes" },
@@ -438,8 +441,8 @@ def register : List Row := [
       fraction needs H against A(2m); the gap A(2m)/A(m)² is DoublingReverse, i.e. the \
       conclusion.  Data are still informative: κ = 4m²V is nearly flat in the split size and \
       linear in N (BridgeProfile.lean module docstring)"
-    reopenIf := "never as a lower-bound route; the cutting side (ProfileStep) is where a \
-      mechanism must act" }
+    reopenIf := "never as a lower-bound route; the cutting side (ProfileStep, now \
+      BridgeMonotone) is where a mechanism must act" }
 ]
 
 end LeanFormalizations.Maze

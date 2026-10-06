@@ -245,13 +245,28 @@ theorem switchMoves_four : switchMoves 4 1 = 124 ∧ switchMoves 4 2 = 124 := by
 (side-marked, so `T(N, N/2)` counts each halving bridge twice).  Under the Kramers form
 `T ≈ κ A(k) A(N−k)` and `A(n) ≈ C λⁿ/n`, the product is flat to leading order.  So this is a
 statement about corrections, which the switching move makes local (`MoveDensityDominance`).
-Evidence: holds on every step for every `N ≤ 14` (normalized by `N·T(N,1)` at `N = 14`:
-0.8409, 0.8900, 0.9131, 0.9274, 0.9346, 0.9370 for `k = 2..7`).  It fails at `k = 1`
-(0.9286 → 0.8409), which is why the range starts at 2.  Confidence 55%: the increments near
-`N/2` shrink with `N`. -/
+Evidence: `bridgeMonotone_upTo_eighteen`.  Normalized by `N·T(N,1)` at `N = 18`, the values
+for `k = 2..9` are 0.8413, 0.8878, 0.9108, 0.9270, 0.9380, 0.9460, 0.9509, 0.9525.  It fails at
+`k = 1` (0.9444 → 0.8413), which is why the range starts at 2.  The last step's increment
+shrinks: +0.32%, 0.26%, 0.21%, 0.17% at `N = 12, 14, 16, 18`, roughly `N^{−1.5}`.  That
+shrinkage is expected and not alarming: `k(N−k)T(N,k)` is symmetric under `k ↔ N−k`, so its
+slope at the half is zero, and the last step's sign is a curvature (concavity) question.
+Confidence 60%. -/
 def BridgeMonotone : Prop :=
   ∀ N k : ℕ, 2 ≤ k → 2 * (k + 1) ≤ N →
     k * (N - k) * bridgeCount N k ≤ (k + 1) * (N - k - 1) * bridgeCount N (k + 1)
+
+/-- `BridgeMonotone`'s inequality for every `N ≤ 18` (enumeration, `polyomino-halving switch
+18`, 2026-10-06; the same run checks `switchMoves_symm` for every `N ≤ 18`).  Confidence 97%. -/
+theorem bridgeMonotone_upTo_eighteen (N k : ℕ) (hN : N ≤ 18) (hk : 2 ≤ k) (hkN : 2 * (k + 1) ≤ N) :
+    k * (N - k) * bridgeCount N k ≤ (k + 1) * (N - k - 1) * bridgeCount N (k + 1) := by sorry
+
+/-- The `N = 18` side-marked bridge column `T(18, 1), …, T(18, 9)`; the last entry is
+`2 · halvableCount 9`.  Confidence 97%. -/
+theorem bridgeCount_eighteen :
+    (List.range 9).map (fun k => bridgeCount 18 (k + 1)) =
+      [6794441992, 3215312496, 2412840696, 1989211648, 1744159700, 1593272480, 1502548944,
+        1453687884, 1438212152] := by sorry
 
 /-- **Per-cell move density is higher with the small side marked.**  `μ(N,j) = O(N,j)/(j(N−j)
 T(N,j))` is the mean over `j`-markings of (moves) / (|marked| · |unmarked|), roughly
