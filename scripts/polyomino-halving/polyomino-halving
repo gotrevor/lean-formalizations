@@ -9,6 +9,11 @@ A(2m) ≤ poly(m)·A(m)², which is equivalent to the polynomial correction A(n)
   polyomino-halving profile NMAX [--jobs J] [--split D]
         n k B(n,k) G(n,k) kappa: bridges whose smaller side has k cells, polyominoes with one,
         and kappa = B(n,k) / (A(k) A(n-k)), single-contact gluings per pair of pieces
+  polyomino-halving switch NMAX [--jobs J] [--split D]
+        leaf-switching move across a bridge (halving.c -s).  Raw lines `S n j T O SL SS X`, then
+        for each step k -> k+1 of the smaller side: the profile ratio T(k+1)/T(k) =
+        meanOut(k)/meanIn(k+1), its factors (leaf ratio, spot ratio, correlation ratio) and
+        Keff = -log(ratio)/log(k/(k+1) * (n-2k)/(n-2k+2)), the ProfileStep exponent this step needs
   polyomino-halving test                              pytest suite (test_polyomino_halving.py)
 
 The enumerator is halving.c (Redelmeier), compiled on first use into ~/.cache/polyomino-halving.
@@ -30,9 +35,9 @@ def binary():
     return exe
 
 
-def enumerate_counts(nmax, jobs=1, split=8, prof=None):
+def enumerate_counts(nmax, jobs=1, split=8, prof=None, sw=None):
     exe = binary()
-    flag = ["-p"] if prof is not None else []
+    flag = (["-p"] if prof is not None else []) + (["-s"] if sw is not None else [])
     if jobs == 1:
         cmds = [[str(exe), *flag, str(nmax)]]
     else:
@@ -48,11 +53,43 @@ def enumerate_counts(nmax, jobs=1, split=8, prof=None):
                 _, n, k, b, g = line.split()
                 t = prof.setdefault((int(n), int(k)), [0, 0])
                 t[0] += int(b); t[1] += int(g)
+            elif line.startswith("S "):
+                n, j, *v = map(int, line.split()[1:])
+                t = sw.setdefault((n, j), [0] * 5)
+                for i, x in enumerate(v):
+                    t[i] += x
             elif line.strip():
                 n, a, h, e = map(int, line.split())
                 t = tot.setdefault(n, [0, 0, 0])
                 t[0] += a; t[1] += h; t[2] += e
     return tot
+
+
+def switch_report(nmax, jobs, split):
+    import math
+    sw = {}
+    enumerate_counts(nmax, jobs, split, sw=sw)
+    for (n, j) in sorted(sw):
+        print("S", n, j, *sw[(n, j)])
+    print("step n k T(k+1)/T(k) meanOut(k) meanIn(k+1) leafRatio spotRatio corrRatio Keff")
+    leaves = lambda n, j: sw[(n, j)][2] / sw[(n, j)][0]
+    spots = lambda n, j: sw[(n, j)][3] / sw[(n, j)][0]
+    for n in range(4, nmax + 1):
+        for k in range(1, n // 2):
+            if (n, k) not in sw or not sw[(n, k)][0]:
+                continue
+            t0, t1 = sw[(n, k)][0], sw[(n, k + 1)][0]
+            mout = sw[(n, k)][1] / t0                 # moves out of a k-marking
+            min_ = sw[(n, n - k - 1)][1] / t1         # moves into a (k+1)-marking
+            # out(k) ~ leaves(side n-k) * spots(side k); in(k+1) ~ leaves(side k+1) * spots(side n-k-1)
+            lr = leaves(n, n - k) / leaves(n, k + 1)
+            sr = spots(n, k) / spots(n, n - k - 1)
+            cr = (mout / (leaves(n, n - k) * spots(n, k))) / (min_ / (leaves(n, k + 1) * spots(n, n - k - 1)))
+            base = math.log(k / (k + 1) * (n - 2 * k) / (n - 2 * k + 2))
+            keff = -math.log(t1 / t0) / base if t1 < t0 else 0.0
+            print("step", n, k, f"{t1 / t0:.6f}", f"{mout:.4f}", f"{min_:.4f}", f"{lr:.4f}",
+                  f"{sr:.4f}", f"{cr:.4f}", f"{keff:.4f}")
+    return 0
 
 
 def main(argv):
@@ -61,11 +98,13 @@ def main(argv):
     if argv[0] == "test":
         return subprocess.call(["uv", "run", "--quiet", "--with", "pytest", "pytest", "-q",
                                 str(HERE / "test_polyomino_halving.py"), *argv[1:]])
-    if argv[0] not in ("run", "profile") or len(argv) < 2:
+    if argv[0] not in ("run", "profile", "switch") or len(argv) < 2:
         print(__doc__); return 2
     nmax = int(argv[1])
     jobs = int(argv[argv.index("--jobs") + 1]) if "--jobs" in argv else 1
     split = int(argv[argv.index("--split") + 1]) if "--split" in argv else min(8, nmax - 1)
+    if argv[0] == "switch":
+        return switch_report(nmax, jobs, split)
     if argv[0] == "profile":
         prof = {}
         tot = enumerate_counts(nmax, jobs, split, prof)

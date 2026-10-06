@@ -91,3 +91,54 @@ def test_profile_half_column_matches_halving():
 
 def test_profile_parallel_matches_serial():
     assert profile("11") == profile("11", "--jobs", "3", "--split", "6")
+
+
+def switching(*args):
+    out = subprocess.run([str(TOOL), "switch", *args], capture_output=True, text=True,
+                         check=True).stdout.split("\n")
+    rows = {}
+    for line in out:
+        if line.startswith("S "):
+            _, n, j, t, o, sl, ss, x = line.split()
+            rows[(int(n), int(j))] = tuple(map(int, (t, o, sl, ss, x)))
+    return rows
+
+
+def test_switching_hand_counts_trominoes():
+    # Marked triples (P, bridge, side S), |S| = j.  Move: delete a leaf c of the other side L (not
+    # the bridge end), add a free cell d with exactly one S-neighbour and none in L - {c}.
+    # Trominoes are paths a-b-c; each has 2 bridges, so 12 triples at j = 1 and 12 at j = 2.
+    # j = 1, S = {a}: L = {b, c} has one eligible leaf (c).  Free cells beside a:
+    #   I3: 3 cells, none touching b or c -> spots 3, out 3.
+    #   L3 (corner b): the cell diagonal to b touches a and c, so it is not a spot, but it is a
+    #   legal d (its L-neighbour is the leaf c being deleted) -> spots 2, out 3.
+    #   O = 12*3 = 36; spots: I 4 triples * 3 + L 8 * 2 = 28; leaves of S: 0.
+    #   leaves(L) * spots(S) summed: 28.
+    # j = 2, S = {b, c}: the other side {a} has no eligible leaf, so out = 0.
+    #   Leaves of S: c, one each -> 12.  Spots of {b, c} avoiding a: I3 5, L3 4 -> 4*5 + 8*4 = 52.
+    rows = switching("3")
+    assert rows[(3, 1)] == (12, 36, 0, 28, 28)
+    assert rows[(3, 2)] == (12, 0, 12, 52, 0)
+
+
+def test_switching_identity():
+    # The move's inverse is the same move on the complement-marked triple, so the move count out
+    # of size-j markings equals the count out of size-(n-1-j) markings.  Computed from disjoint
+    # triples, so it can fail.
+    rows = switching("11")
+    for n in range(3, 12):
+        for j in range(1, n - 1):
+            assert rows[(n, j)][1] == rows[(n, n - 1 - j)][1], (n, j)
+        assert rows[(n, n - 1)][1] == 0
+
+
+def test_switching_triples_match_profile():
+    # Triples marked with the smaller side are bridges B(n,k); the half column counts each bridge twice.
+    sw, pr = switching("10"), profile("10")
+    for (n, k), (b, _) in pr.items():
+        assert sw[(n, k)][0] == (2 * b if 2 * k == n else b)
+        assert sw[(n, n - k)][0] == sw[(n, k)][0]
+
+
+def test_switching_parallel_matches_serial():
+    assert switching("10") == switching("10", "--jobs", "3", "--split", "6")
