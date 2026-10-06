@@ -13,7 +13,11 @@ A(2m) ≤ poly(m)·A(m)², which is equivalent to the polynomial correction A(n)
         leaf-switching move across a bridge (halving.c -s).  Raw lines `S n j T O SL SS X`, then
         for each step k -> k+1 of the smaller side: the profile ratio T(k+1)/T(k) =
         meanOut(k)/meanIn(k+1), its factors (leaf ratio, spot ratio, correlation ratio) and
-        Keff = -log(ratio)/log(k/(k+1) * (n-2k)/(n-2k+2)), the ProfileStep exponent this step needs
+        ratio = size * leafDens * spotDens * corr, where size = k(n-k)/((k+1)(n-k-1)) is what
+        constant per-cell leaf and spot densities would give, leafDens = leaves-per-cell of the
+        (n-k)-side over the (k+1)-side, spotDens = spots-per-cell of the k-side over the
+        (n-k-1)-side; Keff = log(ratio)/log(k/(k+1) * (n-2k)/(n-2k+2)), the ProfileStep exponent
+        this step needs (0 when the ratio is >= 1)
   polyomino-halving test                              pytest suite (test_polyomino_halving.py)
 
 The enumerator is halving.c (Redelmeier), compiled on first use into ~/.cache/polyomino-halving.
@@ -71,7 +75,7 @@ def switch_report(nmax, jobs, split):
     enumerate_counts(nmax, jobs, split, sw=sw)
     for (n, j) in sorted(sw):
         print("S", n, j, *sw[(n, j)])
-    print("step n k T(k+1)/T(k) meanOut(k) meanIn(k+1) leafRatio spotRatio corrRatio Keff")
+    print("step n k T(k+1)/T(k) meanOut(k) meanIn(k+1) size leafDens spotDens corr Keff")
     leaves = lambda n, j: sw[(n, j)][2] / sw[(n, j)][0]
     spots = lambda n, j: sw[(n, j)][3] / sw[(n, j)][0]
     for n in range(4, nmax + 1):
@@ -86,9 +90,12 @@ def switch_report(nmax, jobs, split):
             sr = spots(n, k) / spots(n, n - k - 1)
             cr = (mout / (leaves(n, n - k) * spots(n, k))) / (min_ / (leaves(n, k + 1) * spots(n, n - k - 1)))
             base = math.log(k / (k + 1) * (n - 2 * k) / (n - 2 * k + 2))
-            keff = -math.log(t1 / t0) / base if t1 < t0 else 0.0
-            print("step", n, k, f"{t1 / t0:.6f}", f"{mout:.4f}", f"{min_:.4f}", f"{lr:.4f}",
-                  f"{sr:.4f}", f"{cr:.4f}", f"{keff:.4f}")
+            keff = math.log(t1 / t0) / base if t1 < t0 else 0.0
+            size = k * (n - k) / ((k + 1) * (n - k - 1))
+            ld = lr * (k + 1) / (n - k)
+            sd = sr * (n - k - 1) / k
+            print("step", n, k, f"{t1 / t0:.6f}", f"{mout:.4f}", f"{min_:.4f}", f"{size:.4f}",
+                  f"{ld:.4f}", f"{sd:.4f}", f"{cr:.4f}", f"{keff:.4f}")
     return 0
 
 

@@ -181,4 +181,106 @@ def KramersFlat : Prop :=
     c * ((bridgeCount N k : ℝ) / (count k * count (N - k))) ≤
       (bridgeCount N k' : ℝ) / (count k' * count (N - k'))
 
+/-! ## The switching move, built and measured (2026-10-06)
+
+A **side-marked bridge** is a pair `(s, t)` counted by `bridgeCount N j`: `t` is one side of a
+bridge of `s`, `u = s \ t` the other.  The move deletes a leaf `c` of `s` lying in `u` (not the
+bridge end) and adds a free cell `d` touching exactly one cell of `t` and no cell of `u − {c}`.
+The result is a side-marked bridge with marked side `t ∪ {d}` of `j + 1` cells.  The reverse
+move is the same move applied to the complement marking, so the move counts satisfy the exact
+symmetry `switchMoves_symm`.  Writing `T = bridgeCount`, it gives the profile step as a ratio
+of mean degrees,
+`T(N,k+1)/T(N,k) = meanOut(k)/meanIn(k+1)`.
+
+`scripts/polyomino-halving switch` measures the factors.  The covariance correction
+(`out` vs. leaves × spots) is within 0.4% of 1 for `k ≥ 2`.  Small sides carry a surplus of
+both leaves per cell and spots per cell, and the two surpluses nearly cancel, so
+`T(N,k+1)/T(N,k)` sits just above the **size factor** `k(N−k)/((k+1)(N−k−1))`.  That is
+`BridgeMonotone`, and in the switching language it says the per-cell move density is higher
+with the small side marked (`MoveDensityDominance`).  Heuristically, with leaves of a `j`-cell
+side `≈ ρ(j + β)` and spots `≈ σ(j + α)`, the condition is `α ≳ β`: the small side's spot
+surplus is at least its leaf surplus.
+
+Unlike `ProfileStep`, this route needs no `PendantFraction`: a pendant vertical domino above
+the top cell gives `T(N,2) ≥ A(N−2)` by injection. -/
+
+/-- One switching move out of the side-marked bridge `(s, t)` with `|t| = j`: the leaf `c` of
+`s` on the unmarked side moves to the free cell `d`, which touches exactly one cell of `t` and
+no other cell of the unmarked side. -/
+def IsSwitch (N j : ℕ) (s t : Finset (ℤ × ℤ)) (c d : ℤ × ℤ) : Prop :=
+  IsAnchored s ∧ s.card = N ∧ t ⊆ s ∧ t.card = j ∧ IsPolyomino t ∧ IsPolyomino (s \ t) ∧
+    (∃! e : (ℤ × ℤ) × (ℤ × ℤ), e.1 ∈ t ∧ e.2 ∈ s \ t ∧ gridGraph.Adj e.1 e.2) ∧
+    c ∈ s \ t ∧ {q | q ∈ s ∧ gridGraph.Adj c q}.ncard = 1 ∧ (∀ q ∈ t, ¬ gridGraph.Adj c q) ∧
+    d ∉ s ∧ {q | q ∈ t ∧ gridGraph.Adj d q}.ncard = 1 ∧
+    ∀ q ∈ s \ t, q ≠ c → ¬ gridGraph.Adj d q
+
+/-- `O(N, j)`: switching moves out of side-marked bridges whose marked side has `j` cells. -/
+noncomputable def switchMoves (N j : ℕ) : ℕ :=
+  {x : (Finset (ℤ × ℤ) × Finset (ℤ × ℤ)) × ((ℤ × ℤ) × (ℤ × ℤ)) |
+    IsSwitch N j x.1.1 x.1.2 x.2.1 x.2.2}.ncard
+
+/-- **The switching identity.**  English proof: the map
+`(s, t, c, d) ↦ (s', s' \ t', d, c)`, with `s' = (s \ {c}) ∪ {d}` and `t' = t ∪ {d}` (translated
+to the anchor), is an involution from moves out of `j`-markings to moves out of
+`(N−1−j)`-markings.  In `s'`, `d` touches exactly one cell, it lies in `t'`, and it is not
+the bridge end, so `d` is a legal leaf.  `c ∉ s'` touches exactly one cell of `s \ t − {c}`
+(its old neighbour) and nothing in `t`, so `c` is a legal spot for the marking `s' \ t'`.  The
+bridge edge survives, and both sides stay connected (a leaf leaves, a pendant arrives).
+Applying the map twice returns `(s, t, c, d)`.  Tested exactly for `N ≤ 11`, with trominoes by
+hand (`test_switching_identity`, `test_switching_hand_counts_trominoes`).  Confidence 95%. -/
+theorem switchMoves_symm (N j : ℕ) (hj : 1 ≤ j) (hN : j + 2 ≤ N) :
+    switchMoves N j = switchMoves N (N - 1 - j) := by sorry
+
+/-- Hand count (see the test): the 6 trominoes give 12 side-marked bridges at `j = 1`, each with
+3 moves.  The L-tromino's third move puts `d` diagonal to the corner, touching the deleted
+leaf `c`, which `IsSwitch` allows. -/
+theorem bridgeCount_three_one : bridgeCount 3 1 = 12 := by sorry
+
+theorem switchMoves_three_one : switchMoves 3 1 = 36 := by sorry
+
+/-- Enumeration: the first non-trivial instance of `switchMoves_symm`, `O(4,1) = O(4,2)`. -/
+theorem switchMoves_four : switchMoves 4 1 = 124 ∧ switchMoves 4 2 = 124 := by sorry
+
+/-- Open, new: **`k(N−k)·B(N,k)` is nondecreasing in `k` on `[2, N/2]`.**  With `T = bridgeCount`
+(side-marked, so `T(N, N/2)` counts each halving bridge twice).  Under the Kramers form
+`T ≈ κ A(k) A(N−k)` and `A(n) ≈ C λⁿ/n`, the product is flat to leading order.  So this is a
+statement about corrections, which the switching move makes local (`MoveDensityDominance`).
+Evidence: holds on every step for every `N ≤ 14` (normalized by `N·T(N,1)` at `N = 14`:
+0.8409, 0.8900, 0.9131, 0.9274, 0.9346, 0.9370 for `k = 2..7`).  It fails at `k = 1`
+(0.9286 → 0.8409), which is why the range starts at 2.  Confidence 55%: the increments near
+`N/2` shrink with `N`. -/
+def BridgeMonotone : Prop :=
+  ∀ N k : ℕ, 2 ≤ k → 2 * (k + 1) ≤ N →
+    k * (N - k) * bridgeCount N k ≤ (k + 1) * (N - k - 1) * bridgeCount N (k + 1)
+
+/-- **Per-cell move density is higher with the small side marked.**  `μ(N,j) = O(N,j)/(j(N−j)
+T(N,j))` is the mean over `j`-markings of (moves) / (|marked| · |unmarked|), roughly
+(spots per cell of the marked side) × (leaves per cell of the other side).  The condition
+compares marking the `k`-side against marking the `(N−1−k)`-side, the in-degree of a
+`(k+1)`-marking. -/
+def MoveDensityDominance : Prop :=
+  ∀ N k : ℕ, 2 ≤ k → 2 * (k + 1) ≤ N →
+    (switchMoves N (N - 1 - k) : ℝ) / ((k + 1) * (N - k - 1) * bridgeCount N (k + 1)) ≤
+      (switchMoves N k : ℝ) / (k * (N - k) * bridgeCount N k)
+
+/-- English proof: by `switchMoves_symm` the two numerators are equal, and they are positive
+for `2 ≤ k`, `N ≥ 2k + 2` (a pendant domino shape has a move).  Dividing them out leaves
+`BridgeMonotone`'s inequality, and both counts are positive.  Confidence 95%. -/
+theorem bridgeMonotone_iff_moveDensityDominance : BridgeMonotone ↔ MoveDensityDominance := by
+  sorry
+
+/-- English proof: telescope `BridgeMonotone` from `k = 2` to `m` at `N = 2m`:
+`m² T(2m,m) ≥ 2(2m−2) T(2m,2)`.  A vertical domino hung above the top cell of an
+`(N−2)`-polyomino is a pendant 2-cell side, so `T(N,2) ≥ A(N−2)` by injection.  Deleting the
+lex-greatest non-cut cell twice gives `A(N) ≤ 4N · 4N · A(N−2)`.  Finally
+`T(2m,m) = 2 H(2m)` by `isHalvable_unique`.  So `H(2m) ≥ A(2m)/(64 m⁴)`.  Confidence 92%. -/
+theorem halvingFractionPoly_of_bridgeMonotone (h : BridgeMonotone) : HalvingFractionPoly := by
+  sorry
+
+theorem polyLower_of_bridgeMonotone (h : BridgeMonotone) : PolyLowerCorrection :=
+  polyLower_of_halvingFractionPoly (halvingFractionPoly_of_bridgeMonotone h)
+
+theorem polyLower_of_moveDensityDominance (h : MoveDensityDominance) : PolyLowerCorrection :=
+  polyLower_of_bridgeMonotone (bridgeMonotone_iff_moveDensityDominance.mpr h)
+
 end LeanFormalizations.Polyomino
