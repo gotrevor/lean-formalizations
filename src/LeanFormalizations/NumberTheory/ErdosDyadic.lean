@@ -134,4 +134,24 @@ def Snyder2026Erdos267 : Prop :=
     (∃ c : ℝ, 1 < c ∧ ∀ k, c * (n k : ℝ) ≤ n (k + 1)) →
     Irrational (∑' k, (Nat.fib (n k) : ℝ)⁻¹)
 
+/-- **Why `∑ 1/F_(2^k)` is algebraic: a tiling.**  `1/F_n = √5 ∑_j ε_(n,j) φ^(−(2j+1)n)`, so a
+lacunary sum is a signed Lambert series over the odd multiples of the `n_k`.  For `n_k = a·2^k`
+those sets tile `aℕ`, and the series collapses to a rational function of `φ`.  Concretely, Millin's
+telescoping applies to every tail of the form `a·2^k`.  Believed (~95%, the identity
+`F_(m−1) F_(2m) − F_m F_(2m−1) = F_m` for even `m`). -/
+theorem doubling_tail_algebraic (a : ℕ) (ha : 0 < a) :
+    IsAlgebraic ℚ (∑' k, (Nat.fib (a * 2 ^ (k + 1)) : ℝ)⁻¹) := by
+  sorry
+
+/-- **Open (my conjecture, ~55%): algebraic only by tiling.**  Under Erdős #267's hypotheses,
+`∑ 1/F_(n_k)` is algebraic iff eventually `n (k + 1) = 2 · n k`.  The `if` direction is
+`doubling_tail_algebraic`.  For `n_k = 2^k` with `k` restricted to a set `K`, the odd-multiple
+sets cover `{m : v₂ m ∈ K}`.  That set is eventually periodic only for finite or cofinite `K`, and
+otherwise it carries a Mahler (`z ↦ z²`) generating function.  Nguyen 2022 settles `c > 2`.  The
+sign `ε_(n,j) = (−1)^(nj)` could allow cancellations outside the tilings, hence the low confidence. -/
+def LacunaryFibAlgebraicIffDoubling : Prop :=
+  ∀ n : ℕ → ℕ, (∀ k, 0 < n k) → StrictMono n →
+    (∃ c : ℝ, 1 < c ∧ ∀ k, c * (n k : ℝ) ≤ n (k + 1)) →
+    (IsAlgebraic ℚ (∑' k, (Nat.fib (n k) : ℝ)⁻¹) ↔ ∀ᶠ k in atTop, n (k + 1) = 2 * n k)
+
 end LeanFormalizations.ErdosDyadic
