@@ -391,7 +391,15 @@ def register : List Row := [
       column B).  The best rational-base criterion (ErdosDyadic.Cook2026RationalBase, from Zudilin \
       2004) needs log b/log a < 0.4057; 3/2 sits at 0.631"
     reopenIf := "a Padé/Hankel construction whose denominators do not grow like b^(n²), i.e. one \
-      beating the Mahler 3/2 denominator wall" }
+      beating the Mahler 3/2 denominator wall" },
+  { route := "Erdős #267 (∑ 1/F_(n_k), ratio gap 1 < c < 2) as a new target"
+    verdict := .superseded, tier := .frozen
+    anchor := some ``LeanFormalizations.ErdosDyadic.Snyder2026Erdos267
+    evidence := "Snyder's Lean proof (2026-07-15, GPT 5.6, Z[φ]-lattice window comparison) kernel-checked \
+      here 2026-10-05: Mathlib fabf563, standard axioms, statement faithful to FC erdos_267.  \
+      Transcendence is Nguyen 2022 for c > 2, sharp at c = 2"
+    reopenIf := "never for irrationality; the open neighbour is which lacunary sums with \
+      1 < c ≤ 2 are algebraic (∑ 1/F_(2^k) is)" }
 ]
 
 end LeanFormalizations.Maze

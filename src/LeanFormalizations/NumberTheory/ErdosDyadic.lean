@@ -115,4 +115,23 @@ theorem three_halves_outside_cook_region : ¬ (Real.log 2 / Real.log 3 < 0.4056)
   rw [not_lt, le_div_iff₀ h3]
   linarith
 
+/-! ## #267: lacunary Fibonacci reciprocals (superseded, 2026-10-05) -/
+
+/-- **Snyder 2026 (Erdős #267, every `c > 1`).**  If `n` is positive, strictly increasing and
+`n (k + 1) ≥ c · n k` for some `c > 1`, then `∑ 1 / F_(n_k)` is irrational.  Badea 1993 had
+`c ≥ 2`; Nguyen 2022 (ANT 16) has transcendence for `c > 2`, which is sharp because
+`∑ 1/F_(2^k) = (7 − √5)/2`.
+
+C. Snyder (GPT 5.6, custom harness), proof claim on erdosproblems.com/forum/thread/267,
+2026-07-15, bundle `erdos-267-solution.zip` from starfleetmath.com: theorem
+`Research.erdos_problem_267`, 27,673-line `Erdos267Standalone.lean`.  **Independently kernel-checked
+here 2026-10-05** against Mathlib `fabf563` (Lean v4.31.0, a CoW clone of `~/.lake-base/4.31.0`).
+The build passed and the axioms are `[propext, Classical.choice, Quot.sound]`.  The statement
+matches formal-conjectures `erdos_267` up to real versus rational `c`, which are equivalent.  Not
+`require`d yet; the route to that is a fork plus a pinned `require`. -/
+def Snyder2026Erdos267 : Prop :=
+  ∀ n : ℕ → ℕ, (∀ k, 0 < n k) → StrictMono n →
+    (∃ c : ℝ, 1 < c ∧ ∀ k, c * (n k : ℝ) ≤ n (k + 1)) →
+    Irrational (∑' k, (Nat.fib (n k) : ℝ)⁻¹)
+
 end LeanFormalizations.ErdosDyadic
