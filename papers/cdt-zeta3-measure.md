@@ -45,3 +45,16 @@ The slit plane has 4.912 in both rows.
 - **ρ is set by φ(z) = α on the positive real axis.**  The true ρ uses max|φ| on |z| = ρ, attained at z = −ρ.  The difference is a factor (1−ρ)²/(1+ρ)² ≈ 1 − 9·10⁻⁴, which is negligible.
 - **The coefficient-1 row is a scale, not a theorem.**
 - **Odds** the lead yields μ(ζ(3)) < 5.513: about 5%.
+
+## Template scoring (same day): the lead is parked (~1%)
+
+| Template | L = log\|φ′(0)\| | ∬ | log(1/ρ) | μ, as published | μ, coefficient 1 |
+|---|---|---|---|---|---|
+| Koebe, univalent | 4.912 | 4.912 | 8.437 | 18.17 | 8.53 |
+| CDT bivalent 8(z+z³)/(1+z)⁴ (Rem 2.11.1) | 5.605 | 6.771 | 9.130 | **17.53** | **8.21** |
+
+**Controls:** the numerical ∬ is 1.3808 for Koebe against log 4 = 1.3863, and 3.2401 for the bivalent map against CDT's log 8 + 4G/π = 3.2457.  Both agree to within 0.006, which is discretization error.
+
+**Higher-valence maps are not admissible.**  The nested maps in CDT's Remark 2.11.3, with limit λ and |φ′(0)| → 16, are certified only for Σ₀ = {0}.  Apéry's α is singular on non-principal sheets.  λ covers ℂ∖{0,1}, so it hits α along paths that wind around β.
+
+**Verdict.**  Valence raises L by log 2 per doubling, but it raises ∬ faster, and it raises the log(1/ρ) penalty by the same log 2.  As published, no admissible template gets the holonomy measure for ζ(3) down even to Apéry's 13.42.  Beating Rhin–Viola needs a better theorem, not a better template.  Even the hypothetical coefficient-1 version stalls at 8.2 on the best template.  So it would also need Rhin–Viola-style arithmetic savings fed into a holonomy measure that does not lose to the classical one.  That is CDT's own open problem, and no cheap probe can reach it.  **Parked (~1%).**  Reopen only with a holonomy measure that provably matches the classical measure when the classical one applies.
