@@ -61,3 +61,30 @@ built.**  Reopen only with a mechanism that removes the denominators (an integra
 other function whose value encodes ζ(3)) or a Philippon-type criterion tolerant of exponential
 heights.  Not stated in any source found; the integrality hypothesis and its failure are, the
 quantitative verdict is ours.
+
+## Follow-up 2026-10-24: do the denominators cancel in the solution lattice?
+
+Probe: `nesterenko-kernel-height.py [dmax]` (PARI `matkerint`, ~16 min at `dmax = 4`).  Functions
+`q, E₂, E₄, E₆, h`, all monomials of degree `≤ d` (`s` of them), vanishing to order `r = s/2`.  The
+smallest integer solution has log-size about `log H(K)/dim K` for the saturated kernel lattice `K`
+(Bombieri-Vaaler).  Control `h = Σ σ₀(n) qⁿ`, integer coefficients, same shape.
+
+| d | s | control `log H/dim K` | `g_{0,3}` `log H/dim K` | row-clearing cost / r | share of cost surviving |
+|---|---|---|---|---|---|
+| 2 | 21 | 9.98 | 17.97 | 10.16 | 79% |
+| 3 | 56 | 17.29 | 57.57 | 51.52 | 78% |
+| 4 | 126 | 24.62 | 137.62 | 151.28 | 75% |
+
+Divided by `r` (10, 28, 63): the control falls (1.00, 0.62, 0.39), as Nesterenko's
+`O(d log d)` height needs, while `g_{0,3}` rises (1.80, 2.06, 2.18).  So the height tracks the
+order of vanishing.  In Philippon's criterion (Fonseca's survey, Theorem 2.8, needs height
+`O(d log² d)` against smallness `d^r`), a height of the same order as the smallness yields only
+`trdeg ≥ 1`, which Nesterenko 1996 already beats.  The loophole "denominators cancel in the
+kernel" is closed at the sizes reachable: the surviving share drifts from 79% to 75%, not toward 0.
+
+Nesterenko 2011 (Moscow J. Comb. Number Theory 1:2, 89-99, free at mjcnt.phystech.edu, article 12)
+was read: identities only (`ζ(3)` as a `ℚ(π)`-combination of `π³` and `g_{u,3}(i)`; degeneracy of
+the `g_{u,v}` values at `i` and `ρ`), framed as the analogue of the CM degeneracy behind π, e^π,
+Γ(1/4).  It names no obstruction, so the integrality verdict stands.
+
+**Updated verdict, ~85%: this route is closed as built; ~1% that a new mechanism reopens it.**
